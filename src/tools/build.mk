@@ -12,3 +12,8 @@ out/tofu.tgz: \
 	out/busybox.tgz \
 	out/go.tgz
 	$(call build,tools,tofu)
+
+out/sops.tgz: \
+	out/busybox.tgz \
+	out/go.tgz
+	$(call build,tools,sops)
