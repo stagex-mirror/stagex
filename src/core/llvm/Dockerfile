@@ -9,6 +9,7 @@ FROM ${REGISTRY}/py-setuptools as py-setuptools
 FROM ${REGISTRY}/cmake as cmake
 FROM ${REGISTRY}/ninja as ninja
 FROM ${REGISTRY}/busybox as busybox
+FROM ${REGISTRY}/openssl as openssl
 
 FROM busybox as base
 ARG VERSION
@@ -24,9 +25,10 @@ COPY --from=musl . /
 COPY --from=gcc . /
 COPY --from=python . /
 COPY --from=py-setuptools . /
+COPY --from=openssl . /
 
 FROM base as fetch
-RUN wget ${SRC_SITE}/llvmorg-${SRC_VERSION}/llvm-project-${SRC_VERSION}.src.tar.xz
+RUN wget --no-check-certificate ${SRC_SITE}/llvmorg-${SRC_VERSION}/llvm-project-${SRC_VERSION}.src.tar.xz
 RUN echo "$(printenv SRC_HASH_${VERSION//./_})  llvm-project-${SRC_VERSION}.src.tar.xz" | sha256sum -c
 
 FROM fetch as build

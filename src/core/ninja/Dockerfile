@@ -5,6 +5,8 @@ FROM ${REGISTRY}/python:latest as python
 FROM ${REGISTRY}/musl:latest as musl
 FROM ${REGISTRY}/gcc:latest as gcc
 FROM ${REGISTRY}/busybox:latest as busybox
+FROM ${REGISTRY}/ca-certificates:latest as ca-certificates
+FROM ${REGISTRY}/openssl:latest as openssl
 
 FROM busybox as base
 ENV SRC_SITE=https://github.com/martine/ninja/archive/
@@ -15,9 +17,11 @@ COPY --from=make . /
 COPY --from=python . /
 COPY --from=musl . /
 COPY --from=gcc . /
+COPY --from=openssl . /
+FROM ${REGISTRY}/busybox:latest as busybox
 
 FROM base as fetch
-RUN wget ${SRC_SITE}/v${SRC_VERSION}.tar.gz
+RUN wget --no-check-certificate ${SRC_SITE}/v${SRC_VERSION}.tar.gz
 RUN echo "${SRC_HASH}  v${SRC_VERSION}.tar.gz" | sha256sum -c
 
 FROM fetch as build
