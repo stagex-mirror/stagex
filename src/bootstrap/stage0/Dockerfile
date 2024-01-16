@@ -18,10 +18,10 @@ RUN set -eux; \
     echo "${SRC_HASH}  stage0-posix-${VERSION}.tar.gz" | sha256sum -c; \
     tar -xf stage0-posix-${VERSION}.tar.gz
 WORKDIR stage0-posix-${VERSION}
-RUN bootstrap-seeds/POSIX/AMD64/kaem-optional-seed
-RUN mv AMD64/bin /rootfs/
+RUN bootstrap-seeds/POSIX/x86/kaem-optional-seed
+RUN mkdir -p /rootfs && cp -R * /rootfs/
 WORKDIR /rootfs
-RUN sha256sum * > hashes.txt
+RUN sha256sum x86/bin/* > hashes.txt
 
 FROM archlinux as build2
 ARG VERSION
@@ -36,10 +36,10 @@ RUN set -eux; \
     echo "${SRC_HASH}  stage0-posix-${VERSION}.tar.gz" | sha256sum -c; \
     tar -xf stage0-posix-${VERSION}.tar.gz
 WORKDIR stage0-posix-${VERSION}
-RUN bootstrap-seeds/POSIX/AMD64/kaem-optional-seed
-RUN mv AMD64/bin /rootfs/
+RUN bootstrap-seeds/POSIX/x86/kaem-optional-seed
+RUN mkdir -p /rootfs && cp -R * /rootfs/
 WORKDIR /rootfs
-RUN sha256sum * > hashes.txt
+RUN sha256sum x86/bin/* > hashes.txt
 
 FROM alpine as build3
 ARG VERSION
@@ -54,10 +54,10 @@ RUN set -eux; \
     echo "${SRC_HASH}  stage0-posix-${VERSION}.tar.gz" | sha256sum -c; \
     tar -xf stage0-posix-${VERSION}.tar.gz
 WORKDIR stage0-posix-${VERSION}
-RUN bootstrap-seeds/POSIX/AMD64/kaem-optional-seed
-RUN mv AMD64/bin /rootfs/
+RUN bootstrap-seeds/POSIX/x86/kaem-optional-seed
+RUN mkdir -p /rootfs && cp -R * /rootfs/
 WORKDIR /rootfs
-RUN sha256sum * > hashes.txt
+RUN sha256sum x86/bin/* > hashes.txt
 
 FROM scratch as compare
 COPY --from=build1 /rootfs/ /a
@@ -66,27 +66,27 @@ COPY --from=build3 /rootfs/ /c
 
 FROM compare as test1
 WORKDIR /a
-RUN ["/a/sha256sum","-c","/a/hashes.txt"]
-WORKDIR /b
-RUN ["/a/sha256sum","-c","/a/hashes.txt"]
-WORKDIR /c
-RUN ["/a/sha256sum","-c","/a/hashes.txt"]
+RUN ["x86/bin/sha256sum","-c","/a/hashes.txt"]
+RUN ["x86/bin/sha256sum","-c","/b/hashes.txt"]
+RUN ["x86/bin/sha256sum","-c","/c/hashes.txt"]
 
 FROM compare as test2
-WORKDIR /a
-RUN ["/b/sha256sum","-c","/b/hashes.txt"]
 WORKDIR /b
-RUN ["/b/sha256sum","-c","/b/hashes.txt"]
-WORKDIR /c
-RUN ["/b/sha256sum","-c","/b/hashes.txt"]
+RUN ["x86/bin/sha256sum","-c","/a/hashes.txt"]
+RUN ["x86/bin/sha256sum","-c","/b/hashes.txt"]
+RUN ["x86/bin/sha256sum","-c","/c/hashes.txt"]
 
 FROM compare as test3
-WORKDIR /a
-RUN ["/c/sha256sum","-c","/c/hashes.txt"]
-WORKDIR /b
-RUN ["/c/sha256sum","-c","/c/hashes.txt"]
 WORKDIR /c
-RUN ["/c/sha256sum","-c","/c/hashes.txt"]
+RUN ["x86/bin/sha256sum","-c","/a/hashes.txt"]
+RUN ["x86/bin/sha256sum","-c","/b/hashes.txt"]
+RUN ["x86/bin/sha256sum","-c","/c/hashes.txt"]
+
+FROM scratch as install
+COPY --from=test1 /a/hashes.txt /a-hashes.txt
+COPY --from=test2 /b/hashes.txt /b-hashes.txt
+COPY --from=test3 /c/hashes.txt /c-hashes.txt
+COPY --from=build1 /rootfs /
 
 FROM scratch as package
-COPY --from=build1 /rootfs /
+COPY --from=install / /

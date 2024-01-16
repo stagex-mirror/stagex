@@ -1,13 +1,10 @@
 .PHONY: bootstrap
 bootstrap: \
-	out/bootstrap.tgz \
+	out/live-bootstrap.tgz \
 	out/stage0.tgz
 
-out/bootstrap.tgz:
-	$(call build,bootstrap,bootstrap)
+out/live-bootstrap.tgz: out/stage0.tgz
+	$(call build,bootstrap,live-bootstrap)
 
 out/stage0.tgz:
 	$(call build,bootstrap,stage0)
-
-out/mes.tgz: out/stage0.tgz
-	$(call build,bootstrap,mes)
