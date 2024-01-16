@@ -82,6 +82,7 @@ RUN set -eux; \
 COPY --from=musl /lib/* /rootfs/lib/
 COPY --from=gcc /usr/lib/* /rootfs/usr/lib/
 COPY --from=gcc /usr/lib64/* /rootfs/usr/lib/
+RUN ln -s lit /rootfs/usr/bin/llvm-lit
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package
