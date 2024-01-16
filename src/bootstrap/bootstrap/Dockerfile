@@ -21,8 +21,9 @@ RUN set -eux; \
 WORKDIR live-bootstrap
 RUN ./download-distfiles.sh
 RUN set -eux; \
-    mkdir -p /rootfs; \
-    mv steps distfiles seed/* /rootfs/
+    mkdir -p /rootfs/external; \
+    mv steps seed/* /rootfs/; \
+    mv distfiles /rootfs/external/
 RUN echo "\
 FORCE_TIMESTAMPS=False\n\
 CHROOT=True\n\
@@ -38,7 +39,7 @@ DISK=sda1\n\
 KERNEL_BOOTSTRAP=False\n\
 BUILD_KERNELS=False\
 " > /rootfs/steps/bootstrap.cfg
-RUN cat /rootfs/steps/bootstrap.cfg
+RUN touch /rootfs/steps/lwext4-1.0.0-lb1/files/fiwix-file-list.txt
 
 FROM scratch as build
 COPY --from=stage0 / .
