@@ -15,7 +15,7 @@ mkdir -p ${DIR}
 [ -f ${DIR}/signature-1 ] \
     && LASTSIGNUM=$( \
         find ${DIR} -type f -printf "%f\n" \
-        | sort \
+        | sort -t- -k2 -n \
         | tail -n1 \
         | sed 's/signature-//' \
     ) \
