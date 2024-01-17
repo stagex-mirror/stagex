@@ -9,8 +9,9 @@ ENV SRC_FILE=busybox-${SRC_VERSION}.tar.bz2
 ENV KCONFIG_NOTIMESTAMP=1
 
 FROM base as fetch
+WORKDIR /home/user
 RUN set -eux; \
-    wget ${SRC_SITE}/${SRC_FILE}; \
+    curl -O -J ${SRC_SITE}/${SRC_FILE}; \
     echo "${SRC_HASH}  ${SRC_FILE}" | sha256sum -c
 
 FROM fetch as build
