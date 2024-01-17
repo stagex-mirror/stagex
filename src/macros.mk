@@ -12,6 +12,8 @@
 # - TARGET defaults to "package"
 # - EXTRA_ARGS will be blindly injected
 # - packages may also define a "test" layer
+# - the ulimit line is to workaround a bug in patch when the nofile limit is too large:
+#      https://savannah.gnu.org/bugs/index.php?62958
 #  TODO:
 # - try to disable networking on fetch layers with something like:
 #   $(if $(filter fetch,$(lastword $(subst -, ,$(TARGET)))),,--network=none)
@@ -29,6 +31,7 @@ define build
 		SOURCE_DATE_EPOCH=1 \
 		$(BUILDER) \
 			build \
+			--ulimit nofile=2048:16384 \
 			-t $(REGISTRY)/$(NAME):$(VERSION) \
 			--build-arg REGISTRY=$(REGISTRY) \
 			--platform $(PLATFORM) \
