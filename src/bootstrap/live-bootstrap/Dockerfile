@@ -55,8 +55,8 @@ FROM build as install
 ENV PATH=/bin:/usr/sbin:/usr/bin
 RUN set -eux; \
     rm -rf /usr/lib/python*/__pycache__; \
-    mkdir -p /rootfs/etc /rootfs/home/user; \
-    chown -R 1000:1000 /rootfs/home/user; \
+    mkdir -p /rootfs/etc /rootfs/home/user /rootfs/tmp; \
+    chown -R 1000:1000 /rootfs/home/user /rootfs/tmp; \
     cp -R $(ls -d /etc/* | grep -v '\(resolv.conf\|hosts\)') /rootfs/etc/; \
     cp -R lib usr bin var /rootfs/; \
     echo "user:x:1000:" > /rootfs/etc/group; \
