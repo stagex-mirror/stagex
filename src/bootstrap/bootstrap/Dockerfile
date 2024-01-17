@@ -20,30 +20,33 @@ RUN set -eux; \
     mv lrvick-live-bootstrap-* live-bootstrap
 WORKDIR live-bootstrap
 RUN ./download-distfiles.sh
+
+FROM fetch as config
 RUN set -eux; \
     mkdir -p /rootfs/external; \
     mv steps seed/* /rootfs/; \
-    mv distfiles /rootfs/external/
-RUN echo "\
+    mv distfiles /rootfs/external/; \
+    export CORES=$(nproc --all); \
+    echo "\
 FORCE_TIMESTAMPS=False\n\
 CHROOT=True\n\
 UPDATE_CHECKSUMS=False\n\
-JOBS=10\n\
+JOBS=${CORES}\n\
 SWAP_SIZE=0\n\
-FINAL_JOBS=10\n\
+FINAL_JOBS=${CORES}\n\
 INTERNAL_CI=False\n\
 INTERACTIVE=False\n\
 BARE_METAL=False\n\
 EXTERNAL_SOURCES=True\n\
 DISK=sda1\n\
 KERNEL_BOOTSTRAP=False\n\
-BUILD_KERNELS=False\
-" > /rootfs/steps/bootstrap.cfg
+BUILD_KERNELS=False" \
+    > /rootfs/steps/bootstrap.cfg
 RUN touch /rootfs/steps/lwext4-1.0.0-lb1/files/fiwix-file-list.txt
 
 FROM scratch as build
 COPY --from=stage0 / .
-COPY --from=fetch /rootfs .
+COPY --from=config /rootfs .
 ENV ARCH_DIR=x86
 ENV ARCH=x86
 RUN ["/x86/bin/kaem","--verbose","--strict","--file","./after.kaem"]
@@ -53,6 +56,7 @@ ENV PATH=/bin:/usr/sbin:/usr/bin
 RUN set -eux; \
     rm -rf /usr/lib/python*/__pycache__; \
     mkdir -p /rootfs/etc /rootfs/home/user; \
+    chown -R 1000:1000 /home/user; \
     cp -R $(ls -d /etc/* | grep -v '\(resolv.conf\|hosts\)') /rootfs/etc/; \
     cp -R lib usr bin var /rootfs/; \
     echo "user:x:1000:" > /rootfs/etc/group; \
