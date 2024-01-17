@@ -18,10 +18,12 @@ RUN set -eux; \
     echo "${SRC_HASH}  stage0-posix-${VERSION}.tar.gz" | sha256sum -c; \
     tar -xf stage0-posix-${VERSION}.tar.gz
 WORKDIR stage0-posix-${VERSION}
-RUN bootstrap-seeds/POSIX/x86/kaem-optional-seed
-RUN mkdir -p /rootfs && cp -R * /rootfs/
+RUN set -eux; \
+    bootstrap-seeds/POSIX/x86/kaem-optional-seed; \
+    mkdir -p /rootfs && cp -R * /rootfs/
 WORKDIR /rootfs
-RUN sha256sum x86/bin/* > hashes.txt
+RUN sha256sum x86/bin/* > hashes.txt; \
+    find . -exec touch -hcd "@0" "{}" +
 
 FROM archlinux as build2
 ARG VERSION
@@ -36,10 +38,12 @@ RUN set -eux; \
     echo "${SRC_HASH}  stage0-posix-${VERSION}.tar.gz" | sha256sum -c; \
     tar -xf stage0-posix-${VERSION}.tar.gz
 WORKDIR stage0-posix-${VERSION}
-RUN bootstrap-seeds/POSIX/x86/kaem-optional-seed
-RUN mkdir -p /rootfs && cp -R * /rootfs/
+RUN set -eux; \
+    bootstrap-seeds/POSIX/x86/kaem-optional-seed; \
+    mkdir -p /rootfs && cp -R * /rootfs/
 WORKDIR /rootfs
-RUN sha256sum x86/bin/* > hashes.txt
+RUN sha256sum x86/bin/* > hashes.txt; \
+    find . -exec touch -hcd "@0" "{}" +
 
 FROM alpine as build3
 ARG VERSION
@@ -54,10 +58,12 @@ RUN set -eux; \
     echo "${SRC_HASH}  stage0-posix-${VERSION}.tar.gz" | sha256sum -c; \
     tar -xf stage0-posix-${VERSION}.tar.gz
 WORKDIR stage0-posix-${VERSION}
-RUN bootstrap-seeds/POSIX/x86/kaem-optional-seed
-RUN mkdir -p /rootfs && cp -R * /rootfs/
+RUN set -eux; \
+    bootstrap-seeds/POSIX/x86/kaem-optional-seed; \
+    mkdir -p /rootfs && cp -R * /rootfs/
 WORKDIR /rootfs
-RUN sha256sum x86/bin/* > hashes.txt
+RUN sha256sum x86/bin/* > hashes.txt; \
+    find . -exec touch -hcd "@0" "{}" +
 
 FROM scratch as compare
 COPY --from=build1 /rootfs/ /a
