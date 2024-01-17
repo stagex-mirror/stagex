@@ -32,6 +32,7 @@ define build
 			-t $(REGISTRY)/$(NAME):$(VERSION) \
 			--build-arg REGISTRY=$(REGISTRY) \
 			--platform $(PLATFORM) \
+			--network=host \
 			--progress=plain \
 			$(if $(filter latest,$(VERSION)),,--build-arg VERSION=$(VERSION)) \
 			--target $(TARGET) \
