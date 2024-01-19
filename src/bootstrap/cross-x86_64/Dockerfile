@@ -3,13 +3,10 @@ FROM ${REGISTRY}/live-bootstrap:latest as live-bootstrap
 
 FROM live-bootstrap as base
 ENV TARGET=x86_64-linux-musl
-ENV BINUTILS_VERSION 2.41
-ENV BINUTILS_SRC_SITE https://ftp.gnu.org/gnu/binutils
-ENV BINUTILS_SRC_HASH ae9a5789e23459e59606e6714723f2d3ffc31c03174191ef0d015bdf06007450
-ENV GCC_VERSION 12.2.0
+ENV GCC_VERSION 13.1.0
 ENV GCC_SRC_FILE gcc-$GCC_VERSION.tar.xz
 ENV GCC_SRC_SITE https://mirrors.kernel.org/gnu/gcc/gcc-${GCC_VERSION}
-ENV GCC_SRC_HASH e549cf9cf3594a00e27b6589d4322d70e0720cdd213f39beb4181e06926230ff
+ENV GCC_SRC_HASH 61d684f0aa5e76ac6585ad8898a2427aade8979ed5e7f85492286c4dfc13ee86
 ENV GCC_DEP_SITE https://gcc.gnu.org/pub/gcc/infrastructure/
 ENV GMP_FILE gmp-6.2.1.tar.bz2
 ENV GMP_HASH eae9326beb4158c386e39a356818031bd28f3124cf915f8c5b1dc4c7a36b4d7c
@@ -23,8 +20,6 @@ ENV ISL_HASH fcf78dd9656c10eb8cf9fbd5f59a0b6b01386205fe1934b3b287a0a1898145c0
 FROM base as fetch
 WORKDIR /home/user
 RUN set -eux; \
-    curl -OJ ${BINUTILS_SRC_SITE}/binutils-${BINUTILS_VERSION}.tar.xz; \
-    echo "${BINUTILS_SRC_HASH} binutils-${BINUTILS_VERSION}.tar.xz" | sha256sum -c; \
     curl -OJ ${GCC_SRC_SITE}/${GCC_SRC_FILE}; \
     echo "${GCC_SRC_HASH}  ${GCC_SRC_FILE}" | sha256sum -c; \
     curl -OJ ${GCC_DEP_SITE}/${GMP_FILE}; \
@@ -37,44 +32,54 @@ RUN set -eux; \
     echo "${ISL_HASH}  ${ISL_FILE}" | sha256sum -c
 
 FROM fetch as build
-RUN tar -xf binutils-${BINUTILS_VERSION}.tar.xz
-RUN set -ex; \
-    cd binutils-${BINUTILS_VERSION}; \
-    ./configure \
+RUN set -eux; \
+    tar -xf ${GCC_SRC_FILE}; \
+    cd gcc-${GCC_VERSION}; \
+    mv ../*.tar.* .; \
+    ./contrib/download_prerequisites
+ENV PATH=/home/user/gcc-build/bin:${PATH}
+RUN set -eux; \
+    mkdir -p gcc-build/bin; \
+    cd gcc-build; \
+    ln -s /usr/sbin/ar bin/${TARGET}-ar; \
+    ln -s /usr/sbin/ranlib bin/${TARGET}-ranlib; \
+    ../gcc-${GCC_VERSION}/configure \
+        --build=i386-unknown-linux-musl \
+        --host=i386-unknown-linux-musl \
         --target=${TARGET} \
         --libdir=/lib \
-        --with-sysroot= \
         --prefix= \
+        --enable-languages=c,c++ \
+        --disable-nls \
+        --disable-shared \
+        --without-headers \
+        --with-as=/usr/sbin/as \
         --disable-multilib \
-        --disable-separate-code \
+        --disable-libquadmath \
+        --disable-libatomic \
+        --disable-libgomp \
+        --disable-libssp \
+        --disable-libvtv \
+        --disable-gcov \
+        --disable-libstdcxx \
         --disable-werror \
+        --disable-threads \
+        --disable-separate-code \
         --enable-deterministic-archives; \
-	make -j "$(nproc)"
-#RUN tar -xf ${GCC_SRC_FILE}
-#RUN set -eux; \
-#    cd gcc-${GCC_VERSION}; \
-#    mv ../*.tar.* .; \
-#    ./contrib/download_prerequisites; \
-#    ./configure \
-#        --target=${TARGET} \
-#        --prefix=/usr \
-#        --mandir=/usr/share/man \
-#        --infodir=/usr/share/info \
-#        --libdir=/usr/lib \
-#        --disable-nls \
-#        --without-headers \
-#        --enable-languages=c,c++; \
-#make -j "$(nproc)"
+    make -j "$(nproc)" || :
 
 
-FROM build as package
+FROM build as install
+USER 0:0
+WORKDIR /home/user/gcc-build
+RUN set -eux; \
+    make DESTDIR="/rootfs" install; \
+    cp /lib/ld-musl-i386.so.1 /rootfs/lib/; \
+    ln -s /lib/ld-musl-i386.so.1 /rootfs/lib/libc.so; \
+    find /rootfs -exec touch -hcd "@0" "{}" +
 
-#FROM build as install
-#USER 0:0
-#RUN make DESTDIR="/rootfs" install;
-#RUN find /rootfs -exec touch -hcd "@0" "{}" +
-#
-#FROM scratch as package
-#COPY --from=install /rootfs /
-#ENTRYPOINT ["/bin/ld"]
-#CMD ["--version"]
+#FROM install as package
+FROM scratch as package
+COPY --from=install /rootfs /
+ENTRYPOINT ["/bin/x86_64-linux-musl-gcc"]
+CMD ["--version"]
