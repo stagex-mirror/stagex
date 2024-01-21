@@ -67,8 +67,11 @@ FROM scratch as package
 COPY --from=install /rootfs /
 USER 1000:1000
 ENTRYPOINT ["/bin/bash"]
+ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV USER=user
+ENV HOME=/home/user
 ENV TZ=UTC
 ENV LANG=C.UTF-8
 ENV SOURCE_DATE_EPOCH=1
 ENV KCONFIG_NOTIMESTAMP=1
-ENV PS1="bootstrap$ "
+ENV PS1="stage1 $ "
