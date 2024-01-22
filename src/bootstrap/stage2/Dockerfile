@@ -1,7 +1,7 @@
 ARG REGISTRY=local
-FROM ${REGISTRY}/live-bootstrap:latest as live-bootstrap
+FROM ${REGISTRY}/stage1:latest as stage1
 
-FROM live-bootstrap as base
+FROM stage1 as base
 ENV TARGET=x86_64-linux-musl
 ENV GCC_VERSION 13.1.0
 ENV GCC_FILE gcc-$GCC_VERSION.tar.xz
@@ -24,6 +24,10 @@ ENV BINUTILS_VERSION 2.41
 ENV BINUTILS_SITE https://ftp.gnu.org/gnu/binutils
 ENV BINUTILS_FILE binutils-${BINUTILS_VERSION}.tar.xz
 ENV BINUTILS_HASH ae9a5789e23459e59606e6714723f2d3ffc31c03174191ef0d015bdf06007450
+ENV BINUTILS_DIR ${HOME}/build-binutils
+ENV GCC_DIR ${HOME}/build-gcc
+ENV MUSL_DIR ${HOME}/build-musl
+ENV SYSROOT_DIR ${HOME}/build-sysroot
 
 FROM base as fetch
 WORKDIR ${HOME}
@@ -53,10 +57,6 @@ RUN set -eux; \
     ./contrib/download_prerequisites
 
 FROM extract as build
-ENV BINUTILS_DIR ${HOME}/build-binutils
-ENV GCC_DIR ${HOME}/build-gcc
-ENV MUSL_DIR ${HOME}/build-musl
-ENV SYSROOT_DIR ${HOME}/build-sysroot
 
 # Phase 1: Build cross binutils in build-binutils
 WORKDIR ${BINUTILS_DIR}
@@ -122,10 +122,10 @@ RUN set -eux; \
 WORKDIR ${MUSL_DIR}
 RUN set -eux; \
     ../musl-${MUSL_VERSION}/configure \
-        CC="${GCC_DIR}/gcc/xgcc -B ${HOME}/build-gcc/gcc" \
+        CC="${GCC_DIR}/gcc/xgcc -B ${GCC_DIR}/gcc" \
         LIBCC="${GCC_DIR}/${TARGET}/libgcc/libgcc.a" \
         --prefix= \
-        --host=x86_64-linux-musl; \
+        --host=${TARGET}; \
     make DESTDIR=${SYSROOT_DIR} install-headers
 
 # Phase 5: Compile libgcc
@@ -142,18 +142,31 @@ RUN set -eux; \
 
 # Phase 6: Compile remaining gcc targets
 WORKDIR ${GCC_DIR}
-RUN make
-
-FROM build as package
+RUN make all
 
 FROM build as install
 WORKDIR ${HOME}
+USER 0:0
+COPY --from=stage1 . /rootfs/
 RUN set -eux; \
-    env -C build-musl make DESTDIR=${SYSROOT_DIR} install; \
-    env -C build-gcc make DESTDIR=${SYSROOT_DIR} install; \
-    env -C build-binutils make DESTDIR=${SYSROOT_DIR} install; \
-    find ${SYSROOT_DIR} -exec touch -hcd "@0" "{}" +
+    rm /rootfs/lib; \
+    env -C build-musl make DESTDIR=/rootfs/${TARGET} install; \
+    env -C build-gcc make DESTDIR=/rootfs/ install; \
+    env -C build-binutils make DESTDIR=/rootfs/ install; \
+    ln -s /usr/lib/ld-musl-i386.so.1 /rootfs/lib/libc.so; \
+    ln -s /usr/lib/ld-musl-i386.so.1 /rootfs/lib/ld-musl-i386.so.1; \
+    ln -s /${TARGET}/lib/ld-musl-x86_64.so.1 /rootfs/lib/ld-musl-x86_64.so.1; \
+    find /rootfs -exec touch -hcd "@0" "{}" +
 
-FROM live-bootstrap as package
-COPY --from=install ${SYSROOT_DIR} /${TARGET}
+FROM scratch as package
+COPY --from=install /rootfs/ /
+USER 1000:1000
+ENTRYPOINT ["/bin/bash"]
+ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV USER=user
+ENV HOME=/home/user
+ENV TZ=UTC
+ENV LANG=C.UTF-8
+ENV SOURCE_DATE_EPOCH=1
+ENV KCONFIG_NOTIMESTAMP=1
 ENV PS1="stage2 $ "
