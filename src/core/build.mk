@@ -13,7 +13,7 @@ out/musl.tgz: out/stage3.tgz
 out/busybox.tgz: out/stage3.tgz
 	$(call build,core,busybox)
 
-out/binutils.tgz: out/stage3.tgz
+out/binutils.tgz: out/stage3.tgz out/musl.tgz
 	$(call build,core,binutils)
 
 out/make.tgz: out/stage3.tgz
