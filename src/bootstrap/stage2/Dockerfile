@@ -2,11 +2,14 @@ ARG REGISTRY=local
 FROM ${REGISTRY}/stage1:latest as stage1
 
 FROM stage1 as base
-ENV TARGET=x86_64-linux-musl
+ENV ARCH=x86_64
+ENV TARGET=${ARCH}-linux-musl
+ENV SYSROOT_DIR ${HOME}/build-sysroot
 ENV GCC_VERSION 13.1.0
 ENV GCC_FILE gcc-$GCC_VERSION.tar.xz
 ENV GCC_SITE https://mirrors.kernel.org/gnu/gcc/gcc-${GCC_VERSION}
 ENV GCC_HASH 61d684f0aa5e76ac6585ad8898a2427aade8979ed5e7f85492286c4dfc13ee86
+ENV GCC_DIR ${HOME}/build-gcc
 ENV GCC_DEP_SITE https://gcc.gnu.org/pub/gcc/infrastructure/
 ENV GMP_FILE gmp-6.2.1.tar.bz2
 ENV GMP_HASH eae9326beb4158c386e39a356818031bd28f3124cf915f8c5b1dc4c7a36b4d7c
@@ -20,18 +23,23 @@ ENV MUSL_VERSION 1.2.4
 ENV MUSL_SITE http://musl.libc.org
 ENV MUSL_FILE musl-${MUSL_VERSION}.tar.gz
 ENV MUSL_HASH 7a35eae33d5372a7c0da1188de798726f68825513b7ae3ebe97aaaa52114f039
+ENV MUSL_DIR ${HOME}/build-musl
+ENV LINUX_SITE https://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/
+ENV LINUX_VERSION 6.6
+ENV LINUX_HASH d926a06c63dd8ac7df3f86ee1ffc2ce2a3b81a2d168484e76b5b389aba8e56d0
+ENV LINUX_FILE linux-${LINUX_VERSION}.tar.xz
+ENV LINUX_DIR ${HOME}/build-linux
 ENV BINUTILS_VERSION 2.41
 ENV BINUTILS_SITE https://ftp.gnu.org/gnu/binutils
 ENV BINUTILS_FILE binutils-${BINUTILS_VERSION}.tar.xz
 ENV BINUTILS_HASH ae9a5789e23459e59606e6714723f2d3ffc31c03174191ef0d015bdf06007450
 ENV BINUTILS_DIR ${HOME}/build-binutils
-ENV GCC_DIR ${HOME}/build-gcc
-ENV MUSL_DIR ${HOME}/build-musl
-ENV SYSROOT_DIR ${HOME}/build-sysroot
 
 FROM base as fetch
 WORKDIR ${HOME}
 RUN set -eux; \
+    curl -OJ ${LINUX_SITE}/${LINUX_FILE}; \
+    echo "${LINUX_HASH}  ${LINUX_FILE}" | sha256sum -c; \
     curl -OJ ${GCC_SITE}/${GCC_FILE}; \
     echo "${GCC_HASH}  ${GCC_FILE}" | sha256sum -c; \
     curl -OJ ${GCC_DEP_SITE}/${GMP_FILE}; \
@@ -49,6 +57,7 @@ RUN set -eux; \
 
 FROM fetch as extract
 RUN set -eux; \
+    tar -xf ${LINUX_FILE}; \
     tar -xzf ${MUSL_FILE}; \
     tar -xf ${BINUTILS_FILE}; \
     tar -xf ${GCC_FILE}; \
@@ -144,6 +153,15 @@ RUN set -eux; \
 WORKDIR ${GCC_DIR}
 RUN make all
 
+# Phase 7: Generate linux headers
+WORKDIR ${HOME}/linux-${LINUX_VERSION}
+RUN set -eux; \
+    make ARCH=${ARCH} headers; \
+    find usr/include -name '.*' -delete; \
+    rm usr/include/Makefile; \
+    rm usr/include/headers_check.pl; \
+    cp -rv usr/include ${LINUX_DIR}
+
 FROM build as install
 WORKDIR ${HOME}
 USER 0:0
@@ -153,9 +171,10 @@ RUN set -eux; \
     env -C build-musl make DESTDIR=/rootfs/${TARGET} install; \
     env -C build-gcc make DESTDIR=/rootfs/ install; \
     env -C build-binutils make DESTDIR=/rootfs/ install; \
+    cp -Rv ${LINUX_DIR}/* /rootfs/${TARGET}/include; \
     ln -s /usr/lib/ld-musl-i386.so.1 /rootfs/lib/libc.so; \
     ln -s /usr/lib/ld-musl-i386.so.1 /rootfs/lib/ld-musl-i386.so.1; \
-    ln -s /${TARGET}/lib/ld-musl-x86_64.so.1 /rootfs/lib/ld-musl-x86_64.so.1; \
+    ln -s /${TARGET}/lib/ld-musl-${ARCH}.so.1 /rootfs/lib/ld-musl-${ARCH}.so.1; \
     find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package
