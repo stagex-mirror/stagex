@@ -104,7 +104,7 @@ RUN set -eux; \
         --build=${BUILD} \
         --host=${TARGET} \
         --prefix=/usr \
-        --bindir=/bin \
+        --bindir=/usr/bin \
         --mandir=/usr/share/man \
         --infodir=/usr/share/info \
         --sysconfdir=/etc \
@@ -157,9 +157,6 @@ RUN set -eux; \
 WORKDIR ${BUSYBOX_DIR}
 RUN set -eux; \
     setConfs=' \
-        CONFIG_AR=y \
-        CONFIG_FEATURE_AR_CREATE=y \
-        CONFIG_FEATURE_AR_LONG_FILENAMES=y \
         CONFIG_LAST_SUPPORTED_WCHAR=0 \
         CONFIG_STATIC=y \
     '; \
@@ -198,7 +195,6 @@ RUN set -eux; \
         grep -q "^$confV\$" .config; \
     done; \
     make CROSS_COMPILE=${TARGET}-
-# Phase 7: Generate linux headers
 WORKDIR ${HOME}/linux-${LINUX_VERSION}
 RUN set -eux; \
     make ARCH=${ARCH} headers; \
@@ -210,14 +206,14 @@ RUN set -eux; \
 FROM build as install
 USER 0:0
 RUN set -eux; \
-    env -C ${MUSL_DIR} make DESTDIR=/rootfs install; \
-    env -C ${BINUTILS_DIR} make DESTDIR=/rootfs install; \
-    env -C ${MAKE_DIR} make DESTDIR=/rootfs install; \
-    env -C ${GCC_DIR} make DESTDIR=/rootfs install; \
     env -C ${BUSYBOX_DIR} make \
         CROSS_COMPILE=${TARGET}- \
         CONFIG_PREFIX=/rootfs \
         install ; \
+    env -C ${MUSL_DIR} make DESTDIR=/rootfs install; \
+    env -C ${BINUTILS_DIR} make DESTDIR=/rootfs install; \
+    env -C ${MAKE_DIR} make DESTDIR=/rootfs install; \
+    env -C ${GCC_DIR} make DESTDIR=/rootfs install; \
     cp -Rv ${LINUX_DIR}/* /rootfs/usr/include/; \
     mkdir -p /home/user; \
     find /rootfs -exec touch -hcd "@0" "{}" +
