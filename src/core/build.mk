@@ -7,20 +7,20 @@ core: \
 	out/gcc.tgz \
 	out/llvm.tgz
 
-out/musl.tgz: out/bootstrap.tgz
+out/musl.tgz: out/stage3.tgz
 	$(call build,core,musl)
 
-out/busybox.tgz: out/bootstrap.tgz
+out/busybox.tgz: out/stage3.tgz
 	$(call build,core,busybox)
 
-out/binutils.tgz: out/bootstrap.tgz
+out/binutils.tgz: out/stage3.tgz
 	$(call build,core,binutils)
 
-out/gcc.tgz: out/bootstrap.tgz out/musl.tgz
-	$(call build,core,gcc)
-
-out/make.tgz: out/bootstrap.tgz
+out/make.tgz: out/stage3.tgz
 	$(call build,core,make)
+
+out/gcc.tgz: out/stage3.tgz out/binutils.tgz out/musl.tgz
+	$(call build,core,gcc)
 
 out/bash.tgz: \
 	out/busybox.tgz \

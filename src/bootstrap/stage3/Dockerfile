@@ -215,7 +215,12 @@ RUN set -eux; \
     env -C ${MAKE_DIR} make DESTDIR=/rootfs install; \
     env -C ${GCC_DIR} make DESTDIR=/rootfs install; \
     cp -Rv ${LINUX_DIR}/* /rootfs/usr/include/; \
-    mkdir -p /home/user; \
+    cd /rootfs/; \
+    ln -sT /lib lib64; \
+    mkdir -p etc tmp var/tmp home/user; \
+    echo "user:x:1000:" > etc/group; \
+    echo "user:x:1000:1000::/home/user:/bin/sh" > etc/passwd; \
+    chown -R 1000:1000 tmp var/tmp home/user; \
     find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package

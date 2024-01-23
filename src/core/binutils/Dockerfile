@@ -1,15 +1,16 @@
 ARG REGISTRY=local
-FROM ${REGISTRY}/musl:latest as musl
-FROM ${REGISTRY}/bootstrap:latest as bootstrap
+FROM ${REGISTRY}/stage3 as stage3
+FROM ${REGISTRY}/musl as musl
 
-FROM bootstrap as base
+FROM stage3 as base
 ENV SRC_SITE https://ftp.gnu.org/gnu/binutils
 ENV SRC_VERSION 2.41
 ENV SRC_HASH ae9a5789e23459e59606e6714723f2d3ffc31c03174191ef0d015bdf06007450
 
 FROM base as fetch
+WORKDIR ${HOME}
 RUN wget ${SRC_SITE}/binutils-${SRC_VERSION}.tar.xz
-RUN echo "${SRC_HASH} binutils-${SRC_VERSION}.tar.xz" | sha256sum -c
+RUN echo "${SRC_HASH}  binutils-${SRC_VERSION}.tar.xz" | sha256sum -c
 
 FROM fetch as build
 RUN tar -xf binutils-${SRC_VERSION}.tar.xz

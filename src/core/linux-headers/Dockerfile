@@ -1,13 +1,16 @@
 ARG REGISTRY=local
 FROM ${REGISTRY}/musl:latest as musl
-FROM ${REGISTRY}/bootstrap:latest as base
+FROM ${REGISTRY}/stage3:latest as stage3
+
+FROM stage3 as base
+WORKDIR ${HOME}
 ENV SRC_SITE https://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/
 ENV SRC_VERSION 6.6
 ENV SRC_HASH d926a06c63dd8ac7df3f86ee1ffc2ce2a3b81a2d168484e76b5b389aba8e56d0
 
 FROM base as fetch
 RUN wget ${SRC_SITE}/linux-${SRC_VERSION}.tar.xz
-RUN echo "${SRC_HASH} linux-${SRC_VERSION}.tar.xz" | sha256sum -c
+RUN echo "${SRC_HASH}  linux-${SRC_VERSION}.tar.xz" | sha256sum -c
 
 FROM fetch as build
 RUN tar -xf linux-${SRC_VERSION}.tar.xz

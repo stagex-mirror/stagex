@@ -1,17 +1,17 @@
 ARG REGISTRY=local
-FROM ${REGISTRY}/bootstrap as bootstrap
+FROM ${REGISTRY}/stage3 as stage3
 
-FROM bootstrap as base
+FROM stage3 as base
 ENV SRC_SITE=https://busybox.net/downloads
-ENV SRC_VERSION=1.35.0
-ENV SRC_HASH=faeeb244c35a348a334f4a59e44626ee870fb07b6884d68c10ae8bc19f83a694
+ENV SRC_VERSION=1.36.1
+ENV SRC_HASH=b8cc24c9574d809e7279c3be349795c5d5ceb6fdf19ca709f80cde50e47de314
 ENV SRC_FILE=busybox-${SRC_VERSION}.tar.bz2
 ENV KCONFIG_NOTIMESTAMP=1
 
 FROM base as fetch
-WORKDIR /home/user
+WORKDIR ${HOME}
 RUN set -eux; \
-    curl -O -J ${SRC_SITE}/${SRC_FILE}; \
+    wget ${SRC_SITE}/${SRC_FILE}; \
     echo "${SRC_HASH}  ${SRC_FILE}" | sha256sum -c
 
 FROM fetch as build
@@ -19,9 +19,6 @@ RUN tar -xjf ${SRC_FILE}
 WORKDIR busybox-${SRC_VERSION}
 RUN set -eux; \
 	setConfs=' \
-		CONFIG_AR=y \
-		CONFIG_FEATURE_AR_CREATE=y \
-		CONFIG_FEATURE_AR_LONG_FILENAMES=y \
 		CONFIG_LAST_SUPPORTED_WCHAR=0 \
 		CONFIG_STATIC=y \
 	'; \
@@ -55,7 +52,7 @@ RUN set -eux; \
 	for confV in $setConfs; do \
 		grep -q "^$confV\$" .config; \
 	done; \
-    make
+	make
 
 FROM build as install
 USER 0:0
@@ -81,4 +78,4 @@ ENV TZ=UTC
 ENV LANG=C.UTF-8
 ENV SOURCE_DATE_EPOCH=1
 ENV KCONFIG_NOTIMESTAMP=1
-ENV PS1="busybox$ "
+ENV PS1="stage4 $ "

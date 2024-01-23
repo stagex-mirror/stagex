@@ -1,9 +1,9 @@
 ARG REGISTRY=local
 FROM ${REGISTRY}/musl:latest as musl
 FROM ${REGISTRY}/binutils:latest as binutils
-FROM ${REGISTRY}/bootstrap:latest as bootstrap
+FROM ${REGISTRY}/stage3:latest as stage3
 
-FROM bootstrap as base
+FROM stage3 as base
 ENV VERSION 12.2.0
 ENV SRC_FILE gcc-$VERSION.tar.xz
 ENV SRC_SITE https://mirrors.kernel.org/gnu/gcc/gcc-${VERSION}
@@ -19,6 +19,7 @@ ENV ISL_FILE isl-0.24.tar.bz2
 ENV ISL_HASH fcf78dd9656c10eb8cf9fbd5f59a0b6b01386205fe1934b3b287a0a1898145c0
 
 FROM base as fetch
+WORKDIR ${HOME}
 RUN set -eux; \
     wget ${SRC_SITE}/${SRC_FILE}; \
     echo "${SRC_HASH}  ${SRC_FILE}" | sha256sum -c; \
