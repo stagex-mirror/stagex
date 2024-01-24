@@ -37,28 +37,31 @@ RUN tar -xf ${SRC_FILE}
 WORKDIR gcc-${VERSION}
 RUN set -eux; \
     mv ../*.tar.* .; \
-	./contrib/download_prerequisites; \
-	./configure \
+    ./contrib/download_prerequisites; \
+    ./configure \
         --target=x86_64-linux-musl \
-		--build=x86_64-linux-musl \
-		--host=x86_64-linux-musl \
+        --build=x86_64-linux-musl \
+        --host=x86_64-linux-musl \
         --prefix=/usr \
         --mandir=/usr/share/man \
         --infodir=/usr/share/info \
         --libdir=/usr/lib \
         --disable-cet \
-		--disable-fixed-point \
-		--disable-libstdcxx-pch \
-		--disable-multilib \
-		--disable-nls \
-		--disable-werror \
+        --disable-fixed-point \
+        --disable-libstdcxx-pch \
+        --disable-multilib \
+        --disable-libsanitizer \
+        --disable-nls \
+        --disable-werror \
         --enable-__cxa_atexit \
-		--enable-default-pie \
-		--enable-default-ssp \
-		--enable-languages=c,c++ \
-		--enable-link-serialization=2 \
-		--enable-linker-build-id; \
-	make -j "$(nproc)"
+        --enable-default-pie \
+        --enable-default-ssp \
+        --enable-languages=c,c++ \
+        --enable-link-serialization=2 \
+        --enable-linker-build-id; \
+    make
+
+from build as package
 
 FROM build as install
 USER 0:0
