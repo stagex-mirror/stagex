@@ -23,10 +23,6 @@ COPY --from=gcc . /
 COPY --from=bash . /
 COPY --from=musl . /
 COPY --from=binutils . /
-# Hack to work around busybox ar breaking the build
-USER 0:0
-RUN rm /bin/ar
-USER 1000:1000
 
 FROM base as fetch
 RUN set -eux; \
