@@ -46,6 +46,42 @@ container supply chain has single points of human failure, or review
 complexity, that makes it undesirable for threat models that assume any single
 human can be hacked or coerced.
 
+## Comparison
+
+A comparison of Stage(x) to other distros in some of the areas we care about:
+
+| Distro | Single-Sig | Multi-Sig |Diver.| Musl | Stage0 | Repro. | Rust Deps |
+|--------|------------|-----------|------|------|--------|--------|-----------|
+| Ours   | x          | p         | p    | x    | x      | x      | 4         |
+| Guix   | x          |           |      |      | x      | x      | 4         |
+| Nix    |            |           |      |      |        | ~99%   | 4         |
+| Debian | x          |           |      |      |        | ~95%   | 232       |
+| Arch   | x          |           |      |      |        | ~85%   | 262       |
+| Fedora | x          |           |      |      |        |        | 166       |
+| Alpine |            |           |      |      |        |        | 32        |
+
+### Legend
+
+- x = true
+- p = planned
+- “Single-sig”: one person, typically the maintainer, signed a given package
+    - Some distros blindly sign all packages with a shared accees server
+    - We see this as mostly security theater and do not include it here
+- “Multi-sig”: more than one human verified/signed every package artifact
+    - And ideally also signed the source
+- “Diver.”: Can the entire distro be built with a diversity of toolchains
+- “Musl”: entire distro and resulting artifacts are built against musl libc
+- “Stage0”: Can the entire distro be full-source-bootstrapped from Stage0
+- “Repro.”: Is the entire distro reproducible bit-for-bit identically
+- “Rust Deps”: the number of total dependencies installed to use rustc
+    - Rust is a worst case example for compiler deps and build complexity
+        - It is kind of a nightmare most distros skip
+        - See: [Guix documenting their process](https://guix.gnu.org/en/blog/2018/bootstrapping-rust/) (similar to ours)
+    - Nix, guix, and our distro get away with only 4 deps because:
+        - Rustc -does- need ~20 dependencies to build
+        - The final resulting rust builds can run standalone
+        - We only actually need musl libc, llvm, and gcc to build most projects
+
 ## Goals
 
 Not all of these goals are realized yet, but should at least help you decide
