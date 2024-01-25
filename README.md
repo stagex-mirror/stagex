@@ -58,7 +58,7 @@ A comparison of Stage(x) to other distros in some of the areas we care about:
 | Debian | x          |           |      |      |        | ~95%   | 232       |
 | Arch   | x          |           |      |      |        | ~85%   | 262       |
 | Fedora | x          |           |      |      |        |        | 166       |
-| Alpine |            |           |      |      |        |        | 32        |
+| Alpine |            |           |      |      | x      |        | 32        |
 
 ### Legend
 
