@@ -113,6 +113,7 @@ RUN set -eux; \
         --disable-gprofng \
         --disable-multilib \
         --disable-gdb \
+        --disable-separate-code \
         --enable-deterministic-archives \
         --enable-threads \
         --with-mmap \
