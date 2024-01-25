@@ -48,11 +48,11 @@ human can be hacked or coerced.
 
 ## Comparison
 
-A comparison of Stage(x) to other distros in some of the areas we care about:
+A comparison of `packages` to other distros in some of the areas we care about:
 
 | Distro | Single-Sig | Multi-Sig |Diver.| Musl | Stage0 | Repro. | Rust Deps |
 |--------|------------|-----------|------|------|--------|--------|-----------|
-| Ours   | x          | p         | p    | x    | x      | x      | 4         |
+| Stagex | x          | p         | p    | x    | x      | x      | 4         |
 | Guix   | x          |           |      |      | x      | x      | 4         |
 | Nix    |            |           |      |      |        | ~99%   | 4         |
 | Debian | x          |           |      |      |        | ~95%   | 232       |
