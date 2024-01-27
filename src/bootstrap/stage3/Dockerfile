@@ -16,8 +16,8 @@ ENV BUSYBOX_HASH=faeeb244c35a348a334f4a59e44626ee870fb07b6884d68c10ae8bc19f83a69
 ENV BUSYBOX_SITE=https://busybox.net/downloads
 ENV BUSYBOX_FILE=busybox-${BUSYBOX_VERSION}.tar.bz2
 ENV BUSYBOX_DIR ${HOME}/build-busybox
-ENV BINUTILS_VERSION 2.41
-ENV BINUTILS_HASH ae9a5789e23459e59606e6714723f2d3ffc31c03174191ef0d015bdf06007450
+ENV BINUTILS_VERSION 2.35
+ENV BINUTILS_HASH 1b11659fb49e20e18db460d44485f09442c8c56d5df165de9461eb09c8302f85
 ENV BINUTILS_SITE https://ftp.gnu.org/gnu/binutils
 ENV BINUTILS_FILE binutils-${BINUTILS_VERSION}.tar.xz
 ENV BINUTILS_DIR ${HOME}/build-binutils
@@ -109,15 +109,13 @@ RUN set -eux; \
         --infodir=/usr/share/info \
         --sysconfdir=/etc \
         --disable-nls \
-        --disable-werror \
-        --disable-gprofng \
         --disable-multilib \
-        --disable-gdb \
-        --disable-separate-code \
-        --enable-deterministic-archives \
-        --enable-threads \
-        --with-mmap \
-        --with-pic; \
+        --disable-plugins \
+        --disable-gprofng \
+        --enable-64-bit-bfd \
+        --enable-ld=default \
+        --enable-install-libiberty \
+        --enable-deterministic-archives; \
     make
 WORKDIR ${MAKE_DIR}
 RUN set -ex; \

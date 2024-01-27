@@ -29,10 +29,10 @@ ENV LINUX_VERSION 6.6
 ENV LINUX_HASH d926a06c63dd8ac7df3f86ee1ffc2ce2a3b81a2d168484e76b5b389aba8e56d0
 ENV LINUX_FILE linux-${LINUX_VERSION}.tar.xz
 ENV LINUX_DIR ${HOME}/build-linux
-ENV BINUTILS_VERSION 2.41
+ENV BINUTILS_VERSION 2.35
 ENV BINUTILS_SITE https://ftp.gnu.org/gnu/binutils
 ENV BINUTILS_FILE binutils-${BINUTILS_VERSION}.tar.xz
-ENV BINUTILS_HASH ae9a5789e23459e59606e6714723f2d3ffc31c03174191ef0d015bdf06007450
+ENV BINUTILS_HASH 1b11659fb49e20e18db460d44485f09442c8c56d5df165de9461eb09c8302f85
 ENV BINUTILS_DIR ${HOME}/build-binutils
 
 FROM base as fetch
@@ -77,10 +77,13 @@ RUN set -eux; \
         --with-sysroot=/${TARGET} \
         --prefix= \
         --libdir=/lib \
-        --disable-werror \
+        --disable-nls \
         --disable-multilib \
+        --disable-plugins \
         --disable-gprofng \
-        --disable-separate-code \
+        --enable-64-bit-bfd \
+        --enable-ld=default \
+        --enable-install-libiberty \
         --enable-deterministic-archives; \
     make all
 
