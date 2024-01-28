@@ -96,3 +96,4 @@ COPY --from=build1 /rootfs /
 
 FROM scratch as package
 COPY --from=install / /
+CMD ["x86/bin/kaem","--version"]
