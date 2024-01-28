@@ -9,9 +9,12 @@ include src/core/build.mk
 include src/libs/build.mk
 include src/tools/build.mk
 
+compat:
+	./src/compat.sh
+
 DEFAULT_GOAL := default
 .PHONY: default
-default: bootstrap core
+default: compat bootstrap core
 
 out/graph.svg: Makefile
 	$(MAKE) -Bnd | make2graph | dot -Tsvg -o graph.svg

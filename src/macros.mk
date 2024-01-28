@@ -26,8 +26,10 @@ define build
 	$(eval VERSION := $(if $(3),$(3),latest))
 	$(eval TARGET := $(if $(4),$(4),package))
 	$(eval EXTRA_ARGS := $(if $(5),$(5),))
+	$(eval REVISION := $(shell git rev-list HEAD -1 src/$(CATEGORY)/$(NAME)))
 	$(eval BUILD_CMD := \
 		DOCKER_BUILDKIT=1 \
+		BUILDKIT_MULTI_PLATFORM=1 \
 		SOURCE_DATE_EPOCH=1 \
 		$(BUILDER) \
 			build \
@@ -35,16 +37,19 @@ define build
 			-t $(REGISTRY)/$(NAME):$(VERSION) \
 			--build-arg REGISTRY=$(REGISTRY) \
 			--platform $(PLATFORM) \
-			--network=host \
 			--progress=plain \
 			$(if $(filter latest,$(VERSION)),,--build-arg VERSION=$(VERSION)) \
+			--output type=oci,force-compression=true,name=$(NAME),annotation-index.org.opencontainers.image.revision=$(REVISION),annotation-index.org.opencontainers.image.version=$(VERSION),dest=-  \
 			--target $(TARGET) \
 			$(EXTRA_ARGS) \
 			src/$(CATEGORY)/$(NAME) \
+			| gzip > $@; \
 	)
 	$(eval TIMESTAMP := $(shell TZ=GMT date +"%Y-%m-%dT%H:%M:%SZ"))
 	mkdir -p out/
 	echo $(TIMESTAMP) $(BUILD_CMD) >> out/build.log
 	$(BUILD_CMD)
-	$(if $(filter package,$(TARGET)),$(BUILDER) save $(REGISTRY)/$(NAME):$(VERSION) -o $@,)
+	tar -xf $@ index.json -O \
+		| jq -r '.manifests[].digest | sub("sha256:";"")' \
+	> $@.digest
 endef
