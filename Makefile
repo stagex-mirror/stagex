@@ -1,6 +1,10 @@
-export REGISTRY := local
 export PLATFORM := linux/amd64
 export BUILDER := $(shell which docker)
+export REGISTRY := stagex
+export MIRRORS := \
+	https://git.distrust.co/${REGISTRY} \
+	${REGISTRY}
+
 clean_logs := $(shell rm *.log 2>&1 >/dev/null || :)
 
 include src/macros.mk

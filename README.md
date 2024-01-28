@@ -1,4 +1,4 @@
-# Packages
+# Stage[x]
 
 Minimalism and security first repository of reproducible and multi-signed OCI
 images of common open source software packages full-source bootsrapped from
@@ -12,6 +12,36 @@ distributions for virtually any threat model.
 Our aim is to provide a reasonably secure set of toolchains for every major
 programming language to be the basis of your containers, build systems,
 firmware, secure enclaves, or hosting infrastructure.
+
+## Goals
+
+Not all of these goals are realized yet, but should at least help you decide
+if this project is something you want to contribute to or keep an eye on for
+the future.
+
+### Integrity
+
+* Anyone can reproduce the entire tree with tools from their current distro
+* Hosted CI servers auto-sign confirmed deterministic builds
+    * Like NixOS
+* Maintainers sign all package additions/changes
+    * Like Gentoo, Debian, Fedora, Guix
+* Reviewers/Reproducers locally build and counter-sign all new binary packages
+    * No one does this, as far as we can tell
+
+### Minimalism
+
+* Based on musl libc
+    * Basis of successful minimal distros like Alpine, Adelie, Talos, Void
+    * Implemented with about 1/4 the code of glibc
+    * Required to produce portable static binaries in some languages
+    * Less prone to buffer overflows
+    * Puts being light, fast, and correct before compatibility
+* Package using tools you already have
+    * OCI build tool of choice (Docker, Buildah, Podman)
+    * Make (for dependency management)
+    * Prove hashes of bootstrap layer builds match before proceeding
+* Keep package definitions lean and readable with simple CLI and no magic
 
 ## Background
 
@@ -48,15 +78,15 @@ human can be hacked or coerced.
 
 ## Comparison
 
-A comparison of `packages` to other distros in some of the areas we care about:
+A comparison of `stagex` to other distros in some of the areas we care about:
 
 | Distro | Single-Sig | Multi-Sig |Diver.| Musl | Stage0 | Repro. | Rust Deps |
 |--------|------------|-----------|------|------|--------|--------|-----------|
 | Stagex | x          | p         | p    | x    | x      | x      | 4         |
 | Guix   | x          |           |      |      | x      | x      | 4         |
-| Nix    |            |           |      |      |        | ~99%   | 4         |
-| Debian | x          |           |      |      |        | ~95%   | 232       |
-| Arch   | x          |           |      |      |        | ~85%   | 262       |
+| Nix    |            |           |      |      |        | p      | 4         |
+| Debian | x          |           |      |      |        | p      | 232       |
+| Arch   | x          |           |      |      |        | p      | 262       |
 | Fedora | x          |           |      |      |        |        | 166       |
 | Alpine |            |           |      |      | x      |        | 32        |
 
@@ -82,21 +112,24 @@ A comparison of `packages` to other distros in some of the areas we care about:
         - The final resulting rust builds can run standalone
         - We only actually need musl libc, llvm, and gcc to build most projects
 
-## Goals
+### Signatures
 
-Not all of these goals are realized yet, but should at least help you decide
-if this project is something you want to contribute to or keep an eye on for
-the future.
-
-### Integrity
-
-* Anyone can reproduce the entire tree with tools from their current distro
-* Hosted CI servers auto-sign confirmed deterministic builds
-    * Like NixOS
-* Maintainers sign all package additions/changes
-    * Like Gentoo, Debian, Fedora, Guix
-* Reviewers/Reproducers locally build and counter-sign all new binary packages
-    * No one does this, as far as we can tell.
+* Signatures are made by the PGP public keys in the "keys" directory
+* Signatures are made by any tool that implements "[Container Signature Format](https://github.com/containers/image/blob/main/docs/containers-signature.5.md)"
+    * We provide a minimal shell script implementation as a convenience
+    * Podman also [implements support](https://github.com/containers/podman/blob/main/docs/tutorials/image_signing.md) for this signature scheme
+* Signatures are "PR"ed and committed to this repo as a source of truth
+* Signatures can be mirrored to any HTTPS url
+* Container daemons can verify signatures on pull with a [containers-policy.json](https://github.com/containers/image/blob/main/docs/containers-policy.json.5.md)
+* As a policy, we expect all published signers to:
+    * Maintain their PGP private keys offline and/or on personal HSMs
+        * E.g. Nitrokey, Yubikey, Leger, Trezor, etc.
+    * Maintain a public key in the "keys" folder of this repository
+    * Maintain a [keyoxide](https://keyoxide.org) profile self-certifying keys
+    * Maintain a [Hagrid](https://keys.openpgp.org) profile with verified UIDs
+    * Make best efforts to meet in person and sign each others keys
+    * Create signatures from highly trusted operating systems
+        * E.g Dedicated QubesOS VM, or a an airgapped signing system
 
 ### Reproducibility
 
@@ -131,20 +164,6 @@ be bootstapped all the way from source code in a deterministic way.
     * [Stage(x)](.): Later stages build the distributed packages in this repo
 
 For further reading see the [Bootstrappable Builds](https://bootstrappable.org/) Project.
-
-### Minimalism
-
-* Based on musl libc
-    * Basis of successful minimal distros like Alpine, Adelie, Talos, Void
-    * Implemented with about 1/4 the code of glibc
-    * Required to produce portable static binaries in some languages
-    * Less prone to buffer overflows
-    * Puts being light, fast, and correct before compatibility
-* Package using tools you already have
-    * OCI build tool of choice (Docker, Buildah, Podman)
-    * Make (for dependency management)
-    * Prove hashes of bootstrap layer builds match before proceeding
-* Keep package definitions lean and readable with simple CLI and no magic
 
 ## Building
 
