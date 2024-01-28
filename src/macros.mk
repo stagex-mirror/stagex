@@ -34,7 +34,7 @@ define build
 		$(BUILDER) \
 			build \
 			--ulimit nofile=2048:16384 \
-			-t $(REGISTRY)/$(NAME):$(VERSION) \
+			--tag $(REGISTRY)/$(NAME):$(VERSION) \
 			--build-arg REGISTRY=$(REGISTRY) \
 			--platform $(PLATFORM) \
 			--progress=plain \
@@ -44,6 +44,7 @@ define build
 			$(EXTRA_ARGS) \
 			src/$(CATEGORY)/$(NAME) \
 			| gzip > $@; \
+			gunzip -c $@ | docker load; \
 	)
 	$(eval TIMESTAMP := $(shell TZ=GMT date +"%Y-%m-%dT%H:%M:%SZ"))
 	mkdir -p out/
