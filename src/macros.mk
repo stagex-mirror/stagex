@@ -39,7 +39,7 @@ define build
 			--platform $(PLATFORM) \
 			--progress=plain \
 			$(if $(filter latest,$(VERSION)),,--build-arg VERSION=$(VERSION)) \
-			--output type=oci,force-compression=true,name=$(NAME),annotation-index.org.opencontainers.image.revision=$(REVISION),annotation-index.org.opencontainers.image.version=$(VERSION),dest=-  \
+			--output type=oci,force-compression=true,name=$(NAME),annotation.org.opencontainers.image.revision=$(REVISION),annotation.org.opencontainers.image.version=$(VERSION),dest=-  \
 			--target $(TARGET) \
 			$(EXTRA_ARGS) \
 			src/$(CATEGORY)/$(NAME) \
