@@ -1,6 +1,6 @@
 export PLATFORM := linux/amd64
 export BUILDER := $(shell which docker)
-export REGISTRY := local
+export REGISTRY := stagex
 export MIRRORS := \
 	https://git.distrust.co/stagex \
 	stagex
