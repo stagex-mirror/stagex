@@ -42,6 +42,7 @@ define build
 			--output type=oci,force-compression=true,name=$(NAME),annotation.org.opencontainers.image.revision=$(REVISION),annotation.org.opencontainers.image.version=$(VERSION),dest=-  \
 			--target $(TARGET) \
 			$(EXTRA_ARGS) \
+			$(NOCACHE_FLAG) \
 			src/$(CATEGORY)/$(NAME) \
 			| gzip > $@; \
 			gunzip -c $@ | docker load; \
