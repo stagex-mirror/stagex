@@ -22,6 +22,13 @@ FROM fetch as build
 RUN tar -xf perl-${SRC_VERSION}.tar.xz
 WORKDIR perl-${SRC_VERSION}
 RUN set -eux; \
+    printf "\
+osvers=\"gnulinux\"\n\
+myuname=\"dummy_uname\"\n\
+myhostname=\"builder\"\n\
+cf_by=\"builder\"\n\
+cf_time=\"0\"" \
+    > config.over; \
 	./Configure \
         -des \
 		-Dcccdlflags='-fPIC' \
