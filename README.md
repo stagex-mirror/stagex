@@ -1,8 +1,67 @@
 # Stage[x]
 
 Minimalism and security first repository of reproducible and multi-signed OCI
-images of common open source software packages full-source bootsrapped from
+images of common open source software toolchains full-source bootsrapped from
 Stage 0 all the way up.
+
+If you want to build or deploy software on a foundation of minimalism and
+determinism with reasonable security, stagex might be the foundation you are
+looking for.
+
+## Usage
+
+You can do anything with these images you would with most any other musl based
+containerized linux distro, only with high supply chain integrity and
+determinism.
+
+For a full list of images see the "src" directory.
+
+### Examples
+
+Get a shell in our x86_64 Stage3 bootstrap image:
+
+```
+docker run -it stagex/stage3
+```
+
+Run a Python hello world:
+```
+docker run -i stagex/python -c "print('hello world')"
+```
+
+Make a hello world OCI container image with Rust:
+```
+FROM stagex/busybox as build
+COPY --from=stagex/rust . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+RUN printf 'fn main(){ println!("Hello World!"); }' > hello.rs
+RUN rustc hello.rs
+FROM scratch
+COPY --from=build /home/user/hello .
+CMD ["./hello"]
+```
+
+### Package Management
+
+Unlike most linux distros, stagex was built for determinism, minimalism, and
+containers first, and thus has no concept of a traditional package manager.
+
+In fact, stagex ships no first-party code at all. We just package things in the
+most "stock" way possible with exceptions only to maintain determinism.
+
+Every image is "from scratch" and contains an empty filesystem with the
+installed package.
+
+By default you always get the latest updates to dependencies on the fly, but
+you retain the option for bit-for-bit reproducible builds by locking any given
+dependency at a particular tag or image hash.
+
+If you want an old version of rust with a recent version of Gcc to work around
+some problem build, you can do that without resorting to low security \
+"curl | bash" style solutions like rustup.
+
+## Goals
 
 We built to support very high risk threat models where trusting any single
 system or maintainer in our software supply chain cannot be tolerated. That
@@ -13,11 +72,9 @@ Our aim is to provide a reasonably secure set of toolchains for every major
 programming language to be the basis of your containers, build systems,
 firmware, secure enclaves, or hosting infrastructure.
 
-## Goals
-
-Not all of these goals are realized yet, but should at least help you decide
-if this project is something you want to contribute to or keep an eye on for
-the future.
+Not all of these goals are 100% realized yet, but should at least help you
+decide if this project is something you want to contribute to or keep an eye on
+for the future.
 
 ### Integrity
 
