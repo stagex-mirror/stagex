@@ -23,15 +23,14 @@ COPY --from=binutils . /
 COPY --from=make . /
 COPY --from=musl . /
 COPY --from=openssl . /
+ENV PYTHONHASHSEED=0
+ENV PYTHONDONTWRITEBYTECODE=1
 RUN set -eux; \
     ./configure \
 		--build="x86_64-linux-musl" \
 		--host="x86_64-linux-musl" \
         --prefix=/usr \
-        --enable-ipv6 \
-		--enable-optimizations \
 		--enable-shared \
-		--with-lto \
 		--with-computed-gotos \
 		--without-ensurepip; \
     make
