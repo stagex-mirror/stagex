@@ -1,9 +1,17 @@
 export PLATFORM := linux/amd64
 export BUILDER := $(shell which docker)
 export REGISTRY := stagex
+export NOCACHE ?= 0
 export MIRRORS := \
-	https://git.distrust.co/stagex \
-	stagex
+	git.distrust.co \
+	hub.docker.com
+
+ifeq ($(NOCACHE), 1)
+NOCACHE_FLAG=--no-cache
+else
+NOCACHE_FLAG=
+endif
+export NOCACHE_FLAG
 
 clean_logs := $(shell rm *.log 2>&1 >/dev/null || :)
 
