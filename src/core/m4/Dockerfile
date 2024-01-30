@@ -11,15 +11,15 @@ COPY --from=binutils . /
 COPY --from=make . /
 COPY --from=musl . /
 ENV SRC_SITE=https://ftp.gnu.org/gnu/m4
-ENV SRC_VERSION=1.4.19
-ENV SRC_HASH=63aede5c6d33b6d9b13511cd0be2cac046f2e70fd0a07aa9573a04a82783af96
+ENV SRC_VERSION=1.4.18
+ENV SRC_HASH=ab2633921a5cd38e48797bf5521ad259bdc4b979078034a3b790d7fec5493fab
 
 FROM base as fetch
-RUN wget ${SRC_SITE}/m4-${SRC_VERSION}.tar.xz
-RUN echo "${SRC_HASH}  m4-${SRC_VERSION}.tar.xz" | sha256sum -c
+RUN wget ${SRC_SITE}/m4-${SRC_VERSION}.tar.gz
+RUN echo "${SRC_HASH}  m4-${SRC_VERSION}.tar.gz" | sha256sum -c
 
 FROM fetch as build
-RUN tar -xf m4-${SRC_VERSION}.tar.xz
+RUN tar -xzf m4-${SRC_VERSION}.tar.gz
 WORKDIR m4-${SRC_VERSION}
 RUN set -eux; \
     ./configure \
