@@ -170,7 +170,15 @@ RUN set -eux; \
 
 FROM build as install
 USER 0:0
-RUN python3 x.py install
+RUN set -eux; \
+    python3 x.py install; \
+    cd /rootfs/usr/lib/rustlib; \
+    rm install.log; \
+    sort -o manifest-cargo manifest-cargo; \
+    sort -o manifest-rustc manifest-rustc; \
+    sort -o \
+        manifest-rust-std-x86_64-unknown-linux-musl \
+        manifest-rust-std-x86_64-unknown-linux-musl
 COPY --from=musl /lib/* /rootfs/lib/
 COPY --from=gcc /usr/lib/* /rootfs/usr/lib/
 COPY --from=gcc /usr/lib64/* /rootfs/usr/lib/
