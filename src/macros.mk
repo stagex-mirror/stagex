@@ -44,7 +44,8 @@ define build
 			$(EXTRA_ARGS) \
 			$(NOCACHE_FLAG) \
 			src/$(CATEGORY)/$(NAME) \
-			| gzip > $@; \
+			| gzip > $@.tmp; \
+			mv $@.tmp $@; \
 			gunzip -c $@ | docker load; \
 	)
 	$(eval TIMESTAMP := $(shell TZ=GMT date +"%Y-%m-%dT%H:%M:%SZ"))
