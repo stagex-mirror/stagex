@@ -1,6 +1,7 @@
 ARG REGISTRY=local
 FROM ${REGISTRY}/musl as musl
 FROM ${REGISTRY}/gcc as gcc
+FROM ${REGISTRY}/binutils as binutils
 FROM ${REGISTRY}/busybox as busybox
 
 FROM busybox as base
@@ -16,6 +17,9 @@ RUN echo "${SRC_HASH}  linux-${SRC_VERSION}.tar.xz" | sha256sum -c
 FROM fetch as build
 RUN tar -xf linux-${SRC_VERSION}.tar.xz
 WORKDIR linux-${SRC_VERSION}
+COPY --from=gcc . /
+COPY --from=binutils . /
+COPY --from=musl . /
 RUN gcc usr/gen_init_cpio.c -o usr/gen_init_cpio
 
 FROM build as install

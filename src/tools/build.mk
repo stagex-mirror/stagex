@@ -10,8 +10,15 @@ out/curl.tgz: \
 
 out/gen_initramfs.tgz: \
 	out/gcc.tgz \
+	out/binutils.tgz \
 	out/musl.tgz
 	$(call build,tools,gen_initramfs)
+
+out/cpio.tgz: \
+	out/gcc.tgz \
+	out/binutils.tgz \
+	out/musl.tgz
+	$(call build,tools,cpio)
 
 out/tofu.tgz: \
 	out/busybox.tgz \
