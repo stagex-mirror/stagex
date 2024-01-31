@@ -158,6 +158,7 @@ RUN set -eux; \
         --set="rust.deny-warnings=false" \
         --set="rust.parallel-compiler=false" \
         --set="rust.remap-debuginfo=true" \
+        --set="rust.llvm-libunwind=system" \
         --set="build.full-bootstrap=true" \
         --set="target.x86_64-unknown-linux-musl.crt-static=false" \
         --set="target.x86_64-unknown-linux-musl.musl-root=/usr" \
@@ -178,7 +179,8 @@ RUN set -eux; \
     sort -o manifest-rustc manifest-rustc; \
     sort -o \
         manifest-rust-std-x86_64-unknown-linux-musl \
-        manifest-rust-std-x86_64-unknown-linux-musl
+        manifest-rust-std-x86_64-unknown-linux-musl; \
+    rm -f x86_64-unknown-linux-musl/lib/self-contained/libunwind.a
 COPY --from=musl /lib/* /rootfs/lib/
 COPY --from=gcc /usr/lib/* /rootfs/usr/lib/
 COPY --from=gcc /usr/lib64/* /rootfs/usr/lib/
