@@ -8,6 +8,11 @@ out/curl.tgz: \
 	out/ca-certificates.tgz
 	$(call build,tools,curl)
 
+out/gen_initramfs.tgz: \
+	out/gcc.tgz \
+	out/musl.tgz
+	$(call build,tools,gen_initramfs)
+
 out/tofu.tgz: \
 	out/busybox.tgz \
 	out/go.tgz
