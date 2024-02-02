@@ -39,14 +39,13 @@ define build
 			--platform $(PLATFORM) \
 			--progress=plain \
 			$(if $(filter latest,$(VERSION)),,--build-arg VERSION=$(VERSION)) \
-			--output type=oci,force-compression=true,name=$(NAME),annotation.org.opencontainers.image.revision=$(REVISION),annotation.org.opencontainers.image.version=$(VERSION),dest=-  \
+			--output type=oci,force-compression=true,name=$(NAME),annotation.org.opencontainers.image.revision=$(REVISION),annotation.org.opencontainers.image.version=$(VERSION),dest=$(basename $@).tar \
 			--target $(TARGET) \
 			$(EXTRA_ARGS) \
 			$(NOCACHE_FLAG) \
 			src/$(CATEGORY)/$(NAME) \
-			> $(basename $@).tar.tmp \
-			&& gzip < $(basename $@).tar.tmp > $@ \
-			&& rm $(basename $@).tar.tmp \
+			&& gzip < $(basename $@).tar > $@ \
+			&& rm $(basename $@).tar \
 			&& gunzip -c $@ | docker load; \
 	)
 	$(eval TIMESTAMP := $(shell TZ=GMT date +"%Y-%m-%dT%H:%M:%SZ"))
