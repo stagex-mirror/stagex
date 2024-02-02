@@ -35,6 +35,7 @@ FROM stagex/busybox as build
 COPY --from=stagex/rust . /
 COPY --from=stagex/gcc . /
 COPY --from=stagex/binutils . /
+COPY --from=stagex/libunwind . /
 RUN printf 'fn main(){ println!("Hello World!"); }' > hello.rs
 RUN rustc hello.rs
 FROM scratch
