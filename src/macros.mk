@@ -44,9 +44,10 @@ define build
 			$(EXTRA_ARGS) \
 			$(NOCACHE_FLAG) \
 			src/$(CATEGORY)/$(NAME) \
-			| gzip > $@.tmp; \
-			mv $@.tmp $@; \
-			gunzip -c $@ | docker load; \
+			> $(basename $@).tar.tmp \
+			&& gzip < $(basename $@).tar.tmp > $@ \
+			&& rm $(basename $@).tar.tmp \
+			&& gunzip -c $@ | docker load; \
 	)
 	$(eval TIMESTAMP := $(shell TZ=GMT date +"%Y-%m-%dT%H:%M:%SZ"))
 	mkdir -p out/
