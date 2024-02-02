@@ -18,6 +18,7 @@ clean_logs := $(shell rm *.log 2>&1 >/dev/null || :)
 include src/macros.mk
 include src/bootstrap/build.mk
 include src/core/build.mk
+include src/kernel/build.mk
 include src/libs/build.mk
 include src/tools/build.mk
 

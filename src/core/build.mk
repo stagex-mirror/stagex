@@ -272,3 +272,40 @@ out/rust1.73.tgz: out/rust1.72.tgz
 
 out/rust.tgz: out/rust1.73.tgz
 	$(call build,core,rust,1.74.0,package,--build-arg BUILD_VERSION=1.73.0 --build-arg LLVM_VERSION=16)
+
+out/bison.tgz: \
+	out/busybox.tgz \
+	out/gcc.tgz \
+	out/binutils.tgz \
+	out/musl.tgz \
+	out/make.tgz
+	$(call build,core,bison)
+
+out/gettext.tgz: \
+	out/busybox.tgz \
+	out/gcc.tgz \
+	out/binutils.tgz \
+	out/musl.tgz \
+	out/make.tgz
+	$(call build,core,gettext)
+
+out/heirloom.tgz: \
+	out/busybox.tgz \
+	out/gcc.tgz \
+	out/binutils.tgz \
+	out/musl.tgz \
+	out/make.tgz
+	$(call build,core,heirloom)
+
+out/flex.tgz: \
+	out/heirloom.tgz \
+	out/busybox.tgz \
+	out/gcc.tgz \
+	out/autoconf.tgz \
+	out/libtool.tgz \
+	out/binutils.tgz \
+	out/gettext.tgz \
+	out/bison.tgz \
+	out/musl.tgz \
+	out/make.tgz
+	$(call build,core,flex)
