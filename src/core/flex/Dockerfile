@@ -1,7 +1,6 @@
 ARG REGISTRY=local
 from ${REGISTRY}/binutils as binutils
 from ${REGISTRY}/m4 as m4
-from ${REGISTRY}/lex as lex
 from ${REGISTRY}/gcc as gcc
 from ${REGISTRY}/musl as musl
 from ${REGISTRY}/make as make
@@ -13,10 +12,10 @@ from ${REGISTRY}/bison as bison
 from ${REGISTRY}/busybox as busybox
 
 FROM busybox as base
-ENV SRC_VERSION=2.5.11
-ENV SRC_SITE=http://download.nust.na/pub2/openpkg1/sources/DST/flex/flex-2.5.11.tar.gz
-ENV SRC_HASH=bc79b890f35ca38d66ff89a6e3758226131e51ccbd10ef78d5ff150b7bd73689
-ENV SRC_FILE=flex-${SRC_VERSION}.tar.gz
+ENV VERSION=2.6.4
+ENV SRC_SITE=https://github.com/westes/flex/releases/download/v${VERSION}/flex-${VERSION}.tar.gz
+ENV SRC_HASH=e87aae032bf07c26f85ac0ed3250998c37621d95f8bd748b31f15b33c45ee995
+ENV SRC_FILE=flex-${VERSION}.tar.gz
 
 FROM base as fetch
 RUN set -eux; \
@@ -36,6 +35,7 @@ COPY --from=automake . /
 COPY --from=bison . /
 COPY --from=gettext . /
 COPY --from=musl . /
+
 RUN set -eux; \
     ./autogen.sh; \
     ./configure \
@@ -44,10 +44,8 @@ RUN set -eux; \
         --prefix=/usr \
         --bindir=/bin \
         --mandir=/usr/share/man \
-        --infodir=/usr/share/info \
-        --disable-shared \
-        --disable-static; \
-    make
+        --infodir=/usr/share/info; \
+    make LDFLAGS=-static
 
 FROM build as install
 USER 0:0
