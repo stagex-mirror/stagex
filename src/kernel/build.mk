@@ -14,5 +14,5 @@ out/linux-generic.tgz: \
 	out/perl.tgz \
 	out/zlib.tgz \
 	out/flex.tgz \
-	out/libelf.tgz
+	out/elfutils.tgz
 	$(call build,kernel,linux-generic)
