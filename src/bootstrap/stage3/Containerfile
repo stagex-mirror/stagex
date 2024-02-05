@@ -81,7 +81,7 @@ RUN <<-EOF
 EOF
 
 FROM fetch as extract
-RUN <<-EOF
+RUN --network=none <<-EOF
 	set -eux
 	tar -xf ${LINUX_FILE}
 	tar -kxzf ${MUSL_FILE}
@@ -93,7 +93,7 @@ EOF
 
 FROM extract as build
 WORKDIR ${MUSL_DIR}
-RUN <<-EOF
+RUN --network=none <<-EOF
 	set -eux
 	../musl-${MUSL_VERSION}/configure \
 		--prefix=/usr \
@@ -103,7 +103,7 @@ RUN <<-EOF
 EOF
 
 WORKDIR ${BINUTILS_DIR}
-RUN <<-EOF
+RUN --network=none <<-EOF
 	set -eux
 	../binutils-${BINUTILS_VERSION}/configure \
 		--build=${BUILD} \
@@ -125,7 +125,7 @@ RUN <<-EOF
 EOF
 
 WORKDIR ${MAKE_DIR}
-RUN <<-EOF
+RUN --network=none <<-EOF
 	set -eux
 	../make-${MAKE_VERSION}/configure \
 		--build=${BUILD} \
@@ -138,7 +138,7 @@ RUN <<-EOF
 EOF
 
 WORKDIR ${GCC_DIR}
-RUN <<-EOF
+RUN --network=none <<-EOF
 	set -eux
 	cp ../*.tar.* ../gcc-${GCC_VERSION}
 	env -C ${HOME}/gcc-${GCC_VERSION} ./contrib/download_prerequisites
@@ -166,7 +166,7 @@ RUN <<-EOF
 	make
 EOF
 WORKDIR ${BUSYBOX_DIR}
-RUN <<-EOF
+RUN --network=none <<-EOF
 	set -eux
 	setConfs=' \
 		CONFIG_LAST_SUPPORTED_WCHAR=0 \
@@ -210,7 +210,7 @@ RUN <<-EOF
 EOF
 
 WORKDIR ${HOME}/linux-${LINUX_VERSION}
-RUN <<-EOF
+RUN --network=none <<-EOF
 	set -eux
 	make ARCH=${ARCH} headers
 	find usr/include -name '.*' -delete
@@ -221,7 +221,7 @@ EOF
 
 FROM build as install
 USER 0:0
-RUN <<-EOF
+RUN --network=none <<-EOF
 	set -eux
 	env -C ${BUSYBOX_DIR} make \
 		CROSS_COMPILE=${TARGET}- \

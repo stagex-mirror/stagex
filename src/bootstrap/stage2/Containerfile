@@ -55,7 +55,7 @@ RUN <<-EOF
 EOF
 
 FROM fetch as extract
-RUN <<-EOF
+RUN --network=none <<-EOF
 	set -eux
 	tar -xf ${LINUX_FILE}
 	tar -xzf ${MUSL_FILE}
@@ -70,7 +70,7 @@ FROM extract as build
 
 # Phase 1: Build cross binutils in build-binutils
 WORKDIR ${BINUTILS_DIR}
-RUN <<-EOF
+RUN --network=none <<-EOF
 	set -eux
 	../binutils-${BINUTILS_VERSION}/configure \
 		--build=i386-unknown-linux-musl \
@@ -92,7 +92,7 @@ EOF
 
 # Phase 2: Prepare build sysroot
 WORKDIR ${SYSROOT_DIR}
-RUN <<-EOF
+RUN --network=none <<-EOF
 	set -eux
 	mkdir -p include
 	ln -sf . usr
@@ -102,7 +102,7 @@ EOF
 
 # Phase 3: Build gcc (without libgcc) in build-gcc
 WORKDIR ${GCC_DIR}
-RUN <<-EOF
+RUN --network=none <<-EOF
 	set -eux
 	../gcc-${GCC_VERSION}/configure \
 		--build=i386-unknown-linux-musl \
@@ -139,7 +139,7 @@ EOF
 
 # Phase 4: Install musl libc headers to build-sysroot for use by libgcc
 WORKDIR ${MUSL_DIR}
-RUN <<-EOF
+RUN --network=none <<-EOF
 	set -eux
 	../musl-${MUSL_VERSION}/configure \
 		CC="${GCC_DIR}/gcc/xgcc -B ${GCC_DIR}/gcc" \
@@ -151,11 +151,11 @@ EOF
 
 # Phase 5: Compile libgcc
 WORKDIR ${GCC_DIR}
-RUN make MAKE="make enable_shared=no" all-target-libgcc
+RUN --network=none make MAKE="make enable_shared=no" all-target-libgcc
 
 # Phase 5: Compile musl libc and install to sysroot
 WORKDIR ${MUSL_DIR}
-RUN <<-EOF
+RUN --network=none <<-EOF
 	set -eux
 	make \
 		AR=${BINUTILS_DIR}/binutils/ar \
@@ -165,11 +165,11 @@ EOF
 
 # Phase 6: Compile remaining gcc targets
 WORKDIR ${GCC_DIR}
-RUN make all
+RUN --network=none make all
 
 # Phase 7: Generate linux headers
 WORKDIR ${HOME}/linux-${LINUX_VERSION}
-RUN <<-EOF
+RUN --network=none <<-EOF
 	set -eux
 	make ARCH=${ARCH} headers
 	find usr/include -name '.*' -delete
@@ -182,7 +182,7 @@ FROM build as install
 WORKDIR ${HOME}
 USER 0:0
 COPY --from=stagex/stage1 . /rootfs/
-RUN <<-EOF
+RUN --network=none <<-EOF
 	set -eux
 	rm /rootfs/lib
 	env -C build-musl make DESTDIR=/rootfs/${TARGET} install

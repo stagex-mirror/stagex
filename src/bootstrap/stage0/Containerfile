@@ -26,24 +26,24 @@ RUN --mount=type=cache,target=/var/cache/apt <<-EOF
 	set -eux
 	apt update
 	apt install -y wget gcc
-	sh build.sh
 EOF
+RUN --network=none sh build.sh
 
 FROM base as build2
 COPY --from=arch . /
 RUN --mount=type=cache,target=/var/cache/pacman/pkg <<-EOF
 	set -eux
 	pacman -Sy --noconfirm wget gcc
-	sh build.sh
 EOF
+RUN --network=none sh build.sh
 
 FROM base as build3
 COPY --from=alpine . /
 RUN --mount=type=cache,target=/var/cache/apk <<-EOF
 	set -eux
 	apk add wget gcc
-	sh build.sh
 EOF
+RUN --network=none sh build.sh
 
 FROM scratch as compare
 COPY --from=build1 /rootfs/ /a

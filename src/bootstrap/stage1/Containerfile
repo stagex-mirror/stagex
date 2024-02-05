@@ -26,7 +26,7 @@ EOF
 
 FROM debian as config
 COPY --from=fetch . /
-RUN <<-EOF
+RUN --network=none <<-EOF
 	set -eux
 	mkdir -p /rootfs/external
 	cd /home/user/live-bootstrap
@@ -61,7 +61,8 @@ RUN --network=none \
 FROM build as install
 ENV PATH=/bin:/usr/sbin:/usr/bin
 RUN --mount=type=cache,target=/rootfs \
-	--network=none <<-EOF
+	--network=none \
+<<-EOF
 	set -eux
 	rm -rf /usr/lib/python*/__pycache__
 	mkdir -p /rootfs/etc /rootfs/home/user /rootfs/tmp
