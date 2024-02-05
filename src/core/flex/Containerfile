@@ -1,17 +1,4 @@
-ARG REGISTRY=local
-from ${REGISTRY}/binutils as binutils
-from ${REGISTRY}/m4 as m4
-from ${REGISTRY}/gcc as gcc
-from ${REGISTRY}/musl as musl
-from ${REGISTRY}/make as make
-from ${REGISTRY}/libtool as libtool
-from ${REGISTRY}/autoconf as autoconf
-from ${REGISTRY}/automake as automake
-from ${REGISTRY}/gettext as gettext
-from ${REGISTRY}/bison as bison
-from ${REGISTRY}/busybox as busybox
-
-FROM busybox as base
+FROM stagex/busybox as base
 ENV VERSION=2.6.4
 ENV SRC_SITE=https://github.com/westes/flex/releases/download/v${VERSION}/flex-${VERSION}.tar.gz
 ENV SRC_HASH=e87aae032bf07c26f85ac0ed3250998c37621d95f8bd748b31f15b33c45ee995
@@ -25,16 +12,16 @@ RUN set -eux; \
 FROM fetch as build
 RUN tar -xzf ${SRC_FILE}
 WORKDIR flex-${VERSION}
-COPY --from=gcc . /
-COPY --from=binutils . /
-COPY --from=make . /
-COPY --from=m4 . /
-COPY --from=libtool . /
-COPY --from=autoconf . /
-COPY --from=automake . /
-COPY --from=bison . /
-COPY --from=gettext . /
-COPY --from=musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/m4 . /
+COPY --from=stagex/libtool . /
+COPY --from=stagex/autoconf . /
+COPY --from=stagex/automake . /
+COPY --from=stagex/bison . /
+COPY --from=stagex/gettext . /
+COPY --from=stagex/musl . /
 
 RUN set -eux; \
     ./autogen.sh; \

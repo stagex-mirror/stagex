@@ -8,7 +8,6 @@ COPY --from=stagex/python . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/gcc . /
 COPY --from=stagex/openssl . /
-FROM ${REGISTRY}/busybox:latest as busybox
 
 FROM base as fetch
 RUN wget --no-check-certificate ${SRC_SITE}/v${SRC_VERSION}.tar.gz

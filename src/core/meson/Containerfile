@@ -1,16 +1,11 @@
-ARG REGISTRY=local
-FROM ${REGISTRY}/python as python
-FROM ${REGISTRY}/py-setuptools as py-setuptools
-FROM ${REGISTRY}/zlib as zlib
-
-FROM busybox as base
+FROM stagex/busybox as base
 ENV VERSION=1.3.1
 ENV SRC_FILE=meson-${VERSION}.tar.gz
 ENV SRC_SITE=https://github.com/mesonbuild/meson/releases/download/${VERSION}/${SRC_FILE}
 ENV SRC_HASH=6020568bdede1643d4fb41e28215be38eff5d52da28ac7d125457c59e0032ad7
-COPY --from=python . /
-COPY --from=py-setuptools . /
-COPY --from=zlib . /
+COPY --from=stagex/python . /
+COPY --from=stagex/py-setuptools . /
+COPY --from=stagex/zlib . /
 
 FROM base as fetch
 RUN set -eux; \
