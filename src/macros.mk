@@ -43,6 +43,7 @@ define build
 			--target $(TARGET) \
 			$(EXTRA_ARGS) \
 			$(NOCACHE_FLAG) \
+			-f src/$(CATEGORY)/$(NAME)/Containerfile \
 			src/$(CATEGORY)/$(NAME) \
 			&& tar -tf $(basename $@).tar \
 			&& gzip < $(basename $@).tar > $@ \
