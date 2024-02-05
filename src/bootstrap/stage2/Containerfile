@@ -165,7 +165,7 @@ RUN set -eux; \
 FROM build as install
 WORKDIR ${HOME}
 USER 0:0
-COPY --from=stage1 . /rootfs/
+COPY --from=stagex/stage1 . /rootfs/
 RUN set -eux; \
     rm /rootfs/lib; \
     env -C build-musl make DESTDIR=/rootfs/${TARGET} install; \

@@ -44,7 +44,7 @@ BUILD_KERNELS=False" \
 RUN touch /rootfs/steps/lwext4-1.0.0-lb1/files/fiwix-file-list.txt
 
 FROM scratch as build
-COPY --from=stage0 / .
+COPY --from=stagex/stage0 / .
 COPY --from=config /rootfs .
 ENV ARCH_DIR=x86
 ENV ARCH=x86
