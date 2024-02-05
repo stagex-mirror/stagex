@@ -4,6 +4,7 @@ FROM ${REGISTRY}/binutils:latest as binutils
 FROM ${REGISTRY}/musl:latest as musl
 FROM ${REGISTRY}/make:latest as make
 FROM ${REGISTRY}/openssl:latest as openssl
+FROM ${REGISTRY}/zlib:latest as zlib
 FROM ${REGISTRY}/busybox:latest as busybox
 
 FROM busybox as base
@@ -23,6 +24,7 @@ COPY --from=binutils . /
 COPY --from=make . /
 COPY --from=musl . /
 COPY --from=openssl . /
+COPY --from=zlib . /
 ENV PYTHONHASHSEED=0
 ENV PYTHONDONTWRITEBYTECODE=1
 RUN set -eux; \

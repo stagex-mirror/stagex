@@ -17,11 +17,11 @@ RUN echo "${SRC_HASH}  musl-${SRC_VERSION}.tar.gz" | sha256sum -c
 FROM fetch as build
 RUN tar -xzf musl-${SRC_VERSION}.tar.gz
 WORKDIR musl-${SRC_VERSION}
-ADD lfs64.patch .
-ADD lfs64-2.patch .
+ADD *.patch .
 RUN set -eux; \
     patch -p1 < lfs64.patch; \
     patch -p1 < lfs64-2.patch; \
+    patch -p1 < relr-typedefs.patch; \
     ./configure \
         --build=${ARCH}-linux-musl \
         --host=${ARCH}-linux-musl \

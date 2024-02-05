@@ -133,6 +133,7 @@ out/python.tgz: \
 	out/binutils.tgz \
 	out/busybox.tgz \
 	out/openssl.tgz \
+	out/zlib.tgz \
 	out/make.tgz \
 	out/musl.tgz
 	$(call build,core,python)
@@ -159,7 +160,8 @@ out/cmake.tgz: \
 
 out/py-setuptools.tgz: \
 	out/busybox.tgz \
-	out/python.tgz
+	out/python.tgz \
+	out/zlib.tgz
 	$(call build,core,py-setuptools)
 
 out/zlib.tgz: \
@@ -179,6 +181,7 @@ out/llvm13.tgz: \
 	out/cmake.tgz \
 	out/ninja.tgz \
 	out/busybox.tgz \
+	out/zlib.tgz \
 	out/musl.tgz
 	$(call build,core,llvm,13.0.1)
 
@@ -191,6 +194,7 @@ out/llvm.tgz: \
 	out/cmake.tgz \
 	out/ninja.tgz \
 	out/busybox.tgz \
+	out/zlib.tgz \
 	out/musl.tgz
 	$(call build,core,llvm)
 	$(BUILDER) tag $(REGISTRY)/llvm $(REGISTRY)/llvm:16
@@ -289,16 +293,7 @@ out/gettext.tgz: \
 	out/make.tgz
 	$(call build,core,gettext)
 
-out/heirloom.tgz: \
-	out/busybox.tgz \
-	out/gcc.tgz \
-	out/binutils.tgz \
-	out/musl.tgz \
-	out/make.tgz
-	$(call build,core,heirloom)
-
 out/flex.tgz: \
-	out/heirloom.tgz \
 	out/busybox.tgz \
 	out/gcc.tgz \
 	out/autoconf.tgz \
@@ -309,3 +304,74 @@ out/flex.tgz: \
 	out/musl.tgz \
 	out/make.tgz
 	$(call build,core,flex)
+
+out/argp-standalone.tgz: \
+	out/libtool.tgz \
+	out/automake.tgz \
+	out/autoconf.tgz \
+	out/make.tgz \
+	out/musl.tgz \
+	out/m4.tgz \
+	out/gcc.tgz
+	$(call build,core,argp-standalone)
+
+out/musl-fts.tgz: \
+	out/libtool.tgz \
+	out/automake.tgz \
+	out/autoconf.tgz \
+	out/make.tgz \
+	out/musl.tgz \
+	out/m4.tgz \
+	out/pkgconf.tgz \
+	out/gcc.tgz
+	$(call build,core,musl-fts)
+
+out/musl-obstack.tgz: \
+	out/libtool.tgz \
+	out/automake.tgz \
+	out/autoconf.tgz \
+	out/make.tgz \
+	out/musl.tgz \
+	out/m4.tgz \
+	out/pkgconf.tgz \
+	out/gcc.tgz
+	$(call build,core,musl-obstack)
+
+out/meson.tgz: \
+	out/busybox.tgz \
+	out/cmake.tgz \
+	out/llvm.tgz \
+	out/python.tgz \
+	out/py-setuptools.tgz \
+	out/linux-headers.tgz \
+	out/zlib.tgz
+	$(call build,core,meson)
+
+out/libzstd.tgz: \
+	out/busybox.tgz \
+	out/meson.tgz \
+	out/python.tgz \
+	out/zlib.tgz
+	$(call build,core,libzstd)
+
+out/elfutils.tgz: \
+	out/busybox.tgz \
+	out/argp-standalone.tgz \
+	out/musl.tgz \
+	out/musl-fts.tgz \
+	out/musl-obstack.tgz \
+	out/binutils.tgz \
+	out/bison.tgz \
+	out/flex.tgz \
+	out/linux-headers.tgz \
+	out/libtool.tgz \
+	out/gettext.tgz \
+	out/libzstd.tgz \
+	out/pkgconf.tgz \
+	out/autoconf.tgz \
+	out/automake.tgz \
+	out/m4.tgz \
+	out/make.tgz \
+	out/gcc.tgz \
+	out/zlib.tgz
+	$(call build,core,elfutils)

@@ -1,12 +1,14 @@
 ARG REGISTRY=local
 FROM ${REGISTRY}/python:latest as python
 FROM ${REGISTRY}/busybox:latest as busybox
+FROM ${REGISTRY}/zlib:latest as zlib
 
 FROM busybox as base
 ENV SRC_SITE=https://pypi.io/packages/source/s/setuptools
 ENV SRC_VERSION=68.2.2
 ENV SRC_HASH=4ac1475276d2f1c48684874089fefcd83bd7162ddaafb81fac866ba0db282a87
 COPY --from=python . /
+COPY --from=zlib . /
 
 FROM base as fetch
 RUN wget ${SRC_SITE}/setuptools-${SRC_VERSION}.tar.gz

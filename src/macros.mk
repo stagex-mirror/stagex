@@ -44,6 +44,7 @@ define build
 			$(EXTRA_ARGS) \
 			$(NOCACHE_FLAG) \
 			src/$(CATEGORY)/$(NAME) \
+			&& tar -tf $(basename $@).tar \
 			&& gzip < $(basename $@).tar > $@ \
 			&& rm $(basename $@).tar \
 			&& gunzip -c $@ | docker load; \

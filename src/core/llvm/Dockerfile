@@ -10,6 +10,7 @@ FROM ${REGISTRY}/cmake as cmake
 FROM ${REGISTRY}/ninja as ninja
 FROM ${REGISTRY}/busybox as busybox
 FROM ${REGISTRY}/openssl as openssl
+FROM ${REGISTRY}/zlib as zlib
 
 FROM busybox as base
 ARG VERSION
@@ -25,6 +26,7 @@ COPY --from=musl . /
 COPY --from=gcc . /
 COPY --from=python . /
 COPY --from=py-setuptools . /
+COPY --from=zlib . /
 COPY --from=openssl . /
 
 FROM base as fetch
