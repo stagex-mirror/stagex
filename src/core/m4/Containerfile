@@ -1,18 +1,11 @@
-ARG REGISTRY=local
-FROM ${REGISTRY}/gcc:latest as gcc
-FROM ${REGISTRY}/binutils:latest as binutils
-FROM ${REGISTRY}/musl:latest as musl
-FROM ${REGISTRY}/make:latest as make
-FROM ${REGISTRY}/busybox:latest as busybox
-
-FROM busybox as base
-COPY --from=gcc . /
-COPY --from=binutils . /
-COPY --from=make . /
-COPY --from=musl . /
+FROM stagex/busybox as base
 ENV SRC_SITE=https://ftp.gnu.org/gnu/m4
 ENV SRC_VERSION=1.4.18
 ENV SRC_HASH=ab2633921a5cd38e48797bf5521ad259bdc4b979078034a3b790d7fec5493fab
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/musl . /
 
 FROM base as fetch
 RUN wget ${SRC_SITE}/m4-${SRC_VERSION}.tar.gz
@@ -29,7 +22,7 @@ RUN set -eux; \
 FROM build as install
 USER 0:0
 RUN make DESTDIR=/rootfs install
-COPY --from=musl /usr/lib/libc.so /rootfs/lib/ld-musl-x86_64.so.1
+COPY --from=stagex/musl /usr/lib/libc.so /rootfs/lib/ld-musl-x86_64.so.1
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package

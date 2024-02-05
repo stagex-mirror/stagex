@@ -1,10 +1,4 @@
-ARG REGISTRY=local
-FROM ${REGISTRY}/musl as musl
-FROM ${REGISTRY}/gcc as gcc
-FROM ${REGISTRY}/binutils as binutils
-FROM ${REGISTRY}/busybox as busybox
-
-FROM busybox as base
+FROM stagex/busybox as base
 WORKDIR ${HOME}
 ENV SRC_SITE http://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/
 ENV SRC_VERSION 6.6
@@ -17,9 +11,9 @@ RUN echo "${SRC_HASH}  linux-${SRC_VERSION}.tar.xz" | sha256sum -c
 FROM fetch as build
 RUN tar -xf linux-${SRC_VERSION}.tar.xz
 WORKDIR linux-${SRC_VERSION}
-COPY --from=gcc . /
-COPY --from=binutils . /
-COPY --from=musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/musl . /
 RUN gcc usr/gen_init_cpio.c -o usr/gen_init_cpio
 
 FROM build as install

@@ -1,7 +1,4 @@
-ARG REGISTRY=local
-FROM ${REGISTRY}/stage3:latest as stage3
-
-FROM stage3 as base
+FROM stagex/stage3 as base
 ENV SRC_SITE http://musl.libc.org
 ENV SRC_VERSION 1.2.4
 ENV SRC_HASH 7a35eae33d5372a7c0da1188de798726f68825513b7ae3ebe97aaaa52114f039

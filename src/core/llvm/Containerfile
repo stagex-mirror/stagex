@@ -1,31 +1,19 @@
-ARG REGISTRY=local
 ARG VERSION=16.0.6
-FROM ${REGISTRY}/gcc as gcc
-FROM ${REGISTRY}/binutils as binutils
-FROM ${REGISTRY}/musl as musl
-FROM ${REGISTRY}/openssl as openssl
-FROM ${REGISTRY}/python as python
-FROM ${REGISTRY}/py-setuptools as py-setuptools
-FROM ${REGISTRY}/cmake as cmake
-FROM ${REGISTRY}/ninja as ninja
-FROM ${REGISTRY}/busybox as busybox
-FROM ${REGISTRY}/openssl as openssl
-
-FROM busybox as base
+FROM stagex/busybox as base
 ARG VERSION
 ENV VERSION=${VERSION}
 ENV SRC_VERSION=${VERSION}
 ENV SRC_SITE=https://github.com/llvm/llvm-project/releases/download
 ENV SRC_HASH_13_0_1=326335a830f2e32d06d0a36393b5455d17dc73e0bd1211065227ee014f92cbf8
 ENV SRC_HASH_16_0_6=ce5e71081d17ce9e86d7cbcfa28c4b04b9300f8fb7e78422b1feb6bc52c3028e
-COPY --from=binutils . /
-COPY --from=cmake . /
-COPY --from=ninja . /
-COPY --from=musl . /
-COPY --from=gcc . /
-COPY --from=python . /
-COPY --from=py-setuptools . /
-COPY --from=openssl . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/cmake . /
+COPY --from=stagex/ninja . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/python . /
+COPY --from=stagex/py-setuptools . /
+COPY --from=stagex/openssl . /
 
 FROM base as fetch
 RUN wget --no-check-certificate ${SRC_SITE}/llvmorg-${SRC_VERSION}/llvm-project-${SRC_VERSION}.src.tar.xz
@@ -79,9 +67,9 @@ USER 0:0
 RUN set -eux; \
     DESTDIR="/rootfs" cmake --install build; \
 	python3 llvm/utils/lit/setup.py install --root="/rootfs"
-COPY --from=musl /lib/* /rootfs/lib/
-COPY --from=gcc /usr/lib/* /rootfs/usr/lib/
-COPY --from=gcc /usr/lib64/* /rootfs/usr/lib/
+COPY --from=stagex/musl /lib/* /rootfs/lib/
+COPY --from=stagex/gcc /usr/lib/* /rootfs/usr/lib/
+COPY --from=stagex/gcc /usr/lib64/* /rootfs/usr/lib/
 RUN ln -s lit /rootfs/usr/bin/llvm-lit
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 

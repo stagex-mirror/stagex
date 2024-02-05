@@ -1,9 +1,4 @@
-ARG REGISTRY=local
-FROM ${REGISTRY}/musl:latest as musl
-FROM ${REGISTRY}/binutils:latest as binutils
-FROM ${REGISTRY}/stage3:latest as stage3
-
-FROM stage3 as base
+FROM stagex/stage3 as base
 ENV VERSION 12.2.0
 ENV SRC_FILE gcc-$VERSION.tar.xz
 ENV SRC_SITE https://mirrors.kernel.org/gnu/gcc/gcc-${VERSION}
@@ -68,13 +63,13 @@ USER 0:0
 RUN set -eux; \
     make DESTDIR=/rootfs install-strip; \
     ln -s gcc /rootfs/usr/bin/cc
-COPY --from=musl /lib/* /rootfs/lib/
+COPY --from=stagex/musl /lib/* /rootfs/lib/
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM busybox as test
 COPY --from=install /rootfs /
-COPY --from=binutils . /
-COPY --from=musl . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/musl . /
 ADD test.c .
 RUN set -eux; \
     gcc test.c -static -o main; \

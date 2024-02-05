@@ -1,8 +1,4 @@
-ARG REGISTRY=local
-FROM ${REGISTRY}/musl:latest as musl
-FROM ${REGISTRY}/stage3:latest as stage3
-
-FROM stage3 as base
+FROM stagex/stage3 as base
 WORKDIR ${HOME}
 ENV SRC_SITE https://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/
 ENV SRC_VERSION 6.6

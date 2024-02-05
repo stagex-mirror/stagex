@@ -1,24 +1,8 @@
-ARG REGISTRY=local
 ARG VERSION=1.74.0
 ARG BUILD_VERSION=1.73.0
 ARG LLVM_VERSION=13.0.1
-FROM ${REGISTRY}/gcc as gcc
-FROM ${REGISTRY}/binutils as binutils
-FROM ${REGISTRY}/musl as musl
-FROM ${REGISTRY}/bash as bash
-FROM ${REGISTRY}/make as make
-FROM ${REGISTRY}/cmake as cmake
-FROM ${REGISTRY}/perl as perl
-FROM ${REGISTRY}/libunwind as libunwind
-FROM ${REGISTRY}/python as python
-FROM ${REGISTRY}/py-setuptools as py-setuptools
-FROM ${REGISTRY}/zlib as zlib
-FROM ${REGISTRY}/openssl as openssl
-FROM ${REGISTRY}/pkgconf as pkgconf
-FROM ${REGISTRY}/llvm:${LLVM_VERSION} as llvm
-FROM ${REGISTRY}/busybox as busybox
 
-FROM busybox as base
+FROM stagex/busybox as base
 ENV BOOTSTRAP_VERSION=1.54.0
 ENV SRC_SITE=https://static.rust-lang.org/dist
 ENV MRUSTC_VERSION=16d744fd62e74a2d4356df864b5850bf782918da
@@ -53,20 +37,20 @@ ARG BUILD_VERSION
 ENV BUILD_VERSION=${BUILD_VERSION}
 ARG LLVM_VERSION
 ENV LLVM_VERSION=${LLVM_VERSION}
-COPY --from=binutils . /
-COPY --from=bash . /
-COPY --from=make . /
-COPY --from=cmake . /
-COPY --from=python . /
-COPY --from=py-setuptools . /
-COPY --from=zlib . /
-COPY --from=pkgconf . /
-COPY --from=openssl . /
-COPY --from=llvm . /
-COPY --from=perl . /
-COPY --from=gcc . /
-COPY --from=libunwind . /
-COPY --from=musl . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/bash . /
+COPY --from=stagex/make . /
+COPY --from=stagex/cmake . /
+COPY --from=stagex/python . /
+COPY --from=stagex/py-setuptools . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/llvm . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/libunwind . /
+COPY --from=stagex/musl . /
 
 FROM base as bootstrap-fetch
 RUN set -eux; \
@@ -109,9 +93,9 @@ RUN set -eux; \
     mv /rootfs/bin/cargo /rootfs/usr/bin/; \
     mv /rootfs/lib/rustlib /rootfs/usr/lib/rustlib; \
     mv /rootfs/usr/lib/rustlib/x86_64-unknown-linux-musl/lib/librustc_driver.so /rootfs/usr/lib/
-COPY --from=musl /lib/* /rootfs/lib/
-COPY --from=gcc /usr/lib/* /rootfs/usr/lib/
-COPY --from=gcc /usr/lib64/* /rootfs/usr/lib/
+COPY --from=stagex/musl /lib/* /rootfs/lib/
+COPY --from=stagex/gcc /usr/lib/* /rootfs/usr/lib/
+COPY --from=stagex/gcc /usr/lib64/* /rootfs/usr/lib/
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as bootstrap-package
@@ -181,10 +165,10 @@ RUN set -eux; \
         manifest-rust-std-x86_64-unknown-linux-musl \
         manifest-rust-std-x86_64-unknown-linux-musl; \
     rm -f x86_64-unknown-linux-musl/lib/self-contained/libunwind.a
-COPY --from=musl /lib/* /rootfs/lib/
-COPY --from=gcc /usr/lib/* /rootfs/usr/lib/
-COPY --from=gcc /usr/lib64/* /rootfs/usr/lib/
-COPY --from=llvm /usr/lib/* /rootfs/usr/lib/
+COPY --from=stagex/musl /lib/* /rootfs/lib/
+COPY --from=stagex/gcc /usr/lib/* /rootfs/usr/lib/
+COPY --from=stagex/gcc /usr/lib64/* /rootfs/usr/lib/
+COPY --from=stagex/llvm /usr/lib/* /rootfs/usr/lib/
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package

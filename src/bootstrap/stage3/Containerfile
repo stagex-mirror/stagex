@@ -1,7 +1,4 @@
-ARG REGISTRY=local
-FROM ${REGISTRY}/stage2 as stage2
-
-FROM stage2 as base
+FROM stagex/stage2 as base
 ENV ARCH=x86_64
 ENV TARGET=${ARCH}-linux-musl
 ENV BUILD=i386-unknown-linux-musl

@@ -1,8 +1,4 @@
-ARG REGISTRY=local
-FROM ${REGISTRY}/stage3 as stage3
-FROM ${REGISTRY}/musl as musl
-
-FROM stage3 as base
+FROM stagex/stage3 as base
 ENV SRC_SITE https://ftp.gnu.org/gnu/binutils
 ENV SRC_VERSION 2.35
 ENV SRC_HASH 1b11659fb49e20e18db460d44485f09442c8c56d5df165de9461eb09c8302f85
@@ -53,7 +49,7 @@ RUN set -ex; \
 FROM build as install
 USER 0:0
 RUN make DESTDIR="/rootfs" install;
-COPY --from=musl /usr/lib/libc.so /rootfs/lib/ld-musl-x86_64.so.1
+COPY --from=stagex/musl /usr/lib/libc.so /rootfs/lib/ld-musl-x86_64.so.1
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package

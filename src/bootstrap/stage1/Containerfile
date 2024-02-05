@@ -1,9 +1,8 @@
-ARG REGISTRY=local
 ARG VERSION=fc6eeb6bd75ea0d0025a79ea9fe45614bd60ba14
 ARG SRC_SITE=https://codeload.github.com/lrvick/live-bootstrap/legacy.tar.gz
 ARG SRC_HASH=0c268b19cf9f4eefdaf45dab64ac393ccf8ee43de58f0721624cab358044bf78
 FROM debian@sha256:bac353db4cc04bc672b14029964e686cd7bad56fe34b51f432c1a1304b9928da as debian
-FROM ${REGISTRY}/stage0 as stage0
+FROM stagex/stage0 as stage0
 
 FROM debian as fetch
 ARG VERSION

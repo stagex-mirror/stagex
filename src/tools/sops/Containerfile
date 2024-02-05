@@ -1,22 +1,16 @@
-
-ARG REGISTRY=local
-FROM ${REGISTRY}/go:latest as go
-FROM ${REGISTRY}/busybox:latest as busybox 
-FROM ${REGISTRY}/ca-certificates:latest as ca-certificates
-
-FROM busybox as base
+FROM stagex/busybox as base
 ENV VERSION=3.8.1
 ENV SRC_SITE=https://github.com/getsops/sops/archive/refs/tags
 ENV SRC_HASH=5ca70fb4f96797d09012c705a5bb935835896de7bcd063b98d498912b0e645a0
 RUN echo ${SRC_SITE}/${VERSION}.tar.gz
 
 FROM base as fetch
-COPY --from=go . /
-COPY --from=ca-certificates . /
+COPY --from=stagex/go . /
+COPY --from=stagex/ca-certificates . /
 
 RUN set -eux; \
     wget ${SRC_SITE}/v${VERSION}.tar.gz; \
-    echo "${SRC_HASH}  v${VERSION}.tar.gz" | sha256sum -c; 
+    echo "${SRC_HASH}  v${VERSION}.tar.gz" | sha256sum -c;
 
 FROM fetch as build
 RUN tar -xvf v${VERSION}.tar.gz
@@ -31,7 +25,7 @@ ENV GOSUMDB=sum.golang.org
 ENV CGO_ENABLED=0
 ENV GOHOSTOS=linux
 ENV GOHOSTARCH=amd64
-ENV GOFLAGS=-trimpath 
+ENV GOFLAGS=-trimpath
 RUN mkdir -p ${GOPATH}
 RUN go build -o bin/sops ./cmd/sops
 

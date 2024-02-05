@@ -1,7 +1,4 @@
-ARG REGISTRY=local
-FROM ${REGISTRY}/stage3 as stage3
-
-FROM stage3 as base
+FROM stagex/stage3 as base
 ENV SRC_SITE=https://busybox.net/downloads
 ENV SRC_VERSION=1.36.1
 ENV SRC_HASH=b8cc24c9574d809e7279c3be349795c5d5ceb6fdf19ca709f80cde50e47de314
