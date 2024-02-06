@@ -169,7 +169,7 @@ EOF
 
 FROM build as install
 COPY --from=stagex/stage1 . /rootfs/
-WORKDIR /
+WORKDIR ${HOME}
 RUN --network=none <<-EOF
 	set -eux
 	rm /rootfs/lib
