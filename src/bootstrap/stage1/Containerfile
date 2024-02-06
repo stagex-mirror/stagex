@@ -1,78 +1,329 @@
+FROM scratch as base
+ARG CORES=1
 ARG VERSION=fc6eeb6bd75ea0d0025a79ea9fe45614bd60ba14
 ARG SRC_SITE=https://codeload.github.com/lrvick/live-bootstrap/legacy.tar.gz
 ARG SRC_HASH=0c268b19cf9f4eefdaf45dab64ac393ccf8ee43de58f0721624cab358044bf78
-FROM debian@sha256:bac353db4cc04bc672b14029964e686cd7bad56fe34b51f432c1a1304b9928da as debian
 
-FROM debian as fetch
-ARG VERSION
-ENV VERSION=${VERSION}
-ARG SRC_SITE
-ENV SRC_SITE=${SRC_SITE}
-ARG SRC_HASH
-ENV SRC_HASH=${SRC_HASH}
-WORKDIR /home/user
-RUN \
-	--mount=type=cache,target=/var/cache/apt \
-	--mount=type=cache,target=/var/lib/apt \
-	apt update && apt install -y curl
+FROM base as fetch
+WORKDIR distfiles
+#Generate with: cat live-bootstrap/steps/*/sources | awk -F" " '{ printf("ADD --checksum=sha256:%s %s ./$3\n",$2,$1,$3) }'
+ADD --checksum=sha256:4681bcbb9c9298c506f6405a7deb62c54fc3b339d3239a8f36a5df83daaec94f https://mirrors.kernel.org/gnu/autoconf/autoconf-2.52.tar.bz2 ./
+ADD --checksum=sha256:6b217a064c6d06603d50a3ad05129aef9435367810c10894210b8dad965d2306 https://mirrors.kernel.org/gnu/autoconf/autoconf-2.53.tar.bz2 ./
+ADD --checksum=sha256:a74aea954f36c7beeb6cc47b96a408c3e04e7ad635f614e65250dbcd8ec0bd28 https://mirrors.kernel.org/gnu/autoconf/autoconf-2.54.tar.bz2 ./
+ADD --checksum=sha256:f757158a04889b265203eecd8ca92568e2a67c3b9062fa6bff7a0a6efd2244ac https://mirrors.kernel.org/gnu/autoconf/autoconf-2.55.tar.bz2 ./
+ADD --checksum=sha256:e1035aa2c21fae2a934d1ab56c774ce9d22717881dab8a1a5b16d294fb793489 https://mirrors.kernel.org/gnu/autoconf/autoconf-2.57.tar.bz2 ./
+ADD --checksum=sha256:f0cde70a8f135098a6a3e85869f2e1cc3f141beea766fa3d6636e086cd8b90a7 https://mirrors.kernel.org/gnu/autoconf/autoconf-2.59.tar.bz2 ./
+ADD --checksum=sha256:93a2ceab963618b021db153f0c881a2de82455c1dc7422be436fcd5c554085a1 https://mirrors.kernel.org/gnu/autoconf/autoconf-2.61.tar.bz2 ./
+ADD --checksum=sha256:872f4cadf12e7e7c8a2414e047fdff26b517c7f1a977d72433c124d0d3acaa85 https://mirrors.kernel.org/gnu/autoconf/autoconf-2.64.tar.bz2 ./
+ADD --checksum=sha256:954bd69b391edc12d6a4a51a2dd1476543da5c6bbf05a95b59dc0dd6fd4c2969 https://mirrors.kernel.org/gnu/autoconf/autoconf-2.69.tar.gz ./
+ADD --checksum=sha256:f14c83cfebcc9427f2c3cea7258bd90df972d92eb26752da4ddad81c87a0faa4 https://mirrors.kernel.org/gnu/autoconf/autoconf-2.71.tar.xz ./
+ADD --checksum=sha256:e8a6eb9d28ddcba8ffef3fa211653239e9bf239aba6a01a6b7cfc7ceaec69cbd http://mirrors.kernel.org/gnu/autoconf-archive/autoconf-archive-2021.02.19.tar.xz ./
+ADD --checksum=sha256:953ba180b18acff188a0a8700770c7cf2fc97e1683c7b9699a5a748b542ccdd5 https://github.com/schierlm/gnu-autogen-bootstrapping/archive/refs/tags/autogen-5.18.16-v1.0.1.tar.gz ./
+ADD --checksum=sha256:f8a13466b48faa3ba99fe17a069e71c9ab006d9b1cfabe699f8c60a47d5bb49a https://mirrors.kernel.org/gnu/autogen/rel5.18.16/autogen-5.18.16.tar.xz ./
+ADD --checksum=sha256:0c04ab2f7ce13c4a1c06c4abc7dfe75312aad89b8b0a1068e5e563787eb56632 https://git.savannah.gnu.org/cgit/autogen.git/snapshot/autogen-5.18.16.tar.gz ./
+ADD --checksum=sha256:e207c0bb72093c3a72dde302fcfaa1dbda12a62172d47b73565883a92209ebab http://git.savannah.gnu.org/cgit/gnulib.git/snapshot/gnulib-8f4538a5.tar.gz ./
+ADD --checksum=sha256:e98ab43bb839c31696a4202e5b6ff388b391659ef2387cf9365019fad17e1adc https://mirrors.kernel.org/gnu/automake/automake-1.10.3.tar.bz2 ./
+ADD --checksum=sha256:4f46d1f9380c8a3506280750f630e9fc915cb1a435b724be56b499d016368718 https://mirrors.kernel.org/gnu/automake/automake-1.11.2.tar.bz2 ./
+ADD --checksum=sha256:988e32527abe052307d21c8ca000aa238b914df363a617e38f4fb89f5abf6260 https://mirrors.kernel.org/gnu/automake/automake-1.15.1.tar.gz ./
+ADD --checksum=sha256:ff2bf7656c4d1c6fdda3b8bebb21f09153a736bcba169aaf65eab25fa113bf3a https://mirrors.kernel.org/gnu/automake/automake-1.16.3.tar.xz ./
+ADD --checksum=sha256:0dbafacaf21e135cab35d357a14bdcd981d2f2d00e1387801be8091a31b7bb81 https://mirrors.kernel.org/gnu/automake/automake-1.6.3.tar.bz2 ./
+ADD --checksum=sha256:2dddc3b51506e702647ccc6757e15c05323fa67245d2d53e81ed36a832f9be42 https://mirrors.kernel.org/gnu/automake/automake-1.7.8.tar.bz2 ./
+ADD --checksum=sha256:6633ee1202375e3c8798a92e1b7f46894f78d541aeea7f49654503fdc0b28835 https://mirrors.kernel.org/gnu/automake/automake-1.7.tar.bz2 ./
+ADD --checksum=sha256:84c93aaa3c3651a9e7474b721b0e6788318592509e7de604bafe4ea8049dc410 https://mirrors.kernel.org/gnu/automake/automake-1.8.5.tar.bz2 ./
+ADD --checksum=sha256:8eccaa98e1863d10e4a5f861d8e2ec349a23e88cb12ad10f6b6f79022ad2bb8d https://mirrors.kernel.org/gnu/automake/automake-1.9.6.tar.bz2 ./
+ADD --checksum=sha256:ba03d412998cc54bd0b0f2d6c32100967d3137098affdc2d32e6e7c11b163fe4 https://mirrors.kernel.org/gnu/bash/bash-2.05b.tar.gz ./
+ADD --checksum=sha256:13720965b5f4fc3a0d4b61dd37e7565c741da9a5be24edc2ae00182fc1b3588c http://mirrors.kernel.org/gnu/bash/bash-5.2.15.tar.gz ./
+ADD --checksum=sha256:62adfca89b0a1c0164c2cdca59ca210c1d44c3ffc46daf9931cf4942664cb02a https://mirrors.kernel.org/gnu/bc/bc-1.07.1.tar.gz ./
+ADD --checksum=sha256:efeade848067e9a03f1918b1da0d37aaffa0b0127a06b5e9236229851d9d0c09 https://mirrors.kernel.org/gnu/binutils/binutils-2.30.tar.bz2 ./
+ADD --checksum=sha256:ae9a5789e23459e59606e6714723f2d3ffc31c03174191ef0d015bdf06007450 https://mirrors.kernel.org/gnu/binutils/binutils-2.41.tar.xz ./
+ADD --checksum=sha256:b10d7e9e354be72aee4e4911cf19dd27b5c527d4e7200857365b5fcdeea0dffb http://mirrors.kernel.org/gnu/bison/bison-2.3.tar.bz2 ./
+ADD --checksum=sha256:0190f28cb155fedd22bf8558c3e8705eed9eacfb7ae29e7508d025a68eb90899 http://git.savannah.gnu.org/cgit/gnulib.git/snapshot/gnulib-b28236b.tar.gz ./
+ADD --checksum=sha256:7007fc89c216fbfaff5525359b02a7e5b612694df5168c74673f67055f015095 https://mirrors.kernel.org/gnu/bison/bison-3.4.1.tar.gz ./
+ADD --checksum=sha256:27d05534699735dc69e86add5b808d6cb35900ad3fd63fa82e3eb644336abfa0 http://mirrors.kernel.org/gnu/bison/bison-3.4.2.tar.xz ./
+ADD --checksum=sha256:8cced51f89a950472473856f86e88f5daf97a2347756125ccdc8ee907deec570 http://git.savannah.gnu.org/cgit/gnulib.git/snapshot/gnulib-672663a.tar.gz ./
+ADD --checksum=sha256:ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269 https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz ./
+ADD --checksum=sha256:469888e41e8a780051ce00edcd914e8a6bd38da88a82cfb84898dd388635822a http://ftp.mozilla.org/pub/security/nss/releases/NSS_3_95_RTM/src/nss-3.95.tar.gz ./
+ADD --checksum=sha256:c25b36b8af6e0ad2a875daf4d6196bd0df28a62be7dd252e5f99a4d5d7288d95 https://mirrors.kernel.org/gnu/coreutils/coreutils-5.0.tar.bz2 ./
+ADD --checksum=sha256:1d013547889f20576460249c4210632d5314531c8477378a2e046b13a8ebeb7e https://mirrors.kernel.org/gnu/coreutils/coreutils-6.10.tar.gz ./
+ADD --checksum=sha256:8fb56810310253300b3d6f84e68dc97eb2d74e1f4f78e05776831d9d82e4f2d7 http://git.savannah.gnu.org/cgit/coreutils.git/snapshot/coreutils-9.4.tar.xz ./
+ADD --checksum=sha256:b8aa1ac1b18c67f081486069e6a7a5564f20431c2313a94c20a46dcfb904be2a http://git.savannah.gnu.org/cgit/gnulib.git/snapshot/gnulib-bb5bb43.tar.gz ./
+ADD --checksum=sha256:806e9aed65037197f1ec85e12be6e8cd870fc5608b4de0fffd990f689f376a73 http://ftp.unicode.org/Public/15.0.0/ucd/UnicodeData.txt ./UnicodeData-15.0.0.txt
+ADD --checksum=sha256:e05c0a2811d113dae4abd832884199a3ea8d187ee1b872d8240a788a96540bfd http://ftp.unicode.org/Public/15.0.0/ucd/PropList.txt ./PropList-15.0.0.txt
+ADD --checksum=sha256:d367290bc0867e6b484c68370530bdd1a08b6b32404601b8c7accaf83e05628d http://ftp.unicode.org/Public/15.0.0/ucd/DerivedCoreProperties.txt ./DerivedCoreProperties-15.0.0.txt
+ADD --checksum=sha256:29071dba22c72c27783a73016afb8ffaeb025866740791f9c2d0b55cc45a3470 http://ftp.unicode.org/Public/15.0.0/ucd/emoji/emoji-data.txt ./emoji-data-15.0.0.txt
+ADD --checksum=sha256:eb840f36e0a7446293578c684a54c6d83d249abde7bdd4dfa89794af1d7fe9e9 http://ftp.unicode.org/Public/15.0.0/ucd/ArabicShaping.txt ./ArabicShaping-15.0.0.txt
+ADD --checksum=sha256:cca85d830f46aece2e7c1459ef1249993dca8f2e46d51e869255be140d7ea4b0 http://ftp.unicode.org/Public/15.0.0/ucd/Scripts.txt ./Scripts-15.0.0.txt
+ADD --checksum=sha256:529dc5d0f6386d52f2f56e004bbfab48ce2d587eea9d38ba546c4052491bd820 http://ftp.unicode.org/Public/15.0.0/ucd/Blocks.txt ./Blocks-15.0.0.txt
+ADD --checksum=sha256:909eef4adbeddbdddcd9487c856fe8cdbb8912aa8eb315ed7885b6ef65f4dc4c http://ftp.unicode.org/Public/3.0-Update1/PropList-3.0.1.txt ./
+ADD --checksum=sha256:743e7bc435c04ab1a8459710b1c3cad56eedced5b806b4659b6e69b85d0adf2a http://ftp.unicode.org/Public/15.0.0/ucd/EastAsianWidth.txt ./EastAsianWidth-15.0.0.txt
+ADD --checksum=sha256:012bca868e2c4e59a5a10a7546baf0c6fb1b2ef458c277f054915c8a49d292bf http://ftp.unicode.org/Public/15.0.0/ucd/LineBreak.txt ./LineBreak-15.0.0.txt
+ADD --checksum=sha256:5188a56e91593467c2e912601ebc78750e6adc9b04541b8c5becb5441e388ce2 http://ftp.unicode.org/Public/15.0.0/ucd/auxiliary/WordBreakProperty.txt ./WordBreakProperty-15.0.0.txt
+ADD --checksum=sha256:5a0f8748575432f8ff95e1dd5bfaa27bda1a844809e17d6939ee912bba6568a1 http://ftp.unicode.org/Public/15.0.0/ucd/auxiliary/GraphemeBreakProperty.txt ./GraphemeBreakProperty-15.0.0.txt
+ADD --checksum=sha256:3b019c0a33c3140cbc920c078f4f9af2680ba4f71869c8d4de5190667c70b6a3 http://ftp.unicode.org/Public/15.0.0/ucd/CompositionExclusions.txt ./CompositionExclusions-15.0.0.txt
+ADD --checksum=sha256:78b29c64b5840d25c11a9f31b665ee551b8a499eca6c70d770fcad7dd710f494 http://ftp.unicode.org/Public/15.0.0/ucd/SpecialCasing.txt ./SpecialCasing-15.0.0.txt
+ADD --checksum=sha256:cdd49e55eae3bbf1f0a3f6580c974a0263cb86a6a08daa10fbf705b4808a56f7 http://ftp.unicode.org/Public/15.0.0/ucd/CaseFolding.txt ./CaseFolding-15.0.0.txt
+ADD --checksum=sha256:ce4b6a6655431147624aaf582632a36fe1ade262d5fab385c60f78942dd8d87b https://curl.se/download/curl-8.5.0.tar.bz2 ./
+ADD --checksum=sha256:2bd3480bc93e6bff530872b8bc80cbcaa821449f7bf6aaf202fa12fb8c2e6f55 https://github.com/NetworkConfiguration/dhcpcd/archive/refs/tags/v10.0.1.tar.gz ./
+ADD --checksum=sha256:d5f2489c4056a31528e3ada4adacc23d498532b0af1a980f2f76158162b139d6 https://mirrors.kernel.org/gnu/diffutils/diffutils-2.7.tar.gz ./
+ADD --checksum=sha256:05fa4f6ea9f05adf8f577699cb3f5b88b20dfce86b0d0cebbfb072fe5933d38f http://deb.debian.org/debian/pool/main/d/dist/dist_3.5-236.orig.tar.gz ./
+ADD --checksum=sha256:340e9de42a12d0c26dd7527e9ef055ac85586de5c61f6273ae19f88d04e55804 https://mirrors.edge.kernel.org/pub/linux/kernel/people/tytso/e2fsprogs/v1.45.7/e2fsprogs-1.45.7.tar.gz ./
+ADD --checksum=sha256:64f117a4749dd4a1b6c54277f63f6cf1e0eb45d290cbedaf777fbe71b8880885 https://www.unicode.org/Public/11.0.0/ucd/CaseFolding.txt ./
+ADD --checksum=sha256:eb115a5de9a32c9ad447d6ea1cddcadb53d47f6cbc2521f3fe0bebb040c39866 https://www.unicode.org/Public/11.0.0/ucd/DerivedAge.txt ./
+ADD --checksum=sha256:11c8bd81ecbede4d67c7b5b693a471647d5401956707c639ae053b836cc7f5da https://www.unicode.org/Public/11.0.0/ucd/extracted/DerivedCombiningClass.txt ./
+ADD --checksum=sha256:3406825d64564bf2a37031c36a3e0f99d708aa17595b81f8b539d0f3d1a3923f https://www.unicode.org/Public/11.0.0/ucd/DerivedCoreProperties.txt ./
+ADD --checksum=sha256:c9ffe32e616fa085246644c2351c525788fac363872491185dab7d5ce69fefa9 https://www.unicode.org/Public/11.0.0/ucd/NormalizationCorrections.txt ./
+ADD --checksum=sha256:0fdfc17093dd5482f8089cb11dcd936abdba34c4c9c324e5b8a4e5d8f943f6d3 https://www.unicode.org/Public/11.0.0/ucd/NormalizationTest.txt ./
+ADD --checksum=sha256:4997a3196eb79b4d0d6b8384560f6aeb46a062693f0abd5ba736abbff7976099 https://www.unicode.org/Public/11.0.0/ucd/UnicodeData.txt ./
+ADD --checksum=sha256:db36da85ee1a9d8bafb4b041bd4c8c11becba0c43ec446353b67045de1634fda https://mirrors.kernel.org/gnu/ed/ed-1.4.tar.gz ./
+ADD --checksum=sha256:3751c7fba8dbc831cb8d7cc8aff21035459b8ce5155ef8b0880a27d028475f3b http://ftp.astron.com/pub/file/file-5.44.tar.gz ./
+ADD --checksum=sha256:813cd9405aceec5cfecbe96400d01e90ddad7b512d3034487176ce5258ab0f78 https://mirrors.kernel.org/gnu/findutils/findutils-4.2.33.tar.gz ./
+ADD --checksum=sha256:0cfbf866bc39c31f25fa0e56af1e56c5e5c92fc1e5d51242ebafef7ea211f3d5 https://git.savannah.gnu.org/cgit/gnulib.git/snapshot/gnulib-8e128e.tar.gz ./
+ADD --checksum=sha256:6635f8b8a44694a374daccd528a8d22550e684d33dc967f7fa2d161b9d69deb4 https://github.com/mikaku/Fiwix/releases/download/v1.5.0-lb1/fiwix-1.5.0-lb1.tar.gz ./
+ADD --checksum=sha256:c40385e142989c91989413f3c5a31282b2ffdca16b69cd3ecfde537b8a474921 http://download.nust.na/pub2/openpkg1/sources/DST/flex/flex-2.5.33.tar.gz ./
+ADD --checksum=sha256:e87aae032bf07c26f85ac0ed3250998c37621d95f8bd748b31f15b33c45ee995 https://github.com/westes/flex/releases/download/v2.6.4/flex-2.6.4.tar.gz ./
+ADD --checksum=sha256:5cc35def1ff4375a8b9a98c2ff79e95e80987d24f0d42fdbb7b7039b3ddb3fb0 https://mirrors.kernel.org/gnu/gawk/gawk-3.0.4.tar.gz ./
+ADD --checksum=sha256:436a0ddc67b1ac0b0405b61a9675bca9e075c8156f4debd1d06f3a56c7cd289d https://www.hboehm.info/gc/gc_source/gc-8.0.4.tar.gz ./
+ADD --checksum=sha256:c9297d5bcd7cb43f3dfc2fed5389e948c9312fd962ef6a4ce455cff963ebe4f1 http://ftp.gnu.org/gnu/gcc/gcc-10.4.0/gcc-10.4.0.tar.xz ./
+ADD --checksum=sha256:61d684f0aa5e76ac6585ad8898a2427aade8979ed5e7f85492286c4dfc13ee86 https://ftp.gnu.org/gnu/gcc/gcc-13.1.0/gcc-13.1.0.tar.xz ./
+ADD --checksum=sha256:e9bf58c761a4f988311aef6b41f12fd5c7e51d09477468fb73826aecc1be32e7 https://mirrors.kernel.org/gnu/gcc/gcc-4.0.4/gcc-core-4.0.4.tar.bz2 ./
+ADD --checksum=sha256:ce010788b51f64511a1e9bb2a1ec626037c6d0e7ede32c1c103611b9d3cba65f https://mirrors.kernel.org/gnu/automake/automake-1.16.3.tar.gz ./
+ADD --checksum=sha256:92e61c6dc3a0a449e62d72a38185fda550168a86702dea07125ebd3ec3996282 https://mirrors.kernel.org/gnu/gcc/gcc-4.7.4/gcc-4.7.4.tar.bz2 ./
+ADD --checksum=sha256:d20fcbb537e02dcf1383197ba05bd0734ef7bf5db06bdb241eb69b7d16b73192 https://mirrors.kernel.org/gnu/gettext/gettext-0.21.tar.xz ./
+ADD --checksum=sha256:2d911c2f2ed97b347d6d360b742abdc98aa626d4f8f847ee682c7cde12e90871 https://git.savannah.gnu.org/cgit/gnulib.git/snapshot/gnulib-7daa86f.tar.gz ./
+ADD --checksum=sha256:fd4829912cddd12f84181c3451cc752be224643e87fac497b69edddadc49b4f2 http://mirrors.kernel.org/gnu/gmp/gmp-6.2.1.tar.xz ./
+ADD --checksum=sha256:588546b945bba4b70b6a3a616e80b4ab466e3f33024a352fc2198112cdbb3ae2 https://mirrors.kernel.org/gnu/gperf/gperf-3.1.tar.gz ./
+ADD --checksum=sha256:a32032bab36208509466654df12f507600dfe0313feebbcd218c32a70bf72a16 https://mirrors.kernel.org/gnu/grep/grep-2.4.tar.gz ./
+ADD --checksum=sha256:5c10da312460aec721984d5d83246d24520ec438dd48d7ab5a05dbc0d6d6823c https://mirrors.kernel.org/gnu/grep/grep-3.7.tar.xz ./
+ADD --checksum=sha256:e207c0bb72093c3a72dde302fcfaa1dbda12a62172d47b73565883a92209ebab http://git.savannah.gnu.org/cgit/gnulib.git/snapshot/gnulib-8f4538a5.tar.gz ./
+ADD --checksum=sha256:f57d86c70620271bfceb7a9be0c81744a033f08adc7ceba832c9917ab3e691b7 https://mirrors.kernel.org/gnu/guile/guile-3.0.7.tar.xz ./
+ADD --checksum=sha256:1a2625ac72b2366e95792f3fe758fd2df775b4044a90a4a9787326e66c0d750d https://mirrors.kernel.org/gnu/guile/guile-3.0.9.tar.xz ./
+ADD --checksum=sha256:f9aad85de1f41d57c9368d304020ffbf354a5e56db1297f022c3d12181134e56 https://git.savannah.gnu.org/cgit/gnulib.git/snapshot/gnulib-901694b9.tar.gz ./
+ADD --checksum=sha256:fc9973f1a9243fdc4b98d33d7704f3c71bfdc4c2ef96899b8f28cade7290a714 https://git.savannah.gnu.org/cgit/gnulib.git/snapshot/gnulib-356a414e.tar.gz ./
+ADD --checksum=sha256:14cda9c416506dfadf60c14fc623ff01ef99b87564a78d0a29c5d17143c97609 https://github.com/schierlm/guile-psyntax-bootstrapping/archive/refs/tags/guile-3.0.7.tar.gz ./
+ADD --checksum=sha256:1ca41818a23c9c59ef1d5e1d00c0d5eaa2285d931c0fb059637d7c0cc02ad967 https://mirrors.kernel.org/gnu/gzip/gzip-1.2.4.tar.gz ./
+ADD --checksum=sha256:9f233d8b78e4351fe9dd2d50d83958a0e5af36f54e9818521458a08e058691ba http://downloads.sourceforge.net/project/heirloom/heirloom-devtools/070527/heirloom-devtools-070527.tar.bz2 ./
+ADD --checksum=sha256:a4adadf76b496a6bc50795702253ecfcb6f0d159b68038f31a5362009340bca2 https://mirrors.kernel.org/gnu/help2man/help2man-1.36.4.tar.gz ./
+ADD --checksum=sha256:203c93e004ac7ad0e50423ff54d89e40fa99f45b207b2b892a4d70211feebe05 https://mirrors.edge.kernel.org/pub/linux/utils/kbd/kbd-1.15.tar.gz ./
+ADD --checksum=sha256:af618de7848142f204b57811f703de3ae7aa3f5bc5d52226db35800fa8fc4dff https://github.com/horms/kexec-tools/archive/refs/tags/v2.0.22.tar.gz ./
+ADD --checksum=sha256:f0b19ff39c3c9a5898a219497ababbadab99d8178acc980155c7e1271089b5a0 http://libarchive.org/downloads/libarchive-3.5.2.tar.xz ./
+ADD --checksum=sha256:587edf60817f56daf1e1ab38a4b3c729b8e846ff67b4f62a6157183708f099af https://github.com/ivmai/libatomic_ops/releases/download/v7.6.10/libatomic_ops-7.6.10.tar.gz ./
+ADD --checksum=sha256:72fba7922703ddfa7a028d513ac15a85c8d54c8d67f55fa5a4802885dc652056 https://github.com/libffi/libffi/releases/download/v3.3/libffi-3.3.tar.gz ./
+ADD --checksum=sha256:c4e63399b12f5858d11c44cea8e92f21cd564f8548e488dadc84046b424c80fc https://mirrors.kernel.org/gnu/libtool/libtool-2.2.4.tar.bz2 ./
+ADD --checksum=sha256:4f7f217f057ce655ff22559ad221a0fd8ef84ad1fc5fcb6990cecc333aa1635d http://mirrors.kernel.org/gnu/libtool/libtool-2.4.7.tar.xz ./
+ADD --checksum=sha256:719b399fe09a8f6ca14ba8c4a9a60ce9f93f4892effb50961ef3d8cd1a33ff65 http://git.savannah.gnu.org/cgit/gnulib.git/snapshot/gnulib-a521820.tar.gz ./
+ADD --checksum=sha256:eb8fb2c3e4b6e2d336608377050892b54c3c983b646c561836550863003c05d7 https://mirrors.kernel.org/gnu/libunistring/libunistring-0.9.10.tar.xz ./
+ADD --checksum=sha256:009989b81c0bebc5f6550636ed653fbcb237dafc2af5c706f3522087ca571e4d https://git.savannah.gnu.org/cgit/gnulib.git/snapshot/gnulib-52a06cb3.tar.gz ./
+ADD --checksum=sha256:97ff15f9550c6e85c25173b3cf5c7e89a2d39fb923112f2c8bc2729cf64bf6d8 https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.9.10.tar.gz ./
+ADD --checksum=sha256:af4214b851928a53ef470ed8729122b9db910a6c0769d5d46a5de0b3e96f74f3 https://linux-libre.fsfla.org/pub/linux-libre/releases/old/gen6/4.9.10-gnu/deblob-4.9 ./
+ADD --checksum=sha256:97ff15f9550c6e85c25173b3cf5c7e89a2d39fb923112f2c8bc2729cf64bf6d8 https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.9.10.tar.gz ./
+ADD --checksum=sha256:a90526665123d788fc23d14354468d22cc2e3e9e43a6c44ea452fbbec12b8451 https://github.com/rick-masters/lwext4/releases/download/v1.0.0-lb1/lwext4-1.0.0-lb1.tar.gz ./
+ADD --checksum=sha256:093c993767f563a11e41c1cf887f4e9065247129679d4c1e213d0544d16d8303 https://mirrors.kernel.org/gnu/m4/m4-1.4.7.tar.gz ./
+ADD --checksum=sha256:e2c1a73f179c40c71e2fe8abf8a8a0688b8499538512984da4a76958d0402966 https://mirrors.kernel.org/gnu/make/make-3.82.tar.bz2 ./
+ADD --checksum=sha256:e40b8f018c1da64edd1cc9a6fce5fa63b2e707e404e20cad91fbae337c98a5b7 http://ftp.gnu.org/gnu/make/make-4.2.1.tar.gz ./
+ADD --checksum=sha256:325250b3567ed9203ba70161c835af01079e73ebed97b4b5bb77ca500b828940 https://mirrors.kernel.org/gnu/mes/mes-0.25.tar.gz ./
+ADD --checksum=sha256:f36e4fb7dd524dc3f4b354d3d5313f69e7ce5a6ae93711e8cf6d51eaa8d2b318 https://download.savannah.gnu.org/releases/nyacc/nyacc-1.00.2.tar.gz ./
+ADD --checksum=sha256:17503d2c395dfcf106b622dc142683c1199431d095367c6aacba6eec30340459 http://mirrors.kernel.org/gnu/mpc/mpc-1.2.1.tar.gz ./
+ADD --checksum=sha256:0c98a3f1732ff6ca4ea690552079da9c597872d30e96ec28414ee23c95558a7f http://mirrors.kernel.org/gnu/mpfr/mpfr-4.1.0.tar.xz ./
+ADD --checksum=sha256:1370c9a812b2cf2a7d92802510cca0058cc37e66a7bedd70051f0a34015022a3 https://musl.libc.org/releases/musl-1.1.24.tar.gz ./
+ADD --checksum=sha256:7a35eae33d5372a7c0da1188de798726f68825513b7ae3ebe97aaaa52114f039 https://musl.libc.org/releases/musl-1.2.4.tar.gz ./
+ADD --checksum=sha256:0b7a3e5e59c34827fe0c3a74b7ec8baef302b98fa80088d7f9153aa16fa76bd1 http://mirror.math.princeton.edu/pub/openssl/source/old/1.1.1/openssl-1.1.1l.tar.gz ./
+ADD --checksum=sha256:ecb5c6469d732bcf01d6ec1afe9e64f1668caba5bfdb103c28d7f537ba3cdb8a https://mirrors.kernel.org/gnu/patch/patch-2.5.9.tar.gz ./
+ADD --checksum=sha256:ac610bda97abe0d9f6b7c963255a11dcb196c25e337c61f94e4778d632f1d8fd https://mirrors.kernel.org/gnu/patch/patch-2.7.6.tar.xz ./
+ADD --checksum=sha256:a285dc300c3d9c25cc06e38827ef40f6073ec3b9b0fcb5bba433f943be92d8d4 https://git.savannah.gnu.org/cgit/gnulib.git/snapshot/gnulib-e017871.tar.gz ./
+ADD --checksum=sha256:1ae43c8d2983404b9eec61c96e3ffa27e7b07e08215c95c015a4ab0095373ef3 https://github.com/Perl/perl5/archive/perl-5.000.tar.gz ./
+ADD --checksum=sha256:9fa29beb2fc4a3c373829fc051830796de301f32a719d0b52a400d1719bbd7b1 https://github.com/Perl/perl5/archive/perl-5.003.tar.gz ./
+ADD --checksum=sha256:1184478b298978b164a383ed5661e3a117c48ab97d6d0ab7ef614cdbe918b9eb https://www.cpan.org/src/5.0/perl5.004_05.tar.gz ./
+ADD --checksum=sha256:93f41cd87ab8ee83391cfa39a63b076adeb7c3501d2efa31b98d0ef037122bd1 https://www.cpan.org/src/5.0/perl5.005_03.tar.gz ./
+ADD --checksum=sha256:9385f2c8c2ca8b1dc4a7c31903f1f8dc8f2ba867dc2a9e5c93012ed6b564e826 http://www.cpan.org/src/5.0/perl-5.10.1.tar.bz2 ./
+ADD --checksum=sha256:57cc47c735c8300a8ce2fa0643507b44c4ae59012bfdad0121313db639e02309 http://www.cpan.org/src/5.0/perl-5.32.1.tar.xz ./
+ADD --checksum=sha256:1d179b41283f12ad83f9758430f6ddc49bdf20db5c396aeae7e51ebb4e4afd29 http://deb.debian.org/debian/pool/main/p/perl/perl_5.32.1.orig-regen-configure.tar.gz ./
+ADD --checksum=sha256:a5e66f6ebf701b0567f569f57cae82abf5ce57af70a2b45ae71323b61f49134e https://www.cpan.org/src/5.0/perl-5.6.2.tar.gz ./
+ADD --checksum=sha256:6fc69c01688c9458a57eb9a1664c9aba372ccda420a02bf4429fe610e7e7d591 http://distfiles.macports.org/pkgconfig/pkg-config-0.29.2.tar.gz ./
+ADD --checksum=sha256:98557b819a42d2093b41d8637302d1311b81f627af9ad20036357d7eb2813872 https://www.python.org/ftp/python/2.0.1/Python-2.0.1.tgz ./
+ADD --checksum=sha256:f41d967bc458ee106f0c3948bfad71cd0860d96c49304e3fd02eaf2bbae4b6d9 http://ftp.unicode.org/Public/3.0-Update/UnicodeData-3.0.0.txt ./
+ADD --checksum=sha256:969a9891dce9f50b13e54f9890acaf2be66715a5895bf9b11111f320c205b90e https://www.python.org/ftp/python/2.3.7/Python-2.3.7.tgz ./
+ADD --checksum=sha256:5e444028b6e76d96f9dc509609c5e3222bf609056f35e5fcde7e6fb8a58cd446 http://ftp.unicode.org/Public/3.2-Update/UnicodeData-3.2.0.txt ./
+ADD --checksum=sha256:1d3a450d0f39902710df4972ac4a60ec31fbcb54ffd4d53cd812fc1200c732cb http://ftp.unicode.org/Public/3.2-Update/CompositionExclusions-3.2.0.txt ./
+ADD --checksum=sha256:57e04484de051decd4741fb4a4a3f543becc9a219af8b8063b5541e270f26dcc https://www.python.org/ftp/python/2.5.6/Python-2.5.6.tar.bz2 ./
+ADD --checksum=sha256:5e444028b6e76d96f9dc509609c5e3222bf609056f35e5fcde7e6fb8a58cd446 http://ftp.unicode.org/Public/3.2-Update/UnicodeData-3.2.0.txt ./
+ADD --checksum=sha256:1d3a450d0f39902710df4972ac4a60ec31fbcb54ffd4d53cd812fc1200c732cb http://ftp.unicode.org/Public/3.2-Update/CompositionExclusions-3.2.0.txt ./
+ADD --checksum=sha256:ce19f35ffca911bf492aab6c0d3f6af3d1932f35d2064cf2fe14e10be29534cb http://ftp.unicode.org/Public/3.2-Update/EastAsianWidth-3.2.0.txt ./
+ADD --checksum=sha256:a9f03f6a061ee210c53e33782288a208bed48c65c70d307b2b214989cedfdab0 http://ftp.unicode.org/Public/4.1.0/ucd/UnicodeData.txt ./UnicodeData-4.1.0.txt
+ADD --checksum=sha256:1003a6896078e77532a017b135762501ff0a540ba33694e32b6177f093ebe6b2 http://ftp.unicode.org/Public/4.1.0/ucd/CompositionExclusions.txt ./CompositionExclusions-4.1.0.txt
+ADD --checksum=sha256:089ed5b2becd3196e61124d36e968474d3b7152cb5a3fb56594c34ab1e698e92 http://ftp.unicode.org/Public/4.1.0/ucd/EastAsianWidth.txt ./EastAsianWidth-4.1.0.txt
+ADD --checksum=sha256:85879192f2cffd56cb16c092905949ebf3e5e394b7f764723529637901dfb58f https://www.python.org/ftp/python/3.11.1/Python-3.11.1.tar.xz ./
+ADD --checksum=sha256:5e444028b6e76d96f9dc509609c5e3222bf609056f35e5fcde7e6fb8a58cd446 http://ftp.unicode.org/Public/3.2-Update/UnicodeData-3.2.0.txt ./
+ADD --checksum=sha256:1d3a450d0f39902710df4972ac4a60ec31fbcb54ffd4d53cd812fc1200c732cb http://ftp.unicode.org/Public/3.2-Update/CompositionExclusions-3.2.0.txt ./
+ADD --checksum=sha256:ce19f35ffca911bf492aab6c0d3f6af3d1932f35d2064cf2fe14e10be29534cb http://ftp.unicode.org/Public/3.2-Update/EastAsianWidth-3.2.0.txt ./
+ADD --checksum=sha256:787419dde91701018d7ad4f47432eaa55af14e3fe3fe140a11e4bbf3db18bb4c http://ftp.unicode.org/Public/3.2-Update/DerivedCoreProperties-3.2.0.txt ./
+ADD --checksum=sha256:bab49295e5f9064213762447224ccd83cea0cced0db5dcfc96f9c8a935ef67ee http://ftp.unicode.org/Public/3.2-Update/DerivedNormalizationProps-3.2.0.txt ./
+ADD --checksum=sha256:d693ef2a603d07e20b769ef8ba29afca39765588a03e3196294e5be8638ca735 http://ftp.unicode.org/Public/3.2-Update/LineBreak-3.2.0.txt ./
+ADD --checksum=sha256:1f7913b74dddff55ee566f6220aa9e465bae6f27709fc21d353b04adb8572b37 http://ftp.unicode.org/Public/3.2-Update/SpecialCasing-3.2.0.txt ./
+ADD --checksum=sha256:370f3d1e79a52791c42065946711f4eddb6d9820726afd0e436a3c50360475a9 http://ftp.unicode.org/Public/3.2-Update/CaseFolding-3.2.0.txt ./
+ADD --checksum=sha256:0582b888c4ebab6e3ce8d340c74788f1a68ca662713a1065b9a007f24bb4fe46 http://ftp.unicode.org/Public/3.2-Update/Unihan-3.2.0.zip ./
+ADD --checksum=sha256:36018e68657fdcb3485f636630ffe8c8532e01c977703d2803f5b89d6c5feafb http://ftp.unicode.org/Public/14.0.0/ucd/UnicodeData.txt ./UnicodeData-14.0.0.txt
+ADD --checksum=sha256:3360762fc3295cea54ab251c31df621d05ba4b94d46c60eaac29aa16d70ad1e0 http://ftp.unicode.org/Public/14.0.0/ucd/CompositionExclusions.txt ./CompositionExclusions-14.0.0.txt
+ADD --checksum=sha256:f901ac011aa32a09224d6555da71e2532c59c1d3381322829de0e3b880507250 http://ftp.unicode.org/Public/14.0.0/ucd/EastAsianWidth.txt ./EastAsianWidth-14.0.0.txt
+ADD --checksum=sha256:e3eddd7d469cd1b0feed7528defad1a1cc7c6a9ceb0ae4446a6d10921ed2e7bc http://ftp.unicode.org/Public/14.0.0/ucd/DerivedCoreProperties.txt ./DerivedCoreProperties-14.0.0.txt
+ADD --checksum=sha256:b2c444c20730b097787fdf50bd7d6dd3fc5256ab8084f5b35b11c8776eca674c http://ftp.unicode.org/Public/14.0.0/ucd/DerivedNormalizationProps.txt ./DerivedNormalizationProps-14.0.0.txt
+ADD --checksum=sha256:9e06e9f35c6959fb91dcc7993f90d58523c3079bc62c6b25f828b4cdebc5d70c http://ftp.unicode.org/Public/14.0.0/ucd/LineBreak.txt ./LineBreak-14.0.0.txt
+ADD --checksum=sha256:14b3b677d33f95c51423dce6eef4a6a28b4b160451ecedee4b91edb6745cf4a3 http://ftp.unicode.org/Public/14.0.0/ucd/NameAliases.txt ./NameAliases-14.0.0.txt
+ADD --checksum=sha256:db5745688affcdc0c3927a1ee0667018a96a7b24513f866d5235e98fef6c2436 http://ftp.unicode.org/Public/14.0.0/ucd/NamedSequences.txt ./NamedSequences-14.0.0.txt
+ADD --checksum=sha256:c667b45908fd269af25fd55d2fc5bbc157fb1b77675936e25c513ce32e080334 http://ftp.unicode.org/Public/14.0.0/ucd/SpecialCasing.txt ./SpecialCasing-14.0.0.txt
+ADD --checksum=sha256:a566cd48687b2cd897e02501118b2413c14ae86d318f9abbbba97feb84189f0f http://ftp.unicode.org/Public/14.0.0/ucd/CaseFolding.txt ./CaseFolding-14.0.0.txt
+ADD --checksum=sha256:2ae4519b2b82cd4d15379c17e57bfb12c33c0f54da4977de03b2b04bcf11852d http://ftp.unicode.org/Public/14.0.0/ucd/Unihan.zip ./Unihan-14.0.0.zip
+ADD --checksum=sha256:6bad4dabcdf5940227c7d81fab130dcb18a77850b5d79de28b5dc4e047b0aaac http://ftp.unicode.org/Public/MAPPINGS/VENDORS/MICSFT/PC/CP437.TXT ./
+ADD --checksum=sha256:eb722fa698fb7e8823b835d9fd263e4cdb8f1c7b0d234edf7f0e3bd2ccbb2c79 https://www.ietf.org/rfc/rfc3454.txt ./
+ADD --checksum=sha256:0b7a3e5e59c34827fe0c3a74b7ec8baef302b98fa80088d7f9153aa16fa76bd1 http://mirror.math.princeton.edu/pub/openssl/source/old/1.1.1/openssl-1.1.1l.tar.gz ./
+ADD --checksum=sha256:3a72a21528f0751e89151744350dd12004131d312d47b935ce8041b070c90361 https://www.python.org/ftp/python/3.1.5/Python-3.1.5.tar.bz2 ./
+ADD --checksum=sha256:5e444028b6e76d96f9dc509609c5e3222bf609056f35e5fcde7e6fb8a58cd446 http://ftp.unicode.org/Public/3.2-Update/UnicodeData-3.2.0.txt ./
+ADD --checksum=sha256:1d3a450d0f39902710df4972ac4a60ec31fbcb54ffd4d53cd812fc1200c732cb http://ftp.unicode.org/Public/3.2-Update/CompositionExclusions-3.2.0.txt ./
+ADD --checksum=sha256:ce19f35ffca911bf492aab6c0d3f6af3d1932f35d2064cf2fe14e10be29534cb http://ftp.unicode.org/Public/3.2-Update/EastAsianWidth-3.2.0.txt ./
+ADD --checksum=sha256:787419dde91701018d7ad4f47432eaa55af14e3fe3fe140a11e4bbf3db18bb4c http://ftp.unicode.org/Public/3.2-Update/DerivedCoreProperties-3.2.0.txt ./
+ADD --checksum=sha256:bab49295e5f9064213762447224ccd83cea0cced0db5dcfc96f9c8a935ef67ee http://ftp.unicode.org/Public/3.2-Update/DerivedNormalizationProps-3.2.0.txt ./
+ADD --checksum=sha256:8bd83e9c4e339728ecd532c5b174de5beb9cb4bab5db14e44fcd03ccb2e2c1b5 http://ftp.unicode.org/Public/5.1.0/ucd/UnicodeData.txt ./UnicodeData-5.1.0.txt
+ADD --checksum=sha256:683b094f2bdd0ab132c0bac293a5404626dd858a53b5364b3b6b525323c5a5e4 http://ftp.unicode.org/Public/5.1.0/ucd/CompositionExclusions.txt ./CompositionExclusions-5.1.0.txt
+ADD --checksum=sha256:a0d8abf08d08f3e61875aed6011cb70c61dd8ea61089e6ad9b6cf524d8fba0f2 http://ftp.unicode.org/Public/5.1.0/ucd/EastAsianWidth.txt ./EastAsianWidth-5.1.0.txt
+ADD --checksum=sha256:8f54c77587fee99facc2f28b94e748dfdda5da44f42adab31a65f88b63587ae0 http://ftp.unicode.org/Public/5.1.0/ucd/DerivedCoreProperties.txt ./DerivedCoreProperties-5.1.0.txt
+ADD --checksum=sha256:4fc8cbfa1eed578cdda0768fb4a4ace5443f807c1f652e36a6bd768e81c2c2a3 http://ftp.unicode.org/Public/5.1.0/ucd/DerivedNormalizationProps.txt ./DerivedNormalizationProps-5.1.0.txt
+ADD --checksum=sha256:6bad4dabcdf5940227c7d81fab130dcb18a77850b5d79de28b5dc4e047b0aaac http://ftp.unicode.org/Public/MAPPINGS/VENDORS/MICSFT/PC/CP437.TXT ./
+ADD --checksum=sha256:85f60c327501c36bc18c33370c14d472801e6af2f901dafbba056f61685429fe https://www.python.org/ftp/python/3.3.7/Python-3.3.7.tar.xz ./
+ADD --checksum=sha256:5e444028b6e76d96f9dc509609c5e3222bf609056f35e5fcde7e6fb8a58cd446 http://ftp.unicode.org/Public/3.2-Update/UnicodeData-3.2.0.txt ./
+ADD --checksum=sha256:1d3a450d0f39902710df4972ac4a60ec31fbcb54ffd4d53cd812fc1200c732cb http://ftp.unicode.org/Public/3.2-Update/CompositionExclusions-3.2.0.txt ./
+ADD --checksum=sha256:ce19f35ffca911bf492aab6c0d3f6af3d1932f35d2064cf2fe14e10be29534cb http://ftp.unicode.org/Public/3.2-Update/EastAsianWidth-3.2.0.txt ./
+ADD --checksum=sha256:787419dde91701018d7ad4f47432eaa55af14e3fe3fe140a11e4bbf3db18bb4c http://ftp.unicode.org/Public/3.2-Update/DerivedCoreProperties-3.2.0.txt ./
+ADD --checksum=sha256:bab49295e5f9064213762447224ccd83cea0cced0db5dcfc96f9c8a935ef67ee http://ftp.unicode.org/Public/3.2-Update/DerivedNormalizationProps-3.2.0.txt ./
+ADD --checksum=sha256:d693ef2a603d07e20b769ef8ba29afca39765588a03e3196294e5be8638ca735 http://ftp.unicode.org/Public/3.2-Update/LineBreak-3.2.0.txt ./
+ADD --checksum=sha256:1f7913b74dddff55ee566f6220aa9e465bae6f27709fc21d353b04adb8572b37 http://ftp.unicode.org/Public/3.2-Update/SpecialCasing-3.2.0.txt ./
+ADD --checksum=sha256:370f3d1e79a52791c42065946711f4eddb6d9820726afd0e436a3c50360475a9 http://ftp.unicode.org/Public/3.2-Update/CaseFolding-3.2.0.txt ./
+ADD --checksum=sha256:0582b888c4ebab6e3ce8d340c74788f1a68ca662713a1065b9a007f24bb4fe46 http://ftp.unicode.org/Public/3.2-Update/Unihan-3.2.0.zip ./
+ADD --checksum=sha256:3066262585a3c4f407b16db787e6d3a6e033b90f27405b6c76d1babefffca6ad http://ftp.unicode.org/Public/6.1.0/ucd/UnicodeData.txt ./UnicodeData-6.1.0.txt
+ADD --checksum=sha256:21124f9d38372d68e09c67bcb64694fd4bca0c9cb39c576b1f095554c4ea9693 http://ftp.unicode.org/Public/6.1.0/ucd/CompositionExclusions.txt ./CompositionExclusions-6.1.0.txt
+ADD --checksum=sha256:d591c24b702c1b025b58ca6168746f713b657c6e252c268f52cb07758f428067 http://ftp.unicode.org/Public/6.1.0/ucd/EastAsianWidth.txt ./EastAsianWidth-6.1.0.txt
+ADD --checksum=sha256:a03e62ba5fa9c6f327b6e6cfc5d014f59af9b262b768dd9a6aaa39d205dd8b7a http://ftp.unicode.org/Public/6.1.0/ucd/DerivedCoreProperties.txt ./DerivedCoreProperties-6.1.0.txt
+ADD --checksum=sha256:d028f7eccab4998f8d7a6b15703b088e26ff6ee1f2dbc0939ae872c213de8620 http://ftp.unicode.org/Public/6.1.0/ucd/DerivedNormalizationProps.txt ./DerivedNormalizationProps-6.1.0.txt
+ADD --checksum=sha256:7b7e2cf582ef7f24fd2747a4ef1a50934c15a0fc0ab10ce737d5e3e47bebde0d http://ftp.unicode.org/Public/6.1.0/ucd/LineBreak.txt ./LineBreak-6.1.0.txt
+ADD --checksum=sha256:7253bd84e20d34491b2b124a85ca84bd2cd5d113e4957aebae92f0e3c21f0a45 http://ftp.unicode.org/Public/6.1.0/ucd/NameAliases.txt ./NameAliases-6.1.0.txt
+ADD --checksum=sha256:60c88b6e3ceec871cc6b7e2d552453f88eef0f40ff2188d9cec7021c2debd36a http://ftp.unicode.org/Public/6.1.0/ucd/NamedSequences.txt ./NamedSequences-6.1.0.txt
+ADD --checksum=sha256:7d047fe1aa8a68cc12101427cf03bfbce83201ee277e907822901735f0bfee3c http://ftp.unicode.org/Public/6.1.0/ucd/SpecialCasing.txt ./SpecialCasing-6.1.0.txt
+ADD --checksum=sha256:4c0bece13821a24f469bb8d16ea33fc7da6436b7ebe64c78635673dbfaa88edc http://ftp.unicode.org/Public/6.1.0/ucd/CaseFolding.txt ./CaseFolding-6.1.0.txt
+ADD --checksum=sha256:8ca508ef1bc7eba8c102710016d8510f871f69bdcc74ff877c33d01bb799a38f http://ftp.unicode.org/Public/6.1.0/ucd/Unihan.zip ./Unihan-6.1.0.zip
+ADD --checksum=sha256:6bad4dabcdf5940227c7d81fab130dcb18a77850b5d79de28b5dc4e047b0aaac http://ftp.unicode.org/Public/MAPPINGS/VENDORS/MICSFT/PC/CP437.TXT ./
+ADD --checksum=sha256:d46a8f6fe91679e199c671b1b0a30aaf172d2acb5bcab25beb35f16c3d195b4e https://www.python.org/ftp/python/3.4.10/Python-3.4.10.tar.xz ./
+ADD --checksum=sha256:5e444028b6e76d96f9dc509609c5e3222bf609056f35e5fcde7e6fb8a58cd446 http://ftp.unicode.org/Public/3.2-Update/UnicodeData-3.2.0.txt ./
+ADD --checksum=sha256:1d3a450d0f39902710df4972ac4a60ec31fbcb54ffd4d53cd812fc1200c732cb http://ftp.unicode.org/Public/3.2-Update/CompositionExclusions-3.2.0.txt ./
+ADD --checksum=sha256:ce19f35ffca911bf492aab6c0d3f6af3d1932f35d2064cf2fe14e10be29534cb http://ftp.unicode.org/Public/3.2-Update/EastAsianWidth-3.2.0.txt ./
+ADD --checksum=sha256:787419dde91701018d7ad4f47432eaa55af14e3fe3fe140a11e4bbf3db18bb4c http://ftp.unicode.org/Public/3.2-Update/DerivedCoreProperties-3.2.0.txt ./
+ADD --checksum=sha256:bab49295e5f9064213762447224ccd83cea0cced0db5dcfc96f9c8a935ef67ee http://ftp.unicode.org/Public/3.2-Update/DerivedNormalizationProps-3.2.0.txt ./
+ADD --checksum=sha256:d693ef2a603d07e20b769ef8ba29afca39765588a03e3196294e5be8638ca735 http://ftp.unicode.org/Public/3.2-Update/LineBreak-3.2.0.txt ./
+ADD --checksum=sha256:1f7913b74dddff55ee566f6220aa9e465bae6f27709fc21d353b04adb8572b37 http://ftp.unicode.org/Public/3.2-Update/SpecialCasing-3.2.0.txt ./
+ADD --checksum=sha256:370f3d1e79a52791c42065946711f4eddb6d9820726afd0e436a3c50360475a9 http://ftp.unicode.org/Public/3.2-Update/CaseFolding-3.2.0.txt ./
+ADD --checksum=sha256:0582b888c4ebab6e3ce8d340c74788f1a68ca662713a1065b9a007f24bb4fe46 http://ftp.unicode.org/Public/3.2-Update/Unihan-3.2.0.zip ./
+ADD --checksum=sha256:3f76924f0410ca8ae0e9b5c59bd1ba03196293c32616204b393300f091f52013 http://ftp.unicode.org/Public/6.3.0/ucd/UnicodeData.txt ./UnicodeData-6.3.0.txt
+ADD --checksum=sha256:4ba8ea079ffbffc0025fc31009e95726864feda90d2845c9363c0c40ded8511c http://ftp.unicode.org/Public/6.3.0/ucd/CompositionExclusions.txt ./CompositionExclusions-6.3.0.txt
+ADD --checksum=sha256:bbdf9281767ca4601af3623b62c26ecb834a9f4c46eec629d82339b006da00d8 http://ftp.unicode.org/Public/6.3.0/ucd/EastAsianWidth.txt ./EastAsianWidth-6.3.0.txt
+ADD --checksum=sha256:790826f4cfa82c5845ab4040b5e811f1e67bf1ec4c88cdbf722795c3292b0102 http://ftp.unicode.org/Public/6.3.0/ucd/DerivedCoreProperties.txt ./DerivedCoreProperties-6.3.0.txt
+ADD --checksum=sha256:c5e867ae043fe5d1cf713150d859356bfdcdba291c39f584af0bfb943f1a9743 http://ftp.unicode.org/Public/6.3.0/ucd/DerivedNormalizationProps.txt ./DerivedNormalizationProps-6.3.0.txt
+ADD --checksum=sha256:6a38069025127a60f4a809e788fbbd1bb6b95ac8d1bd62e6a78d7870357f3486 http://ftp.unicode.org/Public/6.3.0/ucd/LineBreak.txt ./LineBreak-6.3.0.txt
+ADD --checksum=sha256:a11bed87ec6f264edcf84d581dd2d7ac8ed7ac1c3b2ccb54a83077fdbd34133e http://ftp.unicode.org/Public/6.3.0/ucd/NameAliases.txt ./NameAliases-6.3.0.txt
+ADD --checksum=sha256:91fc69ff68b1a89e5f7270545547c747624bc96b0e6c23a791d4265d2fa1f988 http://ftp.unicode.org/Public/6.3.0/ucd/NamedSequences.txt ./NamedSequences-6.3.0.txt
+ADD --checksum=sha256:9edafba261e23e72f6e21e3d85d7f15dd4866f38004ab3bfdc6f7057c589d034 http://ftp.unicode.org/Public/6.3.0/ucd/SpecialCasing.txt ./SpecialCasing-6.3.0.txt
+ADD --checksum=sha256:21323e682a2b34400c6af4ab57b9775b7e716150428f092bac5b005a88ab8f42 http://ftp.unicode.org/Public/6.3.0/ucd/CaseFolding.txt ./CaseFolding-6.3.0.txt
+ADD --checksum=sha256:9e408d71e3aba4ff68f5085569bc1c31c9751f9779f55cf877c222467732991f http://ftp.unicode.org/Public/6.3.0/ucd/Unihan.zip ./Unihan-6.3.0.zip
+ADD --checksum=sha256:6bad4dabcdf5940227c7d81fab130dcb18a77850b5d79de28b5dc4e047b0aaac http://ftp.unicode.org/Public/MAPPINGS/VENDORS/MICSFT/PC/CP437.TXT ./
+ADD --checksum=sha256:d85dbb3774132473d8081dcb158f34a10ccad7a90b96c7e50ea4bb61f5ce4562 https://www.python.org/ftp/python/3.8.16/Python-3.8.16.tar.xz ./
+ADD --checksum=sha256:5e444028b6e76d96f9dc509609c5e3222bf609056f35e5fcde7e6fb8a58cd446 http://ftp.unicode.org/Public/3.2-Update/UnicodeData-3.2.0.txt ./
+ADD --checksum=sha256:1d3a450d0f39902710df4972ac4a60ec31fbcb54ffd4d53cd812fc1200c732cb http://ftp.unicode.org/Public/3.2-Update/CompositionExclusions-3.2.0.txt ./
+ADD --checksum=sha256:ce19f35ffca911bf492aab6c0d3f6af3d1932f35d2064cf2fe14e10be29534cb http://ftp.unicode.org/Public/3.2-Update/EastAsianWidth-3.2.0.txt ./
+ADD --checksum=sha256:787419dde91701018d7ad4f47432eaa55af14e3fe3fe140a11e4bbf3db18bb4c http://ftp.unicode.org/Public/3.2-Update/DerivedCoreProperties-3.2.0.txt ./
+ADD --checksum=sha256:bab49295e5f9064213762447224ccd83cea0cced0db5dcfc96f9c8a935ef67ee http://ftp.unicode.org/Public/3.2-Update/DerivedNormalizationProps-3.2.0.txt ./
+ADD --checksum=sha256:d693ef2a603d07e20b769ef8ba29afca39765588a03e3196294e5be8638ca735 http://ftp.unicode.org/Public/3.2-Update/LineBreak-3.2.0.txt ./
+ADD --checksum=sha256:1f7913b74dddff55ee566f6220aa9e465bae6f27709fc21d353b04adb8572b37 http://ftp.unicode.org/Public/3.2-Update/SpecialCasing-3.2.0.txt ./
+ADD --checksum=sha256:370f3d1e79a52791c42065946711f4eddb6d9820726afd0e436a3c50360475a9 http://ftp.unicode.org/Public/3.2-Update/CaseFolding-3.2.0.txt ./
+ADD --checksum=sha256:0582b888c4ebab6e3ce8d340c74788f1a68ca662713a1065b9a007f24bb4fe46 http://ftp.unicode.org/Public/3.2-Update/Unihan-3.2.0.zip ./
+ADD --checksum=sha256:93ab1acd8fd9d450463b50ae77eab151a7cda48f98b25b56baed8070f80fc936 http://ftp.unicode.org/Public/12.1.0/ucd/UnicodeData.txt ./UnicodeData-12.1.0.txt
+ADD --checksum=sha256:abc8394c5bde62453118b00c1c5842160a04d7fffb2e829ee5426b846596d081 http://ftp.unicode.org/Public/12.1.0/ucd/CompositionExclusions.txt ./CompositionExclusions-12.1.0.txt
+ADD --checksum=sha256:904500178b2e752635bef27aaed3a2a3718a100bce35ff96b3890be7a8315d8f http://ftp.unicode.org/Public/12.1.0/ucd/EastAsianWidth.txt ./EastAsianWidth-12.1.0.txt
+ADD --checksum=sha256:a6eb7a8671fb532fbd88c37fd7b20b5b2e7dbfc8b121f74c14abe2947db0da68 http://ftp.unicode.org/Public/12.1.0/ucd/DerivedCoreProperties.txt ./DerivedCoreProperties-12.1.0.txt
+ADD --checksum=sha256:92dcdda84142194a1596f22180fcdf8c0e7f86897f09cc9203c7dc636c549f5f http://ftp.unicode.org/Public/12.1.0/ucd/DerivedNormalizationProps.txt ./DerivedNormalizationProps-12.1.0.txt
+ADD --checksum=sha256:961f842fc70b5afd1d82c6645e68c10d1f701382aed38ae38cb2ff27f671903c http://ftp.unicode.org/Public/12.1.0/ucd/LineBreak.txt ./LineBreak-12.1.0.txt
+ADD --checksum=sha256:ff61a0687d2f32c0dd1094254b8bde967883b43c2d4d50fd17531d498e41ab2c http://ftp.unicode.org/Public/12.1.0/ucd/NameAliases.txt ./NameAliases-12.1.0.txt
+ADD --checksum=sha256:d3eb9a288ebeaf9de1237989f490705e287b6f610b59d2459fb1b7c2d8e39c39 http://ftp.unicode.org/Public/12.1.0/ucd/NamedSequences.txt ./NamedSequences-12.1.0.txt
+ADD --checksum=sha256:817ce2e9edca8e075a153f54b8f3b020345e37652cd2bda9b1495c366af17e7e http://ftp.unicode.org/Public/12.1.0/ucd/SpecialCasing.txt ./SpecialCasing-12.1.0.txt
+ADD --checksum=sha256:9c772627c6ee77eea6a17b42927b8ee28ca05dc65d6a511062104baaf3d12294 http://ftp.unicode.org/Public/12.1.0/ucd/CaseFolding.txt ./CaseFolding-12.1.0.txt
+ADD --checksum=sha256:6e4553f3b5fffe0d312df324d020ef1278d9595932ae03f4e8a2d427de83cdcd http://ftp.unicode.org/Public/12.1.0/ucd/Unihan.zip ./Unihan-12.1.0.zip
+ADD --checksum=sha256:6bad4dabcdf5940227c7d81fab130dcb18a77850b5d79de28b5dc4e047b0aaac http://ftp.unicode.org/Public/MAPPINGS/VENDORS/MICSFT/PC/CP437.TXT ./
+ADD --checksum=sha256:eb722fa698fb7e8823b835d9fd263e4cdb8f1c7b0d234edf7f0e3bd2ccbb2c79 https://www.ietf.org/rfc/rfc3454.txt ./
+ADD --checksum=sha256:c365874794187f8444e5d22998cd5888ffa47f36def4b77517a808dec27c0600 https://mirrors.kernel.org/gnu/sed/sed-4.0.9.tar.gz ./
+ADD --checksum=sha256:f79b0cfea71b37a8eeec8490db6c5f7ae7719c35587f21edb0617f370eeff633 https://mirrors.kernel.org/gnu/sed/sed-4.8.tar.xz ./
+ADD --checksum=sha256:12cfa21abf618a274017d6b18e95fc6582519d7c08e2403e5c5772ccdd5b85f4 http://git.savannah.gnu.org/cgit/gnulib.git/snapshot/gnulib-d279bc.tar.gz ./
+ADD --checksum=sha256:c6c37e888b136ccefab903c51149f4b7bd659d69d4aea21245f61053a57aa60a https://mirrors.kernel.org/gnu/tar/tar-1.12.tar.gz ./
+ADD --checksum=sha256:63bebd26879c5e1eea4352f0d03c991f966aeb3ddeb3c7445c902568d5411d28 http://mirrors.kernel.org/gnu/tar/tar-1.34.tar.xz ./
+ADD --checksum=sha256:df807e694deea2dcba0c43af318394f3e3fcd52658c3b71b61dad0ce0c0cfb77 http://git.savannah.gnu.org/cgit/gnulib.git/snapshot/gnulib-30820c.tar.gz ./
+ADD --checksum=sha256:6b8cbd0a5fed0636d4f0f763a603247bc1935e206e1cc5bda6a2818bab6e819f https://lilypond.org/janneke/tcc/tcc-0.9.26-1147-gee75a10c.tar.gz ./tcc-0.9.26.tar.gz
+ADD --checksum=sha256:de23af78fca90ce32dff2dd45b3432b2334740bb9bb7b05bf60fdbfc396ceb9c https://download.savannah.gnu.org/releases/tinycc/tcc-0.9.27.tar.bz2 ./
+ADD --checksum=sha256:988403c1542d15ad044600b909997ba3079b10e03224c61188117f3676b02caa https://mirrors.kernel.org/gnu/texinfo/texinfo-6.7.tar.xz ./
+ADD --checksum=sha256:1aeea67b7b3883ebcf2b90bc01f4182d7de073a052dabd3749f20c5aa4ad3e27 https://git.savannah.gnu.org/cgit/gnulib.git/snapshot/gnulib-b81ec69.tar.gz ./
+ADD --checksum=sha256:f694bee56099b8d72c3843d97e27f2306aa9946741e34a27391f6f6f19c7bcd0 https://mirrors.kernel.org/pub/linux/utils/util-linux/v2.19/util-linux-2.19.1.tar.gz ./
+ADD --checksum=sha256:f4a245b94124b377d8b49646bf421f9155d36aa7614b6ebf83705d3ffc76eaad https://carlowood.github.io/which/which-2.21.tar.gz ./
+ADD --checksum=sha256:dd172acb53867a68012f94c17389401b2f274a1aa5ae8f84cbfb8b7e383ea8d3 http://ixpeering.dl.sourceforge.net/project/lzmautils/xz-5.4.1.tar.bz2 ./
+ADD --checksum=sha256:b3a24de97a8fdbc835b9833169501030b8977031bcb54b3b3ac13740f846ab30 https://zlib.net/fossils/zlib-1.2.13.tar.gz ./
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE}/${VERSION} live-bootstrap.tgz
+
+#FROM base as extract
+#COPY --from=stagex/stage0 . /
+#COPY --from=fetch distfiles/live-bootstrap.tgz .
+#SHELL ["/x86/bin/kaem","--verbose","--strict","--file"]
+#COPY <<-EOF extract.kaem
+#	set -ex
+#	PATH=/x86/bin
+#	ungz --file live-bootstrap.tgz --output live-bootstrap.tar
+#	untar --non-strict --file live-bootstrap.tar
+#	echo "" > lrvick-live-bootstrap-fc6eeb6/steps/lwext4-1.0.0-lb1/files/fiwix-file-list.txt
+#EOF
+#RUN --network=none ./extract.kaem
+
+# temporary hack as above tar is incompatible with symliks and github tgz files
+FROM debian@sha256:bac353db4cc04bc672b14029964e686cd7bad56fe34b51f432c1a1304b9928da as extract
+COPY --from=fetch distfiles/live-bootstrap.tgz .
 RUN <<-EOF
-	set -uex
-	curl -C - ${SRC_SITE}/${VERSION} -o live-bootstrap.tgz
-	echo "${SRC_HASH}  live-bootstrap.tgz" | sha256sum -c
 	tar -xvf live-bootstrap.tgz
-	mv lrvick-live-bootstrap-* live-bootstrap
-	live-bootstrap/download-distfiles.sh
+	echo "" > lrvick-live-bootstrap-fc6eeb6/steps/lwext4-1.0.0-lb1/files/fiwix-file-list.txt
 EOF
 
-FROM debian as config
-COPY --from=fetch . /
-RUN --network=none <<-EOF
-	set -eux
-	mkdir -p /rootfs/external
-	cd /home/user/live-bootstrap
-	cp -R distfiles /rootfs/external/
-	cp -R steps seed/* /rootfs/
-	export CORES=$(nproc --all)
-	printf "\
-	FORCE_TIMESTAMPS=False\n\
-	CHROOT=True\n\
-	UPDATE_CHECKSUMS=False\n\
-	JOBS=${CORES}\n\
-	SWAP_SIZE=0\n\
-	FINAL_JOBS=${CORES}\n\
-	INTERNAL_CI=False\n\
-	INTERACTIVE=False\n\
-	BARE_METAL=False\n\
-	EXTERNAL_SOURCES=True\n\
-	DISK=sda1\n\
-	KERNEL_BOOTSTRAP=False\n\
-	BUILD_KERNELS=False" \
-	> /rootfs/steps/bootstrap.cfg
-	touch /rootfs/steps/lwext4-1.0.0-lb1/files/fiwix-file-list.txt
+FROM base as build
+USER 0:0
+COPY --from=stagex/stage0 . /
+COPY --from=fetch distfiles external/distfiles
+COPY --from=extract /lrvick-live-bootstrap-fc6eeb6/seed/* .
+COPY --from=extract /lrvick-live-bootstrap-fc6eeb6/steps steps
+COPY <<-EOF steps/bootstrap.cfg
+	FORCE_TIMESTAMPS=False
+	CHROOT=True
+	UPDATE_CHECKSUMS=False
+	JOBS=${CORES}
+	SWAP_SIZE=0
+	FINAL_JOBS=${CORES}
+	INTERNAL_CI=False
+	INTERACTIVE=False
+	BARE_METAL=False
+	EXTERNAL_SOURCES=True
+	DISK=sda1
+	KERNEL_BOOTSTRAP=False
+	BUILD_KERNELS=False
 EOF
-
-FROM stagex/stage0 as build
 ENV ARCH_DIR=x86
 ENV ARCH=x86
-COPY --from=config /rootfs .
-RUN --network=none \
-	["/x86/bin/kaem","--verbose","--strict","--file","./after.kaem"]
+SHELL ["/x86/bin/kaem","--verbose","--strict","--file"]
+RUN --network=none ./after.kaem
 
 FROM build as install
 ENV PATH=/bin:/usr/sbin:/usr/bin
-RUN --mount=type=cache,target=/rootfs \
-	--network=none \
-<<-EOF
-	set -eux
-	rm -rf /usr/lib/python*/__pycache__
-	mkdir -p /rootfs/etc /rootfs/home/user /rootfs/tmp
-	chown -R 1000:1000 /rootfs/home/user /rootfs/tmp
-	cp -R $(ls -d /etc/* | grep -v '\(resolv.conf\|hosts\)') /rootfs/etc/
-	cp -R lib usr bin var /rootfs/
-	echo "user:x:1000:" > /rootfs/etc/group
-	echo "user:x:1000:1000::/home/user:/bin/bash" > /rootfs/etc/passwd
-	find /rootfs -exec touch -hcd "@0" "{}" +
-EOF
+RUN rm -rf /usr/lib/python*/__pycache__
+RUN mkdir -p /rootfs/etc /rootfs/home/user /rootfs/tmp
+RUN chown -R 1000:1000 /rootfs/home/user /rootfs/tmp
+RUN cp -R $(ls -d /etc/* | grep -v '\(resolv.conf\|hosts\)') /rootfs/etc/
+RUN cp -R lib usr bin var /rootfs/
 
 FROM scratch as package
 COPY --from=install /rootfs /

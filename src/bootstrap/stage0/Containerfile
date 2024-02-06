@@ -4,12 +4,13 @@ FROM archlinux@sha256:1f83ba0580a15cd6ad1d02d62ad432ddc940f53f07d0e39c8982d6c9c7
 
 FROM scratch as base
 ENV VERSION=1.6.0
-ENV SRC_SITE=https://github.com/oriansj/stage0-posix/releases/download
+ENV SRC_FILE=stage0-posix-${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/oriansj/stage0-posix/releases/download/Release_${VERSION}/${SRC_FILE}
 ENV SRC_HASH=9260ff69278366e5c056af7b8c436b74773eaa1330a0c6a6b8ab1b5f92e5065c
+ADD ${SRC_SITE} ${SRC_FILE}
 COPY <<-EOF build.sh
 	#!/bin/sh
 	set -eux
-	wget ${SRC_SITE}/Release_${VERSION}/stage0-posix-${VERSION}.tar.gz
 	echo "${SRC_HASH}  stage0-posix-${VERSION}.tar.gz" | sha256sum -c
 	tar -xf stage0-posix-${VERSION}.tar.gz
 	cd stage0-posix-${VERSION}
@@ -25,7 +26,7 @@ COPY --from=debian . /
 RUN --mount=type=cache,target=/var/cache/apt <<-EOF
 	set -eux
 	apt update
-	apt install -y wget gcc
+	apt install -y gcc
 EOF
 RUN --network=none sh build.sh
 
@@ -33,7 +34,7 @@ FROM base as build2
 COPY --from=arch . /
 RUN --mount=type=cache,target=/var/cache/pacman/pkg <<-EOF
 	set -eux
-	pacman -Sy --noconfirm wget gcc
+	pacman -Sy --noconfirm gcc
 EOF
 RUN --network=none sh build.sh
 
@@ -41,7 +42,7 @@ FROM base as build3
 COPY --from=alpine . /
 RUN --mount=type=cache,target=/var/cache/apk <<-EOF
 	set -eux
-	apk add wget gcc
+	apk add gcc
 EOF
 RUN --network=none sh build.sh
 

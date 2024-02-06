@@ -36,6 +36,7 @@ define build
 			--ulimit nofile=2048:16384 \
 			--tag $(REGISTRY)/$(NAME):$(VERSION) \
 			--build-arg REGISTRY=$(REGISTRY) \
+			--build-arg CORES=$(shell nproc --all) \
 			--platform $(PLATFORM) \
 			--progress=plain \
 			$(if $(filter latest,$(VERSION)),,--build-arg VERSION=$(VERSION)) \
