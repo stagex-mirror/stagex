@@ -1,10 +1,11 @@
-FROM stagex/stage1 as base
+FROM scratch as base
 ENV ARCH=x86_64
 ENV TARGET=${ARCH}-linux-musl
+ENV HOME=/home/build
 ENV SYSROOT_DIR ${HOME}/build-sysroot
 ENV GCC_VERSION 13.1.0
 ENV GCC_FILE gcc-$GCC_VERSION.tar.xz
-ENV GCC_SITE https://mirrors.kernel.org/gnu/gcc/gcc-${GCC_VERSION}
+ENV GCC_SITE https://mirrors.kernel.org/gnu/gcc/gcc-${GCC_VERSION}/${GCC_FILE}
 ENV GCC_HASH 61d684f0aa5e76ac6585ad8898a2427aade8979ed5e7f85492286c4dfc13ee86
 ENV GCC_DIR ${HOME}/build-gcc
 ENV GCC_DEP_SITE https://gcc.gnu.org/pub/gcc/infrastructure/
@@ -17,44 +18,34 @@ ENV MPC_HASH 17503d2c395dfcf106b622dc142683c1199431d095367c6aacba6eec30340459
 ENV ISL_FILE isl-0.24.tar.bz2
 ENV ISL_HASH fcf78dd9656c10eb8cf9fbd5f59a0b6b01386205fe1934b3b287a0a1898145c0
 ENV MUSL_VERSION 1.2.4
-ENV MUSL_SITE http://musl.libc.org
 ENV MUSL_FILE musl-${MUSL_VERSION}.tar.gz
+ENV MUSL_SITE http://musl.libc.org/${MUSL_FILE}
 ENV MUSL_HASH 7a35eae33d5372a7c0da1188de798726f68825513b7ae3ebe97aaaa52114f039
 ENV MUSL_DIR ${HOME}/build-musl
-ENV LINUX_SITE https://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/
 ENV LINUX_VERSION 6.6
 ENV LINUX_HASH d926a06c63dd8ac7df3f86ee1ffc2ce2a3b81a2d168484e76b5b389aba8e56d0
 ENV LINUX_FILE linux-${LINUX_VERSION}.tar.xz
+ENV LINUX_SITE https://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/${LINUX_FILE}
 ENV LINUX_DIR ${HOME}/build-linux
 ENV BINUTILS_VERSION 2.35
-ENV BINUTILS_SITE https://ftp.gnu.org/gnu/binutils
 ENV BINUTILS_FILE binutils-${BINUTILS_VERSION}.tar.xz
+ENV BINUTILS_SITE https://ftp.gnu.org/gnu/binutils/${BINUTILS_FILE}
 ENV BINUTILS_HASH 1b11659fb49e20e18db460d44485f09442c8c56d5df165de9461eb09c8302f85
 ENV BINUTILS_DIR ${HOME}/build-binutils
+WORKDIR ${HOME}
 
 FROM base as fetch
-WORKDIR ${HOME}
-RUN <<-EOF
-	set -eux
-	curl -OJ ${LINUX_SITE}/${LINUX_FILE}
-	echo "${LINUX_HASH}  ${LINUX_FILE}" | sha256sum -c
-	curl -OJ ${GCC_SITE}/${GCC_FILE}
-	echo "${GCC_HASH}  ${GCC_FILE}" | sha256sum -c
-	curl -OJ ${GCC_DEP_SITE}/${GMP_FILE}
-	echo "${GMP_HASH}  ${GMP_FILE}" | sha256sum -c
-	curl -OJ ${GCC_DEP_SITE}/${MPFR_FILE}
-	echo "${MPFR_HASH}  ${MPFR_FILE}" | sha256sum -c
-	curl -OJ ${GCC_DEP_SITE}/${MPC_FILE}
-	echo "${MPC_HASH}  ${MPC_FILE}" | sha256sum -c
-	curl -OJ ${GCC_DEP_SITE}/${ISL_FILE}
-	echo "${ISL_HASH}  ${ISL_FILE}" | sha256sum -c
-	curl -OJ ${MUSL_SITE}/releases/${MUSL_FILE}
-	echo "${MUSL_HASH} ${MUSL_FILE}" | sha256sum -c
-	curl -OJ ${BINUTILS_SITE}/${BINUTILS_FILE}
-	echo "${BINUTILS_HASH} ${BINUTILS_FILE}" | sha256sum -c
-EOF
+ADD --checksum=sha256:${LINUX_HASH} ${LINUX_SITE} ${LINUX_FILE}
+ADD --checksum=sha256:${MUSL_HASH} ${MUSL_SITE} ${MUSL_FILE}
+ADD --checksum=sha256:${BINUTILS_HASH} ${BINUTILS_SITE} ${BINUTILS_FILE}
+ADD --checksum=sha256:${GCC_HASH} ${GCC_SITE} ${GCC_FILE}
+ADD --checksum=sha256:${GMP_HASH} ${GCC_DEP_SITE}${GMP_FILE} ${GMP_FILE}
+ADD --checksum=sha256:${MPFR_HASH} ${GCC_DEP_SITE}${MPFR_FILE} ${MPFR_FILE}
+ADD --checksum=sha256:${MPC_HASH} ${GCC_DEP_SITE}${MPC_FILE} ${MPC_FILE}
+ADD --checksum=sha256:${ISL_HASH} ${GCC_DEP_SITE}${ISL_FILE} ${ISL_FILE}
 
-FROM fetch as extract
+FROM fetch as build
+COPY --from=stagex/stage1 . /
 RUN --network=none <<-EOF
 	set -eux
 	tar -xf ${LINUX_FILE}
@@ -65,8 +56,6 @@ RUN --network=none <<-EOF
 	mv ../*.tar.* .
 	./contrib/download_prerequisites
 EOF
-
-FROM extract as build
 
 # Phase 1: Build cross binutils in build-binutils
 WORKDIR ${BINUTILS_DIR}
@@ -87,7 +76,7 @@ RUN --network=none <<-EOF
 		--enable-ld=default \
 		--enable-install-libiberty \
 		--enable-deterministic-archives
-	make all
+	make -j$(nproc) all
 EOF
 
 # Phase 2: Prepare build sysroot
@@ -134,7 +123,7 @@ RUN --network=none <<-EOF
 		RANLIB_FOR_TARGET=${BINUTILS_DIR}/binutils/ranlib \
 		READELF_FOR_TARGET=${BINUTILS_DIR}/binutils/readelf \
 		STRIP_FOR_TARGET=${BINUTILS_DIR}/binutils/strip-new
-	make all-gcc
+    make -j$(nproc) all-gcc
 EOF
 
 # Phase 4: Install musl libc headers to build-sysroot for use by libgcc
@@ -157,7 +146,7 @@ RUN --network=none make MAKE="make enable_shared=no" all-target-libgcc
 WORKDIR ${MUSL_DIR}
 RUN --network=none <<-EOF
 	set -eux
-	make \
+	make -j$(nproc) \
 		AR=${BINUTILS_DIR}/binutils/ar \
 		RANLIB=${BINUTILS_DIR}/binutils/ranlib
 	make DESTDIR=${SYSROOT_DIR} install
@@ -165,7 +154,7 @@ EOF
 
 # Phase 6: Compile remaining gcc targets
 WORKDIR ${GCC_DIR}
-RUN --network=none make all
+RUN --network=none make -j$(nproc) all
 
 # Phase 7: Generate linux headers
 WORKDIR ${HOME}/linux-${LINUX_VERSION}
@@ -179,9 +168,8 @@ RUN --network=none <<-EOF
 EOF
 
 FROM build as install
-WORKDIR ${HOME}
-USER 0:0
 COPY --from=stagex/stage1 . /rootfs/
+WORKDIR /
 RUN --network=none <<-EOF
 	set -eux
 	rm /rootfs/lib
