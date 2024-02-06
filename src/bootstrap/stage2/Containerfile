@@ -192,7 +192,6 @@ RUN --network=none <<-EOF
 	ln -s /usr/lib/ld-musl-i386.so.1 /rootfs/lib/libc.so
 	ln -s /usr/lib/ld-musl-i386.so.1 /rootfs/lib/ld-musl-i386.so.1
 	ln -s /${TARGET}/lib/ld-musl-${ARCH}.so.1 /rootfs/lib/ld-musl-${ARCH}.so.1
-	find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
 
 FROM scratch as package

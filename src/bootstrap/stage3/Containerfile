@@ -238,7 +238,6 @@ RUN --network=none <<-EOF
 	echo "user:x:1000:" > etc/group
 	echo "user:x:1000:1000::/home/user:/bin/sh" > etc/passwd
 	chown -R 1000:1000 tmp var/tmp home/user
-	find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
 
 FROM scratch as package

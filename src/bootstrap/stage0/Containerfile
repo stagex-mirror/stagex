@@ -17,8 +17,7 @@ COPY <<-EOF build.sh
 	bootstrap-seeds/POSIX/x86/kaem-optional-seed
 	mkdir -p /rootfs && cp -R * /rootfs/
 	cd /rootfs
-	sha256sum x86/bin/* > hashes.txt; \
-	find . -exec touch -hcd "@0" "{}" +
+	sha256sum x86/bin/* > hashes.txt
 EOF
 
 FROM base as build1
