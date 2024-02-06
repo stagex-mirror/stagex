@@ -27,6 +27,7 @@ define build
 	$(eval TARGET := $(if $(4),$(4),package))
 	$(eval EXTRA_ARGS := $(if $(5),$(5),))
 	$(eval REVISION := $(shell git rev-list HEAD -1 src/$(CATEGORY)/$(NAME)))
+	$(eval TEMPFILE := out/.$(notdir $(basename $@)).tmp.tar)
 	$(eval BUILD_CMD := \
 		DOCKER_BUILDKIT=1 \
 		BUILDKIT_MULTI_PLATFORM=1 \
@@ -40,22 +41,23 @@ define build
 			--platform $(PLATFORM) \
 			--progress=plain \
 			$(if $(filter latest,$(VERSION)),,--build-arg VERSION=$(VERSION)) \
-			--output type=oci,force-compression=true,name=$(NAME),annotation.org.opencontainers.image.revision=$(REVISION),annotation.org.opencontainers.image.version=$(VERSION),dest=$(basename $@).tar \
+			--output type=oci,force-compression=true,name=$(NAME),annotation.org.opencontainers.image.revision=$(REVISION),annotation.org.opencontainers.image.version=$(VERSION),dest=$(TEMPFILE) \
 			--target $(TARGET) \
 			$(EXTRA_ARGS) \
 			$(NOCACHE_FLAG) \
 			-f src/$(CATEGORY)/$(NAME)/Containerfile \
 			src/$(CATEGORY)/$(NAME) \
-			&& tar -tf $(basename $@).tar \
-			&& gzip < $(basename $@).tar > $@ \
-			&& rm $(basename $@).tar \
-			&& gunzip -c $@ | docker load; \
 	)
 	$(eval TIMESTAMP := $(shell TZ=GMT date +"%Y-%m-%dT%H:%M:%SZ"))
-	mkdir -p out/
-	echo $(TIMESTAMP) $(BUILD_CMD) >> out/build.log
-	$(BUILD_CMD)
+	set -eux; \
+	mkdir -p out/; \
+	echo $(TIMESTAMP) $(BUILD_CMD) start >> out/build.log; \
+	$(BUILD_CMD); \
+	tar -tf $(TEMPFILE); \
+	docker load < $(TEMPFILE); \
+	mv $(TEMPFILE) $@; \
 	tar -xf $@ index.json -O \
 		| jq -r '.manifests[].digest | sub("sha256:";"")' \
-	> $@.digest
+	> $(basename $@).digest; \
+	echo $(TIMESTAMP) $(BUILD_CMD) end >> out/build.log;
 endef

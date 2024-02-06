@@ -1,31 +1,31 @@
-out/curl.tgz: \
-	out/gcc.tgz \
-	out/musl.tgz \
-	out/busybox.tgz \
-	out/make.tgz \
-	out/binutils.tgz \
-	out/openssl.tgz \
-	out/ca-certificates.tgz
+out/curl.tar: \
+	out/gcc.tar \
+	out/musl.tar \
+	out/busybox.tar \
+	out/make.tar \
+	out/binutils.tar \
+	out/openssl.tar \
+	out/ca-certificates.tar
 	$(call build,tools,curl)
 
-out/gen_initramfs.tgz: \
-	out/gcc.tgz \
-	out/binutils.tgz \
-	out/musl.tgz
+out/gen_initramfs.tar: \
+	out/gcc.tar \
+	out/binutils.tar \
+	out/musl.tar
 	$(call build,tools,gen_initramfs)
 
-out/cpio.tgz: \
-	out/gcc.tgz \
-	out/binutils.tgz \
-	out/musl.tgz
+out/cpio.tar: \
+	out/gcc.tar \
+	out/binutils.tar \
+	out/musl.tar
 	$(call build,tools,cpio)
 
-out/tofu.tgz: \
-	out/busybox.tgz \
-	out/go.tgz
+out/tofu.tar: \
+	out/busybox.tar \
+	out/go.tar
 	$(call build,tools,tofu)
 
-out/sops.tgz: \
-	out/busybox.tgz \
-	out/go.tgz
+out/sops.tar: \
+	out/busybox.tar \
+	out/go.tar
 	$(call build,tools,sops)
