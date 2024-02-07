@@ -41,7 +41,7 @@ define build
 			--platform $(PLATFORM) \
 			--progress=plain \
 			$(if $(filter latest,$(VERSION)),,--build-arg VERSION=$(VERSION)) \
-			--output type=oci,force-compression=true,name=$(NAME),annotation.org.opencontainers.image.revision=$(REVISION),annotation.org.opencontainers.image.version=$(VERSION),dest=$(TEMPFILE) \
+			--output type=oci,rewrite-timestamp=true,force-compression=true,name=$(NAME),annotation.org.opencontainers.image.revision=$(REVISION),annotation.org.opencontainers.image.version=$(VERSION),dest=$(TEMPFILE) \
 			--target $(TARGET) \
 			$(EXTRA_ARGS) \
 			$(NOCACHE_FLAG) \
