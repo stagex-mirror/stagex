@@ -1,61 +1,64 @@
 FROM scratch as base
-ENV ARCH=x86_64
-ENV TARGET=${ARCH}-linux-musl
-ENV BUILD=i386-unknown-linux-musl
-ENV KCONFIG_NOTIMESTAMP=1
-ENV MUSL_VERSION 1.2.4
-ENV MUSL_FILE musl-${MUSL_VERSION}.tar.gz
-ENV MUSL_SITE http://musl.libc.org/releases/${MUSL_FILE}
-ENV MUSL_HASH 7a35eae33d5372a7c0da1188de798726f68825513b7ae3ebe97aaaa52114f039
-ENV MUSL_DIR=${HOME}/build-musl
-ENV BUSYBOX_VERSION=1.35.0
-ENV BUSYBOX_HASH=faeeb244c35a348a334f4a59e44626ee870fb07b6884d68c10ae8bc19f83a694
-ENV BUSYBOX_FILE=busybox-${BUSYBOX_VERSION}.tar.bz2
-ENV BUSYBOX_SITE=https://busybox.net/downloads/${BUSYBOX_FILE}
-ENV BUSYBOX_DIR ${HOME}/build-busybox
-ENV BINUTILS_VERSION 2.35
-ENV BINUTILS_HASH 1b11659fb49e20e18db460d44485f09442c8c56d5df165de9461eb09c8302f85
-ENV BINUTILS_FILE binutils-${BINUTILS_VERSION}.tar.xz
-ENV BINUTILS_SITE https://ftp.gnu.org/gnu/binutils/${BINUTILS_FILE}
-ENV BINUTILS_DIR ${HOME}/build-binutils
-ENV MAKE_VERSION 4.4
-ENV MAKE_HASH 581f4d4e872da74b3941c874215898a7d35802f03732bdccee1d4a7979105d18
-ENV MAKE_FILE make-${MAKE_VERSION}.tar.gz
-ENV MAKE_SITE https://ftp.gnu.org/gnu/make/${MAKE_FILE}
-ENV MAKE_DIR ${HOME}/build-make
 ENV GCC_VERSION 13.1.0
 ENV GCC_HASH 61d684f0aa5e76ac6585ad8898a2427aade8979ed5e7f85492286c4dfc13ee86
 ENV GCC_FILE gcc-$GCC_VERSION.tar.xz
 ENV GCC_SITE https://mirrors.kernel.org/gnu/gcc/gcc-${GCC_VERSION}/${GCC_FILE}
-ENV GCC_DIR ${HOME}/build-gcc
 ENV GMP_VERSION 6.2.1
 ENV GMP_HASH eae9326beb4158c386e39a356818031bd28f3124cf915f8c5b1dc4c7a36b4d7c
 ENV GMP_FILE gmp-${GMP_VERSION}.tar.bz2
 ENV GMP_SITE https://gcc.gnu.org/pub/gcc/infrastructure/${GMP_FILE}
-ENV GMP_DIR ${HOME}/build-gmp
 ENV MPFR_VERSION 4.1.0
 ENV MPFR_HASH feced2d430dd5a97805fa289fed3fc8ff2b094c02d05287fd6133e7f1f0ec926
 ENV MPFR_FILE mpfr-${MPFR_VERSION}.tar.bz2
 ENV MPFR_SITE https://gcc.gnu.org/pub/gcc/infrastructure/${MPFR_FILE}
-ENV MPFR_DIR ${HOME}/build-mpfr
 ENV MPC_VERSION 1.2.1
 ENV MPC_HASH 17503d2c395dfcf106b622dc142683c1199431d095367c6aacba6eec30340459
 ENV MPC_FILE mpc-${MPC_VERSION}.tar.gz
 ENV MPC_SITE https://gcc.gnu.org/pub/gcc/infrastructure/${MPC_FILE}
-ENV MPC_DIR ${HOME}/build-mpc
 ENV ISL_VERSION 0.24
 ENV ISL_HASH fcf78dd9656c10eb8cf9fbd5f59a0b6b01386205fe1934b3b287a0a1898145c0
 ENV ISL_FILE isl-${ISL_VERSION}.tar.bz2
 ENV ISL_SITE https://gcc.gnu.org/pub/gcc/infrastructure/${ISL_FILE}
-ENV ISL_DIR ${HOME}/build-isl
+ENV MUSL_VERSION 1.2.4
+ENV MUSL_FILE musl-${MUSL_VERSION}.tar.gz
+ENV MUSL_SITE http://musl.libc.org/releases/${MUSL_FILE}
+ENV MUSL_HASH 7a35eae33d5372a7c0da1188de798726f68825513b7ae3ebe97aaaa52114f039
 ENV LINUX_VERSION 6.6
 ENV LINUX_HASH d926a06c63dd8ac7df3f86ee1ffc2ce2a3b81a2d168484e76b5b389aba8e56d0
 ENV LINUX_FILE linux-${LINUX_VERSION}.tar.xz
 ENV LINUX_SITE https://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/${LINUX_FILE}
+ENV BINUTILS_VERSION 2.35
+ENV BINUTILS_HASH 1b11659fb49e20e18db460d44485f09442c8c56d5df165de9461eb09c8302f85
+ENV BINUTILS_FILE binutils-${BINUTILS_VERSION}.tar.xz
+ENV BINUTILS_SITE https://ftp.gnu.org/gnu/binutils/${BINUTILS_FILE}
+ENV BUSYBOX_VERSION=1.35.0
+ENV BUSYBOX_HASH=faeeb244c35a348a334f4a59e44626ee870fb07b6884d68c10ae8bc19f83a694
+ENV BUSYBOX_FILE=busybox-${BUSYBOX_VERSION}.tar.bz2
+ENV BUSYBOX_SITE=https://busybox.net/downloads/${BUSYBOX_FILE}
+ENV MAKE_VERSION 4.4
+ENV MAKE_HASH 581f4d4e872da74b3941c874215898a7d35802f03732bdccee1d4a7979105d18
+ENV MAKE_FILE make-${MAKE_VERSION}.tar.gz
+ENV MAKE_SITE https://ftp.gnu.org/gnu/make/${MAKE_FILE}
+ENV ARCH=x86_64
+ENV BUILD=i386-unknown-linux-musl
+ENV HOST=${TARGET}
+ENV TARGET=${ARCH}-linux-musl
+ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV USER=user
+ENV HOME=/home/${USER}
+ENV TZ=UTC
+ENV LANG=C.UTF-8
+ENV SOURCE_DATE_EPOCH=1
+ENV KCONFIG_NOTIMESTAMP=1
+ENV MUSL_DIR=${HOME}/build-musl
 ENV LINUX_DIR ${HOME}/build-linux
+ENV BINUTILS_DIR ${HOME}/build-binutils
+ENV BUSYBOX_DIR ${HOME}/build-busybox
+ENV MAKE_DIR ${HOME}/build-make
+ENV GCC_DIR ${HOME}/build-gcc
 
 FROM base as fetch
-WORKDIR /home/user
+WORKDIR ${HOME}
 ADD --checksum=sha256:${LINUX_HASH} ${LINUX_SITE} .
 ADD --checksum=sha256:${MUSL_HASH} ${MUSL_SITE} .
 ADD --checksum=sha256:${BUSYBOX_HASH} ${BUSYBOX_SITE} .
@@ -150,46 +153,46 @@ RUN --network=none <<-EOF
 EOF
 WORKDIR ${BUSYBOX_DIR}
 RUN --network=none <<-EOF
-	set -eux
-	setConfs=' \
-		CONFIG_LAST_SUPPORTED_WCHAR=0 \
-		CONFIG_STATIC=y \
-	'
-	unsetConfs=' \
-		CONFIG_FEATURE_SYNC_FANCY \
-		CONFIG_FEATURE_HAVE_RPC \
-		CONFIG_FEATURE_INETD_RPC \
-		CONFIG_FEATURE_UTMP \
-		CONFIG_FEATURE_WTMP \
-	'
-	make \
-		-f ../busybox-${BUSYBOX_VERSION}/Makefile \
-		KBUILD_SRC=../busybox-${BUSYBOX_VERSION} \
-		CROSS_COMPILE=${TARGET}- \
-		defconfig
-	for conf in $unsetConfs; do \
-		sed -i \
-			-e "s!^$conf=.*\$!# $conf is not set!" \
-			.config
-	done
-	for confV in $setConfs; do \
-		conf="${confV%=*}"
-		sed -i \
-			-e "s!^$conf=.*\$!$confV!" \
-			-e "s!^# $conf is not set\$!$confV!" \
-			.config
-		if ! grep -q "^$confV\$" .config; then \
-			echo "$confV" >> .config; \
-		fi
-	done
-	make oldconfig CROSS_COMPILE=${TARGET}-
-	for conf in $unsetConfs; do
-		! grep -q "^$conf=" .config
-	done
-	for confV in $setConfs; do
-		grep -q "^$confV\$" .config
-	done
-	make -j$(nproc) CROSS_COMPILE=${TARGET}-
+    set -eux
+    setConfs='
+        CONFIG_LAST_SUPPORTED_WCHAR=0
+        CONFIG_STATIC=y
+    '
+    unsetConfs='
+        CONFIG_FEATURE_SYNC_FANCY
+        CONFIG_FEATURE_HAVE_RPC
+        CONFIG_FEATURE_INETD_RPC
+        CONFIG_FEATURE_UTMP
+        CONFIG_FEATURE_WTMP
+    '
+    make \
+        -f ../busybox-${BUSYBOX_VERSION}/Makefile \
+        KBUILD_SRC=../busybox-${BUSYBOX_VERSION} \
+        CROSS_COMPILE=${TARGET}- \
+        defconfig
+    for conf in $unsetConfs; do
+        sed -i \
+            -e "s!^$conf=.*\$!# $conf is not set!" \
+            .config
+    done
+    for confV in $setConfs; do
+        conf="${confV%=*}"
+        sed -i \
+            -e "s!^$conf=.*\$!$confV!" \
+            -e "s!^# $conf is not set\$!$confV!" \
+            .config
+        if ! grep -q "^$confV\$" .config; then
+            echo "$confV" >> .config
+        fi
+    done
+    make oldconfig CROSS_COMPILE=${TARGET}-
+    for conf in $unsetConfs; do
+        ! grep -q "^$conf=" .config
+    done
+    for confV in $setConfs; do
+        grep -q "^$confV\$" .config
+    done
+    make CROSS_COMPILE=${TARGET}-
 EOF
 WORKDIR ${HOME}/linux-${LINUX_VERSION}
 RUN --network=none <<-EOF
@@ -221,19 +224,8 @@ RUN --network=none <<-EOF
 	chown -R 1000:1000 tmp var/tmp home/user
 EOF
 
-FROM scratch as package
+FROM base as package
 COPY --from=install /rootfs /
 USER 1000:1000
 ENTRYPOINT ["/bin/sh"]
-ENV ARCH=x86_64
-ENV TARGET=${ARCH}-linux-musl
-ENV HOST=${TARGET}
-ENV BUILD=${TARGET}
-ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-ENV USER=user
-ENV HOME=/home/${USER}
-ENV TZ=UTC
-ENV LANG=C.UTF-8
-ENV SOURCE_DATE_EPOCH=1
-ENV KCONFIG_NOTIMESTAMP=1
 ENV PS1="stage3 $ "
