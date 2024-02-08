@@ -174,7 +174,7 @@ RUN make all
 
 # Phase 7: Generate linux headers
 WORKDIR ${HOME}/linux-${LINUX_VERSION}
-RUN --network=none
+RUN --network=none <<-EOF
     set -eux
     make ARCH=${TARGET_ARCH} headers
     find usr/include -name '.*' -delete
