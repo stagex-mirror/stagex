@@ -71,7 +71,7 @@ ADD --checksum=sha256:${MPC_HASH} ${MPC_SITE} .
 ADD --checksum=sha256:${ISL_HASH} ${ISL_SITE} .
 
 FROM fetch as build
-COPY --from=stagex/stage2 . /
+COPY --from=stage2 . /
 RUN --network=none <<-EOF
 	set -eux
 	tar -xf ${LINUX_FILE}
