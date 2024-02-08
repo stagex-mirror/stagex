@@ -256,6 +256,7 @@ ADD --checksum=sha256:f4a245b94124b377d8b49646bf421f9155d36aa7614b6ebf83705d3ffc
 ADD --checksum=sha256:dd172acb53867a68012f94c17389401b2f274a1aa5ae8f84cbfb8b7e383ea8d3 http://ixpeering.dl.sourceforge.net/project/lzmautils/xz-5.4.1.tar.bz2 ./
 ADD --checksum=sha256:b3a24de97a8fdbc835b9833169501030b8977031bcb54b3b3ac13740f846ab30 https://zlib.net/fossils/zlib-1.2.13.tar.gz ./
 
+# HACK: stage0 tar is currently incompatible with symlinks and github tgz files
 #FROM base as extract
 #COPY --from=stagex/stage0 . /
 #COPY --from=fetch distfiles/live-bootstrap.tgz .
@@ -268,14 +269,11 @@ ADD --checksum=sha256:b3a24de97a8fdbc835b9833169501030b8977031bcb54b3b3ac13740f8
 #	echo "" > lrvick-live-bootstrap-fc6eeb6/steps/lwext4-1.0.0-lb1/files/fiwix-file-list.txt
 #EOF
 #RUN --network=none ./extract.kaem
-
-# temporary hack as above tar is incompatible with symliks and github tgz files
 FROM debian@sha256:bac353db4cc04bc672b14029964e686cd7bad56fe34b51f432c1a1304b9928da as extract
 COPY --from=fetch distfiles/live-bootstrap.tgz .
-RUN <<-EOF
-	tar -xvf live-bootstrap.tgz
-	echo "" > lrvick-live-bootstrap-fc6eeb6/steps/lwext4-1.0.0-lb1/files/fiwix-file-list.txt
-EOF
+RUN --network=none tar -xvf live-bootstrap.tgz
+# HACK: fixed in live-bootstrap upstream and can be dropped on next source bump
+RUN echo "" > lrvick-live-bootstrap-fc6eeb6/steps/lwext4-1.0.0-lb1/files/fiwix-file-list.txt
 
 FROM base as build
 USER 0:0
@@ -313,12 +311,22 @@ COPY <<-EOF install.kaem
     cp -R lib usr bin var etc /rootfs/
     rm /rootfs/etc/hosts
     rm /rootfs/etc/resolv.conf
+    # HACK: This has been fixed upstream and can be dropped on next source bump
+    rm -rf /usr/lib/python*/__pycache__;
 EOF
 SHELL ["/x86/bin/kaem","--verbose","--strict","--file"]
 RUN --network=none ./install.kaem
 
+# HACK: Zero out timestamps
+# We can drop this when either of the following happens:
+# - buildkit 0.13+ w/ "rewrite-timestamps=true" feature ships in stable Docker
+# - a "find/touch" tool ships with stage0
+FROM debian@sha256:bac353db4cc04bc672b14029964e686cd7bad56fe34b51f432c1a1304b9928da as touch
+COPY --from=install /rootfs /rootfs
+RUN --network=none find /rootfs -exec touch -hcd "@0" "{}" +
+
 FROM scratch as package
-COPY --from=install /rootfs /
+COPY --from=touch /rootfs /
 USER 1000:1000
 ENTRYPOINT ["/bin/bash"]
 ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
