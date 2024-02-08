@@ -36,6 +36,7 @@ define build
 			build \
 			--ulimit nofile=2048:16384 \
 			--tag $(REGISTRY)/$(NAME):$(VERSION) \
+			--build-arg SOURCE_DATE_EPOCH=1 \
 			--build-arg REGISTRY=$(REGISTRY) \
 			--build-arg CORES=$(shell nproc --all) \
 			--platform $(PLATFORM) \
