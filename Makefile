@@ -1,26 +1,21 @@
 export PLATFORM := linux/amd64
 export BUILDER := $(shell which docker)
-export REGISTRY := stagex
+export REGISTRY_LOCAL := stagex-local
+export REGISTRY_REMOTE := stagex
 export NOCACHE ?= 0
 export MIRRORS := \
 	git.distrust.co \
 	hub.docker.com
-
 ifeq ($(NOCACHE), 1)
 NOCACHE_FLAG=--no-cache
 else
 NOCACHE_FLAG=
 endif
 export NOCACHE_FLAG
-
 clean_logs := $(shell rm *.log 2>&1 >/dev/null || :)
-
 include src/macros.mk
-include src/bootstrap/build.mk
-include src/core/build.mk
-include src/kernel/build.mk
-include src/libs/build.mk
-include src/tools/build.mk
+include src/packages.mk
+include src/packages_manual.mk
 
 compat:
 	./src/compat.sh

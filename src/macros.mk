@@ -35,30 +35,23 @@ define build
 		$(BUILDER) \
 			build \
 			--ulimit nofile=2048:16384 \
-			--tag $(REGISTRY)/$(NAME):$(VERSION) \
+			--tag $(REGISTRY_LOCAL)/$(NAME):$(VERSION) \
 			--build-arg SOURCE_DATE_EPOCH=1 \
-			--build-arg REGISTRY=$(REGISTRY) \
 			--build-arg CORES=$(shell nproc --all) \
 			--platform $(PLATFORM) \
 			--progress=plain \
 			$(if $(filter latest,$(VERSION)),,--build-arg VERSION=$(VERSION)) \
-			--output type=oci,rewrite-timestamp=true,force-compression=true,name=$(NAME),annotation.org.opencontainers.image.revision=$(REVISION),annotation.org.opencontainers.image.version=$(VERSION),dest=$(TEMPFILE) \
+			--output type=oci,rewrite-timestamp=true,force-compression=true,name=$(NAME),annotation.org.opencontainers.image.revision=$(REVISION),annotation.org.opencontainers.image.version=$(VERSION),tar=false,dest=out/$(NAME) \
 			--target $(TARGET) \
+			$(shell ./src/context.sh) \
 			$(EXTRA_ARGS) \
 			$(NOCACHE_FLAG) \
 			-f src/$(CATEGORY)/$(NAME)/Containerfile \
 			src/$(CATEGORY)/$(NAME) \
 	)
 	$(eval TIMESTAMP := $(shell TZ=GMT date +"%Y-%m-%dT%H:%M:%SZ"))
-	set -eux; \
-	mkdir -p out/; \
-	echo $(TIMESTAMP) $(BUILD_CMD) start >> out/build.log; \
-	$(BUILD_CMD); \
-	tar -tf $(TEMPFILE); \
-	docker load < $(TEMPFILE); \
-	mv $(TEMPFILE) $@; \
-	tar -xf $@ index.json -O \
-		| jq -r '.manifests[].digest | sub("sha256:";"")' \
-	> $(basename $@).digest; \
-	echo $(TIMESTAMP) $(BUILD_CMD) end >> out/build.log;
+	mkdir -p out/ \
+	&& echo $(TIMESTAMP) $(BUILD_CMD) start >> out/build.log \
+	&& $(BUILD_CMD) \
+	&& echo $(TIMESTAMP) $(BUILD_CMD) end >> out/build.log;
 endef
