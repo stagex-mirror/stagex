@@ -54,5 +54,8 @@ define build
 	mkdir -p out/ \
 	&& echo $(TIMESTAMP) $(BUILD_CMD) start >> out/build.log \
 	&& $(BUILD_CMD) \
+	&& cat out/$(NAME)/index.json \
+		| jq -r '.manifests[].digest | sub("sha256:";"")' \
+		> out/$(NAME).digest \
 	&& echo $(TIMESTAMP) $(BUILD_CMD) end >> out/build.log;
 endef

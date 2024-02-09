@@ -33,8 +33,8 @@ for container_file in $(find src/*/*/Containerfile); do
     [[ "$manual_targets" =~ "$package" ]] && continue
     group=$(basename $(dirname $(dirname ${container_file})))
     deps=$(gen_deps "${container_file}")
-    printf "PHONY: ${package}\n${package}: out/${package}/index.json\n"
-    printf "out/${package}/index.json: %s" "$bs"
+    printf "PHONY: ${package}\n${package}: out/${package}.digest\n"
+    printf "out/${package}.digest: %s" "$bs"
     printf "\n\t${container_file}"
     for each in $(find src/*/*/Containerfile); do
         dep_package=$(basename $(dirname ${each}))
