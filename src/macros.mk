@@ -36,6 +36,7 @@ define build
 			build \
 			--ulimit nofile=2048:16384 \
 			--tag $(REGISTRY_REMOTE)/$(NAME):$(VERSION) \
+			--build-arg CACHE_BUST="$(shell date)" \
 			--build-arg SOURCE_DATE_EPOCH=1 \
 			--build-arg CORES=$(shell nproc --all) \
 			--platform $(PLATFORM) \
@@ -52,7 +53,6 @@ define build
 	$(eval TIMESTAMP := $(shell TZ=GMT date +"%Y-%m-%dT%H:%M:%SZ"))
 	mkdir -p out/ \
 	&& echo $(TIMESTAMP) $(BUILD_CMD) start >> out/build.log \
-	&& rm -rf out/$(NAME) \
 	&& $(BUILD_CMD) \
 	&& echo $(TIMESTAMP) $(BUILD_CMD) end >> out/build.log;
 endef
