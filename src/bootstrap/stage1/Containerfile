@@ -312,7 +312,8 @@ COPY <<-EOF install.kaem
     rm /rootfs/etc/hosts
     rm /rootfs/etc/resolv.conf
     # HACK: This has been fixed upstream and can be dropped on next source bump
-    rm -rf /usr/lib/python*/__pycache__;
+    rm -rf /rootfs/usr/lib/python3.4/__pycache__
+    rm -rf /rootfs/usr/lib/python3.8/__pycache__
 EOF
 SHELL ["/x86/bin/kaem","--verbose","--strict","--file"]
 RUN --network=none ./install.kaem
