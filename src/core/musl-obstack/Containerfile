@@ -1,35 +1,34 @@
-FROM stagex/busybox as base
+FROM scratch as base
 ENV VERSION=1.2.3
+ENV SRC_HASH=9ffb3479b15df0170eba4480e51723c3961dbe0b461ec289744622db03a69395
 ENV SRC_FILE=v${VERSION}.tar.gz
 ENV SRC_SITE=https://github.com/void-linux/musl-obstack/archive/refs/tags/${SRC_FILE}
-ENV SRC_HASH=9ffb3479b15df0170eba4480e51723c3961dbe0b461ec289744622db03a69395
-COPY --from=stagex/gcc . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/make . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/autoconf . /
-COPY --from=stagex/automake . /
-COPY --from=stagex/libtool . /
-COPY --from=stagex/pkgconf . /
-COPY --from=stagex/m4 . /
 
 FROM base as fetch
-RUN wget ${SRC_SITE}
-RUN echo "${SRC_HASH}  ${SRC_FILE}" | sha256sum -c
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
+COPY --from=busybox . /
+COPY --from=gcc . /
+COPY --from=binutils . /
+COPY --from=make . /
+COPY --from=musl . /
+COPY --from=autoconf . /
+COPY --from=automake . /
+COPY --from=libtool . /
+COPY --from=pkgconf . /
+COPY --from=m4 . /
 RUN tar -xzf ${SRC_FILE}
 WORKDIR musl-obstack-${VERSION}
-RUN set -eux; \
-    ./bootstrap.sh; \
-    ./configure --prefix=/usr; \
-    make
+RUN --network=none <<-EOF
+	set -eux
+	./bootstrap.sh
+	./configure --prefix=/usr
+	make
+EOF
 
 FROM build as install
-USER 0:0
-RUN set -eux; \
-    make DESTDIR=/rootfs install; \
-    find /rootfs -exec touch -hcd "@0" "{}" +
+RUN --network=none make DESTDIR=/rootfs install
 
 FROM scratch as package
 COPY --from=install /rootfs /

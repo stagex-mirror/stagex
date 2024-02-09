@@ -1,8 +1,7 @@
 ARG VERSION=1.74.0
 ARG BUILD_VERSION=1.73.0
-ARG LLVM_VERSION=13.0.1
 
-FROM stagex/busybox as base
+FROM scratch as base
 ENV BOOTSTRAP_VERSION=1.54.0
 ENV SRC_SITE=https://static.rust-lang.org/dist
 ENV MRUSTC_VERSION=16d744fd62e74a2d4356df864b5850bf782918da
@@ -33,31 +32,30 @@ ARG VERSION
 ENV VERSION=${VERSION}
 ARG BUILD_VERSION
 ENV BUILD_VERSION=${BUILD_VERSION}
-ARG LLVM_VERSION
-ENV LLVM_VERSION=${LLVM_VERSION}
-COPY --from=stagex/binutils . /
-COPY --from=stagex/bash . /
-COPY --from=stagex/make . /
-COPY --from=stagex/cmake . /
-COPY --from=stagex/python . /
-COPY --from=stagex/py-setuptools . /
-COPY --from=stagex/zlib . /
-COPY --from=stagex/pkgconf . /
-COPY --from=stagex/openssl . /
-COPY --from=stagex/llvm . /
-COPY --from=stagex/perl . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/libunwind . /
-COPY --from=stagex/musl . /
 
 FROM base as bootstrap-fetch
+COPY --from=busybox . /
 RUN set -eux; \
-    wget --no-check-certificate ${MRUSTC_SITE}/${MRUSTC_VERSION} -O mrustc.tar.gz; \
-    echo "${MRUSTC_HASH}  mrustc.tar.gz" | sha256sum -c; \
-    wget --no-check-certificate ${SRC_SITE}/rustc-${BOOTSTRAP_VERSION}-src.tar.gz; \
-    echo "$(printenv SRC_HASH_${BOOTSTRAP_VERSION//./_})  rustc-${BOOTSTRAP_VERSION}-src.tar.gz" | sha256sum -c
+	wget --no-check-certificate ${MRUSTC_SITE}/${MRUSTC_VERSION} -O mrustc.tar.gz; \
+	echo "${MRUSTC_HASH}  mrustc.tar.gz" | sha256sum -c; \
+	wget --no-check-certificate ${SRC_SITE}/rustc-${BOOTSTRAP_VERSION}-src.tar.gz; \
+	echo "$(printenv SRC_HASH_${BOOTSTRAP_VERSION//./_})  rustc-${BOOTSTRAP_VERSION}-src.tar.gz" | sha256sum -c
 
 FROM bootstrap-fetch as bootstrap-build
+COPY --from=binutils . /
+COPY --from=bash . /
+COPY --from=make . /
+COPY --from=cmake . /
+COPY --from=python . /
+COPY --from=py-setuptools . /
+COPY --from=zlib . /
+COPY --from=pkgconf . /
+COPY --from=openssl . /
+COPY --from=llvm . /
+COPY --from=perl . /
+COPY --from=gcc . /
+COPY --from=libunwind . /
+COPY --from=musl . /
 ENV MRUSTC_TARGET_VER=1.54
 ENV RUSTC_VERSION=1.54.0
 ENV RUSTC_TARGET=x86_64-unknown-linux-musl
@@ -69,10 +67,10 @@ RUN tar -xzf mrustc.tar.gz
 RUN mv lrvick-mrustc-* mrustc
 WORKDIR mrustc
 RUN set -eux; \
-    cp ../rustc-${BOOTSTRAP_VERSION}-src.tar.gz .; \
-    tar -xzf rustc-${BOOTSTRAP_VERSION}-src.tar.gz; \
-    cd rustc-${BOOTSTRAP_VERSION}-src; \
-    patch -p0 < ../rustc-${BOOTSTRAP_VERSION}-src.patch
+	cp ../rustc-${BOOTSTRAP_VERSION}-src.tar.gz .; \
+	tar -xzf rustc-${BOOTSTRAP_VERSION}-src.tar.gz; \
+	cd rustc-${BOOTSTRAP_VERSION}-src; \
+	patch -p0 < ../rustc-${BOOTSTRAP_VERSION}-src.patch
 RUN make
 RUN make -f minicargo.mk LIBS
 RUN make test local_tests
@@ -81,96 +79,101 @@ RUN make -f minicargo.mk LLVM_CONFIG=/usr/bin/llvm-config output/cargo
 RUN make -C run_rustc LLVM_CONFIG=/usr/bin/llvm-config
 
 FROM bootstrap-build as bootstrap-install
-USER 0:0
 RUN set -eux; \
-    mkdir -p /rootfs/usr/bin /rootfs/usr/lib; \
-    cp -R run_rustc/output/prefix/* /rootfs/; \
-    rm -rf /rootfs/tmp; \
-    rm /rootfs/bin/rustc; \
-    mv /rootfs/bin/rustc_binary /rootfs/usr/bin/rustc; \
-    mv /rootfs/bin/cargo /rootfs/usr/bin/; \
-    mv /rootfs/lib/rustlib /rootfs/usr/lib/rustlib; \
-    mv /rootfs/usr/lib/rustlib/x86_64-unknown-linux-musl/lib/librustc_driver.so /rootfs/usr/lib/
-COPY --from=stagex/musl /lib/* /rootfs/lib/
-COPY --from=stagex/gcc /usr/lib/* /rootfs/usr/lib/
-COPY --from=stagex/gcc /usr/lib64/* /rootfs/usr/lib/
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
+	mkdir -p /rootfs/usr/bin /rootfs/usr/lib; \
+	cp -R run_rustc/output/prefix/* /rootfs/; \
+	rm -rf /rootfs/tmp; \
+	rm /rootfs/bin/rustc; \
+	mv /rootfs/bin/rustc_binary /rootfs/usr/bin/rustc; \
+	mv /rootfs/bin/cargo /rootfs/usr/bin/; \
+	mv /rootfs/lib/rustlib /rootfs/usr/lib/rustlib; \
+	mv /rootfs/usr/lib/rustlib/x86_64-unknown-linux-musl/lib/librustc_driver.so /rootfs/usr/lib/
+COPY --from=musl /lib/* /rootfs/lib/
+COPY --from=gcc /usr/lib/* /rootfs/usr/lib/
+COPY --from=gcc /usr/lib64/* /rootfs/usr/lib/
 
 FROM scratch as bootstrap-package
-USER 100:100
 COPY --from=bootstrap-install /rootfs/ /
-ENTRYPOINT ["/usr/bin/rustc"]
-CMD ["--version"]
 
 FROM base as fetch
+COPY --from=busybox . /
 RUN wget --no-check-certificate ${SRC_SITE}/rustc-${VERSION}-src.tar.gz
-RUN echo "$(printenv SRC_HASH_${VERSION//./_})  rustc-${VERSION}-src.tar.gz"
-RUN echo "$(printenv SRC_HASH_${VERSION//./_})  rustc-${VERSION}-src.tar.gz" | sha256sum -c
+RUN echo "$(printenv SRC_HASH_${VERSION//./_})	rustc-${VERSION}-src.tar.gz"
+RUN echo "$(printenv SRC_HASH_${VERSION//./_})	rustc-${VERSION}-src.tar.gz" | sha256sum -c
 
-FROM stagex/rust:${BUILD_VERSION} as rust
+FROM rust:${BUILD_VERSION} as rust
 FROM fetch as build
 RUN tar -xzf rustc-${VERSION}-src.tar.gz
 WORKDIR rustc-${VERSION}-src
+COPY --from=binutils . /
+COPY --from=bash . /
+COPY --from=make . /
+COPY --from=cmake . /
+COPY --from=python . /
+COPY --from=py-setuptools . /
+COPY --from=zlib . /
+COPY --from=pkgconf . /
+COPY --from=openssl . /
+COPY --from=llvm . /
+COPY --from=perl . /
+COPY --from=gcc . /
+COPY --from=libunwind . /
+COPY --from=musl . /
 COPY --from=rust . /
-RUN set -eux; \
-    ./configure \
-        --build="x86_64-unknown-linux-musl" \
-        --host="x86_64-unknown-linux-musl" \
-        --target="x86_64-unknown-linux-musl" \
-        --prefix="/usr" \
-        --release-channel="stable" \
-        --enable-local-rust \
-        --local-rust-root="/usr" \
-        --sysconfdir="/rootfs/etc" \
-        --llvm-root="/usr/lib/llvm${LLVM_VERSION}" \
-        --disable-docs \
-        --tools="cargo" \
-        --enable-llvm-link-shared \
-        --enable-option-checking \
-        --enable-locked-deps \
-        --enable-vendor \
-        --dist-compression-formats=gz \
-        --python="python3" \
-        --set="install.prefix=/rootfs/usr" \
-        --set="build.extended=true" \
-        --set="rust.musl-root=/usr" \
-        --set="rust.backtrace-on-ice=true" \
-        --set="rust.codegen-units=1" \
-        --set="rust.codegen-units-std=1" \
-        --set="rust.deny-warnings=false" \
-        --set="rust.parallel-compiler=false" \
-        --set="rust.remap-debuginfo=true" \
-        --set="rust.llvm-libunwind=system" \
-        --set="build.full-bootstrap=true" \
-        --set="target.x86_64-unknown-linux-musl.crt-static=false" \
-        --set="target.x86_64-unknown-linux-musl.musl-root=/usr" \
-        --set="target.x86_64-unknown-linux-musl.llvm-config=/usr/bin/llvm-config" \
-        --set="target.x86_64-unknown-linux-musl.cc=cc" \
-        --set="target.x86_64-unknown-linux-musl.cxx=c++" \
-        --set="target.x86_64-unknown-linux-musl.ar=ar" \
-        --set="target.x86_64-unknown-linux-musl.linker=cc"; \
-    python3 x.py dist
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--build="x86_64-unknown-linux-musl" \
+		--host="x86_64-unknown-linux-musl" \
+		--target="x86_64-unknown-linux-musl" \
+		--prefix="/usr" \
+		--release-channel="stable" \
+		--enable-local-rust \
+		--local-rust-root="/usr" \
+		--sysconfdir="/rootfs/etc" \
+		--llvm-root="/usr/lib/llvm16" \
+		--disable-docs \
+		--tools="cargo" \
+		--enable-llvm-link-shared \
+		--enable-option-checking \
+		--enable-locked-deps \
+		--enable-vendor \
+		--dist-compression-formats=gz \
+		--python="python3" \
+		--set="install.prefix=/rootfs/usr" \
+		--set="build.extended=true" \
+		--set="rust.musl-root=/usr" \
+		--set="rust.backtrace-on-ice=true" \
+		--set="rust.codegen-units=1" \
+		--set="rust.codegen-units-std=1" \
+		--set="rust.deny-warnings=false" \
+		--set="rust.parallel-compiler=false" \
+		--set="rust.remap-debuginfo=true" \
+		--set="rust.llvm-libunwind=system" \
+		--set="build.full-bootstrap=true" \
+		--set="target.x86_64-unknown-linux-musl.crt-static=false" \
+		--set="target.x86_64-unknown-linux-musl.musl-root=/usr" \
+		--set="target.x86_64-unknown-linux-musl.llvm-config=/usr/bin/llvm-config" \
+		--set="target.x86_64-unknown-linux-musl.cc=cc" \
+		--set="target.x86_64-unknown-linux-musl.cxx=c++" \
+		--set="target.x86_64-unknown-linux-musl.ar=ar" \
+		--set="target.x86_64-unknown-linux-musl.linker=cc"
+	python3 x.py dist
+EOF
 
 FROM build as install
-USER 0:0
-RUN set -eux; \
-    python3 x.py install; \
-    cd /rootfs/usr/lib/rustlib; \
-    rm install.log; \
-    sort -o manifest-cargo manifest-cargo; \
-    sort -o manifest-rustc manifest-rustc; \
-    sort -o \
-        manifest-rust-std-x86_64-unknown-linux-musl \
-        manifest-rust-std-x86_64-unknown-linux-musl; \
-    rm -f x86_64-unknown-linux-musl/lib/self-contained/libunwind.a
-COPY --from=stagex/musl /lib/* /rootfs/lib/
-COPY --from=stagex/gcc /usr/lib/* /rootfs/usr/lib/
-COPY --from=stagex/gcc /usr/lib64/* /rootfs/usr/lib/
-COPY --from=stagex/llvm /usr/lib/* /rootfs/usr/lib/
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
+RUN --network=none <<-EOF
+	set -eux
+	python3 x.py install
+	cd /rootfs/usr/lib/rustlib
+	rm install.log
+	sort -o manifest-cargo manifest-cargo
+	sort -o manifest-rustc manifest-rustc
+	sort -o \
+		manifest-rust-std-x86_64-unknown-linux-musl \
+		manifest-rust-std-x86_64-unknown-linux-musl
+	rm -f x86_64-unknown-linux-musl/lib/self-contained/libunwind.a
+EOF
 
 FROM scratch as package
-USER 100:100
 COPY --from=install /rootfs/ /
-ENTRYPOINT ["/usr/bin/rustc"]
-CMD ["--version"]

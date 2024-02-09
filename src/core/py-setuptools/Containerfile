@@ -1,25 +1,22 @@
-FROM stagex/busybox as base
-ENV SRC_SITE=https://pypi.io/packages/source/s/setuptools
-ENV SRC_VERSION=68.2.2
+FROM scratch as base
+ENV VERSION=68.2.2
 ENV SRC_HASH=4ac1475276d2f1c48684874089fefcd83bd7162ddaafb81fac866ba0db282a87
-COPY --from=stagex/python . /
-COPY --from=stagex/zlib . /
+ENV SRC_FILE=setuptools-${VERSION}.tar.gz
+ENV SRC_SITE=https://pypi.io/packages/source/s/setuptools/${SRC_FILE}
 
 FROM base as fetch
-RUN wget ${SRC_SITE}/setuptools-${SRC_VERSION}.tar.gz
-RUN echo "${SRC_HASH}  setuptools-${SRC_VERSION}.tar.gz" | sha256sum -c
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-RUN tar -xzf setuptools-${SRC_VERSION}.tar.gz
-WORKDIR setuptools-${SRC_VERSION}
-RUN set -eux; \
-    python3 setup.py build
+COPY --from=busybox . /
+COPY --from=python . /
+COPY --from=zlib . /
+RUN tar -xzf ${SRC_FILE}
+WORKDIR setuptools-${VERSION}
+RUN python3 setup.py build
 
 FROM build as install
-USER 0:0
-RUN set -eux; \
-    python3 setup.py install --root=/rootfs; \
-    find /rootfs -exec touch -hcd "@0" "{}" +
+RUN python3 setup.py install --root=/rootfs
 
 FROM scratch as package
 COPY --from=install /rootfs /

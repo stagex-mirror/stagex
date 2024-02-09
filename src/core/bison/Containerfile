@@ -1,33 +1,30 @@
-FROM stagex/busybox as base
-ENV SRC_SITE https://ftp.gnu.org/gnu/bison
-ENV SRC_VERSION 3.8.2
-ENV SRC_HASH 06c9e13bdf7eb24d4ceb6b59205a4f67c2c7e7213119644430fe82fbd14a0abb
-ENV SRC_FILE bison-${SRC_VERSION}.tar.gz
+FROM scratch as base
+ENV VERSION=3.8.2
+ENV SRC_HASH=06c9e13bdf7eb24d4ceb6b59205a4f67c2c7e7213119644430fe82fbd14a0abb
+ENV SRC_FILE=bison-${VERSION}.tar.gz
+ENV SRC_SITE=https://ftp.gnu.org/gnu/bison/${SRC_FILE}
 
 FROM base as fetch
-RUN set -eux; \
-    wget ${SRC_SITE}/${SRC_FILE}; \
-    echo "${SRC_HASH}  ${SRC_FILE}" | sha256sum -c
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE}
 
 FROM fetch as build
+COPY --from=musl . /
+COPY --from=busybox . /
+COPY --from=gcc . /
+COPY --from=binutils . /
+COPY --from=make . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR bison-${SRC_VERSION}
-COPY --from=stagex/gcc . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/make . /
-COPY --from=stagex/musl . /
-ENV M4=/usr/bin/m4
-RUN set -eux; \
-    ./configure \
-        --prefix=/usr; \
-    make
+WORKDIR bison-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	M4=/usr/bin/m4 \
+	./configure \
+		--prefix=/usr
+	make
+EOF
 
 from build as install
-USER 0:0
-RUN make DESTDIR=/rootfs install
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
+RUN --network=none make DESTDIR=/rootfs install
 
 FROM scratch as package
 COPY --from=install /rootfs /
-ENTRYPOINT ["/usr/bin/bison"]
-CMD ["--version"]

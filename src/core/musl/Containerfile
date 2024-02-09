@@ -1,9 +1,9 @@
 FROM scratch as base
 ARG ARCH=x86_64
-ENV VERSION 1.2.4
-ENV SRC_FILE musl-${VERSION}.tar.gz
-ENV SRC_SITE http://musl.libc.org/${SRC_FILE}
-ENV SRC_HASH 7a35eae33d5372a7c0da1188de798726f68825513b7ae3ebe97aaaa52114f039
+ENV VERSION=1.2.4
+ENV SRC_FILE=musl-${VERSION}.tar.gz
+ENV SRC_SITE=http://musl.libc.org/${SRC_FILE}
+ENV SRC_HASH=7a35eae33d5372a7c0da1188de798726f68825513b7ae3ebe97aaaa52114f039
 ENV CFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security"
 ENV CXXFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security -D_GLIBCXX_ASSERTIONS=1 -D_LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS=1 -D_LIBCPP_ENABLE_HARDENED_MODE=1"
 ENV LDFLAGS="-Wl,--as-needed,-O1,--sort-common -Wl,-soname,libc.musl-${ARCH}.so.1"
@@ -12,7 +12,7 @@ FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-COPY --from=stagex/stage3 . /
+COPY --from=stage3 . /
 RUN tar -xzf ${SRC_FILE}
 WORKDIR musl-${VERSION}
 ADD *.patch .

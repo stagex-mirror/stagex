@@ -1,30 +1,32 @@
-FROM stagex/busybox as base
-ENV SRC_SITE=https://www.openssl.org/source
-ENV SRC_VERSION=3.0.12
+FROM scratch as base
+ENV VERSION=3.0.12
 ENV SRC_HASH=f93c9e8edde5e9166119de31755fc87b4aa34863662f67ddfcba14d0b6b69b61
-COPY --from=stagex/gcc . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/make . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/perl . /
-COPY --from=stagex/linux-headers . /
+ENV SRC_FILE=openssl-${VERSION}.tar.gz
+ENV SRC_SITE=https://www.openssl.org/source/${SRC_FILE}
 
 FROM base as fetch
-RUN wget ${SRC_SITE}/openssl-${SRC_VERSION}.tar.gz
-RUN echo "${SRC_HASH}  openssl-${SRC_VERSION}.tar.gz" | sha256sum -c
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-RUN tar -xf openssl-${SRC_VERSION}.tar.gz
-WORKDIR openssl-${SRC_VERSION}
-RUN set -eux; \
-    export CC='gcc -fPIE -pie'; \
-    perl ./Configure \
-        --prefix=/usr \
-        --libdir=lib \
-        --openssldir=/etc/ssl \
-        threads \
-        enable-ktls \
-        shared \
+COPY --from=busybox . /
+COPY --from=gcc . /
+COPY --from=binutils . /
+COPY --from=make . /
+COPY --from=musl . /
+COPY --from=perl . /
+COPY --from=linux-headers . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR openssl-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	export CC='gcc -fPIE -pie'
+	perl ./Configure \
+		--prefix=/usr \
+		--libdir=lib \
+		--openssldir=/etc/ssl \
+		threads \
+		enable-ktls \
+		shared \
 		no-zlib \
 		no-async \
 		no-comp \
@@ -35,17 +37,12 @@ RUN set -eux; \
 		no-ssl3 \
 		no-seed \
 		no-weak-ssl-ciphers \
-        linux-x86_64; \
-    make
+		linux-x86_64
+	make
+EOF
 
 FROM build as install
-USER 0:0
-RUN set -eux; \
-    make DESTDIR=/rootfs install; \
-    find /rootfs -exec touch -hcd "@0" "{}" +
+RUN --network=none make DESTDIR=/rootfs install
 
 FROM scratch as package
 COPY --from=install /rootfs /
-USER 100:100
-ENTRYPOINT ["/usr/bin/openssl"]
-CMD ["version"]

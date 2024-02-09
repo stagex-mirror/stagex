@@ -1,4 +1,4 @@
-FROM stagex/busybox as base
+FROM busybox as base
 
 FROM base as install
 USER 0:0

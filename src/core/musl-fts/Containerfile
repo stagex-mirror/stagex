@@ -1,42 +1,47 @@
-FROM stagex/busybox as base
+FROM scratch as base
 ENV VERSION=1.2.7
 ENV SRC_FILE=v${VERSION}.tar.gz
 ENV SRC_SITE=https://github.com/void-linux/musl-fts/archive/refs/tags/${SRC_FILE}
 ENV SRC_HASH=49ae567a96dbab22823d045ffebe0d6b14b9b799925e9ca9274d47d26ff482a6
-COPY --from=stagex/gcc . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/make . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/autoconf . /
-COPY --from=stagex/automake . /
-COPY --from=stagex/libtool . /
-COPY --from=stagex/pkgconf . /
-COPY --from=stagex/m4 . /
 
 FROM base as fetch
 RUN wget ${SRC_SITE}
 RUN echo "${SRC_HASH}  ${SRC_FILE}" | sha256sum -c
 
 FROM fetch as build
-RUN tar -xzf ${SRC_FILE}
-WORKDIR musl-fts-${VERSION}
-RUN set -eux; \
-    ./bootstrap.sh; \
-    ./configure \
-        --prefix=/usr \
-        --sysconfdir=/etc \
-        --sysconfdir=/etc \
-        --mandir=/usr/share/man \
-        --infodir=/usr/share/info \
-        --localstatedir=/var; \
-    make
+COPY --from=busybox . /
+COPY --from=gcc . /
+COPY --from=binutils . /
+COPY --from=make . /
+COPY --from=musl . /
+COPY --from=autoconf . /
+COPY --from=automake . /
+COPY --from=libtool . /
+COPY --from=pkgconf . /
+COPY --from=m4 . /
+RUN --network=none <<-EOF
+	set -eux
+	tar -xzf ${SRC_FILE}
+	cd musl-fts-${VERSION}
+	set -eux
+	./bootstrap.sh
+	./configure \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--localstatedir=/var
+	make
+EOF
 
 FROM build as install
-USER 0:0
-RUN set -eux; \
-    make DESTDIR=/rootfs install; \
-    install -Dm644 musl-fts.pc -t /rootfs/usr/lib/pkgconfig/; \
-    find /rootfs -exec touch -hcd "@0" "{}" +
+RUN <<-EOF
+	set -eux
+	cd musl-fts-${VERSION}
+	make DESTDIR=/rootfs install
+	install -Dm644 musl-fts.pc -t /rootfs/usr/lib/pkgconfig/
+EOF
 
 FROM scratch as package
 COPY --from=install /rootfs /

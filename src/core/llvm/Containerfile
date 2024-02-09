@@ -1,36 +1,35 @@
+FROM scratch as base
 ARG VERSION=16.0.6
-FROM stagex/busybox as base
-ARG VERSION
-ENV VERSION=${VERSION}
-ENV SRC_VERSION=${VERSION}
-ENV SRC_SITE=https://github.com/llvm/llvm-project/releases/download
+ENV SRC_FILE=llvm-project-${VERSION}.src.tar.xz
+ENV SRC_SITE=https://github.com/llvm/llvm-project/releases/download/llvmorg-${VERSION}/${SRC_FILE}
 ENV SRC_HASH_13_0_1=326335a830f2e32d06d0a36393b5455d17dc73e0bd1211065227ee014f92cbf8
 ENV SRC_HASH_16_0_6=ce5e71081d17ce9e86d7cbcfa28c4b04b9300f8fb7e78422b1feb6bc52c3028e
-COPY --from=stagex/binutils . /
-COPY --from=stagex/cmake . /
-COPY --from=stagex/ninja . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/python . /
-COPY --from=stagex/py-setuptools . /
-COPY --from=stagex/zlib . /
-COPY --from=stagex/openssl . /
 
 FROM base as fetch
-RUN wget --no-check-certificate ${SRC_SITE}/llvmorg-${SRC_VERSION}/llvm-project-${SRC_VERSION}.src.tar.xz
-RUN echo "$(printenv SRC_HASH_${VERSION//./_})  llvm-project-${SRC_VERSION}.src.tar.xz" | sha256sum -c
+COPY --from=busybox . /
+RUN wget --no-check-certificate ${SRC_SITE}
+RUN echo "$(printenv SRC_HASH_${VERSION//./_})  ${SRC_FILE}" | sha256sum -c
 
 FROM fetch as build
-RUN tar -xf llvm-project-${SRC_VERSION}.src.tar.xz
-WORKDIR llvm-project-${SRC_VERSION}.src
-ADD . .
-RUN patch -p1 < rust-feature-tables.patch
-RUN set -eux; \
-    python -c "import setuptools; print(setuptools.__version__)"; \
-    cmake \
-        -B build \
-        -G Ninja \
-        -Wno-dev -S llvm \
+COPY --from=binutils . /
+COPY --from=cmake . /
+COPY --from=ninja . /
+COPY --from=musl . /
+COPY --from=gcc . /
+COPY --from=python . /
+COPY --from=py-setuptools . /
+COPY --from=zlib . /
+COPY --from=openssl . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR llvm-project-${VERSION}.src
+ADD *.patch .
+RUN --network=none <<-EOF
+	set -eux
+	python -c "import setuptools; print(setuptools.__version__)"
+	cmake \
+		-B build \
+		-G Ninja \
+		-Wno-dev -S llvm \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_INSTALL_PREFIX=/usr/ \
 		-DCMAKE_INSTALL_RPATH=/usr/ \
@@ -59,23 +58,18 @@ RUN set -eux; \
 		-DLLVM_INCLUDE_EXAMPLES=OFF \
 		-DLLVM_INSTALL_UTILS=ON \
 		-DLLVM_LINK_LLVM_DYLIB=ON \
-		-DLLVM_USE_PERF=ON; \
-	cmake --build build; \
-    python3 llvm/utils/lit/setup.py build;
+		-DLLVM_USE_PERF=ON
+	cmake --build build
+	python3 llvm/utils/lit/setup.py build
+EOF
 
 FROM build as install
-USER 0:0
-RUN set -eux; \
-    DESTDIR="/rootfs" cmake --install build; \
+RUN <<-EOF
+	set -eux
+	DESTDIR="/rootfs" cmake --install build
 	python3 llvm/utils/lit/setup.py install --root="/rootfs"
-COPY --from=stagex/musl /lib/* /rootfs/lib/
-COPY --from=stagex/gcc /usr/lib/* /rootfs/usr/lib/
-COPY --from=stagex/gcc /usr/lib64/* /rootfs/usr/lib/
-RUN ln -s lit /rootfs/usr/bin/llvm-lit
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
+	ln -s lit /rootfs/usr/bin/llvm-lit
+EOF
 
 FROM scratch as package
 COPY --from=install /rootfs /
-USER 100:100
-ENTRYPOINT ["/usr/bin/llc"]
-CMD ["--version"]

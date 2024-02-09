@@ -1,33 +1,30 @@
-FROM stagex/busybox as base
-ENV SRC_SITE https://ftp.gnu.org/gnu/gettext
-ENV SRC_VERSION 0.22.4
-ENV SRC_HASH c1e0bb2a4427a9024390c662cd532d664c4b36b8ff444ed5e54b115fdb7a1aea
-ENV SRC_FILE gettext-${SRC_VERSION}.tar.gz
+FROM scratch as base
+ENV VERSION=0.22.4
+ENV SRC_HASH=c1e0bb2a4427a9024390c662cd532d664c4b36b8ff444ed5e54b115fdb7a1aea
+ENV SRC_FILE=gettext-${VERSION}.tar.gz
+ENV SRC_SITE=https://ftp.gnu.org/gnu/gettext/${SRC_FILE}
 
 FROM base as fetch
-RUN set -eux; \
-    wget ${SRC_SITE}/${SRC_FILE}; \
-    echo "${SRC_HASH}  ${SRC_FILE}" | sha256sum -c
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE}
 
 FROM fetch as build
+COPY --from=busybox . /
+COPY --from=gcc . /
+COPY --from=binutils . /
+COPY --from=make . /
+COPY --from=musl . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR gettext-${SRC_VERSION}
-COPY --from=stagex/gcc . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/make . /
-COPY --from=stagex/musl . /
+WORKDIR gettext-${VERSION}
 ENV M4=/usr/bin/m4
-RUN set -eux; \
-    ./configure \
-        --prefix=/usr; \
-    make
+RUN <<-EOF
+	set -eux
+	./configure \
+		--prefix=/usr
+	make
+EOF
 
 from build as install
-USER 0:0
 RUN make DESTDIR=/rootfs install
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package
 COPY --from=install /rootfs /
-ENTRYPOINT ["/usr/bin/gettext"]
-CMD ["--version"]

@@ -1,27 +1,29 @@
-FROM stagex/busybox as base
-ENV SRC_SITE=https://gitlab.gnome.org/GNOME/libxml2/-/archive
-ENV SRC_VERSION=2.12.1
+FROM scratch as base
+ENV VERSION=2.12.1
 ENV SRC_HASH=1090e62c5a1900429f63e4681263b96e7829876ccbc66cf2d9266cd589f67286
-COPY --from=stagex/gcc . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/make . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/python . /
-COPY --from=stagex/autoconf . /
-COPY --from=stagex/automake . /
-COPY --from=stagex/pkgconf . /
-COPY --from=stagex/libtool . /
-COPY --from=stagex/m4 . /
+ENV SRC_FILE=libxml2-v${VERSION}.tar.gz
+ENV SRC_SITE=https://gitlab.gnome.org/GNOME/libxml2/-/archive/v${VERSION}/${SRC_FILE}
 
 FROM base as fetch
-RUN wget ${SRC_SITE}/v${SRC_VERSION}/libxml2-v${SRC_VERSION}.tar.gz
-RUN echo "${SRC_HASH}  libxml2-v${SRC_VERSION}.tar.gz" | sha256sum -c
+ADD --checksum=${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-RUN tar -xf libxml2-v${SRC_VERSION}.tar.gz
-WORKDIR libxml2-v${SRC_VERSION}
-RUN set -eux; \
-    sh autogen.sh; \
+COPY --from=busybox . /
+COPY --from=gcc . /
+COPY --from=binutils . /
+COPY --from=make . /
+COPY --from=musl . /
+COPY --from=python . /
+COPY --from=autoconf . /
+COPY --from=automake . /
+COPY --from=pkgconf . /
+COPY --from=libtool . /
+COPY --from=m4 . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR libxml2-v${VERSION}
+RUN --network=none <<-EOF
+    set -eux
+    sh autogen.sh
     ./configure \
         --build=x86_64-unknown-linux-musl \
         --host=x86_64-unknown-linux-musl \
@@ -29,14 +31,16 @@ RUN set -eux; \
         --prefix=/usr \
         --sysconfdir=/etc \
         --mandir=/usr/share/man \
-        --infodir=/usr/share/info; \
+        --infodir=/usr/share/info
     make
+EOF
 
 FROM build as install
-USER 0:0
-RUN set -eux; \
-    make DESTDIR=/rootfs install; \
+RUN --network=none <<-EOF
+    set -eux
+    make DESTDIR=/rootfs install
     find /rootfs -exec touch -hcd "@0" "{}" +
+EOF
 
 FROM scratch as package
 COPY --from=install /rootfs /

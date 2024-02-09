@@ -1,28 +1,29 @@
-FROM stagex/busybox as base
-WORKDIR ${HOME}
-ENV SRC_SITE http://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/
-ENV SRC_VERSION 6.6
-ENV SRC_HASH d926a06c63dd8ac7df3f86ee1ffc2ce2a3b81a2d168484e76b5b389aba8e56d0
+FROM busybox as base
+ENV VERSION=6.6
+ENV SRC_HASH=d926a06c63dd8ac7df3f86ee1ffc2ce2a3b81a2d168484e76b5b389aba8e56d0
+ENV SRC_FILE=linux-${VERSION}.tar.xz
+ENV SRC_SITE=http://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/${SRC_FILE}
 
 FROM base as fetch
-RUN wget ${SRC_SITE}/linux-${SRC_VERSION}.tar.xz
-RUN echo "${SRC_HASH}  linux-${SRC_VERSION}.tar.xz" | sha256sum -c
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-RUN tar -xf linux-${SRC_VERSION}.tar.xz
-WORKDIR linux-${SRC_VERSION}
-COPY --from=stagex/gcc . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/musl . /
-RUN gcc usr/gen_init_cpio.c -o usr/gen_init_cpio
+COPY --from=busybox . /
+COPY --from=gcc . /
+COPY --from=binutils . /
+COPY --from=musl . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR linux-${VERSION}
+RUN --network=none gcc usr/gen_init_cpio.c -o usr/gen_init_cpio
 
 FROM build as install
-USER 0:0
-RUN set -eux; \
-    mkdir -p /rootfs/usr/bin; \
-    cp -a usr/gen_initramfs.sh /rootfs/usr/bin/gen_initramfs; \
-    cp -a usr/gen_init_cpio /rootfs/usr/bin; \
+RUN --network=none <<-EOF
+    set -eux
+    mkdir -p /rootfs/usr/bin
+    cp -a usr/gen_initramfs.sh /rootfs/usr/bin/gen_initramfs
+    cp -a usr/gen_init_cpio /rootfs/usr/bin
     find /rootfs -exec touch -hcd "@0" "{}" +
+EOF
 
 FROM scratch as package
 COPY --from=install /rootfs /

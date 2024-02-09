@@ -1,4 +1,4 @@
-FROM stagex/busybox as base
+FROM busybox as base
 WORKDIR ${HOME}
 ENV SRC_SITE http://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/
 ENV SRC_VERSION 6.6
@@ -11,20 +11,20 @@ RUN echo "${SRC_HASH}  linux-${SRC_VERSION}.tar.xz" | sha256sum -c
 FROM fetch as build
 RUN tar -xf linux-${SRC_VERSION}.tar.xz
 WORKDIR linux-${SRC_VERSION}
-COPY --from=stagex/musl . /
-COPY --from=stagex/make . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/linux-headers . /
-COPY --from=stagex/elfutils . /
-COPY --from=stagex/openssl . /
-COPY --from=stagex/perl . /
-COPY --from=stagex/m4 . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/bison . /
-COPY --from=stagex/libzstd . /
-COPY --from=stagex/zlib . /
-COPY --from=stagex/flex . /
-COPY --from=stagex/pkgconf . /
+COPY --from=musl . /
+COPY --from=make . /
+COPY --from=binutils . /
+COPY --from=linux-headers . /
+COPY --from=elfutils . /
+COPY --from=openssl . /
+COPY --from=perl . /
+COPY --from=m4 . /
+COPY --from=gcc . /
+COPY --from=bison . /
+COPY --from=libzstd . /
+COPY --from=zlib . /
+COPY --from=flex . /
+COPY --from=pkgconf . /
 RUN set -eux; \
     make oldconfig
 RUN make

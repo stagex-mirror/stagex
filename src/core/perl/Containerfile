@@ -1,29 +1,31 @@
-FROM stagex/busybox as base
-ENV SRC_SITE=https://www.cpan.org/src/5.0
-ENV SRC_VERSION=5.38.0
+FROM scratch as base
+ENV VERSION=5.38.0
 ENV SRC_HASH=eca551caec3bc549a4e590c0015003790bdd1a604ffe19cc78ee631d51f7072e
-COPY --from=stagex/gcc . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/make . /
-COPY --from=stagex/musl . /
+ENV SRC_FILE=perl-${VERSION}.tar.xz
+ENV SRC_SITE=https://www.cpan.org/src/5.0/${SRC_FILE}
 
 FROM base as fetch
-RUN wget ${SRC_SITE}/perl-${SRC_VERSION}.tar.xz
-RUN echo "${SRC_HASH}  perl-${SRC_VERSION}.tar.xz" | sha256sum -c
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-RUN tar -xf perl-${SRC_VERSION}.tar.xz
-WORKDIR perl-${SRC_VERSION}
-RUN set -eux; \
-    printf "\
-osvers=\"gnulinux\"\n\
-myuname=\"dummy_uname\"\n\
-myhostname=\"builder\"\n\
-cf_by=\"builder\"\n\
-cf_time=\"0\"" \
-    > config.over; \
+COPY --from=busybox . /
+COPY --from=gcc . /
+COPY --from=binutils . /
+COPY --from=make . /
+COPY --from=musl . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR perl-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	printf '
+	osvers="gnulinux"
+	myuname="dummy_uname"
+	myhostname="builder"
+	cf_by="builder"
+	cf_time="0"
+	' > config.over
 	./Configure \
-        -des \
+		-des \
 		-Dcccdlflags='-fPIC' \
 		-Dccdlflags='-rdynamic' \
 		-Dprefix=/usr \
@@ -37,7 +39,7 @@ cf_time=\"0\"" \
 		-Duselargefiles \
 		-Dusethreads \
 		-Duseshrplib \
-        -Dcc=gcc \
+		-Dcc=gcc \
 		-Dd_semctl_semun \
 		-Dman1dir=/usr/share/man/man1 \
 		-Dman3dir=/usr/share/man/man3 \
@@ -48,19 +50,22 @@ cf_time=\"0\"" \
 		-Ud_csh \
 		-Ud_fpos64_t \
 		-Ud_off64_t \
-		-Dusenm; \
-    make
+		-Dusenm
+	make
+EOF
 
 FROM build as install
-USER 0:0
-RUN set -eux; \
-    make DESTDIR=/rootfs install; \
-    mkdir -p /rootfs/lib
-COPY --from=stagex/musl /usr/lib/libc.so /rootfs/lib/ld-musl-x86_64.so.1
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
+RUN --network=none make DESTDIR=/rootfs install
+
+FROM scratch as test
+COPY --from=install /rootfs /
+COPY --from=musl . /
+COPY <<-EOF test.pl
+	use strict;
+	use warnings;
+	print("Success\n");
+EOF
+RUN perl test.pl | grep "Success"
 
 FROM scratch as package
 COPY --from=install /rootfs /
-USER 100:100
-ENTRYPOINT ["/usr/bin/perl"]
-CMD ["--version"]
