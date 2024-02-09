@@ -1,0 +1,56 @@
+ARG VERSION=16.0.6
+FROM stagex/llvm:${VERSION} AS llvm
+
+FROM stagex/busybox as base
+ARG VERSION
+ENV VERSION=${VERSION}
+ENV SRC_VERSION=${VERSION}
+ENV SRC_SITE=https://github.com/llvm/llvm-project/releases/download
+ENV SRC_HASH_13_0_1=326335a830f2e32d06d0a36393b5455d17dc73e0bd1211065227ee014f92cbf8
+ENV SRC_HASH_16_0_6=ce5e71081d17ce9e86d7cbcfa28c4b04b9300f8fb7e78422b1feb6bc52c3028e
+COPY --from=stagex/binutils . /
+COPY --from=stagex/cmake . /
+COPY --from=stagex/ninja . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/python . /
+COPY --from=stagex/py-setuptools . /
+COPY --from=stagex/openssl . /
+
+FROM base as fetch
+RUN wget --no-check-certificate ${SRC_SITE}/llvmorg-${SRC_VERSION}/llvm-project-${SRC_VERSION}.src.tar.xz
+RUN echo "$(printenv SRC_HASH_${VERSION//./_})  llvm-project-${SRC_VERSION}.src.tar.xz" | sha256sum -c
+
+FROM fetch as build
+RUN tar -xf llvm-project-${SRC_VERSION}.src.tar.xz
+WORKDIR llvm-project-${SRC_VERSION}.src
+ADD . .
+RUN set -eux; \
+    cmake \
+        -B build \
+        -G Ninja \
+        -Wno-dev -S clang \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr/ \
+		-DCMAKE_INSTALL_RPATH=/usr/ \
+		-DCLANG_BUILT_STANDALONE=ON \
+		-DCLANG_LINK_CLANG_DYLIB=ON \
+		-DCLANG_PLUGIN_SUPPORT=ON \
+		-DCLANG_VENDOR=stagex \
+		-DLIBCLANG_BUILD_STATIC=ON; \
+	cmake --build build
+
+FROM build as install
+USER 0:0
+RUN set -eux; DESTDIR="/rootfs" cmake --install build
+COPY --from=stagex/musl /lib/* /rootfs/lib/
+COPY --from=stagex/gcc /usr/lib/* /rootfs/usr/lib/
+COPY --from=stagex/gcc /usr/lib64/* /rootfs/usr/lib/
+COPY --from=llvm /usr/lib/* /rootfs/usr/lib
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM scratch as package
+COPY --from=install /rootfs /
+USER 100:100
+ENTRYPOINT ["/usr/bin/clang"]
+CMD ["--version"]

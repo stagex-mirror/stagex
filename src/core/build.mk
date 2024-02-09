@@ -196,6 +196,20 @@ out/llvm.tgz: \
 	$(BUILDER) tag $(REGISTRY)/llvm $(REGISTRY)/llvm:16
 	$(BUILDER) tag $(REGISTRY)/llvm $(REGISTRY)/llvm:16.0.6
 
+out/clang.tgz: \
+	out/gcc.tgz \
+	out/python.tgz \
+	out/py-setuptools.tgz \
+	out/perl.tgz \
+	out/binutils.tgz \
+	out/cmake.tgz \
+	out/ninja.tgz \
+	out/busybox.tgz \
+	out/musl.tgz
+	$(call build,core,clang)
+	$(BUILDER) tag $(REGISTRY)/clang $(REGISTRY)/clang:16
+	$(BUILDER) tag $(REGISTRY)/clang $(REGISTRY)/clang:16.0.6
+
 out/rust1.54.tgz: \
 	out/gcc.tgz \
 	out/bash.tgz \
