@@ -18,8 +18,7 @@ PHONY: stage2
 stage2: out/stage2/index.json
 out/stage2/index.json: \
 	src/bootstrap/stage2/Containerfile \
-	stage1 \
-	stage2
+	stage1
 	$(call build,bootstrap,stage2)
 
 PHONY: stage3
@@ -466,8 +465,7 @@ out/curl/index.json: \
 	gcc \
 	make \
 	musl \
-	openssl \
-	ca-certificates
+	openssl
 	$(call build,tools,curl)
 
 PHONY: gen_initramfs
