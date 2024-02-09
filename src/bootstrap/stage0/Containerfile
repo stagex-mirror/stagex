@@ -7,43 +7,35 @@ ENV VERSION=1.6.0
 ENV SRC_FILE=stage0-posix-${VERSION}.tar.gz
 ENV SRC_SITE=https://github.com/oriansj/stage0-posix/releases/download/Release_${VERSION}/${SRC_FILE}
 ENV SRC_HASH=9260ff69278366e5c056af7b8c436b74773eaa1330a0c6a6b8ab1b5f92e5065c
-ADD ${SRC_SITE} ${SRC_FILE}
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 COPY <<-EOF build.sh
 	#!/bin/sh
 	set -eux
-	echo "${SRC_HASH}  stage0-posix-${VERSION}.tar.gz" | sha256sum -c
-	tar -xf stage0-posix-${VERSION}.tar.gz
+	tar -xf ${SRC_FILE}
 	cd stage0-posix-${VERSION}
 	bootstrap-seeds/POSIX/x86/kaem-optional-seed
 	mkdir -p /rootfs && cp -R * /rootfs/
 	cd /rootfs
 	sha256sum x86/bin/* > hashes.txt
-    find . -exec touch -hcd "@0" "{}" +
+    find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
 
 FROM base as build1
 COPY --from=debian . /
-RUN --mount=type=cache,target=/var/cache/apt <<-EOF
-	set -eux
-	apt update
-	apt install -y gcc
-EOF
+RUN apt update && apt install -y wget gcc
+COPY --from=base . /
 RUN --network=none sh build.sh
 
 FROM base as build2
-COPY --from=arch . /
-RUN --mount=type=cache,target=/var/cache/pacman/pkg <<-EOF
-	set -eux
-	pacman -Sy --noconfirm gcc
-EOF
+COPY --from=archlinux . /
+RUN pacman -Sy --noconfirm wget gcc
+COPY --from=base . /
 RUN --network=none sh build.sh
 
 FROM base as build3
 COPY --from=alpine . /
-RUN --mount=type=cache,target=/var/cache/apk <<-EOF
-	set -eux
-	apk add gcc
-EOF
+RUN apk add wget gcc
+COPY --from=base . /
 RUN --network=none sh build.sh
 
 FROM scratch as compare
@@ -53,26 +45,26 @@ COPY --from=build3 /rootfs/ /c
 
 FROM compare as test1
 WORKDIR /a
-RUN --network=none ["x86/bin/sha256sum","-c","/a/hashes.txt"]
-RUN --network=none ["x86/bin/sha256sum","-c","/b/hashes.txt"]
-RUN --network=none ["x86/bin/sha256sum","-c","/c/hashes.txt"]
+RUN ["x86/bin/sha256sum","-c","/a/hashes.txt"]
+RUN ["x86/bin/sha256sum","-c","/b/hashes.txt"]
+RUN ["x86/bin/sha256sum","-c","/c/hashes.txt"]
 
 FROM compare as test2
 WORKDIR /b
-RUN --network=none ["x86/bin/sha256sum","-c","/a/hashes.txt"]
-RUN --network=none ["x86/bin/sha256sum","-c","/b/hashes.txt"]
-RUN --network=none ["x86/bin/sha256sum","-c","/c/hashes.txt"]
+RUN ["x86/bin/sha256sum","-c","/a/hashes.txt"]
+RUN ["x86/bin/sha256sum","-c","/b/hashes.txt"]
+RUN ["x86/bin/sha256sum","-c","/c/hashes.txt"]
 
 FROM compare as test3
 WORKDIR /c
-RUN --network=none ["x86/bin/sha256sum","-c","/a/hashes.txt"]
-RUN --network=none ["x86/bin/sha256sum","-c","/b/hashes.txt"]
-RUN --network=none ["x86/bin/sha256sum","-c","/c/hashes.txt"]
+RUN ["x86/bin/sha256sum","-c","/a/hashes.txt"]
+RUN ["x86/bin/sha256sum","-c","/b/hashes.txt"]
+RUN ["x86/bin/sha256sum","-c","/c/hashes.txt"]
 
 FROM scratch as install
-COPY --from=test1 /a/hashes.txt /
-COPY --from=test2 /b/hashes.txt /
-COPY --from=test3 /c/hashes.txt /
+COPY --from=test1 /a/hashes.txt /a-hashes.txt
+COPY --from=test2 /b/hashes.txt /b-hashes.txt
+COPY --from=test3 /c/hashes.txt /c-hashes.txt
 COPY --from=build1 /rootfs /
 
 FROM scratch as package

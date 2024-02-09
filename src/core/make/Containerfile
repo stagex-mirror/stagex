@@ -5,7 +5,7 @@ ENV SRC_SITE=https://ftp.gnu.org/gnu/make/${SRC_FILE}
 ENV SRC_HASH=581f4d4e872da74b3941c874215898a7d35802f03732bdccee1d4a7979105d18
 
 FROM base as fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE}
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
 COPY --from=stage3 . /

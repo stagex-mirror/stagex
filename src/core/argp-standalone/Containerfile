@@ -5,7 +5,7 @@ ENV SRC_SITE=https://github.com/argp-standalone/argp-standalone/archive/refs/tag
 ENV SRC_HASH=c29eae929dfebd575c38174f2c8c315766092cec99a8f987569d0cad3c6d64f6
 
 FROM base as fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE}
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
 COPY --from=busybox . /
