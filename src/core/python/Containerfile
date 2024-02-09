@@ -37,6 +37,7 @@ RUN --network=none <<-EOF
 	make DESTDIR=/rootfs install
 	ln -s /usr/bin/python3 /rootfs/usr/bin/python
 EOF
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as test
 COPY --from=install /rootfs /

@@ -42,6 +42,7 @@ RUN <<-EOF
 	make DESTDIR=/rootfs install
 	install -Dm644 musl-fts.pc -t /rootfs/usr/lib/pkgconfig/
 EOF
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package
 COPY --from=install /rootfs /

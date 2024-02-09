@@ -70,6 +70,7 @@ RUN <<-EOF
 	python3 llvm/utils/lit/setup.py install --root="/rootfs"
 	ln -s lit /rootfs/usr/bin/llvm-lit
 EOF
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package
 COPY --from=install /rootfs /

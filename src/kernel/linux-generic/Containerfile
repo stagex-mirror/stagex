@@ -1,15 +1,14 @@
 FROM busybox as base
-WORKDIR ${HOME}
-ENV SRC_SITE http://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/
 ENV SRC_VERSION 6.6
 ENV SRC_HASH d926a06c63dd8ac7df3f86ee1ffc2ce2a3b81a2d168484e76b5b389aba8e56d0
+ENV SRC_FILE linux-${SRC_VERSION}.tar.xz
+ENV SRC_SITE http://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/${SRC_FILE}
 
 FROM base as fetch
-RUN wget ${SRC_SITE}/linux-${SRC_VERSION}.tar.xz
-RUN echo "${SRC_HASH}  linux-${SRC_VERSION}.tar.xz" | sha256sum -c
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-RUN tar -xf linux-${SRC_VERSION}.tar.xz
+RUN tar -xf ${SRC_FILE}
 WORKDIR linux-${SRC_VERSION}
 COPY --from=musl . /
 COPY --from=make . /
@@ -25,16 +24,19 @@ COPY --from=libzstd . /
 COPY --from=zlib . /
 COPY --from=flex . /
 COPY --from=pkgconf . /
-RUN set -eux; \
+RUN <<-EOF
+    set -eux
     make oldconfig
-RUN make
+    make
+EOF
 
 FROM build as install
-USER 0:0
-RUN set -eux; \
-    make DESTDIR=/rootfs install; \
-    mkdir -p /rootfs/usr; \
-    find /rootfs -exec touch -hcd "@0" "{}" +
+RUN <<-EOF
+    set -eux
+    make DESTDIR=/rootfs install
+    mkdir -p /rootfs/usr
+EOF
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package
 COPY --from=install /rootfs /

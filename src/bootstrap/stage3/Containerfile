@@ -222,11 +222,11 @@ RUN --network=none <<-EOF
 	echo "user:x:1000:" > etc/group
 	echo "user:x:1000:1000::/home/user:/bin/sh" > etc/passwd
 	chown -R 1000:1000 tmp var/tmp home/user
-    find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM base as package
-COPY --from=install /rootfs /
+COPY --from=install /rootfs/ .
 USER 1000:1000
 ENTRYPOINT ["/bin/sh"]
 ENV PS1="stage3 $ "

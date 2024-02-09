@@ -324,7 +324,7 @@ RUN --network=none ./install.kaem
 # - a "find/touch" tool ships with stage0
 FROM debian@sha256:bac353db4cc04bc672b14029964e686cd7bad56fe34b51f432c1a1304b9928da as touch
 COPY --from=install /rootfs /rootfs
-RUN --network=none find /rootfs -exec touch -hcd "@0" "{}" +
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package
 COPY --from=touch /rootfs /

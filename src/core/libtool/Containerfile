@@ -28,6 +28,7 @@ RUN --network=none <<-EOF
 	make DESTDIR=/rootfs install
 	ln -s /bin/bash /rootfs/bin/sh
 EOF
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package
 COPY --from=install /rootfs /

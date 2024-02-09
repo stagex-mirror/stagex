@@ -85,6 +85,7 @@ RUN <<-EOF
 	mkdir -p /rootfs
 	cp -R bin lib pkg src /rootfs
 EOF
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM base as test
 COPY --from=install /rootfs /

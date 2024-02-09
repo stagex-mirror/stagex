@@ -17,6 +17,7 @@ RUN python3 setup.py build
 
 FROM build as install
 RUN python3 setup.py install --root=/rootfs
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package
 COPY --from=install /rootfs /

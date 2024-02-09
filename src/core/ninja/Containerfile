@@ -30,6 +30,7 @@ RUN <<-EOF
 	mkdir -p /rootfs/usr/bin/
 	cp ninja /rootfs/usr/bin/
 EOF
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package
 COPY --from=install /rootfs /

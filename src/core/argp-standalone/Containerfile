@@ -39,6 +39,7 @@ RUN <<-EOF
 	install -D -m644 argp.h /rootfs/usr/include/argp.h
 	install -D -m755 libargp.a /rootfs/usr/lib/libargp.a
 EOF
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package
 COPY --from=install /rootfs /

@@ -58,6 +58,7 @@ RUN --network=none <<-EOF
 	make DESTDIR=/rootfs install-strip
 	ln -s gcc /rootfs/usr/bin/cc
 EOF
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM busybox as test
 COPY --from=install /rootfs /

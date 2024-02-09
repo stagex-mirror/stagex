@@ -196,8 +196,8 @@ RUN <<-EOF
     ln -s /usr/lib/ld-musl-${HOST_ARCH}.so.1 /rootfs/lib/libc.so
     ln -s /usr/lib/ld-musl-${HOST_ARCH}.so.1 /rootfs/lib/ld-musl-${HOST_ARCH}.so.1
     ln -s /${TARGET}/lib/ld-musl-${TARGET_ARCH}.so.1 /rootfs/lib/ld-musl-${TARGET_ARCH}.so.1
-    find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM base as package
 COPY --from=install /rootfs/ /

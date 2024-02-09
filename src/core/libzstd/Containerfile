@@ -69,6 +69,7 @@ EOF
 
 FROM build as install
 RUN --network=none DESTDIR=/rootfs meson install --no-rebuild -C output
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package
 COPY --from=install /rootfs /

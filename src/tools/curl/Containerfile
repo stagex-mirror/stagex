@@ -32,10 +32,8 @@ RUN --network=none <<-EOF
 EOF
 
 FROM build as install
-RUN --network=none <<-EOF
-    make install DESTDIR=/rootfs
-    find /rootfs -exec touch -hcd "@0" "{}" +
-EOF
+RUN make install DESTDIR=/rootfs
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package
 COPY --from=install /rootfs /

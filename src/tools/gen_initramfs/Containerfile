@@ -24,6 +24,7 @@ RUN --network=none <<-EOF
     cp -a usr/gen_init_cpio /rootfs/usr/bin
     find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package
 COPY --from=install /rootfs /

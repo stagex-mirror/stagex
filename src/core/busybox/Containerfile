@@ -65,6 +65,7 @@ RUN --network=none <<-EOF
     ln -sT /lib lib64
     chown -R 1000:1000 /rootfs/home/user /rootfs/tmp /rootfs/var/tmp
 EOF
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package
 COPY --from=install /rootfs /

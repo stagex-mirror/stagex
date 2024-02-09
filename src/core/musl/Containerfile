@@ -45,6 +45,7 @@ RUN --network=none <<-EOF
 	ln -sf ld-musl-${ARCH}.so.1 /rootfs/lib/libc.musl-${ARCH}.so.1
 	ln -sf ../../lib/ld-musl-${ARCH}.so.1 /rootfs/usr/lib/libc.so
 EOF
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package
 COPY --from=install /rootfs /

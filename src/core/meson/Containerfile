@@ -21,6 +21,7 @@ EOF
 
 FROM build as install
 RUN --network=none python setup.py install --root=/rootfs
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package
 COPY --from=install /rootfs /

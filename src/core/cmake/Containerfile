@@ -34,6 +34,7 @@ EOF
 
 FROM build as install
 RUN --network=none DESTDIR=/rootfs bin/cmake -P cmake_install.cmake
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package
 COPY --from=install /rootfs /

@@ -26,6 +26,7 @@ EOF
 
 FROM build as install
 RUN make DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package
 COPY --from=install /rootfs /

@@ -28,6 +28,7 @@ RUN --network=none <<-EOF
 	make DESTDIR=/rootfs install
 	ln -s pkgconf /rootfs/usr/bin/pkg-config
 EOF
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package
 COPY --from=install /rootfs /
