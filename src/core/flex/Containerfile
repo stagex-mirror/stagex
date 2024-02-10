@@ -8,8 +8,6 @@ FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-RUN tar -xzf ${SRC_FILE}
-WORKDIR flex-${VERSION}
 COPY --from=busybox . /
 COPY --from=gcc . /
 COPY --from=binutils . /
@@ -21,6 +19,8 @@ COPY --from=automake . /
 COPY --from=bison . /
 COPY --from=gettext . /
 COPY --from=musl . /
+RUN tar -xzf ${SRC_FILE}
+WORKDIR flex-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./autogen.sh
