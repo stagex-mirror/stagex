@@ -14,8 +14,6 @@ RUN --network=none <<-EOF
 	tar -xf ${SRC_FILE}
 	cd make-${VERSION}
 	./configure \
-		--build=${TARGET} \
-		--host=${TARGET} \
 		--prefix=/usr \
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info \
