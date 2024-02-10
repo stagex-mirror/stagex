@@ -5,7 +5,7 @@ ENV SRC_FILE=flex-${VERSION}.tar.gz
 ENV SRC_SITE=https://github.com/westes/flex/releases/download/v${VERSION}/${SRC_FILE}
 
 FROM base as fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_FILE} .
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
 RUN tar -xzf ${SRC_FILE}
