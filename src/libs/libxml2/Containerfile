@@ -44,6 +44,7 @@ FROM build as install
 RUN --network=none <<-EOF
     set -eux
     make DESTDIR=/rootfs install
+    rm -rf /rootfs/usr/lib/python3.12/site-packages/__pycache__
 EOF
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
