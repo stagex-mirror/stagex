@@ -8,8 +8,6 @@ FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-RUN tar -xf ${SRC_FILE}
-WORKDIR autoconf-${SRC_VERSION}
 COPY --from=busybox . /
 COPY --from=gcc . /
 COPY --from=binutils . /
@@ -17,6 +15,8 @@ COPY --from=make . /
 COPY --from=musl . /
 COPY --from=m4 . /
 COPY --from=perl . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR autoconf-${SRC_VERSION}
 ENV M4=/usr/bin/m4
 RUN --network=none <<-EOF
 	set -eux
