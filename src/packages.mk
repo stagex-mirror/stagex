@@ -92,11 +92,15 @@ out/binutils/index.json: \
 bison: out/bison/index.json
 out/bison/index.json: \
 	src/core/bison/Containerfile \
+	out/autoconf/index.json \
+	out/automake/index.json \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
+	out/m4/index.json \
 	out/make/index.json \
-	out/musl/index.json
+	out/musl/index.json \
+	out/perl/index.json
 	$(call build,core,bison)
 
 .PHONY: busybox
@@ -178,11 +182,16 @@ out/gcc/index.json: \
 gettext: out/gettext/index.json
 out/gettext/index.json: \
 	src/core/gettext/Containerfile \
+	out/autoconf/index.json \
+	out/automake/index.json \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
+	out/m4/index.json \
 	out/make/index.json \
-	out/musl/index.json
+	out/musl/index.json \
+	out/perl/index.json \
+	out/libxml2/index.json
 	$(call build,core,gettext)
 
 .PHONY: go
@@ -448,8 +457,10 @@ out/libxml2/index.json: \
 	out/m4/index.json \
 	out/make/index.json \
 	out/musl/index.json \
+	out/perl/index.json \
 	out/pkgconf/index.json \
-	out/python/index.json
+	out/python/index.json \
+	out/zlib/index.json
 	$(call build,libs,libxml2)
 
 .PHONY: cpio
