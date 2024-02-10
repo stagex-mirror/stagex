@@ -18,10 +18,9 @@ COPY --from=automake . /
 COPY --from=m4 . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR argp-standalone-${VERSION}
-RUN ls -lah
 RUN <<-EOF
 	set -eux
-	autoreconf -vif
+	/usr/bin/autoreconf -vif
 	CFLAGS="-fPIC" \
 	./configure \
 		--prefix=/usr \
