@@ -19,6 +19,7 @@ COPY --from=autoconf . /
 COPY --from=automake . /
 COPY --from=pkgconf . /
 COPY --from=libtool . /
+COPY --from=zlib . /
 COPY --from=m4 . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR libxml2-v${VERSION}
@@ -32,7 +33,10 @@ RUN --network=none <<-EOF
         --prefix=/usr \
         --sysconfdir=/etc \
         --mandir=/usr/share/man \
-        --infodir=/usr/share/info
+        --infodir=/usr/share/info \
+        --enable-static \
+        --with-zlib \
+        --with-python=/usr/bin/python3
     make
 EOF
 
