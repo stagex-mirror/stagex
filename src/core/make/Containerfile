@@ -9,10 +9,10 @@ ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
 COPY --from=stage3 . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR make-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
-	tar -xf ${SRC_FILE}
-	cd make-${VERSION}
 	./configure \
 		--prefix=/usr \
 		--mandir=/usr/share/man \
