@@ -9,6 +9,7 @@ ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
 COPY --from=busybox . /
+COPY --from=perl . /
 COPY --from=gcc . /
 COPY --from=binutils . /
 COPY --from=make . /
