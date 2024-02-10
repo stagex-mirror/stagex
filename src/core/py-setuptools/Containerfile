@@ -9,14 +9,15 @@ ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
 COPY --from=busybox . /
+COPY --from=musl . /
 COPY --from=python . /
 COPY --from=zlib . /
 RUN tar -xzf ${SRC_FILE}
 WORKDIR setuptools-${VERSION}
-RUN python3 setup.py build
+RUN python setup.py build
 
 FROM build as install
-RUN python3 setup.py install --root=/rootfs
+RUN python setup.py install --root=/rootfs
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package

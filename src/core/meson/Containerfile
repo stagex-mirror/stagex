@@ -9,6 +9,7 @@ ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
 COPY --from=busybox . /
+COPY --from=musl . /
 COPY --from=python . /
 COPY --from=py-setuptools . /
 COPY --from=zlib . /
