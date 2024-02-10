@@ -5,7 +5,7 @@ ENV SRC_FILE=Python-${VERSION}.tar.xz
 ENV SRC_SITE=https://www.python.org/ftp/python/${SRC_FILE}
 
 FROM base as fetch
-ADD --checksum=${SRC_HASH} ${SRC_SITE} .
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
 COPY --from=busybox . /
