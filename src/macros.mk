@@ -53,7 +53,7 @@ define build
 	$(eval TIMESTAMP := $(shell TZ=GMT date +"%Y-%m-%dT%H:%M:%SZ"))
 	mkdir -p out/ \
 	&& echo $(TIMESTAMP) $(BUILD_CMD) start >> out/build.log \
-	&& rm -rf out/$(NAME) \
+	&& rm -rf out/$(NAME)/* \
 	&& $(BUILD_CMD) \
 	&& echo $(TIMESTAMP) $(BUILD_CMD) end >> out/build.log;
 endef
