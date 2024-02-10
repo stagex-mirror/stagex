@@ -13,12 +13,9 @@ COPY --from=musl . /
 COPY --from=python . /
 COPY --from=py-setuptools . /
 COPY --from=zlib . /
-RUN --network=none <<-EOF
-	set -eux
-	tar -xf ${SRC_FILE}
-	cd meson-${VERSION}
-	python setup.py build
-EOF
+RUN tar -xf ${SRC_FILE}
+WORKDIR meson-${VERSION}
+RUN python setup.py build
 
 FROM build as install
 RUN --network=none python setup.py install --root=/rootfs
