@@ -17,6 +17,7 @@ COPY --from=libtool . /
 COPY --from=zlib . /
 COPY --from=libzstd . /
 COPY --from=flex . /
+COPY --from=perl . /
 COPY --from=autoconf . /
 COPY --from=automake . /
 COPY --from=pkgconf . /

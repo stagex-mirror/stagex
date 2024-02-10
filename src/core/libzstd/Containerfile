@@ -5,7 +5,7 @@ ENV SRC_SITE=https://github.com/facebook/zstd/archive/${SRC_FILE}
 ENV SRC_HASH=98e9c3d949d1b924e28e01eccb7deed865eefebf25c2f21c702e5cd5b63b85e1
 
 FROM base as fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE}
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
 COPY --from=busybox . /
@@ -17,9 +17,11 @@ COPY --from=ninja . /
 COPY --from=binutils . /
 COPY --from=pkgconf . /
 COPY --from=zlib . /
+# HACK: figure out why gcc package puts these in the wrong path at install time
+COPY --from=gcc /usr/lib64/* /usr/lib/
 RUN tar -xf ${SRC_FILE}
 WORKDIR zstd-${VERSION}
-RUN <<-EOF
+RUN --network=none <<-EOF
 	set -eux
 	meson env2mfile \
 		--native \

@@ -13,6 +13,7 @@ COPY --from=gcc . /
 COPY --from=binutils . /
 COPY --from=make . /
 COPY --from=musl . /
+COPY --from=perl . /
 COPY --from=autoconf . /
 COPY --from=automake . /
 COPY --from=libtool . /
