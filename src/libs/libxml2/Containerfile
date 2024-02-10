@@ -5,7 +5,7 @@ ENV SRC_FILE=libxml2-v${VERSION}.tar.gz
 ENV SRC_SITE=https://gitlab.gnome.org/GNOME/libxml2/-/archive/v${VERSION}/${SRC_FILE}
 
 FROM base as fetch
-ADD --checksum=${SRC_HASH} ${SRC_SITE} .
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
 COPY --from=busybox . /
@@ -14,6 +14,7 @@ COPY --from=binutils . /
 COPY --from=make . /
 COPY --from=musl . /
 COPY --from=python . /
+COPY --from=perl . /
 COPY --from=autoconf . /
 COPY --from=automake . /
 COPY --from=pkgconf . /
