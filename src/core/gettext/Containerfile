@@ -5,7 +5,7 @@ ENV SRC_FILE=gettext-${VERSION}.tar.gz
 ENV SRC_SITE=https://ftp.gnu.org/gnu/gettext/${SRC_FILE}
 
 FROM base as fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE}
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
 COPY --from=busybox . /
