@@ -17,13 +17,12 @@ COPY --from=openssl . /
 COPY --from=zlib . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR Python-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
 ENV PYTHONHASHSEED=0
 ENV PYTHONDONTWRITEBYTECODE=1
 RUN --network=none <<-EOF
 	set -eux
 	./configure \
-		--build="x86_64-linux-musl" \
-		--host="x86_64-linux-musl" \
 		--prefix=/usr \
 		--enable-shared \
 		--with-computed-gotos \
