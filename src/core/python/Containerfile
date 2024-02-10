@@ -2,7 +2,7 @@ FROM scratch as base
 ENV VERSION=3.12.0
 ENV SRC_HASH=795c34f44df45a0e9b9710c8c71c15c671871524cd412ca14def212e8ccb155d
 ENV SRC_FILE=Python-${VERSION}.tar.xz
-ENV SRC_SITE=https://www.python.org/ftp/python/${SRC_FILE}
+ENV SRC_SITE=https://www.python.org/ftp/python/${SRC_VERSION}/${SRC_FILE}
 
 FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
