@@ -18,10 +18,13 @@ COPY --from=openssl . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR ninja-${VERSION}
 ADD *.patch .
+# HACK: figure out why gcc package puts these in the wrong path at install time
+COPY --from=gcc /usr/lib64/* /usr/lib/
 RUN --network=none <<-EOF
 	set -eux
+    cp -R /usr/lib64/* /usr/lib/
 	patch -p1 < fix-musl.patch
-	python3 ./configure.py --bootstrap
+	python ./configure.py --bootstrap
 EOF
 
 FROM build as install
