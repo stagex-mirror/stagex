@@ -1,20 +1,20 @@
 FROM scratch as base
-ENV SRC_VERSION=5.2.21
+ENV VERSION=5.2.21
 ENV SRC_HASH=c8e31bdc59b69aaffc5b36509905ba3e5cbb12747091d27b4b977f078560d5b8
-ENV SRC_FILE=bash-${SRC_VERSION}.tar.gz
+ENV SRC_FILE=bash-${VERSION}.tar.gz
 ENV SRC_SITE=https://ftp.gnu.org/gnu/bash/${SRC_FILE}
 
 FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM base as build
+FROM fetch as build
 COPY --from=busybox . /
 COPY --from=musl . /
 COPY --from=gcc . /
 COPY --from=binutils . /
 COPY --from=make . /
 RUN tar -xzf ${SRC_FILE}
-WORKDIR bash-${SRC_VERSION}
+WORKDIR bash-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./configure \
