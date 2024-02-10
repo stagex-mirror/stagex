@@ -26,7 +26,6 @@ EOF
 FROM build as install
 RUN --network=none <<-EOF
 	make DESTDIR=/rootfs install
-	ln -s /bin/bash /rootfs/bin/sh
 EOF
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
