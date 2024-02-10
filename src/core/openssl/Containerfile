@@ -17,6 +17,7 @@ COPY --from=perl . /
 COPY --from=linux-headers . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR openssl-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	set -eux
 	export CC='gcc -fPIE -pie'
