@@ -29,9 +29,9 @@ compat:
 digests:
 	@for each in $$(find out -iname "index.json"| sort); do \
 		printf \
-			"%-20s | %-50s\n"  \
-			"$$(basename $$(dirname $$each))"  \
-			$$(cat $$each | jq -r '.manifests[].digest'); \
+			"%s %s\n"  \
+			$$(cat $$each | jq -r '.manifests[].digest | sub ("sha256:";"")') \
+			"$$(basename $$(dirname $$each))";  \
 	done
 
 out/graph.svg: Makefile
