@@ -1,5 +1,11 @@
 # Stage[x]
 
+[Canonical Repo Link](https://codeberg.org/stagex/stagex)
+
+[#stagex:matrix.org](https://matrix.to/#/#stagex:matrix.org) | [ircs://irc.oftc.net:6697#stagex](ircs://irc.oftc.net:6697#stagex)
+
+---
+
 Minimalism and security first repository of reproducible and multi-signed OCI
 images of common open source software toolchains full-source bootsrapped from
 Stage 0 all the way up.
