@@ -447,6 +447,7 @@ out/xorriso/index.json: \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
+	out/linux-headers/index.json \
 	out/make/index.json \
 	out/musl/index.json
 	$(call build,core,xorriso)
