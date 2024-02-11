@@ -15,7 +15,6 @@ export NOCACHE_FLAG
 clean_logs := $(shell rm *.log 2>&1 >/dev/null || :)
 include src/macros.mk
 include src/packages.mk
-include src/packages_manual.mk
 
 DEFAULT_GOAL := default
 .PHONY: default

@@ -121,7 +121,8 @@ out/cmake/index.json: \
 	out/make/index.json \
 	out/musl/index.json \
 	out/ninja/index.json \
-	out/openssl/index.json
+	out/openssl/index.json \
+	out/zlib/index.json
 	$(call build,core,cmake)
 
 .PHONY: elfutils
@@ -182,15 +183,11 @@ out/gcc/index.json: \
 gettext: out/gettext/index.json
 out/gettext/index.json: \
 	src/core/gettext/Containerfile \
-	out/autoconf/index.json \
-	out/automake/index.json \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
-	out/m4/index.json \
 	out/make/index.json \
 	out/musl/index.json \
-	out/perl/index.json \
 	out/libxml2/index.json
 	$(call build,core,gettext)
 
@@ -252,6 +249,23 @@ out/linux-headers/index.json: \
 	src/core/linux-headers/Containerfile \
 	out/stage3/index.json
 	$(call build,core,linux-headers)
+
+.PHONY: llvm
+llvm: out/llvm/index.json
+out/llvm/index.json: \
+	src/core/llvm/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/ninja/index.json \
+	out/openssl/index.json \
+	out/py-setuptools/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,core,llvm)
 
 .PHONY: m4
 m4: out/m4/index.json
@@ -393,6 +407,27 @@ out/python/index.json: \
 	out/openssl/index.json \
 	out/zlib/index.json
 	$(call build,core,python)
+
+.PHONY: rust
+rust: out/rust/index.json
+out/rust/index.json: \
+	src/core/rust/Containerfile \
+	out/bash/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/gcc/index.json \
+	out/libunwind/index.json \
+	out/llvm/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json \
+	out/py-setuptools/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,core,rust)
 
 .PHONY: sed
 sed: out/sed/index.json

@@ -4,8 +4,6 @@
 # Please replace it with a script in a near universally pre-installed
 # language like python
 
-manual_targets="rust llvm"
-
 gen_deps() {
     local container_file=${1?}
     local dependencies=$( \
@@ -30,7 +28,6 @@ printf "\tsrc/packages.sh > src/packages.mk\n\n"
 bs='\'
 for container_file in $(find src/*/*/Containerfile); do
     package=$(basename $(dirname ${container_file}))
-    [[ "$manual_targets" =~ "$package" ]] && continue
     group=$(basename $(dirname $(dirname ${container_file})))
     deps=$(gen_deps "${container_file}")
     printf ".PHONY: ${package}\n${package}: out/${package}/index.json\n"
