@@ -17,10 +17,10 @@ COPY --from=linux-headers . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR xorriso-${SRC_VERSION}
 RUN --network=none <<-EOF
-	set -eux; \
+	set -eux
 	./configure \
-        --prefix=/usr 
-    make
+		--prefix=/usr
+	make
 EOF
 
 FROM build as install
@@ -34,10 +34,10 @@ COPY --from=busybox . /
 RUN xorriso --version
 RUN /bin/sh <<-EOF
 	set -eux
-    XORRISO_VERSION=$(xorriso --version | grep 'xorriso version' | sed -E 's/^.*: +([^ ]+).*$/\1/') 
+	XORRISO_VERSION=$(xorriso --version | grep 'xorriso version' | sed -E 's/^.*: +([^ ]+).*$/\1/')
 	if [ "${SRC_VERSION}.pl02" != "\$XORRISO_VERSION" ]; then
-	    echo "Expected xorriso version is \$SRC_VERSION.pl02, but got \$XORRISO_VERSION"
-	    exit 1
+		echo "Expected xorriso version is \$SRC_VERSION.pl02, but got \$XORRISO_VERSION"
+		exit 1
 	fi
 EOF
 
