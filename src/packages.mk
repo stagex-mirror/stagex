@@ -191,17 +191,6 @@ out/gettext/index.json: \
 	out/libxml2/index.json
 	$(call build,core,gettext)
 
-PHONY: git
-git: out/git/index.json
-out/git/index.json: \
-	src/tools/git/Containerfile \
-	binutils \
-	busybox \
-	gcc \
-	make \
-	musl
-	$(call build,tools,git)
-
 .PHONY: go
 go: out/go/index.json
 out/go/index.json: \
@@ -541,6 +530,20 @@ out/gen_initramfs/index.json: \
 	out/gcc/index.json \
 	out/musl/index.json
 	$(call build,tools,gen_initramfs)
+
+.PHONY: git
+git: out/git/index.json
+out/git/index.json: \
+	src/tools/git/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/gettext/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/perl/index.json \
+	out/zlib/index.json
+	$(call build,tools,git)
 
 .PHONY: sops
 sops: out/sops/index.json
