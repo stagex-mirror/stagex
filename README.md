@@ -217,12 +217,12 @@ be bootstapped all the way from source code in a deterministic way.
     * OCI allows unlimited signatures on builds as part of the spec
       * E.g: each party that chooses to reproduce adds their own signature
 * We always "Full Source Bootstrap" everything from 0
-    * [Stage0](src/bootstrap/stage0/Dockerfile): 387 bytes of x86 assembly built by 3 distros with the same hash
+    * [Stage0](src/bootstrap/stage0/Containerfile): 387 bytes of x86 assembly built by 3 distros with the same hash
         * Also the same hash many others get from wildly different toolchains
         * Relevant: [Guix: Building From Source All The Way Down](https://guix.gnu.org/en/blog/2023/the-full-source-bootstrap-building-from-source-all-the-way-down/)
-    * [Stage1](src/bootstrap/stage1/Dockerfile): A full x86 toolchain built from stage0 via [live-bootstrap](https://github.com/fosslinux/live-bootstrap/blob/master/parts.rst)
-    * [Stage2](src/bootstrap/stage2/Dockerfile): Cross toolchain bridging us to modern 64 bit architectures
-    * [Stage3](src/bootstrap/stage3/Dockerfile): Native toolchain in native 64 bit architecture
+    * [Stage1](src/bootstrap/stage1/Containerfile): A full x86 toolchain built from stage0 via [live-bootstrap](https://github.com/fosslinux/live-bootstrap/blob/master/parts.rst)
+    * [Stage2](src/bootstrap/stage2/Containerfile): Cross toolchain bridging us to modern 64 bit architectures
+    * [Stage3](src/bootstrap/stage3/Containerfile): Native toolchain in native 64 bit architecture
     * [Stage(x)](.): Later stages build the distributed packages in this repo
 
 For further reading see the [Bootstrappable Builds](https://bootstrappable.org/) Project.
