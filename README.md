@@ -1,8 +1,8 @@
 # Stage[x]
 
-git: [git@codeberg.org:stagex/stagex](https://codeberg.org/stagex/stagex)
-matrix: [#stagex:matrix.org](https://matrix.to/#/#stagex:matrix.org)
-irc: [ircs://irc.oftc.net:6697#stagex](ircs://irc.oftc.net:6697#stagex)
+- git: [git@codeberg.org:stagex/stagex](https://codeberg.org/stagex/stagex)
+- matrix: [#stagex:matrix.org](https://matrix.to/#/#stagex:matrix.org)
+- irc: [ircs://irc.oftc.net:6697#stagex](https://webchat.oftc.net/?channels=stagex&uio=MT11bmRlZmluZWQmMTE9MTk14d)
 
 ---
 
