@@ -13,9 +13,9 @@ ENV SRC_FILE_BOOTSTRAP_1=go${VERSION_BOOTSTRAP_1}.tar.gz
 ENV SRC_SITE_BOOTSTRAP_1=https://dl.google.com/go/${SRC_FILE_BOOTSTRAP_1}
 
 FROM base as fetch
-RUN --checksum=sha256:${SRC_HASH_BOOTSTRAP_1} ${SRC_SITE_BOOTSTRAP_1} .
-RUN --checksum=sha256:${SRC_HASH_BOOTSTRAP_2} ${SRC_SITE_BOOTSTRAP_2} .
-RUN --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+ADD --checksum=sha256:${SRC_HASH_BOOTSTRAP_1} ${SRC_SITE_BOOTSTRAP_1} .
+ADD --checksum=sha256:${SRC_HASH_BOOTSTRAP_2} ${SRC_SITE_BOOTSTRAP_2} .
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
 COPY --from=busybox . /
@@ -27,7 +27,6 @@ RUN <<-EOF
 	set -eux
 	tar -xzf go${VERSION_BOOTSTRAP_1}.tar.gz
 	mv go go-bootstrap-1-src
-EOF
 	tar -xzf go${VERSION_BOOTSTRAP_2}.src.tar.gz
 	mv go go-bootstrap-2-src
 	tar -xzf go${VERSION}.src.tar.gz; \
@@ -76,7 +75,6 @@ RUN --network=none <<-EOF
 	set -eux
 	cd src
 	bash make.bash
-	cd ..
 EOF
 
 FROM build as install
