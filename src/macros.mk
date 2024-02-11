@@ -44,7 +44,7 @@ define build
 			$(if $(filter latest,$(VERSION)),,--build-arg VERSION=$(VERSION)) \
 			--output type=oci,rewrite-timestamp=true,force-compression=true,name=$(NAME),annotation.org.opencontainers.image.revision=$(REVISION),annotation.org.opencontainers.image.version=$(VERSION),tar=false,dest=out/$(NAME) \
 			--target $(TARGET) \
-			$(shell ./src/context.sh) \
+			$(shell ./src/context.sh $(NAME)) \
 			$(EXTRA_ARGS) \
 			$(NOCACHE_FLAG) \
 			-f src/$(CATEGORY)/$(NAME)/Containerfile \
@@ -53,7 +53,7 @@ define build
 	$(eval TIMESTAMP := $(shell TZ=GMT date +"%Y-%m-%dT%H:%M:%SZ"))
 	mkdir -p out/ \
 	&& echo $(TIMESTAMP) $(BUILD_CMD) start >> out/build.log \
-	&& rm -rf out/$(NAME)/* \
+	&& rm -rf out/$(NAME) \
 	&& $(BUILD_CMD) \
 	&& echo $(TIMESTAMP) $(BUILD_CMD) end >> out/build.log;
 endef
