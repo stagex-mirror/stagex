@@ -20,6 +20,8 @@ COPY --from=python . /
 COPY --from=py-setuptools . /
 COPY --from=zlib . /
 COPY --from=openssl . /
+# HACK: figure out why gcc package puts these in the wrong path at install time
+COPY --from=gcc /usr/lib64/* /usr/lib/
 RUN tar -xf ${SRC_FILE}
 WORKDIR llvm-project-${VERSION}.src
 ADD *.patch .
