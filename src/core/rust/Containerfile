@@ -93,10 +93,10 @@ RUN set -eux; \
 COPY --from=musl /lib/* /rootfs/lib/
 COPY --from=gcc /usr/lib/* /rootfs/usr/lib/
 COPY --from=gcc /usr/lib64/* /rootfs/usr/lib/
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as bootstrap-package
 COPY --from=bootstrap-install /rootfs/ /
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM base as fetch
 COPY --from=busybox . /
