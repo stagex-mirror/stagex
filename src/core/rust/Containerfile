@@ -56,6 +56,8 @@ COPY --from=perl . /
 COPY --from=gcc . /
 COPY --from=libunwind . /
 COPY --from=musl . /
+# HACK: figure out why gcc package puts these in the wrong path at install time
+COPY --from=gcc /usr/lib64/* /usr/lib/
 ENV MRUSTC_TARGET_VER=1.54
 ENV RUSTC_VERSION=1.54.0
 ENV RUSTC_TARGET=x86_64-unknown-linux-musl
@@ -121,6 +123,8 @@ COPY --from=gcc . /
 COPY --from=libunwind . /
 COPY --from=musl . /
 COPY --from=rust . /
+# HACK: figure out why gcc package puts these in the wrong path at install time
+COPY --from=gcc /usr/lib64/* /usr/lib/
 RUN --network=none <<-EOF
 	set -eux
 	./configure \
