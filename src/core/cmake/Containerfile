@@ -15,9 +15,12 @@ COPY --from=musl . /
 COPY --from=make . /
 COPY --from=linux-headers . /
 COPY --from=gcc . /
+COPY --from=zlib . /
 COPY --from=openssl . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR cmake-${VERSION}
+# HACK: figure out why gcc package puts these in the wrong path at install time
+COPY --from=gcc /usr/lib64/* /usr/lib/
 RUN --network=none <<-EOF
 	set -eux
 	./bootstrap \
@@ -28,7 +31,7 @@ RUN --network=none <<-EOF
 		--no-system-cppdap \
 		--no-system-curl \
 		--no-system-jsoncpp \
-		--generator=Ninja
+		--generator=Ninja || cat /cmake-3.27.8/Bootstrap.cmk/cmake_bootstrap.log
 	ninja
 EOF
 
