@@ -114,6 +114,8 @@ COPY <<-EOF build.sh
 	PREFIX=/rust-${VERSION}
 	BUILD_PREFIX=/rust-${BUILD_VERSION}
 	set -eux
+	# Required by Rust 1.75.0
+	mkdir -p $HOME/.cargo/registry/src/index.crates.io-6f17d22bba15001f/
 	tar -xzf rustc-${VERSION}-src.tar.gz
 	cd rustc-${VERSION}-src
 	./configure \
