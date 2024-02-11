@@ -300,6 +300,6 @@ Every package should have a minimum of 5 stages as follows
 
 ## Sponsors
 
-- Turnkey
-- Distrust
-- Mysten Labs
+- [Turnkey](https://turnkey.com)
+- [Distrust](https://distrust.co)
+- [Mysten Labs](https://mystenlabs.com)
