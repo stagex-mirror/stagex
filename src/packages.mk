@@ -191,6 +191,17 @@ out/gettext/index.json: \
 	out/libxml2/index.json
 	$(call build,core,gettext)
 
+PHONY: git
+git: out/git/index.json
+out/git/index.json: \
+	src/tools/git/Containerfile \
+	binutils \
+	busybox \
+	gcc \
+	make \
+	musl
+	$(call build,tools,git)
+
 .PHONY: go
 go: out/go/index.json
 out/go/index.json: \
