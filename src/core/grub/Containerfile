@@ -1,0 +1,50 @@
+FROM scratch as base
+ENV SRC_VERSION=2.06
+ENV SRC_HASH=23b64b4c741569f9426ed2e3d0e6780796fca081bee4c99f62aa3f53ae803f5f
+ENV SRC_FILE=grub-${SRC_VERSION}.tar.gz
+ENV SRC_SITE=https://mirrors.kernel.org/gnu/grub/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch as build
+COPY --from=busybox . /
+COPY --from=bison . /
+COPY --from=flex . /
+COPY --from=gcc . /
+COPY --from=binutils . /
+COPY --from=make . /
+COPY --from=musl . /
+COPY --from=python . /
+COPY --from=m4 . /
+COPY --from=linux-headers . / 
+RUN tar -xf ${SRC_FILE}
+WORKDIR grub-${SRC_VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+        --prefix=/usr
+    make CFLAGS="-Wno-error"
+EOF
+
+FROM build as install
+RUN make DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+RUN ls -la .
+
+FROM base as test
+COPY --from=install /rootfs /
+COPY --from=musl . /
+COPY --from=busybox . /
+RUN grub-install --version
+RUN /bin/sh <<-EOF
+	set -eux
+    GRUB_VERSION=\$(echo | grub-install --version) 
+	if [ "grub-install (GRUB) ${SRC_VERSION}" != "\$GRUB_VERSION" ]; then
+	    echo "Expected xorriso version is \$SRC_VERSION.pl02, but got \$XORRISO_VERSION"
+	    exit 1
+	fi
+EOF
+
+FROM scratch as package
+COPY --from=install /rootfs /

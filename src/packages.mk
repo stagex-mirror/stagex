@@ -191,6 +191,16 @@ out/gettext/index.json: \
 	out/libxml2/index.json
 	$(call build,core,gettext)
 
+.PHONY: grub
+grub: out/grub/index.json
+out/grub/index.json: \
+	src/core/grub/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/musl/index.json
+	$(call build,core,grub)
+
 .PHONY: go
 go: out/go/index.json
 out/go/index.json: \
