@@ -183,6 +183,9 @@ RUN sh build.sh 1.71.0 1.70.0
 RUN sh build.sh 1.72.0 1.71.0
 RUN sh build.sh 1.73.0 1.72.0
 RUN sh build.sh 1.74.0 1.73.0
+
+# HACK: Required by Rust 1.75.0
+RUN mkdir -p $HOME/.cargo/registry/src/index.crates.io-6f17d22bba15001f/
 RUN sh build.sh 1.75.0 1.74.0
 
 FROM build as install
