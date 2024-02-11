@@ -405,6 +405,17 @@ out/sed/index.json: \
 	out/musl/index.json
 	$(call build,core,sed)
 
+.PHONY: xorriso
+xorriso: out/xorriso/index.json
+out/xorriso/index.json: \
+	src/core/xorriso/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,core,xorriso)
+
 .PHONY: zlib
 zlib: out/zlib/index.json
 out/zlib/index.json: \
