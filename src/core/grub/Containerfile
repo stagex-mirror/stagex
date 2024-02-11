@@ -41,7 +41,7 @@ RUN /bin/sh <<-EOF
 	set -eux
     GRUB_VERSION=\$(echo | grub-install --version) 
 	if [ "grub-install (GRUB) ${SRC_VERSION}" != "\$GRUB_VERSION" ]; then
-	    echo "Expected xorriso version is \$SRC_VERSION.pl02, but got \$XORRISO_VERSION"
+	    echo "Expected grub version is \$SRC_VERSION, but got \$GRUB_VERSION"
 	    exit 1
 	fi
 EOF
