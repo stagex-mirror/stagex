@@ -237,7 +237,7 @@ For further reading see the [Bootstrappable Builds](https://bootstrappable.org/)
 
 ### Examples
 
-#### Compile all packages (WIP)
+#### Compile all packages
 
 ```
 make

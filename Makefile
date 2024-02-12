@@ -18,7 +18,10 @@ include src/packages.mk
 
 DEFAULT_GOAL := default
 .PHONY: default
-default: compat bootstrap core
+default: compat all
+
+.PHONY: all
+all: $(shell find src/*/* -type d -exec sh -c 'basename {} | tr "\n" " "' \; )
 
 .PHONY: compat
 compat:
