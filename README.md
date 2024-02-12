@@ -237,7 +237,7 @@ For further reading see the [Bootstrappable Builds](https://bootstrappable.org/)
 
 ### Examples
 
-#### Compile all packages
+#### Compile all packages (WIP)
 
 ```
 make
@@ -246,22 +246,22 @@ make
 #### Compile specific package
 
 ```
-make out/rust.tgz
+make rust
 ```
 
-#### Reproduce all changed packages
+#### Reproduce all changed packages (WIP)
 
 ```
 make reproduce
 ```
 
-#### Reproduce all packages without cache
+#### Reproduce all packages without cache (WIP)
 
 ```
 make clean reproduce
 ```
 
-#### Sign current manifest of package hashes
+#### Sign current manifest of package hashes (WIP)
 
 ```
 make sign
