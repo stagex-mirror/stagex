@@ -18,7 +18,7 @@ include src/packages.mk
 
 DEFAULT_GOAL := default
 .PHONY: default
-default: compat all
+default: compat digests.txt
 
 .PHONY: all
 all: $(shell find src/*/* -type d -exec sh -c 'basename {} | tr "\n" " "' \; )
@@ -35,6 +35,11 @@ digests:
 			$$(cat $$each | jq -r '.manifests[].digest | sub ("sha256:";"")') \
 			"$$(basename $$(dirname $$each))";  \
 	done
+
+digests.txt: all
+	mv $@ .$@.old
+	$(MAKE) digests > $@
+	diff $@.old $@
 
 out/graph.svg: Makefile
 	$(MAKE) -Bnd | make2graph | dot -Tsvg -o graph.svg

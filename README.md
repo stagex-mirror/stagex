@@ -237,7 +237,7 @@ For further reading see the [Bootstrappable Builds](https://bootstrappable.org/)
 
 ### Examples
 
-#### Compile all packages
+#### Reproduce entire tree
 
 ```
 make
@@ -249,19 +249,13 @@ make
 make rust
 ```
 
-#### Reproduce all changed packages (WIP)
+#### Compile specific package without cache
 
 ```
-make reproduce
+make NOCACHE=1
 ```
 
-#### Reproduce all packages without cache (WIP)
-
-```
-make clean reproduce
-```
-
-#### Sign current manifest of package hashes (WIP)
+#### Sign all locally built packages (WIP)
 
 ```
 make sign
