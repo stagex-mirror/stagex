@@ -502,6 +502,27 @@ out/linux-generic/index.json: \
 	out/zlib/index.json
 	$(call build,kernel,linux-generic)
 
+.PHONY: linux-nitro
+linux-nitro: out/linux-nitro/index.json
+out/linux-nitro/index.json: \
+	src/kernel/linux-nitro/Containerfile \
+	out/binutils/index.json \
+	out/bison/index.json \
+	out/busybox/index.json \
+	out/elfutils/index.json \
+	out/flex/index.json \
+	out/gcc/index.json \
+	out/libzstd/index.json \
+	out/linux-headers/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json \
+	out/zlib/index.json
+	$(call build,kernel,linux-nitro)
+
 .PHONY: ca-certificates
 ca-certificates: out/ca-certificates/index.json
 out/ca-certificates/index.json: \
