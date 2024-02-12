@@ -1,0 +1,48 @@
+FROM scratch as base
+ENV SRC_VERSION=1.10.3
+ENV SRC_HASH=8b0870897ac5ac67ded568dcfadf45969cfa8a6beb0fd60af2a9eadc2a3272aa
+ENV SRC_FILE=libgcrypt-${SRC_VERSION}.tar.bz2
+ENV SRC_SITE=https://gnupg.org/ftp/gcrypt/libgcrypt/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch as build
+COPY --from=busybox . /
+COPY --from=musl . /
+COPY --from=gcc . /
+COPY --from=binutils . /
+COPY --from=make . /
+COPY --from=libgpg-error . /
+RUN tar -xvf $SRC_FILE
+WORKDIR libgcrypt-${SRC_VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--build=x86_64-unknown-linux-musl \
+		--host=x86_64-unknown-linux-musl \
+		--prefix=/usr \
+		--bindir=/bin \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+	make
+EOF
+
+FROM build as install
+RUN make DESTDIR=/rootfs install
+
+FROM base as test
+COPY --from=install /rootfs /
+COPY --from=busybox . /
+RUN /bin/sh <<-EOF
+	set -eux
+	EXPECTED_LIBGCRYPT_VERSION="${SRC_VERSION}"
+	LIBGCRYPT_FILES_FOUND=\$(ls /usr/lib/ | grep libgcrypt || true)
+	if [ -z "\$LIBGCRYPT_FILES_FOUND" ]; then
+	    echo "libgcrypt not found"
+	    exit 1
+	fi
+EOF
+
+FROM scratch as package
+COPY --from=install /rootfs /
