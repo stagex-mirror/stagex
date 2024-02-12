@@ -250,6 +250,23 @@ out/linux-headers/index.json: \
 	out/stage3/index.json
 	$(call build,core,linux-headers)
 
+.PHONY: llvm13
+llvm13: out/llvm13/index.json
+out/llvm13/index.json: \
+	src/core/llvm13/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/ninja/index.json \
+	out/openssl/index.json \
+	out/py-setuptools/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,core,llvm13)
+
 .PHONY: llvm
 llvm: out/llvm/index.json
 out/llvm/index.json: \
@@ -418,6 +435,7 @@ out/rust/index.json: \
 	out/cmake/index.json \
 	out/gcc/index.json \
 	out/libunwind/index.json \
+	out/llvm13/index.json \
 	out/llvm/index.json \
 	out/make/index.json \
 	out/musl/index.json \
