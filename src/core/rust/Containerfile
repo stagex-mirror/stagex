@@ -85,7 +85,7 @@ ENV OUTDIR_SUF=
 RUN <<-EOF
 	set -eux
 	cp rustc-1.54.0-src.tar.gz mrustc
-    cd mrustc
+	cd mrustc
 	tar -xzf rustc-1.54.0-src.tar.gz
 	cd rustc-1.54.0-src
 	patch -p0 < ../rustc-1.54.0-src.patch
@@ -96,7 +96,8 @@ RUN <<-EOF
 	make -f minicargo.mk LLVM_CONFIG=/usr/bin/llvm-config output/rustc
 	make -f minicargo.mk LLVM_CONFIG=/usr/bin/llvm-config output/cargo
 	make -C run_rustc LLVM_CONFIG=/usr/bin/llvm-config
-    cp -R run_rustc/output/prefix ../rust-1.54.0
+	mkdir ../rust-1.54.0
+	cp -R run_rustc/output/prefix ../rust-1.54.0/usr
 EOF
 COPY <<-'EOF' build.sh
 	VERSION=${1}
@@ -120,7 +121,7 @@ COPY <<-'EOF' build.sh
 		--enable-vendor \
 		--dist-compression-formats=gz \
 		--python="python3" \
-		--local-rust-root="${BUILD_PREFIX}" \
+		--local-rust-root="${BUILD_PREFIX}/usr" \
 		--prefix="${PREFIX}/usr" \
 		--sysconfdir="${PREFIX}/etc" \
 		--release-channel="stable" \
@@ -144,14 +145,6 @@ COPY <<-'EOF' build.sh
 		--set="target.x86_64-unknown-linux-musl.linker=cc"
 	python3 x.py dist
 	python3 x.py install
-	cd usr/lib/rustlib
-	rm install.log
-	sort -o manifest-cargo manifest-cargo
-	sort -o manifest-rustc manifest-rustc
-	sort -o \
-		manifest-rust-std-x86_64-unknown-linux-musl \
-		manifest-rust-std-x86_64-unknown-linux-musl
-	rm -f x86_64-unknown-linux-musl/lib/self-contained/libunwind.a
 EOF
 RUN sh build.sh 1.55.0 1.54.0
 RUN sh build.sh 1.56.0 1.55.0
@@ -180,8 +173,18 @@ RUN sh build.sh 1.75.0 1.74.0
 RUN sh build.sh 1.76.0 1.75.0
 
 FROM build as install
-RUN mv build-${VERSION} /rootfs
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
+RUN <<-EOF
+	mv build-${VERSION} /rootfs
+	cd /rootfs/usr/lib/rustlib
+	rm install.log
+	sort -o manifest-cargo manifest-cargo
+	sort -o manifest-rustc manifest-rustc
+	sort -o \
+		manifest-rust-std-x86_64-unknown-linux-musl \
+		manifest-rust-std-x86_64-unknown-linux-musl
+	rm -f x86_64-unknown-linux-musl/lib/self-contained/libunwind.a
+	find /rootfs -exec touch -hcd "@0" "{}" +
+EOF
 
 FROM scratch as package
 COPY --from=install /rootfs/ /
