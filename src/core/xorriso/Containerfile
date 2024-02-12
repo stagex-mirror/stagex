@@ -31,7 +31,6 @@ FROM base as test
 COPY --from=install /rootfs /
 COPY --from=musl . /
 COPY --from=busybox . /
-RUN xorriso --version
 RUN /bin/sh <<-EOF
 	set -eux
 	XORRISO_VERSION=$(xorriso --version | grep 'xorriso version' | sed -E 's/^.*: +([^ ]+).*$/\1/')
