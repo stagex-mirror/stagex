@@ -202,65 +202,6 @@ out/go/index.json: \
 	out/musl/index.json
 	$(call build,core,go)
 
-.PHONY: gpg
-gpg: out/gpg/index.json
-out/gpg/index.json: \
-	src/tools/gpg/Containerfile \
-	out/bash/index.json \
-	out/binutils/index.json \
-	out/busybox/index.json \
-	out/gcc/index.json \
-	out/musl/index.json
-	$(call build,tools,gpg)
-
-.PHONY: libassuan
-libassuan: out/libassuan/index.json
-out/libassuan/index.json: \
-	src/libs/libassuan/Containerfile \
-	out/binutils/index.json \
-	out/busybox/index.json \
-	out/gcc/index.json \
-	out/m4/index.json \
-	out/make/index.json \
-	out/musl/index.json
-	$(call build,libs,libassuan)
-
-.PHONY: libgcrypt
-libgcrypt: out/libgcrypt/index.json
-out/libgcrypt/index.json: \
-	src/libs/libgcrypt/Containerfile \
-	out/binutils/index.json \
-	out/busybox/index.json \
-	out/gcc/index.json \
-	out/m4/index.json \
-	out/make/index.json \
-	out/musl/index.json
-	$(call build,libs,libgcrypt)
-
-.PHONY: libgpg-error
-libgpg-error: out/libgpg-error/index.json
-out/libgpg-error/index.json: \
-	src/libs/libgpg-error/Containerfile \
-	out/binutils/index.json \
-	out/busybox/index.json \
-	out/gcc/index.json \
-	out/m4/index.json \
-	out/make/index.json \
-	out/musl/index.json
-	$(call build,libs,libgpg-error)
-
-.PHONY: libksba
-libksba: out/libksba/index.json
-out/libksba/index.json: \
-	src/libs/libksba/Containerfile \
-	out/binutils/index.json \
-	out/busybox/index.json \
-	out/gcc/index.json \
-	out/m4/index.json \
-	out/make/index.json \
-	out/musl/index.json
-	$(call build,libs,libksba)
-
 .PHONY: libtool
 libtool: out/libtool/index.json
 out/libtool/index.json: \
@@ -409,17 +350,6 @@ out/ninja/index.json: \
 	out/python/index.json
 	$(call build,core,ninja)
 
-.PHONY: npth
-npth: out/npth/index.json
-out/npth/index.json: \
-	src/libs/npth/Containerfile \
-	out/binutils/index.json \
-	out/busybox/index.json \
-	out/gcc/index.json \
-	out/make/index.json \
-	out/musl/index.json 
-	$(call build,libs,npth)
-
 .PHONY: openssl
 openssl: out/openssl/index.json
 out/openssl/index.json: \
@@ -561,6 +491,59 @@ out/ca-certificates/index.json: \
 	out/busybox/index.json
 	$(call build,libs,ca-certificates)
 
+.PHONY: libassuan
+libassuan: out/libassuan/index.json
+out/libassuan/index.json: \
+	src/libs/libassuan/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/libgpg-error/index.json \
+	out/gpg/index.json
+	$(call build,libs,libassuan)
+
+.PHONY: libgcrypt
+libgcrypt: out/libgcrypt/index.json
+out/libgcrypt/index.json: \
+	src/libs/libgcrypt/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/libgpg-error/index.json \
+	out/gpg/index.json
+	$(call build,libs,libgcrypt)
+
+.PHONY: libgpg-error
+libgpg-error: out/libgpg-error/index.json
+out/libgpg-error/index.json: \
+	src/libs/libgpg-error/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/npth/index.json
+	$(call build,libs,libgpg-error)
+
+.PHONY: libksba
+libksba: out/libksba/index.json
+out/libksba/index.json: \
+	src/libs/libksba/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/zlib/index.json \
+	out/libgpg-error/index.json \
+	out/npth/index.json \
+	out/gpg/index.json
+	$(call build,libs,libksba)
+
 .PHONY: libxml2
 libxml2: out/libxml2/index.json
 out/libxml2/index.json: \
@@ -579,6 +562,18 @@ out/libxml2/index.json: \
 	out/python/index.json \
 	out/zlib/index.json
 	$(call build,libs,libxml2)
+
+.PHONY: npth
+npth: out/npth/index.json
+out/npth/index.json: \
+	src/libs/npth/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/zlib/index.json
+	$(call build,libs,npth)
 
 .PHONY: cpio
 cpio: out/cpio/index.json
@@ -626,6 +621,24 @@ out/git/index.json: \
 	out/perl/index.json \
 	out/zlib/index.json
 	$(call build,tools,git)
+
+.PHONY: gpg
+gpg: out/gpg/index.json
+out/gpg/index.json: \
+	src/tools/gpg/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/zlib/index.json \
+	out/libassuan/index.json \
+	out/libgcrypt/index.json \
+	out/libgpg-error/index.json \
+	out/libksba/index.json \
+	out/npth/index.json \
+	out/gpg/index.json
+	$(call build,tools,gpg)
 
 .PHONY: sops
 sops: out/sops/index.json
