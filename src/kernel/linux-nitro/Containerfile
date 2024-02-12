@@ -1,0 +1,44 @@
+FROM scratch as base
+ENV VERSION=5.19.6
+ENV SRC_HASH=41a4f824af614460c429a7c723e8dcbb0e042f0047d328c18b4ed6f2b4efa63a
+ENV SRC_FILE=linux-${VERSION}.tar.xz
+ENV SRC_SITE=http://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=busybox . /
+COPY --from=musl . /
+COPY --from=make . /
+COPY --from=binutils . /
+COPY --from=linux-headers . /
+COPY --from=elfutils . /
+COPY --from=openssl . /
+COPY --from=perl . /
+COPY --from=m4 . /
+COPY --from=gcc . /
+COPY --from=bison . /
+COPY --from=libzstd . /
+COPY --from=zlib . /
+COPY --from=flex . /
+COPY --from=pkgconf . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR linux-${VERSION}
+ADD linux.config .config
+RUN <<-EOF
+	set -eux
+	make olddefconfig
+	make bzImage
+EOF
+
+FROM build as install
+RUN <<-EOF
+	set -eux
+	make DESTDIR=/rootfs install
+	mkdir -p /rootfs/usr
+EOF
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM scratch as package
+COPY --from=install /rootfs /
