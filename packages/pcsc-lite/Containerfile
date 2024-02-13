@@ -1,0 +1,60 @@
+FROM scratch as base
+ENV SRC_VERSION=2.0.0
+ENV SRC_HASH=d6c3e2b64510e5ed6fcd3323febf2cc2a8e5fda5a6588c7671f2d77f9f189356
+ENV SRC_FILE=pcsc-lite-${SRC_VERSION}.tar.bz2
+ENV SRC_SITE=https://pcsclite.apdu.fr/files/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch as build
+COPY --from=busybox . /
+COPY --from=m4 . /
+COPY --from=musl . /
+COPY --from=gcc . /
+COPY --from=binutils . /
+COPY --from=make . /
+COPY --from=perl . /
+COPY --from=flex . /
+RUN tar -xvf $SRC_FILE
+WORKDIR pcsc-lite-${SRC_VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--localstatedir=/var \
+		--disable-libusb \
+		--enable-libudev \
+		--disable-maintainer-mode \
+		--disable-silent-rules \
+		--without-systemdsystemunitdir \
+		--enable-ipcdir=/run/pcscd \
+		--enable-usbdropdir=/usr/lib/pcsc/drivers \
+		--disable-libsystemd \
+		--disable-polkit \
+		--disable-strict \
+        --disable-libudev \
+		--enable-static
+	make
+EOF
+
+FROM build as install
+RUN make DESTDIR=/rootfs install
+
+FROM base as test
+COPY --from=install /rootfs /
+COPY --from=busybox . /
+RUN /bin/sh <<-EOF
+	set -eux
+	PCSC_FILES_FOUND=\$(ls /usr/lib/ | grep pcsc || true)
+	if [ -z "\$PCSC_FILES_FOUND" ]; then
+	    echo "pcsc-lite not found"
+	    exit 1
+	fi
+EOF
+
+FROM scratch as package
+COPY --from=install /rootfs /
