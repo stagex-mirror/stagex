@@ -16,6 +16,14 @@ clean_logs := $(shell rm *.log 2>&1 >/dev/null || :)
 include src/macros.mk
 include src/packages.mk
 
+src/packages.mk: sxctl $(shell find src/*/*/Containerfile | tr '\n' ' ')
+	env -C out/sxctl tar -cf - . | docker load
+	docker run \
+		--rm \
+		--volume .:/src \
+		--user $(shell id -u):$(shell id -g) \
+		stagex/sxctl -baseDir=/src gen make
+
 DEFAULT_GOAL := default
 .PHONY: default
 default: compat digests.txt
