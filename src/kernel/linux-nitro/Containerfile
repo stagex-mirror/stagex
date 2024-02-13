@@ -1,11 +1,16 @@
 FROM scratch as base
-ENV VERSION=5.19.6
-ENV SRC_HASH=41a4f824af614460c429a7c723e8dcbb0e042f0047d328c18b4ed6f2b4efa63a
-ENV SRC_FILE=linux-${VERSION}.tar.xz
-ENV SRC_SITE=http://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/${SRC_FILE}
+ENV KERNEL_SRC_HASH=41a4f824af614460c429a7c723e8dcbb0e042f0047d328c18b4ed6f2b4efa63a
+ENV KERNEL_SRC_FILE=linux-${KERNEL_VERSION}.tar.xz
+ENV KERNEL_SRC_SITE=http://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/${KERNEL_SRC_FILE}
+ENV NSM_VERSION=ed24913346a34d719afa2031299253160a2e3460
+ENV NSM_SRC_HASH=720916a640f7579a1e9a972ddd43448d201b9ce4d4750079d8256e83be3e937c
+ENV NSM_SRC_FILE=nsm.tgz
+ENV NSM_SRC_SITE=https://codeload.github.com/aws/aws-nitro-enclaves-sdk-bootstrap/legacy.tar.gz/${VERSION}
+ENV KERNEL_VERSION=5.19.6
 
 FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+ADD --checksum=sha256:${NSM_SRC_HASH} ${NSM_SRC_SITE} ${NSM_SRC_FILE}
 
 FROM fetch as build
 COPY --from=busybox . /
@@ -23,20 +28,26 @@ COPY --from=libzstd . /
 COPY --from=zlib . /
 COPY --from=flex . /
 COPY --from=pkgconf . /
+WORKDIR nitro-bootstrap
+RUN tar -xf ../${NSM_SRC_FILE} -C . --strip-components 1
 RUN tar -xf ${SRC_FILE}
-WORKDIR linux-${VERSION}
+WORKDIR linux-${KERNEL_VERSION}
 ADD linux.config .config
 RUN <<-EOF
 	set -eux
 	make olddefconfig
-	make bzImage
+    make bzImage
+	make modules_prepare
+    cd ../nitro-bootstrap
+    make -C ../linux-${KERNEL_VERSION} M=../nitro-bootstrap/nsm-driver
 EOF
 
 FROM build as install
 RUN <<-EOF
 	set -eux
-	make DESTDIR=/rootfs install
-	mkdir -p /rootfs/usr
+    mkdir /rootfs
+    cp arch/x86_64/boot/bzImage /rootfs
+    cp /nitro-bootstrap/nsm-driver/nsm.ko /rootfs
 EOF
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
