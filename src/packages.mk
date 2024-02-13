@@ -191,12 +191,12 @@ out/gettext/index.json: \
 .PHONY: grub
 grub: out/grub/index.json
 out/grub/index.json: \
-	src/core/grub/Containerfile \
+	packages/grub/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
 	out/musl/index.json
-	$(call build,core,grub)
+	$(call build,grub)
 
 .PHONY: go
 go: out/go/index.json
@@ -466,13 +466,13 @@ out/sed/index.json: \
 .PHONY: pcsc-lite
 pcsc-lite: out/pcsc-lite/index.json
 out/pcsc-lite/index.json: \
-	src/core/pcsc-lite/Containerfile \
+	packages/pcsc-lite/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
 	out/make/index.json \
 	out/musl/index.json
-	$(call build,core,pcsc-lite)
+	$(call build,pcsc-lite)
 
 .PHONY: xorriso
 xorriso: out/xorriso/index.json
