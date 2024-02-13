@@ -31,7 +31,7 @@ DEFAULT_GOAL := default
 default: compat digests.txt
 
 .PHONY: all
-all: $(shell find src/*/* -type d -exec sh -c 'basename {} | tr "\n" " "' \; )
+all: $(shell find packages/* -type d -exec sh -c 'basename {} | tr "\n" " "' \; )
 
 .PHONY: compat
 compat:
