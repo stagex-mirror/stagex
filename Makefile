@@ -17,7 +17,7 @@ include src/macros.mk
 include src/packages.mk
 include src/groups.mk
 
-src/packages.mk: out/sxctl/index.json $(shell find src/*/*/Containerfile | tr '\n' ' ')
+src/packages.mk: out/sxctl/index.json $(shell find packages/*/Containerfile | tr '\n' ' ')
 	env -C out/sxctl tar -cf - . | docker load
 	docker run \
 		--rm \
