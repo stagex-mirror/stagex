@@ -109,7 +109,7 @@ COPY <<-'EOF' build.sh
 	BUILD_VERSION=${2}
 	PREFIX=/rust-${VERSION}/usr
 	BUILD_PREFIX=/rust-${BUILD_VERSION}/usr
-	#HACK because rust build seemingly ignores LD_LIBRARY_PATH
+	#HACK because rust build seemindly ignores LD_LIBRARY_PATH
 	cp ${BUILD_PREFIX}/lib/rustlib/x86_64-unknown-linux-musl/lib/*.so /usr/lib
 	tar -xzf rustc-${VERSION}-src.tar.gz
 	cd rustc-${VERSION}-src
@@ -174,6 +174,7 @@ RUN sh build.sh 1.68.0 1.67.0
 FROM build-script as build
 COPY --from=llvm . /
 COPY --from=build-llvm13 /rust-1.68.0 /rust-1.68.0
+COPY --from=llvm13 /usr/lib/libLLVM-13.so /usr/lib/
 RUN sh build.sh 1.69.0 1.68.0
 RUN sh build.sh 1.70.0 1.69.0
 RUN sh build.sh 1.71.0 1.70.0
