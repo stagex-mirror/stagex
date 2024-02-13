@@ -1,5 +1,5 @@
 FROM scratch as base
-ARG VERSION=1.74.0
+ARG VERSION=1.76.0
 ENV SRC_SITE=https://static.rust-lang.org/dist
 ENV MRUSTC_VERSION=16d744fd62e74a2d4356df864b5850bf782918da
 ENV MRUSTC_SRC_HASH=88d5d022875d279a75fa1e9c95d0de779cb3ad3bb587f2edeb85e6f59e99d528
@@ -189,7 +189,7 @@ RUN sh build.sh 1.76.0 1.75.0
 
 FROM build as install
 RUN <<-EOF
-	mv build-${VERSION} /rootfs
+	mv /rust-${VERSION} /rootfs
 	cd /rootfs/usr/lib/rustlib
 	rm install.log
 	sort -o manifest-cargo manifest-cargo
