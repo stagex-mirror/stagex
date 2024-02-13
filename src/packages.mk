@@ -688,6 +688,14 @@ out/sops/index.json: \
 	out/ca-certificates/index.json
 	$(call build,tools,sops)
 
+.PHONY: sxctl
+sxctl: out/sxctl/index.json
+out/sxctl/index.json: \
+	src/tools/sxctl/Containerfile \
+	out/busybox/index.json \
+	out/go/index.json
+	$(call build,tools,sxctl)
+
 .PHONY: tofu
 tofu: out/tofu/index.json
 out/tofu/index.json: \
