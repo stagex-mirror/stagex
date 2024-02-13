@@ -40,7 +40,6 @@ COPY --from=busybox . /
 RUN ls /usr/lib
 RUN /bin/sh <<-EOF
 	set -eux
-	EXPECTED_LIBKSBA_VERSION="${SRC_VERSION}"
 	LIBKSBA_FILES_FOUND=\$(ls /usr/lib/ | grep libksba || true)
 	if [ -z "\$LIBKSBA_FILES_FOUND" ]; then
 	    echo "libksba not found"

@@ -36,7 +36,6 @@ COPY --from=install /rootfs /
 COPY --from=busybox . /
 RUN /bin/sh <<-EOF
 	set -eux
-	EXPECTED_LIBGPG_ERROR_VERSION="${SRC_VERSION}"
 	LIBGPG_ERROR_FILES_FOUND=\$(ls /usr/lib/ | grep libgpg-error || true)
 	if [ -z "\$LIBGPG_ERROR_FILES_FOUND" ]; then
 	    echo "libgpg-error not found"

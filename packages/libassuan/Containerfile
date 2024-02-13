@@ -37,7 +37,6 @@ COPY --from=install /rootfs /
 COPY --from=busybox . /
 RUN /bin/sh <<-EOF
 	set -eux
-	EXPECTED_LIBASSUAN_VERSION="${SRC_VERSION}"
 	LIBASSUAN_FILES_FOUND=\$(ls /usr/lib/ | grep libassuan || true)
 	if [ -z "\$LIBASSUAN_FILES_FOUND" ]; then
 	    echo "libassuan not found"

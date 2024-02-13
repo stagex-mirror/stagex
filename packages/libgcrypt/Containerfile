@@ -36,7 +36,6 @@ COPY --from=install /rootfs /
 COPY --from=busybox . /
 RUN /bin/sh <<-EOF
 	set -eux
-	EXPECTED_LIBGCRYPT_VERSION="${SRC_VERSION}"
 	LIBGCRYPT_FILES_FOUND=\$(ls /usr/lib/ | grep libgcrypt || true)
 	if [ -z "\$LIBGCRYPT_FILES_FOUND" ]; then
 	    echo "libgcrypt not found"

@@ -453,6 +453,17 @@ out/sed/index.json: \
 	out/musl/index.json
 	$(call build,sed)
 
+.PHONY: pcsc-lite
+pcsc-lite: out/pcsc-lite/index.json
+out/pcsc-lite/index.json: \
+	src/core/pcsc-lite/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,core,pcsc-lite)
+
 .PHONY: xorriso
 xorriso: out/xorriso/index.json
 out/xorriso/index.json: \
