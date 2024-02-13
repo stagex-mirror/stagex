@@ -191,20 +191,12 @@ out/gettext/index.json: \
 .PHONY: grub
 grub: out/grub/index.json
 out/grub/index.json: \
-<<<<<<< HEAD
 	packages/grub/Containerfile \
-=======
-	src/core/grub/Containerfile \
->>>>>>> 78fd9b1 (feat: package: add grub)
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
 	out/musl/index.json
-<<<<<<< HEAD
 	$(call build,grub)
-=======
-	$(call build,core,grub)
->>>>>>> 78fd9b1 (feat: package: add grub)
 
 .PHONY: go
 go: out/go/index.json
