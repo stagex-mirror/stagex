@@ -1,8 +1,8 @@
 FROM scratch as base
-ENV VERSION=0.0.2
+ENV VERSION=0.0.3
 ENV SRC_FILE=v${VERSION}.tar.gz
 ENV SRC_SITE=https://codeberg.org/stagex/sxctl/archive/${SRC_FILE}
-ENV SRC_HASH=b0afa8a20fb1925f074b6cda0a3ffc482ae92f52ab8f3f2c758b13de1a733e06
+ENV SRC_HASH=1d159266f669f206d6dbccdb4702d5b72d5f985fd29a83410929fc75b8575d8f
 
 FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
