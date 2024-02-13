@@ -1,0 +1,35 @@
+FROM scratch as base
+ENV VERSION=2.15
+ENV SRC_HASH=d0d224b8b626db5fcc2d7b685bdd229991bbf0a7
+ENV SRC_FILE=aws-nitro-eif.tar.gz
+ENV SRC_SITE=https://codeload.github.com/aws/aws-nitro-enclaves-image-format/legacy.tar.gz/${VERSION}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch as build
+RUN tar -xzf ${SRC_FILE}
+RUN mv aws-aws-nitro-enclave-image-format-* aws-nitro-eif
+WORKDIR build
+COPY --from=busybox . /
+COPY --from=rust . /
+COPY --from=musl . /
+COPY --from=libunwind . /
+ADD Cargo.* .
+RUN --network=none <<-EOF
+    set -eux
+    cp ../aws-nitro-eif/examples/eif_build.rs .
+    cargo build \
+        --no-default-features \
+        --locked \
+        --release \
+        --target x86_64-unknown-linux-musl
+EOF
+
+FROM build as install
+WORKDIR /rootfs
+RUN cp /build/target/x86_64-unknown-lniux-musl/release/eif_build .
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM scratch as package
+COPY --from=install /rootfs /
