@@ -1,11 +1,7 @@
 #!/bin/bash
 self=${1}
-for each in $(find src/*/*/Containerfile); do
+for each in $(find out/*/index.json); do
     package=$(basename $(dirname ${each}))
-    digest_file=out/${package}/index.json
-    digest_line=""
     [ "$package" == "$self" ] && continue
-    if [ -e ${digest_file} ]; then
-        printf -- ' --build-context %s=oci-layout://./out/%s' "${package}" "${package}"
-    fi
+    printf -- ' --build-context %s=oci-layout://./out/%s' "${package}" "${package}"
 done

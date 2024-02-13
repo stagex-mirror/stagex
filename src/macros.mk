@@ -21,12 +21,11 @@
 # - output manifest.txt of all tar/digest hashes for an easy git diff
 # - support buildah and podman
 define build
-	$(eval CATEGORY := $(1))
-	$(eval NAME := $(2))
-	$(eval VERSION := $(if $(3),$(3),latest))
-	$(eval TARGET := $(if $(4),$(4),package))
-	$(eval EXTRA_ARGS := $(if $(5),$(5),))
-	$(eval REVISION := $(shell git rev-list HEAD -1 src/$(CATEGORY)/$(NAME)))
+	$(eval NAME := $(1))
+	$(eval VERSION := $(if $(2),$(2),latest))
+	$(eval TARGET := $(if $(3),$(3),package))
+	$(eval EXTRA_ARGS := $(if $(4),$(4),))
+	$(eval REVISION := $(shell git rev-list HEAD -1 packages/$(NAME)))
 	$(eval TEMPFILE := out/.$(notdir $(basename $@)).tmp.tar)
 	$(eval BUILD_CMD := \
 		DOCKER_BUILDKIT=1 \
@@ -47,8 +46,8 @@ define build
 			$(shell ./src/context.sh $(NAME)) \
 			$(EXTRA_ARGS) \
 			$(NOCACHE_FLAG) \
-			-f src/$(CATEGORY)/$(NAME)/Containerfile \
-			src/$(CATEGORY)/$(NAME) \
+			-f packages/$(NAME)/Containerfile \
+			packages/$(NAME) \
 	)
 	$(eval TIMESTAMP := $(shell TZ=GMT date +"%Y-%m-%dT%H:%M:%SZ"))
 	mkdir -p out/ \

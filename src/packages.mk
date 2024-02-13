@@ -2,34 +2,34 @@
 .PHONY: stage0
 stage0: out/stage0/index.json
 out/stage0/index.json: \
-	src/bootstrap/stage0/Containerfile
-	$(call build,bootstrap,stage0)
+	packages/stage0/Containerfile
+	$(call build,stage0)
 
 .PHONY: stage1
 stage1: out/stage1/index.json
 out/stage1/index.json: \
-	src/bootstrap/stage1/Containerfile \
+	packages/stage1/Containerfile \
 	out/stage0/index.json
-	$(call build,bootstrap,stage1)
+	$(call build,stage1)
 
 .PHONY: stage2
 stage2: out/stage2/index.json
 out/stage2/index.json: \
-	src/bootstrap/stage2/Containerfile \
+	packages/stage2/Containerfile \
 	out/stage1/index.json
-	$(call build,bootstrap,stage2)
+	$(call build,stage2)
 
 .PHONY: stage3
 stage3: out/stage3/index.json
 out/stage3/index.json: \
-	src/bootstrap/stage3/Containerfile \
+	packages/stage3/Containerfile \
 	out/stage2/index.json
-	$(call build,bootstrap,stage3)
+	$(call build,stage3)
 
 .PHONY: argp-standalone
 argp-standalone: out/argp-standalone/index.json
 out/argp-standalone/index.json: \
-	src/core/argp-standalone/Containerfile \
+	packages/argp-standalone/Containerfile \
 	out/autoconf/index.json \
 	out/automake/index.json \
 	out/binutils/index.json \
@@ -39,12 +39,12 @@ out/argp-standalone/index.json: \
 	out/make/index.json \
 	out/musl/index.json \
 	out/perl/index.json
-	$(call build,core,argp-standalone)
+	$(call build,argp-standalone)
 
 .PHONY: autoconf
 autoconf: out/autoconf/index.json
 out/autoconf/index.json: \
-	src/core/autoconf/Containerfile \
+	packages/autoconf/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
@@ -52,12 +52,12 @@ out/autoconf/index.json: \
 	out/make/index.json \
 	out/musl/index.json \
 	out/perl/index.json
-	$(call build,core,autoconf)
+	$(call build,autoconf)
 
 .PHONY: automake
 automake: out/automake/index.json
 out/automake/index.json: \
-	src/core/automake/Containerfile \
+	packages/automake/Containerfile \
 	out/autoconf/index.json \
 	out/binutils/index.json \
 	out/busybox/index.json \
@@ -66,30 +66,30 @@ out/automake/index.json: \
 	out/make/index.json \
 	out/musl/index.json \
 	out/perl/index.json
-	$(call build,core,automake)
+	$(call build,automake)
 
 .PHONY: bash
 bash: out/bash/index.json
 out/bash/index.json: \
-	src/core/bash/Containerfile \
+	packages/bash/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
 	out/make/index.json \
 	out/musl/index.json
-	$(call build,core,bash)
+	$(call build,bash)
 
 .PHONY: binutils
 binutils: out/binutils/index.json
 out/binutils/index.json: \
-	src/core/binutils/Containerfile \
+	packages/binutils/Containerfile \
 	out/stage3/index.json
-	$(call build,core,binutils)
+	$(call build,binutils)
 
 .PHONY: bison
 bison: out/bison/index.json
 out/bison/index.json: \
-	src/core/bison/Containerfile \
+	packages/bison/Containerfile \
 	out/autoconf/index.json \
 	out/automake/index.json \
 	out/binutils/index.json \
@@ -99,19 +99,19 @@ out/bison/index.json: \
 	out/make/index.json \
 	out/musl/index.json \
 	out/perl/index.json
-	$(call build,core,bison)
+	$(call build,bison)
 
 .PHONY: busybox
 busybox: out/busybox/index.json
 out/busybox/index.json: \
-	src/core/busybox/Containerfile \
+	packages/busybox/Containerfile \
 	out/stage3/index.json
-	$(call build,core,busybox)
+	$(call build,busybox)
 
 .PHONY: cmake
 cmake: out/cmake/index.json
 out/cmake/index.json: \
-	src/core/cmake/Containerfile \
+	packages/cmake/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
@@ -121,12 +121,12 @@ out/cmake/index.json: \
 	out/ninja/index.json \
 	out/openssl/index.json \
 	out/zlib/index.json
-	$(call build,core,cmake)
+	$(call build,cmake)
 
 .PHONY: elfutils
 elfutils: out/elfutils/index.json
 out/elfutils/index.json: \
-	src/core/elfutils/Containerfile \
+	packages/elfutils/Containerfile \
 	out/argp-standalone/index.json \
 	out/autoconf/index.json \
 	out/automake/index.json \
@@ -147,12 +147,12 @@ out/elfutils/index.json: \
 	out/perl/index.json \
 	out/pkgconf/index.json \
 	out/zlib/index.json
-	$(call build,core,elfutils)
+	$(call build,elfutils)
 
 .PHONY: flex
 flex: out/flex/index.json
 out/flex/index.json: \
-	src/core/flex/Containerfile \
+	packages/flex/Containerfile \
 	out/autoconf/index.json \
 	out/automake/index.json \
 	out/binutils/index.json \
@@ -165,56 +165,56 @@ out/flex/index.json: \
 	out/make/index.json \
 	out/musl/index.json \
 	out/perl/index.json
-	$(call build,core,flex)
+	$(call build,flex)
 
 .PHONY: gcc
 gcc: out/gcc/index.json
 out/gcc/index.json: \
-	src/core/gcc/Containerfile \
+	packages/gcc/Containerfile \
 	out/binutils/index.json \
 	out/musl/index.json \
 	out/stage3/index.json
-	$(call build,core,gcc)
+	$(call build,gcc)
 
 .PHONY: gettext
 gettext: out/gettext/index.json
 out/gettext/index.json: \
-	src/core/gettext/Containerfile \
+	packages/gettext/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
 	out/libxml2/index.json \
 	out/make/index.json \
 	out/musl/index.json
-	$(call build,core,gettext)
+	$(call build,gettext)
 
 .PHONY: go
 go: out/go/index.json
 out/go/index.json: \
-	src/core/go/Containerfile \
+	packages/go/Containerfile \
 	out/bash/index.json \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
 	out/musl/index.json
-	$(call build,core,go)
+	$(call build,go)
 
 .PHONY: libtool
 libtool: out/libtool/index.json
 out/libtool/index.json: \
-	src/core/libtool/Containerfile \
+	packages/libtool/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
 	out/m4/index.json \
 	out/make/index.json \
 	out/musl/index.json
-	$(call build,core,libtool)
+	$(call build,libtool)
 
 .PHONY: libunwind
 libunwind: out/libunwind/index.json
 out/libunwind/index.json: \
-	src/core/libunwind/Containerfile \
+	packages/libunwind/Containerfile \
 	out/autoconf/index.json \
 	out/automake/index.json \
 	out/binutils/index.json \
@@ -223,12 +223,12 @@ out/libunwind/index.json: \
 	out/libtool/index.json \
 	out/make/index.json \
 	out/musl/index.json
-	$(call build,core,libunwind)
+	$(call build,libunwind)
 
 .PHONY: libzstd
 libzstd: out/libzstd/index.json
 out/libzstd/index.json: \
-	src/core/libzstd/Containerfile \
+	packages/libzstd/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
@@ -238,19 +238,19 @@ out/libzstd/index.json: \
 	out/pkgconf/index.json \
 	out/python/index.json \
 	out/zlib/index.json
-	$(call build,core,libzstd)
+	$(call build,libzstd)
 
 .PHONY: linux-headers
 linux-headers: out/linux-headers/index.json
 out/linux-headers/index.json: \
-	src/core/linux-headers/Containerfile \
+	packages/linux-headers/Containerfile \
 	out/stage3/index.json
-	$(call build,core,linux-headers)
+	$(call build,linux-headers)
 
 .PHONY: llvm
 llvm: out/llvm/index.json
 out/llvm/index.json: \
-	src/core/llvm/Containerfile \
+	packages/llvm/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/cmake/index.json \
@@ -261,12 +261,12 @@ out/llvm/index.json: \
 	out/py-setuptools/index.json \
 	out/python/index.json \
 	out/zlib/index.json
-	$(call build,core,llvm)
+	$(call build,llvm)
 
 .PHONY: llvm13
 llvm13: out/llvm13/index.json
 out/llvm13/index.json: \
-	src/core/llvm13/Containerfile \
+	packages/llvm13/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/cmake/index.json \
@@ -277,48 +277,48 @@ out/llvm13/index.json: \
 	out/py-setuptools/index.json \
 	out/python/index.json \
 	out/zlib/index.json
-	$(call build,core,llvm13)
+	$(call build,llvm13)
 
 .PHONY: m4
 m4: out/m4/index.json
 out/m4/index.json: \
-	src/core/m4/Containerfile \
+	packages/m4/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
 	out/make/index.json \
 	out/musl/index.json
-	$(call build,core,m4)
+	$(call build,m4)
 
 .PHONY: make
 make: out/make/index.json
 out/make/index.json: \
-	src/core/make/Containerfile \
+	packages/make/Containerfile \
 	out/stage3/index.json
-	$(call build,core,make)
+	$(call build,make)
 
 .PHONY: meson
 meson: out/meson/index.json
 out/meson/index.json: \
-	src/core/meson/Containerfile \
+	packages/meson/Containerfile \
 	out/busybox/index.json \
 	out/musl/index.json \
 	out/py-setuptools/index.json \
 	out/python/index.json \
 	out/zlib/index.json
-	$(call build,core,meson)
+	$(call build,meson)
 
 .PHONY: musl
 musl: out/musl/index.json
 out/musl/index.json: \
-	src/core/musl/Containerfile \
+	packages/musl/Containerfile \
 	out/stage3/index.json
-	$(call build,core,musl)
+	$(call build,musl)
 
 .PHONY: musl-fts
 musl-fts: out/musl-fts/index.json
 out/musl-fts/index.json: \
-	src/core/musl-fts/Containerfile \
+	packages/musl-fts/Containerfile \
 	out/autoconf/index.json \
 	out/automake/index.json \
 	out/binutils/index.json \
@@ -330,12 +330,12 @@ out/musl-fts/index.json: \
 	out/musl/index.json \
 	out/perl/index.json \
 	out/pkgconf/index.json
-	$(call build,core,musl-fts)
+	$(call build,musl-fts)
 
 .PHONY: musl-obstack
 musl-obstack: out/musl-obstack/index.json
 out/musl-obstack/index.json: \
-	src/core/musl-obstack/Containerfile \
+	packages/musl-obstack/Containerfile \
 	out/autoconf/index.json \
 	out/automake/index.json \
 	out/binutils/index.json \
@@ -347,12 +347,12 @@ out/musl-obstack/index.json: \
 	out/musl/index.json \
 	out/perl/index.json \
 	out/pkgconf/index.json
-	$(call build,core,musl-obstack)
+	$(call build,musl-obstack)
 
 .PHONY: ninja
 ninja: out/ninja/index.json
 out/ninja/index.json: \
-	src/core/ninja/Containerfile \
+	packages/ninja/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
@@ -360,12 +360,12 @@ out/ninja/index.json: \
 	out/musl/index.json \
 	out/openssl/index.json \
 	out/python/index.json
-	$(call build,core,ninja)
+	$(call build,ninja)
 
 .PHONY: openssl
 openssl: out/openssl/index.json
 out/openssl/index.json: \
-	src/core/openssl/Containerfile \
+	packages/openssl/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
@@ -373,44 +373,44 @@ out/openssl/index.json: \
 	out/make/index.json \
 	out/musl/index.json \
 	out/perl/index.json
-	$(call build,core,openssl)
+	$(call build,openssl)
 
 .PHONY: perl
 perl: out/perl/index.json
 out/perl/index.json: \
-	src/core/perl/Containerfile \
+	packages/perl/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
 	out/make/index.json \
 	out/musl/index.json
-	$(call build,core,perl)
+	$(call build,perl)
 
 .PHONY: pkgconf
 pkgconf: out/pkgconf/index.json
 out/pkgconf/index.json: \
-	src/core/pkgconf/Containerfile \
+	packages/pkgconf/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
 	out/make/index.json \
 	out/musl/index.json
-	$(call build,core,pkgconf)
+	$(call build,pkgconf)
 
 .PHONY: py-setuptools
 py-setuptools: out/py-setuptools/index.json
 out/py-setuptools/index.json: \
-	src/core/py-setuptools/Containerfile \
+	packages/py-setuptools/Containerfile \
 	out/busybox/index.json \
 	out/musl/index.json \
 	out/python/index.json \
 	out/zlib/index.json
-	$(call build,core,py-setuptools)
+	$(call build,py-setuptools)
 
 .PHONY: python
 python: out/python/index.json
 out/python/index.json: \
-	src/core/python/Containerfile \
+	packages/python/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
@@ -418,12 +418,12 @@ out/python/index.json: \
 	out/musl/index.json \
 	out/openssl/index.json \
 	out/zlib/index.json
-	$(call build,core,python)
+	$(call build,python)
 
 .PHONY: rust
 rust: out/rust/index.json
 out/rust/index.json: \
-	src/core/rust/Containerfile \
+	packages/rust/Containerfile \
 	out/bash/index.json \
 	out/binutils/index.json \
 	out/busybox/index.json \
@@ -440,46 +440,46 @@ out/rust/index.json: \
 	out/py-setuptools/index.json \
 	out/python/index.json \
 	out/zlib/index.json
-	$(call build,core,rust)
+	$(call build,rust)
 
 .PHONY: sed
 sed: out/sed/index.json
 out/sed/index.json: \
-	src/core/sed/Containerfile \
+	packages/sed/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
 	out/make/index.json \
 	out/musl/index.json
-	$(call build,core,sed)
+	$(call build,sed)
 
 .PHONY: xorriso
 xorriso: out/xorriso/index.json
 out/xorriso/index.json: \
-	src/core/xorriso/Containerfile \
+	packages/xorriso/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
 	out/linux-headers/index.json \
 	out/make/index.json \
 	out/musl/index.json
-	$(call build,core,xorriso)
+	$(call build,xorriso)
 
 .PHONY: zlib
 zlib: out/zlib/index.json
 out/zlib/index.json: \
-	src/core/zlib/Containerfile \
+	packages/zlib/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
 	out/make/index.json \
 	out/musl/index.json
-	$(call build,core,zlib)
+	$(call build,zlib)
 
 .PHONY: linux-generic
 linux-generic: out/linux-generic/index.json
 out/linux-generic/index.json: \
-	src/kernel/linux-generic/Containerfile \
+	packages/linux-generic/Containerfile \
 	out/binutils/index.json \
 	out/bison/index.json \
 	out/busybox/index.json \
@@ -495,12 +495,12 @@ out/linux-generic/index.json: \
 	out/perl/index.json \
 	out/pkgconf/index.json \
 	out/zlib/index.json
-	$(call build,kernel,linux-generic)
+	$(call build,linux-generic)
 
 .PHONY: linux-nitro
 linux-nitro: out/linux-nitro/index.json
 out/linux-nitro/index.json: \
-	src/kernel/linux-nitro/Containerfile \
+	packages/linux-nitro/Containerfile \
 	out/binutils/index.json \
 	out/bison/index.json \
 	out/busybox/index.json \
@@ -516,54 +516,54 @@ out/linux-nitro/index.json: \
 	out/perl/index.json \
 	out/pkgconf/index.json \
 	out/zlib/index.json
-	$(call build,kernel,linux-nitro)
+	$(call build,linux-nitro)
 
 .PHONY: ca-certificates
 ca-certificates: out/ca-certificates/index.json
 out/ca-certificates/index.json: \
-	src/libs/ca-certificates/Containerfile
-	$(call build,libs,ca-certificates)
+	packages/ca-certificates/Containerfile
+	$(call build,ca-certificates)
 
 .PHONY: libassuan
 libassuan: out/libassuan/index.json
 out/libassuan/index.json: \
-	src/libs/libassuan/Containerfile \
+	packages/libassuan/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
 	out/libgpg-error/index.json \
 	out/make/index.json \
 	out/musl/index.json
-	$(call build,libs,libassuan)
+	$(call build,libassuan)
 
 .PHONY: libgcrypt
 libgcrypt: out/libgcrypt/index.json
 out/libgcrypt/index.json: \
-	src/libs/libgcrypt/Containerfile \
+	packages/libgcrypt/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
 	out/libgpg-error/index.json \
 	out/make/index.json \
 	out/musl/index.json
-	$(call build,libs,libgcrypt)
+	$(call build,libgcrypt)
 
 .PHONY: libgpg-error
 libgpg-error: out/libgpg-error/index.json
 out/libgpg-error/index.json: \
-	src/libs/libgpg-error/Containerfile \
+	packages/libgpg-error/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
 	out/make/index.json \
 	out/musl/index.json \
 	out/npth/index.json
-	$(call build,libs,libgpg-error)
+	$(call build,libgpg-error)
 
 .PHONY: libksba
 libksba: out/libksba/index.json
 out/libksba/index.json: \
-	src/libs/libksba/Containerfile \
+	packages/libksba/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
@@ -572,12 +572,12 @@ out/libksba/index.json: \
 	out/musl/index.json \
 	out/npth/index.json \
 	out/zlib/index.json
-	$(call build,libs,libksba)
+	$(call build,libksba)
 
 .PHONY: libxml2
 libxml2: out/libxml2/index.json
 out/libxml2/index.json: \
-	src/libs/libxml2/Containerfile \
+	packages/libxml2/Containerfile \
 	out/autoconf/index.json \
 	out/automake/index.json \
 	out/binutils/index.json \
@@ -591,67 +591,67 @@ out/libxml2/index.json: \
 	out/pkgconf/index.json \
 	out/python/index.json \
 	out/zlib/index.json
-	$(call build,libs,libxml2)
+	$(call build,libxml2)
 
 .PHONY: npth
 npth: out/npth/index.json
 out/npth/index.json: \
-	src/libs/npth/Containerfile \
+	packages/npth/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
 	out/make/index.json \
 	out/musl/index.json \
 	out/zlib/index.json
-	$(call build,libs,npth)
+	$(call build,npth)
 
 .PHONY: cpio
 cpio: out/cpio/index.json
 out/cpio/index.json: \
-	src/tools/cpio/Containerfile \
+	packages/cpio/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
 	out/make/index.json \
 	out/musl/index.json
-	$(call build,tools,cpio)
+	$(call build,cpio)
 
 .PHONY: curl
 curl: out/curl/index.json
 out/curl/index.json: \
-	src/tools/curl/Containerfile \
+	packages/curl/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
 	out/make/index.json \
 	out/musl/index.json \
 	out/openssl/index.json
-	$(call build,tools,curl)
+	$(call build,curl)
 
 .PHONY: eif_build
 eif_build: out/eif_build/index.json
 out/eif_build/index.json: \
-	src/tools/eif_build/Containerfile \
+	packages/eif_build/Containerfile \
 	out/busybox/index.json \
 	out/libunwind/index.json \
 	out/musl/index.json \
 	out/rust/index.json
-	$(call build,tools,eif_build)
+	$(call build,eif_build)
 
 .PHONY: gen_initramfs
 gen_initramfs: out/gen_initramfs/index.json
 out/gen_initramfs/index.json: \
-	src/tools/gen_initramfs/Containerfile \
+	packages/gen_initramfs/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
 	out/musl/index.json
-	$(call build,tools,gen_initramfs)
+	$(call build,gen_initramfs)
 
 .PHONY: git
 git: out/git/index.json
 out/git/index.json: \
-	src/tools/git/Containerfile \
+	packages/git/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
@@ -660,12 +660,12 @@ out/git/index.json: \
 	out/musl/index.json \
 	out/perl/index.json \
 	out/zlib/index.json
-	$(call build,tools,git)
+	$(call build,git)
 
 .PHONY: gpg
 gpg: out/gpg/index.json
 out/gpg/index.json: \
-	src/tools/gpg/Containerfile \
+	packages/gpg/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/gcc/index.json \
@@ -677,31 +677,31 @@ out/gpg/index.json: \
 	out/musl/index.json \
 	out/npth/index.json \
 	out/zlib/index.json
-	$(call build,tools,gpg)
+	$(call build,gpg)
 
 .PHONY: sops
 sops: out/sops/index.json
 out/sops/index.json: \
-	src/tools/sops/Containerfile \
+	packages/sops/Containerfile \
 	out/busybox/index.json \
 	out/ca-certificates/index.json \
 	out/go/index.json
-	$(call build,tools,sops)
+	$(call build,sops)
 
 .PHONY: sxctl
 sxctl: out/sxctl/index.json
 out/sxctl/index.json: \
-	src/tools/sxctl/Containerfile \
+	packages/sxctl/Containerfile \
 	out/busybox/index.json \
 	out/go/index.json
-	$(call build,tools,sxctl)
+	$(call build,sxctl)
 
 .PHONY: tofu
 tofu: out/tofu/index.json
 out/tofu/index.json: \
-	src/tools/tofu/Containerfile \
+	packages/tofu/Containerfile \
 	out/busybox/index.json \
 	out/ca-certificates/index.json \
 	out/go/index.json
-	$(call build,tools,tofu)
+	$(call build,tofu)
 
