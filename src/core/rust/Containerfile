@@ -102,14 +102,15 @@ RUN <<-EOF
 	cp -R run_rustc/output/prefix ../rust-1.54.0/usr
 EOF
 
-FROM build-base as build
-COPY --from=llvm . /
+FROM build-base as build-script
 COPY <<-'EOF' build.sh
+	set -eux
 	VERSION=${1}
 	BUILD_VERSION=${2}
-	PREFIX=/rust-${VERSION}
-	BUILD_PREFIX=/rust-${BUILD_VERSION}
-	set -eux
+	PREFIX=/rust-${VERSION}/usr
+	BUILD_PREFIX=/rust-${BUILD_VERSION}/usr
+	#HACK because rust build seemingly ignores LD_LIBRARY_PATH
+	cp ${BUILD_PREFIX}/lib/rustlib/x86_64-unknown-linux-musl/lib/*.so /usr/lib
 	tar -xzf rustc-${VERSION}-src.tar.gz
 	cd rustc-${VERSION}-src
 	./configure \
@@ -117,7 +118,7 @@ COPY <<-'EOF' build.sh
 		--host="x86_64-unknown-linux-musl" \
 		--target="x86_64-unknown-linux-musl" \
 		--enable-local-rust \
-		--llvm-root="/usr/lib/llvm16" \
+		--llvm-root="/usr/lib" \
 		--disable-docs \
 		--tools="cargo" \
 		--enable-llvm-link-shared \
@@ -126,11 +127,11 @@ COPY <<-'EOF' build.sh
 		--enable-vendor \
 		--dist-compression-formats=gz \
 		--python="python3" \
-		--local-rust-root="${BUILD_PREFIX}/usr" \
+		--local-rust-root="${BUILD_PREFIX}" \
 		--prefix="${PREFIX}/usr" \
 		--sysconfdir="${PREFIX}/etc" \
 		--release-channel="stable" \
-		--set="install.prefix=${PREFIX}/usr" \
+		--set="install.prefix=${PREFIX}" \
 		--set="build.extended=true" \
 		--set="rust.musl-root=/usr" \
 		--set="rust.backtrace-on-ice=true" \
@@ -151,6 +152,10 @@ COPY <<-'EOF' build.sh
 	python3 x.py dist
 	python3 x.py install
 EOF
+
+FROM build-script as build-llvm13
+COPY --from=llvm13 . /
+COPY --from=build-mrustc /rust-1.54.0 /rust-1.54.0
 RUN sh build.sh 1.55.0 1.54.0
 RUN sh build.sh 1.56.0 1.55.0
 RUN sh build.sh 1.57.0 1.56.0
@@ -165,6 +170,10 @@ RUN sh build.sh 1.65.0 1.64.0
 RUN sh build.sh 1.66.0 1.65.0
 RUN sh build.sh 1.67.0 1.66.0
 RUN sh build.sh 1.68.0 1.67.0
+
+FROM build-script as build
+COPY --from=llvm . /
+COPY --from=build-llvm13 /rust-1.68.0 /rust-1.68.0
 RUN sh build.sh 1.69.0 1.68.0
 RUN sh build.sh 1.70.0 1.69.0
 RUN sh build.sh 1.71.0 1.70.0
