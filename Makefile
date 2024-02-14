@@ -41,7 +41,7 @@ digests:
 			"$$(basename $$(dirname $$each))";  \
 	done
 
-digests.txt: all
+digests.txt:
 	mv $@ .$@.old
 	$(MAKE) digests > $@
 	diff $@.old $@
