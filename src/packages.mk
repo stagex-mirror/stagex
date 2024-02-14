@@ -528,6 +528,7 @@ out/linux-nitro/index.json: \
 	out/binutils/index.json \
 	out/bison/index.json \
 	out/coreutils/index.json \
+	out/diffutils/index.json \
 	out/elfutils/index.json \
 	out/findutils/index.json \
 	out/flex/index.json \
