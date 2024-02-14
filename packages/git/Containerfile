@@ -15,7 +15,7 @@ COPY --from=binutils . /
 COPY --from=make . /
 COPY --from=zlib . /
 COPY --from=perl . /
-COPY --from=gettext . / 
+COPY --from=gettext . /
 RUN tar -xvf $SRC_FILE
 WORKDIR git-${SRC_VERSION}
 RUN --network=none <<-EOF
@@ -37,6 +37,7 @@ EOF
 
 FROM build as install
 RUN make DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM base as test
 COPY --from=install /rootfs /
