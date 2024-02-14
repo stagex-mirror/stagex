@@ -1,0 +1,48 @@
+
+FROM scratch as base
+ENV SRC_VERSION=2.5.6
+ENV SRC_HASH=e9fd27218d5394904e4e39788f9b1742711c3e6b41689a31aa3380bd5aa4f426
+ENV SRC_FILE=libassuan-${SRC_VERSION}.tar.bz2
+ENV SRC_SITE=https://gnupg.org/ftp/gcrypt/libassuan/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch as build
+COPY --from=busybox . /
+COPY --from=musl . /
+COPY --from=gcc . /
+COPY --from=binutils . /
+COPY --from=make . /
+COPY --from=libgpg-error . /
+RUN tar -xvf $SRC_FILE
+WORKDIR libassuan-${SRC_VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--build=x86_64-unknown-linux-musl \
+		--host=x86_64-unknown-linux-musl \
+		--prefix=/usr \
+		--bindir=/bin \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+	make
+EOF
+
+FROM build as install
+RUN make DESTDIR=/rootfs install
+
+FROM base as test
+COPY --from=install /rootfs /
+COPY --from=busybox . /
+RUN /bin/sh <<-EOF
+	set -eux
+	LIBASSUAN_FILES_FOUND=\$(ls /usr/lib/ | grep libassuan || true)
+	if [ -z "\$LIBASSUAN_FILES_FOUND" ]; then
+	    echo "libassuan not found"
+	    exit 1
+	fi
+EOF
+
+FROM scratch as package
+COPY --from=install /rootfs /

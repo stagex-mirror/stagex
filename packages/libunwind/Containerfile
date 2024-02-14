@@ -1,0 +1,41 @@
+FROM scratch as base
+ENV VERSION=1.7.2
+ENV SRC_HASH=a18a6a24307443a8ace7a8acc2ce79fbbe6826cd0edf98d6326d0225d6a5d6e6
+ENV SRC_FILE=libunwind-${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/libunwind/libunwind/releases/download/v${VERSION}/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=busybox . /
+COPY --from=gcc . /
+COPY --from=make . /
+COPY --from=musl . /
+COPY --from=binutils . /
+COPY --from=autoconf . /
+COPY --from=automake . /
+COPY --from=libtool . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR libunwind-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--build=x86_64-unknown-linux-musl \
+		--host=x86_64-unknown-linux-musl \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--localstatedir=/usr/share/man \
+		--enable-cxx-exceptions \
+		--disable-tests \
+		--infodir=/usr/share/info || cat config.log
+	make
+EOF
+
+FROM build as install
+RUN --network=none make DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM scratch as package
+COPY --from=install /rootfs /

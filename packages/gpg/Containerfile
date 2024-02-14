@@ -1,0 +1,60 @@
+FROM scratch as base
+ENV SRC_VERSION=2.4.4
+ENV SRC_HASH=67ebe016ca90fa7688ce67a387ebd82c6261e95897db7b23df24ff335be85bc6
+ENV SRC_FILE=gnupg-${SRC_VERSION}.tar.bz2
+ENV SRC_SITE=https://gnupg.org/ftp/gcrypt/gnupg/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch as build
+COPY --from=busybox . /
+COPY --from=musl . /
+COPY --from=gcc . /
+COPY --from=binutils . /
+COPY --from=make . /
+COPY --from=npth . /
+COPY --from=libksba . /
+COPY --from=libgpg-error . /
+COPY --from=libassuan . /
+COPY --from=libgcrypt . /
+RUN tar -xvf $SRC_FILE
+WORKDIR gnupg-${SRC_VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--build=x86_64-unknown-linux-musl \
+		--host=x86_64-unknown-linux-musl \
+		--prefix=/usr \
+		--bindir=/bin \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+	make
+EOF
+
+FROM build as install
+RUN make DESTDIR=/rootfs install
+
+FROM base as test
+COPY --from=install /rootfs /
+COPY --from=zlib . /
+COPY --from=musl . /
+COPY --from=busybox . /
+COPY --from=npth . /
+COPY --from=libksba . /
+COPY --from=libgpg-error . /
+COPY --from=libassuan . /
+COPY --from=libgcrypt . /
+
+RUN /bin/sh <<-EOF
+	set -eux
+	EXPECTED_GPG_VERSION="gpg version ${SRC_VERSION}"
+	GPG_VERSION=\$(gpg --version)
+	if [ "\$GPG_VERSION" != "\$EXPECTED_GPG_VERSION" ]; then
+	    echo "Expected gpg version is \$EXPECTED_GPG_VERSION, but got \$GPG_VERSION"
+	    exit 1
+	fi
+EOF
+
+FROM scratch as package
+COPY --from=install /rootfs /

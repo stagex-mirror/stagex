@@ -1,4 +1,8 @@
-# Stage[x]
+# \[Stageˣ\]
+
+[git://codeberg.org:stagex/stagex](https://codeberg.org/stagex/stagex) | [matrix://#stagex:matrix.org](https://matrix.to/#/#stagex:matrix.org) | [ircs://irc.oftc.net:6697#stagex](https://webchat.oftc.net/?channels=stagex&uio=MT11bmRlZmluZWQmMTE9MTk14d)
+
+---
 
 Minimalism and security first repository of reproducible and multi-signed OCI
 images of common open source software toolchains full-source bootsrapped from
@@ -233,7 +237,7 @@ For further reading see the [Bootstrappable Builds](https://bootstrappable.org/)
 
 ### Examples
 
-#### Compile all packages
+#### Reproduce entire tree
 
 ```
 make
@@ -242,22 +246,16 @@ make
 #### Compile specific package
 
 ```
-make out/rust.tgz
+make rust
 ```
 
-#### Reproduce all changed packages
+#### Compile specific package without cache
 
 ```
-make reproduce
+make NOCACHE=1
 ```
 
-#### Reproduce all packages without cache
-
-```
-make clean reproduce
-```
-
-#### Sign current manifest of package hashes
+#### Sign all locally built packages (WIP)
 
 ```
 make sign
@@ -296,6 +294,6 @@ Every package should have a minimum of 5 stages as follows
 
 ## Sponsors
 
-- Turnkey
-- Distrust
-- Mysten Labs
+- [Turnkey](https://turnkey.com)
+- [Distrust](https://distrust.co)
+- [Mysten Labs](https://mystenlabs.com)

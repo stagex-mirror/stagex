@@ -21,12 +21,12 @@
 # - output manifest.txt of all tar/digest hashes for an easy git diff
 # - support buildah and podman
 define build
-	$(eval CATEGORY := $(1))
-	$(eval NAME := $(2))
-	$(eval VERSION := $(if $(3),$(3),latest))
-	$(eval TARGET := $(if $(4),$(4),package))
-	$(eval EXTRA_ARGS := $(if $(5),$(5),))
-	$(eval REVISION := $(shell git rev-list HEAD -1 src/$(CATEGORY)/$(NAME)))
+	$(eval NAME := $(1))
+	$(eval VERSION := $(if $(2),$(2),latest))
+	$(eval TARGET := $(if $(3),$(3),package))
+	$(eval EXTRA_ARGS := $(if $(4),$(4),))
+	$(eval REVISION := $(shell git rev-list HEAD -1 packages/$(NAME)))
+	$(eval TEMPFILE := out/.$(notdir $(basename $@)).tmp.tar)
 	$(eval BUILD_CMD := \
 		DOCKER_BUILDKIT=1 \
 		BUILDKIT_MULTI_PLATFORM=1 \
@@ -34,27 +34,25 @@ define build
 		$(BUILDER) \
 			build \
 			--ulimit nofile=2048:16384 \
-			--tag $(REGISTRY)/$(NAME):$(VERSION) \
-			--build-arg REGISTRY=$(REGISTRY) \
+			--tag $(REGISTRY_REMOTE)/$(NAME):$(VERSION) \
+			--build-arg CACHE_BUST="$(shell date)" \
+			--build-arg SOURCE_DATE_EPOCH=1 \
+			--build-arg CORES=$(shell nproc --all) \
 			--platform $(PLATFORM) \
 			--progress=plain \
 			$(if $(filter latest,$(VERSION)),,--build-arg VERSION=$(VERSION)) \
-			--output type=oci,force-compression=true,name=$(NAME),annotation.org.opencontainers.image.revision=$(REVISION),annotation.org.opencontainers.image.version=$(VERSION),dest=$(basename $@).tar \
+			--output type=oci,rewrite-timestamp=true,force-compression=true,name=$(NAME),annotation.org.opencontainers.image.revision=$(REVISION),annotation.org.opencontainers.image.version=$(VERSION),tar=false,dest=out/$(NAME) \
 			--target $(TARGET) \
+			$(shell ./src/context.sh $(NAME)) \
 			$(EXTRA_ARGS) \
 			$(NOCACHE_FLAG) \
-			-f src/$(CATEGORY)/$(NAME)/Containerfile \
-			src/$(CATEGORY)/$(NAME) \
-			&& tar -tf $(basename $@).tar \
-			&& gzip < $(basename $@).tar > $@ \
-			&& rm $(basename $@).tar \
-			&& gunzip -c $@ | docker load; \
+			-f packages/$(NAME)/Containerfile \
+			packages/$(NAME) \
 	)
 	$(eval TIMESTAMP := $(shell TZ=GMT date +"%Y-%m-%dT%H:%M:%SZ"))
-	mkdir -p out/
-	echo $(TIMESTAMP) $(BUILD_CMD) >> out/build.log
-	$(BUILD_CMD)
-	tar -xf $@ index.json -O \
-		| jq -r '.manifests[].digest | sub("sha256:";"")' \
-	> $@.digest
+	mkdir -p out/ \
+	&& echo $(TIMESTAMP) $(BUILD_CMD) start >> out/build.log \
+	&& rm -rf out/$(NAME) \
+	&& $(BUILD_CMD) \
+	&& echo $(TIMESTAMP) $(BUILD_CMD) end >> out/build.log;
 endef

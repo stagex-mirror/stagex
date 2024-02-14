@@ -1,0 +1,35 @@
+FROM scratch as base
+ENV VERSION=0.21
+ENV SRC_HASH=d20fcbb537e02dcf1383197ba05bd0734ef7bf5db06bdb241eb69b7d16b73192
+ENV SRC_FILE=gettext-${VERSION}.tar.xz
+ENV SRC_SITE=https://mirrors.kernel.org/gnu/gettext/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=busybox . /
+COPY --from=gcc . /
+COPY --from=binutils . /
+COPY --from=libxml2 . /
+COPY --from=make . /
+COPY --from=musl . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR gettext-${VERSION}
+RUN <<-EOF
+	set -eux
+	./configure \
+		--prefix=/usr \
+        --enable-threads=posix \
+        --disable-java \
+        --enable-static \
+        --with-included-libxml=no
+	make
+EOF
+
+from build as install
+RUN make DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM scratch as package
+COPY --from=install /rootfs /

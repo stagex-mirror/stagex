@@ -1,0 +1,30 @@
+FROM scratch as base
+ENV VERSION=4.9
+ENV SRC_HASH=6e226b732e1cd739464ad6862bd1a1aba42d7982922da7a53519631d24975181
+ENV SRC_FILE=sed-${VERSION}.tar.xz
+ENV SRC_SITE=https://ftp.gnu.org/gnu/sed/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=busybox . /
+COPY --from=gcc . /
+COPY --from=binutils . /
+COPY --from=make . /
+COPY --from=musl . /
+RUN tar -xf sed-${VERSION}.tar.xz
+WORKDIR sed-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--prefix=/; \
+	make
+EOF
+
+FROM build as install
+RUN make DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM scratch as package
+COPY --from=install /rootfs /

@@ -1,0 +1,36 @@
+FROM scratch as base
+ENV VERSION=1.2.3
+ENV SRC_HASH=9ffb3479b15df0170eba4480e51723c3961dbe0b461ec289744622db03a69395
+ENV SRC_FILE=v${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/void-linux/musl-obstack/archive/refs/tags/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=busybox . /
+COPY --from=gcc . /
+COPY --from=binutils . /
+COPY --from=make . /
+COPY --from=musl . /
+COPY --from=perl . /
+COPY --from=autoconf . /
+COPY --from=automake . /
+COPY --from=libtool . /
+COPY --from=pkgconf . /
+COPY --from=m4 . /
+RUN tar -xzf ${SRC_FILE}
+WORKDIR musl-obstack-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	./bootstrap.sh
+	./configure --prefix=/usr
+	make
+EOF
+
+FROM build as install
+RUN --network=none make DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM scratch as package
+COPY --from=install /rootfs /

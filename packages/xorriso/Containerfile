@@ -1,0 +1,44 @@
+FROM scratch as base
+ENV SRC_VERSION=1.5.6
+ENV SRC_HASH=786f9f5df9865cc5b0c1fecee3d2c0f5e04cab8c9a859bd1c9c7ccd4964fdae1
+ENV SRC_FILE=xorriso-${SRC_VERSION}.pl02.tar.gz
+ENV SRC_SITE=https://www.gnu.org/software/xorriso/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch as build
+COPY --from=busybox . /
+COPY --from=gcc . /
+COPY --from=binutils . /
+COPY --from=make . /
+COPY --from=musl . /
+COPY --from=linux-headers . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR xorriso-${SRC_VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--prefix=/usr
+	make
+EOF
+
+FROM build as install
+RUN make DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM base as test
+COPY --from=install /rootfs /
+COPY --from=musl . /
+COPY --from=busybox . /
+RUN /bin/sh <<-EOF
+	set -eux
+	XORRISO_VERSION=$(xorriso --version | grep 'xorriso version' | sed -E 's/^.*: +([^ ]+).*$/\1/')
+	if [ "${SRC_VERSION}.pl02" != "\$XORRISO_VERSION" ]; then
+		echo "Expected xorriso version is \$SRC_VERSION.pl02, but got \$XORRISO_VERSION"
+		exit 1
+	fi
+EOF
+
+FROM scratch as package
+COPY --from=install /rootfs /

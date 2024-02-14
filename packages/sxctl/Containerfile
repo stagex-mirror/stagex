@@ -1,0 +1,20 @@
+FROM scratch as base
+ENV VERSION=0.0.3
+ENV SRC_FILE=v${VERSION}.tar.gz
+ENV SRC_SITE=https://codeberg.org/stagex/sxctl/archive/${SRC_FILE}
+ENV SRC_HASH=1d159266f669f206d6dbccdb4702d5b72d5f985fd29a83410929fc75b8575d8f
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=busybox . /
+COPY --from=go . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR sxctl/cmd/sxctl
+RUN go build -o /app
+
+FROM scratch as package
+COPY --from=build /app /sxctl
+ENTRYPOINT [ "/sxctl" ]
+CMD []

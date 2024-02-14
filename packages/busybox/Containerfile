@@ -1,0 +1,79 @@
+FROM scratch as base
+ENV VERSION=1.36.1
+ENV SRC_HASH=b8cc24c9574d809e7279c3be349795c5d5ceb6fdf19ca709f80cde50e47de314
+ENV SRC_FILE=busybox-${VERSION}.tar.bz2
+ENV SRC_SITE=https://busybox.net/downloads/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=stage3 . /
+RUN tar -xjf ${SRC_FILE}
+WORKDIR busybox-${VERSION}
+ENV KCONFIG_NOTIMESTAMP=1
+RUN --network=none <<-EOF
+    set -eux
+    setConfs='
+        CONFIG_LAST_SUPPORTED_WCHAR=0
+        CONFIG_STATIC=y
+    '
+    unsetConfs='
+        CONFIG_FEATURE_SYNC_FANCY
+        CONFIG_FEATURE_HAVE_RPC
+        CONFIG_FEATURE_INETD_RPC
+        CONFIG_FEATURE_UTMP
+        CONFIG_FEATURE_WTMP
+    '
+    make defconfig
+    for conf in $unsetConfs; do
+        sed -i \
+            -e "s!^$conf=.*\$!# $conf is not set!" \
+            .config
+    done
+    for confV in $setConfs; do
+        conf="${confV%=*}"
+        sed -i \
+            -e "s!^$conf=.*\$!$confV!" \
+            -e "s!^# $conf is not set\$!$confV!" \
+            .config
+        if ! grep -q "^$confV\$" .config; then
+            echo "$confV" >> .config
+        fi
+    done
+    make oldconfig
+    for conf in $unsetConfs; do
+        ! grep -q "^$conf=" .config
+    done
+    for confV in $setConfs; do
+        grep -q "^$confV\$" .config
+    done
+    make
+EOF
+
+FROM build as install
+RUN --network=none <<-EOF
+    set -eux
+    mkdir -p /rootfs/bin
+    cp busybox /rootfs/bin
+    cp busybox /bin
+    cd /rootfs
+    mkdir -p home/user var/tmp etc tmp lib bin
+    /bin/busybox --install -s bin
+    echo "user:x:1000:" > etc/group
+    echo "user:x:1000:1000::/home/user:/bin/sh" > etc/passwd
+    ln -sT /lib lib64
+    chown -R 1000:1000 /rootfs/home/user /rootfs/tmp /rootfs/var/tmp
+EOF
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM scratch as package
+COPY --from=install /rootfs /
+WORKDIR /home/user
+USER 1000:1000
+ENTRYPOINT ["/bin/sh"]
+ENV TZ=UTC
+ENV LANG=C.UTF-8
+ENV SOURCE_DATE_EPOCH=1
+ENV KCONFIG_NOTIMESTAMP=1
+ENV PS1="stage4 $ "

@@ -1,0 +1,74 @@
+FROM scratch as base
+ENV VERSION=5.38.0
+ENV SRC_HASH=eca551caec3bc549a4e590c0015003790bdd1a604ffe19cc78ee631d51f7072e
+ENV SRC_FILE=perl-${VERSION}.tar.xz
+ENV SRC_SITE=https://www.cpan.org/src/5.0/${SRC_FILE}
+ENV SOURCE_DATE_EPOCH=1
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=busybox . /
+COPY --from=gcc . /
+COPY --from=binutils . /
+COPY --from=make . /
+COPY --from=musl . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR perl-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	printf '
+	osvers="gnulinux"
+	myuname="dummy_uname"
+	myhostname="builder"
+	cf_by="builder"
+	cf_time="0"
+	' > config.over
+    cat config.over
+	./Configure \
+		-des \
+		-Dcccdlflags='-fPIC' \
+		-Dccdlflags='-rdynamic' \
+		-Dprefix=/usr \
+		-Dvendorprefix=/usr \
+		-Dvendorlib=/usr/share/perl5/vendor_perl \
+		-Dvendorarch=/usr/lib/perl5/vendor_perl \
+		-Dsiteprefix=/usr/local \
+		-Dsitelib=/usr/local/share/perl5/site_perl \
+		-Dsitearch=/usr/local/lib/perl5/site_perl \
+		-Dlocincpth=' ' \
+		-Duselargefiles \
+		-Dusethreads \
+		-Duseshrplib \
+		-Dcc=gcc \
+		-Dd_semctl_semun \
+		-Dman1dir=/usr/share/man/man1 \
+		-Dman3dir=/usr/share/man/man3 \
+		-Dinstallman1dir=/usr/share/man/man1 \
+		-Dinstallman3dir=/usr/share/man/man3 \
+		-Dman1ext='1' \
+		-Dman3ext='3pm' \
+		-Ud_csh \
+		-Ud_fpos64_t \
+		-Ud_off64_t \
+		-Dusenm
+	make
+EOF
+
+FROM build as install
+RUN --network=none make DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM scratch as test
+COPY --from=install /rootfs /
+COPY --from=musl . /
+COPY <<-EOF test.pl
+	use strict;
+	use warnings;
+	print("Success\n");
+EOF
+RUN perl test.pl | grep "Success"
+
+FROM scratch as package
+COPY --from=install /rootfs /

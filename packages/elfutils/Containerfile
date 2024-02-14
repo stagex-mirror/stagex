@@ -1,0 +1,62 @@
+FROM scratch as base
+ENV VERSION=0.190
+ENV SRC_HASH=8e00a3a9b5f04bc1dc273ae86281d2d26ed412020b391ffcc23198f10231d692
+ENV SRC_FILE=elfutils-${VERSION}.tar.bz2
+ENV SRC_SITE=https://sourceware.org/elfutils/ftp/${VERSION}/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=busybox . /
+COPY --from=gcc . /
+COPY --from=binutils . /
+COPY --from=make . /
+COPY --from=bison . /
+COPY --from=libtool . /
+COPY --from=zlib . /
+COPY --from=libzstd . /
+COPY --from=flex . /
+COPY --from=perl . /
+COPY --from=autoconf . /
+COPY --from=automake . /
+COPY --from=pkgconf . /
+COPY --from=gettext . /
+COPY --from=m4 . /
+COPY --from=argp-standalone . /
+COPY --from=musl . /
+COPY --from=musl-fts . /
+COPY --from=musl-obstack . /
+COPY --from=linux-headers . /
+RUN tar -xjf ${SRC_FILE}
+WORKDIR elfutils-${VERSION}
+ADD *.patch .
+RUN --network=none <<-EOF
+	set -eux
+	patch -p1 < musl-macros.patch
+	autoreconf -vif
+	CFLAGS="-D_GNU_SOURCE -Wno-error -Wno-null-dereference" \
+	./configure \
+		--build="x86_64-linux-musl" \
+		--host="x86_64-linux-musl" \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--localstatedir=/var \
+		--program-prefix=eu- \
+		--enable-deterministic-archives \
+		--disable-nls \
+		--disable-progs \
+		--disable-libdebuginfod \
+		--disable-debuginfod \
+		--with-zstd
+	make
+EOF
+
+FROM build as install
+RUN --network=none make DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM scratch as package
+COPY --from=install /rootfs /

@@ -1,0 +1,24 @@
+FROM scratch as base
+ENV VERSION=68.2.2
+ENV SRC_HASH=4ac1475276d2f1c48684874089fefcd83bd7162ddaafb81fac866ba0db282a87
+ENV SRC_FILE=setuptools-${VERSION}.tar.gz
+ENV SRC_SITE=https://pypi.io/packages/source/s/setuptools/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=busybox . /
+COPY --from=musl . /
+COPY --from=python . /
+COPY --from=zlib . /
+RUN tar -xzf ${SRC_FILE}
+WORKDIR setuptools-${VERSION}
+RUN python setup.py build
+
+FROM build as install
+RUN python setup.py install --root=/rootfs
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM scratch as package
+COPY --from=install /rootfs /

@@ -1,0 +1,51 @@
+FROM scratch as base
+ENV SRC_VERSION=1.6.5
+ENV SRC_HASH=a564628c574c99287998753f98d750babd91a4e9db451f46ad140466ef2a6d16
+ENV SRC_FILE=libksba-${SRC_VERSION}.tar.bz2
+ENV SRC_SITE=https://gnupg.org/ftp/gcrypt/libksba/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch as build
+COPY --from=busybox . /
+COPY --from=musl . /
+COPY --from=gcc . /
+COPY --from=binutils . /
+COPY --from=make . /
+COPY --from=npth . /
+COPY --from=libgpg-error . / 
+RUN tar -xvf $SRC_FILE
+WORKDIR libksba-${SRC_VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--build=x86_64-unknown-linux-musl \
+		--host=x86_64-unknown-linux-musl \
+		--prefix=/usr \
+		--bindir=/bin \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+	make
+EOF
+
+FROM build as install
+RUN make DESTDIR=/rootfs install
+
+FROM base as test
+COPY --from=install /rootfs /
+COPY --from=zlib . /
+COPY --from=musl . /
+COPY --from=busybox . /
+RUN ls /usr/lib
+RUN /bin/sh <<-EOF
+	set -eux
+	LIBKSBA_FILES_FOUND=\$(ls /usr/lib/ | grep libksba || true)
+	if [ -z "\$LIBKSBA_FILES_FOUND" ]; then
+	    echo "libksba not found"
+	    exit 1
+	fi
+EOF
+
+FROM scratch as package
+COPY --from=install /rootfs /

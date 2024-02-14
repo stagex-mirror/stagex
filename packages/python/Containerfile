@@ -1,0 +1,50 @@
+FROM scratch as base
+ENV VERSION=3.12.0
+ENV SRC_HASH=795c34f44df45a0e9b9710c8c71c15c671871524cd412ca14def212e8ccb155d
+ENV SRC_FILE=Python-${VERSION}.tar.xz
+ENV SRC_SITE=https://www.python.org/ftp/python/${VERSION}/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=busybox . /
+COPY --from=gcc . /
+COPY --from=binutils . /
+COPY --from=make . /
+COPY --from=musl . /
+COPY --from=openssl . /
+COPY --from=zlib . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR Python-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
+ENV PYTHONHASHSEED=0
+ENV PYTHONDONTWRITEBYTECODE=1
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--prefix=/usr \
+		--enable-shared \
+		--with-computed-gotos \
+		--without-ensurepip
+	make
+EOF
+
+FROM build as install
+RUN --network=none <<-EOF
+	set -eux
+	make DESTDIR=/rootfs install
+	ln -s /usr/bin/python3 /rootfs/usr/bin/python
+EOF
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM scratch as test
+COPY --from=install /rootfs /
+COPY --from=musl . /
+COPY <<-EOF test.py
+	print("Success")
+EOF
+RUN python test.py | grep "Success"
+
+FROM scratch as package
+COPY --from=install /rootfs /

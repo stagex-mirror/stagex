@@ -1,0 +1,102 @@
+FROM scratch as base
+ENV VERSION=1.21.4
+ENV SRC_HASH=47b26a83d2b65a3c1c1bcace273b69bee49a7a7b5168a7604ded3d26a37bd787
+ENV SRC_FILE=go${VERSION}.src.tar.gz
+ENV SRC_SITE=https://storage.googleapis.com/golang/${SRC_FILE}
+ENV VERSION_BOOTSTRAP_2=1.19.11
+ENV SRC_HASH_BOOTSTRAP_2=e25c9ab72d811142b7f41ff6da5165fec2d1be5feec3ef2c66bc0bdecb431489
+ENV SRC_FILE_BOOTSTRAP_2=go${VERSION_BOOTSTRAP_2}.src.tar.gz
+ENV SRC_SITE_BOOTSTRAP_2=https://storage.googleapis.com/golang/${SRC_FILE_BOOTSTRAP_2}
+ENV VERSION_BOOTSTRAP_1=1.4-bootstrap-20171003
+ENV SRC_HASH_BOOTSTRAP_1=f4ff5b5eb3a3cae1c993723f3eab519c5bae18866b5e5f96fe1102f0cb5c3e52
+ENV SRC_FILE_BOOTSTRAP_1=go${VERSION_BOOTSTRAP_1}.tar.gz
+ENV SRC_SITE_BOOTSTRAP_1=https://dl.google.com/go/${SRC_FILE_BOOTSTRAP_1}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH_BOOTSTRAP_1} ${SRC_SITE_BOOTSTRAP_1} .
+ADD --checksum=sha256:${SRC_HASH_BOOTSTRAP_2} ${SRC_SITE_BOOTSTRAP_2} .
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=busybox . /
+COPY --from=gcc . /
+COPY --from=bash . /
+COPY --from=musl . /
+COPY --from=binutils . /
+RUN <<-EOF
+	set -eux
+	tar -xzf go${VERSION_BOOTSTRAP_1}.tar.gz
+	mv go go-bootstrap-1-src
+	tar -xzf go${VERSION_BOOTSTRAP_2}.src.tar.gz
+	mv go go-bootstrap-2-src
+	tar -xzf go${VERSION}.src.tar.gz; \
+	mv go go-src
+EOF
+WORKDIR go-bootstrap-1-src
+ENV GOOS=linux
+ENV CGO_ENABLED=0
+ENV GOROOT_FINAL=/go-bootstrap-1
+ENV GOROOT=${GOROOT_FINAL}
+ENV DEST=${GOROOT_FINAL}
+ENV GOBIN=${GOROOT_FINAL}/bin
+RUN --network=none <<-EOF
+	set -eux
+	cd src
+	bash make.bash
+	cd ..
+	mkdir -p ${DEST}
+	cp -R bin lib pkg src ${DEST}
+EOF
+WORKDIR ../go-bootstrap-2-src
+ENV GO11MODULE=off
+ENV GOROOT_BOOTSTRAP=/go-bootstrap-1
+ENV GOROOT_FINAL=/go-bootstrap-2
+ENV GOROOT=${GOROOT_FINAL}
+ENV DEST=${GOROOT_FINAL}
+ENV GOBIN=${GOROOT_FINAL}/bin
+RUN --network=none <<-EOF
+	set -eux
+	cd src
+	bash make.bash
+	cd ..
+	mkdir -p ${DEST}
+	cp -R bin lib pkg src ${DEST}
+EOF
+WORKDIR ../go-src
+ENV GOPROXY=off
+ENV GOTOOLCHAIN=local
+ENV GOFLAGS=-mod=vendor
+ENV GO11MODULE=on
+ENV GOROOT_BOOTSTRAP=/go-bootstrap-2
+ENV GOROOT_FINAL="/lib/go"
+ENV GOBIN=${GOROOT_FINAL}/bin
+ENV GOROOT=/go-bootstrap-2
+RUN --network=none <<-EOF
+	set -eux
+	cd src
+	bash make.bash
+EOF
+
+FROM build as install
+RUN <<-EOF
+	set -eux
+	mkdir -p /rootfs
+	cp -R bin lib pkg src /rootfs
+EOF
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM base as test
+COPY --from=install /rootfs /
+COPY <<-EOF test.go
+	package main
+	import "fmt"
+	func main() { fmt.Println("Success") }
+EOF
+RUN <<-EOF
+	set -eux
+	go build test.go
+	./test | grep "Success"
+EOF
+
+FROM scratch as package
+COPY --from=install /rootfs /

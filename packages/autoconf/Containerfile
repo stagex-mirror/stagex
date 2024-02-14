@@ -1,0 +1,33 @@
+FROM scratch as base
+ENV SRC_VERSION=2.71
+ENV SRC_HASH=f14c83cfebcc9427f2c3cea7258bd90df972d92eb26752da4ddad81c87a0faa4
+ENV SRC_FILE=autoconf-${SRC_VERSION}.tar.xz
+ENV SRC_SITE=https://ftp.gnu.org/gnu/autoconf/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=busybox . /
+COPY --from=gcc . /
+COPY --from=binutils . /
+COPY --from=make . /
+COPY --from=musl . /
+COPY --from=m4 . /
+COPY --from=perl . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR autoconf-${SRC_VERSION}
+ENV M4=/usr/bin/m4
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--prefix=/usr
+	make
+EOF
+
+from build as install
+RUN --network=none make DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM scratch as package
+COPY --from=install /rootfs /

@@ -1,0 +1,33 @@
+FROM scratch as base
+ENV VERSION=2.4.6
+ENV SRC_HASH=7c87a8c2c8c0fc9cd5019e402bed4292462d00a718a7cd5f11218153bf28b26f
+ENV SRC_FILE=libtool-${VERSION}.tar.xz
+ENV SRC_SITE=https://ftp.gnu.org/gnu/libtool/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=busybox . /
+COPY --from=gcc . /
+COPY --from=binutils . /
+COPY --from=make . /
+COPY --from=musl . /
+COPY --from=m4 . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR libtool-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--prefix=/usr; \
+	make
+EOF
+
+FROM build as install
+RUN --network=none <<-EOF
+	make DESTDIR=/rootfs install
+EOF
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM scratch as package
+COPY --from=install /rootfs /
