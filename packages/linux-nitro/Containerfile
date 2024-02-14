@@ -5,7 +5,7 @@ ENV KERNEL_SRC_SITE=http://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/${KERNE
 ENV NSM_VERSION=ed24913346a34d719afa2031299253160a2e3460
 ENV NSM_SRC_HASH=720916a640f7579a1e9a972ddd43448d201b9ce4d4750079d8256e83be3e937c
 ENV NSM_SRC_FILE=nsm.tgz
-ENV NSM_SRC_SITE=https://codeload.github.com/aws/aws-nitro-enclaves-sdk-bootstrap/legacy.tar.gz/${VERSION}
+ENV NSM_SRC_SITE=https://codeload.github.com/aws/aws-nitro-enclaves-sdk-bootstrap/legacy.tar.gz/${NSM_VERSION}
 ENV KERNEL_VERSION=5.19.6
 
 FROM base as fetch
