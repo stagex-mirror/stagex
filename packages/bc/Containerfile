@@ -1,0 +1,52 @@
+FROM scratch as base
+ARG ARCH=x86_64
+ENV VERSION=1.07.1
+ENV SRC_HASH=62adfca89b0a1c0164c2cdca59ca210c1d44c3ffc46daf9931cf4942664cb02a
+ENV SRC_FILE=bc-${VERSION}.tar.gz
+ENV SRC_SITE=https://ftp.gnu.org/gnu/bc/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+#COPY --from=busybox . /
+COPY --from=binutils . /
+COPY --from=coreutils . /
+COPY --from=musl . /
+COPY --from=make . /
+COPY --from=gcc . /
+COPY --from=openssl . /
+COPY --from=bash . /
+COPY --from=bash /bin/bash /bin/sh
+COPY --from=tar . /
+COPY --from=ed . /
+COPY --from=grep . /
+COPY --from=gzip . /
+COPY --from=bison . /
+COPY --from=flex . /
+COPY --from=gawk . /
+COPY --from=perl . /
+COPY --from=texinfo . /
+COPY --from=findutils . /
+COPY --from=sed . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR bc-${VERSION}
+RUN --network=none <<-EOF
+	set -ex
+    mkdir /tmp
+	./configure \
+		--build=${ARCH}-linux-musl \
+		--host=${ARCH}-linux-musl \
+		--prefix=/usr \
+        --sysconfdir=/etc \
+		--mandir=/usr/share/man \
+        --infodir=/usr/share/info
+	make -j1
+EOF
+
+FROM build as install
+RUN --network=none make DESTDIR="/rootfs" install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM scratch as package
+COPY --from=install /rootfs /
