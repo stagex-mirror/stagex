@@ -18,6 +18,7 @@ COPY --from=perl . /
 COPY --from=gettext . /
 RUN tar -xvf $SRC_FILE
 WORKDIR git-${SRC_VERSION}
+ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	set -eux
 	./configure \
