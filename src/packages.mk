@@ -102,6 +102,18 @@ out/cmake/index.json: \
 	out/zlib/index.json
 	$(call build,cmake)
 
+.PHONY: coreutils
+coreutils: out/coreutils/index.json
+out/coreutils/index.json: \
+	packages/coreutils/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json
+	$(call build,coreutils)
+
 .PHONY: cpio
 cpio: out/cpio/index.json
 out/cpio/index.json: \
@@ -129,10 +141,18 @@ out/curl/index.json: \
 eif_build: out/eif_build/index.json
 out/eif_build/index.json: \
 	packages/eif_build/Containerfile \
+	out/binutils/index.json \
 	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/gcc/index.json \
+	out/git/index.json \
 	out/libunwind/index.json \
+	out/llvm/index.json \
 	out/musl/index.json \
-	out/rust/index.json
+	out/openssl/index.json \
+	out/pkgconf/index.json \
+	out/rust/index.json \
+	out/zlib/index.json
 	$(call build,eif_build)
 
 .PHONY: elfutils
@@ -267,6 +287,17 @@ out/grub/index.json: \
 	out/musl/index.json \
 	out/python/index.json
 	$(call build,grub)
+
+.PHONY: gzip
+gzip: out/gzip/index.json
+out/gzip/index.json: \
+	packages/gzip/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,gzip)
 
 .PHONY: libassuan
 libassuan: out/libassuan/index.json
@@ -410,12 +441,15 @@ out/linux-headers/index.json: \
 linux-nitro: out/linux-nitro/index.json
 out/linux-nitro/index.json: \
 	packages/linux-nitro/Containerfile \
+	out/bash/index.json \
 	out/binutils/index.json \
 	out/bison/index.json \
 	out/busybox/index.json \
+	out/coreutils/index.json \
 	out/elfutils/index.json \
 	out/flex/index.json \
 	out/gcc/index.json \
+	out/gzip/index.json \
 	out/libzstd/index.json \
 	out/linux-headers/index.json \
 	out/m4/index.json \
@@ -424,6 +458,9 @@ out/linux-nitro/index.json: \
 	out/openssl/index.json \
 	out/perl/index.json \
 	out/pkgconf/index.json \
+	out/sed/index.json \
+	out/tar/index.json \
+	out/xz/index.json \
 	out/zlib/index.json
 	$(call build,linux-nitro)
 
@@ -703,6 +740,17 @@ out/sxctl/index.json: \
 	out/go/index.json
 	$(call build,sxctl)
 
+.PHONY: tar
+tar: out/tar/index.json
+out/tar/index.json: \
+	packages/tar/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,tar)
+
 .PHONY: tofu
 tofu: out/tofu/index.json
 out/tofu/index.json: \
@@ -723,6 +771,17 @@ out/xorriso/index.json: \
 	out/make/index.json \
 	out/musl/index.json
 	$(call build,xorriso)
+
+.PHONY: xz
+xz: out/xz/index.json
+out/xz/index.json: \
+	packages/xz/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,xz)
 
 .PHONY: zlib
 zlib: out/zlib/index.json
