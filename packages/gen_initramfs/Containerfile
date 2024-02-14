@@ -1,4 +1,4 @@
-FROM busybox as base
+FROM scratch as base
 ENV VERSION=6.6
 ENV SRC_HASH=d926a06c63dd8ac7df3f86ee1ffc2ce2a3b81a2d168484e76b5b389aba8e56d0
 ENV SRC_FILE=linux-${VERSION}.tar.xz
@@ -22,7 +22,6 @@ RUN --network=none <<-EOF
     mkdir -p /rootfs/usr/bin
     cp -a usr/gen_initramfs.sh /rootfs/usr/bin/gen_initramfs
     cp -a usr/gen_init_cpio /rootfs/usr/bin
-    find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
