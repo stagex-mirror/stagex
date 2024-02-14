@@ -1,6 +1,6 @@
 FROM scratch as base
-ENV VERSION=0.2.0
-ENV SRC_HASH=5bc28498279a5e1f1ec01645585d4dd325eb84265d8d372fa4b4c7b34ff3daa3
+ENV VERSION=0.2.1
+ENV SRC_HASH=da5421a705cdba20f9a01b38abfdfb0e31b6e4de50a61450bc9566b1205b25d1
 ENV SRC_FILE=eif_build.tgz
 ENV SRC_SITE=https://codeload.github.com/tkhq/eif_build/legacy.tar.gz/${VERSION}
 
