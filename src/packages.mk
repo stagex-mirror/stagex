@@ -87,6 +87,22 @@ out/ca-certificates/index.json: \
 	packages/ca-certificates/Containerfile
 	$(call build,ca-certificates)
 
+.PHONY: clang
+clang: out/clang/index.json
+out/clang/index.json: \
+	packages/clang/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/gcc/index.json \
+	out/llvm/index.json \
+	out/musl/index.json \
+	out/ninja/index.json \
+	out/openssl/index.json \
+	out/py-setuptools/index.json \
+	out/python/index.json
+	$(call build,clang)
+
 .PHONY: cmake
 cmake: out/cmake/index.json
 out/cmake/index.json: \

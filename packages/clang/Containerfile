@@ -1,24 +1,26 @@
 FROM scratch as base
-ARG VERSION=16.0.6
-ENV SRC_HASH=ce5e71081d17ce9e86d7cbcfa28c4b04b9300f8fb7e78422b1feb6bc52c3028eENV
-ENV SRC_FILE=llvm-project-${SRC_VERSION}.src.tar.xz
+ENV VERSION=16.0.6
+ENV SRC_HASH=ce5e71081d17ce9e86d7cbcfa28c4b04b9300f8fb7e78422b1feb6bc52c3028e
+ENV SRC_FILE=llvm-project-${VERSION}.src.tar.xz
 ENV SRC_SITE=https://github.com/llvm/llvm-project/releases/download/llvm-org-${VERSION}/${SRC_FILE}
 
 FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-RUN tar -xf llvm-project-${SRC_VERSION}.src.tar.xz
-WORKDIR llvm-project-${SRC_VERSION}.src
-COPY --from=stagex/busybox . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/cmake . /
-COPY --from=stagex/ninja . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/python . /
-COPY --from=stagex/py-setuptools . /
-COPY --from=stagex/openssl . /
+COPY --from=busybox . /
+COPY --from=binutils . /
+COPY --from=cmake . /
+COPY --from=ninja . /
+COPY --from=musl . /
+COPY --from=gcc . /
+COPY --from=python . /
+COPY --from=py-setuptools . /
+COPY --from=openssl . /
+COPY --from=gcc . /
+COPY --from=llvm . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR llvm-project-${VERSION}.src
 RUN set -eux; \
     cmake \
         -S clang \
