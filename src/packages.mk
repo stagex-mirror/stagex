@@ -272,6 +272,17 @@ out/gpg/index.json: \
 	out/zlib/index.json
 	$(call build,gpg)
 
+.PHONY: grep
+grep: out/grep/index.json
+out/grep/index.json: \
+	packages/grep/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,grep)
+
 .PHONY: grub
 grub: out/grub/index.json
 out/grub/index.json: \
@@ -449,6 +460,7 @@ out/linux-nitro/index.json: \
 	out/elfutils/index.json \
 	out/flex/index.json \
 	out/gcc/index.json \
+	out/grep/index.json \
 	out/gzip/index.json \
 	out/libzstd/index.json \
 	out/linux-headers/index.json \

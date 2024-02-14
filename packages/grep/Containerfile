@@ -1,0 +1,38 @@
+FROM scratch as base
+ARG ARCH=x86_64
+ENV VERSION=3.11
+ENV SRC_HASH=1db2aedde89d0dea42b16d9528f894c8d15dae4e190b59aecc78f5a951276eab
+ENV SRC_FILE=grep-${VERSION}.tar.xz
+ENV SRC_SITE=https://mirrors.kernel.org/gnu/grep/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=busybox . /
+COPY --from=binutils . /
+COPY --from=musl . /
+COPY --from=make . /
+COPY --from=gcc . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR grep-${VERSION}
+RUN --network=none <<-EOF
+	set -ex
+	./configure \
+		--build=${ARCH}-linux-musl \
+		--host=${ARCH}-linux-musl \
+		--target=${ARCH}-linux-musl \
+		--prefix=/usr \
+        --sysconfdir=/etc \
+		--mandir=/usr/share/man \
+        --infodir=/usr/share/info \
+        --disable-nls
+	make -j "$(nproc)"
+EOF
+
+FROM build as install
+RUN --network=none make DESTDIR="/rootfs" install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM scratch as package
+COPY --from=install /rootfs /
