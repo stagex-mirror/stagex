@@ -30,9 +30,12 @@ RUN --network=none <<-EOF
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info \
         --disable-nls \
+        --with-openssl \
         --enable-single-binary=symlinks \
-        --enable-single-binary-exceptions=env \
-        --with-openssl
+		--enable-single-binary-exceptions=env \
+        gl_cv_func_getcwd_path_max="no, but it is partly working" \
+        gl_cv_prog_perl="no"
+
 	make -j "$(nproc)"
 EOF
 
