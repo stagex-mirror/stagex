@@ -1,0 +1,44 @@
+FROM scratch as base
+ARG ARCH=x86_64
+ENV VERSION=9.4
+ENV SRC_HASH=ea613a4cf44612326e917201bbbcdfbd301de21ffc3b59b6e5c07e040b275e52
+ENV SRC_FILE=coreutils-${VERSION}.tar.xz
+ENV SRC_SITE=https://ftp.gnu.org/gnu/coreutils/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=busybox . /
+COPY --from=binutils . /
+COPY --from=openssl . /
+COPY --from=musl . /
+COPY --from=make . /
+COPY --from=gcc . /
+RUN tar -xf coreutils-${VERSION}.tar.xz
+WORKDIR coreutils-${VERSION}
+ENV FORCE_UNSAFE_CONFIGURE=1
+RUN --network=none <<-EOF
+	set -ex
+	./configure \
+		--build=${ARCH}-linux-musl \
+		--host=${ARCH}-linux-musl \
+		--target=${ARCH}-linux-musl \
+		--with-build-sysroot= \
+		--with-sysroot=/ \
+		--prefix=/usr \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+        --disable-nls \
+        --enable-single-binary=symlinks \
+        --enable-single-binary-exceptions=env \
+        --with-openssl
+	make -j "$(nproc)"
+EOF
+
+FROM build as install
+RUN --network=none make DESTDIR="/rootfs" install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM scratch as package
+COPY --from=install /rootfs /
