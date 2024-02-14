@@ -13,7 +13,6 @@ ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 ADD --checksum=sha256:${NSM_SRC_HASH} ${NSM_SRC_SITE} ${NSM_SRC_FILE}
 
 FROM fetch as build
-COPY --from=busybox . /
 COPY --from=musl . /
 COPY --from=make . /
 COPY --from=binutils . /
@@ -28,6 +27,17 @@ COPY --from=libzstd . /
 COPY --from=zlib . /
 COPY --from=flex . /
 COPY --from=pkgconf . /
+COPY --from=coreutils . /
+COPY --from=findutils . /
+COPY --from=tar . /
+COPY --from=gzip . /
+COPY --from=xz . /
+COPY --from=sed . /
+COPY --from=grep . /
+COPY --from=gawk . /
+COPY --from=bc . /
+COPY --from=bash . /
+COPY --from=bash /bin/bash /bin/sh
 RUN mkdir nitro-bootstrap
 RUN tar -xf ${NSM_SRC_FILE} -C nitro-bootstrap --strip-components 1
 RUN tar -xf ${SRC_FILE}
@@ -35,12 +45,14 @@ WORKDIR linux-${VERSION}
 ADD linux.config .config
 RUN <<-EOF
 	set -eux
+	mkdir /tmp
 	make olddefconfig
 	make bzImage
 	make modules_prepare
 	cd ../nitro-bootstrap
 	make -C ../linux-${KERNEL_VERSION} M=../nitro-bootstrap/nsm-driver
 EOF
+from build as package
 
 FROM build as install
 RUN <<-EOF

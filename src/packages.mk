@@ -524,11 +524,12 @@ linux-nitro: out/linux-nitro/index.json
 out/linux-nitro/index.json: \
 	packages/linux-nitro/Containerfile \
 	out/bash/index.json \
+	out/bc/index.json \
 	out/binutils/index.json \
 	out/bison/index.json \
-	out/busybox/index.json \
 	out/coreutils/index.json \
 	out/elfutils/index.json \
+	out/findutils/index.json \
 	out/flex/index.json \
 	out/gawk/index.json \
 	out/gcc/index.json \
