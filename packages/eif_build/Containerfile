@@ -1,24 +1,32 @@
 FROM scratch as base
-ENV VERSION=2.15
-ENV SRC_HASH=d0d224b8b626db5fcc2d7b685bdd229991bbf0a7
-ENV SRC_FILE=aws-nitro-eif.tar.gz
-ENV SRC_SITE=https://codeload.github.com/aws/aws-nitro-enclaves-image-format/legacy.tar.gz/${VERSION}
+ENV VERSION=0.2.0
+ENV SRC_HASH=5bc28498279a5e1f1ec01645585d4dd325eb84265d8d372fa4b4c7b34ff3daa3
+ENV SRC_FILE=eif_build.tgz
+ENV SRC_SITE=https://codeload.github.com/tkhq/eif_build/legacy.tar.gz/${VERSION}
 
 FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
-
-FROM fetch as build
-RUN tar -xzf ${SRC_FILE}
-RUN mv aws-aws-nitro-enclave-image-format-* aws-nitro-eif
-WORKDIR build
 COPY --from=busybox . /
-COPY --from=rust . /
 COPY --from=musl . /
 COPY --from=libunwind . /
-ADD Cargo.* .
+COPY --from=zlib . /
+COPY --from=openssl . /
+COPY --from=ca-certificates . /
+COPY --from=gcc . /
+COPY --from=llvm . /
+COPY --from=binutils . /
+COPY --from=pkgconf . /
+COPY --from=git . /
+COPY --from=rust . /
+# HACK: figure out why gcc package puts these in the wrong path at install time
+COPY --from=gcc /usr/lib64/* /usr/lib/
+RUN tar -xzf ${SRC_FILE}
+RUN mv tkhq-eif_build-* eif_build
+WORKDIR eif_build
+RUN cargo fetch --locked
+
+FROM fetch as build
 RUN --network=none <<-EOF
-    set -eux
-    cp ../aws-nitro-eif/examples/eif_build.rs .
     cargo build \
         --no-default-features \
         --locked \
@@ -28,7 +36,7 @@ EOF
 
 FROM build as install
 WORKDIR /rootfs
-RUN cp /build/target/x86_64-unknown-lniux-musl/release/eif_build .
+RUN cp /build/target/x86_64-unknown-linux-musl/release/eif_build .
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package
