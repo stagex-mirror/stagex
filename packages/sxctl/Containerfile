@@ -8,8 +8,8 @@ FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-COPY --from=busybox . /
-COPY --from=go . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/go . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR sxctl/cmd/sxctl
 RUN go build -o sxctl

@@ -21,7 +21,7 @@ ADD --checksum=sha256:${MPC_HASH} ${DEP_SITE}/${MPC_FILE} .
 ADD --checksum=sha256:${ISL_HASH} ${DEP_SITE}/${ISL_FILE} .
 
 FROM fetch as build
-COPY --from=stage3 . /
+COPY --from=stagex/stage3 . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR gcc-${VERSION}
 RUN --network=none <<-EOF
@@ -60,10 +60,11 @@ RUN --network=none <<-EOF
 EOF
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
-FROM busybox as test
+FROM scratch as test
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/musl . /
 COPY --from=install /rootfs /
-COPY --from=binutils . /
-COPY --from=musl . /
 COPY <<-EOF test.c
 #include <stdio.h>
 int main() { printf("Success\n"); return 0; }

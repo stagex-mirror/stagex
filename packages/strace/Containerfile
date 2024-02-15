@@ -9,12 +9,12 @@ FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-COPY --from=busybox . /
-COPY --from=binutils . /
-COPY --from=musl . /
-COPY --from=linux-headers . /
-COPY --from=make . /
-COPY --from=gcc . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/linux-headers . /
+COPY --from=stagex/make . /
+COPY --from=stagex/gcc . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR strace-${VERSION}
 RUN --network=none <<-EOF

@@ -1,7 +1,7 @@
 FROM scratch as base
-ARG VERSION=fc6eeb6bd75ea0d0025a79ea9fe45614bd60ba14
-ARG SRC_SITE=https://codeload.github.com/lrvick/live-bootstrap/legacy.tar.gz
-ARG SRC_HASH=0c268b19cf9f4eefdaf45dab64ac393ccf8ee43de58f0721624cab358044bf78
+ENV VERSION=fc6eeb6bd75ea0d0025a79ea9fe45614bd60ba14
+ENV SRC_SITE=https://codeload.github.com/lrvick/live-bootstrap/legacy.tar.gz
+ENV SRC_HASH=0c268b19cf9f4eefdaf45dab64ac393ccf8ee43de58f0721624cab358044bf78
 ARG CORES=1
 
 FROM base as fetch
@@ -258,7 +258,7 @@ ADD --checksum=sha256:b3a24de97a8fdbc835b9833169501030b8977031bcb54b3b3ac13740f8
 
 # HACK: stage0 tar is currently incompatible with symlinks and github tgz files
 #FROM base as extract
-#COPY --from=stage0 . /
+#COPY --from=stagex/stage0 . /
 #COPY --from=fetch distfiles/live-bootstrap.tgz .
 #SHELL ["/x86/bin/kaem","--verbose","--strict","--file"]
 #COPY <<-EOF extract.kaem
@@ -277,7 +277,7 @@ RUN echo "" > lrvick-live-bootstrap-fc6eeb6/steps/lwext4-1.0.0-lb1/files/fiwix-f
 
 FROM base as build
 USER 0:0
-COPY --from=stage0 . /
+COPY --from=stagex/stage0 . /
 COPY --from=fetch distfiles external/distfiles
 COPY --from=extract /lrvick-live-bootstrap-fc6eeb6/seed/* .
 COPY --from=extract /lrvick-live-bootstrap-fc6eeb6/steps steps

@@ -8,17 +8,17 @@ FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-COPY --from=busybox . /
-COPY --from=gcc . /
-COPY --from=binutils . /
-COPY --from=make . /
-COPY --from=musl . /
-COPY --from=perl . /
-COPY --from=autoconf . /
-COPY --from=automake . /
-COPY --from=libtool . /
-COPY --from=pkgconf . /
-COPY --from=m4 . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/autoconf . /
+COPY --from=stagex/automake . /
+COPY --from=stagex/libtool . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/m4 . /
 RUN tar -xzf ${SRC_FILE}
 WORKDIR musl-fts-${VERSION}
 RUN --network=none <<-EOF

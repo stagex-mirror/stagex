@@ -1,21 +1,21 @@
 FROM scratch as base
-ENV SRC_VERSION=1.47
+ENV VERSION=1.47
 ENV SRC_HASH=9e3c670966b96ecc746c28c2c419541e3bcb787d1a73930f5e5f5e1bcbbb9bdb
-ENV SRC_FILE=libgpg-error-${SRC_VERSION}.tar.bz2
+ENV SRC_FILE=libgpg-error-${VERSION}.tar.bz2
 ENV SRC_SITE=https://gnupg.org/ftp/gcrypt/libgpg-error/${SRC_FILE}
 
 FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
 
 FROM fetch as build
-COPY --from=busybox . /
-COPY --from=musl . /
-COPY --from=gcc . /
-COPY --from=binutils . /
-COPY --from=make . /
-COPY --from=npth . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/npth . /
 RUN tar -xvf $SRC_FILE
-WORKDIR libgpg-error-${SRC_VERSION}
+WORKDIR libgpg-error-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./configure \
@@ -34,7 +34,7 @@ RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM base as test
 COPY --from=install /rootfs /
-COPY --from=busybox . /
+COPY --from=stagex/busybox . /
 RUN /bin/sh <<-EOF
 	set -eux
 	LIBGPG_ERROR_FILES_FOUND=\$(ls /usr/lib/ | grep libgpg-error || true)

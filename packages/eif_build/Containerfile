@@ -6,20 +6,20 @@ ENV SRC_SITE=https://codeload.github.com/tkhq/eif_build/legacy.tar.gz/${VERSION}
 
 FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
-COPY --from=busybox . /
-COPY --from=musl . /
-COPY --from=libunwind . /
-COPY --from=zlib . /
-COPY --from=openssl . /
-COPY --from=ca-certificates . /
-COPY --from=gcc . /
-COPY --from=llvm . /
-COPY --from=binutils . /
-COPY --from=pkgconf . /
-COPY --from=git . /
-COPY --from=rust . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/libunwind . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/ca-certificates . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/llvm . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/git . /
+COPY --from=stagex/rust . /
 # HACK: figure out why gcc package puts these in the wrong path at install time
-COPY --from=gcc /usr/lib64/* /usr/lib/
+COPY --from=stagex/gcc /usr/lib64/* /usr/lib/
 RUN tar -xzf ${SRC_FILE}
 RUN mv tkhq-eif_build-* eif_build
 WORKDIR eif_build

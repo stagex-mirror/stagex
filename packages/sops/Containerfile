@@ -8,9 +8,9 @@ FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-COPY --from=busybox . /
-COPY --from=go . /
-COPY --from=ca-certificates . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/go . /
+COPY --from=stagex/ca-certificates . /
 RUN tar -xvf v${VERSION}.tar.gz
 WORKDIR sops-${VERSION}
 ENV PWD=/home/user/sops-${VERSION}

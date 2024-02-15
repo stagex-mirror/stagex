@@ -8,13 +8,13 @@ FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-COPY --from=busybox . /
-COPY --from=gcc . /
-COPY --from=binutils . /
-COPY --from=make . /
-COPY --from=musl . /
-COPY --from=openssl . /
-COPY --from=zlib . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/zlib . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR Python-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
@@ -40,7 +40,7 @@ RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as test
 COPY --from=install /rootfs /
-COPY --from=musl . /
+COPY --from=stagex/musl . /
 COPY <<-EOF test.py
 	print("Success")
 EOF

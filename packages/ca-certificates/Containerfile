@@ -1,7 +1,8 @@
-FROM busybox as base
+FROM scratch as base
+ENV VERSION=20240215
 
 FROM base as install
-USER 0:0
+COPY --from=stagex/busybox . /
 COPY cacert.pem /rootfs/etc/ssl/certs/ca-certificates.crt
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
