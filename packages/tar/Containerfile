@@ -26,7 +26,8 @@ RUN --network=none <<-EOF
 		--prefix=/usr \
 		--mandir=/usr/share/man \
         --localstatedir=/var \
-        --sysconfdir=/etc
+        --sysconfdir=/etc \
+        gl_cv_func_getcwd_path_max="no, but it is partly working"
 	make -j "$(nproc)"
 EOF
 
