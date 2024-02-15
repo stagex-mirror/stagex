@@ -44,6 +44,7 @@ RUN tar -xf ${NSM_SRC_FILE} -C nitro-bootstrap --strip-components 1
 RUN tar -xf ${SRC_FILE}
 WORKDIR linux-${VERSION}
 ADD linux.config .config
+ENV KBUILD_BUILD_TIMESTAMP=1
 RUN <<-EOF
 	set -eux
 	mkdir /tmp
