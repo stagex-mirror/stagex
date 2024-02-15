@@ -35,7 +35,7 @@ RUN --network=none <<-EOF
 EOF
 
 FROM build as install
-WORKDIR /rootfs
+WORKDIR /rootfs/usr/bin
 RUN cp /eif_build/target/x86_64-unknown-linux-musl/release/eif_build .
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
