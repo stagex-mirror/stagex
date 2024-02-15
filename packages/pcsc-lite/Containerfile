@@ -43,6 +43,7 @@ EOF
 
 FROM build as install
 RUN make DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM base as test
 COPY --from=install /rootfs /
