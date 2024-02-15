@@ -1,5 +1,5 @@
 #!/bin/bash
-self=${1}
+release=sx${1}
 for each in $(find out/*/index.json); do
     package=$(basename $(dirname ${each}))
     container_file=packages/${package}/Containerfile
@@ -9,5 +9,7 @@ for each in $(find out/*/index.json); do
         echo docker tag stagex/${package}:latest stagex/${package}:${version}
         echo docker push stagex/${package}:${version}
     fi
+    echo docker tag stagex/${package}:latest stagex/${package}:${release}
+    echo docker push stagex/${package}:${release}
     echo docker push stagex/${package}:latest
 done
