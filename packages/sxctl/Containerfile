@@ -12,9 +12,13 @@ COPY --from=busybox . /
 COPY --from=go . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR sxctl/cmd/sxctl
-RUN go build -o /app
+RUN go build -o sxctl
+
+FROM build as install
+WORKDIR /rootfs
+RUN cp /sxctl/cmd/sxctl/sxctl .
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package
-COPY --from=build /app /sxctl
-ENTRYPOINT [ "/sxctl" ]
-CMD []
+COPY --from=install /rootfs /
+ENTRYPOINT ["/sxctl"]
