@@ -23,7 +23,8 @@ RUN --network=none <<-EOF
         --prefix=/usr \
         --bindir=/bin \
         --mandir=/usr/share/man \
-        --infodir=/usr/share/info
+        --infodir=/usr/share/info \
+        gl_cv_func_getcwd_path_max="no, but it is partly working"
     make
 EOF
 
