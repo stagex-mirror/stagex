@@ -1,0 +1,39 @@
+FROM scratch as base
+ARG ARCH=x86_64
+ENV VERSION=5.45
+ENV SRC_HASH=28c01a5ef1a127ef71758222ca019ba6c6bfa4a8fe20c2b525ce75943ee9da3c
+ENV SRC_FILE=FILE5_45.tar.gz
+ENV SRC_SITE=https://github.com/file/file/archive/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/make . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/autoconf . /
+COPY --from=stagex/automake . /
+COPY --from=stagex/libtool . /
+COPY --from=stagex/m4 . /
+COPY --from=stagex/gcc . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR file-FILE5_45/
+RUN --network=none <<-EOF
+	set -eux
+    autoreconf -fvi
+	./configure \
+		--build=${ARCH}-linux-musl \
+		--host=${ARCH}-linux-musl \
+		--datadir=/usr/share
+	make -j "$(nproc)"
+EOF
+
+FROM build as install
+RUN --network=none make DESTDIR="/rootfs" install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM scratch as package
+COPY --from=install /rootfs /
