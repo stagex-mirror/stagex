@@ -109,7 +109,7 @@ matches down to the last bit
 
 ## Background
 
-We have learned a lot of lessons about supply chain integrity over the years 
+We have learned a lot of lessons about supply chain integrity over the years, 
 and the greatest of them may be that any system that is complex to review 
 and assigns trust of significant components to single individuals, which creates 
 significant points of failure, will lead to eventual compromise.
