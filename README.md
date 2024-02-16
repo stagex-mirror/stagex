@@ -110,9 +110,9 @@ matches down to the last bit
 ## Background
 
 We have learned a lot of lessons about supply chain integrity over the years 
-and the greatest of them may be that any system that is complex to review, 
-and assigns trust of significant components to single individuals, creates 
-significant points of failure which will lead to eventual compromise.
+and the greatest of them may be that any system that is complex to review 
+and assigns trust of significant components to single individuals, which creates 
+significant points of failure, will lead to eventual compromise.
 
 Distros (Linux distributions) rely on complex package management systems for 
 which only a single implementation exists. They typically generate a lot of 
@@ -127,13 +127,13 @@ public, which can give a false sense of security to the unassuming user.
 
 We will cover an exhaustive comparison of the supply chain strategies of other 
 package management solutions elsewhere, but while many are pursuing reproducible 
-builds, minimalism, or signing, there isn't a solution which delivers on all of 
-these basic tenets of supply chain security. `stagex` is an attempt to fix this, 
-in order to satisfy the criteria of reasonably secure supply chain strategy which 
-requires more than one individual to deterministically build and sign software.
+builds, minimalism, or signing, there isn't currently another solution which delivers 
+on all of these basic tenets of supply chain security. `stagex` is an attempt to fix 
+this, in order to satisfy the criteria of reasonably secure supply chain strategy, 
+which requires more than one individual to deterministically build and sign software.
 
-Ask yourself the following: do I have a way to verify that the binary I am using
-from some source hasn't had malicious software introduced into it during compilation? 
+Ask yourself the following: do I have a way of verifying that this binary was 
+produced based on this source code?
 
 While software is often reviewed for security flaws, and sometimes provides signed 
 releases, what is missing is the ability to prove that the resulting binary is the 
