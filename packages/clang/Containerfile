@@ -8,17 +8,20 @@ FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-COPY --from=busybox . /
-COPY --from=binutils . /
-COPY --from=cmake . /
-COPY --from=ninja . /
-COPY --from=musl . /
-COPY --from=gcc . /
-COPY --from=python . /
-COPY --from=py-setuptools . /
-COPY --from=openssl . /
-COPY --from=gcc . /
-COPY --from=llvm . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/cmake . /
+COPY --from=stagex/ninja . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/python . /
+COPY --from=stagex/py-setuptools . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/llvm . /
+# HACK: figure out why gcc package puts these in the wrong path at install time
+COPY --from=stagex/gcc /usr/lib64/* /usr/lib/
+
 RUN tar -xf ${SRC_FILE}
 WORKDIR llvm-project-${VERSION}.src
 RUN set -eux; \
