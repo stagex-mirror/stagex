@@ -20,7 +20,10 @@ FROM build as install
 RUN --network=none <<-EOF
     set -eux
     mkdir -p /rootfs/usr/bin
-    cp -a usr/gen_initramfs.sh /rootfs/usr/bin/gen_initramfs
+    cat usr/gen_initramfs.sh \
+        | sed 's:usr/gen_init_cpio:gen_init_cpio:g' \
+        > /rootfs/usr/bin/gen_initramfs
+    chmod +x /rootfs/usr/bin/gen_initramfs
     cp -a usr/gen_init_cpio /rootfs/usr/bin
 EOF
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
