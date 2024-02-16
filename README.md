@@ -86,6 +86,8 @@ for the future.
 * Anyone can reproduce the entire tree with tools from their current distro
 * Hosted CI servers auto-sign confirmed deterministic builds
     * Like NixOS
+* Multiple maintainers reproduce the entire build and ensure that everything
+matches down to the last bit
 * Maintainers sign all package additions/changes
     * Like Gentoo, Debian, Fedora, Guix
 * Reviewers/Reproducers locally build and counter-sign all new binary packages
@@ -107,36 +109,51 @@ for the future.
 
 ## Background
 
-We have learned a lot of lessons about supply chain integrity over the years,
-and the greatest of them may be that any system that is complex to review and
-assigns trust of significant components to single human points of failure, is
-doomed to have failure.
+We have learned a lot of lessons about supply chain integrity over the years 
+and the greatest of them may be that any system that is complex to review, 
+and assigns trust of significant components to single individuals, creates 
+significant points of failure which will lead to eventual compromise.
 
-Most Linux distributions rely on complex package management systems for which
-only a single implementation exists. They assign package signing privileges to
-individual maintainers at best. Modern popular distros often fail to even do
-this, having a central machine somewhere blindly signing all unsigned
-contributions from the public.
+Distros (Linux distributions) rely on complex package management systems for 
+which only a single implementation exists. They typically generate a lot of 
+custom tooling, which in turn rapidly grows in complexity to meet demands 
+ranging from hobby desktops to production servers. This complexity demands a 
+lot of effort to maintain, and in practice results in a tendency to reduce 
+security overhead in order to lower the barrier to entry to attract more 
+maintainers. As a result, projects rarely mandate cryptographic signing or 
+reproducible builds, let alone multiple signed reproduction proofs. In fact, 
+some popular distros use a server to blindly sign all contributions from the 
+public, which can give a false sense of security to the unassuming user.
 
-We will cover an exhaustive comparison of the supply chain strategies of other
-package management solutions elsewhere, but suffice to say while many are
-pursuing reproducible builds, minimalism, or signing... any one solution
-delivering on all of these does not seem in the cards any time soon.
+We will cover an exhaustive comparison of the supply chain strategies of other 
+package management solutions elsewhere, but while many are pursuing reproducible 
+builds, minimalism, or signing, there isn't a solution which delivers on all of 
+these basic tenets of supply chain security. `stagex` is an attempt to fix this, 
+in order to satisfy the criteria of reasonably secure supply chain strategy which 
+requires more than one individual to deterministically build and sign software.
 
-This is generally a human problem. Most solutions end up generating a lot of
-custom tooling for package management, which in turn rapidly grows in
-complexity to meet demands ranging from hobby desktop systems production
-servers.
+Ask yourself the following: do I have a way to verify that the binary I am using
+from some source hasn't had malicious software introduced into it during compilation? 
 
-This complexity demands a lot of cycles to maintain, and this means in practice
-lowering the barrier to entry to allow any hobbyist to contribute and maintain
-packages with minimal friction and rarely a requirement of signing keys or
-mandatory reproducible builds, let alone multiple signed reproduction proofs.
+While software is often reviewed for security flaws, and sometimes provides signed 
+releases, what is missing is the ability to prove that the resulting binary is the 
+direct result of that code and nothing has been modified along the way. To achieve 
+this, we have to make the software always build the exact same thing, down to the 
+last bit - this is what determinism or reproducibility is. You may be reading this 
+and thinking "of course it should always build to the same exact binary", but this 
+is usually not the case - it's highly unlikely that any of the software you have ever 
+built is deterministic. By forcing software to always produce the same binary, we 
+can use hashes to easily verify nothing has been modified and no new code has been 
+introduced to the software during compilation. This is a significant security 
+improvement, but it's not enough for only one individual to build something deterministically
+as they could be compromised - the real guarantee comes from multiple individuals 
+compiling the software using different setups and still getting the same hashes. This 
+gives us multiple points of reference, which we can use to figure out if the integrity 
+of the software is truly in tact.
 
-Suffice to say, we feel every current Linux package management solution and
-container supply chain has single points of human failure, or review
-complexity, that makes it undesirable for threat models that assume any single
-human can be hacked or coerced.
+To develop a further intuition about the distinction between trusting source code
+and trusting what the compiler translates that source code to, you may refer to the
+seminal paper by Ken Thomson, [Reflections on Trusting Trust](https://www.cs.cmu.edu/~rdriley/487/papers/Thompson_1984_ReflectionsonTrustingTrust.pdf)
 
 ## Comparison
 
@@ -150,7 +167,7 @@ A comparison of `stagex` to other distros in some of the areas we care about:
 | Debian | x          |           |      |      |        | p      | 232       |
 | Arch   | x          |           |      |      |        | p      | 262       |
 | Fedora | x          |           |      |      |        |        | 166       |
-| Alpine |            |           |      |      | x      |        | 32        |
+| Alpine |            |           |      | x    | x      |        | 32        |
 
 ### Legend
 
@@ -208,8 +225,8 @@ our packages to (ideally) be built with totally different OCI toolchains such
 as Docker, Podman, Kaniko, or Buildah.
 
 This is only part of the story though, because being able to build
-deterministically means the compilers that compiler our code themselves must
-be bootstapped all the way from source code in a deterministic way.
+deterministically means the compilers that compile our code themselves must
+be [bootstapped](https://en.wikipedia.org/wiki/Bootstrapping_(compilers)) all the way from source code in a deterministic way.
 
 * Final distributable packages are always OCI container images
     * OCI allows reproduction by totally different toolchains
@@ -232,7 +249,9 @@ For further reading see the [Bootstrappable Builds](https://bootstrappable.org/)
 ### Requirements
 
 * An OCI building runtime
-    * Currently Docker supported, but will support buildah and podman
+    * Currently Docker supported (v25+)
+    * Support for buildah and podman coming soon
+	
 * Gnu Make
 
 ### Examples
