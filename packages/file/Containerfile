@@ -27,6 +27,7 @@ RUN --network=none <<-EOF
 	./configure \
 		--build=${ARCH}-linux-musl \
 		--host=${ARCH}-linux-musl \
+        --prefix=/usr \
 		--datadir=/usr/share
 	make -j "$(nproc)"
 EOF
