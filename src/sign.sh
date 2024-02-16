@@ -1,13 +1,13 @@
 #!/bin/bash
-set -eux
+set -eu
 
 # Generate container image signatures in PGP sigstore format
 
 REGISTRY=${1?}
 NAME=${2?}
 
-ID=$(docker image ls --format '{{.ID}}' --no-trunc "${REGISTRY}/${NAME}")
-DIR=sig/${REGISTRY}/${NAME}@sha256=${ID}
+ID=$(cat out/${NAME}/index.json | jq -r '.manifests[].digest | sub ("sha256:";"")')
+DIR=signatures/${REGISTRY}/${NAME}@sha256=${ID}
 SIGNUM=1
 
 mkdir -p ${DIR}
