@@ -1,4 +1,4 @@
-FROM busybox as base
+FROM scratch as base
 ENV VERSION=6.6
 ENV SRC_HASH=d926a06c63dd8ac7df3f86ee1ffc2ce2a3b81a2d168484e76b5b389aba8e56d0
 ENV SRC_FILE=linux-${VERSION}.tar.xz
@@ -8,10 +8,10 @@ FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-COPY --from=busybox . /
-COPY --from=gcc . /
-COPY --from=binutils . /
-COPY --from=musl . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/musl . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR linux-${VERSION}
 RUN --network=none gcc usr/gen_init_cpio.c -o usr/gen_init_cpio
@@ -22,7 +22,6 @@ RUN --network=none <<-EOF
     mkdir -p /rootfs/usr/bin
     cp -a usr/gen_initramfs.sh /rootfs/usr/bin/gen_initramfs
     cp -a usr/gen_init_cpio /rootfs/usr/bin
-    find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 

@@ -1,0 +1,47 @@
+FROM scratch as base
+ARG ARCH=x86_64
+ENV VERSION=7.1
+ENV SRC_HASH=deeec9f19f159e046fdf8ad22231981806dac332cc372f1c763504ad82b30953
+ENV SRC_FILE=texinfo-${VERSION}.tar.xz
+ENV SRC_SITE=https://ftp.gnu.org/gnu/texinfo/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=stagex/binutils . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/coreutils . /
+COPY --from=stagex/sed . /
+COPY --from=stagex/grep . /
+COPY --from=stagex/tar . /
+COPY --from=stagex/xz . /
+COPY --from=stagex/gawk . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/make . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/diffutils . /
+COPY --from=stagex/findutils . /
+COPY --from=stagex/bash . /
+COPY --from=stagex/bash . /
+COPY --from=stagex/bash /bin/bash /bin/sh
+RUN tar -xf ${SRC_FILE}
+WORKDIR texinfo-${VERSION}
+RUN --network=none <<-EOF
+	set -ex
+    mkdir /tmp
+	./configure \
+		--build=${ARCH}-linux-musl \
+		--host=${ARCH}-linux-musl \
+		--prefix=/usr \
+        --disable-nls
+	make -j "$(nproc)"
+EOF
+
+FROM build as install
+RUN --network=none make DESTDIR="/rootfs" install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM scratch as package
+COPY --from=install /rootfs /

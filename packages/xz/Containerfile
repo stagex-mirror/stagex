@@ -1,0 +1,40 @@
+FROM scratch as base
+ARG ARCH=x86_64
+ENV VERSION=5.4.6
+ENV SRC_HASH=b92d4e3a438affcf13362a1305cd9d94ed47ddda22e456a42791e630a5644f5c
+ENV SRC_FILE=xz-${VERSION}.tar.xz
+ENV SRC_SITE=https://github.com/tukaani-project/xz/releases/download/v${VERSION}/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/make . /
+COPY --from=stagex/gcc . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR xz-${VERSION}
+RUN --network=none <<-EOF
+	set -ex
+	./configure \
+		--build=${ARCH}-linux-musl \
+		--host=${ARCH}-linux-musl \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+        --infodir=/usr/share/info \
+        --localstatedir=/var \
+        --disable-rpath \
+        --disable-werror \
+        --disable-doc
+	make -j "$(nproc)"
+EOF
+
+FROM build as install
+RUN --network=none make DESTDIR="/rootfs" install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM scratch as package
+COPY --from=install /rootfs /

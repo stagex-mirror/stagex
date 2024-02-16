@@ -1,16 +1,16 @@
 FROM scratch as base
 ENV VERSION=1.6.0-beta4
-ENV SRC_SITE=https://github.com/opentofu/opentofu/archive/refs/tags
 ENV SRC_HASH=b14f151839d90d06f95ba4257be159857606daf522d99e9285ddb248f814393f
 ENV SRC_FILE=v${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/opentofu/opentofu/archive/refs/tags/${SRC_FILE}
 
 FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-COPY --from=busybox . /
-COPY --from=go . /
-COPY --from=ca-certificates . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/go . /
+COPY --from=stagex/ca-certificates . /
 RUN tar -xvf v${VERSION}.tar.gz
 WORKDIR opentofu-${VERSION}
 ENV PWD=/home/user/opentofu-${VERSION}

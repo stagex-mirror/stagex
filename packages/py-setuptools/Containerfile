@@ -8,10 +8,10 @@ FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-COPY --from=busybox . /
-COPY --from=musl . /
-COPY --from=python . /
-COPY --from=zlib . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/python . /
+COPY --from=stagex/zlib . /
 RUN tar -xzf ${SRC_FILE}
 WORKDIR setuptools-${VERSION}
 RUN python setup.py build

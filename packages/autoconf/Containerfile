@@ -1,22 +1,22 @@
 FROM scratch as base
-ENV SRC_VERSION=2.71
+ENV VERSION=2.71
 ENV SRC_HASH=f14c83cfebcc9427f2c3cea7258bd90df972d92eb26752da4ddad81c87a0faa4
-ENV SRC_FILE=autoconf-${SRC_VERSION}.tar.xz
+ENV SRC_FILE=autoconf-${VERSION}.tar.xz
 ENV SRC_SITE=https://ftp.gnu.org/gnu/autoconf/${SRC_FILE}
 
 FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-COPY --from=busybox . /
-COPY --from=gcc . /
-COPY --from=binutils . /
-COPY --from=make . /
-COPY --from=musl . /
-COPY --from=m4 . /
-COPY --from=perl . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/m4 . /
+COPY --from=stagex/perl . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR autoconf-${SRC_VERSION}
+WORKDIR autoconf-${VERSION}
 ENV M4=/usr/bin/m4
 RUN --network=none <<-EOF
 	set -eux

@@ -8,12 +8,12 @@ FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-COPY --from=busybox . /
-COPY --from=gcc . /
-COPY --from=binutils . /
-COPY --from=libxml2 . /
-COPY --from=make . /
-COPY --from=musl . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/libxml2 . /
+COPY --from=stagex/make . /
+COPY --from=stagex/musl . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR gettext-${VERSION}
 RUN <<-EOF

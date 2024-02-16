@@ -8,26 +8,26 @@ FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-COPY --from=busybox . /
-COPY --from=gcc . /
-COPY --from=binutils . /
-COPY --from=make . /
-COPY --from=bison . /
-COPY --from=libtool . /
-COPY --from=zlib . /
-COPY --from=libzstd . /
-COPY --from=flex . /
-COPY --from=perl . /
-COPY --from=autoconf . /
-COPY --from=automake . /
-COPY --from=pkgconf . /
-COPY --from=gettext . /
-COPY --from=m4 . /
-COPY --from=argp-standalone . /
-COPY --from=musl . /
-COPY --from=musl-fts . /
-COPY --from=musl-obstack . /
-COPY --from=linux-headers . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/bison . /
+COPY --from=stagex/libtool . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/libzstd . /
+COPY --from=stagex/flex . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/autoconf . /
+COPY --from=stagex/automake . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/gettext . /
+COPY --from=stagex/m4 . /
+COPY --from=stagex/argp-standalone . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/musl-fts . /
+COPY --from=stagex/musl-obstack . /
+COPY --from=stagex/linux-headers . /
 RUN tar -xjf ${SRC_FILE}
 WORKDIR elfutils-${VERSION}
 ADD *.patch .

@@ -12,7 +12,7 @@ FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-COPY --from=stage3 . /
+COPY --from=stagex/stage3 . /
 RUN tar -xzf ${SRC_FILE}
 WORKDIR musl-${VERSION}
 ADD *.patch .

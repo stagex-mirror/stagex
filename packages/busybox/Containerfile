@@ -8,7 +8,7 @@ FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-COPY --from=stage3 . /
+COPY --from=stagex/stage3 . /
 RUN tar -xjf ${SRC_FILE}
 WORKDIR busybox-${VERSION}
 ENV KCONFIG_NOTIMESTAMP=1

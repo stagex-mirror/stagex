@@ -9,7 +9,7 @@ FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-COPY --from=stage3 . /
+COPY --from=stagex/stage3 . /
 RUN tar -xf binutils-${VERSION}.tar.xz
 WORKDIR binutils-${VERSION}
 RUN --network=none <<-EOF

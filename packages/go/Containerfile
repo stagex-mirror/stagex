@@ -18,11 +18,11 @@ ADD --checksum=sha256:${SRC_HASH_BOOTSTRAP_2} ${SRC_SITE_BOOTSTRAP_2} .
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-COPY --from=busybox . /
-COPY --from=gcc . /
-COPY --from=bash . /
-COPY --from=musl . /
-COPY --from=binutils . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/bash . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/binutils . /
 RUN <<-EOF
 	set -eux
 	tar -xzf go${VERSION_BOOTSTRAP_1}.tar.gz

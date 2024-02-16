@@ -8,19 +8,19 @@ FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-COPY --from=busybox . /
-COPY --from=gcc . /
-COPY --from=binutils . /
-COPY --from=make . /
-COPY --from=musl . /
-COPY --from=python . /
-COPY --from=perl . /
-COPY --from=autoconf . /
-COPY --from=automake . /
-COPY --from=pkgconf . /
-COPY --from=libtool . /
-COPY --from=zlib . /
-COPY --from=m4 . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/python . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/autoconf . /
+COPY --from=stagex/automake . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/libtool . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/m4 . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR libxml2-v${VERSION}
 RUN --network=none <<-EOF

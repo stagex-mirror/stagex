@@ -1,0 +1,40 @@
+FROM scratch as base
+ARG ARCH=x86_64
+ENV VERSION=1.20
+ENV SRC_HASH=c6030defe6ae172f1687906d7354054c75a6a9130af319d4e73c50a91959c5a6
+ENV SRC_FILE=ed-${VERSION}.tar.lz
+ENV SRC_SITE=https://ftp.gnu.org/gnu/ed/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/make . /
+COPY --from=stagex/tar . /
+COPY --from=stagex/lzip . /
+COPY --from=stagex/gcc . /
+# HACK: figure out why gcc package puts these in the wrong path at install time
+COPY --from=stagex/gcc /usr/lib64/* /usr/lib/
+RUN tar --lzip -xf ${SRC_FILE}
+WORKDIR ed-${VERSION}
+RUN --network=none <<-EOF
+	set -ex
+	./configure \
+		--build=${ARCH}-linux-musl \
+		--host=${ARCH}-linux-musl \
+		--target=${ARCH}-linux-musl \
+		--prefix=/usr \
+		--bindir=/bin \
+		--mandir=/usr/share/man
+	make -j "$(nproc)"
+EOF
+
+FROM build as install
+RUN --network=none make DESTDIR="/rootfs" install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM scratch as package
+COPY --from=install /rootfs /

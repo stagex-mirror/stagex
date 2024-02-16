@@ -1,53 +1,67 @@
 FROM scratch as base
-ENV KERNEL_SRC_HASH=41a4f824af614460c429a7c723e8dcbb0e042f0047d328c18b4ed6f2b4efa63a
-ENV KERNEL_SRC_FILE=linux-${KERNEL_VERSION}.tar.xz
-ENV KERNEL_SRC_SITE=http://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/${KERNEL_SRC_FILE}
+ENV VERSION=5.19.6
+ENV SRC_HASH=41a4f824af614460c429a7c723e8dcbb0e042f0047d328c18b4ed6f2b4efa63a
+ENV SRC_FILE=linux-${VERSION}.tar.xz
+ENV SRC_SITE=http://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/${SRC_FILE}
 ENV NSM_VERSION=ed24913346a34d719afa2031299253160a2e3460
 ENV NSM_SRC_HASH=720916a640f7579a1e9a972ddd43448d201b9ce4d4750079d8256e83be3e937c
 ENV NSM_SRC_FILE=nsm.tgz
-ENV NSM_SRC_SITE=https://codeload.github.com/aws/aws-nitro-enclaves-sdk-bootstrap/legacy.tar.gz/${VERSION}
-ENV KERNEL_VERSION=5.19.6
+ENV NSM_SRC_SITE=https://codeload.github.com/aws/aws-nitro-enclaves-sdk-bootstrap/legacy.tar.gz/${NSM_VERSION}
 
 FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 ADD --checksum=sha256:${NSM_SRC_HASH} ${NSM_SRC_SITE} ${NSM_SRC_FILE}
 
 FROM fetch as build
-COPY --from=busybox . /
-COPY --from=musl . /
-COPY --from=make . /
-COPY --from=binutils . /
-COPY --from=linux-headers . /
-COPY --from=elfutils . /
-COPY --from=openssl . /
-COPY --from=perl . /
-COPY --from=m4 . /
-COPY --from=gcc . /
-COPY --from=bison . /
-COPY --from=libzstd . /
-COPY --from=zlib . /
-COPY --from=flex . /
-COPY --from=pkgconf . /
-WORKDIR nitro-bootstrap
-RUN tar -xf ../${NSM_SRC_FILE} -C . --strip-components 1
+COPY --from=stagex/musl . /
+COPY --from=stagex/make . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/linux-headers . /
+COPY --from=stagex/elfutils . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/m4 . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/bison . /
+COPY --from=stagex/libzstd . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/flex . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/coreutils . /
+COPY --from=stagex/findutils . /
+COPY --from=stagex/diffutils . /
+COPY --from=stagex/tar . /
+COPY --from=stagex/gzip . /
+COPY --from=stagex/xz . /
+COPY --from=stagex/sed . /
+COPY --from=stagex/grep . /
+COPY --from=stagex/gawk . /
+COPY --from=stagex/bc . /
+COPY --from=stagex/bash . /
+COPY --from=stagex/bash /bin/bash /bin/sh
+RUN mkdir nitro-bootstrap
+RUN tar -xf ${NSM_SRC_FILE} -C nitro-bootstrap --strip-components 1
 RUN tar -xf ${SRC_FILE}
-WORKDIR linux-${KERNEL_VERSION}
+WORKDIR linux-${VERSION}
 ADD linux.config .config
+ENV KBUILD_BUILD_TIMESTAMP=1
 RUN <<-EOF
 	set -eux
+	mkdir /tmp
 	make olddefconfig
-    make bzImage
+	make bzImage
 	make modules_prepare
-    cd ../nitro-bootstrap
-    make -C ../linux-${KERNEL_VERSION} M=../nitro-bootstrap/nsm-driver
+	cd ../nitro-bootstrap
+	make -C ../linux-${VERSION} M=../nitro-bootstrap/nsm-driver
 EOF
 
 FROM build as install
 RUN <<-EOF
 	set -eux
-    mkdir /rootfs
-    cp arch/x86_64/boot/bzImage /rootfs
-    cp /nitro-bootstrap/nsm-driver/nsm.ko /rootfs
+	mkdir /rootfs
+	cp .config /rootfs/linux.config
+	cp arch/x86_64/boot/bzImage /rootfs
+	cp /nitro-bootstrap/nsm-driver/nsm.ko /rootfs
 EOF
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 

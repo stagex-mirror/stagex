@@ -1,23 +1,23 @@
 FROM scratch as base
-ENV SRC_VERSION=1.16.5
+ENV VERSION=1.16.5
 ENV SRC_HASH=f01d58cd6d9d77fbdca9eb4bbd5ead1988228fdb73d6f7a201f5f8d6b118b469
-ENV SRC_FILE=automake-${SRC_VERSION}.tar.xz
+ENV SRC_FILE=automake-${VERSION}.tar.xz
 ENV SRC_SITE=https://ftp.gnu.org/gnu/automake/${SRC_FILE}
 
 FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-COPY --from=busybox . /
-COPY --from=gcc . /
-COPY --from=binutils . /
-COPY --from=make . /
-COPY --from=musl . /
-COPY --from=perl . /
-COPY --from=m4 . /
-COPY --from=autoconf . /
-RUN tar -xf automake-${SRC_VERSION}.tar.xz
-WORKDIR automake-${SRC_VERSION}
+COPY --from=stagex/busybox . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/m4 . /
+COPY --from=stagex/autoconf . /
+RUN tar -xf automake-${VERSION}.tar.xz
+WORKDIR automake-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./configure --prefix=/usr
