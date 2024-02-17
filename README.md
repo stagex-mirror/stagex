@@ -196,7 +196,7 @@ A comparison of `stagex` to other distros in some of the areas we care about:
 ### Reproducibility
 
 The only way to produce trustworthy packages is to make sure no single system
-or human is every trusted in the process of compiling them. Everything we
+or human is ever trusted in the process of compiling them. Everything we
 release must be built deterministically. Further to avoid trusting any specific
 distro or platform, we must be able to reproduce even from wildly different
 toolchains, architectures, kernels, etc.
