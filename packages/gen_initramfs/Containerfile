@@ -8,10 +8,10 @@ FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-COPY --from=busybox . /
-COPY --from=gcc . /
-COPY --from=binutils . /
-COPY --from=musl . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/musl . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR linux-${VERSION}
 RUN --network=none gcc usr/gen_init_cpio.c -o usr/gen_init_cpio
@@ -20,7 +20,10 @@ FROM build as install
 RUN --network=none <<-EOF
     set -eux
     mkdir -p /rootfs/usr/bin
-    cp -a usr/gen_initramfs.sh /rootfs/usr/bin/gen_initramfs
+    cat usr/gen_initramfs.sh \
+        | sed 's:usr/gen_init_cpio:gen_init_cpio:g' \
+        > /rootfs/usr/bin/gen_initramfs
+    chmod +x /rootfs/usr/bin/gen_initramfs
     cp -a usr/gen_init_cpio /rootfs/usr/bin
 EOF
 RUN find /rootfs -exec touch -hcd "@0" "{}" +

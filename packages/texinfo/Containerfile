@@ -9,23 +9,23 @@ FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-COPY --from=binutils . /
-COPY --from=openssl . /
-COPY --from=coreutils . /
-COPY --from=sed . /
-COPY --from=grep . /
-COPY --from=tar . /
-COPY --from=xz . /
-COPY --from=gawk . /
-COPY --from=musl . /
-COPY --from=make . /
-COPY --from=perl . /
-COPY --from=gcc . /
-COPY --from=diffutils . /
-COPY --from=findutils . /
-COPY --from=bash . /
-COPY --from=bash . /
-COPY --from=bash /bin/bash /bin/sh
+COPY --from=stagex/binutils . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/coreutils . /
+COPY --from=stagex/sed . /
+COPY --from=stagex/grep . /
+COPY --from=stagex/tar . /
+COPY --from=stagex/xz . /
+COPY --from=stagex/gawk . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/make . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/diffutils . /
+COPY --from=stagex/findutils . /
+COPY --from=stagex/bash . /
+COPY --from=stagex/bash . /
+COPY --from=stagex/bash /bin/bash /bin/sh
 RUN tar -xf ${SRC_FILE}
 WORKDIR texinfo-${VERSION}
 RUN --network=none <<-EOF

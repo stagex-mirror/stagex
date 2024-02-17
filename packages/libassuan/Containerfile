@@ -1,22 +1,21 @@
-
 FROM scratch as base
-ENV SRC_VERSION=2.5.6
+ENV VERSION=2.5.6
 ENV SRC_HASH=e9fd27218d5394904e4e39788f9b1742711c3e6b41689a31aa3380bd5aa4f426
-ENV SRC_FILE=libassuan-${SRC_VERSION}.tar.bz2
+ENV SRC_FILE=libassuan-${VERSION}.tar.bz2
 ENV SRC_SITE=https://gnupg.org/ftp/gcrypt/libassuan/${SRC_FILE}
 
 FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
 
 FROM fetch as build
-COPY --from=busybox . /
-COPY --from=musl . /
-COPY --from=gcc . /
-COPY --from=binutils . /
-COPY --from=make . /
-COPY --from=libgpg-error . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/libgpg-error . /
 RUN tar -xvf $SRC_FILE
-WORKDIR libassuan-${SRC_VERSION}
+WORKDIR libassuan-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./configure \
@@ -35,7 +34,7 @@ RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM base as test
 COPY --from=install /rootfs /
-COPY --from=busybox . /
+COPY --from=stagex/busybox . /
 RUN /bin/sh <<-EOF
 	set -eux
 	LIBASSUAN_FILES_FOUND=\$(ls /usr/lib/ | grep libassuan || true)

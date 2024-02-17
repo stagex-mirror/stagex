@@ -59,7 +59,6 @@ out/bc/index.json: \
 	out/bash/index.json \
 	out/binutils/index.json \
 	out/bison/index.json \
-	out/busybox/index.json \
 	out/coreutils/index.json \
 	out/ed/index.json \
 	out/findutils/index.json \
@@ -109,8 +108,25 @@ out/busybox/index.json: \
 .PHONY: ca-certificates
 ca-certificates: out/ca-certificates/index.json
 out/ca-certificates/index.json: \
-	packages/ca-certificates/Containerfile
+	packages/ca-certificates/Containerfile \
+	out/busybox/index.json
 	$(call build,ca-certificates)
+
+.PHONY: clang
+clang: out/clang/index.json
+out/clang/index.json: \
+	packages/clang/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/gcc/index.json \
+	out/llvm/index.json \
+	out/musl/index.json \
+	out/ninja/index.json \
+	out/openssl/index.json \
+	out/py-setuptools/index.json \
+	out/python/index.json
+	$(call build,clang)
 
 .PHONY: cmake
 cmake: out/cmake/index.json
@@ -230,6 +246,22 @@ out/elfutils/index.json: \
 	out/zlib/index.json
 	$(call build,elfutils)
 
+.PHONY: file
+file: out/file/index.json
+out/file/index.json: \
+	packages/file/Containerfile \
+	out/autoconf/index.json \
+	out/automake/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/libtool/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/perl/index.json
+	$(call build,file)
+
 .PHONY: findutils
 findutils: out/findutils/index.json
 out/findutils/index.json: \
@@ -275,6 +307,7 @@ gcc: out/gcc/index.json
 out/gcc/index.json: \
 	packages/gcc/Containerfile \
 	out/binutils/index.json \
+	out/busybox/index.json \
 	out/musl/index.json \
 	out/stage3/index.json
 	$(call build,gcc)

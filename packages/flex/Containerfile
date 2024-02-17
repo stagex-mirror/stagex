@@ -8,18 +8,18 @@ FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-COPY --from=busybox . /
-COPY --from=perl . /
-COPY --from=gcc . /
-COPY --from=binutils . /
-COPY --from=make . /
-COPY --from=m4 . /
-COPY --from=libtool . /
-COPY --from=autoconf . /
-COPY --from=automake . /
-COPY --from=bison . /
-COPY --from=gettext . /
-COPY --from=musl . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/m4 . /
+COPY --from=stagex/libtool . /
+COPY --from=stagex/autoconf . /
+COPY --from=stagex/automake . /
+COPY --from=stagex/bison . /
+COPY --from=stagex/gettext . /
+COPY --from=stagex/musl . /
 RUN tar -xzf ${SRC_FILE}
 WORKDIR flex-${VERSION}
 RUN --network=none <<-EOF

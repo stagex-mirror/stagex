@@ -1,25 +1,25 @@
 FROM scratch as base
-ENV SRC_VERSION=2.4.4
+ENV VERSION=2.4.4
 ENV SRC_HASH=67ebe016ca90fa7688ce67a387ebd82c6261e95897db7b23df24ff335be85bc6
-ENV SRC_FILE=gnupg-${SRC_VERSION}.tar.bz2
+ENV SRC_FILE=gnupg-${VERSION}.tar.bz2
 ENV SRC_SITE=https://gnupg.org/ftp/gcrypt/gnupg/${SRC_FILE}
 
 FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
 
 FROM fetch as build
-COPY --from=busybox . /
-COPY --from=musl . /
-COPY --from=gcc . /
-COPY --from=binutils . /
-COPY --from=make . /
-COPY --from=npth . /
-COPY --from=libksba . /
-COPY --from=libgpg-error . /
-COPY --from=libassuan . /
-COPY --from=libgcrypt . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/npth . /
+COPY --from=stagex/libksba . /
+COPY --from=stagex/libgpg-error . /
+COPY --from=stagex/libassuan . /
+COPY --from=stagex/libgcrypt . /
 RUN tar -xvf $SRC_FILE
-WORKDIR gnupg-${SRC_VERSION}
+WORKDIR gnupg-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./configure \
@@ -38,18 +38,18 @@ RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM base as test
 COPY --from=install /rootfs /
-COPY --from=zlib . /
-COPY --from=musl . /
-COPY --from=busybox . /
-COPY --from=npth . /
-COPY --from=libksba . /
-COPY --from=libgpg-error . /
-COPY --from=libassuan . /
-COPY --from=libgcrypt . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/npth . /
+COPY --from=stagex/libksba . /
+COPY --from=stagex/libgpg-error . /
+COPY --from=stagex/libassuan . /
+COPY --from=stagex/libgcrypt . /
 
 RUN /bin/sh <<-EOF
 	set -eux
-	EXPECTED_GPG_VERSION="gpg version ${SRC_VERSION}"
+	EXPECTED_GPG_VERSION="gpg version ${VERSION}"
 	GPG_VERSION=\$(gpg --version)
 	if [ "\$GPG_VERSION" != "\$EXPECTED_GPG_VERSION" ]; then
 	    echo "Expected gpg version is \$EXPECTED_GPG_VERSION, but got \$GPG_VERSION"

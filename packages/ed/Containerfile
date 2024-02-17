@@ -9,15 +9,15 @@ FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-COPY --from=busybox . /
-COPY --from=binutils . /
-COPY --from=musl . /
-COPY --from=make . /
-COPY --from=tar . /
-COPY --from=lzip . /
-COPY --from=gcc . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/make . /
+COPY --from=stagex/tar . /
+COPY --from=stagex/lzip . /
+COPY --from=stagex/gcc . /
 # HACK: figure out why gcc package puts these in the wrong path at install time
-COPY --from=gcc /usr/lib64/* /usr/lib/
+COPY --from=stagex/gcc /usr/lib64/* /usr/lib/
 RUN tar --lzip -xf ${SRC_FILE}
 WORKDIR ed-${VERSION}
 RUN --network=none <<-EOF

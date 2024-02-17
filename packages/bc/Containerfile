@@ -9,26 +9,25 @@ FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-#COPY --from=busybox . /
-COPY --from=binutils . /
-COPY --from=coreutils . /
-COPY --from=musl . /
-COPY --from=make . /
-COPY --from=gcc . /
-COPY --from=openssl . /
-COPY --from=bash . /
-COPY --from=bash /bin/bash /bin/sh
-COPY --from=tar . /
-COPY --from=ed . /
-COPY --from=grep . /
-COPY --from=gzip . /
-COPY --from=bison . /
-COPY --from=flex . /
-COPY --from=gawk . /
-COPY --from=perl . /
-COPY --from=texinfo . /
-COPY --from=findutils . /
-COPY --from=sed . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/coreutils . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/make . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/bash . /
+COPY --from=stagex/bash /bin/bash /bin/sh
+COPY --from=stagex/tar . /
+COPY --from=stagex/ed . /
+COPY --from=stagex/grep . /
+COPY --from=stagex/gzip . /
+COPY --from=stagex/bison . /
+COPY --from=stagex/flex . /
+COPY --from=stagex/gawk . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/texinfo . /
+COPY --from=stagex/findutils . /
+COPY --from=stagex/sed . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR bc-${VERSION}
 RUN --network=none <<-EOF

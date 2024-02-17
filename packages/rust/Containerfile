@@ -30,7 +30,7 @@ ENV SRC_HASH_1_75_0=5b739f45bc9d341e2d1c570d65d2375591e22c2d23ef5b8a37711a0386ab
 ENV SRC_HASH_1_76_0=9e5cff033a7f0d2266818982ad90e4d3e4ef8f8ee1715776c6e25073a136c021
 
 FROM base as fetch
-COPY --from=busybox . /
+COPY --from=stagex/busybox . /
 ADD --checksum=sha256:${MRUSTC_SRC_HASH} ${MRUSTC_SRC_SITE} ${MRUSTC_SRC_FILE}
 ADD --checksum=sha256:${SRC_HASH_1_54_0} ${SRC_SITE}/rustc-1.54.0-src.tar.gz .
 ADD --checksum=sha256:${SRC_HASH_1_55_0} ${SRC_SITE}/rustc-1.55.0-src.tar.gz .
@@ -57,24 +57,24 @@ ADD --checksum=sha256:${SRC_HASH_1_75_0} ${SRC_SITE}/rustc-1.75.0-src.tar.gz .
 ADD --checksum=sha256:${SRC_HASH_1_76_0} ${SRC_SITE}/rustc-1.76.0-src.tar.gz .
 
 FROM fetch as build-base
-COPY --from=binutils . /
-COPY --from=bash . /
-COPY --from=make . /
-COPY --from=cmake . /
-COPY --from=python . /
-COPY --from=py-setuptools . /
-COPY --from=zlib . /
-COPY --from=pkgconf . /
-COPY --from=openssl . /
-COPY --from=perl . /
-COPY --from=gcc . /
-COPY --from=libunwind . /
-COPY --from=musl . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/bash . /
+COPY --from=stagex/make . /
+COPY --from=stagex/cmake . /
+COPY --from=stagex/python . /
+COPY --from=stagex/py-setuptools . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/libunwind . /
+COPY --from=stagex/musl . /
 # HACK: figure out why gcc package puts these in the wrong path at install time
-COPY --from=gcc /usr/lib64/* /usr/lib/
+COPY --from=stagex/gcc /usr/lib64/* /usr/lib/
 
 FROM build-base as build-mrustc
-COPY --from=llvm13 . /
+COPY --from=stagex/llvm13 . /
 RUN tar -xzf ${MRUSTC_SRC_FILE}
 RUN mv lrvick-mrustc-* mrustc
 ENV MRUSTC_TARGET_VER=1.54
@@ -154,7 +154,7 @@ COPY <<-'EOF' build.sh
 EOF
 
 FROM build-script as build-llvm13
-COPY --from=llvm13 . /
+COPY --from=stagex/llvm13 . /
 COPY --from=build-mrustc /rust-1.54.0 /rust-1.54.0
 RUN sh build.sh 1.55.0 1.54.0
 RUN sh build.sh 1.56.0 1.55.0
@@ -172,9 +172,9 @@ RUN sh build.sh 1.67.0 1.66.0
 RUN sh build.sh 1.68.0 1.67.0
 
 FROM build-script as build
-COPY --from=llvm . /
+COPY --from=stagex/llvm . /
 COPY --from=build-llvm13 /rust-1.68.0 /rust-1.68.0
-COPY --from=llvm13 /usr/lib/libLLVM-13.so /usr/lib/
+COPY --from=stagex/llvm13 /usr/lib/libLLVM-13.so /usr/lib/
 RUN sh build.sh 1.69.0 1.68.0
 RUN sh build.sh 1.70.0 1.69.0
 RUN sh build.sh 1.71.0 1.70.0

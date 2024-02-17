@@ -8,17 +8,17 @@ FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-COPY --from=busybox . /
-COPY --from=python . /
-COPY --from=gcc . /
-COPY --from=musl . /
-COPY --from=meson . /
-COPY --from=ninja . /
-COPY --from=binutils . /
-COPY --from=pkgconf . /
-COPY --from=zlib . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/python . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/meson . /
+COPY --from=stagex/ninja . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/zlib . /
 # HACK: figure out why gcc package puts these in the wrong path at install time
-COPY --from=gcc /usr/lib64/* /usr/lib/
+COPY --from=stagex/gcc /usr/lib64/* /usr/lib/
 RUN tar -xf ${SRC_FILE}
 WORKDIR zstd-${VERSION}
 RUN --network=none <<-EOF

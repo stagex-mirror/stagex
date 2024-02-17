@@ -1,25 +1,25 @@
 FROM scratch as base
-ENV VERSION=0.2.1
-ENV SRC_HASH=da5421a705cdba20f9a01b38abfdfb0e31b6e4de50a61450bc9566b1205b25d1
+ENV VERSION=0.2.2
+ENV SRC_HASH=525514cd5b28a315564e2c4b4425189b567b71bf13584804cf266ba6dee71a0e
 ENV SRC_FILE=eif_build.tgz
 ENV SRC_SITE=https://codeload.github.com/tkhq/eif_build/legacy.tar.gz/${VERSION}
 
 FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
-COPY --from=busybox . /
-COPY --from=musl . /
-COPY --from=libunwind . /
-COPY --from=zlib . /
-COPY --from=openssl . /
-COPY --from=ca-certificates . /
-COPY --from=gcc . /
-COPY --from=llvm . /
-COPY --from=binutils . /
-COPY --from=pkgconf . /
-COPY --from=git . /
-COPY --from=rust . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/libunwind . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/ca-certificates . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/llvm . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/git . /
+COPY --from=stagex/rust . /
 # HACK: figure out why gcc package puts these in the wrong path at install time
-COPY --from=gcc /usr/lib64/* /usr/lib/
+COPY --from=stagex/gcc /usr/lib64/* /usr/lib/
 RUN tar -xzf ${SRC_FILE}
 RUN mv tkhq-eif_build-* eif_build
 WORKDIR eif_build
@@ -35,7 +35,7 @@ RUN --network=none <<-EOF
 EOF
 
 FROM build as install
-WORKDIR /rootfs
+WORKDIR /rootfs/usr/bin
 RUN cp /eif_build/target/x86_64-unknown-linux-musl/release/eif_build .
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 

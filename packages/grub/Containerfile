@@ -1,25 +1,25 @@
 FROM scratch as base
-ENV SRC_VERSION=2.06
+ENV VERSION=2.06
 ENV SRC_HASH=23b64b4c741569f9426ed2e3d0e6780796fca081bee4c99f62aa3f53ae803f5f
-ENV SRC_FILE=grub-${SRC_VERSION}.tar.gz
+ENV SRC_FILE=grub-${VERSION}.tar.gz
 ENV SRC_SITE=https://mirrors.kernel.org/gnu/grub/${SRC_FILE}
 
 FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
 
 FROM fetch as build
-COPY --from=busybox . /
-COPY --from=bison . /
-COPY --from=flex . /
-COPY --from=gcc . /
-COPY --from=binutils . /
-COPY --from=make . /
-COPY --from=musl . /
-COPY --from=python . /
-COPY --from=m4 . /
-COPY --from=linux-headers . / 
+COPY --from=stagex/busybox . /
+COPY --from=stagex/bison . /
+COPY --from=stagex/flex . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/python . /
+COPY --from=stagex/m4 . /
+COPY --from=stagex/linux-headers . / 
 RUN tar -xf ${SRC_FILE}
-WORKDIR grub-${SRC_VERSION}
+WORKDIR grub-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./configure \
@@ -34,14 +34,14 @@ RUN ls -la .
 
 FROM base as test
 COPY --from=install /rootfs /
-COPY --from=musl . /
-COPY --from=busybox . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/busybox . /
 RUN grub-install --version
 RUN /bin/sh <<-EOF
 	set -eux
     GRUB_VERSION=\$(echo | grub-install --version) 
-	if [ "grub-install (GRUB) ${SRC_VERSION}" != "\$GRUB_VERSION" ]; then
-	    echo "Expected grub version is \$SRC_VERSION, but got \$GRUB_VERSION"
+	if [ "grub-install (GRUB) ${VERSION}" != "\$GRUB_VERSION" ]; then
+	    echo "Expected grub version is \$VERSION, but got \$GRUB_VERSION"
 	    exit 1
 	fi
 EOF

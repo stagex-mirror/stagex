@@ -1,23 +1,23 @@
 FROM scratch as base
-ENV SRC_VERSION=2.0.0
+ENV VERSION=2.0.0
 ENV SRC_HASH=d6c3e2b64510e5ed6fcd3323febf2cc2a8e5fda5a6588c7671f2d77f9f189356
-ENV SRC_FILE=pcsc-lite-${SRC_VERSION}.tar.bz2
+ENV SRC_FILE=pcsc-lite-${VERSION}.tar.bz2
 ENV SRC_SITE=https://pcsclite.apdu.fr/files/${SRC_FILE}
 
 FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
 
 FROM fetch as build
-COPY --from=busybox . /
-COPY --from=m4 . /
-COPY --from=musl . /
-COPY --from=gcc . /
-COPY --from=binutils . /
-COPY --from=make . /
-COPY --from=perl . /
-COPY --from=flex . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/m4 . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/flex . /
 RUN tar -xvf $SRC_FILE
-WORKDIR pcsc-lite-${SRC_VERSION}
+WORKDIR pcsc-lite-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./configure \
@@ -47,7 +47,7 @@ RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM base as test
 COPY --from=install /rootfs /
-COPY --from=busybox . /
+COPY --from=stagex/busybox . /
 RUN /bin/sh <<-EOF
 	set -eux
 	PCSC_FILES_FOUND=\$(ls /usr/lib/ | grep pcsc || true)

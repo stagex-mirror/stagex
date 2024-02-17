@@ -1,5 +1,5 @@
 FROM scratch as base
-ARG VERSION=13.0.1
+ENV VERSION=13.0.1
 ENV SRC_FILE=llvm-project-${VERSION}.src.tar.xz
 ENV SRC_SITE=https://github.com/llvm/llvm-project/releases/download/llvmorg-${VERSION}/${SRC_FILE}
 ENV SRC_HASH=326335a830f2e32d06d0a36393b5455d17dc73e0bd1211065227ee014f92cbf8
@@ -8,18 +8,18 @@ FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-COPY --from=busybox . /
-COPY --from=binutils . /
-COPY --from=cmake . /
-COPY --from=ninja . /
-COPY --from=musl . /
-COPY --from=gcc . /
-COPY --from=python . /
-COPY --from=py-setuptools . /
-COPY --from=zlib . /
-COPY --from=openssl . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/cmake . /
+COPY --from=stagex/ninja . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/python . /
+COPY --from=stagex/py-setuptools . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/openssl . /
 # HACK: figure out why gcc package puts these in the wrong path at install time
-COPY --from=gcc /usr/lib64/* /usr/lib/
+COPY --from=stagex/gcc /usr/lib64/* /usr/lib/
 RUN tar -xf ${SRC_FILE}
 WORKDIR llvm-project-${VERSION}.src
 ADD *.patch .
