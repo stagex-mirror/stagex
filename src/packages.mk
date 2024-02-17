@@ -882,6 +882,20 @@ out/sxctl/index.json: \
 	out/go/index.json
 	$(call build,sxctl)
 
+.PHONY: syslinux
+syslinux: out/syslinux/index.json
+out/syslinux/index.json: \
+	packages/syslinux/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/linux-headers/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/perl/index.json \
+	out/util-linux/index.json
+	$(call build,syslinux)
+
 .PHONY: tar
 tar: out/tar/index.json
 out/tar/index.json: \
@@ -922,6 +936,26 @@ out/tofu/index.json: \
 	out/ca-certificates/index.json \
 	out/go/index.json
 	$(call build,tofu)
+
+.PHONY: util-linux
+util-linux: out/util-linux/index.json
+out/util-linux/index.json: \
+	packages/util-linux/Containerfile \
+	out/autoconf/index.json \
+	out/automake/index.json \
+	out/binutils/index.json \
+	out/bison/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/gettext/index.json \
+	out/libtool/index.json \
+	out/linux-headers/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json
+	$(call build,util-linux)
 
 .PHONY: xorriso
 xorriso: out/xorriso/index.json
