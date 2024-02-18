@@ -189,6 +189,22 @@ out/diffutils/index.json: \
 	out/musl/index.json
 	$(call build,diffutils)
 
+.PHONY: dosfstools
+dosfstools: out/dosfstools/index.json
+out/dosfstools/index.json: \
+	packages/dosfstools/Containerfile \
+	out/autoconf/index.json \
+	out/automake/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/libtool/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/perl/index.json
+	$(call build,dosfstools)
+
 .PHONY: ed
 ed: out/ed/index.json
 out/ed/index.json: \
@@ -695,6 +711,17 @@ out/meson/index.json: \
 	out/python/index.json \
 	out/zlib/index.json
 	$(call build,meson)
+
+.PHONY: mtools
+mtools: out/mtools/index.json
+out/mtools/index.json: \
+	packages/mtools/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,mtools)
 
 .PHONY: musl
 musl: out/musl/index.json
