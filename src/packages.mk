@@ -524,16 +524,23 @@ out/libzstd/index.json: \
 	out/zlib/index.json
 	$(call build,libzstd)
 
-.PHONY: linux-generic
-linux-generic: out/linux-generic/index.json
-out/linux-generic/index.json: \
-	packages/linux-generic/Containerfile \
+.PHONY: linux-airgap
+linux-airgap: out/linux-airgap/index.json
+out/linux-airgap/index.json: \
+	packages/linux-airgap/Containerfile \
+	out/bash/index.json \
+	out/bc/index.json \
 	out/binutils/index.json \
 	out/bison/index.json \
-	out/busybox/index.json \
+	out/coreutils/index.json \
+	out/diffutils/index.json \
 	out/elfutils/index.json \
+	out/findutils/index.json \
 	out/flex/index.json \
+	out/gawk/index.json \
 	out/gcc/index.json \
+	out/grep/index.json \
+	out/gzip/index.json \
 	out/libzstd/index.json \
 	out/linux-headers/index.json \
 	out/m4/index.json \
@@ -542,6 +549,40 @@ out/linux-generic/index.json: \
 	out/openssl/index.json \
 	out/perl/index.json \
 	out/pkgconf/index.json \
+	out/sed/index.json \
+	out/tar/index.json \
+	out/xz/index.json \
+	out/zlib/index.json
+	$(call build,linux-airgap)
+
+.PHONY: linux-generic
+linux-generic: out/linux-generic/index.json
+out/linux-generic/index.json: \
+	packages/linux-generic/Containerfile \
+	out/bash/index.json \
+	out/bc/index.json \
+	out/binutils/index.json \
+	out/bison/index.json \
+	out/coreutils/index.json \
+	out/diffutils/index.json \
+	out/elfutils/index.json \
+	out/findutils/index.json \
+	out/flex/index.json \
+	out/gawk/index.json \
+	out/gcc/index.json \
+	out/grep/index.json \
+	out/gzip/index.json \
+	out/libzstd/index.json \
+	out/linux-headers/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json \
+	out/sed/index.json \
+	out/tar/index.json \
+	out/xz/index.json \
 	out/zlib/index.json
 	$(call build,linux-generic)
 
