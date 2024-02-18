@@ -1,0 +1,57 @@
+FROM scratch as base
+ENV VERSION=6.7
+ENV SRC_HASH=ef31144a2576d080d8c31698e83ec9f66bf97c677fa2aaf0d5bbb9f3345b1069
+ENV SRC_FILE=linux-${VERSION}.tar.xz
+ENV SRC_SITE=http://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=stagex/musl . /
+COPY --from=stagex/make . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/linux-headers . /
+COPY --from=stagex/elfutils . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/m4 . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/bison . /
+COPY --from=stagex/libzstd . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/flex . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/coreutils . /
+COPY --from=stagex/findutils . /
+COPY --from=stagex/diffutils . /
+COPY --from=stagex/tar . /
+COPY --from=stagex/gzip . /
+COPY --from=stagex/xz . /
+COPY --from=stagex/sed . /
+COPY --from=stagex/grep . /
+COPY --from=stagex/gawk . /
+COPY --from=stagex/bc . /
+COPY --from=stagex/bash . /
+COPY --from=stagex/bash /bin/bash /bin/sh
+RUN tar -xf ${SRC_FILE}
+WORKDIR linux-${VERSION}
+ADD linux.config .config
+ENV KBUILD_BUILD_TIMESTAMP=1
+RUN <<-EOF
+	set -eux
+    mkdir /tmp
+	make bzImage
+EOF
+
+FROM build as install
+RUN <<-EOF
+	set -eux
+    mkdir /rootfs
+	cp .config /rootfs/linux.config
+	cp arch/x86_64/boot/bzImage /rootfs
+EOF
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM scratch as package
+COPY --from=install /rootfs /
