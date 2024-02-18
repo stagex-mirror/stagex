@@ -8,7 +8,6 @@ FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-COPY --from=stagex/busybox . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/make . /
 COPY --from=stagex/binutils . /
@@ -23,20 +22,37 @@ COPY --from=stagex/libzstd . /
 COPY --from=stagex/zlib . /
 COPY --from=stagex/flex . /
 COPY --from=stagex/pkgconf . /
+COPY --from=stagex/coreutils . /
+COPY --from=stagex/findutils . /
+COPY --from=stagex/diffutils . /
+COPY --from=stagex/tar . /
+COPY --from=stagex/gzip . /
+COPY --from=stagex/xz . /
+COPY --from=stagex/sed . /
+COPY --from=stagex/grep . /
+COPY --from=stagex/gawk . /
+COPY --from=stagex/bc . /
+COPY --from=stagex/bash . /
+COPY --from=stagex/bash /bin/bash /bin/sh
 RUN tar -xf ${SRC_FILE}
 WORKDIR linux-${VERSION}
 RUN <<-EOF
 	set -eux
+    mkdir /tmp
 	make oldconfig
-	make
+	make bzImage
+    make modules INSTALL_MOD_PATH=/rootfs
 EOF
 
 FROM build as install
 RUN <<-EOF
 	set -eux
-	make DESTDIR=/rootfs install
-	mkdir -p /rootfs/usr
+    mkdir -p /rootfs/lib/modules /lib/modules
+    make INSTALL_MOD_PATH=/rootfs modules_install
+	cp .config /rootfs/linux.config
+	cp arch/x86_64/boot/bzImage /rootfs
 EOF
+
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package
