@@ -426,6 +426,16 @@ out/libassuan/index.json: \
 	out/musl/index.json
 	$(call build,libassuan)
 
+.PHONY: libcap
+libcap: out/libcap/index.json
+out/libcap/json: \
+	packages/libcap/Containerfile \
+	out/busybox/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/gcc/index.json
+	$(call build,libcap)
+
 .PHONY: libgcrypt
 libgcrypt: out/libgcrypt/index.json
 out/libgcrypt/index.json: \

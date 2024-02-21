@@ -1,0 +1,29 @@
+FROM scratch as base
+ENV VERSION=1.2.69
+ENV SRC_HASH=fdaeab17a1379284d94c8b89980ab616896536bc745779ec992d210bfd759b68
+ENV SRC_FILE=libcap-${VERSION}.tar.gz
+ENV SRC_SITE=https://git.kernel.org/pub/scm/libs/libcap/libcap.git/snapshot/${SRC_FILE}.tar.gz
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/make . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+RUN tar -xzf ${SRC_FILE}
+WOKRDIR libcap-${VERSION}
+RUN --network=none <<-EOF
+    set -eux
+    make
+EOF
+
+FROM build as intall
+RUN make DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+# TODO: test stage
+
+FROM scratch as package
+COPY --from=install /rootfs /
