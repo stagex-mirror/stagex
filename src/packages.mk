@@ -430,11 +430,14 @@ out/libassuan/index.json: \
 libcap: out/libcap/index.json
 out/libcap/index.json: \
 	packages/libcap/Containerfile \
+	out/bash/index.json \
 	out/binutils/index.json \
 	out/busybox/index.json \
+	out/gcc/index.json \
+	out/linux-headers/index.json \
 	out/make/index.json \
 	out/musl/index.json \
-	out/gcc/index.json
+	out/perl/index.json
 	$(call build,libcap)
 
 .PHONY: libgcrypt
