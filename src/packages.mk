@@ -428,8 +428,9 @@ out/libassuan/index.json: \
 
 .PHONY: libcap
 libcap: out/libcap/index.json
-out/libcap/json: \
+out/libcap/index.json: \
 	packages/libcap/Containerfile \
+	out/binutils/index.json \
 	out/busybox/index.json \
 	out/make/index.json \
 	out/musl/index.json \

@@ -2,24 +2,27 @@ FROM scratch as base
 ENV VERSION=1.2.69
 ENV SRC_HASH=fdaeab17a1379284d94c8b89980ab616896536bc745779ec992d210bfd759b68
 ENV SRC_FILE=libcap-${VERSION}.tar.gz
-ENV SRC_SITE=https://git.kernel.org/pub/scm/libs/libcap/libcap.git/snapshot/${SRC_FILE}.tar.gz
+ENV SRC_SITE=https://git.kernel.org/pub/scm/libs/libcap/libcap.git/snapshot/${SRC_FILE}
 
 FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
+COPY --from=stagex/binutils . /
 COPY --from=stagex/busybox . /
 COPY --from=stagex/make . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/gcc . /
+# HACK: figure out why gcc package puts these in the wrong path at install time
+COPY --from=stagex/gcc /usr/lib64/* /usr/lib/
 RUN tar -xzf ${SRC_FILE}
-WOKRDIR libcap-${VERSION}
+WORKDIR libcap-${VERSION}
 RUN --network=none <<-EOF
     set -eux
     make
 EOF
 
-FROM build as intall
+FROM build as install
 RUN make DESTDIR=/rootfs install
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
