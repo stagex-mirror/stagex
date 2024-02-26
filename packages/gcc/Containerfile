@@ -77,3 +77,4 @@ EOF
 
 FROM scratch as package
 COPY --from=install /rootfs /
+COPY --from=install /rootfs/usr/lib64/* /usr/lib
