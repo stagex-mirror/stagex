@@ -52,3 +52,13 @@ digests.txt:
 
 out/graph.svg: Makefile
 	$(MAKE) -Bnd | make2graph | dot -Tsvg -o graph.svg
+
+src/packages.mk: out/sxctl/index.json $(shell find packages/*/Containerfile | tr '\n' ' ')
+	env -C out/sxctl tar -cf - . | docker load
+	docker run \
+		--rm \
+		--volume .:/src \
+		--user $(shell id -u):$(shell id -g) \
+		stagex/sxctl -baseDir=/src gen make
+	touch $@
+
