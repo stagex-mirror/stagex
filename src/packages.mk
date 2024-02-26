@@ -125,7 +125,8 @@ out/clang/index.json: \
 	out/ninja/index.json \
 	out/openssl/index.json \
 	out/py-setuptools/index.json \
-	out/python/index.json
+	out/python/index.json \
+	out/zlib/index.json
 	$(call build,clang)
 
 .PHONY: cmake
