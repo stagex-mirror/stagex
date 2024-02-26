@@ -738,7 +738,7 @@ out/openssl/index.json: \
 pcsc-lite: out/pcsc-lite/index.json
 out/pcsc-lite/index.json: \
 	packages/pcsc-lite/Containerfile \
-	out/binutils/index.json \
+	# out/binutils/index.json \
 	out/busybox/index.json \
 	out/flex/index.json \
 	out/gcc/index.json \
@@ -957,3 +957,38 @@ out/zlib/index.json: \
 	out/musl/index.json
 	$(call build,zlib)
 
+.PHONY: openrc
+openrc: out/openrc/index.json
+out/openrc/index.json: \
+	packages/openrc/Containerfile
+	$(call build,openrc)
+
+.PHONY: eudev
+eudev: out/eudev/index.json
+out/eudev/index.json: \
+	packages/eudev/Containerfile
+	$(call build,eudev)
+
+.PHONY: gperf
+gperf: out/gperf/index.json
+out/gperf/index.json: \
+	packages/gperf/Containerfile
+	$(call build,gperf)
+
+.PHONY: nettle
+nettle: out/nettle/index.json
+out/nettle/index.json: \
+	packages/nettle/Containerfile
+	$(call build,nettle)
+
+.PHONY: gmp
+gmp: out/gmp/index.json
+out/gmp/index.json: \
+	packages/gmp/Containerfile
+	$(call build,gmp)
+
+.PHONY: keyfork
+keyfork: out/keyfork/index.json
+out/keyfork/index.json: \
+	packages/keyfork/Containerfile
+	$(call build,keyfork)

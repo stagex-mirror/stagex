@@ -16,6 +16,8 @@ COPY --from=stagex/binutils . /
 COPY --from=stagex/make . /
 COPY --from=stagex/perl . /
 COPY --from=stagex/flex . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/eudev . /
 RUN tar -xvf $SRC_FILE
 WORKDIR pcsc-lite-${VERSION}
 RUN --network=none <<-EOF
@@ -36,7 +38,6 @@ RUN --network=none <<-EOF
 		--disable-libsystemd \
 		--disable-polkit \
 		--disable-strict \
-        --disable-libudev \
 		--enable-static
 	make
 EOF
