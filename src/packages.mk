@@ -703,6 +703,23 @@ out/linux-nitro/index.json: \
 	out/zlib/index.json
 	$(call build,linux-nitro)
 
+.PHONY: lld
+lld: out/lld/index.json
+out/lld/index.json: \
+	packages/lld/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/gcc/index.json \
+	out/llvm/index.json \
+	out/musl/index.json \
+	out/ninja/index.json \
+	out/openssl/index.json \
+	out/py-setuptools/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,lld)
+
 .PHONY: llvm
 llvm: out/llvm/index.json
 out/llvm/index.json: \
