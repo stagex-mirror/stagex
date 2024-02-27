@@ -26,9 +26,6 @@ COPY --from=stagex/zlib . /
 # NOTE: Necessary for `cargo fetch`, but CA trust is not relied upon
 COPY --from=stagex/ca-certificates . /
 
-# HACK: gcc puts things in /usr/lib64 
-COPY --from=stagex/gcc /usr/lib64/* /usr/lib/
-
 RUN --network=none <<EOF
 set -eux
 mkdir keyfork

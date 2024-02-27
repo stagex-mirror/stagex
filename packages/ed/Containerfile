@@ -16,8 +16,6 @@ COPY --from=stagex/make . /
 COPY --from=stagex/tar . /
 COPY --from=stagex/lzip . /
 COPY --from=stagex/gcc . /
-# HACK: figure out why gcc package puts these in the wrong path at install time
-COPY --from=stagex/gcc /usr/lib64/* /usr/lib/
 RUN tar --lzip -xf ${SRC_FILE}
 WORKDIR ed-${VERSION}
 RUN --network=none <<-EOF

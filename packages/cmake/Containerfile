@@ -19,8 +19,6 @@ COPY --from=stagex/zlib . /
 COPY --from=stagex/openssl . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR cmake-${VERSION}
-# HACK: figure out why gcc package puts these in the wrong path at install time
-COPY --from=stagex/gcc /usr/lib64/* /usr/lib/
 RUN --network=none <<-EOF
 	set -eux
 	./bootstrap \

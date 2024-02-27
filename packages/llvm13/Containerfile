@@ -18,8 +18,6 @@ COPY --from=stagex/python . /
 COPY --from=stagex/py-setuptools . /
 COPY --from=stagex/zlib . /
 COPY --from=stagex/openssl . /
-# HACK: figure out why gcc package puts these in the wrong path at install time
-COPY --from=stagex/gcc /usr/lib64/* /usr/lib/
 RUN tar -xf ${SRC_FILE}
 WORKDIR llvm-project-${VERSION}.src
 ADD *.patch .

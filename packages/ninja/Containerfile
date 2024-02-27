@@ -18,8 +18,6 @@ COPY --from=stagex/openssl . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR ninja-${VERSION}
 ADD *.patch .
-# HACK: figure out why gcc package puts these in the wrong path at install time
-COPY --from=stagex/gcc /usr/lib64/* /usr/lib/
 RUN --network=none <<-EOF
 	set -eux
     cp -R /usr/lib64/* /usr/lib/

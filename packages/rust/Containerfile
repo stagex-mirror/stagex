@@ -70,8 +70,6 @@ COPY --from=stagex/perl . /
 COPY --from=stagex/gcc . /
 COPY --from=stagex/libunwind . /
 COPY --from=stagex/musl . /
-# HACK: figure out why gcc package puts these in the wrong path at install time
-COPY --from=stagex/gcc /usr/lib64/* /usr/lib/
 
 FROM build-base as build-mrustc
 COPY --from=stagex/llvm13 . /

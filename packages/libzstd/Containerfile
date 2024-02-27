@@ -17,8 +17,6 @@ COPY --from=stagex/ninja . /
 COPY --from=stagex/binutils . /
 COPY --from=stagex/pkgconf . /
 COPY --from=stagex/zlib . /
-# HACK: figure out why gcc package puts these in the wrong path at install time
-COPY --from=stagex/gcc /usr/lib64/* /usr/lib/
 RUN tar -xf ${SRC_FILE}
 WORKDIR zstd-${VERSION}
 RUN --network=none <<-EOF
