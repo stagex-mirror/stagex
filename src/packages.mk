@@ -189,6 +189,22 @@ out/diffutils/index.json: \
 	out/musl/index.json
 	$(call build,diffutils)
 
+.PHONY: dosfstools
+dosfstools: out/dosfstools/index.json
+out/dosfstools/index.json: \
+	packages/dosfstools/Containerfile \
+	out/autoconf/index.json \
+	out/automake/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/libtool/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/perl/index.json
+	$(call build,dosfstools)
+
 .PHONY: ed
 ed: out/ed/index.json
 out/ed/index.json: \
@@ -586,16 +602,23 @@ out/libzstd/index.json: \
 	out/zlib/index.json
 	$(call build,libzstd)
 
-.PHONY: linux-generic
-linux-generic: out/linux-generic/index.json
-out/linux-generic/index.json: \
-	packages/linux-generic/Containerfile \
+.PHONY: linux-airgap
+linux-airgap: out/linux-airgap/index.json
+out/linux-airgap/index.json: \
+	packages/linux-airgap/Containerfile \
+	out/bash/index.json \
+	out/bc/index.json \
 	out/binutils/index.json \
 	out/bison/index.json \
-	out/busybox/index.json \
+	out/coreutils/index.json \
+	out/diffutils/index.json \
 	out/elfutils/index.json \
+	out/findutils/index.json \
 	out/flex/index.json \
+	out/gawk/index.json \
 	out/gcc/index.json \
+	out/grep/index.json \
+	out/gzip/index.json \
 	out/libzstd/index.json \
 	out/linux-headers/index.json \
 	out/m4/index.json \
@@ -604,6 +627,40 @@ out/linux-generic/index.json: \
 	out/openssl/index.json \
 	out/perl/index.json \
 	out/pkgconf/index.json \
+	out/sed/index.json \
+	out/tar/index.json \
+	out/xz/index.json \
+	out/zlib/index.json
+	$(call build,linux-airgap)
+
+.PHONY: linux-generic
+linux-generic: out/linux-generic/index.json
+out/linux-generic/index.json: \
+	packages/linux-generic/Containerfile \
+	out/bash/index.json \
+	out/bc/index.json \
+	out/binutils/index.json \
+	out/bison/index.json \
+	out/coreutils/index.json \
+	out/diffutils/index.json \
+	out/elfutils/index.json \
+	out/findutils/index.json \
+	out/flex/index.json \
+	out/gawk/index.json \
+	out/gcc/index.json \
+	out/grep/index.json \
+	out/gzip/index.json \
+	out/libzstd/index.json \
+	out/linux-headers/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json \
+	out/sed/index.json \
+	out/tar/index.json \
+	out/xz/index.json \
 	out/zlib/index.json
 	$(call build,linux-generic)
 
@@ -716,6 +773,17 @@ out/meson/index.json: \
 	out/python/index.json \
 	out/zlib/index.json
 	$(call build,meson)
+
+.PHONY: mtools
+mtools: out/mtools/index.json
+out/mtools/index.json: \
+	packages/mtools/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,mtools)
 
 .PHONY: musl
 musl: out/musl/index.json
@@ -963,6 +1031,20 @@ out/sxctl/index.json: \
 	out/go/index.json
 	$(call build,sxctl)
 
+.PHONY: syslinux
+syslinux: out/syslinux/index.json
+out/syslinux/index.json: \
+	packages/syslinux/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/linux-headers/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/perl/index.json \
+	out/util-linux/index.json
+	$(call build,syslinux)
+
 .PHONY: tar
 tar: out/tar/index.json
 out/tar/index.json: \
@@ -1003,6 +1085,26 @@ out/tofu/index.json: \
 	out/ca-certificates/index.json \
 	out/go/index.json
 	$(call build,tofu)
+
+.PHONY: util-linux
+util-linux: out/util-linux/index.json
+out/util-linux/index.json: \
+	packages/util-linux/Containerfile \
+	out/autoconf/index.json \
+	out/automake/index.json \
+	out/binutils/index.json \
+	out/bison/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/gettext/index.json \
+	out/libtool/index.json \
+	out/linux-headers/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json
+	$(call build,util-linux)
 
 .PHONY: xorriso
 xorriso: out/xorriso/index.json

@@ -1,0 +1,38 @@
+FROM scratch as base
+ARG ARCH=x86_64
+ENV VERSION=4.0.43
+ENV SRC_HASH=541e179665dc4e272b9602f2074243591a157da89cc47064da8c5829dbd2b339
+ENV SRC_FILE=mtools-${VERSION}.tar.bz2
+ENV SRC_SITE=https://ftp.gnu.org/gnu/mtools/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/make . /
+COPY --from=stagex/gcc . /
+RUN tar -xjf ${SRC_FILE}
+WORKDIR mtools-${VERSION}
+ENV FORCE_UNSAFE_CONFIGURE=1
+RUN --network=none <<-EOF
+	set -ex
+	./configure \
+		--build=${ARCH}-linux-musl \
+		--host=${ARCH}-linux-musl \
+		--prefix=/usr \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+        --sysconfdir=/etc/mtools \
+        --without-x
+	make -j "$(nproc)"
+EOF
+
+FROM build as install
+RUN --network=none make DESTDIR="/rootfs" install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM scratch as package
+COPY --from=install /rootfs /
