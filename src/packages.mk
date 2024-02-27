@@ -246,6 +246,19 @@ out/elfutils/index.json: \
 	out/zlib/index.json
 	$(call build,elfutils)
 
+.PHONY: eudev
+eudev: out/eudev/index.json
+out/eudev/index.json: \
+	packages/eudev/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/gperf/index.json \
+	out/linux-headers/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,eudev)
+
 .PHONY: file
 file: out/file/index.json
 out/file/index.json: \
@@ -348,6 +361,22 @@ out/git/index.json: \
 	out/zlib/index.json
 	$(call build,git)
 
+.PHONY: gmp
+gmp: out/gmp/index.json
+out/gmp/index.json: \
+	packages/gmp/Containerfile \
+	out/autoconf/index.json \
+	out/automake/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/libtool/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/perl/index.json
+	$(call build,gmp)
+
 .PHONY: go
 go: out/go/index.json
 out/go/index.json: \
@@ -358,6 +387,17 @@ out/go/index.json: \
 	out/gcc/index.json \
 	out/musl/index.json
 	$(call build,go)
+
+.PHONY: gperf
+gperf: out/gperf/index.json
+out/gperf/index.json: \
+	packages/gperf/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,gperf)
 
 .PHONY: gpg
 gpg: out/gpg/index.json
@@ -413,6 +453,28 @@ out/gzip/index.json: \
 	out/make/index.json \
 	out/musl/index.json
 	$(call build,gzip)
+
+.PHONY: keyfork
+keyfork: out/keyfork/index.json
+out/keyfork/index.json: \
+	packages/keyfork/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/clang/index.json \
+	out/gcc/index.json \
+	out/gmp/index.json \
+	out/libunwind/index.json \
+	out/linux-headers/index.json \
+	out/llvm/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/nettle/index.json \
+	out/openssl/index.json \
+	out/pcsc-lite/index.json \
+	out/pkgconf/index.json \
+	out/zlib/index.json
+	$(call build,keyfork)
 
 .PHONY: libassuan
 libassuan: out/libassuan/index.json
@@ -696,6 +758,23 @@ out/musl-obstack/index.json: \
 	out/pkgconf/index.json
 	$(call build,musl-obstack)
 
+.PHONY: nettle
+nettle: out/nettle/index.json
+out/nettle/index.json: \
+	packages/nettle/Containerfile \
+	out/autoconf/index.json \
+	out/automake/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/gmp/index.json \
+	out/libtool/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/perl/index.json
+	$(call build,nettle)
+
 .PHONY: ninja
 ninja: out/ninja/index.json
 out/ninja/index.json: \
@@ -740,12 +819,14 @@ out/pcsc-lite/index.json: \
 	packages/pcsc-lite/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
+	out/eudev/index.json \
 	out/flex/index.json \
 	out/gcc/index.json \
 	out/m4/index.json \
 	out/make/index.json \
 	out/musl/index.json \
-	out/perl/index.json
+	out/perl/index.json \
+	out/pkgconf/index.json
 	$(call build,pcsc-lite)
 
 .PHONY: perl

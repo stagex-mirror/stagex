@@ -32,6 +32,10 @@ all: \
 compat:
 	./src/compat.sh
 
+.PHONY: preseed
+preseed:
+	./src/preseed.sh
+
 .PHONY: digests
 digests:
 	@for each in $$(find out -iname "index.json"| sort); do \
