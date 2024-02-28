@@ -28,4 +28,4 @@ RUN --network=none DESTDIR=/rootfs make install
 RUN --network=none find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch AS package
-COPY --from=install /rootfs /
+COPY --from=install /rootfs/. /

@@ -64,7 +64,7 @@ FROM scratch as test
 COPY --from=stagex/busybox . /
 COPY --from=stagex/binutils . /
 COPY --from=stagex/musl . /
-COPY --from=install /rootfs /
+COPY --from=install /rootfs/. /
 COPY <<-EOF test.c
 #include <stdio.h>
 int main() { printf("Success\n"); return 0; }
@@ -75,6 +75,5 @@ RUN <<-EOF
 	./main | grep "Success"
 EOF
 
-FROM scratch as package
-COPY --from=install /rootfs /
-COPY --from=install /rootfs/usr/lib64/* /usr/lib
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/./. /

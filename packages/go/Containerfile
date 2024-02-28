@@ -86,7 +86,7 @@ EOF
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM base as test
-COPY --from=install /rootfs /
+COPY --from=install /rootfs/. /
 COPY <<-EOF test.go
 	package main
 	import "fmt"
@@ -98,5 +98,5 @@ RUN <<-EOF
 	./test | grep "Success"
 EOF
 
-FROM scratch as package
-COPY --from=install /rootfs /
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

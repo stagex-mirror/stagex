@@ -67,8 +67,8 @@ RUN --network=none <<-EOF
 EOF
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
-FROM scratch as package
-COPY --from=install /rootfs /
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /
 WORKDIR /home/user
 USER 1000:1000
 ENTRYPOINT ["/bin/sh"]

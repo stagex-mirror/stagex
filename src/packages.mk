@@ -292,6 +292,13 @@ out/file/index.json: \
 	out/perl/index.json
 	$(call build,file)
 
+.PHONY: filesystem
+filesystem: out/filesystem/index.json
+out/filesystem/index.json: \
+	packages/filesystem/Containerfile \
+	out/stage3/index.json
+	$(call build,filesystem)
+
 .PHONY: findutils
 findutils: out/findutils/index.json
 out/findutils/index.json: \
