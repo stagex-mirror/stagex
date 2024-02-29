@@ -1154,6 +1154,24 @@ out/xz/index.json: \
 	out/musl/index.json
 	$(call build,xz)
 
+.PHONY: zig
+zig: out/zig/index.json
+out/zig/index.json: \
+	packages/zig/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/clang/index.json \
+	out/cmake/index.json \
+	out/gcc/index.json \
+	out/libzstd/index.json \
+	out/lld/index.json \
+	out/llvm/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/zlib/index.json
+	$(call build,zig)
+
 .PHONY: zlib
 zlib: out/zlib/index.json
 out/zlib/index.json: \
