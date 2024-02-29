@@ -159,29 +159,20 @@ seminal paper by Ken Thomson, [Reflections on Trusting Trust](https://www.cs.cmu
 
 A comparison of `stagex` to other distros in some of the areas we care about:
 
-| Distro | Single-Sig | Multi-Sig |Diver.| Musl | Stage0 | Repro. | Rust Deps |
-|--------|------------|-----------|------|------|--------|--------|-----------|
-| Stagex | x          | p         | p    | x    | x      | x      | 4         |
-| Guix   | x          |           |      |      | x      | x      | 4         |
-| Nix    |            |           |      |      |        | p      | 4         |
-| Debian | x          |           |      |      |        | p      | 232       |
-| Arch   | x          |           |      |      |        | p      | 262       |
-| Fedora | x          |           |      |      |        |        | 166       |
-| Alpine |            |           |      | x    | x      |        | 32        |
+| Distro | Containerized | Signatures | Libc  | Bootstrapped | Reproducible | Rust Deps |
+|--------|---------------|------------|-------|--------------|--------------|-----------|
+| Stagex | Native        | 2+ Human   | Musl  | Yes          | Yes          | 4         |
+| Guix   | No            | 1 Human    | Glibc | Yes          | Yes          | 4         |
+| Nix    | No            | 1 Bot      | Glibc | Partial      | Mostly       | 4         |
+| Debian | Adapted       | 1 Human    | Glibc | No           | Partial      | 232       |
+| Arch   | Adapted       | 1 Human    | Glibc | No           | Partial      | 262       |
+| Fedora | Adapted       | 1 Bot      | Glibc | No           | No           | 166       |
+| Alpine | Adapted       | None       | Musl  | No           | No           | 32        |
 
-### Legend
+### Notes
 
-- x = true
-- p = planned
-- “Single-sig”: one person, typically the maintainer, signed a given package
-    - Some distros blindly sign all packages with a shared accees server
-    - We see this as mostly security theater and do not include it here
-- “Multi-sig”: more than one human verified/signed every package artifact
-    - And ideally also signed the source
-- “Diver.”: Can the entire distro be built with a diversity of toolchains
-- “Musl”: entire distro and resulting artifacts are built against musl libc
-- “Stage0”: Can the entire distro be full-source-bootstrapped from Stage0
-- “Repro.”: Is the entire distro reproducible bit-for-bit identically
+- “Bootstrapped”: Can the entire distro be full-source-bootstrapped from Stage0
+- “Reproducible”: Is the entire distro reproducible bit-for-bit identically
 - “Rust Deps”: the number of total dependencies installed to use rustc
     - Rust is a worst case example for compiler deps and build complexity
         - It is kind of a nightmare most distros skip
