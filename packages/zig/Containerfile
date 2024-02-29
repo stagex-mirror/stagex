@@ -22,23 +22,26 @@ COPY --from=stagex/musl . /
 COPY --from=stagex/openssl . /
 COPY --from=stagex/zlib . /
 
-RUN tar -xf ${SRC_FILE}
+RUN --network=none tar -xf ${SRC_FILE}
 WORKDIR zig-${VERSION}
-RUN patch -p1 -i ../static-glibc.patch
-RUN set -eux; \
+RUN --network=none patch -p1 -i ../static-glibc.patch
+RUN --network=none <<-EOF
+    set -eux
     cmake -Bbuild \
       -DCMAKE_INSTALL_PREFIX=/usr \
       -DCMAKE_BUILD_TYPE=None \
       -DZIG_STATIC=ON \
       -DZIG_TARGET_TRIPLE=native-linux-musl \
-      -DZIG_TARGET_MCPU=baseline; \
+      -DZIG_TARGET_MCPU=baseline
     cmake --build build
+EOF
 
 FROM build as install
-USER 0:0
-RUN set -eux; \
-    DESTDIR=/rootfs cmake --install build; \
-    find /rootfs -exec touch -hcd "@0" "{}" +
+RUN --network=none <<-EOF
+    set -eux
+    DESTDIR=/rootfs cmake --install build
+EOF
+RUN --network=none find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package
 COPY --from=install /rootfs /
