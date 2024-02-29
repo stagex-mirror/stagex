@@ -5,7 +5,7 @@
 ---
 
 Minimalism and security first repository of reproducible and multi-signed OCI
-images of common open source software toolchains full-source bootsrapped from
+images of common open source software toolchains full-source bootstrapped from
 Stage 0 all the way up.
 
 If you want to build or deploy software on a foundation of minimalism and
@@ -18,7 +18,7 @@ You can do anything with these images you would with most any other musl based
 containerized linux distro, only with high supply chain integrity and
 determinism.
 
-For a full list of images see the "src" directory.
+For a full list of images see the "packages" directory.
 
 ### Examples
 
@@ -217,7 +217,7 @@ as Docker, Podman, Kaniko, or Buildah.
 
 This is only part of the story though, because being able to build
 deterministically means the compilers that compile our code themselves must
-be [bootstapped](https://en.wikipedia.org/wiki/Bootstrapping_(compilers)) all the way from source code in a deterministic way.
+be [bootstrapped](https://en.wikipedia.org/wiki/Bootstrapping_(compilers)) all the way from source code in a deterministic way.
 
 * Final distributable packages are always OCI container images
     * OCI allows reproduction by totally different toolchains
@@ -225,12 +225,12 @@ be [bootstapped](https://en.wikipedia.org/wiki/Bootstrapping_(compilers)) all th
     * OCI allows unlimited signatures on builds as part of the spec
       * E.g: each party that chooses to reproduce adds their own signature
 * We always "Full Source Bootstrap" everything from 0
-    * [Stage0](src/bootstrap/stage0/Containerfile): 387 bytes of x86 assembly built by 3 distros with the same hash
+    * [Stage0](packages/stage0/Containerfile): 387 bytes of x86 assembly built by 3 distros with the same hash
         * Also the same hash many others get from wildly different toolchains
         * Relevant: [Guix: Building From Source All The Way Down](https://guix.gnu.org/en/blog/2023/the-full-source-bootstrap-building-from-source-all-the-way-down/)
-    * [Stage1](src/bootstrap/stage1/Containerfile): A full x86 toolchain built from stage0 via [live-bootstrap](https://github.com/fosslinux/live-bootstrap/blob/master/parts.rst)
-    * [Stage2](src/bootstrap/stage2/Containerfile): Cross toolchain bridging us to modern 64 bit architectures
-    * [Stage3](src/bootstrap/stage3/Containerfile): Native toolchain in native 64 bit architecture
+    * [Stage1](packages/stage1/Containerfile): A full x86 toolchain built from stage0 via [live-bootstrap](https://github.com/fosslinux/live-bootstrap/blob/master/parts.rst)
+    * [Stage2](packages/stage2/Containerfile): Cross toolchain bridging us to modern 64 bit architectures
+    * [Stage3](packages/stage3/Containerfile): Native toolchain in native 64 bit architecture
     * [Stage(x)](.): Later stages build the distributed packages in this repo
 
 For further reading see the [Bootstrappable Builds](https://bootstrappable.org/) Project.
