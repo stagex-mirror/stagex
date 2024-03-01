@@ -47,7 +47,6 @@ ADD linux.config .config
 ENV KBUILD_BUILD_TIMESTAMP=1
 RUN <<-EOF
 	set -eux
-	mkdir /tmp
 	make olddefconfig
 	make bzImage
 	make modules_prepare
@@ -65,5 +64,5 @@ RUN <<-EOF
 EOF
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
-FROM scratch as package
-COPY --from=install /rootfs /
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

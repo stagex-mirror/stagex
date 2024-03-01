@@ -27,7 +27,7 @@ RUN --network=none <<-EOF
 		--build=x86_64-unknown-linux-musl \
 		--host=x86_64-unknown-linux-musl \
 		--prefix=/usr \
-		--sbindir=/sbin \
+		--sbindir=/usr/sbin \
 		--sysconfdir=/etc \
 		--mandir=/usr/share/man \
 		--localstatedir=/var \
@@ -38,5 +38,5 @@ FROM build as install
 RUN --network=none make DESTDIR=/rootfs install
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
-FROM scratch as package
-COPY --from=install /rootfs /
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

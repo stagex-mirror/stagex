@@ -7,8 +7,8 @@ RUN <<-EOF
 	install -d -m0644 usr
 	install -d -m1777 tmp
 	install -d -m1777 var/tmp
-	install -d -m1777 spool/mail
-	install -o 1000:1000 -d -m0755 /home/user
+	install -d -m1777 var/spool/mail
+	install -o 1000:1000 -d -m0755 home/user
 	ln -sT usr/lib lib64
 	ln -sT usr/lib lib
 	ln -sT usr/bin bin
@@ -26,7 +26,24 @@ COPY --chmod=644 <<-EOF etc/group
 	root:x:0:
 	user:x:1000:
 EOF
+COPY --chmod=644 <<-EOF etc/os-release
+	NAME="[Stageˣ]"
+	ID=stagex
+	HOME_URL="https://stagex.tools"
+	SUPPORT_URL="https://codeberg.org/stagex/stagex/src/branch/main/README.md"
+	BUG_REPORT_URL="https://codeberg.org/stagex/stagex/issues"
+EOF
+
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as package
-COPY --from=build /rootfs /
+COPY --from=build /rootfs/. /
+USER 1000:1000
+ENTRYPOINT ["/bin/sh"]
+ENV PS1="[Stageˣ] $ "
+ENV TZ=UTC
+ENV LANG=C.UTF-8
+ENV LC_ALL=C
+ENV USER=user
+ENV HOME=/home/user
+ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin

@@ -37,5 +37,5 @@ WORKDIR /rootfs/usr/bin
 RUN cp /eif_build/target/x86_64-unknown-linux-musl/release/eif_build .
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
-FROM scratch as package
-COPY --from=install /rootfs /
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

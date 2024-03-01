@@ -39,12 +39,12 @@ EOF
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as test
-COPY --from=install /rootfs /
+COPY --from=install /rootfs/. /
 COPY --from=stagex/musl . /
 COPY <<-EOF test.py
 	print("Success")
 EOF
 RUN python test.py | grep "Success"
 
-FROM scratch as package
-COPY --from=install /rootfs /
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

@@ -19,7 +19,7 @@ RUN --network=none <<-EOF
 	set -eux; \
 	./configure \
 		--prefix=/usr \
-		--libdir=/lib \
+		--libdir=/usr/lib \
 		--shared; \
 	make
 EOF
@@ -28,5 +28,5 @@ FROM build as install
 RUN make DESTDIR=/rootfs install
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
-FROM scratch as package
-COPY --from=install /rootfs /
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

@@ -32,9 +32,13 @@ RUN --network=none <<-EOF
 		--build=x86_64-unknown-linux-musl \
 		--host=x86_64-unknown-linux-musl \
 		--prefix=/usr \
-        --disable-nls \
+        --exec-prefix=/usr \
+        --sbindir=/usr/sbin \
+        --bindir=/usr/bin \
+        --libdir=/usr/lib \
         --with-vendordir=/usr/lib \
         --enable-fs-paths-extra=/usr/sbin \
+        --disable-nls \
         --disable-silent-rules \
         --disable-gtk-doc \
         --enable-newgrp
@@ -42,12 +46,8 @@ RUN --network=none <<-EOF
 EOF
 
 FROM build as install
-RUN <<-EOF
-    printf "root:x:0:root\ntty:x:5:" >> /etc/group
-    printf "root:x:0:0:root:/root:/bin/sh" >> /etc/passwd
-    make DESTDIR=/rootfs install
-EOF
+RUN make DESTDIR=/rootfs install
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
-FROM scratch as package
-COPY --from=install /rootfs /
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

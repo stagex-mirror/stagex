@@ -25,7 +25,7 @@ RUN --network=none <<-EOF
 		--host=${ARCH}-linux-musl \
 		--target=${ARCH}-linux-musl \
 		--prefix=/usr \
-		--bindir=/bin \
+		--bindir=/usr/bin \
 		--mandir=/usr/share/man
 	make -j "$(nproc)"
 EOF
@@ -34,5 +34,5 @@ FROM build as install
 RUN --network=none make DESTDIR="/rootfs" install
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
-FROM scratch as package
-COPY --from=install /rootfs /
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

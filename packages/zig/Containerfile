@@ -43,5 +43,5 @@ RUN --network=none <<-EOF
 EOF
 RUN --network=none find /rootfs -exec touch -hcd "@0" "{}" +
 
-FROM scratch as package
-COPY --from=install /rootfs /
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

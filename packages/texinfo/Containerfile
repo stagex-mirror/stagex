@@ -30,7 +30,6 @@ RUN tar -xf ${SRC_FILE}
 WORKDIR texinfo-${VERSION}
 RUN --network=none <<-EOF
 	set -ex
-    mkdir /tmp
 	./configure \
 		--build=${ARCH}-linux-musl \
 		--host=${ARCH}-linux-musl \
@@ -43,5 +42,5 @@ FROM build as install
 RUN --network=none make DESTDIR="/rootfs" install
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
-FROM scratch as package
-COPY --from=install /rootfs /
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

@@ -57,6 +57,8 @@ RUN --network=none <<-EOF
 	set -eux
 	make DESTDIR=/rootfs install-strip
 	ln -s gcc /rootfs/usr/bin/cc
+	mv /rootfs/usr/lib64/* /rootfs/usr/lib/
+	rm -rf /rootfs/usr/lib64
 EOF
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
@@ -64,7 +66,7 @@ FROM scratch as test
 COPY --from=stagex/busybox . /
 COPY --from=stagex/binutils . /
 COPY --from=stagex/musl . /
-COPY --from=install /rootfs /
+COPY --from=install /rootfs/. /
 COPY <<-EOF test.c
 #include <stdio.h>
 int main() { printf("Success\n"); return 0; }
@@ -75,6 +77,5 @@ RUN <<-EOF
 	./main | grep "Success"
 EOF
 
-FROM scratch as package
-COPY --from=install /rootfs /
-COPY --from=install /rootfs/usr/lib64/* /usr/lib
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /
