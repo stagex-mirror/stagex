@@ -41,5 +41,5 @@ FROM build as install
 RUN DESTDIR="/rootfs" cmake --install build
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
-FROM scratch as package
-COPY --from=install /rootfs /
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

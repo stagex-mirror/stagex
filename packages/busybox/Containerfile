@@ -54,26 +54,14 @@ EOF
 FROM build as install
 RUN --network=none <<-EOF
     set -eux
-    mkdir -p /rootfs/bin
-    cp busybox /rootfs/bin
-    cp busybox /bin
+    mkdir -p /rootfs/usr/bin
+    cp busybox /rootfs/usr/bin
+    cp busybox /usr/bin
     cd /rootfs
-    mkdir -p home/user var/tmp etc tmp lib bin
-    /bin/busybox --install -s bin
-    echo "user:x:1000:" > etc/group
-    echo "user:x:1000:1000::/home/user:/bin/sh" > etc/passwd
-    ln -sT /lib lib64
-    chown -R 1000:1000 /rootfs/home/user /rootfs/tmp /rootfs/var/tmp
+    /usr/bin/busybox --install -s usr/bin
 EOF
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
-FROM scratch as package
-COPY --from=install /rootfs /
-WORKDIR /home/user
-USER 1000:1000
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /
 ENTRYPOINT ["/bin/sh"]
-ENV TZ=UTC
-ENV LANG=C.UTF-8
-ENV SOURCE_DATE_EPOCH=1
-ENV KCONFIG_NOTIMESTAMP=1
-ENV PS1="stage4 $ "

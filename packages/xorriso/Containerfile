@@ -28,7 +28,7 @@ RUN make DESTDIR=/rootfs install
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM base as test
-COPY --from=install /rootfs /
+COPY --from=install /rootfs/. /
 COPY --from=stagex/musl . /
 COPY --from=stagex/busybox . /
 RUN /bin/sh <<-EOF
@@ -40,5 +40,5 @@ RUN /bin/sh <<-EOF
 	fi
 EOF
 
-FROM scratch as package
-COPY --from=install /rootfs /
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

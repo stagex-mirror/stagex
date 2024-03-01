@@ -6,5 +6,5 @@ COPY --from=stagex/busybox . /
 COPY cacert.pem /rootfs/etc/ssl/certs/ca-certificates.crt
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
-FROM scratch as package
-COPY --from=install /rootfs /
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

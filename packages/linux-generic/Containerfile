@@ -38,7 +38,6 @@ RUN tar -xf ${SRC_FILE}
 WORKDIR linux-${VERSION}
 RUN <<-EOF
 	set -eux
-    mkdir /tmp
 	make oldconfig
 	make bzImage
     make modules INSTALL_MOD_PATH=/rootfs
@@ -47,13 +46,13 @@ EOF
 FROM build as install
 RUN <<-EOF
 	set -eux
-    mkdir -p /rootfs/lib/modules /lib/modules
-    make INSTALL_MOD_PATH=/rootfs modules_install
+    mkdir -p /rootfs/usr/lib/modules
+    make INSTALL_MOD_PATH=/rootfs/usr modules_install
 	cp .config /rootfs/linux.config
 	cp arch/x86_64/boot/bzImage /rootfs
 EOF
 
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
-FROM scratch as package
-COPY --from=install /rootfs /
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

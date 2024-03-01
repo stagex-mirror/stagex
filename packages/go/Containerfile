@@ -80,13 +80,14 @@ EOF
 FROM build as install
 RUN <<-EOF
 	set -eux
-	mkdir -p /rootfs
-	cp -R bin lib pkg src /rootfs
+	mkdir -p /rootfs/usr
+	cp -R pkg src /rootfs
+    cp -R bin lib /rootfs/usr
 EOF
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM base as test
-COPY --from=install /rootfs /
+COPY --from=install /rootfs/. /
 COPY <<-EOF test.go
 	package main
 	import "fmt"
@@ -98,5 +99,5 @@ RUN <<-EOF
 	./test | grep "Success"
 EOF
 
-FROM scratch as package
-COPY --from=install /rootfs /
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /
