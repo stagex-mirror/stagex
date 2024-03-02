@@ -27,7 +27,7 @@ RUN --network=none <<-EOF
 EOF
 
 FROM build as install
-RUN make -j1 INSTALLROOT="/rootfs" MANDIR=/usr/share/man bios efi64 install
+RUN make -j1 INSTALLROOT="/rootfs/usr" MANDIR=/usr/share/man bios efi64 install
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM base as test
