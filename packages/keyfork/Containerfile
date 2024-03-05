@@ -1,93 +1,50 @@
-ARG RUST_VERSION=1.76.0
-
 FROM scratch AS base
 ENV VERSION=0.1.0
-# https://git.distrust.co/public/keyfork/archive/keyfork-v0.1.0.tar.gz
 ENV SRC_HASH=f6104056538f846a9575e8e407a1e5bb938eac47b3852de4c7359a6972abdcda
 ENV SRC_FILE=keyfork-v${VERSION}.tar.gz
 ENV SRC_SITE=https://git.distrust.co/public/keyfork/archive/${SRC_FILE}
 
 FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM stagex/rust:${RUST_VERSION} AS rust
-FROM fetch AS rust-fetch
-
+COPY --from=stagex/rust . /
 COPY --from=stagex/busybox . /
 COPY --from=stagex/musl . /
-COPY --from=rust . /
-
 COPY --from=stagex/gcc . /
 COPY --from=stagex/llvm . /
 COPY --from=stagex/libunwind . /
 COPY --from=stagex/openssl . /
 COPY --from=stagex/zlib . /
-
-# NOTE: Necessary for `cargo fetch`, but CA trust is not relied upon
 COPY --from=stagex/ca-certificates . /
-
-RUN --network=none <<EOF
-set -eux
-mkdir keyfork
-tar xf ${SRC_FILE}
-EOF
-
+RUN tar xf ${SRC_FILE}
 WORKDIR keyfork
+ADD <<-EOF /.cargo/config.toml
+	[registries.distrust]
+	index = "https://git.distrust.co/public/_cargo-index.git"
+	EOF
+RUN cargo fetch
 
-ADD <<EOF /.cargo/config.toml
-[registries.distrust]
-index = "https://git.distrust.co/public/_cargo-index.git"
-EOF
-
-RUN cargo fetch 
-
-FROM rust-fetch AS build
-
-# Rust build deps
-
-COPY --from=stagex/binutils . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/llvm . /
-COPY --from=stagex/make . /
-COPY --from=stagex/musl . /
-
-# Keyfork build deps
-
+FROM fetch AS build
 COPY --from=stagex/clang . /
 COPY --from=stagex/linux-headers . /
 COPY --from=stagex/gmp . /
 COPY --from=stagex/nettle . /
 COPY --from=stagex/pcsc-lite . /
 COPY --from=stagex/pkgconf . /
-
+COPY --from=stagex/binutils . /
 ENV RUST_BACKTRACE=1
-ENV RUSTFLAGS='-C target-feature=-crt-static -C codegen-units=1'
-ENV GIT_REVISION=d338ed98cbb7dd1e9de9340ae9486880dfcb389a
-
-RUN --network=none cargo build --frozen --release --bin keyfork
+ENV NETTLE_STATIC=yes
+ENV PCSC_LIB_NAME=static=pcsclite
+ENV RUSTFLAGS='-C target-feature=+crt-static -C codegen-units=1'
+RUN --network=none \
+    cargo build \
+        --frozen \
+        --release \
+        --target x86_64-unknown-linux-musl \
+        --bin keyfork
 
 FROM scratch AS install
-
-COPY --from=stagex/busybox . /
-
-COPY --from=stagex/busybox . /rootfs
-COPY --from=stagex/libunwind . /rootfs
-COPY --from=stagex/gcc . /rootfs
-COPY --from=stagex/musl . /rootfs
-
-# HACK: gcc puts things in /usr/lib64 
-COPY --from=stagex/gcc /usr/lib64/* /rootfs/usr/lib/
-
-COPY --from=stagex/gmp . /rootfs
-COPY --from=stagex/nettle . /rootfs
-COPY --from=stagex/pcsc-lite . /rootfs
-
 COPY --from=build keyfork/target/release/keyfork /rootfs/usr/bin/keyfork
-RUN --network=none find /rootfs -exec touch -hcd "@0" "{}" +
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch AS package
-
 COPY --from=install /rootfs/. /
-
-ENTRYPOINT ["/usr/bin/keyfork"]
-CMD ["--version"]
