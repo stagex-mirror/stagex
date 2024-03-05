@@ -1,5 +1,5 @@
 FROM scratch AS base
-# https://gmplib.org/download/gmp/gmp-6.3.0.tar.xz
+ARG ARCH=x86_64
 ENV VERSION=6.3.0
 ENV SRC_HASH=a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898
 ENV SRC_FILE=gmp-${VERSION}.tar.xz
@@ -22,9 +22,11 @@ COPY --from=stagex/gcc . /
 RUN --network=none tar -xf ${SRC_FILE}
 WORKDIR gmp-${VERSION}
 RUN --network=none <<EOF
-set -eux
-./configure --prefix=/usr
-make
+    set -eux
+    ./configure \
+        --prefix=/usr \
+        --build=${ARCH}-linux-musl
+    make
 EOF
 
 FROM build AS install

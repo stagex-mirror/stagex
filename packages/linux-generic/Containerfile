@@ -36,6 +36,9 @@ COPY --from=stagex/bash . /
 COPY --from=stagex/bash /bin/bash /bin/sh
 RUN tar -xf ${SRC_FILE}
 WORKDIR linux-${VERSION}
+ENV KBUILD_BUILD_HOST=stagex
+ENV KBUILD_BUILD_USER=user
+ENV KBUILD_BUILD_TIMESTAMP=1
 RUN <<-EOF
 	set -eux
 	make oldconfig
