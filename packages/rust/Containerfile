@@ -70,8 +70,6 @@ COPY --from=stagex/perl . /
 COPY --from=stagex/gcc . /
 COPY --from=stagex/libunwind . /
 COPY --from=stagex/musl . /
-# HACK: figure out why gcc package puts these in the wrong path at install time
-COPY --from=stagex/gcc /usr/lib64/* /usr/lib/
 
 FROM build-base as build-mrustc
 COPY --from=stagex/llvm13 . /
@@ -107,6 +105,7 @@ COPY <<-'EOF' build.sh
 	set -eux
 	VERSION=${1}
 	BUILD_VERSION=${2}
+	TOOLS=${3:-cargo}
 	PREFIX=/rust-${VERSION}/usr
 	BUILD_PREFIX=/rust-${BUILD_VERSION}/usr
 	#HACK because rust build seemindly ignores LD_LIBRARY_PATH
@@ -120,7 +119,7 @@ COPY <<-'EOF' build.sh
 		--enable-local-rust \
 		--llvm-root="/usr/lib" \
 		--disable-docs \
-		--tools="cargo" \
+		--tools="${TOOLS}" \
 		--enable-llvm-link-shared \
 		--enable-option-checking \
 		--enable-locked-deps \
@@ -185,7 +184,7 @@ RUN sh build.sh 1.74.0 1.73.0
 # HACK: Required by Rust 1.75.0
 RUN mkdir -p $HOME/.cargo/registry/src/index.crates.io-6f17d22bba15001f/
 RUN sh build.sh 1.75.0 1.74.0
-RUN sh build.sh 1.76.0 1.75.0
+RUN sh build.sh 1.76.0 1.75.0 cargo,clippy,rustdoc,rustfmt,rust-demangler
 
 FROM build as install
 RUN <<-EOF
@@ -201,5 +200,5 @@ RUN <<-EOF
 	find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
 
-FROM scratch as package
-COPY --from=install /rootfs/ /
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

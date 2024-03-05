@@ -19,8 +19,7 @@ COPY --from=stagex/py-setuptools . /
 COPY --from=stagex/openssl . /
 COPY --from=stagex/gcc . /
 COPY --from=stagex/llvm . /
-# HACK: figure out why gcc package puts these in the wrong path at install time
-COPY --from=stagex/gcc /usr/lib64/* /usr/lib/
+COPY --from=stagex/zlib . /
 
 RUN tar -xf ${SRC_FILE}
 WORKDIR llvm-project-${VERSION}.src
@@ -44,5 +43,5 @@ FROM build as install
 RUN DESTDIR="/rootfs" cmake --install build
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
-FROM scratch as package
-COPY --from=install /rootfs /
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

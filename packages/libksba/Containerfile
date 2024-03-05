@@ -14,7 +14,7 @@ COPY --from=stagex/gcc . /
 COPY --from=stagex/binutils . /
 COPY --from=stagex/make . /
 COPY --from=stagex/npth . /
-COPY --from=stagex/libgpg-error . / 
+COPY --from=stagex/libgpg-error . /
 RUN tar -xvf $SRC_FILE
 WORKDIR libksba-${VERSION}
 RUN --network=none <<-EOF
@@ -22,7 +22,7 @@ RUN --network=none <<-EOF
 	./configure \
 		--build=x86_64-unknown-linux-musl \
 		--host=x86_64-unknown-linux-musl \
-		--prefix=/usr \
+		--prefix=/usr/ \
 		--bindir=/bin \
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info \
@@ -34,7 +34,7 @@ RUN make DESTDIR=/rootfs install
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM base as test
-COPY --from=install /rootfs /
+COPY --from=install /rootfs/. /
 COPY --from=stagex/zlib . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/busybox . /
@@ -48,5 +48,5 @@ RUN /bin/sh <<-EOF
 	fi
 EOF
 
-FROM scratch as package
-COPY --from=install /rootfs /
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

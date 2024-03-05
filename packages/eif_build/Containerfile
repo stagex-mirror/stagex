@@ -18,8 +18,6 @@ COPY --from=stagex/binutils . /
 COPY --from=stagex/pkgconf . /
 COPY --from=stagex/git . /
 COPY --from=stagex/rust . /
-# HACK: figure out why gcc package puts these in the wrong path at install time
-COPY --from=stagex/gcc /usr/lib64/* /usr/lib/
 RUN tar -xzf ${SRC_FILE}
 RUN mv tkhq-eif_build-* eif_build
 WORKDIR eif_build
@@ -39,5 +37,5 @@ WORKDIR /rootfs/usr/bin
 RUN cp /eif_build/target/x86_64-unknown-linux-musl/release/eif_build .
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
-FROM scratch as package
-COPY --from=install /rootfs /
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

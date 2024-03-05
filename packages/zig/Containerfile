@@ -1,0 +1,47 @@
+FROM scratch as base
+ENV VERSION=0.11.0
+ENV SRC_HASH=72014e700e50c0d3528cef3adf80b76b26ab27730133e8202716a187a799e951
+ENV SRC_FILE=zig-${VERSION}.tar.xz
+ENV SRC_SITE=https://ziglang.org/download/${VERSION}/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+COPY static-glibc.patch .
+
+FROM fetch as build
+COPY --from=stagex/binutils . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/clang . /
+COPY --from=stagex/cmake . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/libzstd . /
+COPY --from=stagex/lld . /
+COPY --from=stagex/llvm . /
+COPY --from=stagex/make . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/zlib . /
+
+RUN --network=none tar -xf ${SRC_FILE}
+WORKDIR zig-${VERSION}
+RUN --network=none patch -p1 -i ../static-glibc.patch
+RUN --network=none <<-EOF
+    set -eux
+    cmake -Bbuild \
+      -DCMAKE_INSTALL_PREFIX=/usr \
+      -DCMAKE_BUILD_TYPE=None \
+      -DZIG_STATIC=ON \
+      -DZIG_TARGET_TRIPLE=native-linux-musl \
+      -DZIG_TARGET_MCPU=baseline
+    cmake --build build
+EOF
+
+FROM build as install
+RUN --network=none <<-EOF
+    set -eux
+    DESTDIR=/rootfs cmake --install build
+EOF
+RUN --network=none find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

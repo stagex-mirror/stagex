@@ -18,11 +18,8 @@ COPY --from=stagex/openssl . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR ninja-${VERSION}
 ADD *.patch .
-# HACK: figure out why gcc package puts these in the wrong path at install time
-COPY --from=stagex/gcc /usr/lib64/* /usr/lib/
 RUN --network=none <<-EOF
 	set -eux
-    cp -R /usr/lib64/* /usr/lib/
 	patch -p1 < fix-musl.patch
 	python ./configure.py --bootstrap
 EOF
@@ -35,5 +32,5 @@ RUN <<-EOF
 EOF
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
-FROM scratch as package
-COPY --from=install /rootfs /
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

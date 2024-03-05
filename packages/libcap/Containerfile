@@ -1,0 +1,40 @@
+FROM scratch as base
+ENV VERSION=2.69
+ENV SRC_HASH=9cc2fa3ee744d881629cdac1a1b54c302e7684fda3e3622056218c7681642ffb
+ENV SRC_FILE=libcap-${VERSION}.tar.gz
+ENV SRC_SITE=https://git.kernel.org/pub/scm/libs/libcap/libcap.git/snapshot/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=stagex/bash . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/linux-headers . /
+COPY --from=stagex/make . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/gcc . /
+# HACK: figure out why gcc package puts these in the wrong path at install time
+COPY --from=stagex/gcc /usr/lib64/* /usr/lib/
+RUN tar -xzf ${SRC_FILE}
+WORKDIR libcap-${VERSION}
+RUN --network=none ARCH=x86_64 make 
+
+FROM build as install
+RUN --network=none make DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM scratch as test
+COPY --from=install /rootfs /
+RUN --network=none <<-EOF
+	set -eux
+	getcap --license | grep LICENSE || true
+	setcap -l | grep LICENSE || true
+	getpcaps --license | grep LICENSE || true
+	capsh --license | grep License || true
+EOF
+
+FROM scratch as package
+COPY --from=install /rootfs /

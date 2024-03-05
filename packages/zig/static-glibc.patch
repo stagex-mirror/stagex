@@ -1,0 +1,17 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 9c06d24715..26777640d8 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -906,11 +906,7 @@ if(ZIG_SINGLE_THREADED)
+ else()
+   set(ZIG_SINGLE_THREADED_ARG "")
+ endif()
+-if(ZIG_STATIC AND NOT MSVC)
+-  set(ZIG_STATIC_ARG "-Duse-zig-libcxx")
+-else()
+-  set(ZIG_STATIC_ARG "")
+-endif()
++set(ZIG_STATIC_ARG "")
+
+ if(CMAKE_POSITION_INDEPENDENT_CODE OR ZIG_PIE)
+   set(ZIG_PIE_ARG "-Dpie")

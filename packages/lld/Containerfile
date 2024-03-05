@@ -1,0 +1,45 @@
+FROM scratch as base
+ENV VERSION=16.0.6
+ENV SRC_HASH=ce5e71081d17ce9e86d7cbcfa28c4b04b9300f8fb7e78422b1feb6bc52c3028e
+ENV SRC_FILE=llvm-project-${VERSION}.src.tar.xz
+ENV SRC_SITE=https://github.com/llvm/llvm-project/releases/download/llvmorg-${VERSION}/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/cmake . /
+COPY --from=stagex/ninja . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/python . /
+COPY --from=stagex/py-setuptools . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/llvm . /
+COPY --from=stagex/zlib . /
+# HACK: figure out why gcc package puts these in the wrong path at install time
+COPY --from=stagex/gcc /usr/lib64/* /usr/lib/
+
+RUN tar -xf ${SRC_FILE}
+WORKDIR llvm-project-${VERSION}.src
+RUN set -eux; \
+    cmake \
+        -S lld \
+        -B build \
+        -G Ninja \
+        -Wno-dev \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr/ \
+		-DCMAKE_INSTALL_RPATH=/usr/ \
+        -DLLVM_ENABLE_ZLIB=FORCE_ON; \
+	cmake --build build
+
+FROM build as install
+RUN DESTDIR="/rootfs" cmake --install build
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

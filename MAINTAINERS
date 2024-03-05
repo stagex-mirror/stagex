@@ -1,0 +1,77 @@
+[people]
+
+[people.lancevick]
+Name = "Lance Vick"
+Location = Silicon Valley, USA
+Email = stagex@lance.vick.house
+Matrix = @lance:matrix.org
+Fediverse = @lrvick@mastodon.social
+Keyoxide = https://keyoxide.org/E90A401336C8AAA9
+Website = https://lance.dev
+
+[people.antonlivaja]
+Name = "Anton Livaja"
+Location = Toronto, Canada
+Email = stagex@livaja.me 
+Matrix = @antonleviathan:matrix.org
+Fediverse = @anton@mastodon.online
+Keyoxide = https://keyoxide.org/DC4B7D1F52E0BA4D
+Website = https://antonlivaja.com/
+
+[keys]
+
+[keys.lancevick.personal]
+ID = 6B61ECD76088748C70590D55E90A401336C8AAA9
+Algorithm = RSA4096
+Servers = openpgp.org
+Devices = Yubikey 4 Nano, Yubikey 5c, FST-01
+OfflineCA = Yes
+Backup = Yes
+Interaction = Yes
+
+[keys.antonlivaja.personal]
+ID = F4BF5C81EC78A5DD341C91EEDC4B7D1F52E0BA4D
+Algorithm = RSA4096
+Servers = openpgp.org
+Devices = Yubikey 5c
+OfflineCA = Yes
+Backup = Yes
+Interaction = Yes
+
+[machines]
+
+[machines.lancevick.local1]
+Owner = Lance Vick
+Location = Silicon Valley, USA
+Type = metal
+Arch = x86_64
+Brand = AMD
+Model = Ryzen Threadripper 2990WX
+Ghz = 3
+Cores = 32
+OS = QubesOS / Debian
+Runtime = Docker
+
+[machines.lancevick.remote1]
+Owner = Hetzner Online GmbH
+Location = Finland, Europe
+Type = metal
+Arch = x86_64
+Brand = AMD
+Model = EPYC 7502P
+Ghz = 2.2
+Cores = 32
+OS = Debian
+Runtime = Docker
+
+[machines.antonlivaja.remote1]
+Owner = Hetzner Online GmbH
+Location = Hillsboro, OR, USA
+Type = vm
+Arch = x86_64
+Brand = AMD
+Model = EPYC Milan
+Ghz = 2.0
+Cores = 32
+OS = Debian
+Runtime = Docker
