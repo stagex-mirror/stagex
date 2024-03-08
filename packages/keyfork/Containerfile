@@ -1,7 +1,7 @@
 FROM scratch AS base
-ENV VERSION=0.1.0
-ENV SRC_HASH=f6104056538f846a9575e8e407a1e5bb938eac47b3852de4c7359a6972abdcda
-ENV SRC_FILE=keyfork-v${VERSION}.tar.gz
+ENV VERSION=37f63fd63ac58ba338719395977054d9d3202325
+ENV SRC_HASH=ba59a3090f0ad9fe051197f1f4b77d70dcb92eceaa3dff80133887e46b271cf8
+ENV SRC_FILE=${VERSION}.tar.gz
 ENV SRC_SITE=https://git.distrust.co/public/keyfork/archive/${SRC_FILE}
 
 FROM base AS fetch
@@ -34,11 +34,12 @@ COPY --from=stagex/binutils . /
 ENV RUST_BACKTRACE=1
 ENV NETTLE_STATIC=yes
 ENV PCSC_LIB_NAME=static=pcsclite
-ENV RUSTFLAGS='-C target-feature=+crt-static -C codegen-units=1'
+ENV RUSTFLAGS='-C codegen-units=1'
 RUN --network=none \
     cargo build \
         --frozen \
         --release \
+        --features static \
         --target x86_64-unknown-linux-musl \
         --bin keyfork
 

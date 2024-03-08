@@ -533,6 +533,7 @@ out/keyfork/index.json: \
 	out/openssl/index.json \
 	out/pcsc-lite/index.json \
 	out/pkgconf/index.json \
+	out/rust/index.json \
 	out/zlib/index.json
 	$(call build,keyfork)
 
