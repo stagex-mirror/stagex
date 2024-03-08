@@ -605,6 +605,19 @@ out/libksba/index.json: \
 	out/zlib/index.json
 	$(call build,libksba)
 
+.PHONY: libqrencode
+libqrencode: out/libqrencode/index.json
+out/libqrencode/index.json: \
+	packages/libqrencode/Containerfile \
+	out/filesystem/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/gcc/index.json \
+	out/linux-headers/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,libqrencode)
+
 .PHONY: libtool
 libtool: out/libtool/index.json
 out/libtool/index.json: \
