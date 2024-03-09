@@ -1,6 +1,8 @@
 #!/bin/sh
 set -eu
 
+date="$(date '+%D %T')"
+
 fetch(){
 	line=${1?}
 	local package=$(echo ${line} | sed 's/^[a-z0-9]\+ \(.*\)/\1/g');
@@ -15,3 +17,5 @@ fetch(){
 while read line; do
 	fetch "${line}"
 done < digests.txt
+
+find out -type f -exec touch -d "$date" {} +
