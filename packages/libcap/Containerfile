@@ -36,5 +36,5 @@ RUN --network=none <<-EOF
 	capsh --license | grep License || true
 EOF
 
-FROM scratch as package
+FROM stagex/filesystem as package
 COPY --from=install /rootfs /

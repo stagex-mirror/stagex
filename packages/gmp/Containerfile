@@ -33,5 +33,5 @@ FROM build AS install
 RUN --network=none DESTDIR=/rootfs make install
 RUN --network=none find /rootfs -exec touch -hcd "@0" "{}" +
 
-FROM scratch AS package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

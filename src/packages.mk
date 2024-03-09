@@ -288,6 +288,7 @@ out/eudev/index.json: \
 	packages/eudev/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
+	out/filesystem/index.json \
 	out/gcc/index.json \
 	out/gperf/index.json \
 	out/linux-headers/index.json \
@@ -420,6 +421,7 @@ out/gmp/index.json: \
 	out/automake/index.json \
 	out/binutils/index.json \
 	out/busybox/index.json \
+	out/filesystem/index.json \
 	out/gcc/index.json \
 	out/libtool/index.json \
 	out/m4/index.json \
@@ -446,6 +448,7 @@ out/gperf/index.json: \
 	packages/gperf/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
+	out/filesystem/index.json \
 	out/gcc/index.json \
 	out/make/index.json \
 	out/musl/index.json
@@ -518,12 +521,12 @@ out/keyfork/index.json: \
 	out/busybox/index.json \
 	out/ca-certificates/index.json \
 	out/clang/index.json \
+	out/filesystem/index.json \
 	out/gcc/index.json \
 	out/gmp/index.json \
 	out/libunwind/index.json \
 	out/linux-headers/index.json \
 	out/llvm/index.json \
-	out/make/index.json \
 	out/musl/index.json \
 	out/nettle/index.json \
 	out/openssl/index.json \
@@ -553,6 +556,7 @@ out/libcap/index.json: \
 	out/bash/index.json \
 	out/binutils/index.json \
 	out/busybox/index.json \
+	out/filesystem/index.json \
 	out/gcc/index.json \
 	out/linux-headers/index.json \
 	out/make/index.json \
@@ -942,6 +946,7 @@ out/nettle/index.json: \
 	out/automake/index.json \
 	out/binutils/index.json \
 	out/busybox/index.json \
+	out/filesystem/index.json \
 	out/gcc/index.json \
 	out/gmp/index.json \
 	out/libtool/index.json \
