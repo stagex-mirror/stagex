@@ -34,12 +34,11 @@ COPY --from=stagex/binutils . /
 ENV RUST_BACKTRACE=1
 ENV NETTLE_STATIC=yes
 ENV PCSC_LIB_NAME=static=pcsclite
-ENV RUSTFLAGS='-C codegen-units=1'
+ENV RUSTFLAGS='-C codegen-units=1 -C target-feature=+crt-static'
 RUN --network=none \
     cargo build \
         --frozen \
         --release \
-        --features static \
         --target x86_64-unknown-linux-musl \
         --bin keyfork
 
