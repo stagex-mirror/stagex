@@ -18,6 +18,15 @@ Fediverse = @anton@mastodon.online
 Keyoxide = https://keyoxide.org/DC4B7D1F52E0BA4D
 Website = https://antonlivaja.com/
 
+[people.ryanheywood]
+Name = "Ryan Heywood"
+Location = Florida, USA
+Email = me@ryansquared.pub
+Matrix = @ryansquared:beeper.com
+Fediverse = @ryan@tilde.zone
+Keyoxide = https://keyoxide.org/8E401478A3FBEF72
+Website = https://ryansquared.pub
+
 [keys]
 
 [keys.lancevick.personal]
@@ -35,6 +44,15 @@ Algorithm = RSA4096
 Servers = openpgp.org
 Devices = Yubikey 5c
 OfflineCA = Yes
+Backup = Yes
+Interaction = Yes
+
+[keys.ryanheywood.personal]
+ID = 88823A75ECAA786B0FF38B148E401478A3FBEF72
+Algorithm = RSA4096
+Servers = openpgp.org
+Devices = Yubikey 4c Nano, Yubikey 5 NFC
+OfflineCA = No
 Backup = Yes
 Interaction = Yes
 
@@ -73,5 +91,17 @@ Brand = AMD
 Model = EPYC Milan
 Ghz = 2.0
 Cores = 32
+OS = Debian
+Runtime = Docker
+
+[machines.ryanheywood.remote]
+Owner = Hetzner Online GmbH
+Location = Falkstein, Germany
+Type = metal
+Arch = x86_64
+Brand = AMD
+Model = Ryzen Threadripper 2950X
+Ghz = 3.5
+Cores = 16
 OS = Debian
 Runtime = Docker
