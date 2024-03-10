@@ -525,6 +525,19 @@ out/gzip/index.json: \
 	out/musl/index.json
 	$(call build,gzip)
 
+.PHONY: iputils
+iputils: out/iputils/index.json
+out/iputils/index.json: \
+	packages/iputils/Containerfile \
+	out/filesystem/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/libcap/index.json \
+	out/meson/index.json \
+	out/musl/index.json \
+	out/gcc/index.json 
+	$(call build,iputils)
+
 .PHONY: keyfork
 keyfork: out/keyfork/index.json
 out/keyfork/index.json: \
