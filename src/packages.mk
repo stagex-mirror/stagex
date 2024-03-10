@@ -621,9 +621,9 @@ out/libksba/index.json: \
 libqrencode: out/libqrencode/index.json
 out/libqrencode/index.json: \
 	packages/libqrencode/Containerfile \
-	out/filesystem/index.json \
 	out/binutils/index.json \
 	out/busybox/index.json \
+	out/filesystem/index.json \
 	out/gcc/index.json \
 	out/linux-headers/index.json \
 	out/make/index.json \
@@ -677,6 +677,24 @@ out/libxml2/index.json: \
 	out/python/index.json \
 	out/zlib/index.json
 	$(call build,libxml2)
+
+.PHONY: libxslt
+libxslt: out/libxslt/index.json
+out/libxslt/index.json: \
+	packages/libxslt/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libtool/index.json \
+	out/libxml2/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json \
+	out/zlib/index.json
+	$(call build,libxslt)
 
 .PHONY: libzstd
 libzstd: out/libzstd/index.json
