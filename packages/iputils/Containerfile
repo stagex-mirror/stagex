@@ -16,6 +16,9 @@ COPY --from=stagex/meson . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/python . /
 COPY --from=stagex/zlib . /
+COPY --from=stagex/libxslt . /
+COPY --from=stagex/linux-headers . /
+COPY --from=stagex/ninja . /
 RUN tar -xzf ${SRC_FILE}
 WORKDIR iputils-${VERSION}
 RUN --network=none <<-EOF
@@ -47,31 +50,21 @@ RUN --network=none <<-EOF
         --wrap-mode=nodownload \
         --default-library=both \
         --cross-file=meson.cross \
-        -Dbacktrace=disabled \
         -Db_lto=false \
-        -Db_staticpic=true \
-        -Db_pie=true \
-        -Dpython.bytecompile=0 \
-        -Dwerror=false \
-        -Db_ndebug=true \
-        -Dbin_tests=false \
-        -Dbin_contrib=false \
-        -Dbin_programs=true \
-        -Dbacktrace=disabled \
-        -Dmulti_thread=enabled \
-        -Dlz4=disabled \
-        -Dlzma=disabled \
-        -Dzlib=disabled \
-        build/meson \
-        builddir
+        -DNO_SETCAP_OR_SUID=true \
+        -DBUILD_MANS=false \
+        -DUSE_IDN=false \
+        -DUSE_GETTEXT=false \
+        . output
     meson compile -C output
 EOF
 
 FROM build AS install
-USER 0:0
-RUN meson install DESTDIR=/rootfs
-COPY --from=stagex/musl . /rootfs/
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
+RUN <<-EOF
+    set -eux
+    DESTDIR=/rootfs meson install --no-rebuild -C output
+    find /rootfs -exec touch -hcd "@0" "{}" +
+EOF
 
 FROM base AS test
 COPY --from=install /rootfs /
@@ -79,7 +72,7 @@ COPY --from=stagex/binutils . /
 COPY --from=stagex/meson . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/gcc . /
-RUN /bin/sh <<-EOF
+RUN <<-EOF
     set -eux
     ARPING_VERSION=$(arping -V)
     CLOCKDIFF_VERSION=$(clockdiff -V)
@@ -109,6 +102,3 @@ EOF
 
 FROM stagex/filesystem AS package
 COPY --from=install /rootfs /
-USER 100:100
-ENTRYPOINT ["/usr/bin/iputils"]
-CMD ["--version"]
