@@ -3,8 +3,8 @@ COPY --from=stagex/stage3 . /
 WORKDIR rootfs
 RUN <<-EOF
 	install -d -m0750 root
-	install -d -m0644 etc
-	install -d -m0644 usr
+	install -d -m0755 etc
+	install -d -m0755 usr
 	install -d -m1777 tmp
 	install -d -m1777 var/tmp
 	install -d -m1777 var/spool/mail
