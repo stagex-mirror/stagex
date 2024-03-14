@@ -1,0 +1,49 @@
+FROM scratch as base
+ARG ARCH=x86_64
+ENV VERSION=74.2
+ENV SRC_HASH=68db082212a96d6f53e35d60f47d38b962e9f9d207a74cfac78029ae8ff5e08c
+ENV SRC_DATA_HASH=c28c3ca5f4ba3384781797138a294ca360988d4322674ad4d51e52f5d9b0a2b6
+ENV SRC_DATA_BIN_B_HASH=42a12ebfb1a82f80bb0005d9b6e018382ccaa2462f0d086a8c69ae736fdded3e
+ENV SRC_DATA_BIN_L_HASH=2acdb1b982228040963d183b2dd9d321252c613e0f4db213d4bbc10417cde569
+ENV SRC_FILE=icu4c-74_2-src.tgz
+ENV SRC_SITE=https://github.com/unicode-org/icu/releases/download/release-74-2
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE}/${SRC_FILE} .
+ADD --checksum=sha256:${SRC_DATA_HASH} ${SRC_SITE}/icu4c-74_2-data.zip .
+ADD --checksum=sha256:${SRC_DATA_BIN_B_HASH} ${SRC_SITE}/icu4c-74_2-data-bin-b.zip .
+ADD --checksum=sha256:${SRC_DATA_BIN_L_HASH} ${SRC_SITE}/icu4c-74_2-data-bin-l.zip .
+
+FROM fetch as build
+COPY --from=stagex/bash . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/make . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+RUN tar -xzf ${SRC_FILE}
+WORKDIR icu/source
+RUN --network=none <<-EOF
+    ./configure \
+        --build=${ARCH}-linux-musl \
+        --host=${ARCH}-linux-musl \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --mandir=/usr/share/man
+        --with-data-packaging=archive \
+        --disable-samples \
+        --enable-static
+    make
+EOF
+
+FROM build as install
+RUN --network=none <<-EOF
+    make DESTDIR=/rootfs install
+    install -D -m644 /icu4c-74_2-data.zip /rootfs/usr/share/icu/74.2/
+    install -D -m644 /icu4c-74_2-data-bin-b.zip /rootfs/usr/share/icu/74.2/
+    install -D -m644 /icu4c-74_2-data-bin-l.zip /rootfs/usr/share/icu/74.2/
+EOF
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs /
