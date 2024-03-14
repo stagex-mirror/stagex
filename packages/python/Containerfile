@@ -15,6 +15,7 @@ COPY --from=stagex/make . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/openssl . /
 COPY --from=stagex/zlib . /
+COPY --from=stagex/bzip2 . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR Python-${VERSION}
 ENV SOURCE_DATE_EPOCH=1

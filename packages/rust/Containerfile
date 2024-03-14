@@ -106,12 +106,16 @@ COPY <<-'EOF' build.sh
 	VERSION=${1}
 	BUILD_VERSION=${2}
 	TOOLS=${3:-cargo}
+	PATCHES=${4:-}
 	PREFIX=/rust-${VERSION}/usr
 	BUILD_PREFIX=/rust-${BUILD_VERSION}/usr
 	#HACK because rust build seemindly ignores LD_LIBRARY_PATH
 	cp ${BUILD_PREFIX}/lib/rustlib/x86_64-unknown-linux-musl/lib/*.so /usr/lib
 	tar -xzf rustc-${VERSION}-src.tar.gz
 	cd rustc-${VERSION}-src
+	[[ -z "$PATCHES" ]] || for name in ${PATCHES//,/ }; do
+		patch -p1 < ../${name}.patch
+	done
 	./configure \
 		--build="x86_64-unknown-linux-musl" \
 		--host="x86_64-unknown-linux-musl" \
@@ -184,7 +188,9 @@ RUN sh build.sh 1.74.0 1.73.0
 # HACK: Required by Rust 1.75.0
 RUN mkdir -p $HOME/.cargo/registry/src/index.crates.io-6f17d22bba15001f/
 RUN sh build.sh 1.75.0 1.74.0
-RUN sh build.sh 1.76.0 1.75.0 cargo,clippy,rustdoc,rustfmt,rust-demangler
+
+ADD no-default-static.patch .
+RUN sh build.sh 1.76.0 1.75.0 cargo,clippy,rustdoc,rustfmt,rust-demangler no-default-static
 
 FROM build as install
 RUN <<-EOF

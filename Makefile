@@ -61,4 +61,3 @@ gen-make: out/sxctl/index.json $(shell find packages/*/Containerfile | tr '\n' '
 		--volume .:/src \
 		--user $(shell id -u):$(shell id -g) \
 		stagex/sxctl -baseDir=/src gen make
-	touch $@
