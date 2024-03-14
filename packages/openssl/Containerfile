@@ -39,7 +39,7 @@ RUN --network=none <<-EOF
 		no-seed \
 		no-weak-ssl-ciphers \
 		linux-x86_64
-	make
+	make -j "$(nproc)"
 EOF
 
 FROM build as install

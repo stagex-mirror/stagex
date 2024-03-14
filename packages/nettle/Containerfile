@@ -28,7 +28,7 @@ set -eux
 ls
 autoreconf -vfi
 ./configure --prefix=/usr --libdir=/usr/lib --enable-public-key
-make
+make -j "$(nproc)"
 EOF
 
 FROM build AS install

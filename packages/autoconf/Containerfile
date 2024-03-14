@@ -22,7 +22,7 @@ RUN --network=none <<-EOF
 	set -eux
 	./configure \
 		--prefix=/usr
-	make
+	make -j "$(nproc)"
 EOF
 
 from build as install

@@ -20,7 +20,7 @@ WORKDIR gperf-${VERSION}
 RUN --network=none <<EOF
 set -eux
 ./configure
-make
+make -j "$(nproc)"
 EOF
 
 FROM build AS install

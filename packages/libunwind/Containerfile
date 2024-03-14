@@ -30,7 +30,7 @@ RUN --network=none <<-EOF
 		--enable-cxx-exceptions \
 		--disable-tests \
 		--infodir=/usr/share/info || cat config.log
-	make
+	make -j "$(nproc)"
 EOF
 
 FROM build as install

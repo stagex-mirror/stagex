@@ -33,7 +33,7 @@ RUN --network=none <<-EOF
         --with-data-packaging=archive \
         --disable-samples \
         --enable-static
-    make
+    make -j "$(nproc)"
 EOF
 
 FROM build as install

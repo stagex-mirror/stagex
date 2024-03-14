@@ -30,7 +30,7 @@ RUN --network=none <<-EOF
 		--infodir=/usr/share/info \
 		--localstatedir=/var \
 		--enable-debug
-	make
+	make -j "$(nproc)"
 EOF
 
 FROM build as install

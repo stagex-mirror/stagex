@@ -49,7 +49,7 @@ RUN --network=none <<-EOF
 		--enable-languages=c,c++ \
 		--enable-link-serialization=2 \
 		--enable-linker-build-id
-	make
+	make -j "$(nproc)"
 EOF
 
 FROM build as install

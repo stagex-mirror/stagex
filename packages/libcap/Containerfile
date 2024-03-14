@@ -18,7 +18,7 @@ COPY --from=stagex/perl . /
 COPY --from=stagex/gcc . /
 RUN tar -xzf ${SRC_FILE}
 WORKDIR libcap-${VERSION}
-RUN --network=none make lib=lib prefix=/usr GOLANG=no DESTDIR=/rootfs
+RUN --network=none make -j "$(nproc)" lib=lib prefix=/usr GOLANG=no DESTDIR=/rootfs
 
 FROM build as install
 RUN --network=none make lib=lib prefix=/usr GOLANG=no DESTDIR=/rootfs install
