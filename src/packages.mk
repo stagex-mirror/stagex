@@ -525,6 +525,19 @@ out/gzip/index.json: \
 	out/musl/index.json
 	$(call build,gzip)
 
+.PHONY: icu
+icu: out/icu/index.json
+out/icu/index.json: \
+	packages/icu/Containerfile \
+	out/bash/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,icu)
+
 .PHONY: iputils
 iputils: out/iputils/index.json
 out/iputils/index.json: \
