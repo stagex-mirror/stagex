@@ -504,6 +504,16 @@ out/go/index.json: \
 	out/musl/index.json
 	$(call build,go)
 
+.PHONY: go-md2man
+go-md2man: out/go-md2man/index.json
+out/go-md2man/index.json: \
+	packages/go-md2man/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,go-md2man)
+
 .PHONY: gperf
 gperf: out/gperf/index.json
 out/gperf/index.json: \
