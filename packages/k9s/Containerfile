@@ -1,0 +1,37 @@
+FROM scratch as base
+ENV VERSION=0.32.3
+ENV SRC_HASH=1b22781ff5f1f5ab0f8c831fe68609411627406198b7de71ac5ea80b7100700e
+ENV SRC_FILE=v${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/derailed/k9s/archive/refs/tags/${SRC_FILE}
+ENV GOPATH=/cache/go
+ENV GOCACHE=/cache/
+ENV GOWORK=off
+ENV GOPROXY=https://proxy.golang.org,direct
+ENV GOSUMDB=sum.golang.org
+ENV CGO_ENABLED=0
+ENV GOHOSTOS=linux
+ENV GOHOSTARCH=amd64
+ENV GO11MODULE=off
+
+FROM base as fetch
+COPY --from=stagex/busybox . /
+COPY --from=stagex/go . /
+COPY --from=stagex/ca-certificates . /
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+RUN tar -xvf ${SRC_FILE}
+WORKDIR k9s-${VERSION}
+RUN go get ./...
+
+FROM fetch as build
+RUN --network=none go build -trimpath -o k9s -v main.go
+
+from build as install
+RUN <<-EOF
+    mkdir -p /rootfs/usr/bin/
+    ls -lah .
+    cp k9s /rootfs/usr/bin/
+    find /rootfs -exec touch -hcd "@0" "{}" +
+EOF
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/./ /
