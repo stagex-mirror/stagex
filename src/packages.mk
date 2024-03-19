@@ -525,6 +525,16 @@ out/gzip/index.json: \
 	out/musl/index.json
 	$(call build,gzip)
 
+.PHONY: helm
+helm: out/helm/index.json
+out/helm/index.json: \
+	packages/helm/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,helm)
+
 .PHONY: icu
 icu: out/icu/index.json
 out/icu/index.json: \
@@ -556,6 +566,16 @@ out/iputils/index.json: \
 	out/zlib/index.json
 	$(call build,iputils)
 
+.PHONY: k9s
+k9s: out/k9s/index.json
+out/k9s/index.json: \
+	packages/k9s/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,k9s)
+
 .PHONY: keyfork
 keyfork: out/keyfork/index.json
 out/keyfork/index.json: \
@@ -578,6 +598,36 @@ out/keyfork/index.json: \
 	out/rust/index.json \
 	out/zlib/index.json
 	$(call build,keyfork)
+
+.PHONY: kubectl
+kubectl: out/kubectl/index.json
+out/kubectl/index.json: \
+	packages/kubectl/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,kubectl)
+
+.PHONY: kustomize
+kustomize: out/kustomize/index.json
+out/kustomize/index.json: \
+	packages/kustomize/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,kustomize)
+
+.PHONY: kustomize-sops
+kustomize-sops: out/kustomize-sops/index.json
+out/kustomize-sops/index.json: \
+	packages/kustomize-sops/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,kustomize-sops)
 
 .PHONY: libassuan
 libassuan: out/libassuan/index.json
@@ -1234,6 +1284,16 @@ out/syslinux/index.json: \
 	out/util-linux/index.json
 	$(call build,syslinux)
 
+.PHONY: talosctl
+talosctl: out/talosctl/index.json
+out/talosctl/index.json: \
+	packages/talosctl/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,talosctl)
+
 .PHONY: tar
 tar: out/tar/index.json
 out/tar/index.json: \
@@ -1267,6 +1327,16 @@ out/texinfo/index.json: \
 	out/tar/index.json \
 	out/xz/index.json
 	$(call build,texinfo)
+
+.PHONY: tflint
+tflint: out/tflint/index.json
+out/tflint/index.json: \
+	packages/tflint/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,tflint)
 
 .PHONY: tofu
 tofu: out/tofu/index.json
@@ -1323,6 +1393,16 @@ out/xz/index.json: \
 	out/make/index.json \
 	out/musl/index.json
 	$(call build,xz)
+
+.PHONY: yq
+yq: out/yq/index.json
+out/yq/index.json: \
+	packages/yq/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,yq)
 
 .PHONY: zig
 zig: out/zig/index.json
