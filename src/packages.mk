@@ -579,6 +579,16 @@ out/keyfork/index.json: \
 	out/zlib/index.json
 	$(call build,keyfork)
 
+.PHONY: kubectl
+kubectl: out/kubectl/index.json
+out/kubectl/index.json: \
+	packages/kubectl/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,kubectl)
+
 .PHONY: libassuan
 libassuan: out/libassuan/index.json
 out/libassuan/index.json: \
