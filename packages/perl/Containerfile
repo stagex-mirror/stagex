@@ -53,7 +53,7 @@ RUN --network=none <<-EOF
 		-Ud_fpos64_t \
 		-Ud_off64_t \
 		-Dusenm
-	make
+	make -j "$(nproc)"
 EOF
 
 FROM build as install

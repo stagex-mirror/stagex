@@ -39,7 +39,7 @@ RUN --network=none <<-EOF
 		--disable-polkit \
 		--disable-strict \
 		--enable-static
-	make
+	make -j "$(nproc)"
 EOF
 
 FROM build as install

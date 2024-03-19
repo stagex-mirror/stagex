@@ -28,7 +28,7 @@ RUN --network=none <<-EOF
 		--enable-shared \
 		--with-computed-gotos \
 		--without-ensurepip
-	make
+	make -j "$(nproc)"
 EOF
 
 FROM build as install

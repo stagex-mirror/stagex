@@ -51,7 +51,7 @@ RUN --network=none <<-EOF
 		--disable-libdebuginfod \
 		--disable-debuginfod \
 		--with-zstd
-	make
+	make -j "$(nproc)"
 EOF
 
 FROM build as install

@@ -37,7 +37,7 @@ RUN --network=none <<-EOF
         --enable-static \
         --with-zlib \
         --with-python=/usr/bin/python3
-    make
+    make -j "$(nproc)"
 EOF
 
 FROM build as install

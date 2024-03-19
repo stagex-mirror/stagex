@@ -33,7 +33,7 @@ RUN --network=none <<-EOF
 		--without-curses \
 		--without-bash-malloc \
 		--without-tcltk
-	make
+	make -j "$(nproc)"
 EOF
 
 FROM build as install

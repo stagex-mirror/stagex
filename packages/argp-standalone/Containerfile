@@ -29,7 +29,7 @@ RUN <<-EOF
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info \
 		--localstatedir=/var
-	make
+	make -j "$(nproc)"
 EOF
 
 FROM build as install

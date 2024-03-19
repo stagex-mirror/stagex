@@ -42,8 +42,8 @@ ENV KBUILD_BUILD_TIMESTAMP=1
 RUN <<-EOF
 	set -eux
 	make oldconfig
-	make bzImage
-    make modules INSTALL_MOD_PATH=/rootfs
+	make -j "$(nproc)" bzImage
+    make -j "$(nproc)" modules INSTALL_MOD_PATH=/rootfs
 EOF
 
 FROM build as install

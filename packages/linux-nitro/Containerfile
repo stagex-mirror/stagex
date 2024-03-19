@@ -50,8 +50,8 @@ ENV KBUILD_BUILD_TIMESTAMP=1
 RUN <<-EOF
 	set -eux
 	make olddefconfig
-	make bzImage
-	make modules_prepare
+	make -j "$(nproc)" bzImage
+	make -j "$(nproc)" modules_prepare
 	cd ../nitro-bootstrap
 	make -C ../linux-${VERSION} M=../nitro-bootstrap/nsm-driver
 EOF
