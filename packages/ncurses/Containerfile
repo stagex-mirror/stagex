@@ -1,0 +1,64 @@
+FROM scratch as base
+ARG ARCH=x86_64
+ENV VERSION=6.4-20240309
+ENV SRC_HASH=ff909c46f219c4a4756da5f2e9f1925704560718765282aae73841f6cce021d5
+ENV SRC_FILE=ncurses-${VERSION}.tgz
+ENV SRC_SITE=https://invisible-mirror.net/archives/ncurses/current/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/linux-headers . /
+COPY --from=stagex/make . /
+COPY --from=stagex/gcc . /
+RUN tar -xzf ${SRC_FILE}
+WORKDIR ncurses-${VERSION}
+ENV ARFLAGS=-crv
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--build=${ARCH}-linux-musl \
+		--host=${ARCH}-linux-musl \
+		--prefix=/usr \
+        --disable-root-access \
+        --disable-root-environ \
+        --disable-setuid-environ \
+        --without-ada \
+        --without-debug \
+        --without-tests \
+        --with-versioned-syms \
+        --with-pkg-config-libdir=/usr/lib/pkgconfig \
+        --with-cxx-binding \
+        --with-cxx-shared \
+        --with-shared \
+        --with-terminfo-dirs="/etc/terminfo:/usr/share/terminfo:/lib/terminfo:/usr/lib/terminfo" \
+        --enable-pc-files \
+        --enable-shared \
+        --enable-widec
+	make -j "$(nproc)"
+EOF
+
+FROM build as install
+RUN --network=none <<-EOF
+    set -eu
+    make DESTDIR="/rootfs" install
+    cd /rootfs
+    # force link against *w.so
+    for lib in ncurses ncurses++ form panel menu; do
+		ln -s ${lib}w.pc usr/lib/pkgconfig/$lib.pc
+		ln -s lib${lib}w.a usr/lib/lib$lib.a
+		echo "INPUT(-l${lib}w)" > usr/lib/lib$lib.so
+	done
+    # link curses -> ncurses
+    ln -s libncurses.a usr/lib/libcurses.a
+    ln -s libncurses.so usr/lib/libcurses.so
+    echo 'INPUT(-lncursesw)' > usr/lib/libcursesw.so
+    find /rootfs -exec touch -hcd "@0" "{}" +
+EOF
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

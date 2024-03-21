@@ -1,0 +1,41 @@
+FROM scratch as base
+ARG ARCH=x86_64
+ENV VERSION=8.6.14
+ENV SRC_HASH=5880225babf7954c58d4fb0f5cf6279104ce1cd6aa9b71e9a6322540e1c4de66
+ENV SRC_FILE=tcl${VERSION}-src.tar.gz
+ENV SRC_SITE=https://fossies.org/linux/misc/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=stagex/bash . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/make . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+RUN tar -xzf ${SRC_FILE}
+WORKDIR tcl${VERSION}/unix
+RUN --network=none <<-EOF
+    ./configure \
+        --build=${ARCH}-linux-musl \
+        --host=${ARCH}-linux-musl \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --mandir=/usr/share/man \
+        --localstatedir=/var \
+        --enable-64bit
+    make -j "$(nproc)"
+EOF
+
+FROM build as install
+RUN --network=none <<-EOF
+    set -eu
+    make DESTDIR=/rootfs install
+    find /rootfs -exec touch -hcd "@0" "{}" +
+EOF
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /
