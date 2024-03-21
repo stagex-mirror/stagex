@@ -43,7 +43,7 @@ RUN <<-EOF
 	set -eux
 	make oldconfig
 	make -j "$(nproc)" bzImage
-    make -j "$(nproc)" modules INSTALL_MOD_PATH=/rootfs
+	make -j "$(nproc)" modules INSTALL_MOD_PATH=/rootfs
 EOF
 
 FROM build as install
