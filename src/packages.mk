@@ -1328,6 +1328,19 @@ out/sops/index.json: \
 	out/go/index.json
 	$(call build,sops)
 
+.PHONY: sqlite3
+sqlite3: out/sqlite3/index.json
+out/sqlite3/index.json: \
+	packages/sqlite3/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/tcl/index.json
+	$(call build,sqlite3)
+
 .PHONY: stage0
 stage0: out/stage0/index.json
 out/stage0/index.json: \
