@@ -1,6 +1,6 @@
 FROM scratch as base
-ENV VERSION=6.6
-ENV SRC_HASH=d926a06c63dd8ac7df3f86ee1ffc2ce2a3b81a2d168484e76b5b389aba8e56d0
+ENV VERSION=6.8
+ENV SRC_HASH=c969dea4e8bb6be991bbf7c010ba0e0a5643a3a8d8fb0a2aaa053406f1e965f3
 ENV SRC_FILE=linux-${VERSION}.tar.xz
 ENV SRC_SITE=http://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/${SRC_FILE}
 
