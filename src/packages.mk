@@ -234,6 +234,22 @@ out/dosfstools/index.json: \
 	out/perl/index.json
 	$(call build,dosfstools)
 
+.PHONY: e2fsprogs
+e2fsprogs: out/e2fsprogs/index.json
+out/e2fsprogs/index.json: \
+	packages/e2fsprogs/Containerfile \
+	out/bash/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/linux-headers/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/pkgconf/index.json \
+	out/util-linux/index.json
+	$(call build,e2fsprogs)
+
 .PHONY: ed
 ed: out/ed/index.json
 out/ed/index.json: \
@@ -1049,6 +1065,19 @@ out/musl-obstack/index.json: \
 	out/pkgconf/index.json
 	$(call build,musl-obstack)
 
+.PHONY: ncurses
+ncurses: out/ncurses/index.json
+out/ncurses/index.json: \
+	packages/ncurses/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/linux-headers/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,ncurses)
+
 .PHONY: nettle
 nettle: out/nettle/index.json
 out/nettle/index.json: \
@@ -1149,6 +1178,35 @@ out/pkgconf/index.json: \
 	out/musl/index.json
 	$(call build,pkgconf)
 
+.PHONY: postgresql
+postgresql: out/postgresql/index.json
+out/postgresql/index.json: \
+	packages/postgresql/Containerfile \
+	out/binutils/index.json \
+	out/bison/index.json \
+	out/busybox/index.json \
+	out/clang/index.json \
+	out/e2fsprogs/index.json \
+	out/filesystem/index.json \
+	out/flex/index.json \
+	out/gcc/index.json \
+	out/icu/index.json \
+	out/libxml2/index.json \
+	out/linux-headers/index.json \
+	out/llvm/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/ncurses/index.json \
+	out/openssl/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json \
+	out/python/index.json \
+	out/readline/index.json \
+	out/tcl/index.json \
+	out/util-linux/index.json \
+	out/zlib/index.json
+	$(call build,postgresql)
+
 .PHONY: py-setuptools
 py-setuptools: out/py-setuptools/index.json
 out/py-setuptools/index.json: \
@@ -1174,6 +1232,20 @@ out/python/index.json: \
 	out/openssl/index.json \
 	out/zlib/index.json
 	$(call build,python)
+
+.PHONY: readline
+readline: out/readline/index.json
+out/readline/index.json: \
+	packages/readline/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/ncurses/index.json \
+	out/pkgconf/index.json
+	$(call build,readline)
 
 .PHONY: rust
 rust: out/rust/index.json
@@ -1305,6 +1377,20 @@ out/tar/index.json: \
 	out/make/index.json \
 	out/musl/index.json
 	$(call build,tar)
+
+.PHONY: tcl
+tcl: out/tcl/index.json
+out/tcl/index.json: \
+	packages/tcl/Containerfile \
+	out/bash/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/pkgconf/index.json
+	$(call build,tcl)
 
 .PHONY: texinfo
 texinfo: out/texinfo/index.json
