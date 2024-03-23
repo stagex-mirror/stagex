@@ -56,6 +56,13 @@ $ sh ./src/setup-debian-12.sh
 
 Stagex uses a Makefile to build everything.
 
+Populate your local registry by building from scratch
+```shell
+$ make all
+```
+|
+OR
+|
 Prepopulate your local registry
 ```shell
 $ make preseed 
@@ -63,7 +70,7 @@ $ rm -rf ./out/sxctl
 $ make sxctl
 ```
 
-Find if there is a relevant package that you can you as a boilerplate for the 
+Find if there is a relevant package that you can use as a boilerplate for the 
 new addition.
 ```
 cp -R packages/python packages/cython
@@ -73,16 +80,31 @@ vim packages/cython/Containerfile
 # https://git.alpinelinux.org/aports/tree/main/cython/APKBUILD
 make gen-make
 make cython
-make digests # maybe this is wrong!!!
-
+make digests 
 ```
 
-Then you can commit and push your package and open a PR.
+Then you can commit {signed} and push your package and open a PR.
 IMPORTANT: the PR should be just the `Containerfile`, and the added block for
 the package you are contributing in `packages.mk`
 
 ## Helpful one liners
-<add one liners > 
+<--author: Lance R. Vick -->
+
+- see contents of a package:
+```
+package=somepackage tar -tvf $(find out/${package} -type f -printf '%s %p\n' | sort -nr | head -n1 | awk '{ print $2 }') | less
+```
+
+- test package for reproducibility:
+```
+package=somepackage; rm -rf out{,2}/${package}; make NOCACHE=1 ${package}; mv out/${package} out2/; make NOCACHE=1 ${package}; diffoscope $(find out*/${package} -type f -printf '%s %p\n' | sort -nr | head -n2 | awk '{ print $2 }' | tr '\n' ' ')
+```
+
+- make svg graph of dependency tree for a single package
+```
+package=somepackage; make -Bnd ${package} | make2graph | dot -Tsvg -o ${package}-graph.svg
+```
+<--author: Lance R. Vick -->
 
 ## Submitting Pull Requests
 
@@ -101,17 +123,15 @@ code changes. But only if those smaller ones make sense as stand-alone PRs.
 
 Regardless of the type of PR, all PRs should include:
 * well documented code changes.
-* 
 
 PRs that fix issues should include a reference like `Closes #XXXX` in the
 commit message so that Codeberg will automatically close the referenced issue
 when the PR is merged.
 
-PRs will be approved by an [approver][owners] listed in [`OWNERS`](OWNERS).
+PRs will be approved by a [maintainer] listed in [`MAINTAINERS`](MAINTAINERS).
 
 In case you're only changing docs, make sure to prefix the PR title with
-"[CI:DOCS]".  That will prevent functional tests from running and save time and
-energy.
+"[CI:DOCS]". 
 
 ### Describe your Changes in Commit Messages
 
@@ -126,55 +146,10 @@ during code review, describe the impact you think it can have on users. Keep in
 mind that the majority of users run packages provided by distributions, so
 include anything that could help route your change downstream.
 
-### Sign your PRs
+### Sign your commits
 
-The sign-off is a line at the end of the explanation for the patch. Your
-signature certifies that you wrote the patch or otherwise have the right to pass
-it on as an open-source patch. The rules are simple: if you can certify
-the below (from [developercertificate.org](https://developercertificate.org/)):
-
-```
-Developer Certificate of Origin
-Version 1.1
-
-Copyright (C) 2004, 2006 The Linux Foundation and its contributors.
-660 York Street, Suite 102,
-San Francisco, CA 94110 USA
-
-Everyone is permitted to copy and distribute verbatim copies of this
-license document, but changing it is not allowed.
-
-Developer's Certificate of Origin 1.1
-
-By making a contribution to this project, I certify that:
-
-(a) The contribution was created in whole or in part by me and I
-    have the right to submit it under the open source license
-    indicated in the file; or
-
-(b) The contribution is based upon previous work that, to the best
-    of my knowledge, is covered under an appropriate open source
-    license and I have the right under that license to submit that
-    work with modifications, whether created in whole or in part
-    by me, under the same open source license (unless I am
-    permitted to submit under a different license), as indicated
-    in the file; or
-
-(c) The contribution was provided directly to me by some other
-    person who certified (a), (b) or (c) and I have not modified
-    it.
-
-(d) I understand and agree that this project and the contribution
-    are public and that a record of the contribution (including all
-    personal information I submit with it, including my sign-off) is
-    maintained indefinitely and may be redistributed consistent with
-    this project or the open source license(s) involved.
-```
-
-Then you just add a line to every git commit message:
-
-    Signed-off-by: Joe Smith <joe.smith@email.com>
-
+Your signature certifies that you wrote the patch or otherwise have the right to pass
+it on as an open-source patch.
 
 If you set your `user.name` and `user.email` git configs, you can sign your
 commit automatically with `git commit -s`.
