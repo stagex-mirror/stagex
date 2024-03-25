@@ -1,8 +1,8 @@
 FROM scratch as base
-ENV VERSION=1.29
-ENV SRC_HASH=d1f1c9c44c425809718edab34c884c4dd9fd6c18396d779d5bd444da2d420792
-ENV SRC_FILE=release-${VERSION}.tar.gz
-ENV SRC_SITE=https://github.com/kubernetes/kubernetes/archive/refs/heads/${SRC_FILE}
+ENV VERSION=1.29.3
+ENV SRC_HASH=401d29af71cb962eb328cefd5166695587f195f9bd960edd1ede630f7e98bf7a
+ENV SRC_FILE=v${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/kubernetes/kubernetes/archive/refs/tags/${SRC_FILE}
 ENV GOPATH=/cache/go
 ENV GOCACHE=/cache/
 ENV GOWORK=off
@@ -18,8 +18,8 @@ COPY --from=stagex/go . /
 COPY --from=stagex/ca-certificates . /
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 RUN tar -xvf ${SRC_FILE}
-WORKDIR kubernetes-release-${VERSION}
-RUN go get ./...
+WORKDIR kubernetes-${VERSION}
+RUN GOPATH="/kubernetes-${VERSION}" go mod download
 
 FROM fetch as build
 RUN --network=none go build -trimpath -v k8s.io/kubernetes/cmd/kubectl
