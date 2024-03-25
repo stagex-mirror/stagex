@@ -70,6 +70,18 @@ Cores = 32
 OS = QubesOS / Debian
 Runtime = Docker
 
+[machines.antonlivaja.local1]
+Owner = Anton Livaja
+Location = Toronto, Canada
+Type = metal
+Arch = x86_64
+Brand = AMD
+Model = Ryzen Threadripper 2970X
+Ghz = 3
+Cores = 24
+OS = QubesOS / Debian
+Runtime = Docker
+
 [machines.lancevick.remote1]
 Owner = Hetzner Online GmbH
 Location = Finland, Europe
