@@ -965,6 +965,27 @@ out/llvm13/index.json: \
 	out/zlib/index.json
 	$(call build,llvm13)
 
+.PHONY: lua
+lua: out/lua/index.json
+out/lua/index.json: \
+	packages/lua/Containerfile \
+	out/autoconf/index.json \
+	out/automake/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libtool/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/ncurses/index.json \
+	out/perl/index.json \
+	out/readline/index.json \
+	out/zlib/index.json
+	$(call build,lua)
+
 .PHONY: lzip
 lzip: out/lzip/index.json
 out/lzip/index.json: \
@@ -1246,6 +1267,21 @@ out/readline/index.json: \
 	out/ncurses/index.json \
 	out/pkgconf/index.json
 	$(call build,readline)
+
+.PHONY: redis
+redis: out/redis/index.json
+out/redis/index.json: \
+	packages/redis/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json
+	$(call build,redis)
 
 .PHONY: rust
 rust: out/rust/index.json
