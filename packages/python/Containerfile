@@ -1,6 +1,6 @@
 FROM scratch as base
-ENV VERSION=3.12.0
-ENV SRC_HASH=795c34f44df45a0e9b9710c8c71c15c671871524cd412ca14def212e8ccb155d
+ENV VERSION=3.11.8
+ENV SRC_HASH=9e06008c8901924395bc1da303eac567a729ae012baa182ab39269f650383bb3
 ENV SRC_FILE=Python-${VERSION}.tar.xz
 ENV SRC_SITE=https://www.python.org/ftp/python/${VERSION}/${SRC_FILE}
 
@@ -16,6 +16,8 @@ COPY --from=stagex/musl . /
 COPY --from=stagex/openssl . /
 COPY --from=stagex/zlib . /
 COPY --from=stagex/bzip2 . /
+COPY --from=stagex/sqlite3 . /
+COPY --from=stagex/libffi . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR Python-${VERSION}
 ENV SOURCE_DATE_EPOCH=1

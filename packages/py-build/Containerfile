@@ -1,0 +1,26 @@
+FROM scratch as base
+ENV VERSION=0.7.0
+ENV SRC_HASH=1aaadcd69338252ade4f7ec1265e1a19184bf916d84c9b7df095f423948cb89f
+ENV SRC_FILE=build-${VERSION}.tar.gz
+ENV SRC_SITE=https://files.pythonhosted.org/packages/source/b/build/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as install
+COPY --from=stagex/busybox . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/python . /
+COPY --from=stagex/py-setuptools . /
+COPY --from=stagex/zlib . /
+RUN tar -xzf ${SRC_FILE}
+WORKDIR build-${VERSION}
+RUN <<-EOF
+	set -eu
+    python setup.py install --root=/rootfs
+    find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+	find /rootfs -exec touch -hcd "@0" "{}" +
+EOF
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /
