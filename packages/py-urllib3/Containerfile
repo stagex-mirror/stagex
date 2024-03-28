@@ -1,0 +1,35 @@
+FROM scratch as base
+ENV VERSION=1.26.18
+ENV SRC_HASH=f8ecc1bba5667413457c529ab955bf8c67b45db799d159066261719e328580a0
+ENV SRC_FILE=urllib3-${VERSION}.tar.gz
+ENV SRC_SITE=https://files.pythonhosted.org/packages/source/u/urllib3/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/python . /
+COPY --from=stagex/libffi . /
+COPY --from=stagex/py-setuptools . /
+COPY --from=stagex/py-installer . /
+COPY --from=stagex/py-flit . /
+COPY --from=stagex/py-wheel . /
+COPY --from=stagex/py-gpep517 . /
+RUN tar -xzf ${SRC_FILE}
+WORKDIR urllib3-${VERSION}
+RUN gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+
+FROM build as install
+RUN <<-EOF
+    set -eu
+    python -m installer -d /rootfs .dist/*.whl
+    find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+    find /rootfs -exec touch -hcd "@0" "{}" +
+EOF
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

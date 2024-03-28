@@ -1,0 +1,29 @@
+FROM scratch as base
+ENV VERSION=1.16.0
+ENV SRC_HASH=1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926
+ENV SRC_FILE=six-${VERSION}.tar.gz
+ENV SRC_SITE=https://files.pythonhosted.org/packages/source/s/six/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as install
+COPY --from=stagex/busybox . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/python . /
+COPY --from=stagex/py-flit . /
+COPY --from=stagex/py-gpep517 . /
+COPY --from=stagex/zlib . /
+RUN tar -xzf ${SRC_FILE}
+WORKDIR six-${VERSION}
+RUN <<-EOF
+	set -eu
+	sitedir="$(python3 -c 'import site;print(site.getsitepackages()[0])')"
+	mkdir -p "/rootfs/${sitedir}"
+	cp six.py "/rootfs/$sitedir/"
+    find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+	find /rootfs -exec touch -hcd "@0" "{}" +
+EOF
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

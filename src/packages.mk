@@ -44,6 +44,40 @@ out/automake/index.json: \
 	out/perl/index.json
 	$(call build,automake)
 
+.PHONY: aws-cli
+aws-cli: out/aws-cli/index.json
+out/aws-cli/index.json: \
+	packages/aws-cli/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libffi/index.json \
+	out/libunwind/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/py-awscrt/index.json \
+	out/py-botocore/index.json \
+	out/py-certifi/index.json \
+	out/py-cffi/index.json \
+	out/py-colorama/index.json \
+	out/py-cryptography/index.json \
+	out/py-dateutil/index.json \
+	out/py-distro/index.json \
+	out/py-docutils/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-jmespath/index.json \
+	out/py-prompt_toolkit/index.json \
+	out/py-ruamel.yaml/index.json \
+	out/py-six/index.json \
+	out/py-urllib3/index.json \
+	out/py-wcwidth/index.json \
+	out/python/index.json \
+	out/sqlite3/index.json \
+	out/zlib/index.json
+	$(call build,aws-cli)
+
 .PHONY: bash
 bash: out/bash/index.json
 out/bash/index.json: \
@@ -512,6 +546,16 @@ out/grep/index.json: \
 	out/musl/index.json
 	$(call build,grep)
 
+.PHONY: grpcurl
+grpcurl: out/grpcurl/index.json
+out/grpcurl/index.json: \
+	packages/grpcurl/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,grpcurl)
+
 .PHONY: grub
 grub: out/grub/index.json
 out/grub/index.json: \
@@ -672,6 +716,18 @@ out/libcap/index.json: \
 	out/musl/index.json \
 	out/perl/index.json
 	$(call build,libcap)
+
+.PHONY: libffi
+libffi: out/libffi/index.json
+out/libffi/index.json: \
+	packages/libffi/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,libffi)
 
 .PHONY: libgcrypt
 libgcrypt: out/libgcrypt/index.json
@@ -1228,6 +1284,314 @@ out/postgresql/index.json: \
 	out/zlib/index.json
 	$(call build,postgresql)
 
+.PHONY: py-awscrt
+py-awscrt: out/py-awscrt/index.json
+out/py-awscrt/index.json: \
+	packages/py-awscrt/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libffi/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-setuptools/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-awscrt)
+
+.PHONY: py-botocore
+py-botocore: out/py-botocore/index.json
+out/py-botocore/index.json: \
+	packages/py-botocore/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/musl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-botocore)
+
+.PHONY: py-build
+py-build: out/py-build/index.json
+out/py-build/index.json: \
+	packages/py-build/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/musl/index.json \
+	out/py-setuptools/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-build)
+
+.PHONY: py-certifi
+py-certifi: out/py-certifi/index.json
+out/py-certifi/index.json: \
+	packages/py-certifi/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/musl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-certifi)
+
+.PHONY: py-cffi
+py-cffi: out/py-cffi/index.json
+out/py-cffi/index.json: \
+	packages/py-cffi/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libffi/index.json \
+	out/musl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-setuptools/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-cffi)
+
+.PHONY: py-colorama
+py-colorama: out/py-colorama/index.json
+out/py-colorama/index.json: \
+	packages/py-colorama/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/musl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-colorama)
+
+.PHONY: py-cparser
+py-cparser: out/py-cparser/index.json
+out/py-cparser/index.json: \
+	packages/py-cparser/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libffi/index.json \
+	out/musl/index.json \
+	out/pkgconf/index.json \
+	out/py-cffi/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-setuptools/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-cparser)
+
+.PHONY: py-cryptography
+py-cryptography: out/py-cryptography/index.json
+out/py-cryptography/index.json: \
+	packages/py-cryptography/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libffi/index.json \
+	out/libunwind/index.json \
+	out/llvm/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/pkgconf/index.json \
+	out/py-cffi/index.json \
+	out/py-cparser/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-semantic-version/index.json \
+	out/py-setuptools/index.json \
+	out/py-setuptools-rust/index.json \
+	out/py-typing-extensions/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/rust/index.json \
+	out/zlib/index.json
+	$(call build,py-cryptography)
+
+.PHONY: py-dateutil
+py-dateutil: out/py-dateutil/index.json
+out/py-dateutil/index.json: \
+	packages/py-dateutil/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/musl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-dateutil)
+
+.PHONY: py-distro
+py-distro: out/py-distro/index.json
+out/py-distro/index.json: \
+	packages/py-distro/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/musl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-distro)
+
+.PHONY: py-docutils
+py-docutils: out/py-docutils/index.json
+out/py-docutils/index.json: \
+	packages/py-docutils/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/musl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-docutils)
+
+.PHONY: py-flit
+py-flit: out/py-flit/index.json
+out/py-flit/index.json: \
+	packages/py-flit/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/musl/index.json \
+	out/py-setuptools/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-flit)
+
+.PHONY: py-gpep517
+py-gpep517: out/py-gpep517/index.json
+out/py-gpep517/index.json: \
+	packages/py-gpep517/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/musl/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-gpep517)
+
+.PHONY: py-installer
+py-installer: out/py-installer/index.json
+out/py-installer/index.json: \
+	packages/py-installer/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/musl/index.json \
+	out/py-build/index.json \
+	out/py-flit/index.json \
+	out/py-packaging/index.json \
+	out/py-pep517/index.json \
+	out/py-toml/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-installer)
+
+.PHONY: py-jmespath
+py-jmespath: out/py-jmespath/index.json
+out/py-jmespath/index.json: \
+	packages/py-jmespath/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/musl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-jmespath)
+
+.PHONY: py-packaging
+py-packaging: out/py-packaging/index.json
+out/py-packaging/index.json: \
+	packages/py-packaging/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/musl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-packaging)
+
+.PHONY: py-pep517
+py-pep517: out/py-pep517/index.json
+out/py-pep517/index.json: \
+	packages/py-pep517/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/musl/index.json \
+	out/py-setuptools/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-pep517)
+
+.PHONY: py-prompt_toolkit
+py-prompt_toolkit: out/py-prompt_toolkit/index.json
+out/py-prompt_toolkit/index.json: \
+	packages/py-prompt_toolkit/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/musl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-prompt_toolkit)
+
+.PHONY: py-ruamel.yaml
+py-ruamel.yaml: out/py-ruamel.yaml/index.json
+out/py-ruamel.yaml/index.json: \
+	packages/py-ruamel.yaml/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/libffi/index.json \
+	out/musl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-setuptools/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-ruamel.yaml)
+
+.PHONY: py-semantic-version
+py-semantic-version: out/py-semantic-version/index.json
+out/py-semantic-version/index.json: \
+	packages/py-semantic-version/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/libffi/index.json \
+	out/musl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-setuptools/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-semantic-version)
+
 .PHONY: py-setuptools
 py-setuptools: out/py-setuptools/index.json
 out/py-setuptools/index.json: \
@@ -1239,6 +1603,131 @@ out/py-setuptools/index.json: \
 	out/zlib/index.json
 	$(call build,py-setuptools)
 
+.PHONY: py-setuptools-rust
+py-setuptools-rust: out/py-setuptools-rust/index.json
+out/py-setuptools-rust/index.json: \
+	packages/py-setuptools-rust/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/libffi/index.json \
+	out/musl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-setuptools/index.json \
+	out/py-setuptools-scm/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-setuptools-rust)
+
+.PHONY: py-setuptools-scm
+py-setuptools-scm: out/py-setuptools-scm/index.json
+out/py-setuptools-scm/index.json: \
+	packages/py-setuptools-scm/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/libffi/index.json \
+	out/musl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-setuptools/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-setuptools-scm)
+
+.PHONY: py-six
+py-six: out/py-six/index.json
+out/py-six/index.json: \
+	packages/py-six/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/musl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-six)
+
+.PHONY: py-toml
+py-toml: out/py-toml/index.json
+out/py-toml/index.json: \
+	packages/py-toml/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/musl/index.json \
+	out/py-setuptools/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-toml)
+
+.PHONY: py-typing-extensions
+py-typing-extensions: out/py-typing-extensions/index.json
+out/py-typing-extensions/index.json: \
+	packages/py-typing-extensions/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/libffi/index.json \
+	out/musl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-setuptools/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-typing-extensions)
+
+.PHONY: py-urllib3
+py-urllib3: out/py-urllib3/index.json
+out/py-urllib3/index.json: \
+	packages/py-urllib3/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/libffi/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-setuptools/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-urllib3)
+
+.PHONY: py-wcwidth
+py-wcwidth: out/py-wcwidth/index.json
+out/py-wcwidth/index.json: \
+	packages/py-wcwidth/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/libffi/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-setuptools/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-wcwidth)
+
+.PHONY: py-wheel
+py-wheel: out/py-wheel/index.json
+out/py-wheel/index.json: \
+	packages/py-wheel/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/musl/index.json \
+	out/py-setuptools/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-wheel)
+
 .PHONY: python
 python: out/python/index.json
 out/python/index.json: \
@@ -1248,9 +1737,11 @@ out/python/index.json: \
 	out/bzip2/index.json \
 	out/filesystem/index.json \
 	out/gcc/index.json \
+	out/libffi/index.json \
 	out/make/index.json \
 	out/musl/index.json \
 	out/openssl/index.json \
+	out/sqlite3/index.json \
 	out/zlib/index.json
 	$(call build,python)
 
@@ -1327,6 +1818,19 @@ out/sops/index.json: \
 	out/filesystem/index.json \
 	out/go/index.json
 	$(call build,sops)
+
+.PHONY: sqlite3
+sqlite3: out/sqlite3/index.json
+out/sqlite3/index.json: \
+	packages/sqlite3/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/tcl/index.json
+	$(call build,sqlite3)
 
 .PHONY: stage0
 stage0: out/stage0/index.json
