@@ -1,8 +1,8 @@
 FROM scratch as base
-ENV VERSION=4.3.1
-ENV SRC_HASH=e7248a158d503a73d9f658cc9ac0ccf16a3d8efb856d93ca50a97f7b89332516
+ENV VERSION=0.2.0
+ENV SRC_HASH=80690d0d702b997aeb1ae6d6a7dc8ea8800d64c7307c004209387947bbd33aa2
 ENV SRC_FILE=v${VERSION}.tar.gz
-ENV SRC_SITE=https://github.com/viaduct-ai/kustomize-sops/archive/refs/tags/${SRC_FILE}
+ENV SRC_SITE=https://github.com/joshdk/ksops-dry-run/archive/refs/tags/${SRC_FILE}
 ENV GOPATH=/cache/go
 ENV GOCACHE=/cache/
 ENV GOWORK=off
@@ -19,16 +19,20 @@ COPY --from=stagex/go . /
 COPY --from=stagex/ca-certificates . /
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 RUN tar -xvf ${SRC_FILE}
-WORKDIR kustomize-sops-${VERSION}
+WORKDIR ksops-dry-run-${VERSION}
 RUN go get ./...
 
 FROM fetch as build
-RUN --network=none go build -trimpath -v
+RUN --network=none \
+    go build \
+        -v \
+        -trimpath \
+        -ldflags "-s -w -X main.version=${VERSION} -buildid="
 
 from build as install
 RUN <<-EOF
     mkdir -p /rootfs/usr/lib/kustomize/plugins/viduct.ai/v1/ksops
-    cp kustomize-sops /rootfs/usr/lib/kustomize/plugins/viduct.ai/v1/ksops/ksops
+    cp ksops-dry-run /rootfs/usr/lib/kustomize/plugins/viduct.ai/v1/ksops/ksops
     find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
 
