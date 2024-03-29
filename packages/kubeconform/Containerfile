@@ -1,8 +1,8 @@
 FROM scratch as base
-ENV VERSION=4.3.1
-ENV SRC_HASH=e7248a158d503a73d9f658cc9ac0ccf16a3d8efb856d93ca50a97f7b89332516
+ENV VERSION=0.6.4
+ENV SRC_HASH=fa5f1f7de0d6cd97106b70965c6275cc5e7afb22ff6e2459a94f8f33341b5c93
 ENV SRC_FILE=v${VERSION}.tar.gz
-ENV SRC_SITE=https://github.com/viaduct-ai/kustomize-sops/archive/refs/tags/${SRC_FILE}
+ENV SRC_SITE=https://github.com/yannh/kubeconform/archive/refs/tags/${SRC_FILE}
 ENV GOPATH=/cache/go
 ENV GOCACHE=/cache/
 ENV GOWORK=off
@@ -19,16 +19,17 @@ COPY --from=stagex/go . /
 COPY --from=stagex/ca-certificates . /
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 RUN tar -xvf ${SRC_FILE}
-WORKDIR kustomize-sops-${VERSION}
+WORKDIR kubeconform-${VERSION}
 RUN go get ./...
 
 FROM fetch as build
-RUN --network=none go build -trimpath -v
+RUN --network=none go build -o bin/ -trimpath -v ./...
 
 from build as install
 RUN <<-EOF
-    mkdir -p /rootfs/usr/lib/kustomize/plugins/viduct.ai/v1/ksops
-    cp kustomize-sops /rootfs/usr/lib/kustomize/plugins/viduct.ai/v1/ksops/ksops
+    set -eu
+    mkdir -p /rootfs/usr/bin/
+    cp bin/kubeconform /rootfs/usr/bin/
     find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
 

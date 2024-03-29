@@ -659,6 +659,26 @@ out/keyfork/index.json: \
 	out/zlib/index.json
 	$(call build,keyfork)
 
+.PHONY: ksops-dry-run
+ksops-dry-run: out/ksops-dry-run/index.json
+out/ksops-dry-run/index.json: \
+	packages/ksops-dry-run/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,ksops-dry-run)
+
+.PHONY: kubeconform
+kubeconform: out/kubeconform/index.json
+out/kubeconform/index.json: \
+	packages/kubeconform/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,kubeconform)
+
 .PHONY: kubectl
 kubectl: out/kubectl/index.json
 out/kubectl/index.json: \
