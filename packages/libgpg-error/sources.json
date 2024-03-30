@@ -1,0 +1,7 @@
+{
+    "libgpg-error-1.47.tar.bz2": {
+        "mirrors": [
+            "https://gnupg.org/ftp/gcrypt/libgpg-error/{SRC_FILE}"
+        ]
+    }
+}

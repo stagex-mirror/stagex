@@ -1,0 +1,7 @@
+{
+    "curl-{VERSION}.tar.xz": {
+        "mirrors": [
+            "https://curl.se/download/{SRC_FILE}"
+        ]
+    }
+}

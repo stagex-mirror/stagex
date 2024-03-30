@@ -1,0 +1,7 @@
+{
+    "awscrt-{VERSION}.tar.gz": {
+        "mirrors": [
+            "https://files.pythonhosted.org/packages/source/a/awscrt/{SRC_FILE}"
+        ]
+    }
+}

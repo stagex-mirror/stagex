@@ -1,0 +1,7 @@
+{
+    "kustomize-3.3.1.tar.gz": {
+        "mirrors": [
+            "https://github.com/kubernetes-sigs/kustomize/archive/refs/tags/{SRC_FILE}"
+        ]
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "mtools-{VERSION}.tar.bz2": {
+        "mirrors": [
+            "https://ftp.gnu.org/gnu/mtools/{SRC_FILE}"
+        ]
+    }
+}

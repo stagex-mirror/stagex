@@ -1,0 +1,7 @@
+{
+    "binutils-{VERSION}.tar.xz": {
+        "mirrors": [
+            "https://ftp.gnu.org/gnu/binutils/{SRC_FILE}"
+        ]
+    }
+}

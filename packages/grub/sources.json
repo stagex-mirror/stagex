@@ -1,0 +1,7 @@
+{
+    "grub-2.06.tar.gz": {
+        "mirrors": [
+            "https://mirrors.kernel.org/gnu/grub/{SRC_FILE}"
+        ]
+    }
+}

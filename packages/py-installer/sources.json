@@ -1,0 +1,7 @@
+{
+    "installer-{VERSION}.tar.gz": {
+        "mirrors": [
+            "https://files.pythonhosted.org/packages/source/i/installer/{SRC_FILE}"
+        ]
+    }
+}

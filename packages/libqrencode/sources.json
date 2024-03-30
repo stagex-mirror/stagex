@@ -1,0 +1,7 @@
+{
+    "qrencode-{VERSION}.tar.gz": {
+        "mirrors": [
+            "https://fukuchi.org/works/qrencode/{SRC_FILE}"
+        ]
+    }
+}

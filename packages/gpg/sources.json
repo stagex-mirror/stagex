@@ -1,0 +1,7 @@
+{
+    "gnupg-2.4.4.tar.bz2": {
+        "mirrors": [
+            "https://gnupg.org/ftp/gcrypt/gnupg/{SRC_FILE}"
+        ]
+    }
+}

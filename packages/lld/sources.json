@@ -1,0 +1,7 @@
+{
+    "llvm-project-16.0.6.src.tar.xz": {
+        "mirrors": [
+            "https://github.com/llvm/llvm-project/releases/download/llvmorg-{VERSION}/{SRC_FILE}"
+        ]
+    }
+}

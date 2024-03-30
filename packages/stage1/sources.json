@@ -1,0 +1,277 @@
+{
+    "live-bootstrap.tgz": {
+        "mirrors": [
+            "https://codeload.github.com/lrvick/live-bootstrap/legacy.tar.gz/fc6eeb6bd75ea0d0025a79ea9fe45614bd60ba14"
+        ]
+    },
+    "./": {
+        "mirrors": [
+            "https://zlib.net/fossils/zlib-1.2.13.tar.gz"
+        ]
+    },
+    "./UnicodeData-4.1.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/4.1.0/ucd/UnicodeData.txt"
+        ]
+    },
+    "./CompositionExclusions-4.1.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/4.1.0/ucd/CompositionExclusions.txt"
+        ]
+    },
+    "./EastAsianWidth-4.1.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/4.1.0/ucd/EastAsianWidth.txt"
+        ]
+    },
+    "./UnicodeData-14.0.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/14.0.0/ucd/UnicodeData.txt"
+        ]
+    },
+    "./CompositionExclusions-14.0.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/14.0.0/ucd/CompositionExclusions.txt"
+        ]
+    },
+    "./EastAsianWidth-14.0.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/14.0.0/ucd/EastAsianWidth.txt"
+        ]
+    },
+    "./DerivedCoreProperties-14.0.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/14.0.0/ucd/DerivedCoreProperties.txt"
+        ]
+    },
+    "./DerivedNormalizationProps-14.0.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/14.0.0/ucd/DerivedNormalizationProps.txt"
+        ]
+    },
+    "./LineBreak-14.0.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/14.0.0/ucd/LineBreak.txt"
+        ]
+    },
+    "./NameAliases-14.0.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/14.0.0/ucd/NameAliases.txt"
+        ]
+    },
+    "./NamedSequences-14.0.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/14.0.0/ucd/NamedSequences.txt"
+        ]
+    },
+    "./SpecialCasing-14.0.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/14.0.0/ucd/SpecialCasing.txt"
+        ]
+    },
+    "./CaseFolding-14.0.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/14.0.0/ucd/CaseFolding.txt"
+        ]
+    },
+    "./Unihan-14.0.0.zip": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/14.0.0/ucd/Unihan.zip"
+        ]
+    },
+    "./UnicodeData-5.1.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/5.1.0/ucd/UnicodeData.txt"
+        ]
+    },
+    "./CompositionExclusions-5.1.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/5.1.0/ucd/CompositionExclusions.txt"
+        ]
+    },
+    "./EastAsianWidth-5.1.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/5.1.0/ucd/EastAsianWidth.txt"
+        ]
+    },
+    "./DerivedCoreProperties-5.1.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/5.1.0/ucd/DerivedCoreProperties.txt"
+        ]
+    },
+    "./DerivedNormalizationProps-5.1.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/5.1.0/ucd/DerivedNormalizationProps.txt"
+        ]
+    },
+    "./UnicodeData-6.1.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/6.1.0/ucd/UnicodeData.txt"
+        ]
+    },
+    "./CompositionExclusions-6.1.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/6.1.0/ucd/CompositionExclusions.txt"
+        ]
+    },
+    "./EastAsianWidth-6.1.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/6.1.0/ucd/EastAsianWidth.txt"
+        ]
+    },
+    "./DerivedCoreProperties-6.1.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/6.1.0/ucd/DerivedCoreProperties.txt"
+        ]
+    },
+    "./DerivedNormalizationProps-6.1.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/6.1.0/ucd/DerivedNormalizationProps.txt"
+        ]
+    },
+    "./LineBreak-6.1.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/6.1.0/ucd/LineBreak.txt"
+        ]
+    },
+    "./NameAliases-6.1.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/6.1.0/ucd/NameAliases.txt"
+        ]
+    },
+    "./NamedSequences-6.1.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/6.1.0/ucd/NamedSequences.txt"
+        ]
+    },
+    "./SpecialCasing-6.1.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/6.1.0/ucd/SpecialCasing.txt"
+        ]
+    },
+    "./CaseFolding-6.1.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/6.1.0/ucd/CaseFolding.txt"
+        ]
+    },
+    "./Unihan-6.1.0.zip": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/6.1.0/ucd/Unihan.zip"
+        ]
+    },
+    "./UnicodeData-6.3.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/6.3.0/ucd/UnicodeData.txt"
+        ]
+    },
+    "./CompositionExclusions-6.3.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/6.3.0/ucd/CompositionExclusions.txt"
+        ]
+    },
+    "./EastAsianWidth-6.3.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/6.3.0/ucd/EastAsianWidth.txt"
+        ]
+    },
+    "./DerivedCoreProperties-6.3.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/6.3.0/ucd/DerivedCoreProperties.txt"
+        ]
+    },
+    "./DerivedNormalizationProps-6.3.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/6.3.0/ucd/DerivedNormalizationProps.txt"
+        ]
+    },
+    "./LineBreak-6.3.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/6.3.0/ucd/LineBreak.txt"
+        ]
+    },
+    "./NameAliases-6.3.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/6.3.0/ucd/NameAliases.txt"
+        ]
+    },
+    "./NamedSequences-6.3.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/6.3.0/ucd/NamedSequences.txt"
+        ]
+    },
+    "./SpecialCasing-6.3.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/6.3.0/ucd/SpecialCasing.txt"
+        ]
+    },
+    "./CaseFolding-6.3.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/6.3.0/ucd/CaseFolding.txt"
+        ]
+    },
+    "./Unihan-6.3.0.zip": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/6.3.0/ucd/Unihan.zip"
+        ]
+    },
+    "./UnicodeData-12.1.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/12.1.0/ucd/UnicodeData.txt"
+        ]
+    },
+    "./CompositionExclusions-12.1.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/12.1.0/ucd/CompositionExclusions.txt"
+        ]
+    },
+    "./EastAsianWidth-12.1.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/12.1.0/ucd/EastAsianWidth.txt"
+        ]
+    },
+    "./DerivedCoreProperties-12.1.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/12.1.0/ucd/DerivedCoreProperties.txt"
+        ]
+    },
+    "./DerivedNormalizationProps-12.1.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/12.1.0/ucd/DerivedNormalizationProps.txt"
+        ]
+    },
+    "./LineBreak-12.1.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/12.1.0/ucd/LineBreak.txt"
+        ]
+    },
+    "./NameAliases-12.1.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/12.1.0/ucd/NameAliases.txt"
+        ]
+    },
+    "./NamedSequences-12.1.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/12.1.0/ucd/NamedSequences.txt"
+        ]
+    },
+    "./SpecialCasing-12.1.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/12.1.0/ucd/SpecialCasing.txt"
+        ]
+    },
+    "./CaseFolding-12.1.0.txt": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/12.1.0/ucd/CaseFolding.txt"
+        ]
+    },
+    "./Unihan-12.1.0.zip": {
+        "mirrors": [
+            "http://ftp.unicode.org/Public/12.1.0/ucd/Unihan.zip"
+        ]
+    },
+    "./tcc-0.9.26.tar.gz": {
+        "mirrors": [
+            "https://lilypond.org/janneke/tcc/tcc-0.9.26-1147-gee75a10c.tar.gz"
+        ]
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "cryptography-{VERSION}.tar.gz": {
+        "mirrors": [
+            "https://files.pythonhosted.org/packages/source/c/cryptography/{SRC_FILE}"
+        ]
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "musl-{VERSION}.tar.gz": {
+        "mirrors": [
+            "http://musl.libc.org/releases/{SRC_FILE}"
+        ]
+    }
+}

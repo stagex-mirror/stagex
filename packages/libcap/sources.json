@@ -1,0 +1,7 @@
+{
+    "libcap-2.69.tar.gz": {
+        "mirrors": [
+            "https://git.kernel.org/pub/scm/libs/libcap/libcap.git/snapshot/{SRC_FILE}"
+        ]
+    }
+}

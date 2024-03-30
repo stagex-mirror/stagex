@@ -1,0 +1,7 @@
+{
+    "urllib3-{VERSION}.tar.gz": {
+        "mirrors": [
+            "https://files.pythonhosted.org/packages/source/u/urllib3/{SRC_FILE}"
+        ]
+    }
+}

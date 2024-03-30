@@ -1,0 +1,7 @@
+{
+    "libxml2-v2.12.1.tar.gz": {
+        "mirrors": [
+            "https://gitlab.gnome.org/GNOME/libxml2/-/archive/v{VERSION}/{SRC_FILE}"
+        ]
+    }
+}

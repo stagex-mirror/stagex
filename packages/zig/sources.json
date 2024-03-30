@@ -1,0 +1,7 @@
+{
+    "zig-{VERSION}.tar.xz": {
+        "mirrors": [
+            "https://ziglang.org/download/{VERSION}/{SRC_FILE}"
+        ]
+    }
+}

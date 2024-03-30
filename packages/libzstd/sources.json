@@ -1,0 +1,7 @@
+{
+    "zstd-1.5.5.tar.gz": {
+        "mirrors": [
+            "https://github.com/facebook/zstd/archive/{SRC_FILE}"
+        ]
+    }
+}

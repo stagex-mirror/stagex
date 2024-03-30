@@ -1,0 +1,7 @@
+{
+    "gperf-{VERSION}.tar.gz": {
+        "mirrors": [
+            "http://ftp.gnu.org/pub/gnu/gperf/{SRC_FILE}"
+        ]
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "redis-{VERSION}.tar.gz": {
+        "mirrors": [
+            "https://download.redis.io/releases/{SRC_FILE}"
+        ]
+    }
+}

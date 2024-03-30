@@ -1,0 +1,7 @@
+{
+    "dosfstools-4.2.tar.gz": {
+        "mirrors": [
+            "https://github.com/dosfstools/dosfstools/releases/download/v{VERSION}/{SRC_FILE}"
+        ]
+    }
+}

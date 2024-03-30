@@ -1,0 +1,22 @@
+{
+    "icu4c-74_2-src.tgz": {
+        "mirrors": [
+            "https://github.com/unicode-org/icu/releases/download/release-74-2/icu4c-74_2-src.tgz"
+        ]
+    },
+    "icu4c-74_2-data.zip": {
+        "mirrors": [
+            "https://github.com/unicode-org/icu/releases/download/release-74-2/icu4c-74_2-data.zip"
+        ]
+    },
+    "icu4c-74_2-data-bin-b.zip": {
+        "mirrors": [
+            "https://github.com/unicode-org/icu/releases/download/release-74-2/icu4c-74_2-data-bin-b.zip"
+        ]
+    },
+    "icu4c-74_2-data-bin-l.zip": {
+        "mirrors": [
+            "https://github.com/unicode-org/icu/releases/download/release-74-2/icu4c-74_2-data-bin-l.zip"
+        ]
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "ed-{VERSION}.tar.lz": {
+        "mirrors": [
+            "https://ftp.gnu.org/gnu/ed/{SRC_FILE}"
+        ]
+    }
+}

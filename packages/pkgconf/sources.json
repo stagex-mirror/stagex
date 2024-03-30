@@ -1,0 +1,7 @@
+{
+    "pkgconf-{VERSION}.tar.xz": {
+        "mirrors": [
+            "https://distfiles.ariadne.space/pkgconf/{SRC_FILE}"
+        ]
+    }
+}

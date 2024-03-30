@@ -1,0 +1,7 @@
+{
+    "tar-{VERSION}.tar.xz": {
+        "mirrors": [
+            "https://ftp.gnu.org/gnu/tar/{SRC_FILE}"
+        ]
+    }
+}

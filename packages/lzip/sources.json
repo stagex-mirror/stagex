@@ -1,0 +1,7 @@
+{
+    "lzip-{VERSION}.tar.gz": {
+        "mirrors": [
+            "http://download.savannah.gnu.org/releases/lzip/{SRC_FILE}"
+        ]
+    }
+}

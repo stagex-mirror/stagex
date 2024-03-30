@@ -1,0 +1,7 @@
+{
+    "lua-{VERSION}.tar.gz": {
+        "mirrors": [
+            "https://www.lua.org/ftp/{SRC_FILE}"
+        ]
+    }
+}

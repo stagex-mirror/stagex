@@ -1,0 +1,7 @@
+{
+    "aws-cli-2.15.31.tar.gz": {
+        "mirrors": [
+            "https://github.com/aws/aws-cli/archive/refs/tags/{VERSION}/{SRC_FILE}"
+        ]
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "syslinux-6.04-pre1.tar.xz": {
+        "mirrors": [
+            "https://www.kernel.org/pub/linux/utils/boot/syslinux/Testing/6.04/{SRC_FILE}"
+        ]
+    }
+}

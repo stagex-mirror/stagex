@@ -1,0 +1,7 @@
+{
+    "ruamel.yaml-{VERSION}.tar.gz": {
+        "mirrors": [
+            "https://files.pythonhosted.org/packages/source/r/ruamel.yaml/{SRC_FILE}"
+        ]
+    }
+}

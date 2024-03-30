@@ -1,0 +1,7 @@
+{
+    "automake-{VERSION}.tar.xz": {
+        "mirrors": [
+            "https://ftp.gnu.org/gnu/automake/{SRC_FILE}"
+        ]
+    }
+}

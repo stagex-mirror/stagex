@@ -1,0 +1,7 @@
+{
+    "grpcurl-1.8.9.tar.gz": {
+        "mirrors": [
+            "https://github.com/fullstorydev/grpcurl/archive/refs/tags/{SRC_FILE}"
+        ]
+    }
+}

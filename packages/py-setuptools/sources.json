@@ -1,0 +1,7 @@
+{
+    "setuptools-{VERSION}.tar.gz": {
+        "mirrors": [
+            "https://pypi.io/packages/source/s/setuptools/{SRC_FILE}"
+        ]
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "file-FILE5_45.tar.gz": {
+        "mirrors": [
+            "https://github.com/file/file/archive/{SRC_FILE}"
+        ]
+    }
+}

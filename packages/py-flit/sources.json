@@ -1,0 +1,7 @@
+{
+    "flit-{VERSION}.tar.gz": {
+        "mirrors": [
+            "https://files.pythonhosted.org/packages/source/f/flit/{SRC_FILE}"
+        ]
+    }
+}

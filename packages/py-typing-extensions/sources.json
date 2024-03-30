@@ -1,0 +1,7 @@
+{
+    "typing_extensions-{VERSION}.tar.gz": {
+        "mirrors": [
+            "https://files.pythonhosted.org/packages/source/t/typing_extensions/{SRC_FILE}"
+        ]
+    }
+}

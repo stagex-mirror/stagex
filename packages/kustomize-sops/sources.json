@@ -1,0 +1,7 @@
+{
+    "kustomize-sops-4.3.1.tar.gz": {
+        "mirrors": [
+            "https://github.com/viaduct-ai/kustomize-sops/archive/refs/tags/{SRC_FILE}"
+        ]
+    }
+}

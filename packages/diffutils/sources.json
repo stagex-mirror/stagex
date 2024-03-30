@@ -1,0 +1,7 @@
+{
+    "diffutils-{VERSION}.tar.xz": {
+        "mirrors": [
+            "https://ftp.gnu.org/gnu/diffutils/{SRC_FILE}"
+        ]
+    }
+}

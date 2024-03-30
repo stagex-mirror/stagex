@@ -1,0 +1,7 @@
+{
+    "e2fsprogs-1.47.0.tar.gz": {
+        "mirrors": [
+            "https://github.com/tytso/e2fsprogs/archive/{SRC_FILE}"
+        ]
+    }
+}

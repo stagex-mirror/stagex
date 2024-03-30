@@ -1,0 +1,7 @@
+{
+    "make-{VERSION}.tar.gz": {
+        "mirrors": [
+            "https://ftp.gnu.org/gnu/make/{SRC_FILE}"
+        ]
+    }
+}

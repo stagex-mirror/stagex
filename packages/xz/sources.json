@@ -1,0 +1,7 @@
+{
+    "xz-5.4.6.tar.xz": {
+        "mirrors": [
+            "https://github.com/tukaani-project/xz/releases/download/v{VERSION}/{SRC_FILE}"
+        ]
+    }
+}

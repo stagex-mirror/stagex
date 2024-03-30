@@ -1,0 +1,7 @@
+{
+    "libksba-1.6.5.tar.bz2": {
+        "mirrors": [
+            "https://gnupg.org/ftp/gcrypt/libksba/{SRC_FILE}"
+        ]
+    }
+}

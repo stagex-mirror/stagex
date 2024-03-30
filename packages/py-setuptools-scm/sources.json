@@ -1,0 +1,7 @@
+{
+    "setuptools-scm-{VERSION}.tar.gz": {
+        "mirrors": [
+            "https://files.pythonhosted.org/packages/source/s/setuptools-scm/{SRC_FILE}"
+        ]
+    }
+}

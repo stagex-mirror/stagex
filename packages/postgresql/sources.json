@@ -1,0 +1,7 @@
+{
+    "postgresql-{VERSION}.tar.gz": {
+        "mirrors": [
+            "https://ftp.postgresql.org/pub/source/v16.2/{SRC_FILE}"
+        ]
+    }
+}

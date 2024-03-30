@@ -1,0 +1,7 @@
+{
+    "certifi-{VERSION}.tar.gz": {
+        "mirrors": [
+            "https://files.pythonhosted.org/packages/source/c/certifi/{SRC_FILE}"
+        ]
+    }
+}

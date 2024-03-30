@@ -1,0 +1,7 @@
+{
+    "build-{VERSION}.tar.gz": {
+        "mirrors": [
+            "https://files.pythonhosted.org/packages/source/b/build/{SRC_FILE}"
+        ]
+    }
+}

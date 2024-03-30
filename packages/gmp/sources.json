@@ -1,0 +1,7 @@
+{
+    "gmp-{VERSION}.tar.xz": {
+        "mirrors": [
+            "https://gmplib.org/download/gmp/{SRC_FILE}"
+        ]
+    }
+}

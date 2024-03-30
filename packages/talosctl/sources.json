@@ -1,0 +1,7 @@
+{
+    "talos-1.6.6.tar.gz": {
+        "mirrors": [
+            "https://github.com/siderolabs/talos/archive/refs/tags/{SRC_FILE}"
+        ]
+    }
+}

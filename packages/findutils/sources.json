@@ -1,0 +1,7 @@
+{
+    "findutils-{VERSION}.tar.xz": {
+        "mirrors": [
+            "https://ftp.gnu.org/gnu/findutils/{SRC_FILE}"
+        ]
+    }
+}

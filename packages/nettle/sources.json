@@ -1,0 +1,7 @@
+{
+    "nettle-nettle_3.9.1_release_20230601.tar.gz": {
+        "mirrors": [
+            "https://git.lysator.liu.se/nettle/nettle/-/archive/nettle_{VERSION}/{SRC_FILE}"
+        ]
+    }
+}

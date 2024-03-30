@@ -1,0 +1,42 @@
+{
+    "linux-{LINUX_VERSION}.tar.xz": {
+        "mirrors": [
+            "https://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/{LINUX_FILE}"
+        ]
+    },
+    "musl-{MUSL_VERSION}.tar.gz": {
+        "mirrors": [
+            "http://musl.libc.org/releases/{MUSL_FILE}"
+        ]
+    },
+    "binutils-{BINUTILS_VERSION}.tar.xz": {
+        "mirrors": [
+            "https://ftp.gnu.org/gnu/binutils/{BINUTILS_FILE}"
+        ]
+    },
+    "gcc-{GCC_VERSION}.tar.xz": {
+        "mirrors": [
+            "https://mirrors.kernel.org/gnu/gcc/gcc-{GCC_VERSION}/{GCC_FILE}"
+        ]
+    },
+    "gmp-{GMP_VERSION}.tar.bz2": {
+        "mirrors": [
+            "https://gcc.gnu.org/pub/gcc/infrastructure/{GMP_FILE}"
+        ]
+    },
+    "mpfr-{MPFR_VERSION}.tar.bz2": {
+        "mirrors": [
+            "https://gcc.gnu.org/pub/gcc/infrastructure/{MPFR_FILE}"
+        ]
+    },
+    "mpc-{MPC_VERSION}.tar.gz": {
+        "mirrors": [
+            "https://gcc.gnu.org/pub/gcc/infrastructure/{MPC_FILE}"
+        ]
+    },
+    "isl-{ISL_VERSION}.tar.bz2": {
+        "mirrors": [
+            "https://gcc.gnu.org/pub/gcc/infrastructure/{ISL_FILE}"
+        ]
+    }
+}

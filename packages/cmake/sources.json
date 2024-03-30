@@ -1,0 +1,7 @@
+{
+    "cmake-{VERSION}.tar.gz": {
+        "mirrors": [
+            "https://cmake.org/files/v3.27/{SRC_FILE}"
+        ]
+    }
+}

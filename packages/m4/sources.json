@@ -1,0 +1,7 @@
+{
+    "m4-{VERSION}.tar.gz": {
+        "mirrors": [
+            "https://ftp.gnu.org/gnu/m4/{SRC_FILE}"
+        ]
+    }
+}

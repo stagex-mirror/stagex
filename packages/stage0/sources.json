@@ -1,0 +1,7 @@
+{
+    "stage0-posix-1.6.0.tar.gz": {
+        "mirrors": [
+            "https://github.com/oriansj/stage0-posix/releases/download/Release_{VERSION}/{SRC_FILE}"
+        ]
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "perl-{VERSION}.tar.xz": {
+        "mirrors": [
+            "https://www.cpan.org/src/5.0/{SRC_FILE}"
+        ]
+    }
+}

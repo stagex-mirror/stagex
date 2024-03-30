@@ -1,0 +1,7 @@
+{
+    "iputils-20240117.tar.gz": {
+        "mirrors": [
+            "https://github.com/iputils/iputils/archive/refs/tags/{SRC_FILE}"
+        ]
+    }
+}

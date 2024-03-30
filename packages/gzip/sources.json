@@ -1,0 +1,7 @@
+{
+    "gzip-{VERSION}.tar.xz": {
+        "mirrors": [
+            "https://ftp.gnu.org/gnu/gzip/{SRC_FILE}"
+        ]
+    }
+}

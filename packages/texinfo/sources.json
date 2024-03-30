@@ -1,0 +1,7 @@
+{
+    "texinfo-{VERSION}.tar.xz": {
+        "mirrors": [
+            "https://ftp.gnu.org/gnu/texinfo/{SRC_FILE}"
+        ]
+    }
+}

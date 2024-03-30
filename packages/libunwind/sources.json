@@ -1,0 +1,7 @@
+{
+    "libunwind-1.7.2.tar.gz": {
+        "mirrors": [
+            "https://github.com/libunwind/libunwind/releases/download/v{VERSION}/{SRC_FILE}"
+        ]
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "tcl{VERSION}-src.tar.gz": {
+        "mirrors": [
+            "https://fossies.org/linux/misc/{SRC_FILE}"
+        ]
+    }
+}

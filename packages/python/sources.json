@@ -1,0 +1,7 @@
+{
+    "Python-{VERSION}.tar.xz": {
+        "mirrors": [
+            "https://www.python.org/ftp/python/{VERSION}/{SRC_FILE}"
+        ]
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "bison-{VERSION}.tar.xz": {
+        "mirrors": [
+            "http://mirrors.kernel.org/gnu/bison/{SRC_FILE}"
+        ]
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "gpep517-15.tar.gz": {
+        "mirrors": [
+            "https://github.com/projg2/gpep517/archive/v{VERSION}/{SRC_FILE}"
+        ]
+    }
+}

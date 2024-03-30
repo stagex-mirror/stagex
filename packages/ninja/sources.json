@@ -1,0 +1,7 @@
+{
+    "ninja-1.9.0.tar.gz": {
+        "mirrors": [
+            "https://github.com/martine/ninja/archive/{SRC_FILE}"
+        ]
+    }
+}

@@ -1,7 +1,7 @@
 FROM scratch as base
 ENV VERSION=3.8.1
 ENV SRC_HASH=5ca70fb4f96797d09012c705a5bb935835896de7bcd063b98d498912b0e645a0
-ENV SRC_FILE=${SRC_SITE}/v${VERSION}.tar.gz
+ENV SRC_FILE=v${VERSION}.tar.gz
 ENV SRC_SITE=https://github.com/getsops/sops/archive/refs/tags/${SRC_FILE}
 
 FROM base as fetch
@@ -11,7 +11,7 @@ FROM fetch as build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/go . /
 COPY --from=stagex/ca-certificates . /
-RUN tar -xvf v${VERSION}.tar.gz
+RUN tar -xvf ${SRC_FILE}
 WORKDIR sops-${VERSION}
 ENV PWD=/home/user/sops-${VERSION}
 ENV GOPATH=${PWD}/cache/go

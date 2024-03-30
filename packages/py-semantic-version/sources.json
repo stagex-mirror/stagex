@@ -1,0 +1,7 @@
+{
+    "semantic_version-{VERSION}.tar.gz": {
+        "mirrors": [
+            "https://files.pythonhosted.org/packages/source/s/semantic_version/{SRC_FILE}"
+        ]
+    }
+}

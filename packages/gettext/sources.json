@@ -1,0 +1,7 @@
+{
+    "gettext-{VERSION}.tar.xz": {
+        "mirrors": [
+            "https://mirrors.kernel.org/gnu/gettext/{SRC_FILE}"
+        ]
+    }
+}

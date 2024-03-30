@@ -1,0 +1,7 @@
+{
+    "ksops-dry-run-0.2.0.tar.gz": {
+        "mirrors": [
+            "https://github.com/joshdk/ksops-dry-run/archive/refs/tags/{SRC_FILE}"
+        ]
+    }
+}

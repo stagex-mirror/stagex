@@ -1,0 +1,7 @@
+{
+    "sed-{VERSION}.tar.xz": {
+        "mirrors": [
+            "https://ftp.gnu.org/gnu/sed/{SRC_FILE}"
+        ]
+    }
+}

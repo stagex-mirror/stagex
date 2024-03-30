@@ -1,0 +1,7 @@
+{
+    "strace-6.7.tar.xz": {
+        "mirrors": [
+            "https://github.com/strace/strace/releases/download/v{VERSION}/{SRC_FILE}"
+        ]
+    }
+}

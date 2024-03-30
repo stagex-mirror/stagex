@@ -1,0 +1,7 @@
+{
+    "zlib-{VERSION}.tar.gz": {
+        "mirrors": [
+            "https://www.zlib.net/{SRC_FILE}"
+        ]
+    }
+}

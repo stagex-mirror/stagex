@@ -1,0 +1,7 @@
+{
+    "openssl-{VERSION}.tar.gz": {
+        "mirrors": [
+            "https://www.openssl.org/source/{SRC_FILE}"
+        ]
+    }
+}

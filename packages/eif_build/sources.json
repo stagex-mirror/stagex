@@ -1,0 +1,7 @@
+{
+    "eif_build.tgz": {
+        "mirrors": [
+            "https://codeload.github.com/tkhq/eif_build/legacy.tar.gz/{VERSION}"
+        ]
+    }
+}

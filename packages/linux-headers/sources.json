@@ -1,0 +1,7 @@
+{
+    "linux-{VERSION}.tar.xz": {
+        "mirrors": [
+            "https://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/{SRC_FILE}"
+        ]
+    }
+}

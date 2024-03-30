@@ -1,0 +1,7 @@
+{
+    "busybox-{VERSION}.tar.bz2": {
+        "mirrors": [
+            "https://busybox.net/downloads/{SRC_FILE}"
+        ]
+    }
+}

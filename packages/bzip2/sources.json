@@ -1,0 +1,7 @@
+{
+    "bzip2-{VERSION}.tar.gz": {
+        "mirrors": [
+            "https://sourceware.org/pub/bzip2/{SRC_FILE}"
+        ]
+    }
+}

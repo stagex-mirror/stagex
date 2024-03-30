@@ -1,0 +1,7 @@
+{
+    "grep-{VERSION}.tar.xz": {
+        "mirrors": [
+            "https://mirrors.kernel.org/gnu/grep/{SRC_FILE}"
+        ]
+    }
+}

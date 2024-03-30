@@ -1,0 +1,12 @@
+{
+    "linux-{VERSION}.tar.xz": {
+        "mirrors": [
+            "http://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/{SRC_FILE}"
+        ]
+    },
+    "nsm.tgz": {
+        "mirrors": [
+            "https://codeload.github.com/aws/aws-nitro-enclaves-sdk-bootstrap/legacy.tar.gz/{NSM_VERSION}"
+        ]
+    }
+}

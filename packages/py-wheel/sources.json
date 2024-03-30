@@ -1,0 +1,7 @@
+{
+    "wheel-{VERSION}.tar.gz": {
+        "mirrors": [
+            "https://files.pythonhosted.org/packages/source/w/wheel/{SRC_FILE}"
+        ]
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "python-dateutil-{VERSION}.tar.gz": {
+        "mirrors": [
+            "https://files.pythonhosted.org/packages/source/p/python-dateutil/{SRC_FILE}"
+        ]
+    }
+}

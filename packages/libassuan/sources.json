@@ -1,0 +1,7 @@
+{
+    "libassuan-2.5.6.tar.bz2": {
+        "mirrors": [
+            "https://gnupg.org/ftp/gcrypt/libassuan/{SRC_FILE}"
+        ]
+    }
+}

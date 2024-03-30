@@ -1,0 +1,7 @@
+{
+    "prompt_toolkit-{VERSION}.tar.gz": {
+        "mirrors": [
+            "https://files.pythonhosted.org/packages/source/p/prompt_toolkit/{SRC_FILE}"
+        ]
+    }
+}

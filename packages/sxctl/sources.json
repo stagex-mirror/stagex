@@ -1,0 +1,7 @@
+{
+    "sxctl-v0.0.5.tar.gz": {
+        "mirrors": [
+            "https://codeberg.org/stagex/sxctl/archive/{SRC_FILE}"
+        ]
+    }
+}
