@@ -1,20 +1,20 @@
 {
-    "go{VERSION_BOOTSTRAP_1}.tar.gz": {
+    "{SRC_FILE_BOOTSTRAP_1}": {
         "mirrors": [
             "https://dl.google.com/go/{SRC_FILE_BOOTSTRAP_1}"
         ]
     },
-    "go{VERSION_BOOTSTRAP_2}.src.tar.gz": {
+    "{SRC_FILE_BOOTSTRAP_2}": {
         "mirrors": [
             "https://storage.googleapis.com/golang/{SRC_FILE_BOOTSTRAP_2}"
         ]
     },
-    "go{VERSION_BOOTSTRAP_3}.src.tar.gz": {
+    "{SRC_FILE_BOOTSTRAP_3}": {
         "mirrors": [
             "https://storage.googleapis.com/golang/{SRC_FILE_BOOTSTRAP_3}"
         ]
     },
-    "go{VERSION}.src.tar.gz": {
+    "{SRC_FILE}": {
         "mirrors": [
             "https://storage.googleapis.com/golang/{SRC_FILE}"
         ]
