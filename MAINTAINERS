@@ -27,6 +27,14 @@ Fediverse = @ryan@tilde.zone
 Keyoxide = https://keyoxide.org/8E401478A3FBEF72
 Website = https://ryansquared.pub
 
+[people.dannygrove]
+Name = "Danny Grove"
+Location = California, USA
+Email = stagex@dannygrove.com
+Matrix = @dgrove:matrix.org
+Keyoxide = https://keyoxide.org/C92FE5A3FBD58DD3EC5AA26BB10116B8193F2DBD
+Website = https://dannygrove.com
+
 [keys]
 
 [keys.lancevick.personal]
@@ -53,6 +61,15 @@ Algorithm = RSA4096
 Servers = openpgp.org
 Devices = Yubikey 4c Nano, Yubikey 5 NFC
 OfflineCA = No
+Backup = Yes
+Interaction = Yes
+
+[keys.dannygrove.personal]
+ID = C92FE5A3FBD58DD3EC5AA26BB10116B8193F2DBD
+Algorithm = RSA4096
+Servers = openpgp.org
+Devices = Yubikey 5 NFC, Yubikey 5C
+OfflineCA = Yes
 Backup = Yes
 Interaction = Yes
 
@@ -116,4 +133,16 @@ Model = Ryzen Threadripper 2950X
 Ghz = 3.5
 Cores = 16
 OS = Debian
+Runtime = Docker
+
+[machines.dannygrove.local1]
+Owner = Danny Grove
+Location = California, USA
+Type = metal
+Arch = x86_64
+Brand = Intel
+Model = Intel(R) Core(TM) i7-6700K CPU @ 4.00GHz
+Ghz = 4.2
+Cores = 4
+OS = Arch Linux
 Runtime = Docker
