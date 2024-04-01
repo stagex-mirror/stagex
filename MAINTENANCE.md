@@ -15,13 +15,17 @@ commit.gpgsign true`.
 ## Release Branches
 
 Release branches take the format `YYYY.MM.release`. A release should include a
-PR to staging to introduce a bump to `digests.txt`, then cut into its own
+PR to staging to introduce a bump to `digests.txt`, creating the release
 branch. Once the branch is created, other users can begin reproducing. The
 release engineer should run `make sign` to ensure a signature exists for every
 package.
 
+In the Git forge UI, the release pull request should target the `main` branch,
+to provide a summary of all changes since the last major code freeze.
+
 Any commits required once the branch is created, but before the release is
-published, should flow from the PR branch, to staging, to the release branch.
+published, should flow from a PR (if push access is not given) to the release
+branch.
 
 Once a release is published, the branch should perform a signed merge commit
 into main. Any further pull requests to the branch (which may be published
