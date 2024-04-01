@@ -44,9 +44,9 @@ FROM build as install
 RUN --network=none <<-EOF
     set -eux
     make DESTDIR=/rootfs install
-    rm -rf /rootfs/usr/lib/python3.12/site-packages/__pycache__
+    find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+    find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM stagex/filesystem as package
 COPY --from=install /rootfs/. /

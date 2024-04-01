@@ -24,7 +24,9 @@ RUN --network=none <<-EOF
 		--prefix=/usr \
         --enable-pax_emutrap \
         --enable-portable-binary \
-        --disable-exec-static-tramp
+        --disable-exec-static-tramp \
+        --without-gcc-arch
+
 	make -j "$(nproc)"
 EOF
 

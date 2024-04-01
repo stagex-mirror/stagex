@@ -36,6 +36,10 @@ compat:
 preseed:
 	./src/preseed.sh
 
+.PHONY: verify
+verify:
+	./src/verify.sh
+
 .PHONY: digests
 digests:
 	./src/digests.sh

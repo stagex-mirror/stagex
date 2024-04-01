@@ -48,6 +48,7 @@ RUN <<-EOF
     set -eu
     python -m installer -d /rootfs .dist/*.whl
     find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+    rm /rootfs/usr/lib/python*/site-packages/awscli-*.dist-info/RECORD
     find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
 
