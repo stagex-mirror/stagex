@@ -3,7 +3,7 @@ ARG ARCH=x86_64
 ENV VERSION=5.4.6
 ENV SRC_HASH=b92d4e3a438affcf13362a1305cd9d94ed47ddda22e456a42791e630a5644f5c
 ENV SRC_FILE=xz-${VERSION}.tar.xz
-ENV SRC_SITE=https://github.com/tukaani-project/xz/releases/download/v${VERSION}/${SRC_FILE}
+ENV SRC_SITE=https://fossies.org/linux/misc/${SRC_FILE}
 
 FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
