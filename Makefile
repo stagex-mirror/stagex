@@ -46,7 +46,7 @@ digests.txt: $(shell find out -iname index.json | tr "\n" " ")
 .PHONY: sign
 sign:
 	./src/digests.sh | diff digests.txt /dev/stdin
-	cat digests.txt | xargs -n2 ./src/sign.sh $(REGISTRY_REMOTE)
+	cut -d' ' -f2 digests.txt | xargs -n1 ./src/sign.sh $(REGISTRY_REMOTE)
 
 out/graph.svg: Makefile
 	$(MAKE) -Bnd | make2graph | dot -Tsvg -o graph.svg
