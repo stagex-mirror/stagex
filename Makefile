@@ -40,6 +40,10 @@ preseed:
 verify:
 	./src/verify.sh
 
+.PHONY: all-tests
+all-tests:
+	./src/run-tests.sh
+
 .PHONY: digests
 digests:
 	./src/digests.sh
