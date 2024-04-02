@@ -1,0 +1,36 @@
+FROM scratch as base
+ENV VERSION=1.6.6
+ENV SRC_HASH=8735500c987c61802d113176f5578b11c783b169e6ff8e352e554b1c3cb63caa
+ENV SRC_FILE=v${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/siderolabs/talos/archive/refs/tags/${SRC_FILE}
+ENV GOPATH=/cache/go
+ENV GOCACHE=/cache/
+ENV GOWORK=off
+ENV GOPROXY=https://proxy.golang.org,direct
+ENV GOSUMDB=sum.golang.org
+ENV CGO_ENABLED=0
+ENV GOHOSTOS=linux
+ENV GOHOSTARCH=amd64
+ENV GO11MODULE=on
+
+FROM base as fetch
+COPY --from=stagex/busybox . /
+COPY --from=stagex/go . /
+COPY --from=stagex/ca-certificates . /
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+RUN tar -xvf ${SRC_FILE}
+WORKDIR talos-${VERSION}
+RUN go get ./...
+
+FROM fetch as build
+RUN --network=none go build -v -trimpath ./cmd/talosctl
+
+from build as install
+RUN <<-EOF
+    mkdir -p /rootfs/usr/bin/
+    cp talosctl /rootfs/usr/bin/
+    find /rootfs -exec touch -hcd "@0" "{}" +
+EOF
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/./ /

@@ -18,8 +18,8 @@ RUN tar -xf ${SRC_FILE}
 WORKDIR bzip2-${VERSION}
 RUN --network=none <<-EOF
 	set -ex
-    make -f Makefile-libbz2_so all
-    make all
+    make -j "$(nproc)" -f Makefile-libbz2_so all
+    make -j "$(nproc)" all
 EOF
 
 FROM build as install

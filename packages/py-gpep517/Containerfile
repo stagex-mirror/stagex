@@ -1,0 +1,37 @@
+FROM scratch as base
+ENV VERSION=15
+ENV SRC_HASH=368fa8dfb0775589e3f85d34df18395c22980de8520dc6447e778fc1d0102787
+ENV SRC_FILE=v${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/projg2/gpep517/archive/v${VERSION}/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as install
+COPY --from=stagex/busybox . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/python . /
+COPY --from=stagex/zlib . /
+RUN tar -xzf ${SRC_FILE}
+WORKDIR gpep517-${VERSION}
+COPY <<-'EOF' gpep517-cli
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+import sys
+from gpep517.__main__ import main
+if __name__ == "__main__":
+    sys.exit(main())
+EOF
+RUN <<-EOF
+	set -eu
+	sitedir="$(python3 -c 'import site;print(site.getsitepackages()[0])')"
+	mkdir -p "/rootfs/${sitedir}"
+	cp -a gpep517 "/rootfs/$sitedir"
+	python3 -m compileall "/rootfs/$sitedir"
+	install -Dm755 gpep517-cli /rootfs/usr/bin/gpep517
+    find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+	find /rootfs -exec touch -hcd "@0" "{}" +
+EOF
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

@@ -90,12 +90,12 @@ RUN <<-EOF
 	cd rustc-1.54.0-src
 	patch -p0 < ../rustc-1.54.0-src.patch
 	cd ..
-	make
-	make -f minicargo.mk LIBS
-	make test local_tests
-	make -f minicargo.mk LLVM_CONFIG=/usr/bin/llvm-config output/rustc
-	make -f minicargo.mk LLVM_CONFIG=/usr/bin/llvm-config output/cargo
-	make -C run_rustc LLVM_CONFIG=/usr/bin/llvm-config
+	make -j "$(nproc)"
+	make -j "$(nproc)" -f minicargo.mk LIBS
+	make -j "$(nproc)" test local_tests
+	make -j "$(nproc)" -f minicargo.mk LLVM_CONFIG=/usr/bin/llvm-config output/rustc
+	make -j "$(nproc)" -f minicargo.mk LLVM_CONFIG=/usr/bin/llvm-config output/cargo
+	make -j "$(nproc)" -C run_rustc LLVM_CONFIG=/usr/bin/llvm-config
 	mkdir ../rust-1.54.0
 	cp -R run_rustc/output/prefix ../rust-1.54.0/usr
 EOF

@@ -21,7 +21,7 @@ RUN --network=none <<-EOF
 		--prefix=/usr \
 		--libdir=/usr/lib \
 		--shared; \
-	make
+	make -j "$(nproc)"
 EOF
 
 FROM build as install

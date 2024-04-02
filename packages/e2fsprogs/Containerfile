@@ -1,0 +1,47 @@
+FROM scratch as base
+ARG ARCH=x86_64
+ENV VERSION=1.47.0
+ENV SRC_HASH=74c8ea97c73294edc6c11dc5e7fbb4324f86c28efd66ad0ba50be4eec8a48be2
+ENV SRC_FILE=v${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/tytso/e2fsprogs/archive/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=stagex/bash . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/make . /
+COPY --from=stagex/linux-headers . /
+COPY --from=stagex/util-linux . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+RUN tar -xzf ${SRC_FILE}
+WORKDIR e2fsprogs-${VERSION}
+RUN --network=none <<-EOF
+    ./configure \
+        --build=${ARCH}-linux-musl \
+        --host=${ARCH}-linux-musl \
+        --prefix=/usr \
+        --mandir=/usr/share/man \
+        --enable-elf-shlibs \
+        --enable-symlink-install \
+        --disable-fsck \
+        --disable-uuidd \
+        --disable-libuuid \
+        --disable-libblkid \
+        --disable-nls
+    make -j "$(nproc)"
+EOF
+
+FROM build as install
+RUN --network=none <<-EOF
+    set -eu
+    make DESTDIR=/rootfs install
+    find /rootfs -exec touch -hcd "@0" "{}" +
+EOF
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

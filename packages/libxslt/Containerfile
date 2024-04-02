@@ -29,7 +29,7 @@ RUN --network=none <<-EOF
         --prefix=/usr \
         --with-python=no \
         --enable-static
-    make
+    make -j "$(nproc)"
 EOF
 
 FROM build as install

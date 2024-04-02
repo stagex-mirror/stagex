@@ -24,7 +24,7 @@ RUN <<-EOF
         --disable-java \
         --enable-static \
         --with-included-libxml=no
-	make
+	make -j "$(nproc)"
 EOF
 
 from build as install

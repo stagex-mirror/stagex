@@ -1,0 +1,28 @@
+FROM scratch as base
+#ENV VERSION=0.13.1
+#ENV SRC_HASH=1b2fa2ffd3938bb4beffe5d6146cbcb2bda996a5a4da9f31abffd8b24e07b317
+ENV VERSION=0.9.1
+ENV SRC_HASH=aeb78601f2d1aa461960b43add204cc7955667687fbcf9cdb5170f00556f117f
+ENV SRC_FILE=pep517-${VERSION}.tar.gz
+ENV SRC_SITE=https://files.pythonhosted.org/packages/source/p/pep517/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as install
+COPY --from=stagex/busybox . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/python . /
+COPY --from=stagex/py-setuptools . /
+COPY --from=stagex/zlib . /
+RUN tar -xzf ${SRC_FILE}
+WORKDIR pep517-${VERSION}
+RUN <<-EOF
+	set -eu
+    python setup.py install --root=/rootfs
+    find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+	find /rootfs -exec touch -hcd "@0" "{}" +
+EOF
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

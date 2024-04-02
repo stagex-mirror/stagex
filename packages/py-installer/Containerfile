@@ -1,0 +1,35 @@
+FROM scratch as base
+ENV VERSION=0.7.0
+ENV SRC_HASH=a26d3e3116289bb08216e0d0f7d925fcef0b0194eedfa0c944bcaaa106c4b631
+ENV SRC_FILE=installer-${VERSION}.tar.gz
+ENV SRC_SITE=https://files.pythonhosted.org/packages/source/i/installer/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/python . /
+COPY --from=stagex/py-wheel . /
+COPY --from=stagex/py-pep517 . /
+COPY --from=stagex/py-build . /
+COPY --from=stagex/py-toml . /
+COPY --from=stagex/py-flit . /
+COPY --from=stagex/py-packaging . /
+COPY --from=stagex/zlib . /
+RUN tar -xzf ${SRC_FILE}
+WORKDIR installer-${VERSION}
+RUN python -m build -wn --skip-dependency-check
+
+FROM build as install
+RUN <<-EOF
+	set -eu
+    PYTHONPATH=src python -m installer --destdir=/rootfs dist/*.whl
+    rm /rootfs/usr/lib/python*/site-packages/installer/_scripts/*.exe
+    find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+	find /rootfs -exec touch -hcd "@0" "{}" +
+EOF
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

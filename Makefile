@@ -36,19 +36,21 @@ compat:
 preseed:
 	./src/preseed.sh
 
+.PHONY: verify
+verify:
+	./src/verify.sh
+
 .PHONY: digests
 digests:
-	@for each in $$(find out -iname "index.json"| sort); do \
-		printf \
-			"%s %s\n"  \
-			$$(cat $$each | jq -r '.manifests[].digest | sub ("sha256:";"")') \
-			"$$(basename $$(dirname $$each))";  \
-	done
+	./src/digests.sh
 
-digests.txt:
-	mv $@ .$@.old
-	$(MAKE) digests > $@
-	diff $@.old $@
+digests.txt: $(shell find out -iname index.json | tr "\n" " ")
+	./src/digests.sh > digests.txt
+
+.PHONY: sign
+sign:
+	./src/digests.sh | diff digests.txt /dev/stdin
+	cut -d' ' -f2 digests.txt | xargs -n1 ./src/sign.sh $(REGISTRY_REMOTE)
 
 out/graph.svg: Makefile
 	$(MAKE) -Bnd | make2graph | dot -Tsvg -o graph.svg

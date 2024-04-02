@@ -1,0 +1,35 @@
+FROM scratch as base
+ENV VERSION=1.29.3
+ENV SRC_HASH=401d29af71cb962eb328cefd5166695587f195f9bd960edd1ede630f7e98bf7a
+ENV SRC_FILE=v${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/kubernetes/kubernetes/archive/refs/tags/${SRC_FILE}
+ENV GOPATH=/cache/go
+ENV GOCACHE=/cache/
+ENV GOWORK=off
+ENV GOPROXY=https://proxy.golang.org,direct
+ENV GOSUMDB=sum.golang.org
+ENV CGO_ENABLED=0
+ENV GOHOSTOS=linux
+ENV GOHOSTARCH=amd64
+
+FROM base as fetch
+COPY --from=stagex/busybox . /
+COPY --from=stagex/go . /
+COPY --from=stagex/ca-certificates . /
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+RUN tar -xvf ${SRC_FILE}
+WORKDIR kubernetes-${VERSION}
+RUN GOPATH="/kubernetes-${VERSION}" go mod download
+
+FROM fetch as build
+RUN --network=none go build -trimpath -v k8s.io/kubernetes/cmd/kubectl
+
+from build as install
+RUN <<-EOF
+    mkdir -p /rootfs/usr/bin/
+    cp kubectl /rootfs/usr/bin/
+    find /rootfs -exec touch -hcd "@0" "{}" +
+EOF
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/./ /

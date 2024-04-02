@@ -1,0 +1,29 @@
+FROM scratch as base
+ENV VERSION=7.2.4
+ENV SRC_FILE=redis-${VERSION}.tar.gz
+ENV SRC_SITE=https://download.redis.io/releases/${SRC_FILE}
+ENV SRC_HASH=8d104c26a154b29fd67d6568b4f375212212ad41e0c2caa3d66480e78dbd3b59
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/make . /
+COPY --from=stagex/openssl . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR redis-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
+RUN make BUILD_TLS=yes all
+
+FROM build as install
+RUN --network=none make install PREFIX="/rootfs" INSTALL_BIN="/rootfs/usr/bin"
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

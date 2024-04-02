@@ -42,7 +42,7 @@ RUN --network=none <<-EOF
         --disable-silent-rules \
         --disable-gtk-doc \
         --enable-newgrp
-	make
+	make -j "$(nproc)"
 EOF
 
 FROM build as install

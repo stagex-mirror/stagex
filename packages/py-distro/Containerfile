@@ -1,0 +1,29 @@
+FROM scratch as base
+ENV VERSION=1.9.0
+ENV SRC_HASH=2fa77c6fd8940f116ee1d6b94a2f90b13b5ea8d019b98bc8bafdcabcdd9bdbed
+ENV SRC_FILE=distro-${VERSION}.tar.gz
+ENV SRC_SITE=https://files.pythonhosted.org/packages/source/d/distro/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as install
+COPY --from=stagex/busybox . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/python . /
+COPY --from=stagex/py-flit . /
+COPY --from=stagex/py-gpep517 . /
+COPY --from=stagex/zlib . /
+RUN tar -xzf ${SRC_FILE}
+WORKDIR distro-${VERSION}/src
+RUN <<-EOF
+	set -eu
+	sitedir="$(python3 -c 'import site;print(site.getsitepackages()[0])')"
+	mkdir -p "/rootfs/${sitedir}"
+	cp -a distro "/rootfs/$sitedir"
+    find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+	find /rootfs -exec touch -hcd "@0" "{}" +
+EOF
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /
