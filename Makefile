@@ -32,6 +32,10 @@ all: \
 compat:
 	./src/compat.sh
 
+.PHONY: lint
+lint:
+	./src/lint.sh
+
 .PHONY: preseed
 preseed:
 	./src/preseed.sh
