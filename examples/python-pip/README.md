@@ -5,5 +5,6 @@ This is a barebones example of a Python 3.12.0 project that uses pypi to install
 ### Running this example
 
 ```sh
-docker build -t stagex-examples/python-pip .
+docker build -t stagex-examples/python-pip -f Containerfile .
+docker run -p 8080:80 stagex-examples/python-pip
 ```
