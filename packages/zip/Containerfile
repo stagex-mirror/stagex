@@ -14,9 +14,9 @@ COPY --from=stagex/gcc . /
 COPY --from=stagex/cmake . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/make . /
-
 RUN --network=none tar -xf ${SRC_FILE}
 WORKDIR zip${VERSION}
+ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
     set -eux
     make -f unix/Makefile prefix=/usr generic
