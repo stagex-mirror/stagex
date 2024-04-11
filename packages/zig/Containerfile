@@ -37,11 +37,7 @@ RUN --network=none <<-EOF
 EOF
 
 FROM build as install
-RUN --network=none <<-EOF
-    set -eux
-    DESTDIR=/rootfs cmake --install build
-EOF
-RUN --network=none find /rootfs -exec touch -hcd "@0" "{}" +
+RUN --network=none DESTDIR=/rootfs cmake --install build
 
 FROM stagex/filesystem as package
 COPY --from=install /rootfs/. /

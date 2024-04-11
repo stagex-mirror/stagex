@@ -2,7 +2,7 @@
 set -e
 
 readonly MIN_BASH_VERSION=5
-readonly MIN_DOCKER_VERSION=25
+readonly MIN_DOCKER_VERSION=26.0.0
 readonly MIN_JQ_VERSION=1.6
 readonly MIN_GPG_VERSION=2.2
 

@@ -26,9 +26,9 @@ RUN --network=none go build -trimpath -v k8s.io/kubernetes/cmd/kubectl
 
 from build as install
 RUN <<-EOF
+    set -eu
     mkdir -p /rootfs/usr/bin/
     cp kubectl /rootfs/usr/bin/
-    find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
 
 FROM stagex/filesystem as package

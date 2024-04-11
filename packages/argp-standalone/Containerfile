@@ -19,7 +19,7 @@ COPY --from=stagex/automake . /
 COPY --from=stagex/m4 . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR argp-standalone-${VERSION}
-RUN <<-EOF
+RUN --network=none <<-EOF
 	set -eux
 	/usr/bin/autoreconf -vif
 	CFLAGS="-fPIC" \
@@ -33,13 +33,11 @@ RUN <<-EOF
 EOF
 
 FROM build as install
-USER 0:0
 RUN <<-EOF
 	set -eux
 	install -D -m644 argp.h /rootfs/usr/include/argp.h
 	install -D -m755 libargp.a /rootfs/usr/lib/libargp.a
 EOF
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM stagex/filesystem as package
 COPY --from=install /rootfs/. /

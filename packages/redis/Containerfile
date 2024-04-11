@@ -23,7 +23,6 @@ RUN make BUILD_TLS=yes all
 
 FROM build as install
 RUN --network=none make install PREFIX="/rootfs" INSTALL_BIN="/rootfs/usr/bin"
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM stagex/filesystem as package
 COPY --from=install /rootfs/. /

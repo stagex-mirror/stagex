@@ -22,7 +22,6 @@ RUN <<-EOF
 	mkdir -p "/rootfs/${sitedir}"
 	cp -a botocore "/rootfs/$sitedir"
     find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
-	find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
 
 FROM stagex/filesystem as package

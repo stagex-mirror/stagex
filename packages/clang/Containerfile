@@ -23,7 +23,8 @@ COPY --from=stagex/zlib . /
 
 RUN tar -xf ${SRC_FILE}
 WORKDIR llvm-project-${VERSION}.src
-RUN set -eux; \
+RUN --network=none <<-EOF
+    set -eux
     cmake \
         -S clang \
         -B build \
@@ -36,12 +37,12 @@ RUN set -eux; \
 		-DCLANG_LINK_CLANG_DYLIB=ON \
 		-DCLANG_PLUGIN_SUPPORT=ON \
 		-DCLANG_VENDOR=stagex \
-		-DLIBCLANG_BUILD_STATIC=ON; \
+		-DLIBCLANG_BUILD_STATIC=ON
 	cmake --build build
+EOF
 
 FROM build as install
-RUN DESTDIR="/rootfs" cmake --install build
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
+RUN --network=none DESTDIR="/rootfs" cmake --install build
 
 FROM stagex/filesystem as package
 COPY --from=install /rootfs/. /

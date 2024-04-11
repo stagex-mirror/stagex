@@ -38,8 +38,7 @@ RUN set -eux; \
 	cmake --build build
 
 FROM build as install
-RUN DESTDIR="/rootfs" cmake --install build
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
+RUN --network=none DESTDIR="/rootfs" cmake --install build
 
 FROM stagex/filesystem as package
 COPY --from=install /rootfs/. /

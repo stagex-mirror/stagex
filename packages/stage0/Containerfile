@@ -17,7 +17,6 @@ COPY <<-EOF build.sh
 	mkdir -p /rootfs && cp -R * /rootfs/
 	cd /rootfs
 	sha256sum x86/bin/* > hashes.txt
-    find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
 
 FROM base as build1

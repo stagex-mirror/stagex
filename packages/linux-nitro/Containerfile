@@ -64,7 +64,6 @@ RUN <<-EOF
 	cp arch/x86_64/boot/bzImage /rootfs
 	cp /nitro-bootstrap/nsm-driver/nsm.ko /rootfs
 EOF
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM stagex/filesystem as package
 COPY --from=install /rootfs/. /

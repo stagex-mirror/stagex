@@ -28,7 +28,6 @@ RUN --network=none <<-EOF
     mkdir -p /rootfs/usr/bin/
     DESTDIR=/rootfs make -f unix/Makefile prefix=/rootfs/usr MANDIR=rootfs/usr/share/man/man1 install
 EOF
-RUN --network=none find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM stagex/filesystem as package
 COPY --from=install /rootfs/. /

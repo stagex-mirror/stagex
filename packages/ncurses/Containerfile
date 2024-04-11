@@ -57,7 +57,6 @@ RUN --network=none <<-EOF
     ln -s libncurses.a usr/lib/libcurses.a
     ln -s libncurses.so usr/lib/libcurses.so
     echo 'INPUT(-lncursesw)' > usr/lib/libcursesw.so
-    find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
 
 FROM stagex/filesystem as package

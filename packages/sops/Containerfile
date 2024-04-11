@@ -27,11 +27,10 @@ RUN mkdir -p ${GOPATH}
 RUN go build -o bin/sops ./cmd/sops
 
 from build as install
-RUN <<-EOF
+RUN --network=none <<-EOF
     mkdir -p /rootfs/usr/bin/
     cp bin/sops /rootfs/usr/bin/
 EOF
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM stagex/filesystem as package
 COPY --from=install /rootfs/./ /

@@ -37,21 +37,18 @@ COPY --from=stagex/py-prompt_toolkit . /
 COPY --from=stagex/py-ruamel.yaml . /
 RUN tar -xzf ${SRC_FILE}
 WORKDIR aws-cli-${VERSION}
-RUN <<-EOF
+RUN --network=none \
     gpep517 build-wheel \
 		--wheel-dir .dist \
 		--output-fd 3 3>&1 >&2
-EOF
 
 FROM build as install
-RUN <<-EOF
+RUN --network=none <<-EOF
     set -eu
     python -m installer -d /rootfs .dist/*.whl
     find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
     rm /rootfs/usr/lib/python*/site-packages/awscli-*.dist-info/RECORD
-    find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
-
 
 FROM stagex/filesystem as package
 COPY --from=install /rootfs/. /

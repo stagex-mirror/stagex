@@ -26,7 +26,6 @@ RUN --network=none <<-EOF
     chmod +x /rootfs/usr/bin/gen_initramfs
     cp -a usr/gen_init_cpio /rootfs/usr/bin
 EOF
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM stagex/filesystem as package
 COPY --from=install /rootfs/. /

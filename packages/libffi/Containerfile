@@ -36,7 +36,6 @@ RUN --network=none <<-EOF
     make DESTDIR="/rootfs" install
     mv /rootfs/usr/lib64/* /rootfs/usr/lib/
     rm -rf /rootfs/usr/lib64
-    find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
 
 FROM stagex/filesystem as package
