@@ -26,7 +26,7 @@ cat << ENDHERE >/etc/docker/daemon.json
     "containerd-snapshotter": true
   }
 }
-ENDHERE;
+ENDHERE
 
 systemctl restart docker
 
