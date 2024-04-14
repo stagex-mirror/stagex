@@ -23,12 +23,11 @@ WORKDIR installer-${VERSION}
 RUN python -m build -wn --skip-dependency-check
 
 FROM build as install
-RUN <<-EOF
+RUN --network=none <<-EOF
 	set -eu
     PYTHONPATH=src python -m installer --destdir=/rootfs dist/*.whl
     rm /rootfs/usr/lib/python*/site-packages/installer/_scripts/*.exe
     find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
-	find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
 
 FROM stagex/filesystem as package

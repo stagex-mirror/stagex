@@ -31,9 +31,9 @@ RUN --network=none \
 
 from build as install
 RUN <<-EOF
+    set -eux
     mkdir -p /rootfs/usr/lib/kustomize/plugins/viduct.ai/v1/ksops
     cp ksops-dry-run /rootfs/usr/lib/kustomize/plugins/viduct.ai/v1/ksops/ksops
-    find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
 
 FROM stagex/filesystem as package

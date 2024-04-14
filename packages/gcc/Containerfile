@@ -60,7 +60,6 @@ RUN --network=none <<-EOF
 	mv /rootfs/usr/lib64/* /rootfs/usr/lib/
 	rm -rf /rootfs/usr/lib64
 EOF
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as test
 COPY --from=stagex/busybox . /

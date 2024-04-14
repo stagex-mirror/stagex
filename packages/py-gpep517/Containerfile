@@ -22,7 +22,7 @@ from gpep517.__main__ import main
 if __name__ == "__main__":
     sys.exit(main())
 EOF
-RUN <<-EOF
+RUN --network=none <<-EOF
 	set -eu
 	sitedir="$(python3 -c 'import site;print(site.getsitepackages()[0])')"
 	mkdir -p "/rootfs/${sitedir}"
@@ -30,7 +30,6 @@ RUN <<-EOF
 	python3 -m compileall "/rootfs/$sitedir"
 	install -Dm755 gpep517-cli /rootfs/usr/bin/gpep517
     find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
-	find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
 
 FROM stagex/filesystem as package

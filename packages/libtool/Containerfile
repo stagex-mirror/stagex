@@ -24,10 +24,7 @@ RUN --network=none <<-EOF
 EOF
 
 FROM build as install
-RUN --network=none <<-EOF
-	make DESTDIR=/rootfs install
-EOF
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
+RUN --network=none make DESTDIR=/rootfs install
 
 FROM stagex/filesystem as package
 COPY --from=install /rootfs/. /

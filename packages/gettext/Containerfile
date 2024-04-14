@@ -28,8 +28,7 @@ RUN <<-EOF
 EOF
 
 from build as install
-RUN make DESTDIR=/rootfs install
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
+RUN --network=none make DESTDIR=/rootfs install
 
 FROM stagex/filesystem as package
 COPY --from=install /rootfs/. /

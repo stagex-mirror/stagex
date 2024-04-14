@@ -24,18 +24,16 @@ WORKDIR eif_build
 RUN cargo fetch --locked
 
 FROM fetch as build
-RUN --network=none <<-EOF
+RUN --network=none \
     cargo build \
         --no-default-features \
         --locked \
         --release \
         --target x86_64-unknown-linux-musl
-EOF
 
 FROM build as install
 WORKDIR /rootfs/usr/bin
 RUN cp /eif_build/target/x86_64-unknown-linux-musl/release/eif_build .
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM stagex/filesystem as package
 COPY --from=install /rootfs/. /

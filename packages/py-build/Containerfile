@@ -15,11 +15,10 @@ COPY --from=stagex/py-setuptools . /
 COPY --from=stagex/zlib . /
 RUN tar -xzf ${SRC_FILE}
 WORKDIR build-${VERSION}
-RUN <<-EOF
+RUN --network=none <<-EOF
 	set -eu
     python setup.py install --root=/rootfs
     find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
-	find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
 
 FROM stagex/filesystem as package

@@ -22,7 +22,6 @@ RUN --network=none make -j "$(nproc)" lib=lib prefix=/usr GOLANG=no DESTDIR=/roo
 
 FROM build as install
 RUN --network=none make lib=lib prefix=/usr GOLANG=no DESTDIR=/rootfs install
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM scratch as test
 COPY --from=install /rootfs /

@@ -27,9 +27,9 @@ RUN --network=none go build -trimpath -v
 
 from build as install
 RUN <<-EOF
+    set -eu
     mkdir -p /rootfs/usr/lib/kustomize/plugins/viduct.ai/v1/ksops
     cp kustomize-sops /rootfs/usr/lib/kustomize/plugins/viduct.ai/v1/ksops/ksops
-    find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
 
 FROM stagex/filesystem as package

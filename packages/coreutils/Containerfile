@@ -35,13 +35,11 @@ RUN --network=none <<-EOF
 		--enable-single-binary-exceptions=env \
         gl_cv_func_getcwd_path_max="no, but it is partly working" \
         gl_cv_prog_perl="no"
-
 	make -j "$(nproc)"
 EOF
 
 FROM build as install
 RUN --network=none make DESTDIR="/rootfs" install
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM stagex/filesystem as package
 COPY --from=install /rootfs/. /

@@ -62,13 +62,12 @@ RUN --network=none <<-EOF
 EOF
 
 FROM build as install
-RUN <<-EOF
+RUN --network=none <<-EOF
 	set -eux
 	DESTDIR="/rootfs" cmake --install build
 	python3 llvm/utils/lit/setup.py install --root="/rootfs"
 	ln -s lit /rootfs/usr/bin/llvm-lit
 EOF
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM stagex/filesystem as package
 COPY --from=install /rootfs/. /

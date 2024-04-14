@@ -104,8 +104,6 @@ COPY --chmod=644 <<-EOF etc/os-release
 	BUG_REPORT_URL="https://codeberg.org/stagex/stagex/issues"
 EOF
 
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
-
 FROM scratch as package
 COPY --from=build /rootfs/. /
 USER 1000:1000

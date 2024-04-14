@@ -51,16 +51,13 @@ RUN --network=none <<-EOF
 EOF
 
 FROM build as install
-RUN <<-EOF
-    set -eu
+RUN --network=none \
     make \
         V="${VERSION}" \
 		INSTALL_TOP="/rootfs/usr" \
 		INSTALL_INC="/rootfs/usr/include/lua" \
 		INSTALL_LIB="/rootfs/usr/lib/lua" \
 		install
-    find /rootfs -exec touch -hcd "@0" "{}" +
-EOF
 
 FROM stagex/filesystem as package
 COPY --from=install /rootfs/. /

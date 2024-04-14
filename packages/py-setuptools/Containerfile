@@ -17,8 +17,7 @@ WORKDIR setuptools-${VERSION}
 RUN python setup.py build
 
 FROM build as install
-RUN python setup.py install --root=/rootfs
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
+RUN --network=none python setup.py install --root=/rootfs
 
 FROM stagex/filesystem as package
 COPY --from=install /rootfs/. /

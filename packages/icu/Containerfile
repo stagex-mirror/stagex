@@ -43,7 +43,6 @@ RUN --network=none <<-EOF
     install -D -m644 /icu4c-74_2-data-bin-b.zip /rootfs/usr/share/icu/74.2/
     install -D -m644 /icu4c-74_2-data-bin-l.zip /rootfs/usr/share/icu/74.2/
 EOF
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM stagex/filesystem as package
 COPY --from=install /rootfs /

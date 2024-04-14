@@ -36,11 +36,10 @@ WORKDIR cryptography-${VERSION}
 RUN gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 
 FROM build as install
-RUN <<-EOF
+RUN --network=none <<-EOF
     set -eu
     python -m installer -d /rootfs .dist/cryptography-*.whl
     find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
-    find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
 
 FROM stagex/filesystem as package

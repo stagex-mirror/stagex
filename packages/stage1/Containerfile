@@ -42,7 +42,7 @@ ADD --checksum=sha256:0190f28cb155fedd22bf8558c3e8705eed9eacfb7ae29e7508d025a68e
 ADD --checksum=sha256:7007fc89c216fbfaff5525359b02a7e5b612694df5168c74673f67055f015095 https://mirrors.kernel.org/gnu/bison/bison-3.4.1.tar.gz ./
 ADD --checksum=sha256:27d05534699735dc69e86add5b808d6cb35900ad3fd63fa82e3eb644336abfa0 http://mirrors.kernel.org/gnu/bison/bison-3.4.2.tar.xz ./
 ADD --checksum=sha256:8cced51f89a950472473856f86e88f5daf97a2347756125ccdc8ee907deec570 http://git.savannah.gnu.org/cgit/gnulib.git/snapshot/gnulib-672663a.tar.gz ./
-ADD --checksum=sha256:ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269 https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz ./
+ADD --checksum=sha256:ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269 https://fossies.org/linux/misc/bzip2-1.0.8.tar.gz ./
 ADD --checksum=sha256:469888e41e8a780051ce00edcd914e8a6bd38da88a82cfb84898dd388635822a http://ftp.mozilla.org/pub/security/nss/releases/NSS_3_95_RTM/src/nss-3.95.tar.gz ./
 ADD --checksum=sha256:c25b36b8af6e0ad2a875daf4d6196bd0df28a62be7dd252e5f99a4d5d7288d95 https://mirrors.kernel.org/gnu/coreutils/coreutils-5.0.tar.bz2 ./
 ADD --checksum=sha256:1d013547889f20576460249c4210632d5314531c8477378a2e046b13a8ebeb7e https://mirrors.kernel.org/gnu/coreutils/coreutils-6.10.tar.gz ./
@@ -318,16 +318,8 @@ EOF
 SHELL ["/x86/bin/kaem","--verbose","--strict","--file"]
 RUN --network=none ./install.kaem
 
-# HACK: Zero out timestamps
-# We can drop this when either of the following happens:
-# - buildkit 0.13+ w/ "rewrite-timestamps=true" feature ships in stable Docker
-# - a "find/touch" tool ships with stage0
-FROM debian@sha256:bac353db4cc04bc672b14029964e686cd7bad56fe34b51f432c1a1304b9928da as touch
-COPY --from=install /rootfs /rootfs
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
-
 FROM scratch as package
-COPY --from=touch /rootfs /
+COPY --from=install /rootfs /
 USER 1000:1000
 ENTRYPOINT ["/bin/bash"]
 ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
