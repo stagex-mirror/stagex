@@ -23,10 +23,7 @@ RUN --network=none <<-EOF
 EOF
 
 FROM build as install
-RUN --network=none <<-EOF
-    make PREFIX="/rootfs/usr" install
-    find /rootfs -exec touch -hcd "@0" "{}" +
-EOF
+RUN --network=none make PREFIX="/rootfs/usr" install
 
 FROM stagex/filesystem as package
 COPY --from=install /rootfs/. /

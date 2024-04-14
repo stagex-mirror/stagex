@@ -72,7 +72,7 @@ $ make sxctl
 
 Find if there is a relevant package that you can use as a boilerplate for the 
 new addition.
-```
+```sh
 cp -R packages/python packages/cython
 vim packages/cython/Containerfile
 # fix SRC_FILE, SRC_HASH, SRC_URL etc manually
@@ -91,17 +91,17 @@ the package you are contributing in `packages.mk`
 <--author: Lance R. Vick -->
 
 - see contents of a package:
-```
+```sh
 package=somepackage tar -tvf $(find out/${package} -type f -printf '%s %p\n' | sort -nr | head -n1 | awk '{ print $2 }') | less
 ```
 
 - test package for reproducibility:
-```
+```sh
 package=somepackage; rm -rf out{,2}/${package}; make NOCACHE=1 ${package}; mv out/${package} out2/; make NOCACHE=1 ${package}; diffoscope $(find out*/${package} -type f -printf '%s %p\n' | sort -nr | head -n2 | awk '{ print $2 }' | tr '\n' ' ')
 ```
 
 - make svg graph of dependency tree for a single package
-```
+```sh
 package=somepackage; make -Bnd ${package} | make2graph | dot -Tsvg -o ${package}-graph.svg
 ```
 <--author: Lance R. Vick -->

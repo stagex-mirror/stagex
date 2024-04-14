@@ -21,7 +21,6 @@ RUN <<-EOF
 	find /rootfs/usr/include/ ! -iname "*.h" -type f -exec rm -v {} \+
 	rm -rf /rootfs/usr/include/drm
 EOF
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM stagex/filesystem as package
 COPY --from=install /rootfs/. /

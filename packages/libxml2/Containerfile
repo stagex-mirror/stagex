@@ -45,7 +45,6 @@ RUN --network=none <<-EOF
     set -eux
     make DESTDIR=/rootfs install
     find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
-    find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
 
 FROM stagex/filesystem as package

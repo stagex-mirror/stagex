@@ -17,7 +17,6 @@ RUN go build -o sxctl
 FROM build as install
 WORKDIR /rootfs
 RUN cp /sxctl/cmd/sxctl/sxctl .
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM stagex/filesystem as package
 COPY --from=install /rootfs/. /

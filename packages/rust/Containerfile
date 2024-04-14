@@ -203,7 +203,6 @@ RUN <<-EOF
 		manifest-rust-std-x86_64-unknown-linux-musl \
 		manifest-rust-std-x86_64-unknown-linux-musl
 	rm -f x86_64-unknown-linux-musl/lib/self-contained/libunwind.a
-	find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
 
 FROM stagex/filesystem as package

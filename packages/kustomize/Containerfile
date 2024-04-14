@@ -27,9 +27,9 @@ RUN --network=none go build -v -trimpath
 
 from build as install
 RUN <<-EOF
+    set -eu
     mkdir -p /rootfs/usr/bin/
     cp kustomize /rootfs/usr/bin/
-    find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
 
 FROM stagex/filesystem as package

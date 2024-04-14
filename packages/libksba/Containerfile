@@ -30,15 +30,13 @@ RUN --network=none <<-EOF
 EOF
 
 FROM build as install
-RUN make DESTDIR=/rootfs install
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
+RUN --network=none make DESTDIR=/rootfs install
 
 FROM base as test
 COPY --from=install /rootfs/. /
 COPY --from=stagex/zlib . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/busybox . /
-RUN ls /usr/lib
 RUN /bin/sh <<-EOF
 	set -eux
 	LIBKSBA_FILES_FOUND=\$(ls /usr/lib/ | grep libksba || true)

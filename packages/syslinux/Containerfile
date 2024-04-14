@@ -34,7 +34,6 @@ RUN make -j1 \
     SBINDIR=/usr/sbin \
     LIBDIR=/usr/lib \
     install
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM base as test
 COPY --from=install /rootfs/. /

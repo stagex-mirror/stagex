@@ -27,10 +27,9 @@ RUN --network=none go build -trimpath -o k9s -v main.go
 
 from build as install
 RUN <<-EOF
+    set -eu
     mkdir -p /rootfs/usr/bin/
-    ls -lah .
     cp k9s /rootfs/usr/bin/
-    find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
 
 FROM stagex/filesystem as package

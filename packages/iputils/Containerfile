@@ -60,11 +60,7 @@ RUN --network=none <<-EOF
 EOF
 
 FROM build AS install
-RUN <<-EOF
-    set -eux
-    DESTDIR=/rootfs meson install --no-rebuild -C output
-    find /rootfs -exec touch -hcd "@0" "{}" +
-EOF
+RUN --network=none DESTDIR=/rootfs meson install --no-rebuild -C output
 
 FROM base AS test
 COPY --from=install /rootfs /

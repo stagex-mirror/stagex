@@ -31,7 +31,6 @@ RUN <<-EOF
     mkdir -p /rootfs/usr/bin/
     cp bin/tofu /rootfs/usr/bin/
 EOF
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
 FROM stagex/filesystem as package
 COPY --from=install /rootfs/./ /

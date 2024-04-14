@@ -24,17 +24,17 @@ For a full list of images see the "packages" directory.
 
 Get a shell in our x86_64 Stage3 bootstrap image:
 
-```
+```sh
 docker run -it stagex/stage3
 ```
 
 Run a Python hello world:
-```
+```sh
 docker run -i stagex/python -c "print('hello world')"
 ```
 
 Make a hello world OCI container image with Rust:
-```
+```dockerfile
 FROM stagex/busybox as build
 COPY --from=stagex/rust . /
 COPY --from=stagex/gcc . /
@@ -249,25 +249,25 @@ For further reading see the [Bootstrappable Builds](https://bootstrappable.org/)
 
 #### Reproduce entire tree
 
-```
+```sh
 make
 ```
 
 #### Compile specific package
 
-```
+```sh
 make rust
 ```
 
 #### Compile specific package without cache
 
-```
+```sh
 make NOCACHE=1
 ```
 
 #### Sign all locally built packages (WIP)
 
-```
+```sh
 make sign
 ```
 

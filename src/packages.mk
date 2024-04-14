@@ -2069,6 +2069,25 @@ out/zig/index.json: \
 	out/zlib/index.json
 	$(call build,zig)
 
+.PHONY: zip
+zip: out/zip/index.json
+out/zip/index.json: \
+	packages/zip/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/clang/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libzstd/index.json \
+	out/lld/index.json \
+	out/llvm/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/zlib/index.json
+	$(call build,zip)
+
 .PHONY: zlib
 zlib: out/zlib/index.json
 out/zlib/index.json: \
