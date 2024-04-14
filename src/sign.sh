@@ -26,6 +26,16 @@ get-filename() {
   echo "${DIR}/signature-${SIGNUM}"
 }
 
+get-signing-fp() {
+  FILE="$1"
+  (gpgv "$FILE" >/dev/null || :) 2>&1 | awk '$4 == "key" { print $5 }'
+}
+
+get-primary-fp() {
+  FP="$1"
+  gpg --list-keys --with-colons "$FP" | grep fpr | cut -d: -f10 | head -n1
+}
+
 dir-has-no-sig() {
   echo "$DIR" >/dev/stderr
   DIR="$1"
@@ -33,7 +43,9 @@ dir-has-no-sig() {
   for file in "${DIR}"/*; do
     # We want to check if a fingerprint matches, we don't need to check if
     # the signature is valid.
-    if (gpgv "$file" >/dev/null || :) 2>&1 | grep "$FP"; then
+    SIGNING_FP="$(get-signing-fp $file)"
+    CERT_FP="$(get-primary-fp "$SIGNING_FP")"
+    if test "$FP" = "$CERT_FP"; then
       echo "found matching signature: $file" >/dev/stderr
       return 1
     fi
@@ -42,7 +54,7 @@ dir-has-no-sig() {
 }
 
 SIGNING_KEY="$(git config user.signingkey)"
-FPR="$(gpg --list-keys --with-colons "$SIGNING_KEY" | grep fpr | cut -d: -f10 | head -n1)"
+FPR="$(get-primary-fp "$SIGNING_KEY")"
 test ! -z "$FPR"
 
 TEMPFILE="$(mktemp)"
