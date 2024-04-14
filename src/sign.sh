@@ -33,7 +33,7 @@ get-signing-fp() {
 
 get-primary-fp() {
   FP="$1"
-  if gpg --list-keys --with-colons "$FP" > /dev/null; then
+  if gpg --list-keys --with-colons "$FP" > /dev/null 2> /dev/null; then
     gpg --list-keys --with-colons "$FP" | grep fpr | cut -d: -f10 | head -n1
   fi
 }
