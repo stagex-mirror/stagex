@@ -1,0 +1,7 @@
+{
+    "libtool-{VERSION}.tar.xz": {
+        "mirrors": [
+            "https://ftp.gnu.org/gnu/libtool/{SRC_FILE}"
+        ]
+    }
+}

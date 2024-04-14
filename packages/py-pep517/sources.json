@@ -1,0 +1,7 @@
+{
+    "pep517-{VERSION}.tar.gz": {
+        "mirrors": [
+            "https://files.pythonhosted.org/packages/source/p/pep517/{SRC_FILE}"
+        ]
+    }
+}

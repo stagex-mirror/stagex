@@ -1,0 +1,7 @@
+{
+    "libxslt-{VERSION}.tar.xz": {
+        "mirrors": [
+            "https://download.gnome.org/sources/libxslt/1.1/{SRC_FILE}"
+        ]
+    }
+}

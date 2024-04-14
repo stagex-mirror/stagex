@@ -1,0 +1,7 @@
+{
+    "toml-{VERSION}.tar.gz": {
+        "mirrors": [
+            "https://files.pythonhosted.org/packages/source/t/toml/{SRC_FILE}"
+        ]
+    }
+}

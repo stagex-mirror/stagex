@@ -1,0 +1,7 @@
+{
+    "npth-1.6.tar.bz2": {
+        "mirrors": [
+            "https://gnupg.org/ftp/gcrypt/npth/{SRC_FILE}"
+        ]
+    }
+}

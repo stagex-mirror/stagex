@@ -1,0 +1,7 @@
+{
+    "bash-{VERSION}.tar.gz": {
+        "mirrors": [
+            "https://ftp.gnu.org/gnu/bash/{SRC_FILE}"
+        ]
+    }
+}

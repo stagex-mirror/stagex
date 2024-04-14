@@ -1,0 +1,7 @@
+{
+    "ncurses-{VERSION}.tgz": {
+        "mirrors": [
+            "https://invisible-mirror.net/archives/ncurses/current/{SRC_FILE}"
+        ]
+    }
+}

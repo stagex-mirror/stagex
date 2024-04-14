@@ -1,0 +1,7 @@
+{
+    "autoconf-{VERSION}.tar.xz": {
+        "mirrors": [
+            "https://ftp.gnu.org/gnu/autoconf/{SRC_FILE}"
+        ]
+    }
+}

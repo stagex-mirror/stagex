@@ -1,0 +1,7 @@
+{
+    "elfutils-{VERSION}.tar.bz2": {
+        "mirrors": [
+            "https://sourceware.org/elfutils/ftp/{VERSION}/{SRC_FILE}"
+        ]
+    }
+}

@@ -1,5 +1,5 @@
 {
-    "xz-{VERSION}.tar.xz": {
+    "zip{VERSION}.tar.gz": {
         "mirrors": [
             "https://fossies.org/linux/misc/{SRC_FILE}"
         ]

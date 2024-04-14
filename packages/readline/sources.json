@@ -1,0 +1,57 @@
+{
+    "readline-8.2.tar.gz": {
+        "mirrors": [
+            "http://ftp.gnu.org/gnu/readline/readline-{VERSION}.tar.gz"
+        ]
+    },
+    "readline82-001": {
+        "mirrors": [
+            "{SRC_SITE}/readline-{VERSION}-patches/readline82-001"
+        ]
+    },
+    "readline82-002": {
+        "mirrors": [
+            "{SRC_SITE}/readline-{VERSION}-patches/readline82-002"
+        ]
+    },
+    "readline82-003": {
+        "mirrors": [
+            "{SRC_SITE}/readline-{VERSION}-patches/readline82-003"
+        ]
+    },
+    "readline82-004": {
+        "mirrors": [
+            "{SRC_SITE}/readline-{VERSION}-patches/readline82-004"
+        ]
+    },
+    "readline82-005": {
+        "mirrors": [
+            "{SRC_SITE}/readline-{VERSION}-patches/readline82-005"
+        ]
+    },
+    "readline82-006": {
+        "mirrors": [
+            "{SRC_SITE}/readline-{VERSION}-patches/readline82-006"
+        ]
+    },
+    "readline82-007": {
+        "mirrors": [
+            "{SRC_SITE}/readline-{VERSION}-patches/readline82-007"
+        ]
+    },
+    "readline82-008": {
+        "mirrors": [
+            "{SRC_SITE}/readline-{VERSION}-patches/readline82-008"
+        ]
+    },
+    "readline82-009": {
+        "mirrors": [
+            "{SRC_SITE}/readline-{VERSION}-patches/readline82-009"
+        ]
+    },
+    "readline82-010": {
+        "mirrors": [
+            "{SRC_SITE}/readline-{VERSION}-patches/readline82-010"
+        ]
+    }
+}
