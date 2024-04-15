@@ -32,7 +32,7 @@ for filename in glob.glob('packages/**/Containerfile', recursive=True):
         if line.startswith("ADD --checksum"):
             line_parts = replace_all(line, replacements).split(" ")
             if line_parts[2] == ".":
-                line_parts[2] = None
+                line_parts[2] = '{SRC_FILE}'
             add_dict = {}
             add_dict["hash"] = line_parts[0]
             add_dict["url"] = line_parts[1]
@@ -50,32 +50,33 @@ for filename in glob.glob('packages/**/Containerfile', recursive=True):
                     sys.exit()
             env_dict[key] = value
         line_list = file.readlines(1)
-    env_dict_formatted = {}
-    for key,value in env_dict.items():
-        try:
-            env_dict_formatted[key] = value.format(**env_dict)
-        except:
-            print("Error: unable to format: %s -> %s" % (filename,line))
-            sys.exit()
+    #env_dict_formatted = {}
+    #for key,value in env_dict.items():
+    #    try:
+    #        env_dict_formatted[key] = value.format(**env_dict)
+    #    except:
+    #        print("Error: unable to format: %s -> %s" % (filename,line))
+    #        sys.exit()
     sources_dict = {}
     for add_dict in add_list:
         for key,value in add_dict.items():
-            if value is not None:
+            if key is 'hash' or 'url':
                 add_dict[key] = value.format(**env_dict)
-        if not add_dict['filename']:
-            url = add_dict['url'].format(**env_dict_formatted)
-            print(url)
-            remotefile = urlopen(url)
-            filename_header = remotefile.info()['Content-Disposition']
-            if filename_header:
-                msg = Message()
-                msg['content-disposition'] = filename_header
-                add_dict['filename'] = msg.get_filename()
-            if not add_dict['filename']:
-                split = urlsplit(add_dict['url'])
-                add_dict['filename'] = split.path.split("/")[-1]
-        add_dict['filename'] = add_dict['filename'].format(**env_dict)
+        #if not add_dict['filename']:
+        #    url = add_dict['url'].format(**env_dict_formatted)
+        #    print(url)
+        #    remotefile = urlopen(url)
+        #    filename_header = remotefile.info()['Content-Disposition']
+        #    if filename_header:
+        #        msg = Message()
+        #        msg['content-disposition'] = filename_header
+        #        add_dict['filename'] = msg.get_filename()
+        #    if not add_dict['filename']:
+        #        split = urlsplit(add_dict['url'])
+        #        add_dict['filename'] = split.path.split("/")[-1]
+        #add_dict['filename'] = add_dict['filename'].format(**env_dict)
         sources_dict[add_dict['filename']] = {}
+        sources_dict[add_dict['filename']]['hash'] = [add_dict['hash']]
         sources_dict[add_dict['filename']]['mirrors'] = [add_dict['url']]
     with open(filename.replace("Containerfile","sources.json"),"w") as outfile:
         json.dump(sources_dict,outfile,indent=4)

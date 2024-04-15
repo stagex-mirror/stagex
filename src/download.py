@@ -3,6 +3,8 @@ import glob
 import re
 import sys
 import time
+import json
+from os.path import isfile, dirname
 from urllib.parse import urlsplit
 from urllib.request import urlopen, urlretrieve
 from email.message import Message
@@ -14,6 +16,10 @@ replacements = {
     "ADD --checksum=sha256:":"",
     "${":"{",
 }
+
+def json_read(filename: str):
+    with open(filename) as f_in:
+        return json.load(f_in)
 
 def replace_all(text, rep_dict):
     for i, j in rep_dict.items():
@@ -43,28 +49,24 @@ def download(url,filename=None):
             filename = msg.get_filename()
         if not filename:
             split = urlsplit(url)
-            filename = "fetch/" + split.path.split("/")[-1]
-    print("\nDownloading: %s" % url)
-    urlretrieve(url, filename, download_status_hook)
+            filename = split.path.split("/")[-1]
+    filepath = "fetch/" + filename
+    urlretrieve(url, filepath, download_status_hook)
 
-queue = []
-for filename in glob.glob('packages/**/Containerfile', recursive=True):
-    file = open(filename)
-    line_list = file.readlines(1)
+queue = {}
+for container_filename in glob.glob('packages/**/Containerfile', recursive=True):
     env_dict = { "TARGET": "x86_64"}
     add_list = []
-    while line_list:
-        line = line_list[0]
-        if line.startswith("ADD --checksum"):
-            line_parts = replace_all(line, replacements).split(" ")
-            if line_parts[2] == ".":
-                line_parts[2] = None
-            add_dict = {}
-            add_dict["hash"] = line_parts[0]
-            add_dict["url"] = line_parts[1]
-            add_dict["filename"] = line_parts[2]
-            add_list.append(add_dict)
-        elif line.startswith("ENV ") or line.startswith("ARG "):
+    sources_filename = "%s/sources.json" % dirname(container_filename)
+    if not isfile(sources_filename):
+        print("\nSkipping: %s" % container_filename)
+        continue
+    sources = json_read(sources_filename)
+    container_file = open(container_filename)
+    container_line_list = container_file.readlines(1)
+    while container_line_list:
+        line = container_line_list[0]
+        if line.startswith("ENV ") or line.startswith("ARG "):
             line = replace_all(line, replacements)
             try:
                 key,value = line.split("=",1)
@@ -75,18 +77,33 @@ for filename in glob.glob('packages/**/Containerfile', recursive=True):
                     print("Error: unable to split: %s" % (line))
                     sys.exit()
             env_dict[key] = value
-        line_list = file.readlines(1)
+        container_line_list = container_file.readlines(1)
     for key,value in env_dict.items():
         try:
             env_dict[key] = value.format(**env_dict)
         except:
             print("Error: unable to format: %s -> %s" % (filename,line))
             sys.exit()
-    for add_dict in add_list:
-        for key,value in add_dict.items():
-            if value is not None:
-                add_dict[key] = value.format(**env_dict)
-        queue.append(add_dict)
+    for key,value_dict in sources.items():
+        mirrors = []
+        processed_key = key.format(**env_dict)
+        queue.setdefault(processed_key, [])
+        for item in value_dict['mirrors']:
+            if item is not None:
+                item_processed = item.format(**env_dict)
+                queue[processed_key].append(item_processed)
 
-for item in queue:
-    download(item['url'],item['filename'])
+failed = []
+for filename in queue:
+    filepath = "fetch/" + filename
+    if isfile(filepath):
+        print("\nSkipping Existing: %s" % filepath)
+        continue;
+    for mirror in queue[filename]:
+        print("\nDownloading: %s -> %s" % (mirror,filename))
+        if download(mirror,filename):
+            break
+        else:
+            failed.append(mirror)
+
+print(failed)
