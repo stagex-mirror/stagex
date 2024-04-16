@@ -3,7 +3,6 @@ ENV VERSION=20.11.1
 ENV SRC_HASH=4af1ba6ea848cc05908b8a62b02fb27684dd52b2a7988ee82b0cfa72deb90b94
 ENV SRC_FILE=node-v${VERSION}.tar.gz
 ENV SRC_SITE=https://nodejs.org/dist/v${VERSION}/${SRC_FILE}
-ENV CFLAGS="-march=x86-64 -mtune=generic -O2"
 
 FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
@@ -18,14 +17,29 @@ COPY --from=stagex/openssl . /
 COPY --from=stagex/python . /
 COPY --from=stagex/bzip2 . /
 COPY --from=stagex/ninja . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/icu . /
 COPY --from=stagex/zlib . /
 COPY --from=stagex/linux-headers . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR node-v${VERSION}
+ENV CFLAGS="-march=x86-64 -mtune=generic -Os"
+ENV CXXFLAGS="-march=x86-64 -mtune=generic -Os"
+ENV CPPFLAGS="-march=x86-64 -mtune=generic -Os"
 RUN --network=none <<-EOF
 	set -eux
 	python configure.py  \
-        --without-snapshot
+        --prefix=/usr \
+        --ninja \
+        --enable-lto \
+        --without-npm \
+        --without-snapshot \
+        --without-corepack \
+        --shared-openssl \
+        --shared-zlib \
+        --with-icu-default-data-dir=$(icu-config --icudatadir) \
+		--with-intl=system-icu \
+        --openssl-use-def-ca-store
 	make BUILDTYPE=Release
 EOF
 
@@ -33,7 +47,6 @@ FROM build as install
 RUN --network=none <<-EOF
 	set -eux
 	make DESTDIR=/rootfs install
-	find /rootfs -exec touch -hcd "@0" "{}" +
 EOF
 
 FROM stagex/filesystem as package
