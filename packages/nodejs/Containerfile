@@ -25,7 +25,11 @@ WORKDIR node-v${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	python configure.py  \
-        --without-snapshot
+	--ninja \
+        --without-snapshot \
+	--shared-openssl \
+        --shared-zlib \
+	--without-npm
 	make BUILDTYPE=Release
 EOF
 
