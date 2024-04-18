@@ -1108,6 +1108,16 @@ out/meson/index.json: \
 	out/zlib/index.json
 	$(call build,meson)
 
+.PHONY: mimir
+mimir: out/mimir/index.json
+out/mimir/index.json: \
+	packages/mimir/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,mimir)
+
 .PHONY: mtools
 mtools: out/mtools/index.json
 out/mtools/index.json: \

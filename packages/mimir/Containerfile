@@ -1,0 +1,53 @@
+FROM scratch as base
+ENV VERSION=2.12.0
+ENV COMMIT=c7aab9e039d63397d2293114ad063b03626e247b
+ENV SRC_HASH=51daf870b381766262e3230cbcb69114217a8c64e916ac837823b0bc2fd3fd2f
+ENV SRC_FILE=mimir-${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/grafana/mimir/archive/refs/tags/${SRC_FILE}
+ENV GOPATH=/cache/go
+ENV GOCACHE=/cache/
+ENV GOWORK=off
+ENV GOPROXY=https://proxy.golang.org,direct
+ENV GOSUMDB=sum.golang.org
+ENV CGO_ENABLED=1
+ENV GOHOSTOS=linux
+ENV GOHOSTARCH=amd64
+ENV GO11MODULE=off
+
+FROM base as fetch
+COPY --from=stagex/busybox . /
+COPY --from=stagex/go . /
+COPY --from=stagex/ca-certificates . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+RUN tar -xvf ${SRC_FILE}
+WORKDIR mimir-mimir-${VERSION}
+RUN go get ./...
+
+FROM fetch as build
+RUN mkdir -p build
+RUN --network=none \
+  go build -v \
+    -buildmode=pie \
+    -mod=readonly \
+    -modcacherw \
+    -ldflags "-compressdwarf=false \
+    -linkmode external \
+    -extldflags ${LDFLAGS} \
+    -X github.com/grafana/mimir/pkg/util/version.Branch=main \
+    -X github.com/grafana/mimir/pkg/util/version.Revision=$COMMIT \
+    -X github.com/grafana/mimir/pkg/util/version.Version=$VERSION" \
+    -o build \
+    ./cmd/...
+RUN ls build
+
+from build as install
+RUN <<-EOF
+    set -eu
+    mkdir -p /rootfs/usr/bin/
+    cp mimir /rootfs/usr/bin/
+EOF
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/./ /
