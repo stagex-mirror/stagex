@@ -139,6 +139,16 @@ out/bison/index.json: \
 	out/perl/index.json
 	$(call build,bison)
 
+.PHONY: buf
+buf: out/buf/index.json
+out/buf/index.json: \
+	packages/buf/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,buf)
+
 .PHONY: busybox
 busybox: out/busybox/index.json
 out/busybox/index.json: \
