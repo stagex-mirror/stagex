@@ -29,6 +29,18 @@ out/autoconf/index.json: \
 	out/perl/index.json
 	$(call build,autoconf)
 
+.PHONY: autoconf-archive
+autoconf-archive: out/autoconf-archive/index.json
+out/autoconf-archive/index.json: \
+	packages/autoconf-archive/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,autoconf-archive)
+
 .PHONY: automake
 automake: out/automake/index.json
 out/automake/index.json: \
@@ -627,6 +639,21 @@ out/iputils/index.json: \
 	out/python/index.json \
 	out/zlib/index.json
 	$(call build,iputils)
+
+.PHONY: json-c
+json-c: out/json-c/index.json
+out/json-c/index.json: \
+	packages/json-c/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/musl/index.json \
+	out/ninja/index.json \
+	out/openssl/index.json \
+	out/zlib/index.json
+	$(call build,json-c)
 
 .PHONY: k9s
 k9s: out/k9s/index.json
@@ -1995,6 +2022,54 @@ out/tofu/index.json: \
 	out/filesystem/index.json \
 	out/go/index.json
 	$(call build,tofu)
+
+.PHONY: tpm2-tools
+tpm2-tools: out/tpm2-tools/index.json
+out/tpm2-tools/index.json: \
+	packages/tpm2-tools/Containerfile \
+	out/autoconf/index.json \
+	out/autoconf-archive/index.json \
+	out/automake/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/curl/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libtool/index.json \
+	out/linux-headers/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json \
+	out/tpm2-tss/index.json \
+	out/util-linux/index.json
+	$(call build,tpm2-tools)
+
+.PHONY: tpm2-tss
+tpm2-tss: out/tpm2-tss/index.json
+out/tpm2-tss/index.json: \
+	packages/tpm2-tss/Containerfile \
+	out/autoconf/index.json \
+	out/autoconf-archive/index.json \
+	out/automake/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/curl/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/json-c/index.json \
+	out/libtool/index.json \
+	out/linux-headers/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json \
+	out/util-linux/index.json
+	$(call build,tpm2-tss)
 
 .PHONY: util-linux
 util-linux: out/util-linux/index.json
