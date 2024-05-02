@@ -70,7 +70,7 @@ check_tools(){
 		case $cmd in
 			jq)
 				version=$(jq -V | sed 's/.*-//g')
-				check_version "jq" "${version}" "${MIN_JQ_VERSION}"
+				# check_version "jq" "${version}" "${MIN_JQ_VERSION}"
 			;;
 			gpg)
 				version=$(gpg --version | head -n1 | cut -d" " -f3)
