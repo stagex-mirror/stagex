@@ -23,6 +23,8 @@ WORKDIR llvm-project-${VERSION}.src
 ADD *.patch .
 RUN --network=none <<-EOF
 	set -eux
+	patch -p1 < gcc-13-base64.patch
+	patch -p1 < gcc-13-signals.patch
 	python -c "import setuptools; print(setuptools.__version__)"
 	cmake \
 		-B build \

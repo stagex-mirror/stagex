@@ -1,8 +1,8 @@
 FROM scratch as base
-ENV VERSION 12.2.0
+ENV VERSION 13.1.0
 ENV SRC_FILE gcc-$VERSION.tar.xz
 ENV SRC_SITE https://mirrors.kernel.org/gnu/gcc/gcc-${VERSION}/${SRC_FILE}
-ENV SRC_HASH e549cf9cf3594a00e27b6589d4322d70e0720cdd213f39beb4181e06926230ff
+ENV SRC_HASH 61d684f0aa5e76ac6585ad8898a2427aade8979ed5e7f85492286c4dfc13ee86
 ENV DEP_SITE https://gcc.gnu.org/pub/gcc/infrastructure/
 ENV GMP_FILE gmp-6.2.1.tar.bz2
 ENV GMP_HASH eae9326beb4158c386e39a356818031bd28f3124cf915f8c5b1dc4c7a36b4d7c
