@@ -1222,6 +1222,29 @@ out/npth/index.json: \
 	out/zlib/index.json
 	$(call build,npth)
 
+.PHONY: openpgp-card-tools
+openpgp-card-tools: out/openpgp-card-tools/index.json
+out/openpgp-card-tools/index.json: \
+	packages/openpgp-card-tools/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/clang/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/gmp/index.json \
+	out/libunwind/index.json \
+	out/linux-headers/index.json \
+	out/llvm/index.json \
+	out/musl/index.json \
+	out/nettle/index.json \
+	out/openssl/index.json \
+	out/pcsc-lite/index.json \
+	out/pkgconf/index.json \
+	out/rust/index.json \
+	out/zlib/index.json
+	$(call build,openpgp-card-tools)
+
 .PHONY: openssl
 openssl: out/openssl/index.json
 out/openssl/index.json: \
