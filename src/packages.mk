@@ -1,4 +1,20 @@
 
+.PHONY: abseil-cpp
+abseil-cpp: out/abseil-cpp/index.json
+out/abseil-cpp/index.json: \
+	packages/abseil-cpp/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/linux-headers/index.json \
+	out/musl/index.json \
+	out/ninja/index.json \
+	out/openssl/index.json \
+	out/zlib/index.json
+	$(call build,abseil-cpp)
+
 .PHONY: argp-standalone
 argp-standalone: out/argp-standalone/index.json
 out/argp-standalone/index.json: \
@@ -1145,6 +1161,16 @@ out/meson/index.json: \
 	out/zlib/index.json
 	$(call build,meson)
 
+.PHONY: mockgen
+mockgen: out/mockgen/index.json
+out/mockgen/index.json: \
+	packages/mockgen/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,mockgen)
+
 .PHONY: mtools
 mtools: out/mtools/index.json
 out/mtools/index.json: \
@@ -1342,6 +1368,72 @@ out/postgresql/index.json: \
 	out/util-linux/index.json \
 	out/zlib/index.json
 	$(call build,postgresql)
+
+.PHONY: protobuf
+protobuf: out/protobuf/index.json
+out/protobuf/index.json: \
+	packages/protobuf/Containerfile \
+	out/abseil-cpp/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/musl/index.json \
+	out/ninja/index.json \
+	out/openssl/index.json \
+	out/zlib/index.json
+	$(call build,protobuf)
+
+.PHONY: protoc-gen-go
+protoc-gen-go: out/protoc-gen-go/index.json
+out/protoc-gen-go/index.json: \
+	packages/protoc-gen-go/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,protoc-gen-go)
+
+.PHONY: protoc-gen-go-grpc
+protoc-gen-go-grpc: out/protoc-gen-go-grpc/index.json
+out/protoc-gen-go-grpc/index.json: \
+	packages/protoc-gen-go-grpc/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,protoc-gen-go-grpc)
+
+.PHONY: protoc-gen-grpc-gateway
+protoc-gen-grpc-gateway: out/protoc-gen-grpc-gateway/index.json
+out/protoc-gen-grpc-gateway/index.json: \
+	packages/protoc-gen-grpc-gateway/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,protoc-gen-grpc-gateway)
+
+.PHONY: protoc-gen-openapiv2
+protoc-gen-openapiv2: out/protoc-gen-openapiv2/index.json
+out/protoc-gen-openapiv2/index.json: \
+	packages/protoc-gen-openapiv2/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,protoc-gen-openapiv2)
+
+.PHONY: protoc-go-inject-tag
+protoc-go-inject-tag: out/protoc-go-inject-tag/index.json
+out/protoc-go-inject-tag/index.json: \
+	packages/protoc-go-inject-tag/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,protoc-go-inject-tag)
 
 .PHONY: py-awscrt
 py-awscrt: out/py-awscrt/index.json
