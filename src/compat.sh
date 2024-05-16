@@ -3,6 +3,7 @@ set -e
 
 readonly MIN_BASH_VERSION=5
 readonly MIN_DOCKER_VERSION=26.0.0
+readonly MIN_BUILDX_VERSION=0.13
 readonly MIN_JQ_VERSION=1.6
 readonly MIN_GPG_VERSION=2.2
 
@@ -80,11 +81,15 @@ check_tools(){
 				version=$(docker version -f json | jq -r '.Server.Version')
 				check_version "docker" "${version}" "${MIN_DOCKER_VERSION}"
 			;;
+			buildx)
+				version=$(docker system info -f '{{ range .ClientInfo.Plugins }}{{ if eq .Name "buildx" }}{{join (split .Version "v") "" }}{{ end }}{{ end }}')
+				check_version "buildx" "${version}" "${MIN_BUILDX_VERSION}"
+			;;
 		esac
 	done
 }
 
-check_tools jq gpg docker;
+check_tools jq gpg docker buildx;
 
 docker info -f '{{ .DriverStatus }}' \
     | grep "io.containerd.snapshotter.v1" >/dev/null \
