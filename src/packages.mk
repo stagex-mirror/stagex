@@ -666,6 +666,18 @@ out/iputils/index.json: \
 	out/zlib/index.json
 	$(call build,iputils)
 
+.PHONY: jq
+jq: out/jq/index.json
+out/jq/index.json: \
+	packages/jq/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,jq)
+
 .PHONY: json-c
 json-c: out/json-c/index.json
 out/json-c/index.json: \
