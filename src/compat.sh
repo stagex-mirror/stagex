@@ -77,8 +77,8 @@ check_tools(){
 				version=$(gpg --version | head -n1 | cut -d" " -f3)
 				check_version "gnupg" "${version}" "${MIN_GPG_VERSION}"
 			;;
-            docker)
-				version=$(docker version -f json | jq -r '.Server.Version')
+			docker)
+				version=$(docker version -f '{{ .Server.Version }}')
 				check_version "docker" "${version}" "${MIN_DOCKER_VERSION}"
 			;;
 			buildx)
