@@ -71,14 +71,14 @@ check_tools(){
 		case $cmd in
 			jq)
 				version=$(jq -V | sed 's/.*-//g')
-				# check_version "jq" "${version}" "${MIN_JQ_VERSION}"
+				check_version "jq" "${version}" "${MIN_JQ_VERSION}"
 			;;
 			gpg)
 				version=$(gpg --version | head -n1 | cut -d" " -f3)
 				check_version "gnupg" "${version}" "${MIN_GPG_VERSION}"
 			;;
-            docker)
-				version=$(docker version -f json | jq -r '.Server.Version')
+			docker)
+				version=$(docker version -f '{{ .Server.Version }}')
 				check_version "docker" "${version}" "${MIN_DOCKER_VERSION}"
 			;;
 			buildx)
