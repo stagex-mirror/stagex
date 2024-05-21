@@ -24,9 +24,10 @@ COPY --from=stagex/openssl . /
 COPY --from=stagex/perl . /
 RUN tar -xf ca-certificates-${SRC_2_VERSION}.tar.gz
 WORKDIR ca-certificates-${SRC_2_VERSION}
+ADD *.patch .
 RUN --network=none <<-EOF
 	set -eux
-
+	patch -p1 < remove-timestamp.patch
 	rm -f ./certdata.txt
 	mv ../certdata.txt ./certdata.txt
 	make
