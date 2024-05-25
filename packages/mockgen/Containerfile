@@ -1,0 +1,36 @@
+FROM scratch as base
+ENV VERSION=1.6.0
+ENV SRC_HASH=470174971c3a63361149a30f5b2d3a716a198afeb6cc71daa30712faa7293942
+ENV SRC_FILE=v${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/golang/mock/archive/refs/tags/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/go . /
+COPY --from=stagex/ca-certificates . /
+RUN tar -xvf v${VERSION}.tar.gz
+WORKDIR mock-${VERSION}
+ENV GOPATH=${PWD}/cache/go
+ENV GOCACHE=${PWD}/cache/
+ENV GOWORK=off
+ENV GOPROXY=https://proxy.golang.org,direct
+ENV GOSUMDB=sum.golang.org
+ENV CGO_ENABLED=0
+ENV GOHOSTOS=linux
+ENV GOHOSTARCH=amd64
+ENV GOFLAGS=-trimpath
+RUN mkdir -p ${GOPATH}
+RUN go build -o bin/mockgen ./mockgen
+
+from build as install
+RUN <<-EOF
+    set -eux
+    mkdir -p /rootfs/usr/bin/
+    cp bin/mockgen /rootfs/usr/bin/
+EOF
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/./ /

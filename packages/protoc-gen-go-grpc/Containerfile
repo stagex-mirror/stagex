@@ -1,0 +1,36 @@
+FROM scratch as base
+ENV VERSION=1.63.2
+ENV SRC_HASH=ffc7611e4989de79de4c17b015ff10db810b85f749b12520336314746e9d7095
+ENV SRC_FILE=v${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/grpc/grpc-go/archive/refs/tags/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/go . /
+COPY --from=stagex/ca-certificates . /
+RUN tar -xvf v${VERSION}.tar.gz
+WORKDIR grpc-go-${VERSION}/cmd/protoc-gen-go-grpc
+ENV GOPATH=${PWD}/cache/go
+ENV GOCACHE=${PWD}/cache/
+ENV GOWORK=off
+ENV GOPROXY=https://proxy.golang.org,direct
+ENV GOSUMDB=sum.golang.org
+ENV CGO_ENABLED=0
+ENV GOHOSTOS=linux
+ENV GOHOSTARCH=amd64
+ENV GOFLAGS=-trimpath
+RUN mkdir -p ${GOPATH}
+RUN go build -o bin/protoc-gen-go-grpc ./
+
+from build as install
+RUN <<-EOF
+    set -eux
+    mkdir -p /rootfs/usr/bin/
+    cp bin/protoc-gen-go-grpc /rootfs/usr/bin/
+EOF
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/./ /

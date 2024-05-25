@@ -146,3 +146,15 @@ Ghz = 4.2
 Cores = 4
 OS = Arch Linux
 Runtime = Docker
+
+[machines.dannygrove.local2]
+Owner = Danny Grove
+Location = California, USA
+Type = metal
+Arch = x86_64
+Brand = AMD
+Model = AMD Ryzen 7 7840U 
+Ghz = 3.3
+Cores = 8
+OS = Arch Linux
+Runtime = Docker

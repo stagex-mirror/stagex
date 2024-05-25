@@ -1,0 +1,46 @@
+FROM scratch AS base
+ENV VERSION=0.10.1
+ENV SRC_HASH=fb8cd1c95c558f1e16a749746dadc6040deca54f4e3aa7735ffa5f082cdfcc01
+ENV SRC_FILE=v${VERSION}.tar.gz
+ENV SRC_SITE=https://codeberg.org/openpgp-card/openpgp-card-tools/archive/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+COPY --from=stagex/rust . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/llvm . /
+COPY --from=stagex/libunwind . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/ca-certificates . /
+RUN tar xf ${SRC_FILE}
+WORKDIR openpgp-card-tools
+RUN cargo fetch
+
+FROM fetch AS build
+COPY --from=stagex/clang . /
+COPY --from=stagex/linux-headers . /
+COPY --from=stagex/gmp . /
+COPY --from=stagex/nettle . /
+COPY --from=stagex/pcsc-lite . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/binutils . /
+ENV PCSC_LIB_NAME=static=pcsclite
+ENV RUSTFLAGS='-C codegen-units=1 -C target-feature=+crt-static'
+RUN --network=none \
+    cargo build \
+        --frozen \
+        --release \
+        --target x86_64-unknown-linux-musl
+
+FROM build AS install
+RUN <<-EOF
+    set -eux
+    mkdir -p /rootfs/usr/bin
+    cp target/x86_64-unknown-linux-musl/release/oct /rootfs/usr/bin/
+EOF
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /

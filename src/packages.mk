@@ -1,4 +1,20 @@
 
+.PHONY: abseil-cpp
+abseil-cpp: out/abseil-cpp/index.json
+out/abseil-cpp/index.json: \
+	packages/abseil-cpp/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/linux-headers/index.json \
+	out/musl/index.json \
+	out/ninja/index.json \
+	out/openssl/index.json \
+	out/zlib/index.json
+	$(call build,abseil-cpp)
+
 .PHONY: argp-standalone
 argp-standalone: out/argp-standalone/index.json
 out/argp-standalone/index.json: \
@@ -28,6 +44,18 @@ out/autoconf/index.json: \
 	out/musl/index.json \
 	out/perl/index.json
 	$(call build,autoconf)
+
+.PHONY: autoconf-archive
+autoconf-archive: out/autoconf-archive/index.json
+out/autoconf-archive/index.json: \
+	packages/autoconf-archive/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,autoconf-archive)
 
 .PHONY: automake
 automake: out/automake/index.json
@@ -138,6 +166,16 @@ out/bison/index.json: \
 	out/musl/index.json \
 	out/perl/index.json
 	$(call build,bison)
+
+.PHONY: buf
+buf: out/buf/index.json
+out/buf/index.json: \
+	packages/buf/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,buf)
 
 .PHONY: busybox
 busybox: out/busybox/index.json
@@ -628,6 +666,33 @@ out/iputils/index.json: \
 	out/zlib/index.json
 	$(call build,iputils)
 
+.PHONY: jq
+jq: out/jq/index.json
+out/jq/index.json: \
+	packages/jq/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,jq)
+
+.PHONY: json-c
+json-c: out/json-c/index.json
+out/json-c/index.json: \
+	packages/json-c/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/musl/index.json \
+	out/ninja/index.json \
+	out/openssl/index.json \
+	out/zlib/index.json
+	$(call build,json-c)
+
 .PHONY: k9s
 k9s: out/k9s/index.json
 out/k9s/index.json: \
@@ -1108,6 +1173,16 @@ out/meson/index.json: \
 	out/zlib/index.json
 	$(call build,meson)
 
+.PHONY: mockgen
+mockgen: out/mockgen/index.json
+out/mockgen/index.json: \
+	packages/mockgen/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,mockgen)
+
 .PHONY: mtools
 mtools: out/mtools/index.json
 out/mtools/index.json: \
@@ -1222,6 +1297,29 @@ out/npth/index.json: \
 	out/zlib/index.json
 	$(call build,npth)
 
+.PHONY: openpgp-card-tools
+openpgp-card-tools: out/openpgp-card-tools/index.json
+out/openpgp-card-tools/index.json: \
+	packages/openpgp-card-tools/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/clang/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/gmp/index.json \
+	out/libunwind/index.json \
+	out/linux-headers/index.json \
+	out/llvm/index.json \
+	out/musl/index.json \
+	out/nettle/index.json \
+	out/openssl/index.json \
+	out/pcsc-lite/index.json \
+	out/pkgconf/index.json \
+	out/rust/index.json \
+	out/zlib/index.json
+	$(call build,openpgp-card-tools)
+
 .PHONY: openssl
 openssl: out/openssl/index.json
 out/openssl/index.json: \
@@ -1305,6 +1403,72 @@ out/postgresql/index.json: \
 	out/util-linux/index.json \
 	out/zlib/index.json
 	$(call build,postgresql)
+
+.PHONY: protobuf
+protobuf: out/protobuf/index.json
+out/protobuf/index.json: \
+	packages/protobuf/Containerfile \
+	out/abseil-cpp/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/musl/index.json \
+	out/ninja/index.json \
+	out/openssl/index.json \
+	out/zlib/index.json
+	$(call build,protobuf)
+
+.PHONY: protoc-gen-go
+protoc-gen-go: out/protoc-gen-go/index.json
+out/protoc-gen-go/index.json: \
+	packages/protoc-gen-go/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,protoc-gen-go)
+
+.PHONY: protoc-gen-go-grpc
+protoc-gen-go-grpc: out/protoc-gen-go-grpc/index.json
+out/protoc-gen-go-grpc/index.json: \
+	packages/protoc-gen-go-grpc/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,protoc-gen-go-grpc)
+
+.PHONY: protoc-gen-grpc-gateway
+protoc-gen-grpc-gateway: out/protoc-gen-grpc-gateway/index.json
+out/protoc-gen-grpc-gateway/index.json: \
+	packages/protoc-gen-grpc-gateway/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,protoc-gen-grpc-gateway)
+
+.PHONY: protoc-gen-openapiv2
+protoc-gen-openapiv2: out/protoc-gen-openapiv2/index.json
+out/protoc-gen-openapiv2/index.json: \
+	packages/protoc-gen-openapiv2/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,protoc-gen-openapiv2)
+
+.PHONY: protoc-go-inject-tag
+protoc-go-inject-tag: out/protoc-go-inject-tag/index.json
+out/protoc-go-inject-tag/index.json: \
+	packages/protoc-go-inject-tag/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,protoc-go-inject-tag)
 
 .PHONY: py-awscrt
 py-awscrt: out/py-awscrt/index.json
@@ -1995,6 +2159,54 @@ out/tofu/index.json: \
 	out/filesystem/index.json \
 	out/go/index.json
 	$(call build,tofu)
+
+.PHONY: tpm2-tools
+tpm2-tools: out/tpm2-tools/index.json
+out/tpm2-tools/index.json: \
+	packages/tpm2-tools/Containerfile \
+	out/autoconf/index.json \
+	out/autoconf-archive/index.json \
+	out/automake/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/curl/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libtool/index.json \
+	out/linux-headers/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json \
+	out/tpm2-tss/index.json \
+	out/util-linux/index.json
+	$(call build,tpm2-tools)
+
+.PHONY: tpm2-tss
+tpm2-tss: out/tpm2-tss/index.json
+out/tpm2-tss/index.json: \
+	packages/tpm2-tss/Containerfile \
+	out/autoconf/index.json \
+	out/autoconf-archive/index.json \
+	out/automake/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/curl/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/json-c/index.json \
+	out/libtool/index.json \
+	out/linux-headers/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json \
+	out/util-linux/index.json
+	$(call build,tpm2-tss)
 
 .PHONY: util-linux
 util-linux: out/util-linux/index.json
