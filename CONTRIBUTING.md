@@ -18,10 +18,10 @@ Below are the steps and processes that we follow.
 Before reporting an issue, check our backlog of
 [open issues](https://codeberg.org/stagex/stagex/issues)
 to see if someone else has already reported it. If so, feel free to add
-your scenario, or additional information, to the discussion. Or simply
+your scenario, or additional information, to the discussion or simply
 "subscribe" to it to be notified when it is updated.
-If you find a new issue with the project we'd love to hear about it! The most
-important aspect of a bug report is that it includes enough information for
+If you find a new issue with the project we'd love to hear about it! 
+The most important aspect of a bug report is that it includes enough information for
 us to reproduce it. 
 Please don't include any private/sensitive information in your issue!
 
@@ -63,7 +63,7 @@ $ make all
 |
 OR
 |
-Prepopulate your local registry
+Prepopulate your docker local registry
 ```shell
 $ make preseed 
 $ rm -rf ./out/sxctl
@@ -76,11 +76,11 @@ new addition.
 cp -R packages/python packages/cython
 vim packages/cython/Containerfile
 # fix SRC_FILE, SRC_HASH, SRC_URL etc manually
-# incorporate anything relevant from Alpines build(){ block }  for {package} 
+# incorporate anything relevant from Alpine's build(){ block }  for {package} 
 # https://git.alpinelinux.org/aports/tree/main/cython/APKBUILD
 make gen-make
 make cython
-make digests 
+make digests.txt 
 ```
 
 Then you can commit {signed} and push your package and open a PR.
@@ -97,7 +97,8 @@ package=somepackage tar -tvf $(find out/${package} -type f -printf '%s %p\n' | s
 
 - test package for reproducibility:
 ```sh
-package=somepackage; rm -rf out{,2}/${package}; make NOCACHE=1 ${package}; mv out/${package} out2/; make NOCACHE=1 ${package}; diffoscope $(find out*/${package} -type f -printf '%s %p\n' | sort -nr | head -n2 | awk '{ print $2 }' | tr '\n' ' ')
+mkdir out2;
+package=somepackage; rm -rf out{,2}/${package}; make NOCACHE=1 ${package}; mv out/${package} out2/${package}; make NOCACHE=1 ${package}; diffoscope $(find out*/${package} -type f -printf '%s %p\n' | sort -nr | head -n2 | awk '{ print $2 }' | tr '\n' ' ')
 ```
 
 - make svg graph of dependency tree for a single package
@@ -109,8 +110,8 @@ package=somepackage; make -Bnd ${package} | make2graph | dot -Tsvg -o ${package}
 ## Submitting Pull Requests
 
 No Pull Request (PR) is too small! Typos, additional comments in the code,
-new test cases, bug fixes, new features, more documentation, ... it's all
-welcome!
+new test cases, bug fixes, new features, more documentation, ... all kinds
+of contribution are welcome.
 
 While bug fixes can first be identified via an "issue", that is not required.
 It's ok to just open up a PR with the fix, but make sure you include the same
