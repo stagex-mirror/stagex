@@ -201,8 +201,14 @@ out/bzip2/index.json: \
 ca-certificates: out/ca-certificates/index.json
 out/ca-certificates/index.json: \
 	packages/ca-certificates/Containerfile \
+	out/binutils/index.json \
 	out/busybox/index.json \
-	out/filesystem/index.json
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/perl/index.json
 	$(call build,ca-certificates)
 
 .PHONY: clang
@@ -270,6 +276,7 @@ out/curl/index.json: \
 	packages/curl/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
+	out/ca-certificates/index.json \
 	out/filesystem/index.json \
 	out/gcc/index.json \
 	out/make/index.json \
@@ -431,6 +438,16 @@ out/findutils/index.json: \
 	out/make/index.json \
 	out/musl/index.json
 	$(call build,findutils)
+
+.PHONY: flashtools
+flashtools: out/flashtools/index.json
+out/flashtools/index.json: \
+	packages/flashtools/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/musl/index.json
+	$(call build,flashtools)
 
 .PHONY: flex
 flex: out/flex/index.json
@@ -610,17 +627,24 @@ out/grpcurl/index.json: \
 grub: out/grub/index.json
 out/grub/index.json: \
 	packages/grub/Containerfile \
+	out/autoconf/index.json \
+	out/automake/index.json \
 	out/binutils/index.json \
 	out/bison/index.json \
 	out/busybox/index.json \
 	out/filesystem/index.json \
 	out/flex/index.json \
+	out/gawk/index.json \
 	out/gcc/index.json \
+	out/gettext/index.json \
 	out/linux-headers/index.json \
 	out/m4/index.json \
 	out/make/index.json \
 	out/musl/index.json \
-	out/python/index.json
+	out/perl/index.json \
+	out/pkgconf/index.json \
+	out/python/index.json \
+	out/xz/index.json
 	$(call build,grub)
 
 .PHONY: gzip
