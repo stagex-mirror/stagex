@@ -201,9 +201,33 @@ out/bzip2/index.json: \
 ca-certificates: out/ca-certificates/index.json
 out/ca-certificates/index.json: \
 	packages/ca-certificates/Containerfile \
+	out/binutils/index.json \
 	out/busybox/index.json \
-	out/filesystem/index.json
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/perl/index.json
 	$(call build,ca-certificates)
+
+.PHONY: ccid
+ccid: out/ccid/index.json
+out/ccid/index.json: \
+	packages/ccid/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/flex/index.json \
+	out/gcc/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/pcsc-lite/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json \
+	out/zlib/index.json
+	$(call build,ccid)
 
 .PHONY: clang
 clang: out/clang/index.json
@@ -270,6 +294,7 @@ out/curl/index.json: \
 	packages/curl/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
+	out/ca-certificates/index.json \
 	out/filesystem/index.json \
 	out/gcc/index.json \
 	out/make/index.json \
@@ -610,17 +635,24 @@ out/grpcurl/index.json: \
 grub: out/grub/index.json
 out/grub/index.json: \
 	packages/grub/Containerfile \
+	out/autoconf/index.json \
+	out/automake/index.json \
 	out/binutils/index.json \
 	out/bison/index.json \
 	out/busybox/index.json \
 	out/filesystem/index.json \
 	out/flex/index.json \
+	out/gawk/index.json \
 	out/gcc/index.json \
+	out/gettext/index.json \
 	out/linux-headers/index.json \
 	out/m4/index.json \
 	out/make/index.json \
 	out/musl/index.json \
-	out/python/index.json
+	out/perl/index.json \
+	out/pkgconf/index.json \
+	out/python/index.json \
+	out/xz/index.json
 	$(call build,grub)
 
 .PHONY: gzip
@@ -907,6 +939,19 @@ out/libunwind/index.json: \
 	out/make/index.json \
 	out/musl/index.json
 	$(call build,libunwind)
+
+.PHONY: libusb
+libusb: out/libusb/index.json
+out/libusb/index.json: \
+	packages/libusb/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/linux-headers/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,libusb)
 
 .PHONY: libxml2
 libxml2: out/libxml2/index.json
