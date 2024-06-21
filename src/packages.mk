@@ -220,6 +220,7 @@ out/ccid/index.json: \
 	out/filesystem/index.json \
 	out/flex/index.json \
 	out/gcc/index.json \
+	out/libusb/index.json \
 	out/m4/index.json \
 	out/make/index.json \
 	out/musl/index.json \
@@ -1395,16 +1396,37 @@ out/pcsc-lite/index.json: \
 	packages/pcsc-lite/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
+	out/ccid/index.json \
 	out/eudev/index.json \
 	out/filesystem/index.json \
 	out/flex/index.json \
 	out/gcc/index.json \
+	out/libusb/index.json \
 	out/m4/index.json \
 	out/make/index.json \
 	out/musl/index.json \
 	out/perl/index.json \
 	out/pkgconf/index.json
 	$(call build,pcsc-lite)
+
+.PHONY: pcsc-tools
+pcsc-tools: out/pcsc-tools/index.json
+out/pcsc-tools/index.json: \
+	packages/pcsc-tools/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/ccid/index.json \
+	out/eudev/index.json \
+	out/filesystem/index.json \
+	out/flex/index.json \
+	out/gcc/index.json \
+	out/libusb/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json
+	$(call build,pcsc-tools)
 
 .PHONY: perl
 perl: out/perl/index.json
