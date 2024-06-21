@@ -1376,6 +1376,32 @@ out/openpgp-card-tools/index.json: \
 	out/zlib/index.json
 	$(call build,openpgp-card-tools)
 
+.PHONY: opensc
+opensc: out/opensc/index.json
+out/opensc/index.json: \
+	packages/opensc/Containerfile \
+	out/autoconf/index.json \
+	out/automake/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/gettext/index.json \
+	out/libtool/index.json \
+	out/linux-headers/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/ncurses/index.json \
+	out/openssl/index.json \
+	out/pcsc-lite/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json \
+	out/readline/index.json \
+	out/util-linux/index.json \
+	out/zlib/index.json
+	$(call build,opensc)
+
 .PHONY: openssl
 openssl: out/openssl/index.json
 out/openssl/index.json: \
