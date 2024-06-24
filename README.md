@@ -34,18 +34,37 @@ docker run -i stagex/python -c "print('hello world')"
 ```
 
 Make a hello world OCI container image with Rust:
+<--author: panekj -->
+
 ```dockerfile
-FROM stagex/busybox as build
+FROM stagex/filesystem AS build
+COPY --from=stagex/busybox . /
 COPY --from=stagex/rust . /
 COPY --from=stagex/gcc . /
 COPY --from=stagex/binutils . /
 COPY --from=stagex/libunwind . /
-RUN printf 'fn main(){ println!("Hello World!"); }' > hello.rs
-RUN rustc hello.rs
+COPY --from=stagex/musl . /
+COPY --from=stagex/llvm . /
+COPY --from=stagex/zlib . /
+
+ENV TMPDIR=/tmp
+WORKDIR /home/user
+ENV RUSTFLAGS="-C panic=abort -C target-feature=+crt-static"
+
+RUN /usr/bin/rustc - -o ./hello <<EOF
+fn main(){
+  println!("Hello World!");
+}
+EOF
+
 FROM scratch
-COPY --from=build /home/user/hello .
-CMD ["./hello"]
+COPY --from=build /home/user/hello /hello
+COPY --from=stagex/musl . /
+COPY --from=stagex/libunwind . /
+COPY --from=stagex/gcc . /
+ENTRYPOINT ["/hello"]
 ```
+<--author: panekj -->
 
 ### Package Management
 
@@ -194,7 +213,6 @@ A comparison of `stagex` to other distros in some of the areas we care about:
 * As a policy, we expect all published signers to:
     * Maintain their PGP private keys offline and/or on personal HSMs
         * E.g. Nitrokey, Yubikey, Leger, Trezor, etc.
-    * Maintain a public key in the "keys" folder of this repository
     * Maintain a [keyoxide](https://keyoxide.org) profile self-certifying keys
     * Maintain a [Hagrid](https://keys.openpgp.org) profile with verified UIDs
     * Make best efforts to meet in person and sign each others keys
