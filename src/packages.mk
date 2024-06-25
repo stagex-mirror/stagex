@@ -211,6 +211,25 @@ out/ca-certificates/index.json: \
 	out/perl/index.json
 	$(call build,ca-certificates)
 
+.PHONY: ccid
+ccid: out/ccid/index.json
+out/ccid/index.json: \
+	packages/ccid/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/flex/index.json \
+	out/gcc/index.json \
+	out/libusb/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/pcsc-lite/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json \
+	out/zlib/index.json
+	$(call build,ccid)
+
 .PHONY: clang
 clang: out/clang/index.json
 out/clang/index.json: \
@@ -932,6 +951,19 @@ out/libunwind/index.json: \
 	out/musl/index.json
 	$(call build,libunwind)
 
+.PHONY: libusb
+libusb: out/libusb/index.json
+out/libusb/index.json: \
+	packages/libusb/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/linux-headers/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,libusb)
+
 .PHONY: libxml2
 libxml2: out/libxml2/index.json
 out/libxml2/index.json: \
@@ -1354,6 +1386,32 @@ out/openpgp-card-tools/index.json: \
 	out/zlib/index.json
 	$(call build,openpgp-card-tools)
 
+.PHONY: opensc
+opensc: out/opensc/index.json
+out/opensc/index.json: \
+	packages/opensc/Containerfile \
+	out/autoconf/index.json \
+	out/automake/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/gettext/index.json \
+	out/libtool/index.json \
+	out/linux-headers/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/ncurses/index.json \
+	out/openssl/index.json \
+	out/pcsc-lite/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json \
+	out/readline/index.json \
+	out/util-linux/index.json \
+	out/zlib/index.json
+	$(call build,opensc)
+
 .PHONY: openssl
 openssl: out/openssl/index.json
 out/openssl/index.json: \
@@ -1374,16 +1432,33 @@ out/pcsc-lite/index.json: \
 	packages/pcsc-lite/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
-	out/eudev/index.json \
 	out/filesystem/index.json \
 	out/flex/index.json \
 	out/gcc/index.json \
+	out/libusb/index.json \
 	out/m4/index.json \
 	out/make/index.json \
 	out/musl/index.json \
 	out/perl/index.json \
 	out/pkgconf/index.json
 	$(call build,pcsc-lite)
+
+.PHONY: pcsc-tools
+pcsc-tools: out/pcsc-tools/index.json
+out/pcsc-tools/index.json: \
+	packages/pcsc-tools/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/flex/index.json \
+	out/gcc/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/pcsc-lite/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json
+	$(call build,pcsc-tools)
 
 .PHONY: perl
 perl: out/perl/index.json
