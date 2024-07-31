@@ -1,0 +1,43 @@
+FROM scratch as base
+ENV VERSION=0.73
+ENV SRC_HASH=ad5edc38bf004807843622fddbf67bd5ac604fc16e14c2bfefa7b07718ad21f3
+ENV SRC_FILE=v${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/mquinson/po4a/archive/refs/tags/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/perl-module-build . /
+COPY --from=stagex/perl-pod-parser . /
+COPY --from=stagex/diffutils . /
+COPY --from=stagex/gettext . /
+COPY --from=stagex/libxml2 . /
+COPY --from=stagex/libxslt . /
+COPY --from=stagex/docbook-xml . /
+COPY --from=stagex/docbook-xsl . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/m4 . /
+COPY --from=stagex/autoconf . /
+COPY --from=stagex/pkgconf . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR po4a-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+    perl Build.PL \
+        --installdirs=vendor \
+        --create_packlist=0
+    LC_ALL=en_US.UTF-8 perl Build
+EOF
+
+FROM build as install
+RUN --network=none ./Build install --destdir="/rootfs"
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /
