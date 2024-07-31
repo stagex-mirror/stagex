@@ -315,6 +315,36 @@ out/diffutils/index.json: \
 	out/musl/index.json
 	$(call build,diffutils)
 
+.PHONY: docbook-xml
+docbook-xml: out/docbook-xml/index.json
+out/docbook-xml/index.json: \
+	packages/docbook-xml/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libtool/index.json \
+	out/libxml2/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json \
+	out/zlib/index.json
+	$(call build,docbook-xml)
+
+.PHONY: docbook-xsl
+docbook-xsl: out/docbook-xsl/index.json
+out/docbook-xsl/index.json: \
+	packages/docbook-xsl/Containerfile \
+	out/busybox/index.json \
+	out/docbook-xml/index.json \
+	out/filesystem/index.json \
+	out/libxml2/index.json \
+	out/musl/index.json \
+	out/zlib/index.json
+	$(call build,docbook-xsl)
+
 .PHONY: dosfstools
 dosfstools: out/dosfstools/index.json
 out/dosfstools/index.json: \
@@ -462,9 +492,11 @@ out/findutils/index.json: \
 flashtools: out/flashtools/index.json
 out/flashtools/index.json: \
 	packages/flashtools/Containerfile \
+	out/binutils/index.json \
 	out/busybox/index.json \
 	out/filesystem/index.json \
 	out/gcc/index.json \
+	out/make/index.json \
 	out/musl/index.json
 	$(call build,flashtools)
 
@@ -1472,6 +1504,30 @@ out/perl/index.json: \
 	out/musl/index.json
 	$(call build,perl)
 
+.PHONY: perl-module-build
+perl-module-build: out/perl-module-build/index.json
+out/perl-module-build/index.json: \
+	packages/perl-module-build/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/perl/index.json
+	$(call build,perl-module-build)
+
+.PHONY: perl-pod-parser
+perl-pod-parser: out/perl-pod-parser/index.json
+out/perl-pod-parser/index.json: \
+	packages/perl-pod-parser/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/perl/index.json
+	$(call build,perl-pod-parser)
+
 .PHONY: pkgconf
 pkgconf: out/pkgconf/index.json
 out/pkgconf/index.json: \
@@ -1483,6 +1539,31 @@ out/pkgconf/index.json: \
 	out/make/index.json \
 	out/musl/index.json
 	$(call build,pkgconf)
+
+.PHONY: po4a
+po4a: out/po4a/index.json
+out/po4a/index.json: \
+	packages/po4a/Containerfile \
+	out/autoconf/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/diffutils/index.json \
+	out/docbook-xml/index.json \
+	out/docbook-xsl/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/gettext/index.json \
+	out/libxml2/index.json \
+	out/libxslt/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/perl/index.json \
+	out/perl-module-build/index.json \
+	out/perl-pod-parser/index.json \
+	out/pkgconf/index.json \
+	out/zlib/index.json
+	$(call build,po4a)
 
 .PHONY: postgresql
 postgresql: out/postgresql/index.json
@@ -2355,12 +2436,19 @@ out/xorriso/index.json: \
 xz: out/xz/index.json
 out/xz/index.json: \
 	packages/xz/Containerfile \
+	out/autoconf/index.json \
+	out/automake/index.json \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/filesystem/index.json \
 	out/gcc/index.json \
+	out/gettext/index.json \
+	out/libtool/index.json \
+	out/m4/index.json \
 	out/make/index.json \
-	out/musl/index.json
+	out/musl/index.json \
+	out/perl/index.json \
+	out/po4a/index.json
 	$(call build,xz)
 
 .PHONY: yq
