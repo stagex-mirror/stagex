@@ -1,0 +1,58 @@
+FROM scratch as base
+ENV VERSION=1.79.2
+ENV SRC_HASH=966188d7c05fc76eaca115a55893e643dd01a3486f6368733c9ad974fcee7a26
+ENV SRC_FILE=docbook-xsl-${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/docbook/xslt10-stylesheets/releases/download/release%2F${VERSION}/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/docbook-xml . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/libxml2 . /
+COPY --from=stagex/musl . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR docbook-xsl-${VERSION}
+RUN --network=none <<-EOF
+    set -eux
+    dest=out/usr/share/xml/docbook/xsl-stylesheets-${VERSION}
+    mkdir -p $dest
+    install -dm755 out
+    install -m644 VERSION VERSION.xsl "$dest"/
+    ln -s xsl-stylesheets-${VERSION} out/usr/share/xml/docbook/xsl-stylesheets-current
+	for dir in assembly common eclipse epub epub3 fo highlighting html \
+		htmlhelp javahelp lib manpages params profiling roundtrip template \
+        website xhtml xhtml-1_1 xhtml5; do
+		install -dm755 $dest/$dir
+		for f in $dir/*.xml $dir/*.xsl $dir/*.dtd $dir/*.ent; do
+			[ -e "$f" ] || continue
+			install -m644 $f $dest/$dir
+		done
+	done
+	install -dm755 out/etc/xml
+	install -m644 -D COPYING out/usr/share/licenses/docbook-xsl/COPYING
+    docbookdir=/usr/share/xml/docbook
+    urls="
+    	http://cdn.docbook.org/release/xsl-nons
+    	http://docbook.sourceforge.net/release/xsl
+    "
+    cp /etc/xml/catalog out/etc/xml/catalog
+    for url in $urls; do
+    	for rewrite in rewriteSystem rewriteURI; do
+    		for version in ${VERSION} current; do
+    			xmlcatalog --noout --add "$rewrite" \
+    				"$url/$version" \
+    				"file://$docbookdir/xsl-stylesheets-$version" \
+    				out/etc/xml/catalog
+    		done
+    	done
+    done
+EOF
+
+FROM build as install
+RUN --network=none mv out /rootfs && ls -Rlah /rootfs
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /
