@@ -1,6 +1,6 @@
 FROM scratch as base
-ENV VERSION=8.4.0
-ENV SRC_HASH=16c62a9c4af0f703d28bda6d7bbf37ba47055ad3414d70dec63e2e6336f2a82d
+ENV VERSION=8.9.1
+ENV SRC_HASH=f292f6cc051d5bbabf725ef85d432dfeacc8711dd717ea97612ae590643801e5
 ENV SRC_FILE=curl-${VERSION}.tar.xz
 ENV SRC_SITE=https://curl.se/download/${SRC_FILE}
 
@@ -14,6 +14,7 @@ COPY --from=stagex/make . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/gcc . /
 COPY --from=stagex/openssl . /
+COPY --from=stagex/perl . /
 COPY --from=stagex/ca-certificates . /
 RUN tar -xf curl-${VERSION}.tar.xz
 WORKDIR curl-${VERSION}
