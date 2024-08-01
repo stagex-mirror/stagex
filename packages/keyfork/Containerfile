@@ -1,6 +1,6 @@
 FROM scratch AS base
-ENV VERSION=0.2.1
-ENV SRC_HASH=afbdd1add087cb0b66e2ec696b1079c9c984995ca7b5a5109ef02d54409f8f28
+ENV VERSION=0.2.2
+ENV SRC_HASH=4a70a6ae1c2fcb6448552950ab67536b9d1abcb5d6e41dedd28db24e3979271f
 ENV SRC_FILE=keyfork-v${VERSION}.tar.gz
 ENV SRC_SITE=https://git.distrust.co/public/keyfork/archive/${SRC_FILE}
 
