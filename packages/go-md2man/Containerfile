@@ -1,0 +1,35 @@
+FROM scratch as base
+ENV VERSION=2.0.3
+ENV SRC_HASH=7ca3a04bb4ab83387538235decc42a535097a05d2fb9f2266d0c47b33119501f
+ENV SRC_FILE=v${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/cpuguy83/go-md2man/archive/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/go . /
+COPY --from=stagex/ca-certificates . /
+RUN tar -xvf ${SRC_FILE}
+WORKDIR go-md2man-${VERSION}
+ENV PWD=/home/user/go-md2man-${VERSION}
+ENV GOPATH=${PWD}/cache/go
+ENV GOCACHE=${PWD}/cache/
+ENV GOWORK=off
+ENV GOPROXY=https://proxy.golang.org,direct
+ENV GOSUMDB=sum.golang.org
+ENV CGO_ENABLED=0
+ENV GOHOSTOS=linux
+ENV GOHOSTARCH=amd64
+RUN mkdir -p ${GOPATH}
+RUN go build -o bin/go-md2man 
+
+from build as install
+RUN <<-EOF
+    mkdir -p /rootfs/usr/bin/
+    cp bin/go-md2man /rootfs/usr/bin/
+EOF
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/./ /

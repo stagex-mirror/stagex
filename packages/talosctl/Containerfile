@@ -1,6 +1,6 @@
 FROM scratch as base
-ENV VERSION=1.6.6
-ENV SRC_HASH=8735500c987c61802d113176f5578b11c783b169e6ff8e352e554b1c3cb63caa
+ENV VERSION=1.7.2
+ENV SRC_HASH=7f16510394ebe12cd405bc9d2cf4c6ef2c8baf6213006d52c05dcbce0bf06100
 ENV SRC_FILE=v${VERSION}.tar.gz
 ENV SRC_SITE=https://github.com/siderolabs/talos/archive/refs/tags/${SRC_FILE}
 ENV GOPATH=/cache/go

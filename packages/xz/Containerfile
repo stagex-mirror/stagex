@@ -1,9 +1,9 @@
 FROM scratch as base
 ARG ARCH=x86_64
-ENV VERSION=5.4.6
-ENV SRC_HASH=b92d4e3a438affcf13362a1305cd9d94ed47ddda22e456a42791e630a5644f5c
-ENV SRC_FILE=xz-${VERSION}.tar.xz
-ENV SRC_SITE=https://fossies.org/linux/misc/${SRC_FILE}
+ENV VERSION=5.6.2
+ENV SRC_HASH=92a439948bba24c2bc25bb67a087a19194905209c56b5e600bc94fd2a472e687
+ENV SRC_FILE=v${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/tukaani-project/xz/archive/refs/tags/${SRC_FILE}
 
 FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
@@ -14,22 +14,30 @@ COPY --from=stagex/binutils . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/make . /
 COPY --from=stagex/gcc . /
+COPY --from=stagex/m4 . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/autoconf . /
+COPY --from=stagex/automake . /
+COPY --from=stagex/libtool . /
+COPY --from=stagex/gettext . /
+COPY --from=stagex/po4a . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR xz-${VERSION}
 RUN --network=none <<-EOF
-	set -ex
-	./configure \
-		--build=${ARCH}-linux-musl \
-		--host=${ARCH}-linux-musl \
-		--prefix=/usr \
-		--sysconfdir=/etc \
-		--mandir=/usr/share/man \
+    set -ex
+    ./autogen.sh
+    ./configure \
+        --build=${ARCH}-linux-musl \
+        --host=${ARCH}-linux-musl \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --mandir=/usr/share/man \
         --infodir=/usr/share/info \
         --localstatedir=/var \
         --disable-rpath \
         --disable-werror \
         --disable-doc
-	make -j "$(nproc)"
+    make -j "$(nproc)"
 EOF
 
 FROM build as install
