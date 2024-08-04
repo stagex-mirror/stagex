@@ -300,7 +300,8 @@ out/curl/index.json: \
 	out/gcc/index.json \
 	out/make/index.json \
 	out/musl/index.json \
-	out/openssl/index.json
+	out/openssl/index.json \
+	out/perl/index.json
 	$(call build,curl)
 
 .PHONY: diffutils
@@ -860,6 +861,18 @@ out/kustomize-sops/index.json: \
 	out/filesystem/index.json \
 	out/go/index.json
 	$(call build,kustomize-sops)
+
+.PHONY: libarchive
+libarchive: out/libarchive/index.json
+out/libarchive/index.json: \
+	packages/libarchive/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,libarchive)
 
 .PHONY: libassuan
 libassuan: out/libassuan/index.json
