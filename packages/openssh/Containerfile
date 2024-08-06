@@ -1,0 +1,64 @@
+FROM scratch as base
+ENV VERSION=9.8p1
+ENV SRC_HASH=dd8bd002a379b5d499dfb050dd1fa9af8029e80461f4bb6c523c49973f5a39f3
+ENV SRC_FILE=openssh-${VERSION}.tar.gz
+ENV SRC_SITE=https://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/bison . /
+COPY --from=stagex/libtool . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/libzstd . /
+COPY --from=stagex/flex . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/autoconf . /
+COPY --from=stagex/automake . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/gettext . /
+COPY --from=stagex/m4 . /
+COPY --from=stagex/argp-standalone . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/musl-fts . /
+COPY --from=stagex/musl-obstack . /
+COPY --from=stagex/linux-headers . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR openssh-${VERSION}
+ADD *.patch .
+RUN --network=none <<-EOF
+    set -eux
+    autoreconf -vif
+    ./configure \
+        --build="x86_64-linux-musl" \
+        --host="x86_64-linux-musl" \
+        --prefix=/usr \
+        --sysconfdir=/etc/ssh \
+        --libexecdir=/usr/lib/ssh \
+        --mandir=/usr/share/man \
+        --with-cflags="$(pkg-config --cflags --static utmps)" \
+        --with-libs="$(pkg-config --libs --static utmps)" \
+        --with-privsep-path=/var/empty \
+        --with-pid-dir=/run \
+        --with-mantype=doc \
+        --with-xauth=/usr/bin/xauth \
+        --with-default-path='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' \
+        --disable-utmp \
+        --disable-wtmp \
+        --disable-lastlog \
+        --disable-strip \
+        --with-ssl-engine
+    make -j "$(nproc)"
+EOF
+
+FROM build as install
+RUN --network=none make DESTDIR=/rootfs install
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /
