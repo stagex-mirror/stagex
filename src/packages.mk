@@ -427,7 +427,7 @@ out/elfutils/index.json: \
 	out/gcc/index.json \
 	out/gettext/index.json \
 	out/libtool/index.json \
-	out/libzstd/index.json \
+	out/zstd/index.json \
 	out/linux-headers/index.json \
 	out/m4/index.json \
 	out/make/index.json \
@@ -1050,7 +1050,7 @@ out/libxslt/index.json: \
 .PHONY: libzstd
 libzstd: out/libzstd/index.json
 out/libzstd/index.json: \
-	packages/libzstd/Containerfile \
+	packages/zstd/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/filesystem/index.json \
@@ -1061,7 +1061,7 @@ out/libzstd/index.json: \
 	out/pkgconf/index.json \
 	out/python/index.json \
 	out/zlib/index.json
-	$(call build,libzstd)
+	$(call build,zstd,,package-lib)
 
 .PHONY: linux-airgap
 linux-airgap: out/linux-airgap/index.json
@@ -1081,7 +1081,7 @@ out/linux-airgap/index.json: \
 	out/gcc/index.json \
 	out/grep/index.json \
 	out/gzip/index.json \
-	out/libzstd/index.json \
+	out/zstd/index.json \
 	out/linux-headers/index.json \
 	out/m4/index.json \
 	out/make/index.json \
@@ -1113,7 +1113,7 @@ out/linux-generic/index.json: \
 	out/gcc/index.json \
 	out/grep/index.json \
 	out/gzip/index.json \
-	out/libzstd/index.json \
+	out/zstd/index.json \
 	out/linux-headers/index.json \
 	out/m4/index.json \
 	out/make/index.json \
@@ -1153,7 +1153,7 @@ out/linux-nitro/index.json: \
 	out/gcc/index.json \
 	out/grep/index.json \
 	out/gzip/index.json \
-	out/libzstd/index.json \
+	out/zstd/index.json \
 	out/linux-headers/index.json \
 	out/m4/index.json \
 	out/make/index.json \
@@ -2511,7 +2511,7 @@ out/zig/index.json: \
 	out/cmake/index.json \
 	out/filesystem/index.json \
 	out/gcc/index.json \
-	out/libzstd/index.json \
+	out/zstd/index.json \
 	out/lld/index.json \
 	out/llvm/index.json \
 	out/make/index.json \
@@ -2545,3 +2545,18 @@ out/zlib/index.json: \
 	out/musl/index.json
 	$(call build,zlib)
 
+.PHONY: zstd
+zstd: out/zstd/index.json
+out/zstd/index.json: \
+	packages/zstd/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/meson/index.json \
+	out/musl/index.json \
+	out/ninja/index.json \
+	out/pkgconf/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,zstd,,package-lib)

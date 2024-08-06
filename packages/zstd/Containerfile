@@ -70,5 +70,12 @@ EOF
 FROM build as install
 RUN --network=none DESTDIR=/rootfs meson install --no-rebuild -C output
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem as package-lib
+COPY --from=install /rootfs/usr/lib /usr/lib
+COPY --from=install /rootfs/usr/libexec /usr/libexec
+COPY --from=install /rootfs/usr/include /usr/include
+COPY --from=install /rootfs/usr/share /usr/share
+COPY --from=install /rootfs/var/lib /var/lib
+
+FROM stagex/filesystem as package-bin
 COPY --from=install /rootfs/. /
