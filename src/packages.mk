@@ -1061,7 +1061,7 @@ out/libzstd/index.json: \
 	out/pkgconf/index.json \
 	out/python/index.json \
 	out/zlib/index.json
-	$(call build,zstd,,package-lib)
+	$(call build,zstd,libzstd,,package-lib)
 
 .PHONY: linux-airgap
 linux-airgap: out/linux-airgap/index.json
@@ -2559,4 +2559,20 @@ out/zstd/index.json: \
 	out/pkgconf/index.json \
 	out/python/index.json \
 	out/zlib/index.json
-	$(call build,zstd,,package-lib)
+	$(call build,zstd,zstd,,package-bin)
+
+.PHONY: zstd-static
+zstd-static: out/zstd-static/index.json
+out/zstd-static/index.json: \
+	packages/zstd/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/meson/index.json \
+	out/musl/index.json \
+	out/ninja/index.json \
+	out/pkgconf/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,zstd,zstd-static,,package-static-bin)

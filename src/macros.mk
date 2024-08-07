@@ -22,9 +22,10 @@
 # - support buildah and podman
 define build
 	$(eval NAME := $(1))
-	$(eval VERSION := $(if $(2),$(2),latest))
-	$(eval TARGET := $(if $(3),$(3),package))
-	$(eval EXTRA_ARGS := $(if $(4),$(4),))
+	$(eval SUBPKG := $(if $(2),$(2),$(NAME)))
+	$(eval VERSION := $(if $(3),$(3),latest))
+	$(eval TARGET := $(if $(4),$(4),package))
+	$(eval EXTRA_ARGS := $(if $(5),$(5),))
 	$(eval REVISION := $(shell git rev-list HEAD -1 packages/$(NAME)))
 	$(eval TEMPFILE := out/.$(notdir $(basename $@)).tmp.tar)
 	$(eval BUILD_CMD := \
@@ -34,14 +35,14 @@ define build
 		$(BUILDER) \
 			build \
 			--ulimit nofile=2048:16384 \
-			--tag $(REGISTRY_REMOTE)/$(NAME):$(VERSION) \
+			--tag $(REGISTRY_REMOTE)/$(SUBPKG):$(VERSION) \
 			--build-arg CACHE_BUST="$(shell date)" \
 			--build-arg SOURCE_DATE_EPOCH=1 \
 			--build-arg CORES=$(shell nproc --all) \
 			--platform $(PLATFORM) \
 			--progress=plain \
 			$(if $(filter latest,$(VERSION)),,--build-arg VERSION=$(VERSION)) \
-			--output type=oci,rewrite-timestamp=true,force-compression=true,name=$(NAME),annotation.org.opencontainers.image.revision=$(REVISION),annotation.org.opencontainers.image.version=$(VERSION),tar=false,dest=out/$(NAME) \
+			--output type=oci,rewrite-timestamp=true,force-compression=true,name=$(SUBPKG),annotation.org.opencontainers.image.revision=$(REVISION),annotation.org.opencontainers.image.version=$(VERSION),tar=false,dest=out/$(SUBPKG) \
 			--target $(TARGET) \
 			$(shell ./src/context.sh $(NAME)) \
 			$(EXTRA_ARGS) \
