@@ -29,7 +29,7 @@ RUN --network=none \
         -trimpath \
         -ldflags "-s -w -X main.version=${VERSION} -buildid="
 
-from build as install
+FROM build AS install
 RUN <<-EOF
     set -eux
     mkdir -p /rootfs/usr/lib/kustomize/plugins/viduct.ai/v1/ksops

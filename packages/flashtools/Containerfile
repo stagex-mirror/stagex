@@ -17,7 +17,7 @@ WORKDIR flashtools-${VERSION}
 FROM fetch AS build
 RUN --network=none make all
 
-from build as install
+FROM build AS install
 RUN <<-EOF
     mkdir -p /rootfs/usr/bin/
     install -D -m 0755 flashtool /rootfs/usr/bin/

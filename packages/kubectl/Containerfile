@@ -24,7 +24,7 @@ RUN GOPATH="/kubernetes-${VERSION}" go mod download
 FROM fetch AS build
 RUN --network=none go build -trimpath -v k8s.io/kubernetes/cmd/kubectl
 
-from build as install
+FROM build AS install
 RUN <<-EOF
     set -eu
     mkdir -p /rootfs/usr/bin/

@@ -28,7 +28,7 @@ RUN --network=none <<-EOF
 	make -j1 MAKEINFO=false
 EOF
 
-from build as install
+FROM build AS install
 RUN --network=none make DESTDIR=/rootfs install
 
 FROM stagex/filesystem AS package

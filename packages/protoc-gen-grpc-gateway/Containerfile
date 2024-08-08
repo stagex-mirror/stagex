@@ -25,7 +25,7 @@ ENV GOFLAGS=-trimpath
 RUN mkdir -p ${GOPATH}
 RUN go build -o bin/protoc-gen-grpc-gateway ./protoc-gen-grpc-gateway
 
-from build as install
+FROM build AS install
 RUN <<-EOF
     set -eux
     mkdir -p /rootfs/usr/bin/

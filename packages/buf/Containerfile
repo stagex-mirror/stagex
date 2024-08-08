@@ -26,7 +26,7 @@ ENV GOFLAGS=-trimpath
 RUN mkdir -p ${GOPATH}
 RUN go build -o bin/buf ./cmd/buf
 
-from build as install
+FROM build AS install
 RUN <<-EOF
     mkdir -p /rootfs/usr/bin/
     cp bin/buf /rootfs/usr/bin/

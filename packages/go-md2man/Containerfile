@@ -25,7 +25,7 @@ ENV GOHOSTARCH=amd64
 RUN mkdir -p ${GOPATH}
 RUN go build -o bin/go-md2man 
 
-from build as install
+FROM build AS install
 RUN <<-EOF
     mkdir -p /rootfs/usr/bin/
     cp bin/go-md2man /rootfs/usr/bin/

@@ -25,7 +25,7 @@ RUN go get ./...
 FROM fetch AS build
 RUN --network=none go build -o bin/ -trimpath -v ./...
 
-from build as install
+FROM build AS install
 RUN <<-EOF
     set -eu
     mkdir -p /rootfs/usr/bin/
