@@ -300,7 +300,8 @@ out/curl/index.json: \
 	out/gcc/index.json \
 	out/make/index.json \
 	out/musl/index.json \
-	out/openssl/index.json
+	out/openssl/index.json \
+	out/perl/index.json
 	$(call build,curl)
 
 .PHONY: diffutils
@@ -860,6 +861,18 @@ out/kustomize-sops/index.json: \
 	out/filesystem/index.json \
 	out/go/index.json
 	$(call build,kustomize-sops)
+
+.PHONY: libarchive
+libarchive: out/libarchive/index.json
+out/libarchive/index.json: \
+	packages/libarchive/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,libarchive)
 
 .PHONY: libassuan
 libassuan: out/libassuan/index.json
@@ -1443,6 +1456,33 @@ out/opensc/index.json: \
 	out/util-linux/index.json \
 	out/zlib/index.json
 	$(call build,opensc)
+
+.PHONY: openssh
+openssh: out/openssh/index.json
+out/openssh/index.json: \
+	packages/openssh/Containerfile \
+	out/argp-standalone/index.json \
+	out/autoconf/index.json \
+	out/automake/index.json \
+	out/binutils/index.json \
+	out/bison/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/flex/index.json \
+	out/gcc/index.json \
+	out/gettext/index.json \
+	out/libtool/index.json \
+	out/libzstd/index.json \
+	out/linux-headers/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/musl-fts/index.json \
+	out/musl-obstack/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json \
+	out/zlib/index.json
+	$(call build,openssh)
 
 .PHONY: openssl
 openssl: out/openssl/index.json
