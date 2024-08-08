@@ -1,4 +1,4 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=4.42.1
 ENV SRC_HASH=be31e5e828a0251721ea71964596832d4a40cbc21c8a8392a804bc8d1c55dd62
 ENV SRC_FILE=v${VERSION}.tar.gz
@@ -13,7 +13,7 @@ ENV GOHOSTOS=linux
 ENV GOHOSTARCH=amd64
 ENV GO11MODULE=on
 
-FROM base as fetch
+FROM base AS fetch
 COPY --from=stagex/busybox . /
 COPY --from=stagex/go . /
 COPY --from=stagex/ca-certificates . /
@@ -22,7 +22,7 @@ RUN tar -xvf ${SRC_FILE}
 WORKDIR yq-${VERSION}
 RUN go get ./...
 
-FROM fetch as build
+FROM fetch AS build
 RUN --network=none go build -v -trimpath
 
 from build as install
@@ -31,5 +31,5 @@ RUN <<-EOF
     cp yq /rootfs/usr/bin/
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/./ /

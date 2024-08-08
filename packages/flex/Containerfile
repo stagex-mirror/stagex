@@ -1,13 +1,13 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=2.6.4
 ENV SRC_HASH=e87aae032bf07c26f85ac0ed3250998c37621d95f8bd748b31f15b33c45ee995
 ENV SRC_FILE=flex-${VERSION}.tar.gz
 ENV SRC_SITE=https://github.com/westes/flex/releases/download/v${VERSION}/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/perl . /
 COPY --from=stagex/gcc . /
@@ -35,8 +35,8 @@ RUN --network=none <<-EOF
 	make -j "$(nproc)" LDFLAGS=-static
 EOF
 
-FROM build as install
+FROM build AS install
 RUN --network=none make DESTDIR=/rootfs install
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

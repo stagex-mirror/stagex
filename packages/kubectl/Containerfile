@@ -1,4 +1,4 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=1.29.3
 ENV SRC_HASH=401d29af71cb962eb328cefd5166695587f195f9bd960edd1ede630f7e98bf7a
 ENV SRC_FILE=v${VERSION}.tar.gz
@@ -12,7 +12,7 @@ ENV CGO_ENABLED=0
 ENV GOHOSTOS=linux
 ENV GOHOSTARCH=amd64
 
-FROM base as fetch
+FROM base AS fetch
 COPY --from=stagex/busybox . /
 COPY --from=stagex/go . /
 COPY --from=stagex/ca-certificates . /
@@ -21,7 +21,7 @@ RUN tar -xvf ${SRC_FILE}
 WORKDIR kubernetes-${VERSION}
 RUN GOPATH="/kubernetes-${VERSION}" go mod download
 
-FROM fetch as build
+FROM fetch AS build
 RUN --network=none go build -trimpath -v k8s.io/kubernetes/cmd/kubectl
 
 from build as install
@@ -31,5 +31,5 @@ RUN <<-EOF
     cp kubectl /rootfs/usr/bin/
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/./ /

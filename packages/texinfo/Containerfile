@@ -1,14 +1,14 @@
-FROM scratch as base
+FROM scratch AS base
 ARG ARCH=x86_64
 ENV VERSION=7.1
 ENV SRC_HASH=deeec9f19f159e046fdf8ad22231981806dac332cc372f1c763504ad82b30953
 ENV SRC_FILE=texinfo-${VERSION}.tar.xz
 ENV SRC_SITE=https://ftp.gnu.org/gnu/texinfo/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/binutils . /
 COPY --from=stagex/openssl . /
 COPY --from=stagex/coreutils . /
@@ -38,8 +38,8 @@ RUN --network=none <<-EOF
 	make -j "$(nproc)"
 EOF
 
-FROM build as install
+FROM build AS install
 RUN --network=none make DESTDIR="/rootfs" install
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

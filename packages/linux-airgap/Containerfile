@@ -1,13 +1,13 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=6.7
 ENV SRC_HASH=ef31144a2576d080d8c31698e83ec9f66bf97c677fa2aaf0d5bbb9f3345b1069
 ENV SRC_FILE=linux-${VERSION}.tar.xz
 ENV SRC_SITE=http://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/musl . /
 COPY --from=stagex/make . /
 COPY --from=stagex/binutils . /
@@ -45,7 +45,7 @@ RUN <<-EOF
 	make -j "$(nproc)" bzImage
 EOF
 
-FROM build as install
+FROM build AS install
 RUN <<-EOF
 	set -eux
     mkdir /rootfs
@@ -53,5 +53,5 @@ RUN <<-EOF
 	cp arch/x86_64/boot/bzImage /rootfs
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

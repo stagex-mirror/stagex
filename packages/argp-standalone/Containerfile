@@ -1,13 +1,13 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=1.5.0
 ENV SRC_FILE=${VERSION}.tar.gz
 ENV SRC_SITE=https://github.com/argp-standalone/argp-standalone/archive/refs/tags/${SRC_FILE}
 ENV SRC_HASH=c29eae929dfebd575c38174f2c8c315766092cec99a8f987569d0cad3c6d64f6
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/gcc . /
 COPY --from=stagex/binutils . /
@@ -32,12 +32,12 @@ RUN --network=none <<-EOF
 	make -j "$(nproc)"
 EOF
 
-FROM build as install
+FROM build AS install
 RUN <<-EOF
 	set -eux
 	install -D -m644 argp.h /rootfs/usr/include/argp.h
 	install -D -m755 libargp.a /rootfs/usr/lib/libargp.a
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

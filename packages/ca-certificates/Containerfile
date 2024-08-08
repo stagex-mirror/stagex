@@ -33,7 +33,7 @@ RUN --network=none <<-EOF
 	make
 EOF
 
-FROM build as install
+FROM build AS install
 RUN --network=none make install DESTDIR=/rootfs
 RUN --network=none mv cert.pem /rootfs/etc/ssl/certs/ca-certificates.crt
 

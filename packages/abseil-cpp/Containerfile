@@ -1,13 +1,13 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=20240116.2
 ENV SRC_HASH=733726b8c3a6d39a4120d7e45ea8b41a434cdacde401cba500f14236c49b39dc
 ENV SRC_FILE=${VERSION}.tar.gz
 ENV SRC_SITE=https://github.com/abseil/abseil-cpp/archive/refs/tags/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/binutils . /
 COPY --from=stagex/linux-headers . /
@@ -38,8 +38,8 @@ RUN <<-EOF
 	cmake --build build
 EOF
 
-FROM build as install
+FROM build AS install
 RUN --network=none DESTDIR="/rootfs" cmake --install build
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

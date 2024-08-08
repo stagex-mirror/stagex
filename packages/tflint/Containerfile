@@ -1,4 +1,4 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=0.50.3
 ENV SRC_HASH=e90acdbf4cd1dc936e50b580ade53583baced53a93b3b01cee3e073b233ef8c5
 ENV SRC_FILE=v${VERSION}.tar.gz
@@ -13,7 +13,7 @@ ENV GOHOSTOS=linux
 ENV GOHOSTARCH=amd64
 ENV GO11MODULE=on
 
-FROM base as fetch
+FROM base AS fetch
 COPY --from=stagex/busybox . /
 COPY --from=stagex/go . /
 COPY --from=stagex/ca-certificates . /
@@ -22,7 +22,7 @@ RUN tar -xvf ${SRC_FILE}
 WORKDIR tflint-${VERSION}
 RUN go get ./...
 
-FROM fetch as build
+FROM fetch AS build
 RUN --network=none go build -o out/tflint -v -trimpath
 
 from build as install
@@ -31,5 +31,5 @@ RUN <<-EOF
     cp out/tflint /rootfs/usr/bin/
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/./ /

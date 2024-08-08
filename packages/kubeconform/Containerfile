@@ -1,4 +1,4 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=0.6.4
 ENV SRC_HASH=fa5f1f7de0d6cd97106b70965c6275cc5e7afb22ff6e2459a94f8f33341b5c93
 ENV SRC_FILE=v${VERSION}.tar.gz
@@ -13,7 +13,7 @@ ENV GOHOSTOS=linux
 ENV GOHOSTARCH=amd64
 ENV GO11MODULE=off
 
-FROM base as fetch
+FROM base AS fetch
 COPY --from=stagex/busybox . /
 COPY --from=stagex/go . /
 COPY --from=stagex/ca-certificates . /
@@ -22,7 +22,7 @@ RUN tar -xvf ${SRC_FILE}
 WORKDIR kubeconform-${VERSION}
 RUN go get ./...
 
-FROM fetch as build
+FROM fetch AS build
 RUN --network=none go build -o bin/ -trimpath -v ./...
 
 from build as install
@@ -32,5 +32,5 @@ RUN <<-EOF
     cp bin/kubeconform /rootfs/usr/bin/
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/./ /
