@@ -1272,6 +1272,23 @@ out/make/index.json: \
 	out/stage3/index.json
 	$(call build,make)
 
+.PHONY: mdbook
+mdbook: out/mdbook/index.json
+out/mdbook/index.json: \
+        packages/mdbook/Containerfile \
+        out/binutils/index.json \
+        out/busybox/index.json \
+        out/ca-certificates/index.json \
+        out/filesystem/index.json \
+        out/gcc/index.json \
+        out/libunwind/index.json \
+        out/llvm/index.json \
+        out/musl/index.json \
+        out/openssl/index.json \
+        out/rust/index.json \
+        out/zlib/index.json
+        $(call build,mdbook)
+
 .PHONY: meson
 meson: out/meson/index.json
 out/meson/index.json: \
