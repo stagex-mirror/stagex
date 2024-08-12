@@ -3,6 +3,7 @@ ENV VERSION=0.4234
 ENV SRC_HASH=66aeac6127418be5e471ead3744648c766bd01482825c5b66652675f2bc86a8f
 ENV SRC_FILE=Module-Build-${VERSION}.tar.gz
 ENV SRC_SITE=https://search.cpan.org/CPAN/authors/id/L/LE/LEONT/${SRC_FILE}
+ENV SOURCE_DATE_EPOCH=1
 
 FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .

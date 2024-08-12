@@ -3,6 +3,7 @@ ENV VERSION=8.9.1
 ENV SRC_HASH=f292f6cc051d5bbabf725ef85d432dfeacc8711dd717ea97612ae590643801e5
 ENV SRC_FILE=curl-${VERSION}.tar.xz
 ENV SRC_SITE=https://curl.se/download/${SRC_FILE}
+ENV SOURCE_DATE_EPOCH=1
 
 FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .

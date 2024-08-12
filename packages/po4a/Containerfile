@@ -3,6 +3,7 @@ ENV VERSION=0.73
 ENV SRC_HASH=ad5edc38bf004807843622fddbf67bd5ac604fc16e14c2bfefa7b07718ad21f3
 ENV SRC_FILE=v${VERSION}.tar.gz
 ENV SRC_SITE=https://github.com/mquinson/po4a/archive/refs/tags/${SRC_FILE}
+ENV SOURCE_DATE_EPOCH=1
 
 FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
