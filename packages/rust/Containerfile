@@ -176,8 +176,8 @@ RUN sh build.sh 1.66.0 1.65.0
 RUN sh build.sh 1.67.0 1.66.0
 RUN sh build.sh 1.68.0 1.67.0
 
-FROM build-script AS build
-COPY --from=stagex/llvm . /
+FROM build-script as build
+COPY --from=stagex/llvm16 . /
 COPY --from=build-llvm13 /rust-1.68.0 /rust-1.68.0
 COPY --from=stagex/llvm13 /usr/lib/libLLVM-13.so /usr/lib/
 RUN sh build.sh 1.69.0 1.68.0

@@ -11,12 +11,12 @@ COPY static-glibc.patch .
 FROM fetch AS build
 COPY --from=stagex/binutils . /
 COPY --from=stagex/busybox . /
-COPY --from=stagex/clang . /
+COPY --from=stagex/clang16 . /
 COPY --from=stagex/cmake . /
 COPY --from=stagex/gcc . /
 COPY --from=stagex/libzstd . /
 COPY --from=stagex/lld . /
-COPY --from=stagex/llvm . /
+COPY --from=stagex/llvm16 . /
 COPY --from=stagex/make . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/openssl . /
