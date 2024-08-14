@@ -18,7 +18,7 @@ COPY --from=stagex/python . /
 COPY --from=stagex/py-setuptools . /
 COPY --from=stagex/openssl . /
 COPY --from=stagex/gcc . /
-COPY --from=stagex/llvm16 . /
+COPY --from=stagex/llvm . /
 COPY --from=stagex/zlib . /
 # HACK: figure out why gcc package puts these in the wrong path at install time
 COPY --from=stagex/gcc /usr/lib64/* /usr/lib/
