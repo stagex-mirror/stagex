@@ -20,7 +20,7 @@ WORKDIR openpgp-card-tools
 RUN cargo fetch
 
 FROM fetch AS build
-COPY --from=stagex/clang . /
+COPY --from=stagex/clang16 . /
 COPY --from=stagex/linux-headers . /
 COPY --from=stagex/gmp . /
 COPY --from=stagex/nettle . /
