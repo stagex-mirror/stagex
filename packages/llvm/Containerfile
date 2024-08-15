@@ -28,6 +28,7 @@ RUN --network=none <<-EOF
 	cmake \
 		-B build \
 		-G Ninja \
+		-DCMAKE_INSTALL_LIBDIR=lib \
 		-Wno-dev -S llvm \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_INSTALL_PREFIX=/usr/ \
