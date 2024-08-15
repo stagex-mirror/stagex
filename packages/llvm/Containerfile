@@ -1,9 +1,9 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=18.1.8
 ENV SRC_FILE=llvm-project-${VERSION}.src.tar.xz
 ENV SRC_SITE=https://github.com/llvm/llvm-project/releases/download/llvmorg-${VERSION}/${SRC_FILE}
 ENV SRC_HASH=0b58557a6d32ceee97c8d533a59b9212d87e0fc4d2833924eb6c611247db2f2a
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch AS build
