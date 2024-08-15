@@ -1,13 +1,13 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=0.4234
 ENV SRC_HASH=66aeac6127418be5e471ead3744648c766bd01482825c5b66652675f2bc86a8f
 ENV SRC_FILE=Module-Build-${VERSION}.tar.gz
 ENV SRC_SITE=https://search.cpan.org/CPAN/authors/id/L/LE/LEONT/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/gcc . /
 COPY --from=stagex/binutils . /
@@ -22,8 +22,8 @@ RUN --network=none <<-EOF
     perl Build
 EOF
 
-FROM build as install
+FROM build AS install
 RUN --network=none perl Build install destdir="/rootfs"
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

@@ -1,4 +1,4 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=4.5
 ENV SRC_HASH_4_5=4e4e037a2b83c98c6c94818390d4bdd3f6e10f6ec62dd79188594e26190dc7b4
 ENV SRC_HASH_4_4=02f159eb88c4254d95e831c51c144b1863b216d909b5ff45743a1ce6f5273090
@@ -7,14 +7,14 @@ ENV SRC_HASH_4_2=acc4601e4f97a196076b7e64b368d9248b07c7abf26b34a02cca40eeebe60fa
 ENV SRC_HASH_4_1_2=30f0644064e0ea71751438251940b1431f46acada814a062870f486c772e7772
 ENV SRC_SITE=https://docbook.org/xml
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH_4_5} ${SRC_SITE}/4.5/docbook-xml-4.5.zip .
 ADD --checksum=sha256:${SRC_HASH_4_4} ${SRC_SITE}/4.4/docbook-xml-4.4.zip .
 ADD --checksum=sha256:${SRC_HASH_4_3} ${SRC_SITE}/4.3/docbook-xml-4.3.zip .
 ADD --checksum=sha256:${SRC_HASH_4_2} ${SRC_SITE}/4.2/docbook-xml-4.2.zip .
 ADD --checksum=sha256:${SRC_HASH_4_1_2} ${SRC_SITE}/4.1.2/docbkx412.zip .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/gcc . /
 COPY --from=stagex/binutils . /
@@ -278,8 +278,8 @@ RUN --network=none <<-EOF
         out/etc/xml/catalog
 EOF
 
-FROM build as install
+FROM build AS install
 RUN --network=none mv out/ /rootfs
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

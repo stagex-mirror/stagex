@@ -1,4 +1,4 @@
-FROM scratch as base
+FROM scratch AS base
 ARG VERSION=1.76.0
 ENV SRC_SITE=https://static.rust-lang.org/dist
 ENV MRUSTC_VERSION=16d744fd62e74a2d4356df864b5850bf782918da
@@ -29,7 +29,7 @@ ENV SRC_HASH_1_74_0=882b584bc321c5dcfe77cdaa69f277906b936255ef7808fcd5c7492925cf
 ENV SRC_HASH_1_75_0=5b739f45bc9d341e2d1c570d65d2375591e22c2d23ef5b8a37711a0386abc088
 ENV SRC_HASH_1_76_0=9e5cff033a7f0d2266818982ad90e4d3e4ef8f8ee1715776c6e25073a136c021
 
-FROM base as fetch
+FROM base AS fetch
 COPY --from=stagex/busybox . /
 ADD --checksum=sha256:${MRUSTC_SRC_HASH} ${MRUSTC_SRC_SITE} ${MRUSTC_SRC_FILE}
 ADD --checksum=sha256:${SRC_HASH_1_54_0} ${SRC_SITE}/rustc-1.54.0-src.tar.gz .
@@ -56,7 +56,7 @@ ADD --checksum=sha256:${SRC_HASH_1_74_0} ${SRC_SITE}/rustc-1.74.0-src.tar.gz .
 ADD --checksum=sha256:${SRC_HASH_1_75_0} ${SRC_SITE}/rustc-1.75.0-src.tar.gz .
 ADD --checksum=sha256:${SRC_HASH_1_76_0} ${SRC_SITE}/rustc-1.76.0-src.tar.gz .
 
-FROM fetch as build-base
+FROM fetch AS build-base
 COPY --from=stagex/binutils . /
 COPY --from=stagex/bash . /
 COPY --from=stagex/make . /
@@ -71,7 +71,7 @@ COPY --from=stagex/gcc . /
 COPY --from=stagex/libunwind . /
 COPY --from=stagex/musl . /
 
-FROM build-base as build-mrustc
+FROM build-base AS build-mrustc
 COPY --from=stagex/llvm13 . /
 ADD gcc_version.patch .
 RUN tar -xzf ${MRUSTC_SRC_FILE}
@@ -102,7 +102,7 @@ RUN <<-EOF
 	cp -R run_rustc/output/prefix ../rust-1.54.0/usr
 EOF
 
-FROM build-base as build-script
+FROM build-base AS build-script
 COPY <<-'EOF' build.sh
 	set -eux
 	VERSION=${1}
@@ -158,7 +158,7 @@ COPY <<-'EOF' build.sh
 	python3 x.py install
 EOF
 
-FROM build-script as build-llvm13
+FROM build-script AS build-llvm13
 COPY --from=stagex/llvm13 . /
 COPY --from=build-mrustc /rust-1.54.0 /rust-1.54.0
 RUN sh build.sh 1.55.0 1.54.0
@@ -176,7 +176,7 @@ RUN sh build.sh 1.66.0 1.65.0
 RUN sh build.sh 1.67.0 1.66.0
 RUN sh build.sh 1.68.0 1.67.0
 
-FROM build-script as build
+FROM build-script AS build
 COPY --from=stagex/llvm . /
 COPY --from=build-llvm13 /rust-1.68.0 /rust-1.68.0
 COPY --from=stagex/llvm13 /usr/lib/libLLVM-13.so /usr/lib/
@@ -194,7 +194,7 @@ RUN sh build.sh 1.75.0 1.74.0
 ADD no-default-static.patch .
 RUN sh build.sh 1.76.0 1.75.0 cargo,clippy,rustdoc,rustfmt,rust-demangler no-default-static
 
-FROM build as install
+FROM build AS install
 RUN <<-EOF
 	mv /rust-${VERSION} /rootfs
 	cd /rootfs/usr/lib/rustlib
@@ -207,5 +207,5 @@ RUN <<-EOF
 	rm -f x86_64-unknown-linux-musl/lib/self-contained/libunwind.a
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

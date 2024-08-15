@@ -1,4 +1,4 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=1.7.2
 ENV SRC_HASH=7f16510394ebe12cd405bc9d2cf4c6ef2c8baf6213006d52c05dcbce0bf06100
 ENV SRC_FILE=v${VERSION}.tar.gz
@@ -13,7 +13,7 @@ ENV GOHOSTOS=linux
 ENV GOHOSTARCH=amd64
 ENV GO11MODULE=on
 
-FROM base as fetch
+FROM base AS fetch
 COPY --from=stagex/busybox . /
 COPY --from=stagex/go . /
 COPY --from=stagex/ca-certificates . /
@@ -22,14 +22,14 @@ RUN tar -xvf ${SRC_FILE}
 WORKDIR talos-${VERSION}
 RUN go get ./...
 
-FROM fetch as build
+FROM fetch AS build
 RUN --network=none go build -v -trimpath ./cmd/talosctl
 
-from build as install
+FROM build AS install
 RUN <<-EOF
     mkdir -p /rootfs/usr/bin/
     cp talosctl /rootfs/usr/bin/
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/./ /

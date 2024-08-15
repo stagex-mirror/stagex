@@ -1,13 +1,13 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=3.0.43
 ENV SRC_HASH=3527b7af26106cbc65a040bcc84839a3566ec1b051bb0bfe953631e704b0ff7d
 ENV SRC_FILE=prompt_toolkit-${VERSION}.tar.gz
 ENV SRC_SITE=https://files.pythonhosted.org/packages/source/p/prompt_toolkit/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as install
+FROM fetch AS install
 COPY --from=stagex/busybox . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/python . /
@@ -24,5 +24,5 @@ RUN --network=none <<-EOF
     find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

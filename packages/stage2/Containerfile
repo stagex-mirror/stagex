@@ -1,4 +1,4 @@
-FROM scratch as base
+FROM scratch AS base
 ENV GCC_VERSION 13.1.0
 ENV GCC_HASH 61d684f0aa5e76ac6585ad8898a2427aade8979ed5e7f85492286c4dfc13ee86
 ENV GCC_FILE gcc-$GCC_VERSION.tar.xz
@@ -49,7 +49,7 @@ ENV LINUX_DIR ${HOME}/build-linux
 ENV BINUTILS_DIR ${HOME}/build-binutils
 ENV MUSL_DIR=${HOME}/build-musl
 
-FROM base as fetch
+FROM base AS fetch
 WORKDIR ${HOME}
 ADD --checksum=sha256:${LINUX_HASH} ${LINUX_SITE} .
 ADD --checksum=sha256:${MUSL_HASH} ${MUSL_SITE} .
@@ -60,7 +60,7 @@ ADD --checksum=sha256:${MPFR_HASH} ${MPFR_SITE} .
 ADD --checksum=sha256:${MPC_HASH} ${MPC_SITE} .
 ADD --checksum=sha256:${ISL_HASH} ${ISL_SITE} .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/stage1 . /
 RUN --network=none <<-EOF
     set -eux
@@ -183,7 +183,7 @@ RUN --network=none <<-EOF
     cp -rv usr/include ${LINUX_DIR}
 EOF
 
-FROM build as install
+FROM build AS install
 WORKDIR ${HOME}
 COPY --from=stagex/stage1 . /rootfs/
 RUN <<-EOF
@@ -198,7 +198,7 @@ RUN <<-EOF
     ln -s /${TARGET}/lib/ld-musl-${TARGET_ARCH}.so.1 /rootfs/lib/ld-musl-${TARGET_ARCH}.so.1
 EOF
 
-FROM base as package
+FROM base AS package
 COPY --from=install /rootfs/ /
 USER 1000:1000
 ENTRYPOINT ["/bin/bash"]

@@ -1,4 +1,4 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=3.3.1
 ENV SRC_HASH=04e7b957e764ba7d32ae182d0b290e75c8785c18ab922ae6ac7087de103fd8de
 ENV SRC_FILE=v${VERSION}.tar.gz
@@ -13,7 +13,7 @@ ENV GOHOSTOS=linux
 ENV GOHOSTARCH=amd64
 ENV GO11MODULE=on
 
-FROM base as fetch
+FROM base AS fetch
 COPY --from=stagex/busybox . /
 COPY --from=stagex/go . /
 COPY --from=stagex/ca-certificates . /
@@ -22,15 +22,15 @@ RUN tar -xvf ${SRC_FILE}
 WORKDIR kustomize-${VERSION}/kustomize
 RUN go get ./...
 
-FROM fetch as build
+FROM fetch AS build
 RUN --network=none go build -v -trimpath
 
-from build as install
+FROM build AS install
 RUN <<-EOF
     set -eu
     mkdir -p /rootfs/usr/bin/
     cp kustomize /rootfs/usr/bin/
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/./ /

@@ -1,4 +1,4 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=0.2.0
 ENV SRC_HASH=80690d0d702b997aeb1ae6d6a7dc8ea8800d64c7307c004209387947bbd33aa2
 ENV SRC_FILE=v${VERSION}.tar.gz
@@ -13,7 +13,7 @@ ENV GOHOSTOS=linux
 ENV GOHOSTARCH=amd64
 ENV GO11MODULE=off
 
-FROM base as fetch
+FROM base AS fetch
 COPY --from=stagex/busybox . /
 COPY --from=stagex/go . /
 COPY --from=stagex/ca-certificates . /
@@ -22,19 +22,19 @@ RUN tar -xvf ${SRC_FILE}
 WORKDIR ksops-dry-run-${VERSION}
 RUN go get ./...
 
-FROM fetch as build
+FROM fetch AS build
 RUN --network=none \
     go build \
         -v \
         -trimpath \
         -ldflags "-s -w -X main.version=${VERSION} -buildid="
 
-from build as install
+FROM build AS install
 RUN <<-EOF
     set -eux
     mkdir -p /rootfs/usr/lib/kustomize/plugins/viduct.ai/v1/ksops
     cp ksops-dry-run /rootfs/usr/lib/kustomize/plugins/viduct.ai/v1/ksops/ksops
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/./ /

@@ -1,13 +1,13 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=5.6
 ENV SRC_HASH=7169fac7b5afb3ce20091b8d66ee13a69cf0b107ea1e17f5d1aa087d99bcf8e2
 ENV SRC_FILE=${VERSION}.tar.gz
 ENV SRC_SITE=https://github.com/tpm2-software/tpm2-tools/archive/refs/tags/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/gcc . /
 COPY --from=stagex/binutils . /
@@ -39,12 +39,12 @@ RUN --network=none <<-EOF
     make -j "$(nproc)"
 EOF
 
-FROM build as install
+FROM build AS install
 RUN --network=none <<-EOF
     set -eux
     make DESTDIR=/rootfs install
     rm -rf /rootfs/var/run
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

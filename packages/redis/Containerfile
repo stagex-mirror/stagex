@@ -1,13 +1,13 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=7.2.4
 ENV SRC_FILE=redis-${VERSION}.tar.gz
 ENV SRC_SITE=https://download.redis.io/releases/${SRC_FILE}
 ENV SRC_HASH=8d104c26a154b29fd67d6568b4f375212212ad41e0c2caa3d66480e78dbd3b59
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/gcc . /
@@ -21,8 +21,8 @@ WORKDIR redis-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN make BUILD_TLS=yes all
 
-FROM build as install
+FROM build AS install
 RUN --network=none make install PREFIX="/rootfs" INSTALL_BIN="/rootfs/usr/bin"
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /
