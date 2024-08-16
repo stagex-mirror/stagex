@@ -1,0 +1,43 @@
+FROM scratch as base
+ARG ARCH=x86_64
+ENV VERSION=20230828-3.1
+ENV SRC_HASH=4ee8182b6e569290e7d1f44f0f78dac8716b35f656b76528f699c69c98814dad
+ENV SRC_FILE=libedit-${VERSION}.tar.gz
+ENV SRC_SITE=https://www.thrysoee.dk/editline/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+FROM fetch as build
+COPY --from=stagex/perl . /
+COPY --from=stagex/ncurses . /
+COPY --from=stagex/gawk . /
+COPY --from=stagex/autoconf . /
+COPY --from=stagex/automake . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+RUN tar -xf $SRC_FILE
+WORKDIR libedit-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--build=${ARCH}-linux-musl \
+		--host=${ARCH}-linux-musl \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--localstatedir=/var
+	make -j "$(nproc)"
+EOF
+
+FROM build as install
+RUN make DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /
+
+

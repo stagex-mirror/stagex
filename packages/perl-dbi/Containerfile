@@ -1,0 +1,34 @@
+FROM scratch as base
+ARG ARCH=x86_64
+ENV VERSION=1.643
+ENV SRC_HASH=8a2b993db560a2c373c174ee976a51027dd780ec766ae17620c20393d2e836fa
+ENV SRC_FILE=DBI-${VERSION}.tar.gz
+ENV SRC_SITE=https://cpan.metacpan.org/authors/id/T/TI/TIMB/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch as build
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/bash . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/make . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR DBI-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+    perl Makefile.PL
+	PERL_MM_USE_DEFAULT="1 perl -I. Makefile.PL INSTALLDIRS=vendor"
+	make
+EOF
+
+FROM build as install
+RUN make DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

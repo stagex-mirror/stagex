@@ -1,0 +1,48 @@
+FROM scratch as base
+ARG ARCH=x86_64
+ENV VERSION=1.10.0
+ENV SRC_HASH=dd7c556b4d96ca5e682534bc1f1a78a5cfabce0c425b14c1b8549802686a4442
+ENV SRC_FILE=doxygen-${VERSION}.src.tar.gz
+ENV SRC_SITE=https://doxygen.nl/files/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch as build
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/flex . /
+COPY --from=stagex/bison . /
+COPY --from=stagex/coreutils . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/python . /
+COPY --from=stagex/cmake . /
+COPY --from=stagex/samurai . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/libxml2 . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/m4 . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR doxygen-${VERSION}
+COPY *.patch .
+RUN --network=none <<-EOF
+	set -eux \
+	patch -p1 remove-usage-of-fstat64.patch
+    cmake -B build -G Ninja \
+		-DGIT_EXECUTABLE=/bin/false \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_BUILD_TYPE=MinSizeRel \
+		-Dbuild_xmlparser=ON
+	cmake --build build
+EOF
+
+FROM build as install
+RUN DESTDIR=/rootfs cmake --install build
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

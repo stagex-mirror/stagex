@@ -1,0 +1,40 @@
+
+FROM scratch as base
+ARG ARCH=x86_64
+ENV VERSION=1.8.9
+ENV SRC_HASH=57ca5f07d263788ad661a86f4139412e8b699662e6b60c20f1f028c25a935e48
+ENV SRC_FILE=libX11-${VERSION}.tar.gz
+ENV SRC_SITE=https://www.x.org/releases/individual/lib/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch as build
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/libxslt . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR libX11-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+    ./configure
+		--build=${ARCH}-linux-musl \
+		--host=${ARCH}-linux-musl \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--localstatedir=/var \
+		--disable-xf86bigfont
+	make
+EOF
+
+FROM build as install
+RUN make DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

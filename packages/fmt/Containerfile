@@ -1,0 +1,45 @@
+FROM scratch as base
+ARG ARCH=x86_64
+ENV VERSION=10.2.1
+ENV SRC_HASH=1250e4cc58bf06ee631567523f48848dc4596133e163f02615c97f78bab6c811
+ENV SRC_FILE=${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/fmtlib/fmt/archive/refs/tags/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch as build
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/postgresql . /
+COPY --from=stagex/cmake . /
+COPY --from=stagex/samurai . /
+COPY --from=stagex/python . /
+COPY --from=stagex/doxygen . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR fmt-${VERSION}
+COPY *.patch .
+RUN --network=none <<-EOF
+	set -eux \
+	patch -p1 fix-handling-of-static-separator.patch
+	# Build in-tree so the prebuilt docs get installed correctly.
+	# See https://github.com/fmtlib/fmt/issues/2837
+	cmake -B . -G Ninja \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DBUILD_SHARED_LIBS=True \
+		-DCMAKE_BUILD_TYPE=None \
+		CMAKE_CROSSOPTS="-DCMAKE_SYSTEM_NAME=Linux -DCMAKE_HOST_SYSTEM_NAME=Linux"
+	cmake --build .
+EOF
+
+FROM build as install
+RUN DESTDIR=/rootfs cmake --install .
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

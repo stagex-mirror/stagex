@@ -1,0 +1,50 @@
+FROM scratch as base
+ARG ARCH=x86_64
+ENV VERSION=3.3.9
+ENV SRC_HASH=062b9ec5c26cbb236a78f0ba26981272053f59bdfc113040bab904a9da36d31f
+ENV SRC_FILE=v${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/mariadb-corporation/mariadb-connector-c/archive/refs/tags/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch as build
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/cmake . /
+COPY --from=stagex/samurai . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/libzstd . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/ninja . /
+COPY --from=stagex/linux-headers . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR mariadb-connector-c-${VERSION}
+COPY *.patch .
+RUN --network=none <<-EOF
+	set -eux
+	patch -p1 < incorrect-sys-poll.patch
+	patch -p1 < unused-parameter.patch
+	cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=MinSizeRel \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DBUILD_SHARED_LIBS=True \
+		-DINSTALL_LIBDIR=lib \
+		-DINSTALL_INCLUDEDIR=include/mysql \
+		\
+		-DMARIADB_PORT=3306 \
+		-DMARIADB_UNIX_ADDR=/run/mysqld/mysqld.sock \
+		-DWITH_EXTERNAL_ZLIB=YES \
+		-DWITH_MYSQLCOMPAT=ON \
+		-DWITH_SSL=OPENSSL
+	cmake --build build
+EOF
+
+FROM build as install
+RUN DESTDIR=/rootfs cmake --install build
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

@@ -1,0 +1,35 @@
+
+FROM scratch as base
+ARG ARCH=x86_64
+ENV VERSION=2.6.2
+ENV SRC_HASH=d4cf38d26e21a56654ffe4acd9cd5481164619626802328506a2869afab29ab3
+ENV SRC_FILE=expat-${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/libexpat/libexpat/releases/download/R_2_6_2/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+FROM fetch as build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+RUN tar -xf $SRC_FILE
+WORKDIR expat-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--build=${ARCH}-linux-musl \
+		--host=${ARCH}-linux-musl \
+		--prefix=/usr \
+		--mandir=/usr/share/man \
+		--enable-static
+	make -j "$(nproc)"
+EOF
+
+FROM build as install
+RUN make DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

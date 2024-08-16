@@ -1,0 +1,45 @@
+FROM scratch AS base
+ARG ARCH=x86_64
+ENV VERSION=2024.1
+ENV SRC_HASH=4f6b9b4faf91e5df8265b71843a91fc73dc895be6210c84117a996545df296ce
+ENV SRC_FILE=xorgproto-${VERSION}.tar.gz
+ENV SRC_SITE=https://xorg.freedesktop.org/archive/individual/proto/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch AS build
+COPY --from=stagex/musl . /
+COPY --from=stagex/abuild . /
+COPY --from=stagex/ninja . /
+COPY --from=stagex/make . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/util-macros . /
+COPY --from=stagex/bash . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/meson . /
+COPY --from=stagex/m4 . /
+COPY --from=stagex/autoconf . /
+COPY --from=stagex/automake . /
+COPY --from=stagex/zlib . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR xorgproto-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	abuild-meson \
+		--datadir=/usr/lib \
+		-Dlegacy=true \
+		. output
+	meson compile -C output
+EOF
+
+FROM build AS install
+RUN make DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /

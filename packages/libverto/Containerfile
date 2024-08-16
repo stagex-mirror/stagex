@@ -1,0 +1,64 @@
+FROM scratch as base
+ARG ARCH=x86_64
+ENV VERSION=0.3.2
+ENV SRC_HASH=8d1756fd704f147549f606cd987050fb94b0b1ff621ea6aa4d6bf0b74450468a
+ENV SRC_FILE=libverto-${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/latchset/libverto/releases/download/0.3.2/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+FROM fetch as build
+COPY --from=stagex/perl . /
+COPY --from=stagex/bash . /
+COPY --from=stagex/m4 . /
+COPY --from=stagex/curl . /
+COPY --from=stagex/linux-headers . /
+COPY --from=stagex/util-linux . /
+COPY --from=stagex/autoconf . /
+COPY --from=stagex/automake . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/e2fsprogs . /
+COPY --from=stagex/python . /
+COPY --from=stagex/openldap . /
+COPY --from=stagex/libtool . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/groff . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/autoconf . /
+COPY --from=stagex/automake . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/libedit . /
+COPY --from=stagex/python . /
+COPY --from=stagex/libevent . /
+COPY --from=stagex/pkgconf . /
+
+RUN tar -xf $SRC_FILE
+WORKDIR libverto-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--build=${ARCH}-linux-musl \
+		--host=${ARCH}-linux-musl \
+		--prefix=/usr \
+		--localstatedir=/var/lib \
+		--with-libdev \
+        --with-libevent
+	make -j "$(nproc)"
+EOF
+
+FROM build as install
+RUN make DESTDIR=/rootfs install
+RUN ls -la .
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+RUN mv /rootfs/usr/lib/libverto-libevent.so.* /rootfs/usr/lib/
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

@@ -1,0 +1,38 @@
+FROM scratch as base
+ARG ARCH=x86_64
+ENV VERSION=0.60.8.1
+ENV SRC_HASH=d6da12b34d42d457fa604e435ad484a74b2effcd120ff40acd6bb3fb2887d21b
+ENV SRC_FILE=aspell-${VERSION}.tar.gz
+ENV SRC_SITE=https://ftp.gnu.org/gnu/aspell/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/make . /
+COPY --from=stagex/gcc . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR aspell-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
+RUN --network=none <<-EOF
+	set -ex
+	./configure \
+		--build=${ARCH}-linux-musl \
+		--host=${ARCH}-linux-musl \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--enable-dict-dir=/usr/share/aspell \
+		--enable-pkgdatadir=/usr/share/aspell
+	make
+EOF
+
+FROM build as install
+RUN --network=none make DESTDIR="/rootfs" install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

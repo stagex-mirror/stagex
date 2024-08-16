@@ -1,0 +1,51 @@
+FROM scratch as base
+ARG ARCH=x86_64
+ENV VERSION=2.6.9
+ENV SRC_HASH=d9a5a10dc9b38a43b3a0fa22c76ed6ebb7e09eb535aff62954afcdbd40efff6b
+ENV SRC_FILE=enchant-${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/AbiWord/enchant/releases/download/v${VERSION}/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch as build
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/file . /
+COPY --from=stagex/bash . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/linux-headers . /
+COPY --from=stagex/glib . /
+COPY --from=stagex/groff . /
+COPY --from=stagex/hunspell . /
+COPY --from=stagex/pcre2 . /
+COPY --from=stagex/gettext . /
+COPY --from=stagex/aspell . /
+COPY --from=stagex/file . /
+COPY --from=stagex/nuspell . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR enchant-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+    ./configure \
+		--build=${ARCH}-linux-musl \
+		--host=${ARCH}-linux-musl \
+		--prefix=/usr \
+		--disable-static \
+		--with-aspell \
+		--with-hunspell \
+		--with-nuspell
+	make
+EOF
+
+FROM build as install
+RUN make DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

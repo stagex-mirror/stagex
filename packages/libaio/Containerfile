@@ -1,0 +1,37 @@
+FROM scratch as base
+ARG ARCH=x86_64
+ENV VERSION=0.3.113
+ENV SRC_HASH=716c7059703247344eb066b54ecbc3ca2134f0103307192e6c2b7dab5f9528ab
+ENV SRC_FILE=libaio-libaio-${VERSION}.tar.gz
+ENV SRC_SITE=https://pagure.io/libaio/archive/libaio-${VERSION}/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch as build
+COPY --from=stagex/musl . /
+COPY --from=stagex/bash . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/linux-headers . /
+
+RUN tar -xf ${SRC_FILE}
+WORKDIR libaio-libaio-${VERSION}
+COPY *.patch .
+RUN --network=none <<-EOF
+	set -eux \
+    patch -p1 libaio-cppflags.patch
+    patch -p1 libaio-errno.patch
+    patch -p1 test-poll.patch
+    patch -p1 test.patch
+    make
+EOF
+
+FROM build as install
+RUN make DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

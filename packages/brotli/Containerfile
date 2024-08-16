@@ -1,0 +1,42 @@
+FROM scratch as base
+ARG ARCH=x86_64
+ENV VERSION=1.1.0
+ENV SRC_HASH=e720a6ca29428b803f4ad165371771f5398faba397edf6778837a18599ea13ff
+ENV SRC_FILE=v${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/google/brotli/archive/refs/tags/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch as build
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/samurai . /
+COPY --from=stagex/cmake . /
+COPY --from=stagex/openssl . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR brotli-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+    cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=None \
+		-DCMAKE_INSTALL_PREFIX=/usr/lib \
+		-DBUILD_SHARED_LIBS=OFF
+	cmake --build build
+
+	cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=None \
+		-DCMAKE_INSTALL_PREFIX=/usr/lib \
+		-DBUILD_SHARED_LIBS=ON
+	cmake --build build
+EOF
+
+FROM build as install
+RUN DESTDIR=/rootfs cmake --install build
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

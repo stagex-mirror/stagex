@@ -1,0 +1,48 @@
+FROM scratch as base
+ARG ARCH=x86_64
+ENV VERSION=1.6.3
+ENV SRC_HASH=a41076e3710746326c3945042994ad9a4fcac0ce0277dd8fea076fec3c9772b5
+ENV SRC_FILE=apr-util-${VERSION}.tar.bz2
+ENV SRC_SITE=https://www.apache.org/dist/apr/${SRC_FILE}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch as build
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/expat . /
+COPY --from=stagex/gdbm . /
+COPY --from=stagex/openldap . /
+COPY --from=stagex/sqlite3 . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/postgresql . /
+
+RUN tar -xf ${SRC_FILE}
+WORKDIR apr-util-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+    ./configure \
+	    --prefix=/usr \
+		--with-apr=/usr \
+		--with-ldap \
+		--with-pgsql \
+		--with-mysql \
+		--with-sqlite3 \
+		--with-crypto \
+		--with-openssl \
+		--without-sqlite2 \
+		--with-dbm=ndbm \
+		--with-ndbm
+    make
+EOF
+
+FROM build as install
+RUN make DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /

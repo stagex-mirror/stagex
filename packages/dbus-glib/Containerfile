@@ -1,0 +1,44 @@
+
+FROM scratch AS base
+ARG ARCH=x86_64
+ENV VERSION=0.112
+ENV SRC_HASH=7d550dccdfcd286e33895501829ed971eeb65c614e73aadb4a08aeef719b143a
+ENV SRC_FILE=dbus-glib-${VERSION}.tar.gz
+ENV SRC_SITE=https://dbus.freedesktop.org/releases/dbus-glib/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch AS build
+COPY --from=stagex/glib . /
+COPY --from=stagex/gettext . /
+COPY --from=stagex/expat . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/dbus . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR dbus-glib-${VERSION}
+RUN ls -la .
+RUN --network=none <<-EOF
+	set -eux \
+    CFLAGS="-flto=auto" \
+	./configure \
+		--build=${ARCH}-linux-musl \
+		--host=${ARCH}-linux-musl \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--localstatedir=/var \
+		--enable-static=no \
+		--enable-bash-completion=no
+	make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN DESTDIR=/rootfs cmake --install build
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /
