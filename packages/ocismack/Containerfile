@@ -1,0 +1,40 @@
+FROM scratch AS base
+ENV VERSION=0.1.0
+ENV SRC_HASH=dc9ae7ce78e46351f4f0a8b5ffbb5ff5fdc90bffab9b55cea3c2b3f9ea20123d
+ENV SRC_FILE=ocismack-v${VERSION}.tar.gz
+ENV SRC_SITE=https://codeberg.org/stagex/ocismack/archive/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+COPY --from=stagex/rust . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/llvm . /
+COPY --from=stagex/libunwind . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/ca-certificates . /
+RUN tar xf ${SRC_FILE}
+WORKDIR ocismack
+RUN cargo fetch
+
+FROM fetch AS build
+COPY --from=stagex/binutils . /
+ENV RUSTFLAGS='-C codegen-units=1 -C target-feature=+crt-static'
+RUN --network=none \
+    cargo build \
+        --frozen \
+        --release \
+        --target x86_64-unknown-linux-musl \
+        --bin ocismack
+
+FROM build AS install
+RUN <<-EOF
+    set -eux
+    mkdir -p /rootfs/usr/bin
+    cp target/x86_64-unknown-linux-musl/release/ocismack /rootfs/usr/bin/ocismack
+EOF
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /
