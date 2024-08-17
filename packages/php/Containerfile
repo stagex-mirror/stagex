@@ -63,7 +63,7 @@ RUN --network=none <<-EOF
     patch -p1 sharedir.patch
     export CC=clang-18
 	export CXX=clang++-18
-    ./buildconf --force || { echo "buildconf failed"; cat config.log;}
+    ./buildconf --force
     EXTENSION_DIR=/usr/lib/modules ./configure \
         --build=x86_64-linux-musl \
         --host=x86_64-linux-musl \
@@ -80,11 +80,12 @@ RUN --network=none <<-EOF
 		--disable-rpath \
 		--disable-short-tags \
 		\
+		--disable-all \
 		--enable-bcmath=shared \
 		--with-bz2=shared \
-		# --enable-calendar=shared \
-		# --enable-ctype=shared \
-		# --with-curl=shared \
+		--enable-calendar=shared \
+		--enable-ctype=shared \
+		--with-curl=shared \
 		# --enable-dba=shared \
 		# 	--with-dbmaker=shared \
 		# 	--with-gdbm \
@@ -142,7 +143,7 @@ RUN --network=none <<-EOF
 		# --enable-soap=shared \
 		# --with-sodium=shared \
 		# --enable-sockets=shared \
-		# with-sqlite3=shared \
+		# --with-sqlite3=shared \
 		# --enable-sysvmsg=shared \
 		# --enable-sysvsem=shared \
 		# --enable-sysvshm=shared \
@@ -154,10 +155,10 @@ RUN --network=none <<-EOF
 		# --enable-xmlwriter=shared \
 		# --with-xsl=shared \
 		# --with-zip=shared \
-		--with-zlib \
+		# --with-zlib \
 		# --enable-zend-test=shared \
 		"$@"
-    make || { echo "Make failed"; cat config.log; }
+    make -j "$(nproc)"
 EOF
 
 FROM build AS install
@@ -176,4 +177,3 @@ USER root
 RUN rm -rf /var/run
 RUN mkdir -p /var && mkdir -p /var/run && chown -R root:root /var/run && chmod -R 755 /var/run
 COPY --from=install /rootfs/. /
-
