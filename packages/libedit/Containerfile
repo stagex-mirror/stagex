@@ -1,13 +1,14 @@
-FROM scratch as base
+FROM scratch AS base
 ARG ARCH=x86_64
 ENV VERSION=20230828-3.1
 ENV SRC_HASH=4ee8182b6e569290e7d1f44f0f78dac8716b35f656b76528f699c69c98814dad
 ENV SRC_FILE=libedit-${VERSION}.tar.gz
 ENV SRC_SITE=https://www.thrysoee.dk/editline/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
-FROM fetch as build
+
+FROM fetch AS build
 COPY --from=stagex/perl . /
 COPY --from=stagex/ncurses . /
 COPY --from=stagex/gawk . /
@@ -33,11 +34,11 @@ RUN --network=none <<-EOF
 	make -j "$(nproc)"
 EOF
 
-FROM build as install
+FROM build AS install
 RUN make DESTDIR=/rootfs install
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /
 
 

@@ -22,8 +22,6 @@ RUN --network=none <<-EOF
 		--build=${ARCH}-linux-musl \
 		--host=${ARCH}-linux-musl \
 		--prefix=/usr
-	make
-
 	make -j "$(nproc)"
 EOF
 

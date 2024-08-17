@@ -1,14 +1,14 @@
-FROM scratch as base
+FROM scratch AS base
 ARG ARCH=x86_64
 ENV VERSION=2.80.0
 ENV SRC_HASH=8228a92f92a412160b139ae68b6345bd28f24434a7b5af150ebe21ff587a561d
 ENV SRC_FILE=glib-${VERSION}.tar.xz
 ENV SRC_SITE=https://download.gnome.org/sources/glib/2.80/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/python . /
 COPY --from=stagex/zlib . /
 COPY --from=stagex/bzip2 . /
@@ -41,7 +41,7 @@ RUN tar -xf ${SRC_FILE}
 WORKDIR glib-${VERSION}
 COPY *.patch .
 RUN --network=none <<-EOF
-	# set -eux \
+	set -eux
 	patch -p1 alwaysbash.patch
 	patch -p1 deprecated-no-warn.patch
 	patch -p1 fix-tests.patch
@@ -63,9 +63,9 @@ RUN --network=none <<-EOF
 	meson install --no-rebuild -C output
 EOF
 
-FROM build as install
+FROM build AS install
 RUN DESTDIR=/rootfs meson install --no-rebuild -C output
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

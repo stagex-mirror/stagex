@@ -20,9 +20,9 @@ COPY --from=stagex/libzstd . /
 COPY --from=stagex/lld . /
 COPY --from=stagex/binutils . /
 COPY --from=stagex/llvm . /
+COPY --from=stagex/curl . /
 COPY --from=stagex/clang . /
 COPY --from=stagex/bison . /
-COPY --from=stagex/curl . /
 COPY --from=stagex/gdbm . /
 COPY --from=stagex/lmdb . /
 COPY --from=stagex/pkgconf . /
@@ -79,10 +79,9 @@ RUN --network=none <<-EOF
 		--with-config-file-scan-dir=/etc/php83/conf.d \
 		--disable-rpath \
 		--disable-short-tags \
-		--disable-all \
 		\
-		# --enable-bcmath=shared \
-		# --with-bz2=shared \
+		--enable-bcmath=shared \
+		--with-bz2=shared \
 		# --enable-calendar=shared \
 		# --enable-ctype=shared \
 		# --with-curl=shared \
@@ -143,7 +142,7 @@ RUN --network=none <<-EOF
 		# --enable-soap=shared \
 		# --with-sodium=shared \
 		# --enable-sockets=shared \
-		# --with-sqlite3=shared \
+		# with-sqlite3=shared \
 		# --enable-sysvmsg=shared \
 		# --enable-sysvsem=shared \
 		# --enable-sysvshm=shared \
@@ -155,7 +154,7 @@ RUN --network=none <<-EOF
 		# --enable-xmlwriter=shared \
 		# --with-xsl=shared \
 		# --with-zip=shared \
-		# --with-zlib \
+		--with-zlib \
 		# --enable-zend-test=shared \
 		"$@"
     make || { echo "Make failed"; cat config.log; }

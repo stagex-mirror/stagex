@@ -1,13 +1,14 @@
-FROM scratch as base
+FROM scratch AS base
 ARG ARCH=x86_64
 ENV VERSION=2.5.17
 ENV SRC_HASH=d706a34b348ae38a9e3e4eb0d2cd5afeb939f2b2db95e6ae3d410d6a75e90e3c
 ENV SRC_FILE=openldap-${VERSION}.tgz
 ENV SRC_SITE=https://www.openldap.org/software/download/OpenLDAP/openldap-release/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
-FROM fetch as build
+
+FROM fetch AS build
 COPY --from=stagex/perl . /
 COPY --from=stagex/bash . /
 COPY --from=stagex/m4 . /
@@ -27,6 +28,7 @@ COPY --from=stagex/argon2 . /
 COPY --from=stagex/groff . /
 RUN tar -xf $SRC_FILE
 WORKDIR openldap-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	set -eux
 	./configure \
@@ -48,9 +50,9 @@ RUN --network=none <<-EOF
 	make -j "$(nproc)"
 EOF
 
-FROM build as install
+FROM build AS install
 RUN make DESTDIR=/rootfs install
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

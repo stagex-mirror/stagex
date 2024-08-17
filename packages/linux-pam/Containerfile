@@ -1,14 +1,14 @@
-FROM scratch as base
+FROM scratch AS base
 ARG ARCH=x86_64
 ENV VERSION=1.6.1
 ENV SRC_HASH=f8923c740159052d719dbfc2a2f81942d68dd34fcaf61c706a02c9b80feeef8e
 ENV SRC_FILE=Linux-PAM-${VERSION}.tar.xz
 ENV SRC_SITE=https://github.com/linux-pam/linux-pam/releases/download/v${VERSION}/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/musl . /
 COPY --from=stagex/gcc . /
 COPY --from=stagex/busybox . /
@@ -45,13 +45,12 @@ RUN --network=none <<-EOF
 		--disable-examples \
 		--sbindir=/usr/sbin \
 		--enable-securedir=/usr/lib/security
-    make
+    make -j "$(nproc)"
 EOF
 
-FROM build as install
+FROM build AS install
 RUN make DESTDIR=/rootfs install
-RUN ls -la /rootfs
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

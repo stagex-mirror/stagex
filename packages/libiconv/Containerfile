@@ -1,15 +1,15 @@
 
-FROM scratch as base
+FROM scratch AS base
 ARG ARCH=x86_64
 ENV VERSION=1.17
-ENV SRC_HASH=8e7d1a8ccac0143c8fe9b68ebac67d485df119ea17a613f4038cda52f84ef52a
+ENV SRC_HASH=8f74213b56238c85a50a5329f77e06198771e70dd9a739779f4c02f65d971313
 ENV SRC_FILE=libiconv-${VERSION}.tar.gz
 ENV SRC_SITE=https://ftp.gnu.org/gnu/libiconv/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/musl . /
 COPY --from=stagex/gcc . /
 COPY --from=stagex/bash . /
@@ -26,12 +26,12 @@ RUN --network=none <<-EOF
 		--sysconfdir=/etc \
 		--enable-openssl \
 		--disable-openssl-runtime
-	make
+	make -j "$(nproc)"
 EOF
 
-FROM build as install
+FROM build AS install
 RUN make DESTDIR=/rootfs install
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /
