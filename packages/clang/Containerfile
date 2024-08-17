@@ -1,6 +1,6 @@
 FROM scratch AS base
-ENV VERSION=16.0.6
-ENV SRC_HASH=ce5e71081d17ce9e86d7cbcfa28c4b04b9300f8fb7e78422b1feb6bc52c3028e
+ENV VERSION=18.1.8
+ENV SRC_HASH=0b58557a6d32ceee97c8d533a59b9212d87e0fc4d2833924eb6c611247db2f2a
 ENV SRC_FILE=llvm-project-${VERSION}.src.tar.xz
 ENV SRC_SITE=https://github.com/llvm/llvm-project/releases/download/llvm-org-${VERSION}/${SRC_FILE}
 

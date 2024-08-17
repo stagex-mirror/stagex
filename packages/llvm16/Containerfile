@@ -1,14 +1,14 @@
 FROM scratch AS base
-ENV VERSION=18.1.8
+ENV VERSION=16.0.6
 ENV SRC_FILE=llvm-project-${VERSION}.src.tar.xz
 ENV SRC_SITE=https://github.com/llvm/llvm-project/releases/download/llvmorg-${VERSION}/${SRC_FILE}
-ENV SRC_HASH=0b58557a6d32ceee97c8d533a59b9212d87e0fc4d2833924eb6c611247db2f2a
+ENV SRC_HASH=ce5e71081d17ce9e86d7cbcfa28c4b04b9300f8fb7e78422b1feb6bc52c3028e
+
 FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch AS build
 COPY --from=stagex/busybox . /
-COPY --from=stagex/linux-headers . /
 COPY --from=stagex/binutils . /
 COPY --from=stagex/cmake . /
 COPY --from=stagex/ninja . /
@@ -21,14 +21,12 @@ COPY --from=stagex/openssl . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR llvm-project-${VERSION}.src
 ADD *.patch .
-
 RUN --network=none <<-EOF
 	set -eux
 	python -c "import setuptools; print(setuptools.__version__)"
 	cmake \
 		-B build \
 		-G Ninja \
-		-DCMAKE_INSTALL_LIBDIR=lib \
 		-Wno-dev -S llvm \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_INSTALL_PREFIX=/usr/ \
@@ -56,7 +54,6 @@ RUN --network=none <<-EOF
 		-DLLVM_ENABLE_ZSTD=OFF \
 		-DLLVM_INCLUDE_BENCHMARKS=OFF \
 		-DLLVM_INCLUDE_EXAMPLES=OFF \
-		-DLLVM_INSTALL_GTEST=ON \
 		-DLLVM_INSTALL_UTILS=ON \
 		-DLLVM_LINK_LLVM_DYLIB=ON \
 		-DLLVM_USE_PERF=ON

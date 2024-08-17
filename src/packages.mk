@@ -247,6 +247,24 @@ out/clang/index.json: \
 	out/zlib/index.json
 	$(call build,clang)
 
+.PHONY: clang16
+clang16: out/clang16/index.json
+out/clang16/index.json: \
+	packages/clang16/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/llvm16/index.json \
+	out/musl/index.json \
+	out/ninja/index.json \
+	out/openssl/index.json \
+	out/py-setuptools/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,clang16)
+
 .PHONY: cmake
 cmake: out/cmake/index.json
 out/cmake/index.json: \
@@ -795,7 +813,7 @@ out/keyfork/index.json: \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/ca-certificates/index.json \
-	out/clang/index.json \
+	out/clang16/index.json \
 	out/filesystem/index.json \
 	out/gcc/index.json \
 	out/gmp/index.json \
@@ -1193,6 +1211,7 @@ out/llvm/index.json: \
 	out/cmake/index.json \
 	out/filesystem/index.json \
 	out/gcc/index.json \
+	out/linux-headers/index.json \
 	out/musl/index.json \
 	out/ninja/index.json \
 	out/openssl/index.json \
@@ -1217,6 +1236,23 @@ out/llvm13/index.json: \
 	out/python/index.json \
 	out/zlib/index.json
 	$(call build,llvm13)
+
+.PHONY: llvm16
+llvm16: out/llvm16/index.json
+out/llvm16/index.json: \
+	packages/llvm16/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/musl/index.json \
+	out/ninja/index.json \
+	out/openssl/index.json \
+	out/py-setuptools/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,llvm16)
 
 .PHONY: lua
 lua: out/lua/index.json
@@ -1512,6 +1548,7 @@ out/openssh/index.json: \
 	out/musl/index.json \
 	out/musl-fts/index.json \
 	out/musl-obstack/index.json \
+	out/openssl/index.json \
 	out/perl/index.json \
 	out/pkgconf/index.json \
 	out/zlib/index.json
@@ -1858,7 +1895,7 @@ out/py-cryptography/index.json: \
 	out/gcc/index.json \
 	out/libffi/index.json \
 	out/libunwind/index.json \
-	out/llvm/index.json \
+	out/llvm16/index.json \
 	out/musl/index.json \
 	out/openssl/index.json \
 	out/pkgconf/index.json \
@@ -2234,8 +2271,8 @@ out/rust/index.json: \
 	out/filesystem/index.json \
 	out/gcc/index.json \
 	out/libunwind/index.json \
-	out/llvm/index.json \
 	out/llvm13/index.json \
+	out/llvm16/index.json \
 	out/make/index.json \
 	out/musl/index.json \
 	out/openssl/index.json \
