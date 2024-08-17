@@ -32,7 +32,7 @@ COPY *.patch .
 RUN --network=none <<-EOF
 	set -eux \
 	patch -p1 remove-usage-of-fstat64.patch
-    cmake -B build -G Ninja \
+	cmake -B build -G Ninja \
 		-DGIT_EXECUTABLE=/bin/false \
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DCMAKE_BUILD_TYPE=MinSizeRel \

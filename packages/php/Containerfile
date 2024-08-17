@@ -51,22 +51,22 @@ RUN tar -xf php-${VERSION}RC1.tar.gz
 WORKDIR php-src-php-${VERSION}RC1
 COPY *.patch .
 RUN --network=none <<-EOF
-    set -eux
-    export CFLAGS="-O2"
-    export CXXFLAGS="-O2"
-    patch -p1 fix-lfs64-2.patch
-    patch -p1 fix-tests-devserver.patch
-    patch -p1 includedir.patch
-    patch -p1 install-pear.patch
-    patch -p1 php83-fpm-verison-suffix.patch
-    patch -p1 phpinfo-avif.patch
-    patch -p1 sharedir.patch
-    export CC=clang-18
+	set -eux
+	export CFLAGS="-O2"
+	export CXXFLAGS="-O2"
+	patch -p1 fix-lfs64-2.patch
+	patch -p1 fix-tests-devserver.patch
+	patch -p1 includedir.patch
+	patch -p1 install-pear.patch
+	patch -p1 php83-fpm-verison-suffix.patch
+	patch -p1 phpinfo-avif.patch
+	patch -p1 sharedir.patch
+	export CC=clang-18
 	export CXX=clang++-18
-    ./buildconf --force
-    EXTENSION_DIR=/usr/lib/modules ./configure \
-        --build=x86_64-linux-musl \
-        --host=x86_64-linux-musl \
+	./buildconf --force
+	EXTENSION_DIR=/usr/lib/modules ./configure \
+		--build=x86_64-linux-musl \
+		--host=x86_64-linux-musl \
 		--prefix=/usr \
 		--program-suffix=php83#php \
 		--libdir=/usr/lib \
@@ -166,10 +166,10 @@ RUN --network=none make INSTALL_ROOT=/rootfs install
 
 FROM build AS test
 RUN /bin/sh -c 'set -eux; \
-    if ! make TEST_PHP_ARGS=-j$(nproc) test; then \
-      echo "PHP test failed"; \
-      exit 1; \
-    fi'
+	if ! make TEST_PHP_ARGS=-j$(nproc) test; then \
+		echo "PHP test failed"; \
+		exit 1; \
+	fi'
 
 FROM stagex/filesystem AS package
 COPY --from=stagex/busybox . /

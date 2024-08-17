@@ -22,7 +22,7 @@ WORKDIR DBI-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	set -eux
-    perl Makefile.PL
+	perl Makefile.PL
 	PERL_MM_USE_DEFAULT="1 perl -I. Makefile.PL INSTALLDIRS=vendor"
 	make -j "$(nproc)"
 EOF

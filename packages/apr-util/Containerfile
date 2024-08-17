@@ -30,8 +30,8 @@ COPY *.patch .
 RUN --network=none <<-EOF
 	set -eux
 	patch -p1 < musl-fix-testsuite.patch
-    ./configure \
-	    --prefix=/usr \
+	./configure \
+		--prefix=/usr \
 		--with-apr=/usr \
 		--with-ldap \
 		--with-pgsql \
@@ -42,7 +42,7 @@ RUN --network=none <<-EOF
 		--without-sqlite2 \
 		--with-dbm=ndbm \
 		--with-ndbm
-    make -j "$(nproc)"
+	make -j "$(nproc)"
 EOF
 
 FROM build AS install

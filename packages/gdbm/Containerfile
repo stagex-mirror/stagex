@@ -21,7 +21,7 @@ WORKDIR gdbm-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	set -eux
-   	./configure \
+	./configure \
 		--build=${ARCH}-linux-musl \
 		--host=${ARCH}-linux-musl \
 		--prefix=/usr \

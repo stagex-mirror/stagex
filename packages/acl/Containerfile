@@ -22,7 +22,7 @@ RUN --network=none <<-EOF
     ./configure \
 		--build=${ARCH}-linux-musl \
 		--host=${ARCH}-linux-musl \
-	    --prefix=/usr \
+		--prefix=/usr \
 		--libdir=/usr/lib \
 		--libexecdir=/usr/libexec
 	make -j "$(nproc)"

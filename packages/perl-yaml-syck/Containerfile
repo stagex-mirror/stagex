@@ -21,7 +21,7 @@ WORKDIR YAML-Syck-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	set -eux \
-    export CFLAGS=$(perl -MConfig -E 'say $Config{ccflags}')
+	export CFLAGS=$(perl -MConfig -E 'say $Config{ccflags}')
 	PERL_MM_USE_DEFAULT=1 perl -I. Makefile.PL INSTALLDIRS=vendor
 	make -j "$(nproc)"
 EOF

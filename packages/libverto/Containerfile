@@ -50,7 +50,7 @@ RUN --network=none <<-EOF
 		--prefix=/usr \
 		--localstatedir=/var/lib \
 		--with-libdev \
-        --with-libevent
+		--with-libevent
 	make -j "$(nproc)"
 EOF
 

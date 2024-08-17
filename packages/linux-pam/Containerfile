@@ -29,9 +29,9 @@ RUN tar -xf ${SRC_FILE}
 WORKDIR Linux-PAM-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
-    export CFLAGS="-flto=auto $(pkg-config --cflags utmps)"
+	export CFLAGS="-flto=auto $(pkg-config --cflags utmps)"
 	export LDFLAGS=$(pkg-config --libs utmps)
-    ./configure \
+	./configure \
 		--build=${ARCH}-linux-musl \
 		--host=${ARCH}-linux-musl \
 		--prefix=/usr \
@@ -45,7 +45,7 @@ RUN --network=none <<-EOF
 		--disable-examples \
 		--sbindir=/usr/sbin \
 		--enable-securedir=/usr/lib/security
-    make -j "$(nproc)"
+	make -j "$(nproc)"
 EOF
 
 FROM build AS install

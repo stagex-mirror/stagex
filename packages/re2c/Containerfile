@@ -23,9 +23,9 @@ RUN tar -xvf $SRC_FILE
 WORKDIR re2c-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
-    autoreconf -i -W all
+	autoreconf -i -W all
 	./configure \
-        --prefix=/usr
+		--prefix=/usr
 	make -j "$(nproc)"
 EOF
 

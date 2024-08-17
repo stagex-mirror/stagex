@@ -20,10 +20,10 @@ RUN tar -xf ${SRC_FILE}
 WORKDIR hunspell-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
-    ./configure \
+	./configure \
 		--build=${ARCH}-linux-musl \
 		--host=${ARCH}-linux-musl \
-    	--prefix=/usr \
+		--prefix=/usr \
 		--with-ui \
 		--with-readline \
 		--disable-static \

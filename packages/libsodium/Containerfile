@@ -27,8 +27,8 @@ EOF
 
 FROM build AS install
 RUN --network=none <<-EOF
-    set -eu
-    make DESTDIR="/rootfs" install
+	set -eu
+	make DESTDIR="/rootfs" install
 EOF
 
 FROM stagex/filesystem AS package

@@ -23,7 +23,7 @@ RUN --network=none <<-EOF
 	./configure \
 		--build=${ARCH}-linux-musl \
 		--host=${ARCH}-linux-musl \
-        --prefix=/usr \
+		--prefix=/usr \
 		--sysconfdir=/etc
 	make -j "$(nproc)"
 EOF

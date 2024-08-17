@@ -22,11 +22,11 @@ WORKDIR libaio-libaio-${VERSION}
 COPY *.patch .
 RUN --network=none <<-EOF
 	set -eux
-    patch -p1 libaio-cppflags.patch
-    patch -p1 libaio-errno.patch
-    patch -p1 test-poll.patch
-    patch -p1 test.patch
-    make -j "$(nproc)"
+	patch -p1 libaio-cppflags.patch
+	patch -p1 libaio-errno.patch
+	patch -p1 test-poll.patch
+	patch -p1 test.patch
+	make -j "$(nproc)"
 EOF
 
 FROM build AS install

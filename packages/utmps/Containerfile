@@ -19,10 +19,10 @@ RUN tar -xf ${SRC_FILE}
 WORKDIR utmps-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
-    ./configure \
-	    --enable-shared \
+	./configure \
+		--enable-shared \
 		--enable-static \
-        --prefix=/usr \
+		--prefix=/usr \
 		--disable-allstatic \
 		--libdir=/usr/lib \
 		--libexecdir=/lib/utmps \

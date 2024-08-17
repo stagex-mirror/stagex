@@ -22,12 +22,12 @@ RUN --network=none <<-EOF
 	set -eux \
 	patch -p1 apr-1.6.2-dont-test-dlclose.patch
 	patch -p1 semtimedop-s390x.patch
-    ./configure \
-    	--prefix=/usr \
+	./configure \
+		--prefix=/usr \
 		--datadir=/usr/share \
 		--enable-nonportable-atomics=no \
 		--with-devrandom=/dev/urandom
-    make
+	make -j "$(nproc)"
 EOF
 
 FROM build as install

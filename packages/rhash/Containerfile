@@ -20,7 +20,7 @@ RUN tar -xf ${SRC_FILE}
 WORKDIR RHash-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
-   	./configure \
+	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \
 		--enable-openssl \
