@@ -1,4 +1,3 @@
-
 .PHONY: abseil-cpp
 abseil-cpp: out/abseil-cpp/index.json
 out/abseil-cpp/index.json: \
@@ -1424,6 +1423,23 @@ out/npth/index.json: \
 	out/musl/index.json \
 	out/zlib/index.json
 	$(call build,npth)
+
+.PHONY: ocismack
+ocismack: out/ocismack/index.json
+out/ocismack/index.json: \
+       packages/ocismack/Containerfile \
+       out/binutils/index.json \
+       out/busybox/index.json \
+       out/ca-certificates/index.json \
+       out/filesystem/index.json \
+       out/gcc/index.json \
+       out/libunwind/index.json \
+       out/llvm/index.json \
+       out/musl/index.json \
+       out/openssl/index.json \
+       out/rust/index.json \
+       out/zlib/index.json
+       $(call build,ocismack)
 
 .PHONY: openpgp-card-tools
 openpgp-card-tools: out/openpgp-card-tools/index.json
