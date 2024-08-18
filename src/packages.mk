@@ -1012,34 +1012,6 @@ out/libqrencode/index.json: \
 	out/musl/index.json
 	$(call build,libqrencode)
 
-.PHONY: libseccomp
-libseccomp: out/libseccomp/index.json
-out/libseccomp/index.json: \
-	packages/libseccomp/Containerfile \
-	out/binutils/index.json \
-	out/busybox/index.json \
-	out/cmake/index.json \
-	out/cython/index.json \
-	out/filesystem/index.json \
-	out/gcc/index.json \
-	out/gperf/index.json \
-	out/libffi/index.json \
-	out/make/index.json \
-	out/musl/index.json \
-	out/openssl/index.json \
-	out/py-cffi/index.json \
-	out/py-dateutil/index.json \
-	out/py-distro/index.json \
-	out/py-flit/index.json \
-	out/py-gpep517/index.json \
-	out/py-installer/index.json \
-	out/py-setuptools/index.json \
-	out/py-urllib3/index.json \
-	out/py-wheel/index.json \
-	out/python/index.json \
-	out/zlib/index.json
-	$(call build,libseccomp)
-
 .PHONY: libtool
 libtool: out/libtool/index.json
 out/libtool/index.json: \
