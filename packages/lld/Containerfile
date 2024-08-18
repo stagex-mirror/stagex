@@ -26,15 +26,15 @@ COPY --from=stagex/gcc /usr/lib64/* /usr/lib/
 RUN tar -xf ${SRC_FILE}
 WORKDIR llvm-project-${VERSION}.src
 RUN set -eux; \
-    cmake \
-        -S lld \
-        -B build \
-        -G Ninja \
-        -Wno-dev \
+	cmake \
+		-S lld \
+		-B build \
+		-G Ninja \
+		-Wno-dev \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_INSTALL_PREFIX=/usr/ \
 		-DCMAKE_INSTALL_RPATH=/usr/ \
-        -DLLVM_ENABLE_ZLIB=FORCE_ON; \
+		-DLLVM_ENABLE_ZLIB=FORCE_ON; \
 	cmake --build build
 
 FROM build AS install

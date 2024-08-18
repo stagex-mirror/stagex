@@ -25,11 +25,11 @@ RUN cargo fetch --locked
 
 FROM fetch AS build
 RUN --network=none \
-    cargo build \
-        --no-default-features \
-        --locked \
-        --release \
-        --target x86_64-unknown-linux-musl
+	cargo build \
+		--no-default-features \
+		--locked \
+		--release \
+		--target x86_64-unknown-linux-musl
 
 FROM build AS install
 WORKDIR /rootfs/usr/bin
