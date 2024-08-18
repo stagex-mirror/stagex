@@ -1,3 +1,4 @@
+
 .PHONY: abseil-cpp
 abseil-cpp: out/abseil-cpp/index.json
 out/abseil-cpp/index.json: \
@@ -421,7 +422,7 @@ out/eif_build/index.json: \
 	out/gcc/index.json \
 	out/git/index.json \
 	out/libunwind/index.json \
-	out/llvm/index.json \
+	out/llvm16/index.json \
 	out/musl/index.json \
 	out/openssl/index.json \
 	out/pkgconf/index.json \
@@ -819,7 +820,7 @@ out/keyfork/index.json: \
 	out/gmp/index.json \
 	out/libunwind/index.json \
 	out/linux-headers/index.json \
-	out/llvm/index.json \
+	out/llvm16/index.json \
 	out/musl/index.json \
 	out/nettle/index.json \
 	out/openssl/index.json \
@@ -1193,7 +1194,7 @@ out/lld/index.json: \
 	out/cmake/index.json \
 	out/filesystem/index.json \
 	out/gcc/index.json \
-	out/llvm/index.json \
+	out/llvm16/index.json \
 	out/musl/index.json \
 	out/ninja/index.json \
 	out/openssl/index.json \
@@ -1463,19 +1464,19 @@ out/npth/index.json: \
 .PHONY: ocismack
 ocismack: out/ocismack/index.json
 out/ocismack/index.json: \
-       packages/ocismack/Containerfile \
-       out/binutils/index.json \
-       out/busybox/index.json \
-       out/ca-certificates/index.json \
-       out/filesystem/index.json \
-       out/gcc/index.json \
-       out/libunwind/index.json \
-       out/llvm/index.json \
-       out/musl/index.json \
-       out/openssl/index.json \
-       out/rust/index.json \
-       out/zlib/index.json
-       $(call build,ocismack)
+	packages/ocismack/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libunwind/index.json \
+	out/llvm/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/rust/index.json \
+	out/zlib/index.json
+	$(call build,ocismack)
 
 .PHONY: openpgp-card-tools
 openpgp-card-tools: out/openpgp-card-tools/index.json
@@ -1484,13 +1485,13 @@ out/openpgp-card-tools/index.json: \
 	out/binutils/index.json \
 	out/busybox/index.json \
 	out/ca-certificates/index.json \
-	out/clang/index.json \
+	out/clang16/index.json \
 	out/filesystem/index.json \
 	out/gcc/index.json \
 	out/gmp/index.json \
 	out/libunwind/index.json \
 	out/linux-headers/index.json \
-	out/llvm/index.json \
+	out/llvm16/index.json \
 	out/musl/index.json \
 	out/nettle/index.json \
 	out/openssl/index.json \
@@ -2577,13 +2578,13 @@ out/zig/index.json: \
 	packages/zig/Containerfile \
 	out/binutils/index.json \
 	out/busybox/index.json \
-	out/clang/index.json \
+	out/clang16/index.json \
 	out/cmake/index.json \
 	out/filesystem/index.json \
 	out/gcc/index.json \
 	out/libzstd/index.json \
 	out/lld/index.json \
-	out/llvm/index.json \
+	out/llvm16/index.json \
 	out/make/index.json \
 	out/musl/index.json \
 	out/openssl/index.json \
