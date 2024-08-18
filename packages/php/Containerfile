@@ -2,8 +2,8 @@ FROM scratch AS base
 ARG ARCH=x86_64
 ENV PKG_NAME=php83
 ENV VERSION=8.3.4
-ENV SRC_HASH=c458cf3a9e83764055c6cf15f3348b06645ab499f424b32e33339ada954928db
-ENV SRC_FILE=php-${VERSION}RC1.tar.gz
+ENV SRC_HASH=4e633d4709afa5301d84d3821471bfb136f281bb71f9acca2fe9d29cc0407d2a
+ENV SRC_FILE=php-${VERSION}.tar.gz
 ENV SRC_SITE=https://github.com/php/php-src/archive/refs/tags/${SRC_FILE}
 
 FROM base AS fetch
@@ -47,8 +47,8 @@ COPY --from=stagex/python . /
 COPY --from=stagex/libedit . /
 COPY --from=stagex/linux-headers . /
 COPY --from=stagex/sqlite3 . /
-RUN tar -xf php-${VERSION}RC1.tar.gz
-WORKDIR php-src-php-${VERSION}RC1
+RUN tar -xf php-${VERSION}.tar.gz
+WORKDIR php-src-php-${VERSION}
 COPY *.patch .
 RUN --network=none <<-EOF
 	set -eux
