@@ -3544,6 +3544,19 @@ out/scdoc/index.json: \
 	out/musl/index.json
 	$(call build,scdoc)
 
+.PHONY: sdtool
+sdtool: out/sdtool/index.json
+out/sdtool/index.json: \
+	packages/sdtool/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/linux-headers/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,sdtool)
+
 .PHONY: sed
 sed: out/sed/index.json
 out/sed/index.json: \
