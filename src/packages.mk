@@ -436,6 +436,32 @@ out/curl/index.json: \
 	out/perl/index.json
 	$(call build,curl)
 
+.PHONY: cython
+cython: out/cython/index.json
+out/cython/index.json: \
+	packages/cython/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libffi/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/py-cffi/index.json \
+	out/py-dateutil/index.json \
+	out/py-distro/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-setuptools/index.json \
+	out/py-urllib3/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,cython)
+
 .PHONY: diffutils
 diffutils: out/diffutils/index.json
 out/diffutils/index.json: \
@@ -1749,7 +1775,7 @@ out/mdbook/index.json: \
 	out/filesystem/index.json \
 	out/gcc/index.json \
 	out/libunwind/index.json \
-	out/llvm/index.json \
+	out/llvm16/index.json \
 	out/musl/index.json \
 	out/openssl/index.json \
 	out/rust/index.json \
@@ -1902,7 +1928,7 @@ out/ocismack/index.json: \
 	out/filesystem/index.json \
 	out/gcc/index.json \
 	out/libunwind/index.json \
-	out/llvm/index.json \
+	out/llvm16/index.json \
 	out/musl/index.json \
 	out/openssl/index.json \
 	out/rust/index.json \
