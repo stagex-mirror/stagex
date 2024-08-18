@@ -42,11 +42,6 @@ WORKDIR glib-${VERSION}
 COPY *.patch .
 RUN --network=none <<-EOF
 	set -eux
-	patch -p1 alwaysbash.patch
-	patch -p1 deprecated-no-warn.patch
-	patch -p1 fix-tests.patch
-	patch -p1 flaky-tests.patch
-	patch -p1 tests-machine-id.patch
     export CFLAGS="-ffat-lto-objects -O2"
     export CXXFLAGS="-O2"
     export CPPFLAGS="-O2"
