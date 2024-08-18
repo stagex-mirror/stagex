@@ -21,9 +21,9 @@ RUN --network=none <<-EOF
 	make -j "$(nproc)" OPTTARGET=none ARGON2_VERSION=${VERSION}
 EOF
 
-FROM build as install
+FROM build AS install
 RUN make OPTTARGET=none LIBRARY_REL=lib DESTDIR=/rootfs install
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

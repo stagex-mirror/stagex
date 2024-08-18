@@ -1,0 +1,179 @@
+FROM scratch AS base
+ENV VERSION=9.0.2
+ENV SRC_HASH=a8c3f596aece96da3b00cafb74baafa0d14515eafb8ed1ee3f7f5c2d0ebf02b6
+ENV SRC_FILE=qemu-${VERSION}.tar.xz
+ENV SRC_SITE=https://download.qemu.org/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/bash . /
+COPY --from=stagex/gzip . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/python . /
+COPY --from=stagex/py-docutils . /
+COPY --from=stagex/py-pygments . /
+COPY --from=stagex/py-babel . /
+COPY --from=stagex/py-packaging . /
+COPY --from=stagex/py-sphinx . /
+COPY --from=stagex/py-sphinx_rtd_theme . /
+COPY --from=stagex/py-sphinxcontrib-applehelp . /
+COPY --from=stagex/py-sphinxcontrib-devhelp . /
+COPY --from=stagex/py-sphinxcontrib-htmlhelp . /
+COPY --from=stagex/py-sphinxcontrib-qthelp . /
+COPY --from=stagex/py-sphinxcontrib-serializinghtml . /
+COPY --from=stagex/py-sphinxcontrib-jquery . /
+COPY --from=stagex/py-jinja2 . /
+COPY --from=stagex/py-markupsafe . /
+COPY --from=stagex/py-snowballstemmer . /
+COPY --from=stagex/py-imagesize . /
+COPY --from=stagex/py-requests . /
+COPY --from=stagex/py-urllib3 . /
+COPY --from=stagex/py-idna . /
+COPY --from=stagex/py-certifi . /
+COPY --from=stagex/py-alabaster . /
+COPY --from=stagex/make . /
+COPY --from=stagex/bison . /
+COPY --from=stagex/meson . /
+COPY --from=stagex/ninja . /
+COPY --from=stagex/libtool . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/git . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/libffi . /
+COPY --from=stagex/libaio . /
+COPY --from=stagex/libzstd . /
+COPY --from=stagex/libseccomp . /
+COPY --from=stagex/libcap-ng . /
+COPY --from=stagex/alsa-lib . /
+COPY --from=stagex/ncurses . /
+COPY --from=stagex/curl . /
+COPY --from=stagex/flex . /
+COPY --from=stagex/openssh . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/pcre2 . /
+COPY --from=stagex/glib . /
+COPY --from=stagex/lzo . /
+COPY --from=stagex/dtc . /
+COPY --from=stagex/autoconf . /
+COPY --from=stagex/automake . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/gettext . /
+COPY --from=stagex/numactl . /
+COPY --from=stagex/m4 . /
+COPY --from=stagex/argp-standalone . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/musl-fts . /
+COPY --from=stagex/musl-obstack . /
+COPY --from=stagex/linux-headers . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR qemu-${VERSION}
+ADD *.patch .
+ENV SOURCE_DATE_EPOCH=1
+ENV LDFLAGS=" \
+    -Wl,-O1 -Wl,--sort-common -Wl,--as-needed -Wl,-z,relro \
+    -Wl,-z,now -Wl,-z,pack-relative-relocs"
+ENV CFLAGS=" \
+    -march=x86-64 -mtune=generic -O2 -pipe -fno-plt -fexceptions \
+    -Wp,-D_FORTIFY_SOURCE=3 -Wformat -Werror=format-security \
+    -fstack-clash-protection -fcf-protection \
+    -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer"
+ENV CXXFLAGS="$CFLAGS -Wp,-D_GLIBCXX_ASSERTIONS"
+ENV LTOFLAGS="-flto=auto"
+RUN --network=none <<-EOF
+    set -eux
+    ./configure \
+        --build="x86_64-linux-musl" \
+        --host="x86_64-linux-musl" \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        --libexecdir=/usr/lib/qemu \
+        --docdir=/usr/share/doc/qemu \
+        --python=/usr/bin/python \
+        --cc=gcc \
+        --audio-drv-list=oss,alsa \
+        --enable-curses \
+        --enable-modules \
+        --enable-tpm \
+        --disable-docs \
+        --disable-sdl \
+        --disable-gtk \
+        --disable-bpf \
+        --disable-capstone \
+        --disable-glusterfs \
+        --disable-debug-info \
+        --disable-opengl \
+        --disable-bsd-user \
+        --disable-werror \
+        --disable-libnfs \
+        --disable-libssh \
+        --disable-snappy \
+        --disable-spice \
+        --disable-usb-redir \
+        --disable-vde \
+        --disable-vhost-net \
+        --disable-virglrenderer \
+        --disable-virtfs \
+        --disable-vnc \
+        --disable-vnc-jpeg \
+        --disable-xen
+    make ARFLAGS="rc"
+EOF
+
+FROM build AS install
+RUN --network=none <<-EOF
+    make DESTDIR=/rootfs install
+    rm -rf /rootfs/var/run
+    strip /rootfs/usr/bin/qemu-*
+    # These are not currently deterministic so we can't release them yet
+    rm -rf /rootfs/usr/bin/qemu-aarch64
+    rm -rf /rootfs/usr/bin/qemu-aarch64_be
+    rm -rf /rootfs/usr/bin/qemu-arm
+    rm -rf /rootfs/usr/bin/qemu-armeb
+    rm -rf /rootfs/usr/bin/qemu-hexagon
+    rm -rf /rootfs/usr/bin/qemu-hppa
+    rm -rf /rootfs/usr/bin/qemu-loongarch64
+    rm -rf /rootfs/usr/bin/qemu-microblaze
+    rm -rf /rootfs/usr/bin/qemu-microblazeel
+    rm -rf /rootfs/usr/bin/qemu-mips
+    rm -rf /rootfs/usr/bin/qemu-mips64
+    rm -rf /rootfs/usr/bin/qemu-mips64el
+    rm -rf /rootfs/usr/bin/qemu-mipsel
+    rm -rf /rootfs/usr/bin/qemu-mipsn32
+    rm -rf /rootfs/usr/bin/qemu-mipsn32el
+    rm -rf /rootfs/usr/bin/qemu-or1k
+    rm -rf /rootfs/usr/bin/qemu-ppc
+    rm -rf /rootfs/usr/bin/qemu-ppc64
+    rm -rf /rootfs/usr/bin/qemu-ppc64le
+    rm -rf /rootfs/usr/bin/qemu-riscv32
+    rm -rf /rootfs/usr/bin/qemu-riscv64
+    rm -rf /rootfs/usr/bin/qemu-sparc
+    rm -rf /rootfs/usr/bin/qemu-sparc32plus
+    rm -rf /rootfs/usr/bin/qemu-sparc64
+    rm -rf /rootfs/usr/bin/qemu-system-aarch64
+    rm -rf /rootfs/usr/bin/qemu-system-arm
+    rm -rf /rootfs/usr/bin/qemu-system-avr
+    rm -rf /rootfs/usr/bin/qemu-system-hppa
+    rm -rf /rootfs/usr/bin/qemu-system-loongarch64
+    rm -rf /rootfs/usr/bin/qemu-system-microblaze
+    rm -rf /rootfs/usr/bin/qemu-system-microblazeel
+    rm -rf /rootfs/usr/bin/qemu-system-mips
+    rm -rf /rootfs/usr/bin/qemu-system-mips64
+    rm -rf /rootfs/usr/bin/qemu-system-mips64el
+    rm -rf /rootfs/usr/bin/qemu-system-mipsel
+    rm -rf /rootfs/usr/bin/qemu-system-or1k
+    rm -rf /rootfs/usr/bin/qemu-system-ppc
+    rm -rf /rootfs/usr/bin/qemu-system-ppc64
+    rm -rf /rootfs/usr/bin/qemu-system-riscv32
+    rm -rf /rootfs/usr/bin/qemu-system-riscv64
+    rm -rf /rootfs/usr/bin/qemu-system-rx
+    rm -rf /rootfs/usr/bin/qemu-system-sparc
+    rm -rf /rootfs/usr/bin/qemu-system-sparc64
+EOF
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /

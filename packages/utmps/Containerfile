@@ -8,7 +8,7 @@ ENV SRC_SITE=https://skarnet.org/software/utmps/${SRC_FILE}
 FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/musl . /
 COPY --from=stagex/gcc . /
 COPY --from=stagex/busybox . /

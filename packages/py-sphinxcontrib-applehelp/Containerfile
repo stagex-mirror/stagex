@@ -1,8 +1,8 @@
 FROM scratch AS base
-ENV VERSION=0.20.1
-ENV SRC_HASH=f08a4e276c3a1583a86dce3e34aba3fe04d02bba2dd51ed16106244e8a923e3b
-ENV SRC_FILE=docutils-${VERSION}.tar.gz
-ENV SRC_SITE=https://files.pythonhosted.org/packages/source/d/docutils/${SRC_FILE}
+ENV VERSION=1.0.4
+ENV SRC_HASH=828f867945bbe39817c210a1abfd1bc4895c8b73fcaade56d45357a348a07d7e
+ENV SRC_FILE=sphinxcontrib-applehelp-${VERSION}.tar.gz
+ENV SRC_SITE=https://files.pythonhosted.org/packages/source/s/sphinxcontrib-applehelp/${SRC_FILE}
 
 FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
@@ -10,21 +10,21 @@ ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/musl . /
-COPY --from=stagex/python . /
 COPY --from=stagex/libffi . /
+COPY --from=stagex/python . /
 COPY --from=stagex/py-flit . /
-COPY --from=stagex/py-wheel . /
+COPY --from=stagex/py-gpep517 . /
 COPY --from=stagex/py-installer . /
 COPY --from=stagex/py-setuptools . /
-COPY --from=stagex/py-gpep517 . /
+COPY --from=stagex/py-wheel . /
 COPY --from=stagex/zlib . /
 RUN tar -xzf ${SRC_FILE}
-WORKDIR docutils-${VERSION}
+WORKDIR sphinxcontrib-applehelp-${VERSION}
 RUN gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 
 FROM build AS install
 RUN --network=none <<-EOF
-    set -eu
+	set -eu
     python -m installer -d /rootfs .dist/*.whl
     find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
