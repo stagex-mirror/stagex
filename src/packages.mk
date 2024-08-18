@@ -15,6 +15,78 @@ out/abseil-cpp/index.json: \
 	out/zlib/index.json
 	$(call build,abseil-cpp)
 
+.PHONY: acl
+acl: out/acl/index.json
+out/acl/index.json: \
+	packages/acl/Containerfile \
+	out/attr/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,acl)
+
+.PHONY: alsa-lib
+alsa-lib: out/alsa-lib/index.json
+out/alsa-lib/index.json: \
+	packages/alsa-lib/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/linux-headers/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,alsa-lib)
+
+.PHONY: apr
+apr: out/apr/index.json
+out/apr/index.json: \
+	packages/apr/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/util-linux/index.json
+	$(call build,apr)
+
+.PHONY: apr-util
+apr-util: out/apr-util/index.json
+out/apr-util/index.json: \
+	packages/apr-util/Containerfile \
+	out/apr/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/expat/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/gdbm/index.json \
+	out/libtool/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openldap/index.json \
+	out/openssl/index.json \
+	out/postgresql/index.json \
+	out/sqlite3/index.json \
+	out/util-linux/index.json
+	$(call build,apr-util)
+
+.PHONY: argon2
+argon2: out/argon2/index.json
+out/argon2/index.json: \
+	packages/argon2/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,argon2)
+
 .PHONY: argp-standalone
 argp-standalone: out/argp-standalone/index.json
 out/argp-standalone/index.json: \
@@ -30,6 +102,32 @@ out/argp-standalone/index.json: \
 	out/musl/index.json \
 	out/perl/index.json
 	$(call build,argp-standalone)
+
+.PHONY: aspell
+aspell: out/aspell/index.json
+out/aspell/index.json: \
+	packages/aspell/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/perl/index.json
+	$(call build,aspell)
+
+.PHONY: attr
+attr: out/attr/index.json
+out/attr/index.json: \
+	packages/attr/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/perl/index.json
+	$(call build,attr)
 
 .PHONY: autoconf
 autoconf: out/autoconf/index.json
@@ -167,6 +265,21 @@ out/bison/index.json: \
 	out/perl/index.json
 	$(call build,bison)
 
+.PHONY: brotli
+brotli: out/brotli/index.json
+out/brotli/index.json: \
+	packages/brotli/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/samurai/index.json
+	$(call build,brotli)
+
 .PHONY: buf
 buf: out/buf/index.json
 out/buf/index.json: \
@@ -239,12 +352,16 @@ out/clang/index.json: \
 	out/cmake/index.json \
 	out/filesystem/index.json \
 	out/gcc/index.json \
+	out/git/index.json \
+	out/libxml2/index.json \
+	out/linux-headers/index.json \
 	out/llvm/index.json \
 	out/musl/index.json \
 	out/ninja/index.json \
 	out/openssl/index.json \
 	out/py-setuptools/index.json \
 	out/python/index.json \
+	out/samurai/index.json \
 	out/zlib/index.json
 	$(call build,clang)
 
@@ -322,6 +439,32 @@ out/curl/index.json: \
 	out/perl/index.json
 	$(call build,curl)
 
+.PHONY: cython
+cython: out/cython/index.json
+out/cython/index.json: \
+	packages/cython/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libffi/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/py-cffi/index.json \
+	out/py-dateutil/index.json \
+	out/py-distro/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-setuptools/index.json \
+	out/py-urllib3/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,cython)
+
 .PHONY: diffutils
 diffutils: out/diffutils/index.json
 out/diffutils/index.json: \
@@ -380,6 +523,53 @@ out/dosfstools/index.json: \
 	out/musl/index.json \
 	out/perl/index.json
 	$(call build,dosfstools)
+
+.PHONY: doxygen
+doxygen: out/doxygen/index.json
+out/doxygen/index.json: \
+	packages/doxygen/Containerfile \
+	out/binutils/index.json \
+	out/bison/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/coreutils/index.json \
+	out/filesystem/index.json \
+	out/flex/index.json \
+	out/gcc/index.json \
+	out/libxml2/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json \
+	out/python/index.json \
+	out/samurai/index.json
+	$(call build,doxygen)
+
+.PHONY: dtc
+dtc: out/dtc/index.json
+out/dtc/index.json: \
+	packages/dtc/Containerfile \
+	out/binutils/index.json \
+	out/bison/index.json \
+	out/busybox/index.json \
+	out/coreutils/index.json \
+	out/filesystem/index.json \
+	out/flex/index.json \
+	out/gcc/index.json \
+	out/libzstd/index.json \
+	out/linux-headers/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json \
+	out/py-setuptools/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,dtc)
 
 .PHONY: e2fsprogs
 e2fsprogs: out/e2fsprogs/index.json
@@ -471,6 +661,18 @@ out/eudev/index.json: \
 	out/musl/index.json
 	$(call build,eudev)
 
+.PHONY: expat
+expat: out/expat/index.json
+out/expat/index.json: \
+	packages/expat/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,expat)
+
 .PHONY: file
 file: out/file/index.json
 out/file/index.json: \
@@ -538,6 +740,42 @@ out/flex/index.json: \
 	out/perl/index.json
 	$(call build,flex)
 
+.PHONY: fmt
+fmt: out/fmt/index.json
+out/fmt/index.json: \
+	packages/fmt/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/doxygen/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/postgresql/index.json \
+	out/python/index.json \
+	out/samurai/index.json
+	$(call build,fmt)
+
+.PHONY: freetds
+freetds: out/freetds/index.json
+out/freetds/index.json: \
+	packages/freetds/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libtool/index.json \
+	out/linux-headers/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/perl/index.json \
+	out/readline/index.json \
+	out/unixodbc/index.json
+	$(call build,freetds)
+
 .PHONY: gawk
 gawk: out/gawk/index.json
 out/gawk/index.json: \
@@ -560,6 +798,20 @@ out/gcc/index.json: \
 	out/musl/index.json \
 	out/stage3/index.json
 	$(call build,gcc)
+
+.PHONY: gdbm
+gdbm: out/gdbm/index.json
+out/gdbm/index.json: \
+	packages/gdbm/Containerfile \
+	out/bash/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json
+	$(call build,gdbm)
 
 .PHONY: gen_initramfs
 gen_initramfs: out/gen_initramfs/index.json
@@ -601,6 +853,39 @@ out/git/index.json: \
 	out/perl/index.json \
 	out/zlib/index.json
 	$(call build,git)
+
+.PHONY: glib
+glib: out/glib/index.json
+out/glib/index.json: \
+	packages/glib/Containerfile \
+	out/binutils/index.json \
+	out/bison/index.json \
+	out/busybox/index.json \
+	out/bzip2/index.json \
+	out/cmake/index.json \
+	out/expat/index.json \
+	out/filesystem/index.json \
+	out/flex/index.json \
+	out/gcc/index.json \
+	out/gettext/index.json \
+	out/libffi/index.json \
+	out/libxml2/index.json \
+	out/libxslt/index.json \
+	out/linux-headers/index.json \
+	out/make/index.json \
+	out/meson/index.json \
+	out/musl/index.json \
+	out/ncurses/index.json \
+	out/ninja/index.json \
+	out/pcre2/index.json \
+	out/pkgconf/index.json \
+	out/py-packaging/index.json \
+	out/python/index.json \
+	out/rhash/index.json \
+	out/util-linux/index.json \
+	out/xz/index.json \
+	out/zlib/index.json
+	$(call build,glib)
 
 .PHONY: gmp
 gmp: out/gmp/index.json
@@ -683,6 +968,20 @@ out/grep/index.json: \
 	out/musl/index.json
 	$(call build,grep)
 
+.PHONY: groff
+groff: out/groff/index.json
+out/groff/index.json: \
+	packages/groff/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/perl/index.json
+	$(call build,groff)
+
 .PHONY: grpcurl
 grpcurl: out/grpcurl/index.json
 out/grpcurl/index.json: \
@@ -738,6 +1037,20 @@ out/helm/index.json: \
 	out/filesystem/index.json \
 	out/go/index.json
 	$(call build,helm)
+
+.PHONY: hunspell
+hunspell: out/hunspell/index.json
+out/hunspell/index.json: \
+	packages/hunspell/Containerfile \
+	out/bash/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json
+	$(call build,hunspell)
 
 .PHONY: icu
 icu: out/icu/index.json
@@ -830,6 +1143,36 @@ out/keyfork/index.json: \
 	out/zlib/index.json
 	$(call build,keyfork)
 
+.PHONY: krb5
+krb5: out/krb5/index.json
+out/krb5/index.json: \
+	packages/krb5/Containerfile \
+	out/autoconf/index.json \
+	out/automake/index.json \
+	out/bash/index.json \
+	out/binutils/index.json \
+	out/bison/index.json \
+	out/busybox/index.json \
+	out/curl/index.json \
+	out/e2fsprogs/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/groff/index.json \
+	out/libevent/index.json \
+	out/libtool/index.json \
+	out/libverto/index.json \
+	out/linux-headers/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openldap/index.json \
+	out/openssl/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json \
+	out/python/index.json \
+	out/util-linux/index.json
+	$(call build,krb5)
+
 .PHONY: ksops-dry-run
 ksops-dry-run: out/ksops-dry-run/index.json
 out/ksops-dry-run/index.json: \
@@ -880,6 +1223,20 @@ out/kustomize-sops/index.json: \
 	out/go/index.json
 	$(call build,kustomize-sops)
 
+.PHONY: libaio
+libaio: out/libaio/index.json
+out/libaio/index.json: \
+	packages/libaio/Containerfile \
+	out/bash/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/linux-headers/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,libaio)
+
 .PHONY: libarchive
 libarchive: out/libarchive/index.json
 out/libarchive/index.json: \
@@ -920,6 +1277,50 @@ out/libcap/index.json: \
 	out/perl/index.json
 	$(call build,libcap)
 
+.PHONY: libcap-ng
+libcap-ng: out/libcap-ng/index.json
+out/libcap-ng/index.json: \
+	packages/libcap-ng/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/linux-headers/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,libcap-ng)
+
+.PHONY: libedit
+libedit: out/libedit/index.json
+out/libedit/index.json: \
+	packages/libedit/Containerfile \
+	out/autoconf/index.json \
+	out/automake/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gawk/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/ncurses/index.json \
+	out/perl/index.json
+	$(call build,libedit)
+
+.PHONY: libevent
+libevent: out/libevent/index.json
+out/libevent/index.json: \
+	packages/libevent/Containerfile \
+	out/bash/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json
+	$(call build,libevent)
+
 .PHONY: libffi
 libffi: out/libffi/index.json
 out/libffi/index.json: \
@@ -958,6 +1359,38 @@ out/libgpg-error/index.json: \
 	out/npth/index.json
 	$(call build,libgpg-error)
 
+.PHONY: libical
+libical: out/libical/index.json
+out/libical/index.json: \
+	packages/libical/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/icu/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/ninja/index.json \
+	out/openssl/index.json \
+	out/perl/index.json \
+	out/samurai/index.json
+	$(call build,libical)
+
+.PHONY: libiconv
+libiconv: out/libiconv/index.json
+out/libiconv/index.json: \
+	packages/libiconv/Containerfile \
+	out/bash/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json
+	$(call build,libiconv)
+
 .PHONY: libksba
 libksba: out/libksba/index.json
 out/libksba/index.json: \
@@ -985,6 +1418,35 @@ out/libqrencode/index.json: \
 	out/make/index.json \
 	out/musl/index.json
 	$(call build,libqrencode)
+
+.PHONY: libseccomp
+libseccomp: out/libseccomp/index.json
+out/libseccomp/index.json: \
+	packages/libseccomp/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cython/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/gperf/index.json \
+	out/linux-headers/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,libseccomp)
+
+.PHONY: libsodium
+libsodium: out/libsodium/index.json
+out/libsodium/index.json: \
+	packages/libsodium/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,libsodium)
 
 .PHONY: libtool
 libtool: out/libtool/index.json
@@ -1026,6 +1488,35 @@ out/libusb/index.json: \
 	out/make/index.json \
 	out/musl/index.json
 	$(call build,libusb)
+
+.PHONY: libverto
+libverto: out/libverto/index.json
+out/libverto/index.json: \
+	packages/libverto/Containerfile \
+	out/autoconf/index.json \
+	out/automake/index.json \
+	out/bash/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/curl/index.json \
+	out/e2fsprogs/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/groff/index.json \
+	out/libedit/index.json \
+	out/libevent/index.json \
+	out/libtool/index.json \
+	out/linux-headers/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openldap/index.json \
+	out/openssl/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json \
+	out/python/index.json \
+	out/util-linux/index.json
+	$(call build,libverto)
 
 .PHONY: libxml2
 libxml2: out/libxml2/index.json
@@ -1185,6 +1676,29 @@ out/linux-nitro/index.json: \
 	out/zlib/index.json
 	$(call build,linux-nitro)
 
+.PHONY: linux-pam
+linux-pam: out/linux-pam/index.json
+out/linux-pam/index.json: \
+	packages/linux-pam/Containerfile \
+	out/autoconf/index.json \
+	out/automake/index.json \
+	out/binutils/index.json \
+	out/bison/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/flex/index.json \
+	out/gcc/index.json \
+	out/gettext/index.json \
+	out/libtool/index.json \
+	out/linux-headers/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json \
+	out/utmps/index.json
+	$(call build,linux-pam)
+
 .PHONY: lld
 lld: out/lld/index.json
 out/lld/index.json: \
@@ -1255,6 +1769,20 @@ out/llvm16/index.json: \
 	out/zlib/index.json
 	$(call build,llvm16)
 
+.PHONY: lmdb
+lmdb: out/lmdb/index.json
+out/lmdb/index.json: \
+	packages/lmdb/Containerfile \
+	out/bash/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json
+	$(call build,lmdb)
+
 .PHONY: lua
 lua: out/lua/index.json
 out/lua/index.json: \
@@ -1288,6 +1816,22 @@ out/lzip/index.json: \
 	out/musl/index.json
 	$(call build,lzip)
 
+.PHONY: lzo
+lzo: out/lzo/index.json
+out/lzo/index.json: \
+	packages/lzo/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/linux-headers/index.json \
+	out/musl/index.json \
+	out/ninja/index.json \
+	out/openssl/index.json \
+	out/zlib/index.json
+	$(call build,lzo)
+
 .PHONY: m4
 m4: out/m4/index.json
 out/m4/index.json: \
@@ -1318,7 +1862,7 @@ out/mdbook/index.json: \
 	out/filesystem/index.json \
 	out/gcc/index.json \
 	out/libunwind/index.json \
-	out/llvm/index.json \
+	out/llvm16/index.json \
 	out/musl/index.json \
 	out/openssl/index.json \
 	out/rust/index.json \
@@ -1461,6 +2005,39 @@ out/npth/index.json: \
 	out/zlib/index.json
 	$(call build,npth)
 
+.PHONY: numactl
+numactl: out/numactl/index.json
+out/numactl/index.json: \
+	packages/numactl/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/gperf/index.json \
+	out/linux-headers/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,numactl)
+
+.PHONY: nuspell
+nuspell: out/nuspell/index.json
+out/nuspell/index.json: \
+	packages/nuspell/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/icu/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/ninja/index.json \
+	out/openssl/index.json \
+	out/perl/index.json \
+	out/samurai/index.json
+	$(call build,nuspell)
+
 .PHONY: ocismack
 ocismack: out/ocismack/index.json
 out/ocismack/index.json: \
@@ -1471,12 +2048,36 @@ out/ocismack/index.json: \
 	out/filesystem/index.json \
 	out/gcc/index.json \
 	out/libunwind/index.json \
-	out/llvm/index.json \
+	out/llvm16/index.json \
 	out/musl/index.json \
 	out/openssl/index.json \
 	out/rust/index.json \
 	out/zlib/index.json
 	$(call build,ocismack)
+
+.PHONY: openldap
+openldap: out/openldap/index.json
+out/openldap/index.json: \
+	packages/openldap/Containerfile \
+	out/argon2/index.json \
+	out/autoconf/index.json \
+	out/automake/index.json \
+	out/bash/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/groff/index.json \
+	out/libedit/index.json \
+	out/libevent/index.json \
+	out/libtool/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/perl/index.json \
+	out/unixodbc/index.json
+	$(call build,openldap)
 
 .PHONY: openpgp-card-tools
 openpgp-card-tools: out/openpgp-card-tools/index.json
@@ -1569,6 +2170,31 @@ out/openssl/index.json: \
 	out/perl/index.json
 	$(call build,openssl)
 
+.PHONY: pcre2
+pcre2: out/pcre2/index.json
+out/pcre2/index.json: \
+	packages/pcre2/Containerfile \
+	out/autoconf/index.json \
+	out/automake/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/bzip2/index.json \
+	out/filesystem/index.json \
+	out/gawk/index.json \
+	out/gcc/index.json \
+	out/libedit/index.json \
+	out/libtool/index.json \
+	out/libzstd/index.json \
+	out/linux-headers/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/ncurses/index.json \
+	out/perl/index.json \
+	out/readline/index.json \
+	out/zlib/index.json
+	$(call build,pcre2)
+
 .PHONY: pcsc-lite
 pcsc-lite: out/pcsc-lite/index.json
 out/pcsc-lite/index.json: \
@@ -1615,6 +2241,21 @@ out/perl/index.json: \
 	out/musl/index.json
 	$(call build,perl)
 
+.PHONY: perl-dbi
+perl-dbi: out/perl-dbi/index.json
+out/perl-dbi/index.json: \
+	packages/perl-dbi/Containerfile \
+	out/bash/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json
+	$(call build,perl-dbi)
+
 .PHONY: perl-module-build
 perl-module-build: out/perl-module-build/index.json
 out/perl-module-build/index.json: \
@@ -1638,6 +2279,63 @@ out/perl-pod-parser/index.json: \
 	out/musl/index.json \
 	out/perl/index.json
 	$(call build,perl-pod-parser)
+
+.PHONY: perl-yaml-syck
+perl-yaml-syck: out/perl-yaml-syck/index.json
+out/perl-yaml-syck/index.json: \
+	packages/perl-yaml-syck/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/perl/index.json
+	$(call build,perl-yaml-syck)
+
+.PHONY: php
+php: out/php/index.json
+out/php/index.json: \
+	packages/php/Containerfile \
+	out/acl/index.json \
+	out/autoconf/index.json \
+	out/automake/index.json \
+	out/bash/index.json \
+	out/bc/index.json \
+	out/binutils/index.json \
+	out/bison/index.json \
+	out/busybox/index.json \
+	out/bzip2/index.json \
+	out/clang/index.json \
+	out/curl/index.json \
+	out/expat/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/gdbm/index.json \
+	out/gettext/index.json \
+	out/gmp/index.json \
+	out/icu/index.json \
+	out/libedit/index.json \
+	out/libunwind/index.json \
+	out/libxml2/index.json \
+	out/libzstd/index.json \
+	out/linux-headers/index.json \
+	out/lld/index.json \
+	out/llvm/index.json \
+	out/lmdb/index.json \
+	out/lzip/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/pcre2/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json \
+	out/python/index.json \
+	out/re2c/index.json \
+	out/sqlite3/index.json \
+	out/zlib/index.json
+	$(call build,php)
 
 .PHONY: pkgconf
 pkgconf: out/pkgconf/index.json
@@ -1771,6 +2469,29 @@ out/protoc-go-inject-tag/index.json: \
 	out/go/index.json
 	$(call build,protoc-go-inject-tag)
 
+.PHONY: py-alabaster
+py-alabaster: out/py-alabaster/index.json
+out/py-alabaster/index.json: \
+	packages/py-alabaster/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libffi/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-packaging/index.json \
+	out/py-setuptools/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-alabaster)
+
 .PHONY: py-awscrt
 py-awscrt: out/py-awscrt/index.json
 out/py-awscrt/index.json: \
@@ -1792,6 +2513,29 @@ out/py-awscrt/index.json: \
 	out/python/index.json \
 	out/zlib/index.json
 	$(call build,py-awscrt)
+
+.PHONY: py-babel
+py-babel: out/py-babel/index.json
+out/py-babel/index.json: \
+	packages/py-babel/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libffi/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-packaging/index.json \
+	out/py-setuptools/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-babel)
 
 .PHONY: py-botocore
 py-botocore: out/py-botocore/index.json
@@ -1947,9 +2691,13 @@ out/py-docutils/index.json: \
 	packages/py-docutils/Containerfile \
 	out/busybox/index.json \
 	out/filesystem/index.json \
+	out/libffi/index.json \
 	out/musl/index.json \
 	out/py-flit/index.json \
 	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-setuptools/index.json \
+	out/py-wheel/index.json \
 	out/python/index.json \
 	out/zlib/index.json
 	$(call build,py-docutils)
@@ -1977,6 +2725,77 @@ out/py-gpep517/index.json: \
 	out/zlib/index.json
 	$(call build,py-gpep517)
 
+.PHONY: py-hatchling
+py-hatchling: out/py-hatchling/index.json
+out/py-hatchling/index.json: \
+	packages/py-hatchling/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libffi/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-packaging/index.json \
+	out/py-pathspec/index.json \
+	out/py-pluggy/index.json \
+	out/py-trove-classifiers/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-hatchling)
+
+.PHONY: py-idna
+py-idna: out/py-idna/index.json
+out/py-idna/index.json: \
+	packages/py-idna/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libffi/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-packaging/index.json \
+	out/py-setuptools/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-idna)
+
+.PHONY: py-imagesize
+py-imagesize: out/py-imagesize/index.json
+out/py-imagesize/index.json: \
+	packages/py-imagesize/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libffi/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-packaging/index.json \
+	out/py-setuptools/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-imagesize)
+
 .PHONY: py-installer
 py-installer: out/py-installer/index.json
 out/py-installer/index.json: \
@@ -1994,6 +2813,28 @@ out/py-installer/index.json: \
 	out/zlib/index.json
 	$(call build,py-installer)
 
+.PHONY: py-jinja2
+py-jinja2: out/py-jinja2/index.json
+out/py-jinja2/index.json: \
+	packages/py-jinja2/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libffi/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-packaging/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-jinja2)
+
 .PHONY: py-jmespath
 py-jmespath: out/py-jmespath/index.json
 out/py-jmespath/index.json: \
@@ -2006,6 +2847,29 @@ out/py-jmespath/index.json: \
 	out/python/index.json \
 	out/zlib/index.json
 	$(call build,py-jmespath)
+
+.PHONY: py-markupsafe
+py-markupsafe: out/py-markupsafe/index.json
+out/py-markupsafe/index.json: \
+	packages/py-markupsafe/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libffi/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-packaging/index.json \
+	out/py-setuptools/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-markupsafe)
 
 .PHONY: py-packaging
 py-packaging: out/py-packaging/index.json
@@ -2020,6 +2884,27 @@ out/py-packaging/index.json: \
 	out/zlib/index.json
 	$(call build,py-packaging)
 
+.PHONY: py-pathspec
+py-pathspec: out/py-pathspec/index.json
+out/py-pathspec/index.json: \
+	packages/py-pathspec/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libffi/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-pathspec)
+
 .PHONY: py-pep517
 py-pep517: out/py-pep517/index.json
 out/py-pep517/index.json: \
@@ -2031,6 +2916,29 @@ out/py-pep517/index.json: \
 	out/python/index.json \
 	out/zlib/index.json
 	$(call build,py-pep517)
+
+.PHONY: py-pluggy
+py-pluggy: out/py-pluggy/index.json
+out/py-pluggy/index.json: \
+	packages/py-pluggy/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libffi/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-pathspec/index.json \
+	out/py-setuptools/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-pluggy)
 
 .PHONY: py-prompt_toolkit
 py-prompt_toolkit: out/py-prompt_toolkit/index.json
@@ -2044,6 +2952,55 @@ out/py-prompt_toolkit/index.json: \
 	out/python/index.json \
 	out/zlib/index.json
 	$(call build,py-prompt_toolkit)
+
+.PHONY: py-pygments
+py-pygments: out/py-pygments/index.json
+out/py-pygments/index.json: \
+	packages/py-pygments/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libffi/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-hatchling/index.json \
+	out/py-installer/index.json \
+	out/py-packaging/index.json \
+	out/py-pathspec/index.json \
+	out/py-pluggy/index.json \
+	out/py-trove-classifiers/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-pygments)
+
+.PHONY: py-requests
+py-requests: out/py-requests/index.json
+out/py-requests/index.json: \
+	packages/py-requests/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libffi/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-packaging/index.json \
+	out/py-setuptools/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-requests)
 
 .PHONY: py-ruamel.yaml
 py-ruamel.yaml: out/py-ruamel.yaml/index.json
@@ -2138,6 +3095,162 @@ out/py-six/index.json: \
 	out/zlib/index.json
 	$(call build,py-six)
 
+.PHONY: py-snowballstemmer
+py-snowballstemmer: out/py-snowballstemmer/index.json
+out/py-snowballstemmer/index.json: \
+	packages/py-snowballstemmer/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libffi/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-packaging/index.json \
+	out/py-setuptools/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-snowballstemmer)
+
+.PHONY: py-sphinx
+py-sphinx: out/py-sphinx/index.json
+out/py-sphinx/index.json: \
+	packages/py-sphinx/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/musl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-sphinx)
+
+.PHONY: py-sphinx_rtd_theme
+py-sphinx_rtd_theme: out/py-sphinx_rtd_theme/index.json
+out/py-sphinx_rtd_theme/index.json: \
+	packages/py-sphinx_rtd_theme/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/libffi/index.json \
+	out/musl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-setuptools/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-sphinx_rtd_theme)
+
+.PHONY: py-sphinxcontrib-applehelp
+py-sphinxcontrib-applehelp: out/py-sphinxcontrib-applehelp/index.json
+out/py-sphinxcontrib-applehelp/index.json: \
+	packages/py-sphinxcontrib-applehelp/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/libffi/index.json \
+	out/musl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-setuptools/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-sphinxcontrib-applehelp)
+
+.PHONY: py-sphinxcontrib-devhelp
+py-sphinxcontrib-devhelp: out/py-sphinxcontrib-devhelp/index.json
+out/py-sphinxcontrib-devhelp/index.json: \
+	packages/py-sphinxcontrib-devhelp/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/libffi/index.json \
+	out/musl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-setuptools/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-sphinxcontrib-devhelp)
+
+.PHONY: py-sphinxcontrib-htmlhelp
+py-sphinxcontrib-htmlhelp: out/py-sphinxcontrib-htmlhelp/index.json
+out/py-sphinxcontrib-htmlhelp/index.json: \
+	packages/py-sphinxcontrib-htmlhelp/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/libffi/index.json \
+	out/musl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-setuptools/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-sphinxcontrib-htmlhelp)
+
+.PHONY: py-sphinxcontrib-jquery
+py-sphinxcontrib-jquery: out/py-sphinxcontrib-jquery/index.json
+out/py-sphinxcontrib-jquery/index.json: \
+	packages/py-sphinxcontrib-jquery/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/libffi/index.json \
+	out/musl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-setuptools/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-sphinxcontrib-jquery)
+
+.PHONY: py-sphinxcontrib-qthelp
+py-sphinxcontrib-qthelp: out/py-sphinxcontrib-qthelp/index.json
+out/py-sphinxcontrib-qthelp/index.json: \
+	packages/py-sphinxcontrib-qthelp/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/libffi/index.json \
+	out/musl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-setuptools/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-sphinxcontrib-qthelp)
+
+.PHONY: py-sphinxcontrib-serializinghtml
+py-sphinxcontrib-serializinghtml: out/py-sphinxcontrib-serializinghtml/index.json
+out/py-sphinxcontrib-serializinghtml/index.json: \
+	packages/py-sphinxcontrib-serializinghtml/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/libffi/index.json \
+	out/musl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-setuptools/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-sphinxcontrib-serializinghtml)
+
 .PHONY: py-toml
 py-toml: out/py-toml/index.json
 out/py-toml/index.json: \
@@ -2149,6 +3262,28 @@ out/py-toml/index.json: \
 	out/python/index.json \
 	out/zlib/index.json
 	$(call build,py-toml)
+
+.PHONY: py-trove-classifiers
+py-trove-classifiers: out/py-trove-classifiers/index.json
+out/py-trove-classifiers/index.json: \
+	packages/py-trove-classifiers/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libffi/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-setuptools/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-trove-classifiers)
 
 .PHONY: py-typing-extensions
 py-typing-extensions: out/py-typing-extensions/index.json
@@ -2232,6 +3367,92 @@ out/python/index.json: \
 	out/zlib/index.json
 	$(call build,python)
 
+.PHONY: qemu
+qemu: out/qemu/index.json
+out/qemu/index.json: \
+	packages/qemu/Containerfile \
+	out/alsa-lib/index.json \
+	out/argp-standalone/index.json \
+	out/autoconf/index.json \
+	out/automake/index.json \
+	out/bash/index.json \
+	out/binutils/index.json \
+	out/bison/index.json \
+	out/busybox/index.json \
+	out/curl/index.json \
+	out/dtc/index.json \
+	out/filesystem/index.json \
+	out/flex/index.json \
+	out/gcc/index.json \
+	out/gettext/index.json \
+	out/git/index.json \
+	out/glib/index.json \
+	out/gzip/index.json \
+	out/libaio/index.json \
+	out/libcap-ng/index.json \
+	out/libffi/index.json \
+	out/libseccomp/index.json \
+	out/libtool/index.json \
+	out/libzstd/index.json \
+	out/linux-headers/index.json \
+	out/lzo/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/meson/index.json \
+	out/musl/index.json \
+	out/musl-fts/index.json \
+	out/musl-obstack/index.json \
+	out/ncurses/index.json \
+	out/ninja/index.json \
+	out/numactl/index.json \
+	out/openssh/index.json \
+	out/openssl/index.json \
+	out/pcre2/index.json \
+	out/perl/index.json \
+	out/pkgconf/index.json \
+	out/py-alabaster/index.json \
+	out/py-babel/index.json \
+	out/py-certifi/index.json \
+	out/py-docutils/index.json \
+	out/py-idna/index.json \
+	out/py-imagesize/index.json \
+	out/py-jinja2/index.json \
+	out/py-markupsafe/index.json \
+	out/py-packaging/index.json \
+	out/py-pygments/index.json \
+	out/py-requests/index.json \
+	out/py-snowballstemmer/index.json \
+	out/py-sphinx/index.json \
+	out/py-sphinx_rtd_theme/index.json \
+	out/py-sphinxcontrib-applehelp/index.json \
+	out/py-sphinxcontrib-devhelp/index.json \
+	out/py-sphinxcontrib-htmlhelp/index.json \
+	out/py-sphinxcontrib-jquery/index.json \
+	out/py-sphinxcontrib-qthelp/index.json \
+	out/py-sphinxcontrib-serializinghtml/index.json \
+	out/py-urllib3/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,qemu)
+
+.PHONY: re2c
+re2c: out/re2c/index.json
+out/re2c/index.json: \
+	packages/re2c/Containerfile \
+	out/autoconf/index.json \
+	out/automake/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libtool/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/perl/index.json \
+	out/python/index.json
+	$(call build,re2c)
+
 .PHONY: readline
 readline: out/readline/index.json
 out/readline/index.json: \
@@ -2261,6 +3482,20 @@ out/redis/index.json: \
 	out/pkgconf/index.json
 	$(call build,redis)
 
+.PHONY: rhash
+rhash: out/rhash/index.json
+out/rhash/index.json: \
+	packages/rhash/Containerfile \
+	out/bash/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json
+	$(call build,rhash)
+
 .PHONY: rust
 rust: out/rust/index.json
 out/rust/index.json: \
@@ -2284,6 +3519,31 @@ out/rust/index.json: \
 	out/zlib/index.json
 	$(call build,rust)
 
+.PHONY: samurai
+samurai: out/samurai/index.json
+out/samurai/index.json: \
+	packages/samurai/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/pkgconf/index.json
+	$(call build,samurai)
+
+.PHONY: scdoc
+scdoc: out/scdoc/index.json
+out/scdoc/index.json: \
+	packages/scdoc/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,scdoc)
+
 .PHONY: sed
 sed: out/sed/index.json
 out/sed/index.json: \
@@ -2295,6 +3555,18 @@ out/sed/index.json: \
 	out/make/index.json \
 	out/musl/index.json
 	$(call build,sed)
+
+.PHONY: skalibs
+skalibs: out/skalibs/index.json
+out/skalibs/index.json: \
+	packages/skalibs/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,skalibs)
 
 .PHONY: sops
 sops: out/sops/index.json
@@ -2509,6 +3781,25 @@ out/tpm2-tss/index.json: \
 	out/util-linux/index.json
 	$(call build,tpm2-tss)
 
+.PHONY: unixodbc
+unixodbc: out/unixodbc/index.json
+out/unixodbc/index.json: \
+	packages/unixodbc/Containerfile \
+	out/autoconf/index.json \
+	out/automake/index.json \
+	out/bash/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libtool/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/perl/index.json \
+	out/postgresql/index.json
+	$(call build,unixodbc)
+
 .PHONY: util-linux
 util-linux: out/util-linux/index.json
 out/util-linux/index.json: \
@@ -2529,6 +3820,61 @@ out/util-linux/index.json: \
 	out/perl/index.json \
 	out/pkgconf/index.json
 	$(call build,util-linux)
+
+.PHONY: util-macros
+util-macros: out/util-macros/index.json
+out/util-macros/index.json: \
+	packages/util-macros/Containerfile \
+	out/bash/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gawk/index.json \
+	out/gcc/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/pkgconf/index.json
+	$(call build,util-macros)
+
+.PHONY: utmps
+utmps: out/utmps/index.json
+out/utmps/index.json: \
+	packages/utmps/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/skalibs/index.json
+	$(call build,utmps)
+
+.PHONY: xmlto
+xmlto: out/xmlto/index.json
+out/xmlto/index.json: \
+	packages/xmlto/Containerfile \
+	out/autoconf/index.json \
+	out/automake/index.json \
+	out/bash/index.json \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/docbook-xsl/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/gettext/index.json \
+	out/glib/index.json \
+	out/libtool/index.json \
+	out/libxml2/index.json \
+	out/libxslt/index.json \
+	out/m4/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/perl/index.json \
+	out/perl-pod-parser/index.json \
+	out/perl-yaml-syck/index.json \
+	out/zlib/index.json
+	$(call build,xmlto)
 
 .PHONY: xorriso
 xorriso: out/xorriso/index.json

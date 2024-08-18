@@ -1,0 +1,44 @@
+FROM scratch AS base
+ENV VERSION=1.7.0
+ENV SRC_HASH=29edce3d302a15563d8663198bbc398c5a0554765c83830d0d4c0409d21a16c4
+ENV SRC_FILE=dtc-${VERSION}.tar.xz
+ENV SRC_SITE=https://kernel.org/pub/software/utils/dtc/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/make . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/linux-headers . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/m4 . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/bison . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/libzstd . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/flex . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/coreutils . /
+COPY --from=stagex/python . /
+COPY --from=stagex/py-setuptools . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR dtc-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+    sed -i s:-Werror::g Makefile
+	sed -i "s|@VERSION@|${VERSION}|" setup.py
+    make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN <<-EOF
+	set -eux
+    make DESTDIR=/rootfs PREFIX=/usr install
+EOF
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /

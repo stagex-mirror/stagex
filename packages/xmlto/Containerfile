@@ -1,0 +1,49 @@
+FROM scratch AS base
+ARG ARCH=x86_64
+ENV VERSION=0.0.29
+ENV SRC_HASH=40504db68718385a4eaa9154a28f59e51e59d006d1aa14f5bc9d6fded1d6017a
+ENV SRC_FILE=xmlto-${VERSION}.tar.gz
+ENV SRC_SITE=https://www.pagure.io/xmlto/archive/${VERSION}/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch AS build
+COPY --from=stagex/perl . /
+COPY --from=stagex/glib . /
+COPY --from=stagex/bash . /
+COPY --from=stagex/gettext . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/automake . /
+COPY --from=stagex/autoconf . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/libxslt . /
+COPY --from=stagex/docbook-xsl . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/perl-pod-parser . /
+COPY --from=stagex/perl-yaml-syck . /
+COPY --from=stagex/libtool . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/m4 . /
+COPY --from=stagex/libxml2 . /
+COPY --from=stagex/make . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR xmlto-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	autoreconf -vfi
+	./configure \
+		--build=${ARCH}-linux-musl \
+		--host=${ARCH}-linux-musl \
+		--prefix=/usr \
+		--mandir=/usr/share/man
+	make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN make DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /

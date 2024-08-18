@@ -1,0 +1,42 @@
+FROM scratch AS base
+ENV VERSION=3.0.10
+ENV SRC_HASH=00f97476cef9fcd9a89f9d2a49be3b518e1a74b91f377fe08c97fcb44bc0f7d7
+ENV SRC_FILE=${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/cython/cython/archive/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/python . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/cmake . /
+COPY --from=stagex/libffi . /
+COPY --from=stagex/py-setuptools . /
+COPY --from=stagex/py-installer . /
+COPY --from=stagex/py-flit . /
+COPY --from=stagex/py-gpep517 . /
+COPY --from=stagex/py-wheel . /
+COPY --from=stagex/py-distro . /
+COPY --from=stagex/py-dateutil . /
+COPY --from=stagex/py-urllib3 . /
+COPY --from=stagex/py-cffi . /
+RUN tar -xzf ${SRC_FILE}
+WORKDIR cython-${VERSION}
+RUN gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+#
+FROM build AS install
+RUN --network=none <<-EOF
+    set -eux
+    python -m installer -d /rootfs .dist/*.whl
+    find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+EOF
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /
