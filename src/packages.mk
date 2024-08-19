@@ -2038,6 +2038,19 @@ out/nuspell/index.json: \
 	out/samurai/index.json
 	$(call build,nuspell)
 
+.PHONY: ocaml
+ocaml: out/ocaml/index.json
+out/ocaml/index.json: \
+	packages/ocaml/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libzstd/index.json \
+	out/make/index.json \
+	out/musl/index.json
+	$(call build,ocaml)
+
 .PHONY: ocismack
 ocismack: out/ocismack/index.json
 out/ocismack/index.json: \
