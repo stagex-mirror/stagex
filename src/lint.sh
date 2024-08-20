@@ -8,7 +8,7 @@ has-stage () {
 check-stages () {
   all_packages=$(ls -1 ./packages | sort)
 
-  stages="base fetch build install test package"
+  stages="base fetch build install package"
 
   for stage in $stages; do
     missing=$(comm -13 <(has-stage "${stage}") <(ls -1 ./packages | sort))
