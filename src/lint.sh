@@ -7,15 +7,21 @@ has-stage () {
 
 check-stages () {
   all_packages=$(ls -1 ./packages | sort)
-
   stages="base fetch build install package"
+  incomplete=""
 
   for stage in $stages; do
     missing=$(comm -13 <(has-stage "${stage}") <(ls -1 ./packages | sort))
     if [ $(printf "${missing}" | wc -l) -gt "0" ]; then
-      echo "${missing}" | xargs printf "%s is missing '${stage}' stage\n"
+      incomplete="${incomplete}$(echo "${missing}" | xargs printf "{ \"package\": \"%s\", \"stage\": \"${stage}\" },")"
     fi
   done
+
+  incomplete=$(echo "[${incomplete}]" | sed 's/,]$/]/')
+
+  [ "${incomplete}" == "[]" ] && exit 0
+  echo "${incomplete}"
+  exit 1
 
 }
 
