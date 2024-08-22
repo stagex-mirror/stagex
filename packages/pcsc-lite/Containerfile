@@ -1,7 +1,7 @@
 FROM scratch as base
-ENV VERSION=2.0.0
-ENV SRC_HASH=d6c3e2b64510e5ed6fcd3323febf2cc2a8e5fda5a6588c7671f2d77f9f189356
-ENV SRC_FILE=pcsc-lite-${VERSION}.tar.bz2
+ENV VERSION=2.2.3
+ENV SRC_HASH=cab1e62755713f62ce1b567954dbb0e9a7e668ffbc3bbad3ce85c53f8f4e00a4
+ENV SRC_FILE=pcsc-lite-${VERSION}.tar.xz
 ENV SRC_SITE=https://pcsclite.apdu.fr/files/${SRC_FILE}
 
 FROM base as fetch
@@ -18,8 +18,13 @@ COPY --from=stagex/make . /
 COPY --from=stagex/perl . /
 COPY --from=stagex/flex . /
 COPY --from=stagex/pkgconf . /
+COPY --from=stagex/autoconf . /
+COPY --from=stagex/autoconf-archive . /
+COPY --from=stagex/automake . /
+COPY --from=stagex/libtool . /
 RUN tar -xvf $SRC_FILE
 WORKDIR pcsc-lite-${VERSION}
+RUN ./bootstrap
 RUN --network=none <<-EOF
 	set -eux
 	./configure \
