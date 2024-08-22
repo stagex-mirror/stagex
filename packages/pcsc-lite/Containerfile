@@ -1,4 +1,4 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=2.2.3
 ENV SRC_HASH=cab1e62755713f62ce1b567954dbb0e9a7e668ffbc3bbad3ce85c53f8f4e00a4
 ENV SRC_FILE=pcsc-lite-${VERSION}.tar.xz
