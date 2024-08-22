@@ -24,12 +24,12 @@ For a full list of images see the "packages" directory.
 
 Get a shell in our x86_64 Stage3 bootstrap image:
 
-```sh
+```shell
 docker run -it stagex/stage3
 ```
 
 Run a Python hello world:
-```sh
+```shell
 docker run -i stagex/python -c "print('hello world')"
 ```
 
@@ -259,33 +259,58 @@ For further reading see the [Bootstrappable Builds](https://bootstrappable.org/)
 
 * An OCI building runtime
     * Currently Docker supported (v25+)
+        * [`containerd` support](https://earthly.dev/blog/containerd-docker/) is required:
+            * Add the following to `/etc/docker/daemon.json`:
+                ```json
+                {
+                    "features": {
+                        "containerd-snapshotter": true
+                    }
+                }
+                ```
+            * Restart Docker daemon:
+                ```shell
+                systemctl restart docker
+                ```
     * Support for buildah and podman coming soon
 	
 * Gnu Make
+
+### First
+
+#### Create untracked build output directory
+
+From the `stagex` repository root:
+
+```shell
+mkdir out
+```
 
 ### Examples
 
 #### Reproduce entire tree
 
-```sh
+```shell
 make
 ```
 
 #### Compile specific package
 
-```sh
+```shell
 make rust
 ```
 
 #### Compile specific package without cache
 
-```sh
+```shell
 make NOCACHE=1
 ```
 
 #### Sign all locally built packages (WIP)
 
-```sh
+Do this after successfully reproducing all packages and stages:
+
+```shell
 make sign
 ```
 
