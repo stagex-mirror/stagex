@@ -1,0 +1,43 @@
+FROM scratch AS base
+ENV VERSION=0.4.27
+ENV SRC_HASH=3978a25d43d9a7b8a89ae9d726bd4962fc90dc4f69ae852e399f3c56d4b0bd63
+ENV SRC_FILE=${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/ahupp/python-magic/archive/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/python . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/cmake . /
+COPY --from=stagex/libffi . /
+COPY --from=stagex/py-setuptools . /
+COPY --from=stagex/py-installer . /
+COPY --from=stagex/py-flit . /
+COPY --from=stagex/py-gpep517 . /
+COPY --from=stagex/py-wheel . /
+COPY --from=stagex/py-distro . /
+COPY --from=stagex/py-dateutil . /
+COPY --from=stagex/py-urllib3 . /
+COPY --from=stagex/py-cffi . /
+COPY --from=stagex/file . /
+RUN tar -xzf ${SRC_FILE}
+WORKDIR python-magic-${VERSION}
+RUN gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+#
+FROM build AS install
+RUN --network=none <<-EOF
+    set -eu
+    python -m installer -d /rootfs .dist/*.whl
+    find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+EOF
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /

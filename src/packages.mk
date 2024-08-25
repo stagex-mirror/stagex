@@ -465,6 +465,35 @@ out/cython/index.json: \
 	out/zlib/index.json
 	$(call build,cython)
 
+.PHONY: diffoscope
+diffoscope: out/diffoscope/index.json
+out/diffoscope/index.json: \
+	packages/diffoscope/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/file/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libffi/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/py-cffi/index.json \
+	out/py-dateutil/index.json \
+	out/py-distro/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-libarchive/index.json \
+	out/py-magic/index.json \
+	out/py-setuptools/index.json \
+	out/py-urllib3/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,diffoscope)
+
 .PHONY: diffutils
 diffutils: out/diffutils/index.json
 out/diffutils/index.json: \
@@ -2860,6 +2889,60 @@ out/py-jmespath/index.json: \
 	out/python/index.json \
 	out/zlib/index.json
 	$(call build,py-jmespath)
+
+.PHONY: py-libarchive
+py-libarchive: out/py-libarchive/index.json
+out/py-libarchive/index.json: \
+	packages/py-libarchive/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libarchive/index.json \
+	out/libffi/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/py-cffi/index.json \
+	out/py-dateutil/index.json \
+	out/py-distro/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-setuptools/index.json \
+	out/py-urllib3/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-libarchive)
+
+.PHONY: py-magic
+py-magic: out/py-magic/index.json
+out/py-magic/index.json: \
+	packages/py-magic/Containerfile \
+	out/binutils/index.json \
+	out/busybox/index.json \
+	out/cmake/index.json \
+	out/file/index.json \
+	out/filesystem/index.json \
+	out/gcc/index.json \
+	out/libffi/index.json \
+	out/make/index.json \
+	out/musl/index.json \
+	out/openssl/index.json \
+	out/py-cffi/index.json \
+	out/py-dateutil/index.json \
+	out/py-distro/index.json \
+	out/py-flit/index.json \
+	out/py-gpep517/index.json \
+	out/py-installer/index.json \
+	out/py-setuptools/index.json \
+	out/py-urllib3/index.json \
+	out/py-wheel/index.json \
+	out/python/index.json \
+	out/zlib/index.json
+	$(call build,py-magic)
 
 .PHONY: py-markupsafe
 py-markupsafe: out/py-markupsafe/index.json
