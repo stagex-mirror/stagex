@@ -33,8 +33,7 @@ include src/groups.mk
 .PHONY: all
 all: \
 	compat \
-	$(shell find packages/* -type d -exec sh -c 'basename {} | tr "\n" " "' \; ) \
-	digests.txt
+	$(shell find packages/* -type d -exec sh -c 'basename {} | tr "\n" " "' \; )
 
 .PHONY: check
 check:
