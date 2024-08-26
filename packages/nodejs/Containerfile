@@ -52,6 +52,7 @@ RUN --network=none <<-EOF
         --shared-brotli \
         --without-npm \
         --without-corepack \
+        --with-intl=system-icu \
         --with-icu-default-data-dir=$(icu-config --icudatadir) \
         --openssl-use-def-ca-store
 	make BUILDTYPE=Release
