@@ -1,0 +1,54 @@
+FROM scratch AS base
+ENV PY_PACKAGE=beancount
+ENV VERSION=2.3.6
+ENV SRC_FILE=${VERSION}.tar.gz
+ENV SRC_HASH=d02819a18fcf2974287a8d2d0949a47b3d2bc4a1b27642cb0424e773207a03e5
+ENV SRC_SITE=https://github.com/${PY_PACKAGE}/${PY_PACKAGE}/archive/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/make . /
+COPY --from=stagex/libffi . /
+COPY --from=stagex/python . /
+COPY --from=stagex/py-setuptools . /
+COPY --from=stagex/py-installer . /
+COPY --from=stagex/py-flit . /
+COPY --from=stagex/py-gpep517 . /
+COPY --from=stagex/py-wheel . /
+COPY --from=stagex/py-distro . /
+COPY --from=stagex/py-dateutil . /
+COPY --from=stagex/py-packaging . /
+COPY --from=stagex/py-pluggy . /
+COPY --from=stagex/py-ply . /
+COPY --from=stagex/py-bottle . /
+COPY --from=stagex/py-lxml . /
+COPY --from=stagex/py-magic . /
+COPY --from=stagex/py-pathspec . /
+COPY --from=stagex/py-hatchling . /
+COPY --from=stagex/py-trove-classifiers . /
+COPY --from=stagex/py-requests . /
+COPY --from=stagex/py-soupsieve . /
+COPY --from=stagex/py-beautifulsoup4 . /
+
+RUN tar -xzf ${SRC_FILE}
+WORKDIR /${PY_PACKAGE}-${VERSION}
+RUN gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+#
+FROM build AS install
+RUN --network=none <<-EOF
+    set -eu
+    python -m installer -d /rootfs .dist/*.whl
+    find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+EOF
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /
+
