@@ -20,7 +20,7 @@
 # - actually output OCI files for each build (vs plain tar)
 # - output manifest.txt of all tar/digest hashes for an easy git diff
 # - support buildah and podman
-define build-pkg
+define build
 	$(eval NAME := $(1))
 	$(eval VERSION := $(if $(2),$(2),latest))
 	$(eval TARGET := $(if $(3),$(3),package))
@@ -46,6 +46,7 @@ define build-pkg
 			$(shell ./src/context.sh $(NAME)) \
 			$(EXTRA_ARGS) \
 			$(NOCACHE_FLAG) \
+			$(CHECK_FLAG) \
 			-f packages/$(NAME)/Containerfile \
 			packages/$(NAME) \
 	)
@@ -55,30 +56,4 @@ define build-pkg
 	&& rm -rf out/$(NAME) \
 	&& $(BUILD_CMD) \
 	&& echo $(TIMESTAMP) $(BUILD_CMD) end >> out/build.log;
-endef
-
-define check-pkg
-	$(eval NAME := $(1))
-	$(eval BUILD_CMD := \
-		DOCKER_BUILDKIT=1 \
-		BUILDKIT_MULTI_PLATFORM=1 \
-		SOURCE_DATE_EPOCH=1 \
-		$(BUILDER) \
-			build \
-			--check \
-			--progress=plain \
-			-f packages/$(NAME)/Containerfile \
-			packages/$(NAME) \
-	)
-	$(BUILD_CMD)
-endef
-
-define build
-	$(eval NAME := $(1))
-	$(eval VERSION := $(if $(2),$(2),))
-	$(eval TARGET := $(if $(3),$(3),))
-	$(eval EXTRA_ARGS := $(if $(4),$(4),))
-
-	$(call check-pkg,$(NAME))
-	$(call build-pkg,$(NAME),$(VERSION),$(TARGET),$(EXTRA_ARGS))
 endef
