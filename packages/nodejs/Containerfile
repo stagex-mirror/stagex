@@ -1,9 +1,8 @@
 FROM scratch as base
-ENV VERSION=22.4.0
-ENV SRC_HASH=b62cd83c9a57a11349883f89b1727a16e66c02eb6255a4bf32714ff5d93165f5
+ENV VERSION=22.7.0
+ENV SRC_HASH=7a7c99282d59866d971b2da12c99596cb15782b9c3efe2e2146390c14f4d490e
 ENV SRC_FILE=node-v${VERSION}.tar.gz
 ENV SRC_SITE=https://nodejs.org/dist/v${VERSION}/${SRC_FILE}
-ENV CFLAGS="-march=x86-64 -mtune=generic -O2"
 
 FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
@@ -22,10 +21,21 @@ COPY --from=stagex/zlib . /
 COPY --from=stagex/linux-headers . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR node-v${VERSION}
+ENV SOURCE_DATE_EPOCH=1
+ENV LDFLAGS=" \
+    -Wl,-O1 -Wl,--sort-common -Wl,--as-needed -Wl,-z,relro \
+    -Wl,-z,now -Wl,-z,pack-relative-relocs"
+ENV CFLAGS=" \
+    -march=x86-64 -mtune=generic -O2 -pipe -fno-plt -fexceptions \
+    -Wp,-D_FORTIFY_SOURCE=3 -Wformat -Werror=format-security \
+    -fstack-clash-protection -fcf-protection \
+    -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer"
+ENV CXXFLAGS="$CFLAGS -Wp,-D_GLIBCXX_ASSERTIONS"
+ENV LTOFLAGS="-flto=auto"
+
 RUN --network=none <<-EOF
 	set -eux
-	python configure.py  \
-        --without-snapshot
+	python configure.py
 	make BUILDTYPE=Release
 EOF
 
