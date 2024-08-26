@@ -945,6 +945,16 @@ out/go/index.json: \
 	out/musl/index.json
 	$(call build,go)
 
+.PHONY: go-ledger
+go-ledger: out/go-ledger/index.json
+out/go-ledger/index.json: \
+	packages/go-ledger/Containerfile \
+	out/busybox/index.json \
+	out/ca-certificates/index.json \
+	out/filesystem/index.json \
+	out/go/index.json
+	$(call build,go-ledger)
+
 .PHONY: go-md2man
 go-md2man: out/go-md2man/index.json
 out/go-md2man/index.json: \
@@ -3458,6 +3468,7 @@ out/python/index.json: \
 	out/libffi/index.json \
 	out/make/index.json \
 	out/musl/index.json \
+	out/ncurses/index.json \
 	out/openssl/index.json \
 	out/sqlite3/index.json \
 	out/zlib/index.json

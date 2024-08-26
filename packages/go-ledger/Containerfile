@@ -1,0 +1,37 @@
+FROM scratch AS base
+ENV VERSION=1.16.2
+ENV SRC_HASH=7014837d5ed6db785b0ee9144d0aad9939060124b0d0669a70c2c8b786a53fa7
+ENV SRC_FILE=v${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/howeyc/ledger/archive/refs/tags/${SRC_FILE}
+ENV GOPATH=/cache/go
+ENV GOCACHE=/cache/
+ENV GOWORK=off
+ENV GOPROXY=https://proxy.golang.org,direct
+ENV GOSUMDB=sum.golang.org
+ENV CGO_ENABLED=0
+ENV GOHOSTOS=linux
+ENV GOHOSTARCH=amd64
+ENV GOARCH=amd64
+ENV GOOS=linux
+ENV SOURCE_DATE_EPOCH=1
+
+FROM base AS fetch
+COPY --from=stagex/busybox . /
+COPY --from=stagex/go . /
+COPY --from=stagex/ca-certificates . /
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+RUN tar -xvf ${SRC_FILE}
+WORKDIR /ledger-${VERSION}/ledger
+RUN go get ./...
+
+FROM fetch AS build
+RUN --network=none go build -v -trimpath -ldflags="-s -w"
+
+FROM build AS install
+RUN <<-EOF
+    mkdir -p /rootfs/usr/bin/
+    cp ledger /rootfs/usr/bin/
+EOF
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/./ /
