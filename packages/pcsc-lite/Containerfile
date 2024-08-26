@@ -19,7 +19,7 @@ COPY --from=stagex/perl . /
 COPY --from=stagex/flex . /
 COPY --from=stagex/pkgconf . /
 RUN tar -xvf $SRC_FILE
-WORKDIR pcsc-lite-${VERSION}
+WORKDIR /pcsc-lite-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./configure \

@@ -19,7 +19,7 @@ COPY --from=stagex/gcc . /
 COPY --from=stagex/zlib . /
 
 RUN tar -xf ${SRC_FILE}
-WORKDIR json-c-${VERSION}
+WORKDIR /json-c-${VERSION}
 RUN <<-EOF
     set -eux
     cmake \

@@ -18,7 +18,7 @@ COPY --from=stagex/go . /
 COPY --from=stagex/ca-certificates . /
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 RUN tar -xvf ${SRC_FILE}
-WORKDIR grpcurl-${VERSION}
+WORKDIR /grpcurl-${VERSION}
 ENV GOPATH="/grpcurl-${VERSION}"
 RUN go get ./...
 

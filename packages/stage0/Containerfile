@@ -43,19 +43,19 @@ COPY --from=build2 /rootfs/ /b
 COPY --from=build3 /rootfs/ /c
 
 FROM compare AS test1
-WORKDIR /a
+WORKDIR //a
 RUN ["x86/bin/sha256sum","-c","/a/hashes.txt"]
 RUN ["x86/bin/sha256sum","-c","/b/hashes.txt"]
 RUN ["x86/bin/sha256sum","-c","/c/hashes.txt"]
 
 FROM compare AS test2
-WORKDIR /b
+WORKDIR //b
 RUN ["x86/bin/sha256sum","-c","/a/hashes.txt"]
 RUN ["x86/bin/sha256sum","-c","/b/hashes.txt"]
 RUN ["x86/bin/sha256sum","-c","/c/hashes.txt"]
 
 FROM compare AS test3
-WORKDIR /c
+WORKDIR //c
 RUN ["x86/bin/sha256sum","-c","/a/hashes.txt"]
 RUN ["x86/bin/sha256sum","-c","/b/hashes.txt"]
 RUN ["x86/bin/sha256sum","-c","/c/hashes.txt"]

@@ -10,7 +10,7 @@ ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 FROM fetch AS build
 COPY --from=stagex/stage3 . /
 RUN tar -xjf ${SRC_FILE}
-WORKDIR busybox-${VERSION}
+WORKDIR /busybox-${VERSION}
 ENV KCONFIG_NOTIMESTAMP=1
 RUN --network=none <<-EOF
     set -eux

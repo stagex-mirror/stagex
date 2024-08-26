@@ -20,7 +20,7 @@ COPY --from=stagex/ncurses . /
 COPY --from=stagex/sqlite3 . /
 COPY --from=stagex/libffi . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR Python-${VERSION}
+WORKDIR //Python-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 ENV PYTHONHASHSEED=0
 ENV PYTHONDONTWRITEBYTECODE=1

@@ -16,7 +16,7 @@ COPY --from=stagex/make . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/perl . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR Module-Build-${VERSION}
+WORKDIR /Module-Build-${VERSION}
 RUN --network=none <<-EOF
     set -eux
     perl Build.PL installdirs=vendor

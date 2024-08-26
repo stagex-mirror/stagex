@@ -17,7 +17,7 @@ COPY --from=stagex/gcc . /
 COPY --from=stagex/binutils . /
 COPY --from=stagex/make . /
 RUN tar -xf $SRC_FILE
-WORKDIR groff-${VERSION}
+WORKDIR /groff-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	set -eux

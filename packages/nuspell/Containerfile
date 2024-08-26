@@ -22,7 +22,7 @@ COPY --from=stagex/make . /
 COPY --from=stagex/m4 . /
 COPY --from=stagex/gcc . /
 RUN tar -xf v${VERSION}.tar.gz
-WORKDIR nuspell-${VERSION}
+WORKDIR /nuspell-${VERSION}
 RUN --network=none <<-EOF
 	set -ex
 	CXXFLAGS="$CXXFLAGS -flto=auto" \

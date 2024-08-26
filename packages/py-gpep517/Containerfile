@@ -13,7 +13,7 @@ COPY --from=stagex/musl . /
 COPY --from=stagex/python . /
 COPY --from=stagex/zlib . /
 RUN tar -xzf ${SRC_FILE}
-WORKDIR gpep517-${VERSION}
+WORKDIR /gpep517-${VERSION}
 COPY <<-'EOF' gpep517-cli
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-

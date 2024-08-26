@@ -32,7 +32,7 @@ COPY --from=stagex/e2fsprogs . /
 COPY --from=stagex/tcl . /
 
 RUN tar -xf ${SRC_FILE}
-WORKDIR postgresql-${VERSION}
+WORKDIR /postgresql-${VERSION}
 RUN --network=none <<-EOF
     set -eux
     ./configure \

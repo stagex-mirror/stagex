@@ -27,7 +27,7 @@ COPY --from=stagex/perl . /
 COPY --from=stagex/openssl . /
 COPY --from=stagex/m4 . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR doxygen-${VERSION}
+WORKDIR /doxygen-${VERSION}
 COPY *.patch .
 RUN --network=none <<-EOF
 	set -eux \

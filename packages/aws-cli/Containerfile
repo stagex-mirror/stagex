@@ -36,7 +36,7 @@ COPY --from=stagex/py-wcwidth . /
 COPY --from=stagex/py-prompt_toolkit . /
 COPY --from=stagex/py-ruamel.yaml . /
 RUN tar -xzf ${SRC_FILE}
-WORKDIR aws-cli-${VERSION}
+WORKDIR /aws-cli-${VERSION}
 RUN --network=none \
     gpep517 build-wheel \
 		--wheel-dir .dist \

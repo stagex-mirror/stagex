@@ -16,7 +16,7 @@ COPY --from=stagex/linux-headers . /
 COPY --from=stagex/make . /
 COPY --from=stagex/gcc . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR strace-${VERSION}
+WORKDIR /strace-${VERSION}
 RUN --network=none <<-EOF
 	set -ex
 	./configure \

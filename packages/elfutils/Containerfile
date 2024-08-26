@@ -29,7 +29,7 @@ COPY --from=stagex/musl-fts . /
 COPY --from=stagex/musl-obstack . /
 COPY --from=stagex/linux-headers . /
 RUN tar -xjf ${SRC_FILE}
-WORKDIR elfutils-${VERSION}
+WORKDIR /elfutils-${VERSION}
 ADD *.patch .
 RUN --network=none <<-EOF
 	set -eux

@@ -20,7 +20,7 @@ COPY --from=stagex/zlib . /
 COPY --from=stagex/abseil-cpp . /
 
 RUN tar -xf ${SRC_FILE}
-WORKDIR protobuf-${VERSION}
+WORKDIR /protobuf-${VERSION}
 RUN <<-EOF
 	set -eux
 	cmake \

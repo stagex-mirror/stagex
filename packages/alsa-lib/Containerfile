@@ -15,7 +15,7 @@ COPY --from=stagex/linux-headers . /
 COPY --from=stagex/make . /
 COPY --from=stagex/musl . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR alsa-lib-${VERSION}
+WORKDIR /alsa-lib-${VERSION}
 RUN --network=none <<-EOF
 	set -eux; \
 	./configure \

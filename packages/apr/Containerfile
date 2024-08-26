@@ -16,7 +16,7 @@ COPY --from=stagex/binutils . /
 COPY --from=stagex/make . /
 COPY --from=stagex/util-linux . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR apr-${VERSION}
+WORKDIR /apr-${VERSION}
 COPY *.patch .
 RUN --network=none <<-EOF
 	set -eux \

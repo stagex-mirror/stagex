@@ -20,7 +20,7 @@ COPY --from=stagex/make . /
 COPY --from=stagex/m4 . /
 COPY --from=stagex/musl . /
 RUN tar -xvf $SRC_FILE
-WORKDIR re2c-${VERSION}
+WORKDIR /re2c-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	autoreconf -i -W all

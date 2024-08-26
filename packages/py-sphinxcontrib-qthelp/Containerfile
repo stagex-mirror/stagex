@@ -19,7 +19,7 @@ COPY --from=stagex/py-setuptools . /
 COPY --from=stagex/py-wheel . /
 COPY --from=stagex/zlib . /
 RUN tar -xzf ${SRC_FILE}
-WORKDIR sphinxcontrib-qthelp-${VERSION}
+WORKDIR /sphinxcontrib-qthelp-${VERSION}
 RUN gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 
 FROM build AS install

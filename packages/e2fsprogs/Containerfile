@@ -19,7 +19,7 @@ COPY --from=stagex/util-linux . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/gcc . /
 RUN tar -xzf ${SRC_FILE}
-WORKDIR e2fsprogs-${VERSION}
+WORKDIR /e2fsprogs-${VERSION}
 RUN --network=none <<-EOF
     ./configure \
         --build=${ARCH}-linux-musl \

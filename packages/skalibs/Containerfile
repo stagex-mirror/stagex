@@ -15,7 +15,7 @@ COPY --from=stagex/busybox . /
 COPY --from=stagex/binutils . /
 COPY --from=stagex/make . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR skalibs-${VERSION}
+WORKDIR /skalibs-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./configure \

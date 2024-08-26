@@ -20,7 +20,7 @@ COPY --from=stagex/gcc . /
 COPY --from=stagex/zlib . /
 
 RUN tar -xf ${SRC_FILE}
-WORKDIR lzo-${VERSION}
+WORKDIR /lzo-${VERSION}
 RUN <<-EOF
 	set -eux
 	cmake -B build -G Ninja \

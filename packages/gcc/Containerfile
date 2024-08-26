@@ -23,7 +23,7 @@ ADD --checksum=sha256:${ISL_HASH} ${DEP_SITE}/${ISL_FILE} .
 FROM fetch AS build
 COPY --from=stagex/stage3 . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR gcc-${VERSION}
+WORKDIR /gcc-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	mv ../*.tar.* .

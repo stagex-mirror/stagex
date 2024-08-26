@@ -15,7 +15,7 @@ COPY --from=stagex/gcc . /
 COPY --from=stagex/binutils . /
 COPY --from=stagex/make . /
 RUN tar -xf $SRC_FILE
-WORKDIR phc-winner-argon2-${VERSION}
+WORKDIR /phc-winner-argon2-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	make -j "$(nproc)" OPTTARGET=none ARGON2_VERSION=${VERSION}

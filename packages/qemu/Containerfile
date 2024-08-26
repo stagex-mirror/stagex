@@ -70,7 +70,7 @@ COPY --from=stagex/musl-fts . /
 COPY --from=stagex/musl-obstack . /
 COPY --from=stagex/linux-headers . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR qemu-${VERSION}
+WORKDIR /qemu-${VERSION}
 ADD *.patch .
 ENV SOURCE_DATE_EPOCH=1
 ENV LDFLAGS=" \

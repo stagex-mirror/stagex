@@ -19,7 +19,7 @@ COPY --from=stagex/pkgconf . /
 COPY --from=stagex/m4 . /
 COPY --from=stagex/gawk . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR util-macros-${VERSION}
+WORKDIR /util-macros-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./configure \

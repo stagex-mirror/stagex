@@ -50,7 +50,7 @@ ENV BINUTILS_DIR ${HOME}/build-binutils
 ENV MUSL_DIR=${HOME}/build-musl
 
 FROM base AS fetch
-WORKDIR ${HOME}
+WORKDIR /${HOME}
 ADD --checksum=sha256:${LINUX_HASH} ${LINUX_SITE} .
 ADD --checksum=sha256:${MUSL_HASH} ${MUSL_SITE} .
 ADD --checksum=sha256:${BINUTILS_HASH} ${BINUTILS_SITE} .
@@ -74,7 +74,7 @@ RUN --network=none <<-EOF
 EOF
 
 # Phase 1: Build cross binutils in build-binutils
-WORKDIR ${BINUTILS_DIR}
+WORKDIR /${BINUTILS_DIR}
 RUN --network=none <<-EOF
     set -eux
     ../binutils-${BINUTILS_VERSION}/configure \
@@ -96,7 +96,7 @@ RUN --network=none <<-EOF
 EOF
 
 # Phase 2: Prepare build sysroot
-WORKDIR ${SYSROOT_DIR}
+WORKDIR /${SYSROOT_DIR}
 RUN <<-EOF
     set -eux
     mkdir -p include
@@ -106,7 +106,7 @@ RUN <<-EOF
 EOF
 
 # Phase 3: Build gcc (without libgcc) in build-gcc
-WORKDIR ${GCC_DIR}
+WORKDIR /${GCC_DIR}
 RUN --network=none <<-EOF
     set -eux
     ../gcc-${GCC_VERSION}/configure \
@@ -143,7 +143,7 @@ RUN --network=none <<-EOF
 EOF
 
 # Phase 4: Install musl libc headers to build-sysroot for use by libgcc
-WORKDIR ${MUSL_DIR}
+WORKDIR /${MUSL_DIR}
 RUN --network=none <<-EOF
     set -eux
     ../musl-${MUSL_VERSION}/configure \
@@ -155,11 +155,11 @@ RUN --network=none <<-EOF
 EOF
 
 # Phase 5: Compile libgcc
-WORKDIR ${GCC_DIR}
+WORKDIR /${GCC_DIR}
 RUN --network=none make MAKE="make enable_shared=no" all-target-libgcc
 
 # Phase 5: Compile musl libc and install to sysroot
-WORKDIR ${MUSL_DIR}
+WORKDIR /${MUSL_DIR}
 RUN --network=none <<-EOF
     set -eux
     make \
@@ -169,11 +169,11 @@ RUN --network=none <<-EOF
 EOF
 
 # Phase 6: Compile remaining gcc targets
-WORKDIR ${GCC_DIR}
+WORKDIR /${GCC_DIR}
 RUN make all
 
 # Phase 7: Generate linux headers
-WORKDIR ${HOME}/linux-${LINUX_VERSION}
+WORKDIR /${HOME}/linux-${LINUX_VERSION}
 RUN --network=none <<-EOF
     set -eux
     make ARCH=${TARGET_ARCH} headers
@@ -184,7 +184,7 @@ RUN --network=none <<-EOF
 EOF
 
 FROM build AS install
-WORKDIR ${HOME}
+WORKDIR /${HOME}
 COPY --from=stagex/stage1 . /rootfs/
 RUN <<-EOF
     set -eux

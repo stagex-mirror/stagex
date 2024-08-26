@@ -20,7 +20,7 @@ COPY --from=stagex/git . /
 COPY --from=stagex/rust . /
 RUN tar -xzf ${SRC_FILE}
 RUN mv tkhq-eif_build-* eif_build
-WORKDIR eif_build
+WORKDIR /eif_build
 RUN cargo fetch --locked
 
 FROM fetch AS build
@@ -32,7 +32,7 @@ RUN --network=none \
 		--target x86_64-unknown-linux-musl
 
 FROM build AS install
-WORKDIR /rootfs/usr/bin
+WORKDIR //rootfs/usr/bin
 RUN cp /eif_build/target/x86_64-unknown-linux-musl/release/eif_build .
 
 FROM stagex/filesystem AS package

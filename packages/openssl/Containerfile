@@ -16,7 +16,7 @@ COPY --from=stagex/musl . /
 COPY --from=stagex/perl . /
 COPY --from=stagex/linux-headers . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR openssl-${VERSION}
+WORKDIR /openssl-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	set -eux

@@ -19,7 +19,7 @@ COPY --from=stagex/go . /
 COPY --from=stagex/ca-certificates . /
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 RUN tar -xvf ${SRC_FILE}
-WORKDIR tflint-${VERSION}
+WORKDIR /tflint-${VERSION}
 RUN go get ./...
 
 FROM fetch AS build

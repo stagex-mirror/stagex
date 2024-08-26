@@ -13,7 +13,7 @@ COPY --from=stagex/musl . /
 COPY --from=stagex/python . /
 COPY --from=stagex/zlib . /
 RUN tar -xzf ${SRC_FILE}
-WORKDIR setuptools-${VERSION}
+WORKDIR /setuptools-${VERSION}
 RUN python setup.py build
 
 FROM build AS install

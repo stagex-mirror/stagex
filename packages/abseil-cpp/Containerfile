@@ -20,7 +20,7 @@ COPY --from=stagex/gcc . /
 COPY --from=stagex/zlib . /
 
 RUN tar -xf ${SRC_FILE}
-WORKDIR abseil-cpp-${VERSION}
+WORKDIR /abseil-cpp-${VERSION}
 RUN <<-EOF
 	set -eux
 	cmake \

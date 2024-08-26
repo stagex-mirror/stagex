@@ -13,7 +13,7 @@ COPY --from=stagex/gcc . /
 COPY --from=stagex/binutils . /
 COPY --from=stagex/musl . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR linux-${VERSION}
+WORKDIR /linux-${VERSION}
 RUN --network=none gcc usr/gen_init_cpio.c -o usr/gen_init_cpio
 
 FROM build AS install

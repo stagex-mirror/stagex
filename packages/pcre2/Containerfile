@@ -28,7 +28,7 @@ COPY --from=stagex/m4 . /
 COPY --from=stagex/libedit . /
 COPY --from=stagex/ncurses . /
 RUN tar -xf $SRC_FILE
-WORKDIR pcre2-pcre2-${VERSION}
+WORKDIR /pcre2-pcre2-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./autogen.sh

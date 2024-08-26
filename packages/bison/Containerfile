@@ -18,7 +18,7 @@ COPY --from=stagex/automake . /
 COPY --from=stagex/make . /
 COPY --from=stagex/m4 . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR bison-${VERSION}
+WORKDIR /bison-${VERSION}
 ENV M4=/usr/bin/m4
 RUN --network=none <<-EOF
 	set -eux

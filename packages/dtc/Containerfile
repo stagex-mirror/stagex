@@ -26,7 +26,7 @@ COPY --from=stagex/coreutils . /
 COPY --from=stagex/python . /
 COPY --from=stagex/py-setuptools . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR dtc-${VERSION}
+WORKDIR /dtc-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
     sed -i s:-Werror::g Makefile

@@ -10,7 +10,7 @@ ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 FROM fetch AS build
 COPY --from=stagex/stage3 . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR make-${VERSION}
+WORKDIR /make-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./configure \

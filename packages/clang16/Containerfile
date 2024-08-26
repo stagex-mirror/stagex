@@ -22,7 +22,7 @@ COPY --from=stagex/llvm16 . /
 COPY --from=stagex/zlib . /
 
 RUN tar -xf ${SRC_FILE}
-WORKDIR llvm-project-${VERSION}.src
+WORKDIR /llvm-project-${VERSION}.src
 RUN --network=none <<-EOF
     set -eux
     cmake \

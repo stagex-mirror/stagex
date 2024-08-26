@@ -14,7 +14,7 @@ COPY --from=stagex/gcc . /
 COPY --from=stagex/binutils . /
 COPY --from=stagex/make . /
 RUN tar -xvf $SRC_FILE
-WORKDIR npth-${VERSION}
+WORKDIR /npth-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./configure \

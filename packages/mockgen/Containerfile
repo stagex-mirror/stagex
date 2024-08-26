@@ -12,7 +12,7 @@ COPY --from=stagex/busybox . /
 COPY --from=stagex/go . /
 COPY --from=stagex/ca-certificates . /
 RUN tar -xvf v${VERSION}.tar.gz
-WORKDIR mock-${VERSION}
+WORKDIR /mock-${VERSION}
 ENV GOPATH=${PWD}/cache/go
 ENV GOCACHE=${PWD}/cache/
 ENV GOWORK=off

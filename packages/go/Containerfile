@@ -39,7 +39,7 @@ RUN <<-EOF
 	tar -xzf go${VERSION}.src.tar.gz; \
 	mv go go-src
 EOF
-WORKDIR go-bootstrap-1-src
+WORKDIR /go-bootstrap-1-src
 ENV GOOS=linux
 ENV CGO_ENABLED=0
 ENV GOROOT_FINAL=/go-bootstrap-1
@@ -54,7 +54,7 @@ RUN --network=none <<-EOF
 	mkdir -p ${DEST}
 	cp -R bin lib pkg src ${DEST}
 EOF
-WORKDIR ../go-bootstrap-2-src
+WORKDIR /go-bootstrap-2-src
 ENV GO11MODULE=off
 ENV GOROOT_BOOTSTRAP=/go-bootstrap-1
 ENV GOROOT_FINAL=/go-bootstrap-2
@@ -69,7 +69,7 @@ RUN --network=none <<-EOF
 	mkdir -p ${DEST}
 	cp -R bin lib pkg src ${DEST}
 EOF
-WORKDIR ../go-bootstrap-3-src
+WORKDIR /go-bootstrap-3-src
 ENV GO11MODULE=off
 ENV GOROOT_BOOTSTRAP=/go-bootstrap-2
 ENV GOROOT_FINAL=/go-bootstrap-3
@@ -84,7 +84,7 @@ RUN --network=none <<-EOF
 	mkdir -p ${DEST}
 	cp -R bin lib pkg src ${DEST}
 EOF
-WORKDIR ../go-src
+WORKDIR /go-src
 ENV GOPROXY=off
 ENV GOTOOLCHAIN=local
 ENV GOFLAGS=-mod=vendor

@@ -35,7 +35,7 @@ COPY --from=stagex/bc . /
 COPY --from=stagex/bash . /
 COPY --from=stagex/bash /bin/bash /bin/sh
 RUN tar -xf ${SRC_FILE}
-WORKDIR linux-${VERSION}
+WORKDIR /linux-${VERSION}
 ADD linux.config .config
 ENV KBUILD_BUILD_HOST=stagex
 ENV KBUILD_BUILD_USER=user
