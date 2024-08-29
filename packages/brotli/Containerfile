@@ -35,8 +35,13 @@ RUN --network=none <<-EOF
 EOF
 
 FROM build AS install
-RUN DESTDIR=/rootfs cmake --install build
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
+RUN <<-EOF
+    set -eux
+    DESTDIR=/rootfs cmake --install build
+    for file in common dec enc; do
+		install -D -m 755 build/libbrotli$file.a /rootfs/usr/lib/
+	done
+EOF
 
 FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /
