@@ -55,15 +55,11 @@ RUN --network=none <<-EOF
         --with-intl=system-icu \
         --with-icu-default-data-dir=$(icu-config --icudatadir) \
         --openssl-use-def-ca-store
-	make BUILDTYPE=Release
+	make BUILDTYPE=Release -j $(nproc)
 EOF
 
 FROM build AS install
-RUN --network=none <<-EOF
-	set -eux
-	make DESTDIR=/rootfs install
-	find /rootfs -exec touch -hcd "@0" "{}" +
-EOF
+RUN --network=none make DESTDIR=/rootfs install
 
 FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /
