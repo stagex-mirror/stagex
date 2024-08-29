@@ -1,0 +1,41 @@
+FROM scratch AS base
+ENV VERSION=1.0.5
+ENV SRC_FILE=libmnl-${VERSION}.tar.bz2
+ENV SRC_SITE=https://netfilter.org/projects/libmnl/files/${SRC_FILE}
+ENV SRC_HASH=274b9b919ef3152bfb3da3a13c950dd60d6e2bcd54230ffeca298d03b40d0525
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/linux-headers . /
+COPY --from=stagex/m4 . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR /libmnl-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+        --build=x86_64-linux-musl \
+        --host=x86_64-linux-musl \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+        --localstatedir=/var \
+        --enable-static
+	make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN <<-EOF
+	set -eux
+    make install DESTDIR=/rootfs
+EOF
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /

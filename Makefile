@@ -2,6 +2,7 @@ export PLATFORM := linux/amd64
 export BUILDER := $(shell which docker)
 export REGISTRY_LOCAL := stagex-local
 export REGISTRY_REMOTE := stagex
+export CHECK ?= 0
 export NOCACHE ?= 0
 export MIRRORS := \
 	git.distrust.co \
@@ -12,6 +13,13 @@ else
 NOCACHE_FLAG=
 endif
 export NOCACHE_FLAG
+ifeq ($(CHECK), 1)
+CHECK_FLAG=--check
+else
+CHECK_FLAG=
+endif
+export CHECK_FLAG
+
 clean_logs := $(shell rm *.log 2>&1 >/dev/null || :)
 
 DEFAULT_GOAL := default
@@ -25,8 +33,11 @@ include src/groups.mk
 .PHONY: all
 all: \
 	compat \
-	$(shell find packages/* -type d -exec sh -c 'basename {} | tr "\n" " "' \; ) \
-	digests.txt
+	$(shell find packages/* -type d -exec sh -c 'basename {} | tr "\n" " "' \; )
+
+.PHONY: check
+check:
+	$(MAKE) CHECK=1 all
 
 .PHONY: compat
 compat:
