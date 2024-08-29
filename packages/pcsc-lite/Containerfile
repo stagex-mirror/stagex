@@ -24,9 +24,9 @@ COPY --from=stagex/automake . /
 COPY --from=stagex/libtool . /
 RUN tar -xvf $SRC_FILE
 WORKDIR pcsc-lite-${VERSION}
-RUN ./bootstrap
 RUN --network=none <<-EOF
 	set -eux
+	./bootstrap && \
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \
