@@ -259,19 +259,7 @@ For further reading see the [Bootstrappable Builds](https://bootstrappable.org/)
 
 * An OCI building runtime
     * Currently Docker supported (v25+)
-        * [`containerd` support](https://earthly.dev/blog/containerd-docker/) is required:
-            * Add the following to `/etc/docker/daemon.json`:
-                ```json
-                {
-                    "features": {
-                        "containerd-snapshotter": true
-                    }
-                }
-                ```
-            * Restart Docker daemon:
-                ```shell
-                systemctl restart docker
-                ```
+        * [`containerd` support](https://docs.docker.com/engine/storage/containerd/#enable-containerd-image-store-on-docker-engine) is required
     * Support for buildah and podman coming soon
 	
 * Gnu Make
