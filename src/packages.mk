@@ -3458,7 +3458,6 @@ out/python/index.json: \
 	out/libffi/index.json \
 	out/make/index.json \
 	out/musl/index.json \
-	out/ncurses/index.json \
 	out/openssl/index.json \
 	out/sqlite3/index.json \
 	out/zlib/index.json
