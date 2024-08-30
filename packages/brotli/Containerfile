@@ -23,20 +23,26 @@ RUN --network=none <<-EOF
 	set -eux
     cmake -B build -G Ninja \
 		-DCMAKE_BUILD_TYPE=None \
-		-DCMAKE_INSTALL_PREFIX=/usr/lib \
+		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DBUILD_SHARED_LIBS=OFF
 	cmake --build build
 
 	cmake -B build -G Ninja \
 		-DCMAKE_BUILD_TYPE=None \
-		-DCMAKE_INSTALL_PREFIX=/usr/lib \
+		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DBUILD_SHARED_LIBS=ON
 	cmake --build build
 EOF
 
 FROM build AS install
-RUN DESTDIR=/rootfs cmake --install build
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
+RUN <<-EOF
+    set -eux
+    DESTDIR=/rootfs cmake --install build
+    for file in common dec enc; do
+		install -D -m 755 build/libbrotli$file.a /rootfs/usr/lib64
+	done
+    mv /rootfs/usr/lib64 /rootfs/usr/lib
+EOF
 
 FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

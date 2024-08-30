@@ -1,0 +1,65 @@
+FROM scratch AS base
+ENV VERSION=22.7.0
+ENV SRC_HASH=7a7c99282d59866d971b2da12c99596cb15782b9c3efe2e2146390c14f4d490e
+ENV SRC_FILE=node-v${VERSION}.tar.gz
+ENV SRC_SITE=https://nodejs.org/dist/v${VERSION}/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/python . /
+COPY --from=stagex/bzip2 . /
+COPY --from=stagex/ninja . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/icu . /
+COPY --from=stagex/linux-headers . /
+COPY --from=stagex/libnghttp2 . /
+COPY --from=stagex/brotli . /
+COPY --from=stagex/c-ares . /
+COPY --from=stagex/pkgconf . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR /node-v${VERSION}
+ENV SOURCE_DATE_EPOCH=1
+ENV LDFLAGS=" \
+    -Wl,-O1 -Wl,--sort-common -Wl,--as-needed -Wl,-z,relro \
+    -Wl,-z,now -Wl,-z,pack-relative-relocs"
+ENV CFLAGS=" \
+    -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 \
+    -march=x86-64 -mtune=generic -O2 -pipe -fno-plt -fexceptions \
+    -Wp,-D_FORTIFY_SOURCE=3 -Wformat -Werror=format-security \
+    -fstack-clash-protection -fcf-protection \
+    -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer"
+ENV CXXFLAGS="$CFLAGS -Wp,-D_GLIBCXX_ASSERTIONS"
+ENV CPPFLAGS="$CXXFLAGS"
+ENV LTOFLAGS="-flto=auto"
+
+RUN --network=none <<-EOF
+	set -eux
+	python configure.py \
+        --prefix=/usr \
+        --ninja \
+        --shared-zlib \
+        --shared-nghttp2 \
+        --shared-openssl \
+        --shared-cares \
+        --shared-brotli \
+        --without-npm \
+        --without-corepack \
+        --with-intl=system-icu \
+        --with-icu-default-data-dir=$(icu-config --icudatadir) \
+        --openssl-use-def-ca-store
+	make BUILDTYPE=Release -j $(nproc)
+EOF
+
+FROM build AS install
+RUN --network=none make DESTDIR=/rootfs install
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /
