@@ -18,7 +18,7 @@ COPY --from=stagex/go . /
 COPY --from=stagex/ca-certificates . /
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 RUN tar -xvf ${SRC_FILE}
-WORKDIR kubernetes-${VERSION}
+WORKDIR /kubernetes-${VERSION}
 RUN GOPATH="/kubernetes-${VERSION}" go mod download
 
 FROM fetch AS build

@@ -16,7 +16,7 @@ COPY --from=stagex/openssl . /
 COPY --from=stagex/zlib . /
 COPY --from=stagex/ca-certificates . /
 RUN tar xf ${SRC_FILE}
-WORKDIR mdBook-${VERSION}
+WORKDIR /mdBook-${VERSION}
 RUN cargo fetch
 
 FROM fetch AS build

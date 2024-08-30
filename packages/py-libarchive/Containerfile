@@ -29,7 +29,7 @@ COPY --from=stagex/libffi . /
 COPY --from=stagex/cmake . /
 COPY --from=stagex/gcc . /
 RUN tar -xzf ${SRC_FILE}
-WORKDIR python-libarchive-c-${VERSION}
+WORKDIR /python-libarchive-c-${VERSION}
 RUN gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 
 FROM build AS install

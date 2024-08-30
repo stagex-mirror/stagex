@@ -48,7 +48,7 @@ COPY --from=stagex/libedit . /
 COPY --from=stagex/linux-headers . /
 COPY --from=stagex/sqlite3 . /
 RUN tar -xf php-${VERSION}.tar.gz
-WORKDIR php-src-php-${VERSION}
+WORKDIR /php-src-php-${VERSION}
 COPY *.patch .
 RUN --network=none <<-EOF
 	set -eux

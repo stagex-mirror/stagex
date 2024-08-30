@@ -25,7 +25,7 @@ COPY --from=stagex/py-flit . /
 COPY --from=stagex/py-wheel . /
 COPY --from=stagex/py-gpep517 . /
 RUN tar -xzf ${SRC_FILE}
-WORKDIR Babel-${VERSION}
+WORKDIR /Babel-${VERSION}
 RUN gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 
 FROM build AS install

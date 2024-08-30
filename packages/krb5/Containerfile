@@ -33,7 +33,7 @@ COPY --from=stagex/libtool . /
 COPY --from=stagex/libverto . /
 COPY --from=stagex/pkgconf . /
 RUN tar -xf $SRC_FILE
-WORKDIR krb5-${VERSION}/src
+WORKDIR /krb5-${VERSION}/src
 RUN --network=none <<-EOF
 	set -eux
 	./configure \

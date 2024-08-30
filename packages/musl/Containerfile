@@ -14,7 +14,7 @@ ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 FROM fetch AS build
 COPY --from=stagex/stage3 . /
 RUN tar -xzf ${SRC_FILE}
-WORKDIR musl-${VERSION}
+WORKDIR /musl-${VERSION}
 ADD *.patch .
 RUN --network=none <<-EOF
 	set -eux; \

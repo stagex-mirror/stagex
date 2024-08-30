@@ -27,7 +27,7 @@ COPY --from=stagex/bash . /
 COPY --from=stagex/bash . /
 COPY --from=stagex/bash /bin/bash /bin/sh
 RUN tar -xf ${SRC_FILE}
-WORKDIR texinfo-${VERSION}
+WORKDIR /texinfo-${VERSION}
 RUN --network=none <<-EOF
 	set -ex
 	./configure \

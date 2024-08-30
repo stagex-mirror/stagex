@@ -26,7 +26,7 @@ COPY --from=stagex/gettext . /
 COPY --from=stagex/flex . /
 COPY --from=stagex/pkgconf . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR Linux-PAM-${VERSION}
+WORKDIR /Linux-PAM-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	export CFLAGS="-flto=auto $(pkg-config --cflags utmps)"

@@ -16,7 +16,7 @@ COPY --from=stagex/openssl . /
 COPY --from=stagex/zlib . /
 COPY --from=stagex/ca-certificates . /
 RUN tar xf ${SRC_FILE}
-WORKDIR openpgp-card-tools
+WORKDIR /openpgp-card-tools
 RUN cargo fetch
 
 FROM fetch AS build

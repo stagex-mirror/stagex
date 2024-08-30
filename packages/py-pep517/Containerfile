@@ -16,7 +16,7 @@ COPY --from=stagex/python . /
 COPY --from=stagex/py-setuptools . /
 COPY --from=stagex/zlib . /
 RUN tar -xzf ${SRC_FILE}
-WORKDIR pep517-${VERSION}
+WORKDIR /pep517-${VERSION}
 RUN --network=none <<-EOF
 	set -eu
     python setup.py install --root=/rootfs

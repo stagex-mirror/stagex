@@ -25,7 +25,7 @@ COPY --from=stagex/libtool . /
 COPY --from=stagex/util-linux . /
 
 RUN tar -xf ${SRC_FILE}
-WORKDIR apr-util-${VERSION}
+WORKDIR /apr-util-${VERSION}
 COPY *.patch .
 RUN --network=none <<-EOF
 	set -eux

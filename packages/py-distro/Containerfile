@@ -15,7 +15,7 @@ COPY --from=stagex/py-flit . /
 COPY --from=stagex/py-gpep517 . /
 COPY --from=stagex/zlib . /
 RUN tar -xzf ${SRC_FILE}
-WORKDIR distro-${VERSION}/src
+WORKDIR /distro-${VERSION}/src
 RUN --network=none <<-EOF
 	set -eu
 	sitedir="$(python3 -c 'import site;print(site.getsitepackages()[0])')"

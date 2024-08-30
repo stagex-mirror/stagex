@@ -21,7 +21,7 @@ COPY --from=stagex/samurai . /
 COPY --from=stagex/python . /
 COPY --from=stagex/doxygen . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR fmt-${VERSION}
+WORKDIR /fmt-${VERSION}
 COPY *.patch .
 RUN --network=none <<-EOF
 	set -eux

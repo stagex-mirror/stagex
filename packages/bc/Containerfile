@@ -29,7 +29,7 @@ COPY --from=stagex/texinfo . /
 COPY --from=stagex/findutils . /
 COPY --from=stagex/sed . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR bc-${VERSION}
+WORKDIR /bc-${VERSION}
 RUN --network=none <<-EOF
 	set -ex
 	./configure \

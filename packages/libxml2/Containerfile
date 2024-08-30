@@ -22,7 +22,7 @@ COPY --from=stagex/libtool . /
 COPY --from=stagex/zlib . /
 COPY --from=stagex/m4 . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR libxml2-v${VERSION}
+WORKDIR /libxml2-v${VERSION}
 RUN --network=none <<-EOF
     set -eux
     sh autogen.sh

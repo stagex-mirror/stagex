@@ -27,7 +27,7 @@ COPY --from=stagex/openssl . /
 COPY --from=stagex/argon2 . /
 COPY --from=stagex/groff . /
 RUN tar -xf $SRC_FILE
-WORKDIR openldap-${VERSION}
+WORKDIR /openldap-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	set -eux

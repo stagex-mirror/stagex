@@ -19,7 +19,7 @@ COPY --from=stagex/py-flit . /
 COPY --from=stagex/py-packaging . /
 COPY --from=stagex/zlib . /
 RUN tar -xzf ${SRC_FILE}
-WORKDIR installer-${VERSION}
+WORKDIR /installer-${VERSION}
 RUN python -m build -wn --skip-dependency-check
 
 FROM build AS install

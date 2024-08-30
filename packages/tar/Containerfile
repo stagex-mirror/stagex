@@ -15,7 +15,7 @@ COPY --from=stagex/musl . /
 COPY --from=stagex/make . /
 COPY --from=stagex/gcc . /
 RUN tar -xf tar-${VERSION}.tar.xz
-WORKDIR tar-${VERSION}
+WORKDIR /tar-${VERSION}
 ENV FORCE_UNSAFE_CONFIGURE=1
 RUN --network=none <<-EOF
 	set -ex

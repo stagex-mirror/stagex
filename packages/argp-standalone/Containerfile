@@ -18,7 +18,7 @@ COPY --from=stagex/autoconf . /
 COPY --from=stagex/automake . /
 COPY --from=stagex/m4 . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR argp-standalone-${VERSION}
+WORKDIR /argp-standalone-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	/usr/bin/autoreconf -vif

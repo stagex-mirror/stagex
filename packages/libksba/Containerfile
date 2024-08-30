@@ -16,7 +16,7 @@ COPY --from=stagex/make . /
 COPY --from=stagex/npth . /
 COPY --from=stagex/libgpg-error . /
 RUN tar -xvf $SRC_FILE
-WORKDIR libksba-${VERSION}
+WORKDIR /libksba-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./configure \

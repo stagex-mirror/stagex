@@ -15,7 +15,7 @@ COPY --from=stagex/binutils . /
 COPY --from=stagex/make . /
 COPY --from=stagex/npth . /
 RUN tar -xvf $SRC_FILE
-WORKDIR libgpg-error-${VERSION}
+WORKDIR /libgpg-error-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	set -eux

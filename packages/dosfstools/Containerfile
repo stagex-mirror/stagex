@@ -19,7 +19,7 @@ COPY --from=stagex/autoconf . /
 COPY --from=stagex/automake . /
 COPY --from=stagex/musl . /
 RUN tar -xzf ${SRC_FILE}
-WORKDIR dosfstools-${VERSION}
+WORKDIR /dosfstools-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./autogen.sh

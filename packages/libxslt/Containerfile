@@ -20,7 +20,7 @@ COPY --from=stagex/libxml2 . /
 COPY --from=stagex/zlib . /
 COPY --from=stagex/m4 . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR libxslt-${VERSION}
+WORKDIR /libxslt-${VERSION}
 RUN --network=none <<-EOF
     set -eux
     ./configure \

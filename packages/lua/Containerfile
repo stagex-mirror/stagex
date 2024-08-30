@@ -24,7 +24,7 @@ COPY --from=stagex/make . /
 COPY --from=stagex/cmake . /
 COPY --from=stagex/zlib . /
 RUN tar -xvf $SRC_FILE
-WORKDIR lua-${VERSION}
+WORKDIR /lua-${VERSION}
 COPY <<-EOF configure.ac
     top_buildir=.
     AC_INIT(src/luaconf.h)

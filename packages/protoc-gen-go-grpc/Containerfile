@@ -12,9 +12,9 @@ COPY --from=stagex/busybox . /
 COPY --from=stagex/go . /
 COPY --from=stagex/ca-certificates . /
 RUN tar -xvf v${VERSION}.tar.gz
-WORKDIR grpc-go-${VERSION}/cmd/protoc-gen-go-grpc
-ENV GOPATH=${PWD}/cache/go
-ENV GOCACHE=${PWD}/cache/
+WORKDIR /grpc-go-${VERSION}/cmd/protoc-gen-go-grpc
+ENV GOPATH=/cache/go
+ENV GOCACHE=/cache/
 ENV GOWORK=off
 ENV GOPROXY=https://proxy.golang.org,direct
 ENV GOSUMDB=sum.golang.org

@@ -32,7 +32,7 @@ COPY --from=stagex/py-typing-extensions . /
 COPY --from=stagex/py-gpep517 . /
 COPY --from=stagex/py-installer . /
 RUN tar -xzf ${SRC_FILE}
-WORKDIR cryptography-${VERSION}
+WORKDIR /cryptography-${VERSION}
 RUN gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 
 FROM build AS install

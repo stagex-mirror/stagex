@@ -14,7 +14,7 @@ COPY --from=stagex/gcc . /
 COPY --from=stagex/binutils . /
 COPY --from=stagex/make . /
 RUN tar -xzf ${SRC_FILE}
-WORKDIR bash-${VERSION}
+WORKDIR /bash-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./configure \

@@ -28,7 +28,7 @@ COPY --from=stagex/pkgconf . /
 COPY --from=stagex/m4 . /
 COPY --from=stagex/zlib . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR OpenSC-${VERSION}
+WORKDIR /OpenSC-${VERSION}
 ENV CFLAGS="-U_FORTIFY_SOURCE -Wno-error"
 RUN --network=none <<-EOF
     set -eux

@@ -23,7 +23,7 @@ COPY --from=stagex/openssl . /
 COPY --from=stagex/zlib . /
 
 RUN --network=none tar -xf ${SRC_FILE}
-WORKDIR zig-${VERSION}
+WORKDIR /zig-${VERSION}
 RUN --network=none patch -p1 -i ../static-glibc.patch
 RUN --network=none <<-EOF
     set -eux

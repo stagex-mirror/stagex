@@ -18,7 +18,7 @@ COPY --from=stagex/binutils . /
 COPY --from=stagex/pkgconf . /
 COPY --from=stagex/zlib . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR zstd-${VERSION}
+WORKDIR /zstd-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	meson env2mfile \

@@ -16,7 +16,7 @@ COPY --from=stagex/openssl . /
 COPY --from=stagex/zlib . /
 COPY --from=stagex/ca-certificates . /
 RUN tar xf ${SRC_FILE}
-WORKDIR ocismack
+WORKDIR /ocismack
 RUN cargo fetch
 
 FROM fetch AS build

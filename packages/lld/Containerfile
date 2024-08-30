@@ -24,7 +24,7 @@ COPY --from=stagex/zlib . /
 COPY --from=stagex/gcc /usr/lib64/* /usr/lib/
 
 RUN tar -xf ${SRC_FILE}
-WORKDIR llvm-project-${VERSION}.src
+WORKDIR /llvm-project-${VERSION}.src
 RUN set -eux; \
 	cmake \
 		-S lld \

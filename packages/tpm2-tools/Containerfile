@@ -26,7 +26,7 @@ COPY --from=stagex/m4 . /
 COPY --from=stagex/curl . /
 COPY --from=stagex/tpm2-tss . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR tpm2-tools-${VERSION}
+WORKDIR /tpm2-tools-${VERSION}
 RUN --network=none <<-EOF
     set -eux
     printf "${VERSION}" > VERSION

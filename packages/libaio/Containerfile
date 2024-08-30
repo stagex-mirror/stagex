@@ -18,7 +18,7 @@ COPY --from=stagex/make . /
 COPY --from=stagex/linux-headers . /
 
 RUN tar -xf ${SRC_FILE}
-WORKDIR libaio-libaio-${VERSION}
+WORKDIR /libaio-libaio-${VERSION}
 COPY *.patch .
 RUN --network=none <<-EOF
 	set -eux

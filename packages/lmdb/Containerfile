@@ -17,7 +17,7 @@ COPY --from=stagex/binutils . /
 COPY --from=stagex/make . /
 COPY --from=stagex/openssl . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR openldap-LMDB_${VERSION}/libraries/liblmdb
+WORKDIR /openldap-LMDB_${VERSION}/libraries/liblmdb
 COPY *.patch .
 RUN --network=none <<-EOF
 	set -eux \

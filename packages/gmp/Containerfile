@@ -20,7 +20,7 @@ COPY --from=stagex/m4 . /
 COPY --from=stagex/gcc . /
 
 RUN --network=none tar -xf ${SRC_FILE}
-WORKDIR gmp-${VERSION}
+WORKDIR /gmp-${VERSION}
 RUN --network=none <<EOF
     set -eux
     ./configure \

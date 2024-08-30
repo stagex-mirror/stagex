@@ -10,7 +10,7 @@ ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 FROM fetch AS build
 COPY --from=stagex/stage3 . /
 RUN tar -xf linux-${VERSION}.tar.xz
-WORKDIR linux-${VERSION}
+WORKDIR /linux-${VERSION}
 RUN --network=none make headers
 
 FROM build AS install

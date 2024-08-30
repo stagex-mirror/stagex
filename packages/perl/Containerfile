@@ -15,7 +15,7 @@ COPY --from=stagex/binutils . /
 COPY --from=stagex/make . /
 COPY --from=stagex/musl . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR perl-${VERSION}
+WORKDIR /perl-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	printf '

@@ -16,7 +16,7 @@ COPY --from=stagex/musl . /
 COPY --from=stagex/m4 . /
 COPY --from=stagex/perl . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR autoconf-${VERSION}
+WORKDIR /autoconf-${VERSION}
 ENV M4=/usr/bin/m4
 RUN --network=none <<-EOF
 	set -eux

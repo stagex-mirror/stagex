@@ -15,7 +15,7 @@ COPY --from=stagex/binutils . /
 COPY --from=stagex/make . /
 COPY --from=stagex/libgpg-error . /
 RUN tar -xvf $SRC_FILE
-WORKDIR libgcrypt-${VERSION}
+WORKDIR /libgcrypt-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	set -eux
