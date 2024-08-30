@@ -1,7 +1,7 @@
 FROM scratch AS base
 ARG ARCH=x86_64
-ENV VERSION=2.35
-ENV SRC_HASH=1b11659fb49e20e18db460d44485f09442c8c56d5df165de9461eb09c8302f85
+ENV VERSION=2.43.1
+ENV SRC_HASH=13f74202a3c4c51118b797a39ea4200d3f6cfbe224da6d1d95bb938480132dfd
 ENV SRC_FILE=binutils-${VERSION}.tar.xz
 ENV SRC_SITE=https://ftp.gnu.org/gnu/binutils/${SRC_FILE}
 
@@ -11,7 +11,7 @@ ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 FROM fetch AS build
 COPY --from=stagex/stage3 . /
 RUN tar -xf binutils-${VERSION}.tar.xz
-WORKDIR binutils-${VERSION}
+WORKDIR /binutils-${VERSION}
 RUN --network=none <<-EOF
 	set -ex
 	CFLAGS='-Os -Wformat -Werror=format-security -O2' \
