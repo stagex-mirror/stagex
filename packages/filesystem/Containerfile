@@ -8,7 +8,7 @@ RUN <<-EOF
 	install -d -m1777 tmp
 	install -d -m1777 var/tmp
 	install -d -m1777 var/spool/mail
-	install -o 1000:1000 -d -m0755 home/user
+	install -o 1000 -g 1000 -d -m0755 home/user
 	ln -sT usr/lib lib64
 	ln -sT usr/lib lib
 	ln -sT usr/bin bin
