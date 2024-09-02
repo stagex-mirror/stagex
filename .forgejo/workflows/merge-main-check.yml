@@ -13,14 +13,9 @@ defaults:
 
 jobs:
   check:
+    name: Check if non-staging -> main
     runs-on: shell
-    if: github.base_ref == 'main'
+    if: github.base_ref == 'main' && !startsWith(github.ref, 'refs/heads/release/') && github.head_ref != 'staging'
     steps:
       - name: Check if non-staging -> main
-        if: github.head_ref != 'staging'
         run: echo 'Cannot merge non-staging branch to main'; exit 1
-
-      - name: Check if staging -> main
-        if: github.head_ref == 'staging'
-        run: echo 'Merge from staging branch to main allowed'; exit 0
-
