@@ -1,0 +1,39 @@
+FROM scratch AS base
+ENV VERSION=1.22.22
+ENV SRC_HASH=88268464199d1611fcf73ce9c0a6c4d44c7d5363682720d8506f6508addf36a0
+ENV SRC_FILE=yarn-v${VERSION}.tar.gz
+ENV SRC_SITE=https://yarnpkg.com/downloads/${VERSION}/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/musl . /
+COPY --from=stagex/busybox . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR /yarn-v${VERSION}
+
+FROM build AS install
+ENV DESTDIR=/rootfs
+RUN --network=none <<-EOF
+	destdir="usr/share/node_modules/yarn"
+
+	mkdir -p $DESTDIR/$destdir
+	cp -R ./* $DESTDIR/$destdir
+
+	# Windows files
+	rm $DESTDIR/$destdir/bin/*.cmd
+	# Shell shim
+	rm $DESTDIR/$destdir/bin/yarn
+	# Old alias
+	rm $DESTDIR/$destdir/bin/yarnpkg
+
+	mkdir -p $DESTDIR/usr/bin
+	ln -s ../share/node_modules/yarn/bin/yarn.js $DESTDIR/usr/bin/yarn
+	ln -s ../share/node_modules/yarn/bin/yarn.js $DESTDIR/usr/bin/yarnpkg
+
+	sed -i 's/\"tar\"/\"stagex\"/g' $DESTDIR/$destdir/package.json
+EOF
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /
