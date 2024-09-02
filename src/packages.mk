@@ -4338,6 +4338,15 @@ out/xz/index.json: \
 	out/po4a/index.json
 	$(call build,xz)
 
+.PHONY: yarn
+yarn: out/yarn/index.json
+out/yarn/index.json: \
+	packages/yarn/Containerfile \
+	out/busybox/index.json \
+	out/filesystem/index.json \
+	out/musl/index.json
+	$(call build,yarn)
+
 .PHONY: yq
 yq: out/yq/index.json
 out/yq/index.json: \
