@@ -1,0 +1,56 @@
+FROM scratch AS base
+ARG ARCH=x86_64
+ENV VERSION=1.6.1
+ENV SRC_HASH=f8923c740159052d719dbfc2a2f81942d68dd34fcaf61c706a02c9b80feeef8e
+ENV SRC_FILE=Linux-PAM-${VERSION}.tar.xz
+ENV SRC_SITE=https://github.com/linux-pam/linux-pam/releases/download/v${VERSION}/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch AS build
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/bison . /
+COPY --from=stagex/cmake . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/autoconf . /
+COPY --from=stagex/automake . /
+COPY --from=stagex/linux-headers . /
+COPY --from=stagex/utmps . /
+COPY --from=stagex/libtool . /
+COPY --from=stagex/gettext . /
+COPY --from=stagex/flex . /
+COPY --from=stagex/pkgconf . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR /Linux-PAM-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	export CFLAGS="-flto=auto $(pkg-config --cflags utmps)"
+	export LDFLAGS=$(pkg-config --libs utmps)
+	./configure \
+		--build=${ARCH}-linux-musl \
+		--host=${ARCH}-linux-musl \
+		--prefix=/usr \
+		--libdir=/usr/lib \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--localstatedir=/var \
+		--disable-nls \
+		--disable-db \
+		--disable-examples \
+		--sbindir=/usr/sbin \
+		--enable-securedir=/usr/lib/security
+	make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN make DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /

@@ -1,21 +1,21 @@
-FROM scratch as base
+FROM scratch AS base
 ARG ARCH=x86_64
 ENV VERSION=3.10
 ENV SRC_HASH=90e5e93cc724e4ebe12ede80df1634063c7a855692685919bfe60b556c9bd09e
 ENV SRC_FILE=diffutils-${VERSION}.tar.xz
 ENV SRC_SITE=https://ftp.gnu.org/gnu/diffutils/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/binutils . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/make . /
 COPY --from=stagex/gcc . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR diffutils-${VERSION}
+WORKDIR /diffutils-${VERSION}
 RUN --network=none <<-EOF
 	set -ex
 	./configure \
@@ -28,8 +28,8 @@ RUN --network=none <<-EOF
 	make -j "$(nproc)"
 EOF
 
-FROM build as install
+FROM build AS install
 RUN --network=none make DESTDIR="/rootfs" install
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

@@ -1,10 +1,10 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=0.2.2
 ENV SRC_HASH=525514cd5b28a315564e2c4b4425189b567b71bf13584804cf266ba6dee71a0e
 ENV SRC_FILE=eif_build.tgz
 ENV SRC_SITE=https://codeload.github.com/tkhq/eif_build/legacy.tar.gz/${VERSION}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
 COPY --from=stagex/busybox . /
 COPY --from=stagex/musl . /
@@ -13,27 +13,27 @@ COPY --from=stagex/zlib . /
 COPY --from=stagex/openssl . /
 COPY --from=stagex/ca-certificates . /
 COPY --from=stagex/gcc . /
-COPY --from=stagex/llvm . /
+COPY --from=stagex/llvm16 . /
 COPY --from=stagex/binutils . /
 COPY --from=stagex/pkgconf . /
 COPY --from=stagex/git . /
 COPY --from=stagex/rust . /
 RUN tar -xzf ${SRC_FILE}
 RUN mv tkhq-eif_build-* eif_build
-WORKDIR eif_build
+WORKDIR /eif_build
 RUN cargo fetch --locked
 
-FROM fetch as build
+FROM fetch AS build
 RUN --network=none \
-    cargo build \
-        --no-default-features \
-        --locked \
-        --release \
-        --target x86_64-unknown-linux-musl
+	cargo build \
+		--no-default-features \
+		--locked \
+		--release \
+		--target x86_64-unknown-linux-musl
 
-FROM build as install
-WORKDIR /rootfs/usr/bin
+FROM build AS install
+WORKDIR //rootfs/usr/bin
 RUN cp /eif_build/target/x86_64-unknown-linux-musl/release/eif_build .
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

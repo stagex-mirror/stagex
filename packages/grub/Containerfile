@@ -1,13 +1,13 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=2.12
 ENV SRC_HASH=b30919fa5be280417c17ac561bb1650f60cfb80cc6237fa1e2b6f56154cb9c91
 ENV SRC_FILE=grub-${VERSION}.tar.gz
 ENV SRC_SITE=https://mirrors.kernel.org/gnu/grub/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/bison . /
 COPY --from=stagex/flex . /
@@ -26,7 +26,7 @@ COPY --from=stagex/gettext . /
 COPY --from=stagex/xz . /
 COPY --from=stagex/linux-headers . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR grub-${VERSION}
+WORKDIR /grub-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
     sh autogen.sh
@@ -64,7 +64,7 @@ RUN --network=none <<-EOF
     make
 EOF
 
-FROM build as install
+FROM build AS install
 RUN <<-EOF
     cd build-pc
     make DESTDIR=/rootfs install-strip
@@ -73,5 +73,5 @@ RUN <<-EOF
     make DESTDIR=/rootfs install-strip
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

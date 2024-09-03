@@ -1,4 +1,4 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=1.8.9
 ENV SRC_HASH=962fe7d3da7653519d2975e130244af9286db32041b0745613aebf89949a9009
 ENV SRC_FILE=v${VERSION}.tar.gz
@@ -12,25 +12,25 @@ ENV GOHOSTOS=linux
 ENV GOHOSTARCH=amd64
 ENV GOLDFLAGS="-w -extldflags \"-static\" -X \"main.version=${VERSION}\""
 
-FROM base as fetch
+FROM base AS fetch
 COPY --from=stagex/busybox . /
 COPY --from=stagex/go . /
 COPY --from=stagex/ca-certificates . /
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 RUN tar -xvf ${SRC_FILE}
-WORKDIR grpcurl-${VERSION}
+WORKDIR /grpcurl-${VERSION}
 ENV GOPATH="/grpcurl-${VERSION}"
 RUN go get ./...
 
-FROM fetch as build
+FROM fetch AS build
 RUN --network=none go build -trimpath -v ./cmd/grpcurl
 
-from build as install
+FROM build AS install
 RUN <<-EOF
     set -eu
     mkdir -p /rootfs/usr/bin/
     cp grpcurl /rootfs/usr/bin/
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/./ /

@@ -1,13 +1,13 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=2.9.5
 ENV SRC_HASH=a4bea37ecb9a3fb5c0c8ef18c2f7eeaf8ccbcfec91f72f3bccfc6bf72a3e3902
 ENV SRC_FILE=git-${VERSION}.tar.xz
 ENV SRC_SITE=http://mirrors.edge.kernel.org/pub/software/scm/git/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/gcc . /
@@ -19,7 +19,7 @@ COPY --from=stagex/zlib . /
 COPY --from=stagex/perl . /
 COPY --from=stagex/gettext . /
 RUN tar -xvf $SRC_FILE
-WORKDIR git-${VERSION}
+WORKDIR /git-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	set -eux
@@ -38,10 +38,10 @@ RUN --network=none <<-EOF
 	make -j "$(nproc)"
 EOF
 
-FROM build as install
+FROM build AS install
 RUN make DESTDIR=/rootfs install
 
-FROM base as test
+FROM base AS test
 COPY --from=install /rootfs/. /
 COPY --from=stagex/zlib . /
 COPY --from=stagex/musl . /
@@ -56,5 +56,5 @@ RUN /bin/sh <<-EOF
 	fi
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

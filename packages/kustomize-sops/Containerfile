@@ -1,4 +1,4 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=4.3.1
 ENV SRC_HASH=e7248a158d503a73d9f658cc9ac0ccf16a3d8efb856d93ca50a97f7b89332516
 ENV SRC_FILE=v${VERSION}.tar.gz
@@ -13,24 +13,24 @@ ENV GOHOSTOS=linux
 ENV GOHOSTARCH=amd64
 ENV GO11MODULE=off
 
-FROM base as fetch
+FROM base AS fetch
 COPY --from=stagex/busybox . /
 COPY --from=stagex/go . /
 COPY --from=stagex/ca-certificates . /
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 RUN tar -xvf ${SRC_FILE}
-WORKDIR kustomize-sops-${VERSION}
+WORKDIR /kustomize-sops-${VERSION}
 RUN go get ./...
 
-FROM fetch as build
+FROM fetch AS build
 RUN --network=none go build -trimpath -v
 
-from build as install
+FROM build AS install
 RUN <<-EOF
     set -eu
     mkdir -p /rootfs/usr/lib/kustomize/plugins/viduct.ai/v1/ksops
     cp kustomize-sops /rootfs/usr/lib/kustomize/plugins/viduct.ai/v1/ksops/ksops
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/./ /

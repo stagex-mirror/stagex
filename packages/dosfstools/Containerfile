@@ -1,13 +1,13 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=4.2
 ENV SRC_HASH=64926eebf90092dca21b14259a5301b7b98e7b1943e8a201c7d726084809b527
 ENV SRC_FILE=dosfstools-${VERSION}.tar.gz
 ENV SRC_SITE=https://github.com/dosfstools/dosfstools/releases/download/v${VERSION}/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/gcc . /
 COPY --from=stagex/binutils . /
@@ -19,7 +19,7 @@ COPY --from=stagex/autoconf . /
 COPY --from=stagex/automake . /
 COPY --from=stagex/musl . /
 RUN tar -xzf ${SRC_FILE}
-WORKDIR dosfstools-${VERSION}
+WORKDIR /dosfstools-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./autogen.sh
@@ -34,8 +34,8 @@ RUN --network=none <<-EOF
         --enable-compat-symlinks
 EOF
 
-FROM build as install
+FROM build AS install
 RUN --network=none make DESTDIR=/rootfs install
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

@@ -1,0 +1,43 @@
+FROM scratch AS base
+ENV VERSION=1.13
+ENV SRC_FILE=fuse-overlayfs-${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/containers/fuse-overlayfs/archive/v${VERSION}/${SRC_FILE}
+ENV SRC_HASH=96d10344921d5796bcba7a38580ae14a53c4e60399bb90b238ac5a10b3bb65b2
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/autoconf . /
+COPY --from=stagex/automake . /
+COPY --from=stagex/m4 . /
+COPY --from=stagex/fuse3 . /
+COPY --from=stagex/linux-headers . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR /fuse-overlayfs-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	/usr/bin/autoreconf -fis
+	./configure \
+        --build=x86_64-linux-musl \
+        --host=x86_64-linux-musl \
+		--prefix=/usr \
+		--mandir=/usr/share/man
+	make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN <<-EOF
+	set -eux
+    make DESTDIR=/rootfs install
+EOF
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /

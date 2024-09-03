@@ -4,10 +4,10 @@ ENV SRC_HASH=cab1e62755713f62ce1b567954dbb0e9a7e668ffbc3bbad3ce85c53f8f4e00a4
 ENV SRC_FILE=pcsc-lite-${VERSION}.tar.xz
 ENV SRC_SITE=https://pcsclite.apdu.fr/files/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/m4 . /
 COPY --from=stagex/musl . /
@@ -23,7 +23,7 @@ COPY --from=stagex/autoconf-archive . /
 COPY --from=stagex/automake . /
 COPY --from=stagex/libtool . /
 RUN tar -xvf $SRC_FILE
-WORKDIR pcsc-lite-${VERSION}
+WORKDIR /pcsc-lite-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./bootstrap && \
@@ -47,10 +47,10 @@ RUN --network=none <<-EOF
 	make -j "$(nproc)"
 EOF
 
-FROM build as install
+FROM build AS install
 RUN --network=none make DESTDIR=/rootfs install
 
-FROM base as test
+FROM base AS test
 COPY --from=install /rootfs/. /
 COPY --from=stagex/busybox . /
 RUN /bin/sh <<-EOF
@@ -62,5 +62,5 @@ RUN /bin/sh <<-EOF
 	fi
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

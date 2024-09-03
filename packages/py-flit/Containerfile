@@ -1,20 +1,20 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=3.9.0
 ENV SRC_HASH=d75edf5eb324da20d53570a6a6f87f51e606eee8384925cd66a90611140844c7
 ENV SRC_FILE=flit-${VERSION}.tar.gz
 ENV SRC_SITE=https://files.pythonhosted.org/packages/source/f/flit/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as install
+FROM fetch AS install
 COPY --from=stagex/busybox . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/python . /
 COPY --from=stagex/py-setuptools . /
 COPY --from=stagex/zlib . /
 RUN tar -xzf ${SRC_FILE}
-WORKDIR flit-${VERSION}/flit_core
+WORKDIR /flit-${VERSION}/flit_core
 RUN --network=none <<-EOF
 	set -eu
     rm -rf flit_core/vendor
@@ -25,5 +25,5 @@ RUN --network=none <<-EOF
     find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

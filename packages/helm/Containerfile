@@ -1,4 +1,4 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=3.14.3
 ENV SRC_HASH=e0d46f69954002d27eaac3bd6543ee4f486cdd3795c5aac921e7f02791df8d8e
 ENV SRC_FILE=v${VERSION}.tar.gz
@@ -13,24 +13,24 @@ ENV GOHOSTOS=linux
 ENV GOHOSTARCH=amd64
 ENV GO11MODULE=on
 
-FROM base as fetch
+FROM base AS fetch
 COPY --from=stagex/busybox . /
 COPY --from=stagex/go . /
 COPY --from=stagex/ca-certificates . /
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 RUN tar -xvf ${SRC_FILE}
-WORKDIR helm-${VERSION}
+WORKDIR /helm-${VERSION}
 RUN go get ./...
 
-FROM fetch as build
+FROM fetch AS build
 RUN --network=none go build -v -trimpath ./cmd/helm
 
-from build as install
+FROM build AS install
 RUN <<-EOF
     set -eu
     mkdir -p /rootfs/usr/bin/
     cp helm /rootfs/usr/bin/
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/./ /

@@ -1,14 +1,14 @@
-FROM scratch as base
+FROM scratch AS base
 ARG ARCH=x86_64
 ENV VERSION=1.20
 ENV SRC_HASH=c6030defe6ae172f1687906d7354054c75a6a9130af319d4e73c50a91959c5a6
 ENV SRC_FILE=ed-${VERSION}.tar.lz
 ENV SRC_SITE=https://ftp.gnu.org/gnu/ed/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/binutils . /
 COPY --from=stagex/musl . /
@@ -17,7 +17,7 @@ COPY --from=stagex/tar . /
 COPY --from=stagex/lzip . /
 COPY --from=stagex/gcc . /
 RUN tar --lzip -xf ${SRC_FILE}
-WORKDIR ed-${VERSION}
+WORKDIR /ed-${VERSION}
 RUN --network=none <<-EOF
 	set -ex
 	./configure \
@@ -30,8 +30,8 @@ RUN --network=none <<-EOF
 	make -j "$(nproc)"
 EOF
 
-FROM build as install
+FROM build AS install
 RUN make DESTDIR="/rootfs" install
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

@@ -1,13 +1,13 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=1.1.39
 ENV SRC_HASH=2a20ad621148339b0759c4d4e96719362dee64c9a096dbba625ba053846349f0
 ENV SRC_FILE=libxslt-${VERSION}.tar.xz
 ENV SRC_SITE=https://download.gnome.org/sources/libxslt/1.1/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/gcc . /
 COPY --from=stagex/binutils . /
@@ -20,7 +20,7 @@ COPY --from=stagex/libxml2 . /
 COPY --from=stagex/zlib . /
 COPY --from=stagex/m4 . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR libxslt-${VERSION}
+WORKDIR /libxslt-${VERSION}
 RUN --network=none <<-EOF
     set -eux
     ./configure \
@@ -32,8 +32,8 @@ RUN --network=none <<-EOF
     make -j "$(nproc)"
 EOF
 
-FROM build as install
+FROM build AS install
 RUN --network=none make DESTDIR=/rootfs install
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

@@ -1,22 +1,22 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=6.8
 ENV SRC_HASH=c969dea4e8bb6be991bbf7c010ba0e0a5643a3a8d8fb0a2aaa053406f1e965f3
 ENV SRC_FILE=linux-${VERSION}.tar.xz
 ENV SRC_SITE=http://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/gcc . /
 COPY --from=stagex/binutils . /
 COPY --from=stagex/musl . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR linux-${VERSION}
+WORKDIR /linux-${VERSION}
 RUN --network=none gcc usr/gen_init_cpio.c -o usr/gen_init_cpio
 
-FROM build as install
+FROM build AS install
 RUN --network=none <<-EOF
     set -eux
     mkdir -p /rootfs/usr/bin
@@ -27,5 +27,5 @@ RUN --network=none <<-EOF
     cp -a usr/gen_init_cpio /rootfs/usr/bin
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

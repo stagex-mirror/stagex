@@ -1,21 +1,21 @@
-FROM scratch as base
+FROM scratch AS base
 ARG ARCH=x86_64
 ENV VERSION=3.11
 ENV SRC_HASH=1db2aedde89d0dea42b16d9528f894c8d15dae4e190b59aecc78f5a951276eab
 ENV SRC_FILE=grep-${VERSION}.tar.xz
 ENV SRC_SITE=https://mirrors.kernel.org/gnu/grep/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/binutils . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/make . /
 COPY --from=stagex/gcc . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR grep-${VERSION}
+WORKDIR /grep-${VERSION}
 RUN --network=none <<-EOF
 	set -ex
 	./configure \
@@ -30,8 +30,8 @@ RUN --network=none <<-EOF
 	make -j "$(nproc)"
 EOF
 
-FROM build as install
+FROM build AS install
 RUN --network=none make DESTDIR="/rootfs" install
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

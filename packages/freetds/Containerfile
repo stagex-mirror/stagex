@@ -1,0 +1,48 @@
+FROM scratch AS base
+ARG ARCH=x86_64
+ENV VERSION=1.4.22
+ENV SRC_HASH=a9a7f24f0a7a871617e76e8cc6e6556ae788042f1c006195665505499b2334b1
+ENV SRC_FILE=freetds-${VERSION}.tar.bz2
+ENV SRC_SITE=https://www.freetds.org/files/stable/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/make . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/libtool . /
+COPY --from=stagex/linux-headers . /
+COPY --from=stagex/readline . /
+COPY --from=stagex/unixodbc . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/perl . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR /freetds-${VERSION}
+RUN --network=none <<-EOF
+	set -ex
+	./configure \
+		--build=${ARCH}-linux-musl \
+		--host=${ARCH}-linux-musl \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--enable-msdblib \
+		--with-openssl=/usr \
+		--enable-odbc \
+		--with-unixodbc=/usr
+	make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN --network=none <<-EOF
+	set -eu
+	make DESTDIR="/rootfs" install
+EOF
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /

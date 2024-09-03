@@ -10,13 +10,13 @@ COPY --from=stagex/rust . /
 COPY --from=stagex/busybox . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/gcc . /
-COPY --from=stagex/llvm . /
+COPY --from=stagex/llvm16 . /
 COPY --from=stagex/libunwind . /
 COPY --from=stagex/openssl . /
 COPY --from=stagex/zlib . /
 COPY --from=stagex/ca-certificates . /
 RUN tar xf ${SRC_FILE}
-WORKDIR keyfork
+WORKDIR /keyfork
 ADD <<-EOF /.cargo/config.toml
 	[registries.distrust]
 	index = "https://git.distrust.co/public/_cargo-index.git"
@@ -24,7 +24,7 @@ ADD <<-EOF /.cargo/config.toml
 RUN cargo fetch
 
 FROM fetch AS build
-COPY --from=stagex/clang . /
+COPY --from=stagex/clang16 . /
 COPY --from=stagex/linux-headers . /
 COPY --from=stagex/gmp . /
 COPY --from=stagex/nettle . /

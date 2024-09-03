@@ -1,14 +1,14 @@
-FROM scratch as base
+FROM scratch AS base
 ARG ARCH=x86_64
 ENV VERSION=6.7
 ENV SRC_HASH=2090201e1a3ff32846f4fe421c1163b15f440bb38e31355d09f82d3949922af7
 ENV SRC_FILE=strace-${VERSION}.tar.xz
 ENV SRC_SITE=https://github.com/strace/strace/releases/download/v${VERSION}/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/binutils . /
 COPY --from=stagex/musl . /
@@ -16,7 +16,7 @@ COPY --from=stagex/linux-headers . /
 COPY --from=stagex/make . /
 COPY --from=stagex/gcc . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR strace-${VERSION}
+WORKDIR /strace-${VERSION}
 RUN --network=none <<-EOF
 	set -ex
 	./configure \
@@ -30,8 +30,8 @@ RUN --network=none <<-EOF
 	make -j "$(nproc)"
 EOF
 
-FROM build as install
+FROM build AS install
 RUN --network=none make DESTDIR="/rootfs" install
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

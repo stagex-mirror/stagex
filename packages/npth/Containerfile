@@ -1,20 +1,20 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=1.6
 ENV SRC_HASH=1393abd9adcf0762d34798dc34fdcf4d0d22a8410721e76f1e3afcd1daa4e2d1
 ENV SRC_FILE=npth-${VERSION}.tar.bz2
 ENV SRC_SITE=https://gnupg.org/ftp/gcrypt/npth/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/gcc . /
 COPY --from=stagex/binutils . /
 COPY --from=stagex/make . /
 RUN tar -xvf $SRC_FILE
-WORKDIR npth-${VERSION}
+WORKDIR /npth-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./configure \
@@ -27,10 +27,10 @@ RUN --network=none <<-EOF
 	make -j "$(nproc)"
 EOF
 
-FROM build as install
+FROM build AS install
 RUN make DESTDIR=/rootfs install
 
-FROM base as test
+FROM base AS test
 COPY --from=install /rootfs/. /
 COPY --from=stagex/zlib . /
 COPY --from=stagex/musl . /
@@ -45,5 +45,5 @@ RUN /bin/sh <<-EOF
 	fi
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

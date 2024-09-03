@@ -1,13 +1,13 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=2.12.1
 ENV SRC_HASH=1090e62c5a1900429f63e4681263b96e7829876ccbc66cf2d9266cd589f67286
 ENV SRC_FILE=libxml2-v${VERSION}.tar.gz
 ENV SRC_SITE=https://gitlab.gnome.org/GNOME/libxml2/-/archive/v${VERSION}/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/gcc . /
 COPY --from=stagex/binutils . /
@@ -22,7 +22,7 @@ COPY --from=stagex/libtool . /
 COPY --from=stagex/zlib . /
 COPY --from=stagex/m4 . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR libxml2-v${VERSION}
+WORKDIR /libxml2-v${VERSION}
 RUN --network=none <<-EOF
     set -eux
     sh autogen.sh
@@ -40,12 +40,12 @@ RUN --network=none <<-EOF
     make -j "$(nproc)"
 EOF
 
-FROM build as install
+FROM build AS install
 RUN --network=none <<-EOF
     set -eux
     make DESTDIR=/rootfs install
     find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

@@ -46,6 +46,7 @@ define build
 			$(shell ./src/context.sh $(NAME)) \
 			$(EXTRA_ARGS) \
 			$(NOCACHE_FLAG) \
+			$(CHECK_FLAG) \
 			-f packages/$(NAME)/Containerfile \
 			packages/$(NAME) \
 	)

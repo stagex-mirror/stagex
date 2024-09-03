@@ -1,14 +1,15 @@
-FROM scratch as base
-ENV VERSION=16.0.6
-ENV SRC_HASH=ce5e71081d17ce9e86d7cbcfa28c4b04b9300f8fb7e78422b1feb6bc52c3028e
+FROM scratch AS base
+ENV VERSION=18.1.8
+ENV SRC_HASH=0b58557a6d32ceee97c8d533a59b9212d87e0fc4d2833924eb6c611247db2f2a
 ENV SRC_FILE=llvm-project-${VERSION}.src.tar.xz
 ENV SRC_SITE=https://github.com/llvm/llvm-project/releases/download/llvm-org-${VERSION}/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
+COPY --from=stagex/linux-headers . /
 COPY --from=stagex/binutils . /
 COPY --from=stagex/cmake . /
 COPY --from=stagex/ninja . /
@@ -17,32 +18,39 @@ COPY --from=stagex/gcc . /
 COPY --from=stagex/python . /
 COPY --from=stagex/py-setuptools . /
 COPY --from=stagex/openssl . /
-COPY --from=stagex/gcc . /
+COPY --from=stagex/git . /
 COPY --from=stagex/llvm . /
 COPY --from=stagex/zlib . /
+COPY --from=stagex/ninja . /
+COPY --from=stagex/libxml2 . /
+COPY --from=stagex/samurai . /
 
 RUN tar -xf ${SRC_FILE}
-WORKDIR llvm-project-${VERSION}.src
+WORKDIR /llvm-project-${VERSION}.src
 RUN --network=none <<-EOF
     set -eux
     cmake \
-        -S clang \
-        -B build \
-        -G Ninja \
-        -Wno-dev \
-		-DCMAKE_BUILD_TYPE=Release \
-		-DCMAKE_INSTALL_PREFIX=/usr/ \
-		-DCMAKE_INSTALL_RPATH=/usr/ \
-		-DCLANG_BUILT_STANDALONE=ON \
-		-DCLANG_LINK_CLANG_DYLIB=ON \
-		-DCLANG_PLUGIN_SUPPORT=ON \
-		-DCLANG_VENDOR=stagex \
-		-DLIBCLANG_BUILD_STATIC=ON
-	cmake --build build
+    	-S clang \
+	-B build \
+	-G Ninja \
+	-Wno-dev \
+	-DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr/ \
+        -DCLANG_BUILT_STANDALONE=ON \
+        -DCLANG_CONFIG_FILE_SYSTEM_DIR=/etc/clang16 \
+        -DCLANG_ENABLE_ARCMT=ON \
+        -DCMAKE_INSTALL_RPATH=/usr/ \
+        -DCLANG_LINK_CLANG_DYLIB=ON \
+        -DCLANG_PLUGIN_SUPPORT=ON \
+        -DCLANG_VENDOR=stagex \
+        -DENABLE_LINKER_BUILD_ID=ON \
+        -DLIBCLANG_BUILD_STATIC=ON
+    ninja -C build clang-tblgen
+    ninja -C build
 EOF
 
-FROM build as install
+FROM build AS install
 RUN --network=none DESTDIR="/rootfs" cmake --install build
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

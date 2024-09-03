@@ -1,13 +1,13 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=1.9.0
 ENV SRC_HASH=5d7ec75828f8d3fd1a0c2f31b5b0cea780cdfe1031359228c428c1a48bfcd5b9
 ENV SRC_FILE=v${VERSION}.tar.gz
 ENV SRC_SITE=https://github.com/martine/ninja/archive/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/binutils . /
 COPY --from=stagex/make . /
@@ -16,7 +16,7 @@ COPY --from=stagex/musl . /
 COPY --from=stagex/gcc . /
 COPY --from=stagex/openssl . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR ninja-${VERSION}
+WORKDIR /ninja-${VERSION}
 ADD *.patch .
 RUN --network=none <<-EOF
 	set -eux
@@ -24,12 +24,12 @@ RUN --network=none <<-EOF
 	python ./configure.py --bootstrap
 EOF
 
-FROM build as install
+FROM build AS install
 RUN <<-EOF
 	set -eux
 	mkdir -p /rootfs/usr/bin/
 	cp ninja /rootfs/usr/bin/
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

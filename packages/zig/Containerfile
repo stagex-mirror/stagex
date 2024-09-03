@@ -1,29 +1,29 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=0.11.0
 ENV SRC_HASH=72014e700e50c0d3528cef3adf80b76b26ab27730133e8202716a187a799e951
 ENV SRC_FILE=zig-${VERSION}.tar.xz
 ENV SRC_SITE=https://ziglang.org/download/${VERSION}/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 COPY static-glibc.patch .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/binutils . /
 COPY --from=stagex/busybox . /
-COPY --from=stagex/clang . /
+COPY --from=stagex/clang16 . /
 COPY --from=stagex/cmake . /
 COPY --from=stagex/gcc . /
 COPY --from=stagex/libzstd . /
 COPY --from=stagex/lld . /
-COPY --from=stagex/llvm . /
+COPY --from=stagex/llvm16 . /
 COPY --from=stagex/make . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/openssl . /
 COPY --from=stagex/zlib . /
 
 RUN --network=none tar -xf ${SRC_FILE}
-WORKDIR zig-${VERSION}
+WORKDIR /zig-${VERSION}
 RUN --network=none patch -p1 -i ../static-glibc.patch
 RUN --network=none <<-EOF
     set -eux
@@ -36,8 +36,8 @@ RUN --network=none <<-EOF
     cmake --build build
 EOF
 
-FROM build as install
+FROM build AS install
 RUN --network=none DESTDIR=/rootfs cmake --install build
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /
