@@ -1,0 +1,48 @@
+FROM scratch AS base
+ENV VERSION=5.45.4
+ENV SRC_HASH=49a7da83b0bdd9f46d04a04deec19c7767bb9a323e40c4781f89caf760b92c34
+ENV SRC_FILE=expect${VERSION}.tar.gz
+ENV SRC_SITE=https://downloads.sourceforge.net/project/expect/Expect/${VERSION}/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch AS build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/automake . /
+COPY --from=stagex/autoconf . /
+COPY --from=stagex/m4 . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/tcl . /
+RUN tar -xvf $SRC_FILE
+WORKDIR /expect${VERSION}
+ADD *.patch .
+RUN --network=none <<-EOF
+    set -eux
+    patch -Np0 -i expect-5.45-format-security.patch
+    patch -Np1 -i expect-c99.patch
+    patch -Np1 -i expect-configure-c99.patch
+    autoreconf -vif
+    ./configure \
+        --build=x86_64-unknown-linux-musl \
+        --host=x86_64-unknown-linux-musl \
+        --prefix=/usr/ \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        --mandir=/usr/share/man \
+        --with-tcl=/usr/lib \
+        --with-tclinclude=/usr/include \
+        --disable-rpath
+        make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN --network=none make DESTDIR=/rootfs install
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /
