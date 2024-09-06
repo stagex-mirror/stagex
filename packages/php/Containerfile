@@ -50,6 +50,7 @@ COPY --from=stagex/sqlite3 . /
 RUN tar -xf php-${VERSION}.tar.gz
 WORKDIR /php-src-php-${VERSION}
 COPY *.patch .
+ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	set -eux
 	export CFLAGS="-O2"
