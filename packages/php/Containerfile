@@ -51,6 +51,8 @@ RUN tar -xf php-${VERSION}.tar.gz
 WORKDIR /php-src-php-${VERSION}
 COPY *.patch .
 ENV SOURCE_DATE_EPOCH=1
+ENV PHP_UNAME="Linux stagex"
+ENV PHP_BUILD_SYSTEM="${PHP_UNAME}"
 RUN --network=none <<-EOF
 	set -eux
 	export CFLAGS="-O2"
