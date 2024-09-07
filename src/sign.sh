@@ -5,6 +5,8 @@ set -eu
 
 REGISTRY=${1?}
 NAME=${2?}
+GPG=${STAGEX_GPG:-gpg}
+GPGV=${STAGEX_GPGV:-gpgv}
 
 ID=$(cat out/${NAME}/index.json | jq -r '.manifests[].digest | sub ("sha256:";"")')
 DIR=signatures/${REGISTRY}/${NAME}@sha256=${ID}
@@ -28,13 +30,13 @@ get-filename() {
 
 get-signing-fp() {
   FILE="$1"
-  (gpgv "$FILE" >/dev/null || :) 2>&1 | awk '$4 == "key" { print $5 }'
+  ($GPGV "$FILE" >/dev/null || :) 2>&1 | awk '$4 == "key" { print $5 }'
 }
 
 get-primary-fp() {
   FP="$1"
-  if gpg --list-keys --with-colons "$FP" > /dev/null 2> /dev/null; then
-    gpg --list-keys --with-colons "$FP" | grep fpr | cut -d: -f10 | head -n1
+  if $GPG --list-keys --with-colons "$FP" > /dev/null 2> /dev/null; then
+    $GPG --list-keys --with-colons "$FP" | grep fpr | cut -d: -f10 | head -n1
   fi
 }
 
@@ -67,6 +69,6 @@ if dir-has-no-sig "$DIR" "$FPR"; then
   printf \
       '[{"critical":{"identity":{"docker-reference":"%s/%s"},"image":{"docker-manifest-digest":"%s"},"type":"pgp container image signature"},"optional":null}]' \
       "$REGISTRY" "$NAME" "$ID" \
-      | gpg --sign > "$TEMPFILE"
+      | $GPG --sign > "$TEMPFILE"
   mv "$TEMPFILE" "$FILENAME"
 fi

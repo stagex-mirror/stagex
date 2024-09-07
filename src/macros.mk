@@ -9,8 +9,9 @@ define target-list
 endef
 
 define sign
-	./src/digests.sh | diff digests.txt /dev/stdin
-	cut -d' ' -f2 digests.txt | xargs -n1 ./src/sign.sh $(REGISTRY_REMOTE)
+	git diff --quiet \
+	|| { echo "Error: Dirty git tree"; exit 1; } \
+	&& cut -d' ' -f2 digests.txt | xargs -n1 ./src/sign.sh $(REGISTRY_REMOTE)
 endef
 
 define verify
