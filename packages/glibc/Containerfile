@@ -1,0 +1,73 @@
+FROM scratch AS base
+ARG ARCH=x86_64
+ENV VERSION=2.40
+ENV SRC_FILE=glibc-${VERSION}.tar.gz
+ENV SRC_SITE=http://ftpmirror.gnu.org/gnu/glibc/${SRC_FILE}
+ENV SRC_HASH=2abc038f5022949cb67e996c3cae0e7764f99b009f0b9b7fd954dfc6577b599e
+ENV CFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security"
+ENV CXXFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security -D_GLIBCXX_ASSERTIONS=1 -D_LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS=1 -D_LIBCPP_ENABLE_HARDENED_MODE=1"
+#ENV LDFLAGS="-Wl,--as-needed,-O1,--sort-common -Wl,-soname,libc.musl-${ARCH}.so.1"
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+
+COPY --from=stagex/busybox . /
+COPY --from=stagex/musl . /
+# RUN rm -rf /usr/include
+
+COPY --from=stagex/binutils . /
+COPY --from=stagex/bison . /
+COPY --from=stagex/gawk . /
+COPY --from=stagex/grep . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/linux-headers . /
+COPY --from=stagex/m4 . /
+COPY --from=stagex/make . /
+COPY --from=stagex/python . /
+RUN tar -xzf ${SRC_FILE}
+WORKDIR glibc-${VERSION}
+COPY --from=stagex/linux-headers /usr/include /usr/include/x86_64-linux-gnu
+RUN --network=none <<-EOF
+	set -eux
+
+	sed -i 's/--yacc //' intl/Makefile
+
+	mkdir build
+	cd build
+	../configure \
+		--build=${ARCH}-linux-musl \
+		--host=${ARCH}-linux-musl \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--libdir=/usr/lib/x86_64-linux-gnu \
+		--includedir=/usr/include/x86_64-linux-gnu \
+		--localstatedir=/var \
+		--with-headers=/usr/include/x86_64-linux-gnu \
+		--disable-nls \
+		--disable-werror \
+		--enable-debug
+	make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN --network=none <<-EOF
+	set -eux
+	cd build
+	make DESTDIR=/rootfs install
+	mv /rootfs/lib64/* /rootfs/usr/lib/x86_64-linux-gnu/
+	mv /rootfs/sbin/* /rootfs/usr/bin
+	rmdir /rootfs/lib64 /rootfs/sbin
+#	mkdir -p /rootfs/usr/bin /rootfs/usr/lib
+#	rm -rf /rootfs/lib
+#	ln -sf /usr/lib/ld-musl-${ARCH}.so.1 /rootfs/usr/bin/ldd
+#	mv -f /rootfs/usr/lib/libc.so /rootfs/usr/lib/ld-musl-${ARCH}.so.1
+#	ln -sf ld-musl-${ARCH}.so.1 /rootfs/usr/lib/libc.musl-${ARCH}.so.1
+#	ln -sf /usr/lib/ld-musl-${ARCH}.so.1 /rootfs/usr/lib/libc.so
+EOF
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /
