@@ -1,0 +1,57 @@
+FROM scratch AS base
+ENV VERSION=2.40
+ENV SRC_HASH=2abc038f5022949cb67e996c3cae0e7764f99b009f0b9b7fd954dfc6577b599e
+ENV SRC_FILE=glibc-${VERSION}.tar.gz
+ENV SRC_SITE=https://ftp.gnu.org/gnu/glibc/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/m4 . /
+COPY --from=stagex/gawk . /
+COPY --from=stagex/bison . /
+COPY --from=stagex/python . /
+COPY --from=stagex/linux-headers . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR /glibc-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+    mkdir build; \
+    cd build; \
+    echo "slibdir=/usr/lib/x86_64-linux-gnu" >> configparms
+    echo "rtlddir=/usr/lib/x86_64-linux-gnu" >> configparms
+    echo "sbindir=/usr/bin" >> configparms
+    echo "rootsbindir=/usr/bin" >> configparms
+	../configure \
+        --host=x86_64-linux-musl \
+        --target=x86_64-linux-musl \
+        --build=x86_64-linux-gnu \
+		--prefix=/usr \
+        --sysconfdir=/etc \
+        --infodir=/usr/share/info \
+        --mandir=/usr/share/man \
+        --libdir=/usr/lib/x86_64-linux-gnu \
+        --includedir=/usr/include/x86_64-linux-gnu \
+        --libexecdir=/usr/lib/x86_64-linux-gnu \
+        --with-headers=/usr/include \
+        --enable-cit \
+        --enable-bind-now \
+        --enable-fortify-source \
+        --enable-stack-protector=strong \
+        --enable-nscd \
+        --enable-profile \
+        --disable-werror;
+	make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN --network=none make DESTDIR=/rootfs install
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /
