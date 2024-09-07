@@ -54,7 +54,7 @@ define folder-list
 endef
 
 define gen-target
-out/$(1)/index.json: $(shell $(call dep-list,$(1))) | out
+out/$(1)/index.json: $(shell $(call dep-list,$(1))) $(shell find packages/$(1)) | out
 	$(call build,$(1))
 endef
 
