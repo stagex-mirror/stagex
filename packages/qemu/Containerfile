@@ -48,6 +48,7 @@ COPY --from=stagex/libaio . /
 COPY --from=stagex/libzstd . /
 COPY --from=stagex/libseccomp . /
 COPY --from=stagex/libcap-ng . /
+COPY --from=stagex/libslirp . /
 COPY --from=stagex/alsa-lib . /
 COPY --from=stagex/ncurses . /
 COPY --from=stagex/curl . /
@@ -99,6 +100,12 @@ RUN --network=none <<-EOF
         --enable-curses \
         --enable-modules \
         --enable-tpm \
+        --enable-vhost-net \
+        --enable-attr \
+        --enable-linux-user \
+        --enable-slirp \
+        --enable-tcg \
+        --disable-install-blobs \
         --disable-docs \
         --disable-sdl \
         --disable-gtk \
@@ -115,7 +122,6 @@ RUN --network=none <<-EOF
         --disable-spice \
         --disable-usb-redir \
         --disable-vde \
-        --disable-vhost-net \
         --disable-virglrenderer \
         --disable-virtfs \
         --disable-vnc \
