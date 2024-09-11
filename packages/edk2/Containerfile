@@ -1,0 +1,53 @@
+FROM scratch as base
+ARG ARCH=x86_64
+ENV VERSION=202408
+ENV SRC_HASH=63c99b6f9f7aa94e8d76c432bea05d0d4dd6600af78d6fd59a1aec5ce9cea8ce
+ENV SRC_FILE=edk2-stable${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/tianocore/edk2/archive/refs/tags/${SRC_FILE}}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+# https://github.com/tianocore/tianocore.github.io/wiki/Using-EDK-II-with-Native-GCC
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/make . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/git . /
+COPY --from=stagex/python . /
+# TODO: package nasm: COPY --from=stagex/nasm . /
+# TODO: package iasl: COPY --from=stagex/iasl . /
+
+RUN tar -xf ${SRC_FILE}
+WORKDIR edk2-edk2-stable${VERSION}
+
+# Not sure how we want to package this
+# We could do just Ovmf stuff, or do all platforms
+# then in qemu, we can grab the efi we need and convert it
+# to a rom
+
+# https://github.com/tianocore/tianocore.github.io/wiki/Common-instructions
+RUN --network=none <<-EOF
+	set -ex
+    make -C BaseTools -j "$(nproc)"
+    . edksetup.sh
+    echo "
+    ACTIVE_PLATFORM       = OvmfPkg/OvmfPkgX64.dsc
+    TARGET                = RELEASE
+    TARGET_ARCH           = X64
+    TOOL_CHAIN_CONF       = Conf/tools_def.txt
+    TOOL_CHAIN_TAG        = GCC5
+    MAX_CONCURRENT_THREAD_NUMBER = 1
+    BUILD_RULE_CONF = Conf/build_rule.txt
+    " > Conf/target.txt
+    build
+    # EFI is located in /Build/OvmfX64/RELEASE_GCC5/X64/
+EOF
+
+FROM build as install
+RUN make DESTDIR="/rootfs" install
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /
