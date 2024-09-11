@@ -1,0 +1,57 @@
+FROM scratch as base
+ARG ARCH=x86_64
+ENV VERSION=202408
+ENV SRC_HASH=63c99b6f9f7aa94e8d76c432bea05d0d4dd6600af78d6fd59a1aec5ce9cea8ce
+ENV SRC_FILE=edk2-stable${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/tianocore/edk2/archive/refs/tags/${SRC_FILE}}
+
+FROM base as fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch as build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/make . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/git . /
+COPY --from=stagex/python . /
+COPY --from=stagex/nasm . /
+COPY --from=stagex/acpica . /
+
+RUN tar -xf ${SRC_FILE}
+WORKDIR edk2-edk2-stable${VERSION}
+
+ENV PLATFORM = "ShellPkg/ShellPkg.dsc OvmfPkg/OvmfPkgX64.dsc OvmfPkg/OvmfXen.dsc"
+ENV TOOLCHAIN = "GCC5"
+ENV RELEASE = "RELEASE"
+RUN --network=none <<-EOF
+	set -ex
+    export PYTHON_COMMAND=python3
+	export WORKSPACE=$PWD
+	export PACKAGES_PATH=$PWD
+	export EDK_TOOLS_PATH=$PWD/BaseTools/
+	export PATH=$PWD/BaseTools/BinWrappers/PosixLike/:$PATH
+	# parallel build fails
+	unset MAKEFLAGS
+
+	bash -c ". edksetup.sh"
+	make -C BaseTools
+
+	for _p in $PLATFORM; do
+		msg "Building Plaform Files $_p"
+		command build -b $RELEASE \
+			-a $TARGET_ARCH  \
+			-t $TOOLCHAIN \
+			-p $_p \
+			-n ${JOBS:-2} \
+			-DSECURE_BOOT_ENABLE=TRUE \
+			-DTPM2_ENABLE=TRUE
+	done
+EOF
+
+FROM build as install
+RUN make DESTDIR="/rootfs" install
+
+FROM stagex/filesystem as package
+COPY --from=install /rootfs/. /
