@@ -9,7 +9,6 @@ FROM base as fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch as build
-# https://github.com/tianocore/tianocore.github.io/wiki/Using-EDK-II-with-Native-GCC
 COPY --from=stagex/busybox . /
 COPY --from=stagex/binutils . /
 COPY --from=stagex/musl . /
@@ -17,33 +16,38 @@ COPY --from=stagex/make . /
 COPY --from=stagex/gcc . /
 COPY --from=stagex/git . /
 COPY --from=stagex/python . /
-# TODO: package nasm: COPY --from=stagex/nasm . /
-# TODO: package iasl: COPY --from=stagex/iasl . /
+COPY --from=stagex/nasm . /
+COPY --from=stagex/acpica . /
 
 RUN tar -xf ${SRC_FILE}
 WORKDIR edk2-edk2-stable${VERSION}
 
-# Not sure how we want to package this
-# We could do just Ovmf stuff, or do all platforms
-# then in qemu, we can grab the efi we need and convert it
-# to a rom
-
-# https://github.com/tianocore/tianocore.github.io/wiki/Common-instructions
+ENV PLATFORM = "ShellPkg/ShellPkg.dsc OvmfPkg/OvmfPkgX64.dsc OvmfPkg/OvmfXen.dsc"
+ENV TOOLCHAIN = "GCC5"
+ENV RELEASE = "RELEASE"
 RUN --network=none <<-EOF
 	set -ex
-    make -C BaseTools -j "$(nproc)"
-    . edksetup.sh
-    echo "
-    ACTIVE_PLATFORM       = OvmfPkg/OvmfPkgX64.dsc
-    TARGET                = RELEASE
-    TARGET_ARCH           = X64
-    TOOL_CHAIN_CONF       = Conf/tools_def.txt
-    TOOL_CHAIN_TAG        = GCC5
-    MAX_CONCURRENT_THREAD_NUMBER = 1
-    BUILD_RULE_CONF = Conf/build_rule.txt
-    " > Conf/target.txt
-    build
-    # EFI is located in /Build/OvmfX64/RELEASE_GCC5/X64/
+    export PYTHON_COMMAND=python3
+	export WORKSPACE=$PWD
+	export PACKAGES_PATH=$PWD
+	export EDK_TOOLS_PATH=$PWD/BaseTools/
+	export PATH=$PWD/BaseTools/BinWrappers/PosixLike/:$PATH
+	# parallel build fails
+	unset MAKEFLAGS
+
+	bash -c ". edksetup.sh"
+	make -C BaseTools
+
+	for _p in $PLATFORM; do
+		msg "Building Plaform Files $_p"
+		command build -b $RELEASE \
+			-a $TARGET_ARCH  \
+			-t $TOOLCHAIN \
+			-p $_p \
+			-n ${JOBS:-2} \
+			-DSECURE_BOOT_ENABLE=TRUE \
+			-DTPM2_ENABLE=TRUE
+	done
 EOF
 
 FROM build as install
