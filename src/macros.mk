@@ -103,6 +103,8 @@ define build
 	$(eval TEMPFILE := out/.$(notdir $(basename $@)).tmp.tar)
 	$(eval BUILD_CONTEXT := $(shell $(call build-context-args,$(NAME))))
 	$(eval BUILD_CMD := \
+		( \
+		mkdir out/$(NAME) && \
 		DOCKER_BUILDKIT=1 \
 		BUILDKIT_MULTI_PLATFORM=1 \
 		SOURCE_DATE_EPOCH=1 \
@@ -113,7 +115,7 @@ define build
 			--platform $(PLATFORM) \
 			--progress=plain \
 			$(if $(filter latest,$(VERSION)),,--build-arg VERSION=$(VERSION)) \
-			--output type=oci,rewrite-timestamp=true,force-compression=true,name=$(NAME),annotation.org.opencontainers.image.revision=$(REVISION),annotation.org.opencontainers.image.version=$(VERSION),tar=false,dest=out/$(NAME) \
+			--output type=oci,rewrite-timestamp=true,force-compression=true,name=$(NAME),annotation.org.opencontainers.image.revision=$(REVISION),annotation.org.opencontainers.image.version=$(VERSION),tar=true,dest=- \
 			--target $(TARGET) \
 			$(BUILD_CONTEXT) \
 			$(EXTRA_ARGS) \
@@ -121,10 +123,12 @@ define build
 			$(CHECK_FLAG) \
 			-f packages/$(NAME)/Containerfile \
 			packages/$(NAME) \
+		| tar -C out/$(NAME) -x \
+		) \
 	)
 	$(eval TIMESTAMP := $(shell TZ=GMT date +"%Y-%m-%dT%H:%M:%SZ"))
-	echo $(TIMESTAMP) $(BUILD_CMD) start >> out/build.log \
+	printf "%s %s %s\n" "$(TIMESTAMP)" "$(BUILD_CMD)" start >> out/build.log \
 	&& rm -rf out/$(NAME) \
 	&& $(BUILD_CMD) \
-	&& echo $(TIMESTAMP) $(BUILD_CMD) end >> out/build.log;
+	&& printf "%s %s %s\n" "$(TIMESTAMP)" "$(BUILD_CMD)" end >> out/build.log;
 endef
