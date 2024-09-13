@@ -1,12 +1,11 @@
 FROM scratch AS base
-ENV VERSION=0.11.0
-ENV SRC_HASH=72014e700e50c0d3528cef3adf80b76b26ab27730133e8202716a187a799e951
+ENV VERSION=0.13.0
+ENV SRC_HASH=06c73596beeccb71cc073805bdb9c0e05764128f16478fa53bf17dfabc1d4318
 ENV SRC_FILE=zig-${VERSION}.tar.xz
 ENV SRC_SITE=https://ziglang.org/download/${VERSION}/${SRC_FILE}
 
 FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-COPY static-glibc.patch .
 
 FROM fetch AS build
 COPY --from=stagex/binutils . /
@@ -24,7 +23,6 @@ COPY --from=stagex/zlib . /
 
 RUN --network=none tar -xf ${SRC_FILE}
 WORKDIR /zig-${VERSION}
-RUN --network=none patch -p1 -i ../static-glibc.patch
 RUN --network=none <<-EOF
     set -eux
     cmake -Bbuild \
