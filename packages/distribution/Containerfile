@@ -22,7 +22,6 @@ RUN git clone https://github.com/distribution/distribution.git
 WORKDIR /distribution
 RUN git checkout c709432b917488208fa78a7932843d91eca59801
 RUN git archive --format=tar.gz --output=../distribution-${VERSION}.tar.gz HEAD
-RUN sha256sum ../distribution-${VERSION}.tar.gz | awk '{print $1}' > checksum.txt && echo "SHA256: $(cat checksum.txt)"
 RUN echo "${SRC_HASH} ../distribution-${VERSION}.tar.gz" | sha256sum -c
 RUN --network=none <<-EOF
     set -eux
