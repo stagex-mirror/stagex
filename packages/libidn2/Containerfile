@@ -1,0 +1,38 @@
+FROM scratch AS base
+ARG ARCH=x86_64
+ENV VERSION=2.3.7
+ENV SRC_HASH=4c21a791b610b9519b9d0e12b8097bf2f359b12f8dd92647611a929e6bfd7d64
+ENV SRC_FILE=libidn2-${VERSION}.tar.gz
+ENV SRC_SITE=https://ftp.gnu.org/gnu/libidn/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/make . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/libunistring . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR /libidn2-${VERSION}
+RUN --network=none <<-EOF
+	set -ex
+	./configure \
+		--build=${ARCH}-linux-musl \
+		--host=${ARCH}-linux-musl \
+		--target=${ARCH}-linux-musl \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--disable-nls
+	make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN --network=none make DESTDIR="/rootfs" install
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /

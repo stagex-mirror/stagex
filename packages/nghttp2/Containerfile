@@ -1,0 +1,63 @@
+FROM scratch AS base
+ARG ARCH=x86_64
+ENV VERSION=1.62.1
+ENV SRC_HASH=2345d4dc136fda28ce243e0bb21f2e7e8ef6293d62c799abbf6f633a6887af72
+ENV SRC_FILE=nghttp2-${VERSION}.tar.xz
+ENV SRC_SITE=https://github.com/nghttp2/nghttp2/releases/download/v${VERSION}/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/make . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/libev . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/c-ares . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR /nghttp2-${VERSION}
+RUN --network=none <<-EOF
+	set -ex
+	./configure \
+		--build=${ARCH}-linux-musl \
+		--host=${ARCH}-linux-musl \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--localstatedir=/var \
+		--disable-examples \
+		--disable-http3 \
+		--disable-werror \
+		--enable-app \
+		--enable-static \
+		--enable-threads \
+		--with-libcares \
+		--with-libev \
+		--with-openssl \
+		--without-jansson \
+		--without-jemalloc \
+		--without-libbpf \
+		--without-libnghttp3 \
+		--without-libngtcp2 \
+		--without-libxml2 \
+		--without-mruby \
+		--without-neverbleed \
+		--without-systemd \
+		"$(want_check && echo --with-cunit || echo --without-cunit)"
+	make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN --network=none <<-EOF
+	make DESTDIR="/rootfs" install
+EOF
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /
+

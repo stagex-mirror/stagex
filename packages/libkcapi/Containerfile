@@ -1,0 +1,54 @@
+FROM scratch AS base
+ARG ARCH=x86_64
+ENV VERSION=1.5.0
+ENV SRC_HASH=f1d827738bda03065afd03315479b058f43493ab6e896821b947f391aa566ba0
+ENV SRC_FILE=libkcapi-${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/smuellerDD/libkcapi/archive/refs/tags/v${VERSION}.tar.gz
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/make . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/autoconf . /
+COPY --from=stagex/libtool . /
+COPY --from=stagex/linux-headers . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/m4 . /
+COPY --from=stagex/automake . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/perl . /
+RUN tar -xf v${VERSION}.tar.gz
+WORKDIR /libkcapi-${VERSION}
+RUN --network=none <<-EOF
+	set -ex
+	autoreconf -fvi
+	CFLAGS="$CFLAGS -flto=auto"
+	./configure \
+		--build=${ARCH}-linux-musl \
+		--host=${ARCH}-linux-musl \
+		--prefix=/usr \
+		--enable-kcapi-hasher \
+		--enable-kcapi-speed \
+		--enable-kcapi-rngapp \
+		--enable-kcapi-encapp \
+		--enable-kcapi-dgstapp \
+		--enable-kcapi-test \
+		--disable-static \
+		--disable-werror
+	make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN  --network=none <<-EOF
+	make DESTDIR="/rootfs" install
+	rm -rf /rootfs/usr/share/info
+EOF
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /
+

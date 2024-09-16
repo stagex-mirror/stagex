@@ -1,0 +1,51 @@
+FROM scratch AS base
+ARG ARCH=x86_64
+ENV VERSION=4.2.1
+ENV SRC_HASH=8895878b9215612e73611203dc8f5232c626e4d07ffc4532922f375518f067ca
+ENV SRC_FILE=swig-${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/swig/swig/archive/refs/tags/v${VERSION}.tar.gz
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/make . /
+COPY --from=stagex/libtool . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/bison . /
+COPY --from=stagex/pcre2 . /
+COPY --from=stagex/autoconf . /
+COPY --from=stagex/automake . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/gettext . /
+COPY --from=stagex/diffutils . /
+COPY --from=stagex/m4 . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/python . /
+COPY --from=stagex/pkgconf . /
+RUN tar -xf v${VERSION}.tar.gz
+WORKDIR /swig-${VERSION}
+RUN --network=none <<-EOF
+	set -ex
+	./autogen.sh
+	./configure \
+		--build=${ARCH}-linux-musl \
+		--host=${ARCH}-linux-musl \
+		--prefix=/usr \
+		--with-python3=/usr/bin/python3
+	make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN --network=none <<-EOF
+	make DESTDIR="/rootfs" install
+	rm -rf rm -rf /rootfs/usr/lib/charset.alias
+	rmdir -p /rootfs/usr/lib 2>/dev/null || true
+EOF
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /

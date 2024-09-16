@@ -1,0 +1,65 @@
+
+FROM scratch AS base
+ARG ARCH=x86_64
+ENV VERSION=3.7.11
+ENV SRC_HASH=90e337504031ef7d3077ab1a52ca8bac9b2f72bc454c95365a1cd1e0e81e06e9
+ENV SRC_FILE=gnutls-${VERSION}.tar.xz
+ENV SRC_SITE=https://www.gnupg.org/ftp/gcrypt/gnutls/v3.7/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/make . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/nettle . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/gettext . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/libtool . /
+COPY --from=stagex/linux-headers . /
+COPY --from=stagex/libtasn1 . /
+COPY --from=stagex/libidn2 . /
+COPY --from=stagex/libkcapi . /
+COPY --from=stagex/gmp . /
+COPY --from=stagex/libffi . /
+COPY --from=stagex/libevent . /
+COPY --from=stagex/gmp . /
+COPY --from=stagex/glib . /
+COPY --from=stagex/m4 . /
+COPY --from=stagex/libunwind . /
+COPY --from=stagex/libunistring . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/python . /
+COPY --from=stagex/p11-kit . /
+COPY --from=stagex/unbound . /
+COPY --from=stagex/opensc . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR /gnutls-${VERSION}
+COPY *.patch .
+RUN --network=none <<-EOF
+	set -ex
+	patch -p1 skip-ktls.patch
+	./configure \
+		--build=${ARCH}-linux-musl \
+		--host=${ARCH}-linux-musl \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--enable-ktls \
+		--disable-openssl-compatibility \
+		--disable-rpath \
+		--disable-static \
+		--disable-valgrind-tests
+	make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN --network=none make DESTDIR="/rootfs" install
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /
