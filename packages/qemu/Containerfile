@@ -1,6 +1,6 @@
 FROM scratch AS base
-ENV VERSION=9.0.2
-ENV SRC_HASH=a8c3f596aece96da3b00cafb74baafa0d14515eafb8ed1ee3f7f5c2d0ebf02b6
+ENV VERSION=9.1.0
+ENV SRC_HASH=816b7022a8ba7c2ac30e2e0cf973e826f6bcc8505339603212c5ede8e94d7834
 ENV SRC_FILE=qemu-${VERSION}.tar.xz
 ENV SRC_SITE=https://download.qemu.org/${SRC_FILE}
 
@@ -84,11 +84,37 @@ ENV CFLAGS=" \
     -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer"
 ENV CXXFLAGS="$CFLAGS -Wp,-D_GLIBCXX_ASSERTIONS"
 ENV LTOFLAGS="-flto=auto"
+ENV TARGET_LIST="x86_64-softmmu,x86_64-linux-user,i386-softmmu,i386-linux-user"
+COPY <<-EOF pc-bios/optionrom/config.mak
+    TOPSRC_DIR=/qemu-${VERSION}
+    CC=gcc
+    CCAS=gcc
+    AR=ar
+    AS=as
+    LD=ld
+    NM=nm
+    OBJCOPY=objcopy
+    RANLIB=ranlib
+    STRIP=strip
+EOF
 RUN --network=none <<-EOF
     set -eux
+    # rm -rf pc-bios/*.bz2
+    rm -rf \
+        pc-bios/*.bin \
+        pc-bios/*.rom \
+        pc-bios/*.img \
+        pc-bios/*.e500 \
+        pc-bios/*.dtb \
+        pc-bios/*.lid \
+        pc-bios/*.ndrv \
+        pc-bios/palcode-clipper \
+        pc-bios/openbios-*
+    make -j "$(nproc)" -C pc-bios/optionrom all
     ./configure \
         --build="x86_64-linux-musl" \
         --host="x86_64-linux-musl" \
+        --target-list="$TARGET_LIST" \
         --prefix=/usr \
         --sysconfdir=/etc \
         --localstatedir=/var \
@@ -127,7 +153,7 @@ RUN --network=none <<-EOF
         --disable-vnc \
         --disable-vnc-jpeg \
         --disable-xen
-    make ARFLAGS="rc"
+    make ARFLAGS="rc" -j "$(nproc)"
 EOF
 
 FROM build AS install
@@ -135,50 +161,8 @@ RUN --network=none <<-EOF
     make DESTDIR=/rootfs install
     rm -rf /rootfs/var/run
     strip /rootfs/usr/bin/qemu-*
-    # These are not currently deterministic so we can't release them yet
-    rm -rf /rootfs/usr/bin/qemu-aarch64
-    rm -rf /rootfs/usr/bin/qemu-aarch64_be
-    rm -rf /rootfs/usr/bin/qemu-arm
-    rm -rf /rootfs/usr/bin/qemu-armeb
-    rm -rf /rootfs/usr/bin/qemu-hexagon
-    rm -rf /rootfs/usr/bin/qemu-hppa
-    rm -rf /rootfs/usr/bin/qemu-loongarch64
-    rm -rf /rootfs/usr/bin/qemu-microblaze
-    rm -rf /rootfs/usr/bin/qemu-microblazeel
-    rm -rf /rootfs/usr/bin/qemu-mips
-    rm -rf /rootfs/usr/bin/qemu-mips64
-    rm -rf /rootfs/usr/bin/qemu-mips64el
-    rm -rf /rootfs/usr/bin/qemu-mipsel
-    rm -rf /rootfs/usr/bin/qemu-mipsn32
-    rm -rf /rootfs/usr/bin/qemu-mipsn32el
-    rm -rf /rootfs/usr/bin/qemu-or1k
-    rm -rf /rootfs/usr/bin/qemu-ppc
-    rm -rf /rootfs/usr/bin/qemu-ppc64
-    rm -rf /rootfs/usr/bin/qemu-ppc64le
-    rm -rf /rootfs/usr/bin/qemu-riscv32
-    rm -rf /rootfs/usr/bin/qemu-riscv64
-    rm -rf /rootfs/usr/bin/qemu-sparc
-    rm -rf /rootfs/usr/bin/qemu-sparc32plus
-    rm -rf /rootfs/usr/bin/qemu-sparc64
-    rm -rf /rootfs/usr/bin/qemu-system-aarch64
-    rm -rf /rootfs/usr/bin/qemu-system-arm
-    rm -rf /rootfs/usr/bin/qemu-system-avr
-    rm -rf /rootfs/usr/bin/qemu-system-hppa
-    rm -rf /rootfs/usr/bin/qemu-system-loongarch64
-    rm -rf /rootfs/usr/bin/qemu-system-microblaze
-    rm -rf /rootfs/usr/bin/qemu-system-microblazeel
-    rm -rf /rootfs/usr/bin/qemu-system-mips
-    rm -rf /rootfs/usr/bin/qemu-system-mips64
-    rm -rf /rootfs/usr/bin/qemu-system-mips64el
-    rm -rf /rootfs/usr/bin/qemu-system-mipsel
-    rm -rf /rootfs/usr/bin/qemu-system-or1k
-    rm -rf /rootfs/usr/bin/qemu-system-ppc
-    rm -rf /rootfs/usr/bin/qemu-system-ppc64
-    rm -rf /rootfs/usr/bin/qemu-system-riscv32
-    rm -rf /rootfs/usr/bin/qemu-system-riscv64
-    rm -rf /rootfs/usr/bin/qemu-system-rx
-    rm -rf /rootfs/usr/bin/qemu-system-sparc
-    rm -rf /rootfs/usr/bin/qemu-system-sparc64
+    install -vDm 644 pc-bios/optionrom/*.bin -t /rootfs/usr/share/qemu
+    install -vDm 644 pc-bios/optionrom/*.img -t /rootfs/usr/share/qemu
 EOF
 
 FROM stagex/filesystem AS package
