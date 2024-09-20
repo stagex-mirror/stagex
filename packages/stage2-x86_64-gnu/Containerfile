@@ -24,8 +24,8 @@ ENV MUSL_FILE=musl-${MUSL_VERSION}.tar.gz
 ENV MUSL_SITE=http://musl.libc.org/releases/${MUSL_FILE}
 ENV MUSL_HASH=7a35eae33d5372a7c0da1188de798726f68825513b7ae3ebe97aaaa52114f039
 ENV GLIBC_VERSION=2.40
-ENV GLIBC_FILE=glibc-${VERSION}.tar.gz
-ENV GLIBC_SITE=http://ftpmirror.gnu.org/gnu/glibc/${SRC_FILE}
+ENV GLIBC_FILE=glibc-${GLIBC_VERSION}.tar.gz
+ENV GLIBC_SITE=http://ftpmirror.gnu.org/gnu/glibc/${GLIBC_FILE}
 ENV GLIBC_HASH=2abc038f5022949cb67e996c3cae0e7764f99b009f0b9b7fd954dfc6577b599e
 ENV LINUX_VERSION=6.6
 ENV LINUX_HASH=d926a06c63dd8ac7df3f86ee1ffc2ce2a3b81a2d168484e76b5b389aba8e56d0
@@ -58,7 +58,7 @@ FROM base AS fetch
 WORKDIR /${HOME}
 ADD --checksum=sha256:${LINUX_HASH} ${LINUX_SITE} .
 ADD --checksum=sha256:${MUSL_HASH} ${MUSL_SITE} .
-ADD --checksum=sha256:${GLIBC_HASH} ${MUSL_SITE} .
+ADD --checksum=sha256:${GLIBC_HASH} ${GLIBC_SITE} .
 ADD --checksum=sha256:${BINUTILS_HASH} ${BINUTILS_SITE} .
 ADD --checksum=sha256:${GCC_HASH} ${GCC_SITE} .
 ADD --checksum=sha256:${GMP_HASH} ${GMP_SITE} .
@@ -170,21 +170,7 @@ EOF
 WORKDIR /${GCC_DIR}
 RUN --network=none make MAKE="make enable_shared=no" all-target-libgcc
 
-# Phase 5: Compile gnu libc and install to sysroot
-WORKDIR /${GLIBC_DIR}
-RUN --network=none <<-EOF
-    set -eux
-    make \
-        AR=${BINUTILS_DIR}/binutils/ar \
-        RANLIB=${BINUTILS_DIR}/binutils/ranlib
-    make DESTDIR=${SYSROOT_DIR} install
-EOF
-
-# Phase 6: Compile remaining gcc targets
-WORKDIR /${GCC_DIR}
-RUN make all
-
-# Phase 7: Generate linux headers
+# Phase 7 (hoisted): Generate linux headers
 WORKDIR /${HOME}/linux-${LINUX_VERSION}
 RUN --network=none <<-EOF
     set -eux
@@ -194,6 +180,37 @@ RUN --network=none <<-EOF
     rm usr/include/headers_check.pl
     cp -rv usr/include ${LINUX_DIR}
 EOF
+
+# Phase 5: Compile gnu libc and install to sysroot
+WORKDIR /${GLIBC_DIR}
+RUN --network=none <<-EOF
+    set -eux
+
+    sed -i 's/--yacc '// intl/Makefile
+    mkdir build
+    cd build
+    ../configure
+	--build=${ARCH}-linux-musl \
+	--host=${ARCH}-linux-musl \
+	--prefix=/usr \
+	--sysconfdir=/etc \
+	--mandir=/usr/share/man \
+	--infodir=/usr/share/info \
+	--libdir=/usr/lib/x86_64-linux-gnu \
+	--localstatedir=/var \
+	--with-headers=${LINUX_DIR} \
+	--disable-nls \
+	--disable-werror \
+	--enable-debug
+    make \
+        AR=${BINUTILS_DIR}/binutils/ar \
+        RANLIB=${BINUTILS_DIR}/binutils/ranlib
+    make DESTDIR=${SYSROOT_DIR} install
+EOF
+
+# Phase 6: Compile remaining gcc targets
+WORKDIR /${GCC_DIR}
+RUN make all
 
 FROM build AS install
 WORKDIR /${HOME}
