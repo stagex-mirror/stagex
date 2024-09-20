@@ -1,0 +1,105 @@
+FROM scratch AS base
+ARG VERSION=1.76.0
+ENV SRC_SITE=https://static.rust-lang.org/dist
+ENV SRC_HASH=9e5cff033a7f0d2266818982ad90e4d3e4ef8f8ee1715776c6e25073a136c021
+
+FROM base AS fetch
+COPY --from=stagex/busybox . /
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE}/rustc-${VERSION}-src.tar.gz .
+#ADD rust rustc-${VERSION}-src
+
+FROM fetch AS build
+COPY --from=stagex/binutils . /
+COPY --from=stagex/bash . /
+COPY --from=stagex/make . /
+COPY --from=stagex/cmake . /
+COPY --from=stagex/python . /
+COPY --from=stagex/py-setuptools . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/perl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/libunwind . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/rust . /
+
+COPY --from=stagex/glibc . /
+
+COPY --from=stagex/curl . /
+COPY --from=stagex/ca-certificates . /
+
+COPY --from=stagex/llvm16 . /
+RUN mkdir -p $HOME/.cargo/registry/src/index.crates.io-6f17d22bba15001f/
+
+#ADD no-default-static.patch .
+ADD glibc.patch .
+RUN <<EOF
+	set -eux
+	#PATCHES=no-default-static
+	PATCHES=glibc
+	PREFIX=/rust-${VERSION}/usr
+	tar -xzf rustc-${VERSION}-src.tar.gz
+	cd rustc-${VERSION}-src
+	[[ -z "$PATCHES" ]] || for name in ${PATCHES//,/ }; do
+		patch -p1 < ../${name}.patch
+	done
+	./configure \
+		--build="x86_64-unknown-linux-musl" \
+		--host="x86_64-unknown-linux-musl" \
+		--target="x86_64-unknown-linux-gnu" \
+		--enable-local-rust \
+		--llvm-root="/usr" \
+		--disable-docs \
+		--enable-llvm-link-shared \
+		--enable-option-checking \
+		--enable-locked-deps \
+		--enable-vendor \
+		--dist-compression-formats=gz \
+		--python="python3" \
+		--prefix="/rootfs/usr" \
+		--libdir="/usr/lib/x86_64-linux-gnu" \
+		--sysconfdir="/rootfs/etc" \
+		--release-channel="stable" \
+		--set="install.prefix=/rootfs" \
+		--set="build.extended=true" \
+		--set="rust.musl-root=/usr" \
+		--set="rust.backtrace-on-ice=true" \
+		--set="rust.codegen-units=1" \
+		--set="rust.codegen-units-std=1" \
+		--set="rust.deny-warnings=false" \
+		--set="rust.parallel-compiler=false" \
+		--set="rust.remap-debuginfo=true" \
+		--set="rust.llvm-libunwind=system" \
+		--set="build.full-bootstrap=true" \
+		--set="target.x86_64-unknown-linux-gnu.llvm-config=/usr/bin/llvm-config" \
+		--set="target.x86_64-unknown-linux-gnu.cc=cc" \
+		--set="target.x86_64-unknown-linux-gnu.cxx=c++" \
+		--set="target.x86_64-unknown-linux-gnu.ar=ar" \
+		--set="target.x86_64-unknown-linux-gnu.linker=cc" \
+		--set="target.x86_64-unknown-linux-gnu.musl-libdir=/usr/lib/x86_64-linux-gnu"
+	# un-usrmerge glibc
+	rm /lib64
+	mv /usr/lib64-pre-move /lib64
+	python3 x.py build --stage 0 --target x86_64-unknown-linux-gnu library
+	# RUSTFLAGS from pcsc
+	# export RUSTFLAGS="-L /rustc-1.76.0-src/build/x86_64-unknown-linux-musl/stage0-sysroot/lib64/rustlib/x86_64-unknown-linux-gnu/lib/ -L /rustc-1.76.0-src/build/x86_64-unknown-linux-musl/stage0-sysroot/lib64/rustlib/x86_64-unknown-linux-gnu/lib/self-contained/ -L /usr/lib/x86_64-linux-gnu -L /lib64 -C target-feature=+crt-static"
+EOF
+
+FROM build AS test
+ENV RUSTFLAGS="-L /rustc-1.76.0-src/build/x86_64-unknown-linux-musl/stage0-sysroot/lib64/rustlib/x86_64-unknown-linux-gnu/lib/ -L /rustc-1.76.0-src/build/x86_64-unknown-linux-musl/stage0-sysroot/lib64/rustlib/x86_64-unknown-linux-gnu/lib/self-contained/ -L /usr/lib/x86_64-linux-gnu -L /lib64 -C target-feature=+crt-static"
+RUN <<EOF
+	set -eux
+	cargo new --bin hello_world
+	cd hello_world
+	cargo run --release --target x86_64-unknown-linux-gnu
+EOF
+
+FROM build AS install
+RUN <<-EOF
+	mkdir /rootfs
+	cp -r /rustc-1.76.0-src/build/x86_64-unknown-linux-musl/stage0-sysroot/lib64/rustlib/x86_64-unknown-linux-gnu /usr/lib/rustlib/x86_64-unknown-linux-gnu
+EOF
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /

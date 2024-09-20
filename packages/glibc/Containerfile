@@ -29,6 +29,9 @@ COPY --from=stagex/python . /
 RUN tar -xzf ${SRC_FILE}
 WORKDIR glibc-${VERSION}
 COPY --from=stagex/linux-headers /usr/include /usr/include/x86_64-linux-gnu
+ENV _TRIPLE=x86_64-linux-gnu
+ENV _LIBDIR=/usr/lib/${_TRIPLE}
+ENV _INCDIR=/usr/include/${_TRIPLE}
 RUN --network=none <<-EOF
 	set -eux
 
@@ -36,6 +39,8 @@ RUN --network=none <<-EOF
 
 	mkdir build
 	cd build
+	echo "slibdir=${_LIBDIR}" >> configparams
+	echo "rtlddir=${_LIBDIR}" >> configparams
 	../configure \
 		--build=${ARCH}-linux-musl \
 		--host=${ARCH}-linux-musl \
@@ -43,10 +48,11 @@ RUN --network=none <<-EOF
 		--sysconfdir=/etc \
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info \
-		--libdir=/usr/lib/x86_64-linux-gnu \
-		--includedir=/usr/include/x86_64-linux-gnu \
+		--libdir=${_LIBDIR} \
+		--libexecdir=${_LIBDIR} \
+		--includedir=${_INCDIR} \
 		--localstatedir=/var \
-		--with-headers=/usr/include/x86_64-linux-gnu \
+		--with-headers=${_INCDIR} \
 		--disable-nls \
 		--disable-werror \
 		--enable-debug
@@ -58,9 +64,9 @@ RUN --network=none <<-EOF
 	set -eux
 	cd build
 	make DESTDIR=/rootfs install
-	mv /rootfs/lib64/* /rootfs/usr/lib/x86_64-linux-gnu/
 	mv /rootfs/sbin/* /rootfs/usr/bin
-	rmdir /rootfs/lib64 /rootfs/sbin
+	mv /rootfs/lib64 /rootfs/usr/lib64-pre-move
+	rmdir /rootfs/sbin
 #	mkdir -p /rootfs/usr/bin /rootfs/usr/lib
 #	rm -rf /rootfs/lib
 #	ln -sf /usr/lib/ld-musl-${ARCH}.so.1 /rootfs/usr/bin/ldd
@@ -69,5 +75,6 @@ RUN --network=none <<-EOF
 #	ln -sf /usr/lib/ld-musl-${ARCH}.so.1 /rootfs/usr/lib/libc.so
 EOF
 
-FROM stagex/filesystem AS package
+FROM scratch AS package
+COPY --from=stagex/filesystem . /
 COPY --from=install /rootfs/. /
