@@ -26,11 +26,14 @@ WORKDIR /zig-${VERSION}
 RUN --network=none <<-EOF
     set -eux
     cmake -Bbuild \
+      -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=/usr \
-      -DCMAKE_BUILD_TYPE=None \
-      -DZIG_STATIC=ON \
-      -DZIG_TARGET_TRIPLE=native-linux-musl \
-      -DZIG_TARGET_MCPU=baseline
+      -DCMAKE_PREFIX_PATH=/usr \
+      -DCMAKE_VERBOSE_MAKEFILE=ON \
+      -DZIG_VERSION="${VERSION}" \
+      -DZIG_SHARED_LLVM=ON \
+      -DZIG_TARGET_MCPU=baseline \
+      -DLANG_INCLUDE_DIRS=/usr/lib/llvm18/include
     cmake --build build
 EOF
 
