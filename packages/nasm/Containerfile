@@ -16,6 +16,7 @@ COPY --from=stagex/musl . /
 COPY --from=stagex/perl . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR /nasm-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
     set -eux
     ./configure \
