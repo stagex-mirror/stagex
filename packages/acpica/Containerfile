@@ -18,6 +18,7 @@ COPY --from=stagex/flex . /
 COPY --from=stagex/m4 . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR /acpica-unix-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
 ENV LDFLAGS="-Wl,-z,pack-relative-relocs"
 RUN --network=none make NOWERROR=TRUE -j "$(nproc)"
 
