@@ -20,17 +20,25 @@ COPY --from=stagex/make . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/openssl . /
 COPY --from=stagex/zlib . /
+COPY --from=stagex/ninja . /
 
 RUN --network=none tar -xf ${SRC_FILE}
 WORKDIR /zig-${VERSION}
+ADD *.patch .
 RUN --network=none <<-EOF
     set -eux
-    cmake -Bbuild \
+    patch -p1 < fix-pie-support-detection.patch
+    cmake -B build -G Ninja \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_PREFIX_PATH=/usr \
       -DCMAKE_INSTALL_PREFIX=/usr \
-      -DCMAKE_BUILD_TYPE=None \
-      -DZIG_STATIC=ON \
-      -DZIG_TARGET_TRIPLE=native-linux-musl \
-      -DZIG_TARGET_MCPU=baseline
+      -DCMAKE_VERBOSE_MAKEFILE=ON \
+      -DZIG_PIE=ON \
+      -DZIG_VERSION="${VERSION}" \
+      -DZIG_SHARED_LLVM=ON \
+      -DZIG_USE_LLVM_CONFIG=ON \
+      -DZIG_TARGET_MCPU=baseline \
+      -DZIG_TARGET_TRIPLE=native-linux.6.1-musl
     cmake --build build
 EOF
 

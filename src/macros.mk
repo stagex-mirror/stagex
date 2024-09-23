@@ -123,7 +123,7 @@ define build
 			$(CHECK_FLAG) \
 			-f packages/$(NAME)/Containerfile \
 			packages/$(NAME) \
-		| tar -C out/$(NAME) -x \
+		| tar -C out/$(NAME) -mx \
 		) \
 	)
 	$(eval TIMESTAMP := $(shell TZ=GMT date +"%Y-%m-%dT%H:%M:%SZ"))
