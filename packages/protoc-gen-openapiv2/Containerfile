@@ -1,6 +1,6 @@
 FROM scratch AS base
-ENV VERSION=2.17.1
-ENV SRC_HASH=092bc95544d6089ccea00fb124a0a81eadf212bf06d61a4ba422ad331bf3c6da
+ENV VERSION=2.22.0
+ENV SRC_HASH=509c86f389f4da5ac5ce06c6e2e85834070e4f774b4bb4c5c0536c464911ae25
 ENV SRC_FILE=v${VERSION}.tar.gz
 ENV SRC_SITE=https://github.com/grpc-ecosystem/grpc-gateway/archive/refs/tags/${SRC_FILE}
 
