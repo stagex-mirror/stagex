@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -euo pipefail
+set -eu
 
 SCRIPTDIR="$(cd "$(dirname $0)"; pwd)"
 
