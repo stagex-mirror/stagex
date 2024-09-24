@@ -1,0 +1,35 @@
+# NOTE: This script does not make use of heredocs to ensure it can be run on
+# as many systems as possible. This is in contrast to the StageX project, which
+# requires containerd and Docker 26+
+
+FROM debian:bookworm-slim AS debian-results
+RUN apt-get update && \
+	apt-get install -y cargo rustc && \
+	printf "DEPS (Debian): %s\n" $(dpkg --get-selections | wc -l) > /results.txt
+
+FROM archlinux:base AS archlinux-results
+RUN pacman -Syu --noconfirm rust && \
+	printf "DEPS (Arch Linux): %s\n" $(pacman -Q | wc -l) > /results.txt
+
+FROM fedora:40 AS fedora-results
+# Yum prints a header, even when called with --quiet
+RUN yum install -y cargo && \
+	printf "DEPS (Fedora): %s\n" $(yum list installed | tail -n +2 | wc -l) > /results.txt
+
+FROM alpine:3 AS alpine-results
+RUN apk add cargo && \
+	printf "DEPS (Alpine): %s\n" $(apk list --installed --quiet | wc -l) > /results.txt
+
+# NOTE: Nix does not specify a generic 2 or 2.24, meaning it may become
+# out-of-date and result in errors.
+FROM nixos/nix:2.24.7 AS nix-results
+RUN get_deps='nix-store -q --requisites $(dirname $(dirname $(which cargo)))' && \
+	printf "DEPS (Nix) %s\n" $(nix-shell -p cargo --run "$get_deps" | wc -l) > /results.txt
+
+FROM debian:bookworm-slim AS results
+COPY --from=debian-results /results.txt /results-debian.txt
+COPY --from=archlinux-results /results.txt /results-archlinux.txt
+COPY --from=fedora-results /results.txt /results-fedora.txt
+COPY --from=alpine-results /results.txt /results-alpine.txt
+COPY --from=nix-results /results.txt /results-nix.txt
+RUN cat /results-*.txt | tee /results-total.txt

@@ -184,7 +184,7 @@ A comparison of `stagex` to other distros in some of the areas we care about:
 | Guix   | No            | 1 Human    | Glibc | Yes          | Partial (90%) | 4 (Unconfirmed) |
 | Nix    | No            | 1 Bot      | Glibc | Partial      | Partial (95%) | 25        |
 | Debian | Adapted       | 1 Human    | Glibc | No           | Partial (96%) | 231       |
-| Arch   | Adapted       | 1 Human    | Glibc | No           | Partial (80%) | 127       |
+| Arch   | Adapted       | 1 Human    | Glibc | No           | Partial (90%) | 127       |
 | Fedora | Adapted       | 1 Bot      | Glibc | No           | No            | 167       |
 | Alpine | Adapted       | None       | Musl  | No           | No            | 41        |
 
@@ -199,6 +199,8 @@ A comparison of `stagex` to other distros in some of the areas we care about:
     - Fedora and Alpine were previously listed on the Reproducible Builds site,
       but their entries have not been maintained, and as such are marked not
       reproducible.
+    - Arch Linux is currently out of date; as such, metrics have been pulled
+      from their own site: https://reproducible.archlinux.org/
 - “Rust Deps”: the number of total dependencies installed to use rustc
     - Rust is a worst case example for compiler deps and build complexity
         - It is kind of a nightmare most distros skip

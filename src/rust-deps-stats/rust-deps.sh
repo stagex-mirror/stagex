@@ -1,8 +1,8 @@
 #!/bin/sh
 
+set -euo pipefail
+
 SCRIPTDIR="$(cd "$(dirname $0)"; pwd)"
 
-for distro in debian:bookworm debian:bookworm-slim archlinux:base fedora:40 alpine:3.20.3 nixos/nix:2.24.7; do
-  script="$(echo "${distro}" | tr "/" "_")"
-  docker run --rm -v "$SCRIPTDIR:/scripts:ro" $distro /bin/sh /scripts/$script.sh | grep --color "^DEPS"
-done
+docker build -t stagex-comparison-results -f "$SCRIPTDIR/Containerfile" "$SCRIPTDIR"
+docker run --rm stagex-comparison-results cat /results-total.txt
