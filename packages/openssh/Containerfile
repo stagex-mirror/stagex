@@ -1,13 +1,13 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=9.8p1
 ENV SRC_HASH=dd8bd002a379b5d499dfb050dd1fa9af8029e80461f4bb6c523c49973f5a39f3
 ENV SRC_FILE=openssh-${VERSION}.tar.gz
 ENV SRC_SITE=https://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/gcc . /
 COPY --from=stagex/binutils . /
@@ -30,7 +30,7 @@ COPY --from=stagex/musl-fts . /
 COPY --from=stagex/musl-obstack . /
 COPY --from=stagex/linux-headers . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR openssh-${VERSION}
+WORKDIR /openssh-${VERSION}
 ADD *.patch .
 RUN --network=none <<-EOF
     set -eux
@@ -57,8 +57,8 @@ RUN --network=none <<-EOF
     make -j "$(nproc)"
 EOF
 
-FROM build as install
+FROM build AS install
 RUN --network=none make DESTDIR=/rootfs install
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

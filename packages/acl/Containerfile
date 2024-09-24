@@ -1,0 +1,36 @@
+FROM scratch AS base
+ARG ARCH=x86_64
+ENV VERSION=2.3.2
+ENV SRC_HASH=5f2bdbad629707aa7d85c623f994aa8a1d2dec55a73de5205bac0bf6058a2f7c
+ENV SRC_FILE=acl-${VERSION}.tar.gz
+ENV SRC_SITE=https://download.savannah.nongnu.org/releases/acl/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch AS build
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/attr . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR /acl-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+    ./configure \
+		--build=${ARCH}-linux-musl \
+		--host=${ARCH}-linux-musl \
+		--prefix=/usr \
+		--libdir=/usr/lib \
+		--libexecdir=/usr/libexec
+	make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN make DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /

@@ -1,0 +1,50 @@
+FROM scratch AS base
+ARG ARCH=x86_64
+ENV VERSION=4.8.0
+ENV SRC_HASH=378216c88c021c9ed7de9006db291127d30a0da94a23dffefdb26b26a5849bf7
+ENV SRC_FILE=libslirp-${VERSION}.tar.gz
+ENV SRC_SITE=https://gitlab.freedesktop.org/slirp/libslirp/-/archive/v${VERSION}/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch AS build
+COPY --from=stagex/python . /
+COPY --from=stagex/zlib . /
+COPY --from=stagex/bzip2 . /
+COPY --from=stagex/pkgconf . /
+COPY --from=stagex/ncurses . /
+COPY --from=stagex/meson . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/cmake . /
+COPY --from=stagex/pcre2 . /
+COPY --from=stagex/python . /
+COPY --from=stagex/bison . /
+COPY --from=stagex/flex . /
+COPY --from=stagex/py-packaging . /
+COPY --from=stagex/xz . /
+COPY --from=stagex/ninja . /
+COPY --from=stagex/glib . /
+COPY --from=stagex/linux-headers . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR /libslirp-v${VERSION}-ce314e39458223c2c42245fe536fbe1bcd94e9b1
+RUN --network=none <<-EOF
+	set -eux
+    meson setup \
+		--default-library=shared \
+		--prefix=/usr \
+		. output
+	meson compile -C output
+	meson install --no-rebuild -C output
+EOF
+
+FROM build AS install
+RUN DESTDIR=/rootfs meson install --no-rebuild -C output
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /

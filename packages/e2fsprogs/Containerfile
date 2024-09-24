@@ -1,14 +1,14 @@
-FROM scratch as base
+FROM scratch AS base
 ARG ARCH=x86_64
 ENV VERSION=1.47.0
 ENV SRC_HASH=74c8ea97c73294edc6c11dc5e7fbb4324f86c28efd66ad0ba50be4eec8a48be2
 ENV SRC_FILE=v${VERSION}.tar.gz
 ENV SRC_SITE=https://github.com/tytso/e2fsprogs/archive/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/bash . /
 COPY --from=stagex/binutils . /
 COPY --from=stagex/pkgconf . /
@@ -19,7 +19,7 @@ COPY --from=stagex/util-linux . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/gcc . /
 RUN tar -xzf ${SRC_FILE}
-WORKDIR e2fsprogs-${VERSION}
+WORKDIR /e2fsprogs-${VERSION}
 RUN --network=none <<-EOF
     ./configure \
         --build=${ARCH}-linux-musl \
@@ -36,8 +36,8 @@ RUN --network=none <<-EOF
     make -j "$(nproc)"
 EOF
 
-FROM build as install
+FROM build AS install
 RUN make DESTDIR=/rootfs install
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

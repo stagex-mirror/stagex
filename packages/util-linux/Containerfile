@@ -1,13 +1,13 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=2.39.3
 ENV SRC_HASH=d3315ff701890f4fa1dd38ea387767fcb9e1aaeb763eb904677c03d2a7a5bdc1
 ENV SRC_FILE=util-linux-${VERSION}.tar.gz
 ENV SRC_SITE=https://codeload.github.com/util-linux/util-linux/legacy.tar.gz/v${VERSION}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/gcc . /
@@ -24,7 +24,7 @@ COPY --from=stagex/m4 . /
 COPY --from=stagex/make . /
 RUN mkdir util-linux
 RUN tar -xvf $SRC_FILE --strip-components=1 -C util-linux
-WORKDIR util-linux
+WORKDIR /util-linux
 RUN --network=none <<-EOF
 	set -eux
     ./autogen.sh
@@ -45,8 +45,8 @@ RUN --network=none <<-EOF
 	make -j "$(nproc)"
 EOF
 
-FROM build as install
+FROM build AS install
 RUN --network=none make DESTDIR=/rootfs install
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

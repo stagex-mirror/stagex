@@ -1,13 +1,13 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=41.0.7
 ENV SRC_HASH=13f93ce9bea8016c253b34afc6bd6a75993e5c40672ed5405a9c832f0d4a00bc
 ENV SRC_FILE=cryptography-${VERSION}.tar.gz
 ENV SRC_SITE=https://files.pythonhosted.org/packages/source/c/cryptography/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/gcc . /
@@ -32,15 +32,15 @@ COPY --from=stagex/py-typing-extensions . /
 COPY --from=stagex/py-gpep517 . /
 COPY --from=stagex/py-installer . /
 RUN tar -xzf ${SRC_FILE}
-WORKDIR cryptography-${VERSION}
+WORKDIR /cryptography-${VERSION}
 RUN gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 
-FROM build as install
+FROM build AS install
 RUN --network=none <<-EOF
     set -eu
     python -m installer -d /rootfs .dist/cryptography-*.whl
     find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

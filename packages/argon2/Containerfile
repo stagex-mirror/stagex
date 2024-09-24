@@ -1,0 +1,29 @@
+FROM scratch AS base
+ARG ARCH=x86_64
+ENV VERSION=20190702
+ENV SRC_HASH=daf972a89577f8772602bf2eb38b6a3dd3d922bf5724d45e7f9589b5e830442c
+ENV SRC_FILE=${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/P-H-C/phc-winner-argon2/archive/refs/tags/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch AS build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+RUN tar -xf $SRC_FILE
+WORKDIR /phc-winner-argon2-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	make -j "$(nproc)" OPTTARGET=none ARGON2_VERSION=${VERSION}
+EOF
+
+FROM build AS install
+RUN make OPTTARGET=none LIBRARY_REL=lib DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /

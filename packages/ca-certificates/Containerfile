@@ -23,7 +23,7 @@ COPY --from=stagex/gcc . /
 COPY --from=stagex/openssl . /
 COPY --from=stagex/perl . /
 RUN tar -xf ca-certificates-${SRC_2_VERSION}.tar.gz
-WORKDIR ca-certificates-${SRC_2_VERSION}
+WORKDIR /ca-certificates-${SRC_2_VERSION}
 ADD *.patch .
 RUN --network=none <<-EOF
 	set -eux
@@ -33,7 +33,7 @@ RUN --network=none <<-EOF
 	make
 EOF
 
-FROM build as install
+FROM build AS install
 RUN --network=none make install DESTDIR=/rootfs
 RUN --network=none mv cert.pem /rootfs/etc/ssl/certs/ca-certificates.crt
 

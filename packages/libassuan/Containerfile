@@ -1,13 +1,13 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=2.5.6
 ENV SRC_HASH=e9fd27218d5394904e4e39788f9b1742711c3e6b41689a31aa3380bd5aa4f426
 ENV SRC_FILE=libassuan-${VERSION}.tar.bz2
 ENV SRC_SITE=https://gnupg.org/ftp/gcrypt/libassuan/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/gcc . /
@@ -15,7 +15,7 @@ COPY --from=stagex/binutils . /
 COPY --from=stagex/make . /
 COPY --from=stagex/libgpg-error . /
 RUN tar -xvf $SRC_FILE
-WORKDIR libassuan-${VERSION}
+WORKDIR /libassuan-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./configure \
@@ -28,10 +28,10 @@ RUN --network=none <<-EOF
 	make -j "$(nproc)"
 EOF
 
-FROM build as install
+FROM build AS install
 RUN --network=none make DESTDIR=/rootfs install
 
-FROM base as test
+FROM base AS test
 COPY --from=install /rootfs/. /
 COPY --from=stagex/busybox . /
 RUN /bin/sh <<-EOF
@@ -43,5 +43,5 @@ RUN /bin/sh <<-EOF
 	fi
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

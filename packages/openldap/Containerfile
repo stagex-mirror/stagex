@@ -1,0 +1,58 @@
+FROM scratch AS base
+ARG ARCH=x86_64
+ENV VERSION=2.5.17
+ENV SRC_HASH=d706a34b348ae38a9e3e4eb0d2cd5afeb939f2b2db95e6ae3d410d6a75e90e3c
+ENV SRC_FILE=openldap-${VERSION}.tgz
+ENV SRC_SITE=https://www.openldap.org/software/download/OpenLDAP/openldap-release/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch AS build
+COPY --from=stagex/perl . /
+COPY --from=stagex/bash . /
+COPY --from=stagex/m4 . /
+COPY --from=stagex/autoconf . /
+COPY --from=stagex/automake . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/libtool . /
+COPY --from=stagex/unixodbc . /
+COPY --from=stagex/libedit . /
+COPY --from=stagex/libevent . /
+COPY --from=stagex/openssl . /
+COPY --from=stagex/argon2 . /
+COPY --from=stagex/groff . /
+RUN tar -xf $SRC_FILE
+WORKDIR /openldap-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--enable-slapd \
+		--enable-modules \
+		--enable-dnssrv=mod \
+		--enable-ldap=mod \
+		--enable-mdb=mod \
+		--enable-meta=mod \
+		--enable-asyncmeta=mod \
+		--enable-null=mod \
+		--enable-passwd=mod \
+		--enable-relay=mod \
+		--enable-sock=mod \
+		--enable-sql=mod \
+		--enable-overlays=mod \
+		--enable-balancer=mod \
+		--enable-argon2
+	make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN make DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /

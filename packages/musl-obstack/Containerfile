@@ -1,13 +1,13 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=1.2.3
 ENV SRC_HASH=9ffb3479b15df0170eba4480e51723c3961dbe0b461ec289744622db03a69395
 ENV SRC_FILE=v${VERSION}.tar.gz
 ENV SRC_SITE=https://github.com/void-linux/musl-obstack/archive/refs/tags/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/gcc . /
 COPY --from=stagex/binutils . /
@@ -20,7 +20,7 @@ COPY --from=stagex/libtool . /
 COPY --from=stagex/pkgconf . /
 COPY --from=stagex/m4 . /
 RUN tar -xzf ${SRC_FILE}
-WORKDIR musl-obstack-${VERSION}
+WORKDIR /musl-obstack-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./bootstrap.sh
@@ -28,8 +28,8 @@ RUN --network=none <<-EOF
 	make -j "$(nproc)"
 EOF
 
-FROM build as install
+FROM build AS install
 RUN --network=none make DESTDIR=/rootfs install
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

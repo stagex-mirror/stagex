@@ -1,13 +1,13 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=3.27.8
 ENV SRC_HASH=fece24563f697870fbb982ea8bf17482c9d5f855d8c9bf0b82463d76c9e8d0cc
 ENV SRC_FILE=cmake-${VERSION}.tar.gz
 ENV SRC_SITE=https://cmake.org/files/v3.27/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/binutils . /
 COPY --from=stagex/ninja . /
@@ -18,7 +18,7 @@ COPY --from=stagex/gcc . /
 COPY --from=stagex/zlib . /
 COPY --from=stagex/openssl . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR cmake-${VERSION}
+WORKDIR /cmake-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./bootstrap \
@@ -33,8 +33,8 @@ RUN --network=none <<-EOF
 	ninja
 EOF
 
-FROM build as install
+FROM build AS install
 RUN --network=none DESTDIR=/rootfs bin/cmake -P cmake_install.cmake
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

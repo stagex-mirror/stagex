@@ -1,13 +1,13 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=0.190
 ENV SRC_HASH=8e00a3a9b5f04bc1dc273ae86281d2d26ed412020b391ffcc23198f10231d692
 ENV SRC_FILE=elfutils-${VERSION}.tar.bz2
 ENV SRC_SITE=https://sourceware.org/elfutils/ftp/${VERSION}/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/gcc . /
 COPY --from=stagex/binutils . /
@@ -29,7 +29,7 @@ COPY --from=stagex/musl-fts . /
 COPY --from=stagex/musl-obstack . /
 COPY --from=stagex/linux-headers . /
 RUN tar -xjf ${SRC_FILE}
-WORKDIR elfutils-${VERSION}
+WORKDIR /elfutils-${VERSION}
 ADD *.patch .
 RUN --network=none <<-EOF
 	set -eux
@@ -54,8 +54,8 @@ RUN --network=none <<-EOF
 	make -j "$(nproc)"
 EOF
 
-FROM build as install
+FROM build AS install
 RUN --network=none make DESTDIR=/rootfs install
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

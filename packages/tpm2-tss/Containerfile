@@ -1,13 +1,13 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=4.1.0
 ENV SRC_HASH=4f6c53010b9f422107235d748178daf77817bd2bbe856befa3d54cab9f2f07e4
 ENV SRC_FILE=${VERSION}.tar.gz
 ENV SRC_SITE=https://github.com/tpm2-software/tpm2-tss/archive/refs/tags/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/gcc . /
 COPY --from=stagex/binutils . /
@@ -26,7 +26,7 @@ COPY --from=stagex/m4 . /
 COPY --from=stagex/curl . /
 COPY --from=stagex/json-c . /
 RUN tar -xf ${SRC_FILE}
-WORKDIR tpm2-tss-${VERSION}
+WORKDIR /tpm2-tss-${VERSION}
 RUN --network=none <<-EOF
     set -eux
     printf "${VERSION}" > VERSION
@@ -44,12 +44,12 @@ RUN --network=none <<-EOF
     make -j "$(nproc)"
 EOF
 
-FROM build as install
+FROM build AS install
 RUN --network=none <<-EOF
     set -eux
     make DESTDIR=/rootfs install
     rm -rf /rootfs/var/run
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

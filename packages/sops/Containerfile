@@ -1,18 +1,18 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=3.8.1
 ENV SRC_HASH=5ca70fb4f96797d09012c705a5bb935835896de7bcd063b98d498912b0e645a0
-ENV SRC_FILE=${SRC_SITE}/v${VERSION}.tar.gz
+ENV SRC_FILE=v${VERSION}.tar.gz
 ENV SRC_SITE=https://github.com/getsops/sops/archive/refs/tags/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/go . /
 COPY --from=stagex/ca-certificates . /
 RUN tar -xvf v${VERSION}.tar.gz
-WORKDIR sops-${VERSION}
+WORKDIR /sops-${VERSION}
 ENV PWD=/home/user/sops-${VERSION}
 ENV GOPATH=${PWD}/cache/go
 ENV GOCACHE=${PWD}/cache/
@@ -26,11 +26,11 @@ ENV GOFLAGS=-trimpath
 RUN mkdir -p ${GOPATH}
 RUN go build -o bin/sops ./cmd/sops
 
-from build as install
+FROM build AS install
 RUN --network=none <<-EOF
     mkdir -p /rootfs/usr/bin/
     cp bin/sops /rootfs/usr/bin/
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/./ /

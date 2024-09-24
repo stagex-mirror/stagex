@@ -1,0 +1,35 @@
+FROM scratch AS base
+ENV VERSION=1.33.1
+ENV SRC_HASH=06869824094745872fa26efd4c48e622b9bd82a89ef0ce693dc682a23604f415
+ENV SRC_FILE=c-ares-${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/c-ares/c-ares/releases/download/v${VERSION}/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/make . /
+COPY --from=stagex/gcc . /
+
+RUN --network=none tar -xf ${SRC_FILE}
+WORKDIR /c-ares-${VERSION}
+RUN --network=none <<EOF
+	set -eux
+	./configure \
+        --build=x86_64-linux-musl \
+        --host=x86_64-linux-musl \
+        --prefix=/usr \
+        --mandir=/usr/share/man \
+        --infodir=/usr/share/info \
+        --enable-shared
+	make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN --network=none make DESTDIR=/rootfs install
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /

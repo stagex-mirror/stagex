@@ -1,13 +1,13 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=24.0
 ENV SRC_HASH=eb82c5e3e56209074766e6885bb04b8c38a0c015d0a30036ebe7ece34c9989e9
 ENV SRC_FILE=packaging-${VERSION}.tar.gz
 ENV SRC_SITE=https://files.pythonhosted.org/packages/source/p/packaging/${SRC_FILE}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch as install
+FROM fetch AS install
 COPY --from=stagex/busybox . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/python . /
@@ -15,7 +15,7 @@ COPY --from=stagex/py-flit . /
 COPY --from=stagex/py-gpep517 . /
 COPY --from=stagex/zlib . /
 RUN tar -xzf ${SRC_FILE}
-WORKDIR packaging-${VERSION}/src
+WORKDIR /packaging-${VERSION}/src
 RUN --network=none <<-EOF
 	set -eu
 	sitedir="$(python3 -c 'import site;print(site.getsitepackages()[0])')"
@@ -24,5 +24,5 @@ RUN --network=none <<-EOF
     find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

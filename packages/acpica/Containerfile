@@ -1,0 +1,29 @@
+FROM scratch AS base
+ENV VERSION=20230628
+ENV SRC_HASH=86876a745e3d224dcfd222ed3de465b47559e85811df2db9820ef09a9dff5cce
+ENV SRC_FILE=acpica-unix-${VERSION}.tar.gz
+ENV SRC_SITE=https://downloadmirror.intel.com/783549/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/busybox . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/bison . /
+COPY --from=stagex/flex . /
+COPY --from=stagex/m4 . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR /acpica-unix-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
+ENV LDFLAGS="-Wl,-z,pack-relative-relocs"
+RUN --network=none make NOWERROR=TRUE -j "$(nproc)"
+
+FROM build AS install
+RUN --network=none DESTDIR=/rootfs make install
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /

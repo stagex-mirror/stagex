@@ -16,7 +16,7 @@ COPY --from=stagex/openssl . /
 COPY --from=stagex/zlib . /
 COPY --from=stagex/ca-certificates . /
 RUN tar xf ${SRC_FILE}
-WORKDIR keyfork
+WORKDIR /keyfork
 ADD <<-EOF /.cargo/config.toml
 	[registries.distrust]
 	index = "https://git.distrust.co/public/_cargo-index.git"

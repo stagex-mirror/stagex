@@ -1,4 +1,4 @@
-FROM scratch as base
+FROM scratch AS base
 ENV VERSION=5.19.6
 ENV SRC_HASH=41a4f824af614460c429a7c723e8dcbb0e042f0047d328c18b4ed6f2b4efa63a
 ENV SRC_FILE=linux-${VERSION}.tar.xz
@@ -8,11 +8,11 @@ ENV NSM_SRC_HASH=720916a640f7579a1e9a972ddd43448d201b9ce4d4750079d8256e83be3e937
 ENV NSM_SRC_FILE=nsm.tgz
 ENV NSM_SRC_SITE=https://codeload.github.com/aws/aws-nitro-enclaves-sdk-bootstrap/legacy.tar.gz/${NSM_VERSION}
 
-FROM base as fetch
+FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 ADD --checksum=sha256:${NSM_SRC_HASH} ${NSM_SRC_SITE} ${NSM_SRC_FILE}
 
-FROM fetch as build
+FROM fetch AS build
 COPY --from=stagex/musl . /
 COPY --from=stagex/make . /
 COPY --from=stagex/binutils . /
@@ -42,11 +42,12 @@ COPY --from=stagex/bash /bin/bash /bin/sh
 RUN mkdir nitro-bootstrap
 RUN tar -xf ${NSM_SRC_FILE} -C nitro-bootstrap --strip-components 1
 RUN tar -xf ${SRC_FILE}
-WORKDIR linux-${VERSION}
+WORKDIR /linux-${VERSION}
 ADD linux.config .config
+ENV SOURCE_DATE_EPOCH=1
 ENV KBUILD_BUILD_HOST=stagex
 ENV KBUILD_BUILD_USER=user
-ENV KBUILD_BUILD_TIMESTAMP=1
+ENV KBUILD_BUILD_TIMESTAMP="Thu Jan  1 12:00:00 AM GMT 1970"
 RUN <<-EOF
 	set -eux
 	make olddefconfig
@@ -56,7 +57,7 @@ RUN <<-EOF
 	make -C ../linux-${VERSION} M=../nitro-bootstrap/nsm-driver
 EOF
 
-FROM build as install
+FROM build AS install
 RUN <<-EOF
 	set -eux
 	mkdir /rootfs
@@ -65,5 +66,5 @@ RUN <<-EOF
 	cp /nitro-bootstrap/nsm-driver/nsm.ko /rootfs
 EOF
 
-FROM stagex/filesystem as package
+FROM stagex/filesystem AS package
 COPY --from=install /rootfs/. /

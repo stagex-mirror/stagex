@@ -22,7 +22,7 @@ COPY --from=stagex/gcc . /
 COPY --from=stagex/gmp . /
 
 RUN --network=none tar -xf ${SRC_FILE}
-WORKDIR nettle-nettle_${VERSION}
+WORKDIR /nettle-nettle_${VERSION}
 RUN --network=none <<EOF
 set -eux
 ls
