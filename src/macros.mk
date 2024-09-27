@@ -42,7 +42,7 @@ define dep-list
 	$(eval PACKAGE := $(1))
 	grep -Ri \
 		-e "^COPY --from=stagex/"
-		-e "FROM .* AS package" \
+		-e "FROM stagex/.* AS package" \
 		packages/$(PACKAGE)/Containerfile \
 	| sed \
 		-e 's/COPY --from=stagex\/\([^ ]\+\) .*/\1/g' \
