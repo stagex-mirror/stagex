@@ -1,4 +1,3 @@
-
 FROM scratch AS base
 ENV VERSION=0.6.0
 ENV SRC_HASH=897cdd7a83162d6330ecc5da493bddf9ab59e25d6dbc5337eafbdf8856030fac
