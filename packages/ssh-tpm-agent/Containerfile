@@ -1,0 +1,36 @@
+
+FROM scratch AS base
+ENV VERSION=0.6.0
+ENV SRC_HASH=897cdd7a83162d6330ecc5da493bddf9ab59e25d6dbc5337eafbdf8856030fac
+ENV SRC_FILE=v${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/Foxboron/ssh-tpm-agent/archive/refs/tags/v${VERSION}.tar.gz
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/binutils . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/ca-certificates . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/make . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/go . /
+RUN tar -xvf v${VERSION}.tar.gz
+WORKDIR /ssh-tpm-agent-${VERSION}
+ENV GOPROXY=https://proxy.golang.org,direct
+ENV GOSUMDB=sum.golang.org
+ENV GOPATH=/cache/go
+ENV GOBIN=${GOPATH}/bin
+ENV PATH=${GOBIN}:${PATH}
+RUN mkdir -p ${GOPATH}
+RUN go build -o bin/ssh-tpm-agent ./cmd/ssh-tpm-agent
+
+FROM build AS install
+RUN --network=none <<-EOF
+    mkdir -p /rootfs/usr/bin/
+    cp bin/ssh-tpm-agent /rootfs/usr/bin/
+EOF
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/./ /
