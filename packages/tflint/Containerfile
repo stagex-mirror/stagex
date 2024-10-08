@@ -1,6 +1,6 @@
 FROM scratch AS base
-ENV VERSION=0.50.3
-ENV SRC_HASH=e90acdbf4cd1dc936e50b580ade53583baced53a93b3b01cee3e073b233ef8c5
+ENV VERSION=0.53.0
+ENV SRC_HASH=22dd4644dd249b38b8cbb29bd4ca66aefa65a2d9dc38109a3ca5b428a4ba755b
 ENV SRC_FILE=v${VERSION}.tar.gz
 ENV SRC_SITE=https://github.com/terraform-linters/tflint/archive/refs/tags/${SRC_FILE}
 ENV GOPATH=/cache/go
