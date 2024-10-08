@@ -1,6 +1,6 @@
 FROM scratch AS base
-ENV VERSION=2.9.0
-ENV SRC_HASH=78e73e19c63f5b20ffa567001531680d939dc042bf7850431877645523c66709
+ENV VERSION=2.9.0.post0
+ENV SRC_HASH=37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3
 ENV SRC_FILE=python-dateutil-${VERSION}.tar.gz
 ENV SRC_SITE=https://files.pythonhosted.org/packages/source/p/python-dateutil/${SRC_FILE}
 
