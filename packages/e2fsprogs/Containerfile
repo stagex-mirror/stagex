@@ -1,7 +1,7 @@
 FROM scratch AS base
 ARG ARCH=x86_64
-ENV VERSION=1.47.0
-ENV SRC_HASH=74c8ea97c73294edc6c11dc5e7fbb4324f86c28efd66ad0ba50be4eec8a48be2
+ENV VERSION=1.47.1
+ENV SRC_HASH=db95ff1cb6ef741c9aa8875d9f3f52a34168360febba765b6377b80bada09a8c
 ENV SRC_FILE=v${VERSION}.tar.gz
 ENV SRC_SITE=https://github.com/tytso/e2fsprogs/archive/${SRC_FILE}
 
