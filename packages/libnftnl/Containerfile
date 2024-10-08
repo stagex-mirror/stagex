@@ -1,8 +1,8 @@
 FROM scratch AS base
-ENV VERSION=1.2.7
+ENV VERSION=1.2.8
 ENV SRC_FILE=libnftnl-${VERSION}.tar.xz
 ENV SRC_SITE=https://netfilter.org/projects/libnftnl/files/${SRC_FILE}
-ENV SRC_HASH=9122774f968093d5c0bacddd67de480f31fa4073405a7fc058a34b0f387aecb3
+ENV SRC_HASH=37fea5d6b5c9b08de7920d298de3cdc942e7ae64b1a3e8b880b2d390ae67ad95
 
 FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
