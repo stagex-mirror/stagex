@@ -15,8 +15,6 @@ FROM fetch AS build
 
 COPY --from=stagex/busybox . /
 COPY --from=stagex/musl . /
-# RUN rm -rf /usr/include
-
 COPY --from=stagex/binutils . /
 COPY --from=stagex/bison . /
 COPY --from=stagex/gawk . /
@@ -28,8 +26,8 @@ COPY --from=stagex/make . /
 COPY --from=stagex/python . /
 RUN tar -xzf ${SRC_FILE}
 WORKDIR glibc-${VERSION}
-COPY --from=stagex/linux-headers /usr/include /usr/include/x86_64-linux-gnu
-ENV _TRIPLE=x86_64-linux-gnu
+COPY --from=stagex/linux-headers /usr/include /usr/include/${ARCH}-linux-gnu
+ENV _TRIPLE=${ARCH}-linux-gnu
 ENV _LIBDIR=/usr/lib/${_TRIPLE}
 ENV _INCDIR=/usr/include/${_TRIPLE}
 RUN --network=none <<-EOF
@@ -64,16 +62,16 @@ RUN --network=none <<-EOF
 	set -eux
 	cd build
 	make DESTDIR=/rootfs install
+    mkdir -p /rootfs/usr/lib/
+    mv /rootfs/lib64/* /rootfs/usr/lib/
+    rmdir /rootfs/lib64
 	mv /rootfs/sbin/* /rootfs/usr/bin
-	mv /rootfs/lib64 /rootfs/usr/lib64-pre-move
 	rmdir /rootfs/sbin
-#	mkdir -p /rootfs/usr/bin /rootfs/usr/lib
-#	rm -rf /rootfs/lib
-#	ln -sf /usr/lib/ld-musl-${ARCH}.so.1 /rootfs/usr/bin/ldd
-#	mv -f /rootfs/usr/lib/libc.so /rootfs/usr/lib/ld-musl-${ARCH}.so.1
-#	ln -sf ld-musl-${ARCH}.so.1 /rootfs/usr/lib/libc.musl-${ARCH}.so.1
-#	ln -sf /usr/lib/ld-musl-${ARCH}.so.1 /rootfs/usr/lib/libc.so
+    ln -s ${ARCH}-linux-gnu/libc.so /rootfs/usr/lib/ld-gnu-${ARCH}.so.1
 EOF
+ADD glibc-gcc /rootfs/usr/bin/
+ADD glibc-gcc.specs /rootfs/usr/lib/${ARCH}-linux-gnu/glibc-gcc.specs
+RUN ls -Rlah /rootfs
 
 FROM scratch AS package
 COPY --from=stagex/filesystem . /
