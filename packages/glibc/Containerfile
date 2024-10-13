@@ -6,7 +6,6 @@ ENV SRC_SITE=http://ftpmirror.gnu.org/gnu/glibc/${SRC_FILE}
 ENV SRC_HASH=2abc038f5022949cb67e996c3cae0e7764f99b009f0b9b7fd954dfc6577b599e
 ENV CFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security"
 ENV CXXFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security -D_GLIBCXX_ASSERTIONS=1 -D_LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS=1 -D_LIBCPP_ENABLE_HARDENED_MODE=1"
-#ENV LDFLAGS="-Wl,--as-needed,-O1,--sort-common -Wl,-soname,libc.musl-${ARCH}.so.1"
 
 FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
@@ -32,9 +31,7 @@ ENV _LIBDIR=/usr/lib/${_TRIPLE}
 ENV _INCDIR=/usr/include/${_TRIPLE}
 RUN --network=none <<-EOF
 	set -eux
-
 	sed -i 's/--yacc //' intl/Makefile
-
 	mkdir build
 	cd build
 	echo "slibdir=${_LIBDIR}" >> configparams
@@ -69,9 +66,6 @@ RUN --network=none <<-EOF
 	rmdir /rootfs/sbin
     ln -s ${ARCH}-linux-gnu/libc.so /rootfs/usr/lib/ld-gnu-${ARCH}.so.1
 EOF
-ADD glibc-gcc /rootfs/usr/bin/
-ADD glibc-gcc.specs /rootfs/usr/lib/${ARCH}-linux-gnu/glibc-gcc.specs
-RUN ls -Rlah /rootfs
 
 FROM scratch AS package
 COPY --from=stagex/filesystem . /
