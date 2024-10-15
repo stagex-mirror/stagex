@@ -35,6 +35,12 @@ matrix = "@dgrove:matrix.org"
 keyoxide = "https://keyoxide.org/C92FE5A3FBD58DD3EC5AA26BB10116B8193F2DBD"
 website = "https://dannygrove.com"
 
+[people.avrukin]
+name = "Michael Avrukin"
+location = "New York, USA"
+email = "michael@turnkey.io"
+website = "https://www.linkedin.com/in/mavrukin/"
+
 [keys]
 
 [keys.lancevick.personal]
@@ -69,6 +75,15 @@ id = "C92FE5A3FBD58DD3EC5AA26BB10116B8193F2DBD"
 algorithm = "RSA4096"
 servers = "openpgp.org"
 devices = "Yubikey 5 NFC, Yubikey 5C"
+offline-ca = true
+backup = true
+interaction = true
+
+[keys.avrukin.turnkey]
+id = "FA0FA2E96BC2EABF6F85F01CA2D1BD3B8539D8E2"
+algorithm = "RSA4096"
+servers = "openpgp.org"
+devices = "Yubikey 5c Nano"
 offline-ca = true
 backup = true
 interaction = true
@@ -157,4 +172,16 @@ model = "AMD Ryzen 7 7840U"
 ghz = 3.3
 cores = 8
 os = "arch Linux"
+runtime = "Docker"
+
+[machines.avrukin.gcp1]
+owner = "Michael Avrukin (Turnkey)"
+location = "us-central1-c"
+type = "vm"
+arch = "x86_64"
+brand = "Intel"
+model = "Intel Xeon Platinum 8260"
+ghz = 2.8
+cores = 48
+os = "debian linux"
 runtime = "Docker"
