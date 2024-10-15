@@ -15,7 +15,6 @@ COPY --from=stagex/make . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/python . /
 RUN tar -xf ${SRC_FILE}
-RUN ls -lah .
 WORKDIR /seabios-rel-${VERSION}
 ADD config.* .
 RUN --network=none <<-EOF
