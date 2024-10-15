@@ -1,9 +1,9 @@
 FROM scratch AS base
-ENV VERSION=1.7.20
+ENV VERSION=1.7.22
 ENV COMMIT=8fc6bcff51318944179630522a095cc9dbf9f353
 ENV SRC_FILE=v${VERSION}.tar.gz
 ENV SRC_SITE=https://github.com/containerd/containerd/archive/${SRC_FILE}
-ENV SRC_HASH=c4268561e514a2e8322bc8cdd39113d5e164fb31c2cef76f479d683395ea9bd6
+ENV SRC_HASH=8c5edde741b7596af63c021429a1212bd616350ed65a7b741eeffc47e27ee9a9
 
 FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
