@@ -264,16 +264,6 @@ For further reading see the [Bootstrappable Builds](https://bootstrappable.org/)
 	
 * Gnu Make
 
-### First
-
-#### Create untracked build output directory
-
-From the `stagex` repository root:
-
-```shell
-mkdir out
-```
-
 ### Examples
 
 #### Reproduce entire tree
