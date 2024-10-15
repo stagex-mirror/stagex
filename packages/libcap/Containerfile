@@ -1,6 +1,6 @@
 FROM scratch AS base
-ENV VERSION=2.69
-ENV SRC_HASH=9cc2fa3ee744d881629cdac1a1b54c302e7684fda3e3622056218c7681642ffb
+ENV VERSION=2.70
+ENV SRC_HASH=18f00ea97c7541af86379dec9d4d8ea838aac4a1f70177d81d91657e4e43b808
 ENV SRC_FILE=libcap-${VERSION}.tar.gz
 ENV SRC_SITE=https://git.kernel.org/pub/scm/libs/libcap/libcap.git/snapshot/${SRC_FILE}
 
