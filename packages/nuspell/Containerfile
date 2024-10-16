@@ -1,7 +1,7 @@
 FROM scratch AS base
 ARG ARCH=x86_64
-ENV VERSION=5.1.4
-ENV SRC_HASH=bdf344c5adbcc6797940f8f8cb75cb59f5a3794eb21b9547751a11782a792ef7
+ENV VERSION=5.1.6
+ENV SRC_HASH=5d4baa1daf833a18dc06ae0af0571d9574cc849d47daff6b9ce11dac0a5ded6a
 ENV SRC_FILE=nuspell-${VERSION}.tar.gz
 ENV SRC_SITE=https://github.com/nuspell/nuspell/archive/refs/tags/v${VERSION}.tar.gz
 
