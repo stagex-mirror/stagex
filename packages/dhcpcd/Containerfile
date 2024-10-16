@@ -1,8 +1,8 @@
 FROM scratch AS base
-ENV VERSION=10.0.10
+ENV VERSION=10.1.0
 ENV SRC_FILE=dhcpcd-${VERSION}.tar.xz
 ENV SRC_SITE=https://github.com/NetworkConfiguration/dhcpcd/releases/download/v${VERSION}/${SRC_FILE}
-ENV SRC_HASH=d582012992efddd2442bb1213c518a37d90febbcf8b11f8e76448c710dacad27
+ENV SRC_HASH=abc307c63853da3199baa5c1e15fd5ede9d68d068b2a59ca14c5a6768e9cc3b7
 
 FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
