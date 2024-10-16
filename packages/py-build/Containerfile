@@ -1,33 +1,25 @@
 FROM scratch AS base
-ENV VERSION=1.2.2
-ENV SRC_HASH=119b2fb462adef986483438377a13b2f42064a2a3a4161f24a0cca698a07ac8c
+ENV VERSION=0.7.0
+ENV SRC_HASH=1aaadcd69338252ade4f7ec1265e1a19184bf916d84c9b7df095f423948cb89f
 ENV SRC_FILE=build-${VERSION}.tar.gz
 ENV SRC_SITE=https://files.pythonhosted.org/packages/source/b/build/${SRC_FILE}
 
 FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch AS build 
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/python . /
 COPY --from=stagex/py-setuptools . /
-COPY --from=stagex/openssl . /
-COPY --from=stagex/py-installer . /
-COPY --from=stagex/py-flit . /
-COPY --from=stagex/py-gpep517 . /
-COPY --from=stagex/py-wheel . /
-COPY --from=stagex/py-distro . /
-COPY --from=stagex/py-dateutil . /
 COPY --from=stagex/zlib . /
 RUN tar -xzf ${SRC_FILE}
 WORKDIR /build-${VERSION}
-RUN gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 
 FROM build AS install
 RUN --network=none <<-EOF
     set -eu
-    python -m installer -d /rootfs .dist/*.whl
+    python setup.py install --root=/rootfs
     find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
 
