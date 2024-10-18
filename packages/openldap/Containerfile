@@ -1,7 +1,7 @@
 FROM scratch AS base
 ARG ARCH=x86_64
-ENV VERSION=2.5.17
-ENV SRC_HASH=d706a34b348ae38a9e3e4eb0d2cd5afeb939f2b2db95e6ae3d410d6a75e90e3c
+ENV VERSION=2.6.8
+ENV SRC_HASH=48969323e94e3be3b03c6a132942dcba7ef8d545f2ad35401709019f696c3c4e
 ENV SRC_FILE=openldap-${VERSION}.tgz
 ENV SRC_SITE=https://www.openldap.org/software/download/OpenLDAP/openldap-release/${SRC_FILE}
 

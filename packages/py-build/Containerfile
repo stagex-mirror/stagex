@@ -7,7 +7,7 @@ ENV SRC_SITE=https://files.pythonhosted.org/packages/source/b/build/${SRC_FILE}
 FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
-FROM fetch AS install
+FROM fetch AS build
 COPY --from=stagex/busybox . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/python . /
@@ -15,8 +15,10 @@ COPY --from=stagex/py-setuptools . /
 COPY --from=stagex/zlib . /
 RUN tar -xzf ${SRC_FILE}
 WORKDIR /build-${VERSION}
+
+FROM build AS install
 RUN --network=none <<-EOF
-	set -eu
+    set -eu
     python setup.py install --root=/rootfs
     find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF

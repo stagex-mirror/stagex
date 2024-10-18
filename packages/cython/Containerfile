@@ -1,6 +1,6 @@
 FROM scratch AS base
-ENV VERSION=3.0.10
-ENV SRC_HASH=00f97476cef9fcd9a89f9d2a49be3b518e1a74b91f377fe08c97fcb44bc0f7d7
+ENV VERSION=3.0.11-1
+ENV SRC_HASH=a6bcfc81ae0487c3d0de4226e0c5aff7c7d0a5e344cc7b75c17bbb6e713f154b
 ENV SRC_FILE=${VERSION}.tar.gz
 ENV SRC_SITE=https://github.com/cython/cython/archive/${SRC_FILE}
 

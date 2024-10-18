@@ -9,8 +9,6 @@ ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch AS build
 COPY --from=stagex/busybox . /
-#COPY --from=stagex/gcc . /
-#COPY --from=stagex/binutils . /
 COPY --from=stagex/make . /
 COPY --from=stagex/musl . /
 RUN tar -xf ${SRC_FILE}

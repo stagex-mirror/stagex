@@ -1,7 +1,7 @@
 FROM scratch AS base
 ARG ARCH=x86_64
-ENV VERSION=1.20.0
-ENV SRC_HASH=0b86b262dbe971edb4ff233bc370dfad9f241d09f078a3f6d5b7f4b8ea4430db
+ENV VERSION=1.20.1
+ENV SRC_HASH=0b308f62dce78ac0f4d9de6888234bf170f276b64ac7c96e99779bb4319bcef5
 ENV SRC_FILE=util-macros-${VERSION}.tar.xz
 ENV SRC_SITE=https://www.x.org/releases/individual/util/${SRC_FILE}
 
