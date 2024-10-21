@@ -1,9 +1,9 @@
 FROM scratch AS base
 ARG ARCH=x86_64
-ENV VERSION=6.4-20240309
-ENV SRC_HASH=ff909c46f219c4a4756da5f2e9f1925704560718765282aae73841f6cce021d5
-ENV SRC_FILE=ncurses-${VERSION}.tgz
-ENV SRC_SITE=https://invisible-mirror.net/archives/ncurses/current/${SRC_FILE}
+ENV VERSION=6.5
+ENV SRC_HASH=136d91bc269a9a5785e5f9e980bc76ab57428f604ce3e5a5a90cebc767971cc6
+ENV SRC_FILE=ncurses-${VERSION}.tar.gz
+ENV SRC_SITE=https://ftp.gnu.org/gnu/ncurses/${SRC_FILE}
 
 FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
