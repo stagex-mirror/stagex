@@ -2,6 +2,8 @@
 
 [git://codeberg.org:stagex/stagex](https://codeberg.org/stagex/stagex) | [matrix://#stagex:matrix.org](https://matrix.to/#/#stagex:matrix.org) | [ircs://irc.oftc.net:6697#stagex](https://webchat.oftc.net/?channels=stagex&uio=MT11bmRlZmluZWQmMTE9MTk14d)
 
+<object type="image/svg+xml" data="https://opencollective.com/stagex/tiers/sponsors.svg?avatarHeight=36&width=600"></object>
+
 ---
 
 Minimalism and security first repository of reproducible and multi-signed OCI
