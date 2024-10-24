@@ -215,10 +215,10 @@ RUN sh build.sh 1.80.0 1.79.0
 
 # Required by Rust >= 1.81.0
 COPY --from=stagex/ninja . /
+COPY --from=stagex/ca-certificates . /
 RUN sh build.sh 1.81.0 1.80.0
 
 ADD no-default-static.patch .
-COPY --from=stagex/ca-certificates . /
 RUN sh build.sh 1.82.0 1.81.0 cargo,clippy,rustdoc,rustfmt,rust-demangler no-default-static
 
 FROM build AS install
