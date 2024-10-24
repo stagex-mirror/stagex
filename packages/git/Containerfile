@@ -1,6 +1,6 @@
 FROM scratch AS base
-ENV VERSION=2.9.5
-ENV SRC_HASH=a4bea37ecb9a3fb5c0c8ef18c2f7eeaf8ccbcfec91f72f3bccfc6bf72a3e3902
+ENV VERSION=2.47.0
+ENV SRC_HASH=1ce114da88704271b43e027c51e04d9399f8c88e9ef7542dae7aebae7d87bc4e
 ENV SRC_FILE=git-${VERSION}.tar.xz
 ENV SRC_SITE=http://mirrors.edge.kernel.org/pub/software/scm/git/${SRC_FILE}
 
