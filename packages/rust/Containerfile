@@ -170,6 +170,64 @@ COPY <<-'EOF' build.sh
 	python3 x.py install
 EOF
 
+FROM build-base AS build-script-lld
+COPY <<-'EOF' build.sh
+	set -eux
+	VERSION=${1}
+	BUILD_VERSION=${2}
+	TOOLS=${3:-cargo}
+	PATCHES=${4:-}
+	PREFIX=/rust-${VERSION}/usr
+	BUILD_PREFIX=/rust-${BUILD_VERSION}/usr
+	#HACK because rust build seemindly ignores LD_LIBRARY_PATH
+	cp ${BUILD_PREFIX}/lib/rustlib/x86_64-unknown-linux-musl/lib/*.so /usr/lib
+	tar -xzf rustc-${VERSION}-src.tar.gz
+	cd rustc-${VERSION}-src
+	[[ -z "$PATCHES" ]] || for name in ${PATCHES//,/ }; do
+		patch -p1 < ../${name}.patch
+	done
+	./configure \
+		--build="x86_64-unknown-linux-musl" \
+		--host="x86_64-unknown-linux-musl" \
+		--target="x86_64-unknown-linux-musl" \
+		--enable-local-rust \
+		--llvm-root="/usr/lib" \
+		--disable-docs \
+		--tools="${TOOLS}" \
+		--enable-llvm-link-shared \
+		--enable-option-checking \
+		--enable-locked-deps \
+		--enable-vendor \
+		--dist-compression-formats=gz \
+		--python="python3" \
+		--local-rust-root="${BUILD_PREFIX}" \
+		--prefix="${PREFIX}/usr" \
+		--sysconfdir="${PREFIX}/etc" \
+		--release-channel="stable" \
+		--set="install.prefix=${PREFIX}" \
+		--set="build.extended=true" \
+		--set="rust.musl-root=/usr" \
+		--set="rust.backtrace-on-ice=true" \
+		--set="rust.codegen-units=1" \
+		--set="rust.codegen-units-std=1" \
+		--set="rust.deny-warnings=false" \
+		--set="rust.parallel-compiler=false" \
+		--set="rust.remap-debuginfo=true" \
+		--set="rust.llvm-libunwind=system" \
+		--set="build.full-bootstrap=true" \
+		--set="target.x86_64-unknown-linux-musl.crt-static=false" \
+		--set="target.x86_64-unknown-linux-musl.musl-root=/usr" \
+		--set="target.x86_64-unknown-linux-musl.llvm-config=/usr/bin/llvm-config" \
+		--set="target.x86_64-unknown-linux-musl.cc=cc" \
+		--set="target.x86_64-unknown-linux-musl.cxx=c++" \
+		--set="target.x86_64-unknown-linux-musl.ar=ar" \
+		--set="target.x86_64-unknown-linux-musl.linker=cc" \
+		--set="rust.lld=false" \
+		--set="rust.use-lld=external"
+	python3 x.py dist
+	python3 x.py install
+EOF
+
 FROM build-script AS build-llvm13
 COPY --from=stagex/llvm13 . /
 COPY --from=build-mrustc /rust-1.54.0 /rust-1.54.0
@@ -205,7 +263,7 @@ RUN sh build.sh 1.75.0 1.74.0
 RUN sh build.sh 1.76.0 1.75.0
 RUN sh build.sh 1.77.0 1.76.0
 
-FROM build-script AS build
+FROM build-script AS build-pre-lld
 COPY --from=stagex/llvm . /
 COPY --from=stagex/llvm16 /usr/lib/libLLVM-16.so /usr/lib/
 COPY --from=build-llvm16 /rust-1.77.0 /rust-1.77.0
@@ -213,9 +271,13 @@ RUN sh build.sh 1.78.0 1.77.0
 RUN sh build.sh 1.79.0 1.78.0
 RUN sh build.sh 1.80.0 1.79.0
 
-# Required by Rust >= 1.81.0
+FROM build-script-lld AS build
+COPY --from=stagex/llvm . /
+COPY --from=stagex/lld . /
 COPY --from=stagex/ninja . /
 COPY --from=stagex/ca-certificates . /
+COPY --from=build-pre-lld /rust-1.80.0 /rust-1.80.0
+
 RUN sh build.sh 1.81.0 1.80.0
 
 ADD no-default-static.patch .
