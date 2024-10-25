@@ -115,6 +115,7 @@ RUN <<-EOF
 EOF
 
 FROM build-base AS build-script
+ENV CONFIGURE_FLAGS=
 COPY <<-'EOF' build.sh
 	set -eux
 	VERSION=${1}
