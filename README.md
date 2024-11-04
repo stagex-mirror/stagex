@@ -34,7 +34,7 @@ docker run -i stagex/python -c "print('hello world')"
 ```
 
 Make a hello world OCI container image with Rust:
-<--author: panekj -->
+<!--author: panekj -->
 
 ```dockerfile
 FROM stagex/filesystem AS build
@@ -64,7 +64,7 @@ COPY --from=stagex/libunwind . /
 COPY --from=stagex/gcc . /
 ENTRYPOINT ["/hello"]
 ```
-<--author: panekj -->
+<!--author: panekj -->
 
 ### Package Management
 
