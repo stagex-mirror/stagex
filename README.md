@@ -2,9 +2,7 @@
 
 [git://codeberg.org:stagex/stagex](https://codeberg.org/stagex/stagex) | [matrix://#stagex:matrix.org](https://matrix.to/#/#stagex:matrix.org) | [ircs://irc.oftc.net:6697#stagex](https://webchat.oftc.net/?channels=stagex&uio=MT11bmRlZmluZWQmMTE9MTk14d)
 
-<a href="https://opencollective.com/webpack/donate" target="_blank">
-  <img src="https://opencollective.com/webpack/donate/button@2x.png?color=blue" width=300 />
-</a>  
+[![Donate to StageX's OpenCollective](https://opencollective.com/webpack/donate/button.png?width=300?color=black)](https://opencollective.com/webpack/donate)  
 
 ---
 
