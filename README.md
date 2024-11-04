@@ -4,7 +4,8 @@
 
 <a href="https://opencollective.com/webpack/donate" target="_blank">
   <img src="https://opencollective.com/webpack/donate/button@2x.png?color=blue" width=300 />
-</a>
+</a>  
+
 ---
 
 Minimalism and security first repository of reproducible and multi-signed OCI
