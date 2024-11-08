@@ -2,6 +2,8 @@
 
 [git://codeberg.org:stagex/stagex](https://codeberg.org/stagex/stagex) | [matrix://#stagex:matrix.org](https://matrix.to/#/#stagex:matrix.org) | [ircs://irc.oftc.net:6697#stagex](https://webchat.oftc.net/?channels=stagex&uio=MT11bmRlZmluZWQmMTE9MTk14d)
 
+[![Donate to StageX's OpenCollective](https://opencollective.com/stagex/donate/button.png?color=white)](https://opencollective.com/stagex/donate)     
+
 ---
 
 Minimalism and security first repository of reproducible and multi-signed OCI
