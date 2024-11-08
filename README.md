@@ -28,17 +28,28 @@ Get a shell in our x86_64 Stage3 bootstrap image:
 docker run -it stagex/stage3
 ```
 
-Run a Python hello world:
-```shell
-docker run -i stagex/python -c "print('hello world')"
+For a bare Python shell you'll need a simple `Containerfile`:
+```Dockerfile
+FROM stagex/filesystem
+
+COPY --from=stagex/musl . /
+COPY --from=stagex/python . /
+
+ENTRYPOINT ["python"]
+```
+
+Build and run it with:
+```sh
+docker build . -f Containerfile -t stagex-python
+docker run -it stagex-python -c "print('hello, world!')"
 ```
 
 Make a hello world OCI container image with Rust:
-<--author: panekj -->
+<!--author: panekj -->
 
 ```dockerfile
-FROM stagex/filesystem AS build
-COPY --from=stagex/busybox . /
+FROM scratch AS build
+
 COPY --from=stagex/rust . /
 COPY --from=stagex/gcc . /
 COPY --from=stagex/binutils . /
@@ -47,24 +58,22 @@ COPY --from=stagex/musl . /
 COPY --from=stagex/llvm . /
 COPY --from=stagex/zlib . /
 
-ENV TMPDIR=/tmp
-WORKDIR /home/user
-ENV RUSTFLAGS="-C panic=abort -C target-feature=+crt-static"
-
-RUN /usr/bin/rustc - -o ./hello <<EOF
-fn main(){
-  println!("Hello World!");
-}
+COPY <<-EOF ./hello.rs
+  fn main(){
+    println!("Hello World!");
+  }
 EOF
+RUN ["rustc","-C","target-feature=+crt-static","-o","hello","hello.rs"]
 
 FROM scratch
-COPY --from=build /home/user/hello /hello
-COPY --from=stagex/musl . /
-COPY --from=stagex/libunwind . /
-COPY --from=stagex/gcc . /
+COPY --from=build /hello .
 ENTRYPOINT ["/hello"]
 ```
-<--author: panekj -->
+<!--author: panekj -->
+
+Note the difference between the "build" and the final image: `build` has to
+pull `gcc`, `libunwind`, `llvm`, etc. The final OCI image only contains the
+statically compiled Rust binary, and is tiny as a result.
 
 ### Package Management
 

@@ -88,7 +88,7 @@ IMPORTANT: the PR should be just the `Containerfile`, and the added block for
 the package you are contributing in `packages.mk`
 
 ## Helpful one liners
-<--author: Lance R. Vick -->
+<!--author: Lance R. Vick -->
 
 - see contents of a package:
 ```sh
@@ -105,7 +105,7 @@ package=somepackage; rm -rf out{,2}/${package}; make NOCACHE=1 ${package}; mv ou
 ```sh
 package=somepackage; make -Bnd ${package} | make2graph | dot -Tsvg -o ${package}-graph.svg
 ```
-<--author: Lance R. Vick -->
+<!--author: Lance R. Vick -->
 
 ## Submitting Pull Requests
 
