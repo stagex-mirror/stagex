@@ -19,12 +19,13 @@ COPY --from=stagex/pkgconf . /
 COPY --from=stagex/openssl . /
 COPY --from=stagex/perl . /
 COPY --from=stagex/gcc . /
-COPY --from=stagex/libunwind . /
 COPY --from=stagex/musl . /
 COPY --from=stagex/rust . /
 COPY --from=stagex/curl . /
 COPY --from=stagex/ca-certificates . /
 COPY --from=stagex/llvm . /
+COPY --from=stagex/libunwind . /
+COPY --from=stagex/libunwind /usr/lib/. /opt/cross/x86_64-linux-gnu/lib/
 COPY --from=stagex/cross-x86_64-gnu-gcc . /
 
 RUN tar -xzf rustc-${VERSION}-src.tar.gz
@@ -63,7 +64,7 @@ RUN <<EOF
 		--set="rust.deny-warnings=false" \
 		--set="rust.parallel-compiler=false" \
 		--set="rust.remap-debuginfo=true" \
-		--set="rust.llvm-libunwind=in-tree" \
+		--set="rust.llvm-libunwind=system" \
 		--set="build.full-bootstrap=true"
 	python3 x.py build --stage 0 --target x86_64-unknown-linux-gnu library
 EOF
