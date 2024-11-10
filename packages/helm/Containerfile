@@ -1,6 +1,6 @@
 FROM scratch AS base
-ENV VERSION=3.14.3
-ENV SRC_HASH=e0d46f69954002d27eaac3bd6543ee4f486cdd3795c5aac921e7f02791df8d8e
+ENV VERSION=3.16.1
+ENV SRC_HASH=2d6d99eff0f1667578ec2481aed259c8fe19d5c91f680e78e80fe903c55280ee
 ENV SRC_FILE=v${VERSION}.tar.gz
 ENV SRC_SITE=https://github.com/helm/helm/archive/refs/tags/${SRC_FILE}
 ENV GOPATH=/cache/go

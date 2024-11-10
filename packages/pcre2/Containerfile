@@ -1,7 +1,7 @@
 FROM scratch AS base
 ARG ARCH=x86_64
-ENV VERSION=10.43
-ENV SRC_HASH=f0048e26b02bdfaf43b8cec75030a9c2fe28552bf5caa693d3ccbf4d886fa930
+ENV VERSION=10.44
+ENV SRC_HASH=07a002e8216382a96f722bc4a831f3d77457fe3e9e62a6dff250a2dd0e9c5e6d
 ENV SRC_FILE=pcre2-${VERSION}.tar.gz
 ENV SRC_SITE=https://github.com/PCRE2Project/pcre2/archive/refs/tags/${SRC_FILE}
 

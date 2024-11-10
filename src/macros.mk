@@ -40,8 +40,13 @@ endef
 
 define dep-list
 	$(eval PACKAGE := $(1))
-	grep -Ri "^COPY --from=stagex/" packages/$(PACKAGE)/Containerfile \
-	| sed -e 's/COPY --from=stagex\/\([a-z0-9._-]\+\) .*/\1/g' \
+	grep -Ri \
+		-e "^COPY --from=stagex/"
+		-e "FROM stagex/.* AS package" \
+		packages/$(PACKAGE)/Containerfile \
+	| sed \
+		-e 's/COPY --from=stagex\/\([^ ]\+\) .*/\1/g' \
+		-e 's/FROM stagex\/\([^ ]\+\).*/\1/g'
 	| uniq \
 	| while IFS= read -r package; \
 		do \
@@ -61,8 +66,13 @@ endef
 
 define build-context-args
 	$(eval PACKAGE := $(1))
-	grep -Ri "^COPY --from=stagex/" packages/$(PACKAGE)/Containerfile \
-	| sed -e 's/COPY --from=stagex\/\([a-z0-9._-]\+\) .*/\1/g' \
+	grep -Ri \
+		-e "^COPY --from=stagex/"
+		-e "FROM stagex/.* AS package" \
+		packages/$(PACKAGE)/Containerfile \
+	| sed \
+		-e 's/COPY --from=stagex\/\([^ ]\+\) .*/\1/g' \
+		-e 's/FROM stagex\/\([^ ]\+\).*/\1/g'
 	| uniq \
 	| while IFS= read -r package; do \
 		if [ "$$package" = "$(PACKAGE)" ]; then

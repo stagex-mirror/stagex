@@ -1,5 +1,5 @@
 FROM scratch AS base
-ARG VERSION=1.81.0
+ARG VERSION=1.82.0
 ENV SRC_SITE=https://static.rust-lang.org/dist
 ENV MRUSTC_VERSION=16d744fd62e74a2d4356df864b5850bf782918da
 ENV MRUSTC_SRC_HASH=88d5d022875d279a75fa1e9c95d0de779cb3ad3bb587f2edeb85e6f59e99d528
@@ -33,6 +33,7 @@ ENV SRC_HASH_1_78_0=ff544823a5cb27f2738128577f1e7e00ee8f4c83f2a348781ae4fc355e91
 ENV SRC_HASH_1_79_0=172ecf3c7d1f9d9fb16cd2a628869782670416ded0129e524a86751f961448c0
 ENV SRC_HASH_1_80_0=6f606c193f230f6b2cae4576f7b24d50f5f9b25dff11dbf9b22f787d3521d672
 ENV SRC_HASH_1_81_0=872448febdff32e50c3c90a7e15f9bb2db131d13c588fe9071b0ed88837ccfa7
+ENV SRC_HASH_1_82_0=7c53f4509eda184e174efa6ba7d5eeb586585686ce8edefc781a2b11a7cf512a
 
 FROM base AS fetch
 COPY --from=stagex/busybox . /
@@ -65,6 +66,7 @@ ADD --checksum=sha256:${SRC_HASH_1_78_0} ${SRC_SITE}/rustc-1.78.0-src.tar.gz .
 ADD --checksum=sha256:${SRC_HASH_1_79_0} ${SRC_SITE}/rustc-1.79.0-src.tar.gz .
 ADD --checksum=sha256:${SRC_HASH_1_80_0} ${SRC_SITE}/rustc-1.80.0-src.tar.gz .
 ADD --checksum=sha256:${SRC_HASH_1_81_0} ${SRC_SITE}/rustc-1.81.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_82_0} ${SRC_SITE}/rustc-1.82.0-src.tar.gz .
 
 FROM fetch AS build-base
 COPY --from=stagex/binutils . /
@@ -113,6 +115,7 @@ RUN <<-EOF
 EOF
 
 FROM build-base AS build-script
+ENV CONFIGURE_FLAGS=
 COPY <<-'EOF' build.sh
 	set -eux
 	VERSION=${1}
@@ -163,7 +166,8 @@ COPY <<-'EOF' build.sh
 		--set="target.x86_64-unknown-linux-musl.cc=cc" \
 		--set="target.x86_64-unknown-linux-musl.cxx=c++" \
 		--set="target.x86_64-unknown-linux-musl.ar=ar" \
-		--set="target.x86_64-unknown-linux-musl.linker=cc"
+		--set="target.x86_64-unknown-linux-musl.linker=cc" \
+		$CONFIGURE_FLAGS
 	python3 x.py dist
 	python3 x.py install
 EOF
@@ -204,17 +208,23 @@ RUN sh build.sh 1.76.0 1.75.0
 RUN sh build.sh 1.77.0 1.76.0
 
 FROM build-script AS build
+# lld, ninja, ca-certificates required post-1.80
 COPY --from=stagex/llvm . /
+COPY --from=stagex/lld . /
+COPY --from=stagex/ninja . /
+COPY --from=stagex/ca-certificates . /
 COPY --from=stagex/llvm16 /usr/lib/libLLVM-16.so /usr/lib/
 COPY --from=build-llvm16 /rust-1.77.0 /rust-1.77.0
 RUN sh build.sh 1.78.0 1.77.0
 RUN sh build.sh 1.79.0 1.78.0
 RUN sh build.sh 1.80.0 1.79.0
 
+ENV CONFIGURE_FLAGS="--set=rust.lld=false --set=rust.use-lld=external"
+
+RUN sh build.sh 1.81.0 1.80.0
+
 ADD no-default-static.patch .
-COPY --from=stagex/ninja . /
-COPY --from=stagex/ca-certificates . /
-RUN sh build.sh 1.81.0 1.80.0 cargo,clippy,rustdoc,rustfmt,rust-demangler no-default-static
+RUN sh build.sh 1.82.0 1.81.0 cargo,clippy,rustdoc,rustfmt,rust-demangler no-default-static
 
 FROM build AS install
 RUN <<-EOF

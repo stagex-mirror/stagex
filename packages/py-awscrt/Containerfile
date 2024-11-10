@@ -1,6 +1,6 @@
 FROM scratch AS base
-ENV VERSION=0.20.3
-ENV SRC_HASH=c41e471c3494287606a2c6c26b8fe97acc74b8941aae9d9a121a470c19838758
+ENV VERSION=0.22.0
+ENV SRC_HASH=4ca2b0b49328f03f5a3dde2d565132df8ad74cba27352612ecd9fe2505e1d770
 ENV SRC_FILE=awscrt-${VERSION}.tar.gz
 ENV SRC_SITE=https://files.pythonhosted.org/packages/source/a/awscrt/${SRC_FILE}
 
