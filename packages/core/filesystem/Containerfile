@@ -1,5 +1,5 @@
 FROM scratch AS build
-COPY --from=stagex/stage3 . /
+COPY --from=stagex/bootstrap-stage3 . /
 WORKDIR /rootfs
 RUN <<-EOF
 	install -d -m0750 root

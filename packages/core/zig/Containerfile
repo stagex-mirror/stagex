@@ -8,19 +8,19 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch AS build
-COPY --from=stagex/binutils . /
-COPY --from=stagex/busybox . /
-COPY --from=stagex/clang . /
-COPY --from=stagex/cmake . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/libzstd . /
-COPY --from=stagex/lld . /
-COPY --from=stagex/llvm . /
-COPY --from=stagex/make . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/openssl . /
-COPY --from=stagex/zlib . /
-COPY --from=stagex/ninja . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-clang . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-lld . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-ninja . /
 
 RUN --network=none tar -xf ${SRC_FILE}
 WORKDIR /zig-${VERSION}
@@ -45,5 +45,5 @@ EOF
 FROM build AS install
 RUN --network=none DESTDIR=/rootfs cmake --install build
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /

@@ -8,7 +8,7 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch AS build
-COPY --from=stagex/stage3 . /
+COPY --from=stagex/bootstrap-stage3 . /
 RUN tar -xjf ${SRC_FILE}
 WORKDIR /busybox-${VERSION}
 ENV KCONFIG_NOTIMESTAMP=1
@@ -61,6 +61,6 @@ RUN --network=none <<-EOF
     /usr/bin/busybox --install -s usr/bin
 EOF
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /
 ENTRYPOINT ["/bin/sh"]

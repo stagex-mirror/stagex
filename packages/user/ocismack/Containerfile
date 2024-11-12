@@ -6,21 +6,21 @@ ENV SRC_SITE=https://codeberg.org/stagex/ocismack/archive/${SRC_FILE}
 
 FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-COPY --from=stagex/rust . /
-COPY --from=stagex/busybox . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/llvm . /
-COPY --from=stagex/libunwind . /
-COPY --from=stagex/openssl . /
-COPY --from=stagex/zlib . /
-COPY --from=stagex/ca-certificates . /
+COPY --from=stagex/core-rust . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-ca-certificates . /
 RUN tar xf ${SRC_FILE}
 WORKDIR /ocismack
 RUN cargo fetch
 
 FROM fetch AS build
-COPY --from=stagex/binutils . /
+COPY --from=stagex/core-binutils . /
 ENV RUSTFLAGS='-C codegen-units=1 -C target-feature=+crt-static'
 RUN --network=none \
     cargo build \
@@ -36,5 +36,5 @@ RUN <<-EOF
     cp target/x86_64-unknown-linux-musl/release/ocismack /rootfs/usr/bin/ocismack
 EOF
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /

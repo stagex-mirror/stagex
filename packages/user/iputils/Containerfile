@@ -8,17 +8,17 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch AS build
-COPY --from=stagex/busybox . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/libcap . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/meson . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/python . /
-COPY --from=stagex/zlib . /
-COPY --from=stagex/libxslt . /
-COPY --from=stagex/linux-headers . /
-COPY --from=stagex/ninja . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-meson . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-libxslt . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-ninja . /
+COPY --from=stagex/user-libcap . /
 RUN tar -xzf ${SRC_FILE}
 WORKDIR /iputils-${VERSION}
 RUN --network=none <<-EOF
@@ -64,10 +64,10 @@ RUN --network=none DESTDIR=/rootfs meson install --no-rebuild -C output
 
 FROM base AS test
 COPY --from=install /rootfs /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/meson . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-meson . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
 RUN <<-EOF
     set -eux
     ARPING_VERSION=$(arping -V)
@@ -96,5 +96,5 @@ RUN <<-EOF
     fi
 EOF
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs /

@@ -9,24 +9,24 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch AS build
-COPY --from=stagex/busybox . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/make . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/perl . /
-COPY --from=stagex/perl-module-build . /
-COPY --from=stagex/perl-pod-parser . /
-COPY --from=stagex/diffutils . /
-COPY --from=stagex/gettext . /
-COPY --from=stagex/libxml2 . /
-COPY --from=stagex/libxslt . /
-COPY --from=stagex/docbook-xml . /
-COPY --from=stagex/docbook-xsl . /
-COPY --from=stagex/zlib . /
-COPY --from=stagex/m4 . /
-COPY --from=stagex/autoconf . /
-COPY --from=stagex/pkgconf . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-perl-module-build . /
+COPY --from=stagex/core-perl-pod-parser . /
+COPY --from=stagex/core-diffutils . /
+COPY --from=stagex/core-gettext . /
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-libxslt . /
+COPY --from=stagex/core-docbook-xml . /
+COPY --from=stagex/core-docbook-xsl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-m4 . /
+COPY --from=stagex/core-autoconf . /
+COPY --from=stagex/core-pkgconf . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR /po4a-${VERSION}
 RUN --network=none <<-EOF
@@ -40,5 +40,5 @@ EOF
 FROM build AS install
 RUN --network=none ./Build install --destdir="/rootfs"
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /

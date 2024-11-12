@@ -4,29 +4,29 @@ ENV SRC_SITE=https://static.rust-lang.org/dist
 ENV SRC_HASH=7c53f4509eda184e174efa6ba7d5eeb586585686ce8edefc781a2b11a7cf512a
 
 FROM base AS fetch
-COPY --from=stagex/busybox . /
+COPY --from=stagex/core-busybox . /
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE}/rustc-${VERSION}-src.tar.gz .
 
 FROM fetch AS build
-COPY --from=stagex/binutils . /
-COPY --from=stagex/bash . /
-COPY --from=stagex/make . /
-COPY --from=stagex/cmake . /
-COPY --from=stagex/python . /
-COPY --from=stagex/py-setuptools . /
-COPY --from=stagex/zlib . /
-COPY --from=stagex/pkgconf . /
-COPY --from=stagex/openssl . /
-COPY --from=stagex/perl . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/rust . /
-COPY --from=stagex/curl . /
-COPY --from=stagex/ca-certificates . /
-COPY --from=stagex/llvm . /
-COPY --from=stagex/libunwind . /
-COPY --from=stagex/libunwind /usr/lib/. /opt/cross/x86_64-linux-gnu/lib/
-COPY --from=stagex/cross-x86_64-gnu-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-bash . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-py-setuptools . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-rust . /
+COPY --from=stagex/core-curl . /
+COPY --from=stagex/core-ca-certificates . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libunwind /usr/lib/. /opt/cross/x86_64-linux-gnu/lib/
+COPY --from=stagex/core-cross-x86_64-gnu-gcc . /
 
 RUN tar -xzf rustc-${VERSION}-src.tar.gz
 WORKDIR rustc-${VERSION}-src
@@ -77,5 +77,5 @@ RUN <<-EOF
         /rootfs/usr/lib/rustlib/
 EOF
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /

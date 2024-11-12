@@ -1,12 +1,8 @@
-export PLATFORM := linux/amd64
-export BUILDER := $(shell which docker)
-export REGISTRY_LOCAL := stagex-local
-export REGISTRY_REMOTE := stagex
-export CHECK ?= 0
-export NOCACHE ?= 0
-export MIRRORS := \
-	git.distrust.co \
-	hub.docker.com
+export PLATFORM BUILDER REGISTRY CHECK NOCACHE
+export TZ=UTC
+export LANG=C.UTF-8
+export LC_ALL=C
+
 ifeq ($(NOCACHE), 1)
 NOCACHE_FLAG=--no-cache
 else
@@ -26,15 +22,36 @@ DEFAULT_GOAL := default
 .PHONY: default
 default: compat all
 
-.PHONY: all check compat preseed verify sign
+.PHONY: all check compat digests preseed verify sign help
 
 include src/macros.mk
 
 out:
 	mkdir out
 
-all_packages := $(shell $(call folder-list,packages))
+## TODO: Figure out how to foreach these to be more DRY
 
-$(all_packages): %: out/%/index.json
+bootstrap_targets := $(shell $(call target-list,bootstrap))
+bootstrap: $(bootstrap_targets)
+$(bootstrap_targets): %: out/%/index.json
+$(foreach target,$(bootstrap_targets),$(eval $(call target-gen,$(target))))
 
-$(foreach package,$(all_packages),$(eval $(call gen-target,$(package))))
+core_targets := $(shell $(call target-list,core))
+core: $(toolchain_targets)
+$(core_targets): %: out/%/index.json
+$(foreach target,$(core_targets),$(eval $(call target-gen,$(target))))
+
+pallet_targets := $(shell $(call target-list,pallet))
+pallet: $(pallet_targets)
+$(pallet_targets): %: out/%/index.json
+$(foreach target,$(pallet_targets),$(eval $(call target-gen,$(target))))
+
+user_targets := $(shell $(call target-list,user))
+user: $(user_targets)
+$(user_targets): %: out/%/index.json
+$(foreach target,$(user_targets),$(eval $(call target-gen,$(target))))
+
+digests/%.txt: %
+	$(call gen-digests,$(word 1,$(subst ., ,$(word 2,$(subst /, ,$@))))) > $@
+
+digests_all: digests/pallet.txt digests/bootstrap.txt digests/core.txt digests/user.txt

@@ -8,15 +8,15 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch AS build
-COPY --from=stagex/busybox . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/make . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/pkgconf . /
-COPY --from=stagex/m4 . /
-COPY --from=stagex/libmnl . /
-COPY --from=stagex/linux-headers . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-m4 . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/user-libmnl . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR /libnftnl-${VERSION}
 RUN --network=none <<-EOF
@@ -38,5 +38,5 @@ RUN <<-EOF
     make install DESTDIR=/rootfs
 EOF
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /

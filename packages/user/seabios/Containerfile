@@ -8,12 +8,12 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch AS build
-COPY --from=stagex/busybox . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/make . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/python . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-python . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR /seabios-rel-${VERSION}
 ADD config.* .
@@ -57,5 +57,5 @@ RUN <<-EOF
     install -vDm 644 output/*.bin -t /rootfs/usr/share/qemu/
 EOF
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /

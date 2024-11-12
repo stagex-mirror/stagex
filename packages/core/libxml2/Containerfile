@@ -8,19 +8,19 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch AS build
-COPY --from=stagex/busybox . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/make . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/python . /
-COPY --from=stagex/perl . /
-COPY --from=stagex/autoconf . /
-COPY --from=stagex/automake . /
-COPY --from=stagex/pkgconf . /
-COPY --from=stagex/libtool . /
-COPY --from=stagex/zlib . /
-COPY --from=stagex/m4 . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-autoconf . /
+COPY --from=stagex/core-automake . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-libtool . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-m4 . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR /libxml2-v${VERSION}
 RUN --network=none <<-EOF
@@ -47,5 +47,5 @@ RUN --network=none <<-EOF
     find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /

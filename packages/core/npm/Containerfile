@@ -8,8 +8,8 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch AS build
-COPY --from=stagex/musl . /
-COPY --from=stagex/busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-busybox . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR /package
 ADD *.patch .
@@ -62,6 +62,6 @@ RUN --network=none <<-EOF
 	usr/share/bash-completion/completions/npm
 EOF
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /
 

@@ -8,13 +8,13 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch AS build
-COPY --from=stagex/busybox . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/python . /
-COPY --from=stagex/py-flit . /
-COPY --from=stagex/py-gpep517 . /
-COPY --from=stagex/py-installer . /
-COPY --from=stagex/zlib . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-py-flit . /
+COPY --from=stagex/core-py-gpep517 . /
+COPY --from=stagex/core-py-installer . /
+COPY --from=stagex/core-zlib . /
 RUN tar -xzf ${SRC_FILE}
 WORKDIR /sphinx-${VERSION}
 RUN gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
@@ -26,5 +26,5 @@ RUN --network=none <<-EOF
     find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /

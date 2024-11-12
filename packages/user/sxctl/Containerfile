@@ -8,8 +8,8 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch AS build
-COPY --from=stagex/busybox . /
-COPY --from=stagex/go . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-go . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR /sxctl/cmd/sxctl
 RUN go build -o sxctl
@@ -18,6 +18,6 @@ FROM build AS install
 WORKDIR //rootfs
 RUN cp /sxctl/cmd/sxctl/sxctl .
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /
 ENTRYPOINT ["/sxctl"]

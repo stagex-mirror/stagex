@@ -49,18 +49,18 @@ ADD --checksum=sha256:${MPC_HASH} ${MPC_SITE} .
 ADD --checksum=sha256:${ISL_HASH} ${ISL_SITE} .
 
 FROM fetch AS build
-COPY --from=stagex/busybox . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/make . /
-COPY --from=stagex/gawk . /
-COPY --from=stagex/linux-headers /usr/include/. ${OUTPUT}/${TARGET}/include/
-COPY --from=stagex/bison . /
-COPY --from=stagex/m4 . /
-COPY --from=stagex/perl . /
-COPY --from=stagex/python . /
-COPY --from=stagex/grep . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-gawk . /
+COPY --from=stagex/core-linux-headers /usr/include/. ${OUTPUT}/${TARGET}/include/
+COPY --from=stagex/core-bison . /
+COPY --from=stagex/core-m4 . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-grep . /
 
 RUN --network=none <<-EOF
 	set -eux
@@ -73,7 +73,7 @@ RUN --network=none <<-EOF
 EOF
 
 # HACK: libgcc.a embeds .o files with timestamps ignoring SOURCE_DATE_EPOCH
-COPY --from=stagex/libfaketime . /
+COPY --from=stagex/core-libfaketime . /
 ENV LD_PRELOAD=/usr/local/lib/faketime/libfaketime.so.1
 ENV FAKETIME="1970-01-01 00:00:00 GMT"
 
@@ -169,5 +169,5 @@ RUN --network=none <<-EOF
     done
 EOF
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /

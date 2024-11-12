@@ -8,13 +8,13 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch AS build
-COPY --from=stagex/binutils . /
-COPY --from=stagex/busybox . /
-COPY --from=stagex/ca-certificates . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/make . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/go . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-ca-certificates . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-go . /
 RUN tar -xvf v${VERSION}.tar.gz
 WORKDIR /ssh-tpm-agent-${VERSION}
 ENV GOPROXY=https://proxy.golang.org,direct
@@ -31,5 +31,5 @@ RUN --network=none <<-EOF
     cp bin/ssh-tpm-agent /rootfs/usr/bin/
 EOF
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/./ /

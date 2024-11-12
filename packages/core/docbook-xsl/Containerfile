@@ -8,11 +8,11 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch AS build
-COPY --from=stagex/busybox . /
-COPY --from=stagex/docbook-xml . /
-COPY --from=stagex/zlib . /
-COPY --from=stagex/libxml2 . /
-COPY --from=stagex/musl . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-docbook-xml . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-musl . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR /docbook-xsl-${VERSION}
 RUN --network=none <<-EOF
@@ -54,5 +54,5 @@ EOF
 FROM build AS install
 RUN --network=none mv out /rootfs && ls -Rlah /rootfs
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /

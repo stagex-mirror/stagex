@@ -13,17 +13,17 @@ ADD --checksum=sha256:${SRC_HASH_MOBY} ${SRC_SITE_MOBY} moby-${SRC_FILE}
 ADD --checksum=sha256:${SRC_HASH_CLI} ${SRC_SITE_CLI} cli-${SRC_FILE}
 
 FROM fetch AS build
-COPY --from=stagex/musl . /
-COPY --from=stagex/bash . /
-COPY --from=stagex/busybox . /
-COPY --from=stagex/go . /
-COPY --from=stagex/make . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/linux-headers . /
-COPY --from=stagex/pkgconf . /
-COPY --from=stagex/libseccomp . /
-COPY --from=stagex/ca-certificates . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-bash . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-go . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-ca-certificates . /
+COPY --from=stagex/user-libseccomp . /
 RUN tar -xf moby-${SRC_FILE}
 RUN tar -xf cli-${SRC_FILE}
 ENV GO11MODULE=off
@@ -84,5 +84,5 @@ RUN <<-EOF
 	ln -sf /sbin/tini-static /rootfs/usr/bin/docker-init
 EOF
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /

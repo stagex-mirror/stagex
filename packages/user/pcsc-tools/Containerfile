@@ -8,16 +8,16 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
 
 FROM fetch AS build
-COPY --from=stagex/busybox . /
-COPY --from=stagex/m4 . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/make . /
-COPY --from=stagex/perl . /
-COPY --from=stagex/flex . /
-COPY --from=stagex/pkgconf . /
-COPY --from=stagex/pcsc-lite . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-m4 . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-flex . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/user-pcsc-lite . /
 RUN tar -xvjf $SRC_FILE
 WORKDIR /pcsc-tools-${VERSION}
 RUN --network=none <<-EOF
@@ -33,5 +33,5 @@ EOF
 FROM build AS install
 RUN --network=none make DESTDIR=/rootfs install
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /

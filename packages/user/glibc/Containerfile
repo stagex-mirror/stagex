@@ -12,20 +12,20 @@ ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch AS build
 
-COPY --from=stagex/busybox . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/bison . /
-COPY --from=stagex/gawk . /
-COPY --from=stagex/grep . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/linux-headers . /
-COPY --from=stagex/m4 . /
-COPY --from=stagex/make . /
-COPY --from=stagex/python . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-bison . /
+COPY --from=stagex/core-gawk . /
+COPY --from=stagex/core-grep . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-m4 . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-python . /
 RUN tar -xzf ${SRC_FILE}
 WORKDIR glibc-${VERSION}
-COPY --from=stagex/linux-headers /usr/include /usr/include/${ARCH}-linux-gnu
+COPY --from=stagex/core-linux-headers /usr/include /usr/include/${ARCH}-linux-gnu
 ENV _TRIPLE=${ARCH}-linux-gnu
 ENV _LIBDIR=/usr/lib/${_TRIPLE}
 ENV _INCDIR=/usr/include/${_TRIPLE}
@@ -68,5 +68,5 @@ RUN --network=none <<-EOF
 EOF
 
 FROM scratch AS package
-COPY --from=stagex/filesystem . /
+COPY --from=stagex/core-filesystem . /
 COPY --from=install /rootfs/. /

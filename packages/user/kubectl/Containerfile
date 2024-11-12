@@ -13,9 +13,9 @@ ENV GOHOSTOS=linux
 ENV GOHOSTARCH=amd64
 
 FROM base AS fetch
-COPY --from=stagex/busybox . /
-COPY --from=stagex/go . /
-COPY --from=stagex/ca-certificates . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-go . /
+COPY --from=stagex/core-ca-certificates . /
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 RUN tar -xvf ${SRC_FILE}
 WORKDIR /kubernetes-${VERSION}
@@ -31,5 +31,5 @@ RUN <<-EOF
     cp kubectl /rootfs/usr/bin/
 EOF
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/./ /

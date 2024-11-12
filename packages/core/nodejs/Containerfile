@@ -8,22 +8,22 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch AS build
-COPY --from=stagex/busybox . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/make . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/openssl . /
-COPY --from=stagex/python . /
-COPY --from=stagex/bzip2 . /
-COPY --from=stagex/ninja . /
-COPY --from=stagex/zlib . /
-COPY --from=stagex/icu . /
-COPY --from=stagex/linux-headers . /
-COPY --from=stagex/libnghttp2 . /
-COPY --from=stagex/brotli . /
-COPY --from=stagex/c-ares . /
-COPY --from=stagex/pkgconf . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-bzip2 . /
+COPY --from=stagex/core-ninja . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-icu . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-libnghttp2 . /
+COPY --from=stagex/core-brotli . /
+COPY --from=stagex/core-c-ares . /
+COPY --from=stagex/core-pkgconf . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR /node-v${VERSION}
 ENV SOURCE_DATE_EPOCH=1
@@ -61,5 +61,5 @@ EOF
 FROM build AS install
 RUN --network=none make DESTDIR=/rootfs install
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /

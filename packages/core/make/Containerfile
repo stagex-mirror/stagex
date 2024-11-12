@@ -8,7 +8,7 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch AS build
-COPY --from=stagex/stage3 . /
+COPY --from=stagex/bootstrap-stage3 . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR /make-${VERSION}
 RUN --network=none <<-EOF
@@ -24,5 +24,5 @@ EOF
 FROM build AS install
 RUN --network=none make DESTDIR="/rootfs" install
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /

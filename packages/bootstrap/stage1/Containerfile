@@ -277,7 +277,7 @@ RUN echo "" > lrvick-live-bootstrap-fc6eeb6/steps/lwext4-1.0.0-lb1/files/fiwix-f
 
 FROM base AS build
 USER 0:0
-COPY --from=stagex/stage0 . /
+COPY --from=stagex/bootstrap-stage0 . /
 COPY --from=fetch distfiles external/distfiles
 COPY --from=extract /lrvick-live-bootstrap-fc6eeb6/seed/* .
 COPY --from=extract /lrvick-live-bootstrap-fc6eeb6/steps steps

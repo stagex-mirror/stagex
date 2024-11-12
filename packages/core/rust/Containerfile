@@ -36,7 +36,7 @@ ENV SRC_HASH_1_81_0=872448febdff32e50c3c90a7e15f9bb2db131d13c588fe9071b0ed88837c
 ENV SRC_HASH_1_82_0=7c53f4509eda184e174efa6ba7d5eeb586585686ce8edefc781a2b11a7cf512a
 
 FROM base AS fetch
-COPY --from=stagex/busybox . /
+COPY --from=stagex/core-busybox . /
 ADD --checksum=sha256:${MRUSTC_SRC_HASH} ${MRUSTC_SRC_SITE} ${MRUSTC_SRC_FILE}
 ADD --checksum=sha256:${SRC_HASH_1_54_0} ${SRC_SITE}/rustc-1.54.0-src.tar.gz .
 ADD --checksum=sha256:${SRC_HASH_1_55_0} ${SRC_SITE}/rustc-1.55.0-src.tar.gz .
@@ -69,22 +69,22 @@ ADD --checksum=sha256:${SRC_HASH_1_81_0} ${SRC_SITE}/rustc-1.81.0-src.tar.gz .
 ADD --checksum=sha256:${SRC_HASH_1_82_0} ${SRC_SITE}/rustc-1.82.0-src.tar.gz .
 
 FROM fetch AS build-base
-COPY --from=stagex/binutils . /
-COPY --from=stagex/bash . /
-COPY --from=stagex/make . /
-COPY --from=stagex/cmake . /
-COPY --from=stagex/python . /
-COPY --from=stagex/py-setuptools . /
-COPY --from=stagex/zlib . /
-COPY --from=stagex/pkgconf . /
-COPY --from=stagex/openssl . /
-COPY --from=stagex/perl . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/libunwind . /
-COPY --from=stagex/musl . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-bash . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-py-setuptools . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-musl . /
 
 FROM build-base AS build-mrustc
-COPY --from=stagex/llvm13 . /
+COPY --from=stagex/core-llvm13 . /
 ADD gcc_version.patch .
 RUN tar -xzf ${MRUSTC_SRC_FILE}
 RUN mv lrvick-mrustc-* mrustc
@@ -173,7 +173,7 @@ COPY <<-'EOF' build.sh
 EOF
 
 FROM build-script AS build-llvm13
-COPY --from=stagex/llvm13 . /
+COPY --from=stagex/core-llvm13 . /
 COPY --from=build-mrustc /rust-1.54.0 /rust-1.54.0
 RUN sh build.sh 1.55.0 1.54.0
 RUN sh build.sh 1.56.0 1.55.0
@@ -191,8 +191,8 @@ RUN sh build.sh 1.67.0 1.66.0
 RUN sh build.sh 1.68.0 1.67.0
 
 FROM build-script AS build-llvm16
-COPY --from=stagex/llvm16 . /
-COPY --from=stagex/llvm13 /usr/lib/libLLVM-13.so /usr/lib/
+COPY --from=stagex/core-llvm16 . /
+COPY --from=stagex/core-llvm13 /usr/lib/libLLVM-13.so /usr/lib/
 COPY --from=build-llvm13 /rust-1.68.0 /rust-1.68.0
 RUN sh build.sh 1.69.0 1.68.0
 RUN sh build.sh 1.70.0 1.69.0
@@ -209,11 +209,11 @@ RUN sh build.sh 1.77.0 1.76.0
 
 FROM build-script AS build
 # lld, ninja, ca-certificates required post-1.80
-COPY --from=stagex/llvm . /
-COPY --from=stagex/lld . /
-COPY --from=stagex/ninja . /
-COPY --from=stagex/ca-certificates . /
-COPY --from=stagex/llvm16 /usr/lib/libLLVM-16.so /usr/lib/
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-lld . /
+COPY --from=stagex/core-ninja . /
+COPY --from=stagex/core-ca-certificates . /
+COPY --from=stagex/core-llvm16 /usr/lib/libLLVM-16.so /usr/lib/
 COPY --from=build-llvm16 /rust-1.77.0 /rust-1.77.0
 RUN sh build.sh 1.78.0 1.77.0
 RUN sh build.sh 1.79.0 1.78.0
@@ -239,5 +239,5 @@ RUN <<-EOF
 	rm -f x86_64-unknown-linux-musl/lib/self-contained/libunwind.a
 EOF
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /

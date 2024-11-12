@@ -8,15 +8,15 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch AS build
-COPY --from=stagex/musl . /
-COPY --from=stagex/bash . /
-COPY --from=stagex/busybox . /
-COPY --from=stagex/go . /
-COPY --from=stagex/make . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/pkgconf . /
-COPY --from=stagex/ca-certificates . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-bash . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-go . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-ca-certificates . /
 RUN tar -xf ${SRC_FILE}
 ENV GOPROXY=https://proxy.golang.org,direct
 ENV GOSUMDB=sum.golang.org
@@ -40,5 +40,5 @@ RUN <<-EOF
     install -Dm755 ./out/osv-scanner -t /rootfs/usr/bin/
 EOF
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /

@@ -8,12 +8,12 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch AS build
-COPY --from=stagex/busybox . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/linux-headers . /
-COPY --from=stagex/make . /
-COPY --from=stagex/musl . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR /sdtool-${VERSION}
 RUN --network=none make all
@@ -21,5 +21,5 @@ RUN --network=none make all
 FROM build AS install
 RUN --network=none install -D -m644 sdtool /rootfs/usr/bin/sdtool
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /

@@ -9,12 +9,12 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
 
 FROM fetch AS build
-COPY --from=stagex/musl . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/busybox . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/make . /
-COPY --from=stagex/attr . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-attr . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR /acl-${VERSION}
 RUN --network=none <<-EOF
@@ -32,5 +32,5 @@ FROM build AS install
 RUN make DESTDIR=/rootfs install
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /

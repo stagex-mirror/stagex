@@ -8,14 +8,14 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch AS build
-COPY --from=stagex/binutils . /
-COPY --from=stagex/busybox . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/openssl . /
-COPY --from=stagex/cmake . /
-COPY --from=stagex/ninja . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/make . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/core-ninja . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-make . /
 RUN --network=none tar -xf ${SRC_FILE}
 WORKDIR /tini-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
@@ -33,5 +33,5 @@ RUN --network=none <<-EOF
     install -Dm755 build/tini-static /rootfs/usr/sbin/tini-static
 EOF
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /

@@ -15,13 +15,13 @@ ADD --checksum=sha256:${SRC_1_HASH} ${SRC_1_SITE} /
 ADD --checksum=sha256:${SRC_2_HASH} ${SRC_2_SITE} /
 
 FROM fetch AS build
-COPY --from=stagex/busybox . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/make . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/openssl . /
-COPY --from=stagex/perl . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-perl . /
 RUN tar -xf ca-certificates-${SRC_2_VERSION}.tar.gz
 WORKDIR /ca-certificates-${SRC_2_VERSION}
 ADD *.patch .
@@ -37,5 +37,5 @@ FROM build AS install
 RUN --network=none make install DESTDIR=/rootfs
 RUN --network=none mv cert.pem /rootfs/etc/ssl/certs/ca-certificates.crt
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /

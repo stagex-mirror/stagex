@@ -8,16 +8,16 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch AS build
-COPY --from=stagex/busybox . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/curl . /
-COPY --from=stagex/openssl . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/make . /
-COPY --from=stagex/zlib . /
-COPY --from=stagex/perl . /
-COPY --from=stagex/gettext . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-curl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-gettext . /
 RUN tar -xvf $SRC_FILE
 WORKDIR /git-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
@@ -43,9 +43,9 @@ RUN make DESTDIR=/rootfs install
 
 FROM base AS test
 COPY --from=install /rootfs/. /
-COPY --from=stagex/zlib . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/busybox . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-busybox . /
 RUN /bin/sh <<-EOF
 	set -eux
 	EXPECTED_GIT_VERSION="git version ${VERSION}"
@@ -56,5 +56,5 @@ RUN /bin/sh <<-EOF
 	fi
 EOF
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /

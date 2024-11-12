@@ -61,7 +61,7 @@ ADD --checksum=sha256:${MPC_HASH} ${MPC_SITE} .
 ADD --checksum=sha256:${ISL_HASH} ${ISL_SITE} .
 
 FROM fetch AS build
-COPY --from=stagex/stage1 . /
+COPY --from=stagex/bootstrap-stage1 . /
 RUN --network=none <<-EOF
     set -eux
     tar -xf ${LINUX_FILE}
@@ -185,7 +185,7 @@ EOF
 
 FROM build AS install
 WORKDIR /${HOME}
-COPY --from=stagex/stage1 . /rootfs/
+COPY --from=stagex/bootstrap-stage1 . /rootfs/
 RUN <<-EOF
     set -eux
     rm /rootfs/lib

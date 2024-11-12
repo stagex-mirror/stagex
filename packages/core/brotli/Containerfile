@@ -9,14 +9,14 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
 
 FROM fetch AS build
-COPY --from=stagex/musl . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/busybox . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/make . /
-COPY --from=stagex/samurai . /
-COPY --from=stagex/cmake . /
-COPY --from=stagex/openssl . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-samurai . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/core-openssl . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR /brotli-${VERSION}
 RUN --network=none <<-EOF
@@ -44,5 +44,5 @@ RUN <<-EOF
     mv /rootfs/usr/lib64 /rootfs/usr/lib
 EOF
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /

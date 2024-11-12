@@ -5,11 +5,11 @@ ENV SRC_FILE=${VERSION}.tar.gz
 ENV SRC_SITE=https://github.com/osresearch/flashtools/archive/${SRC_FILE}
 
 FROM base AS fetch
-COPY --from=stagex/busybox . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/make . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/gcc . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-gcc . /
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 RUN tar -xvf ${SRC_FILE}
 WORKDIR /flashtools-${VERSION}
@@ -27,5 +27,5 @@ RUN <<-EOF
     install -D -m 0755 uefi /rootfs/usr/bin/
 EOF
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/./ /

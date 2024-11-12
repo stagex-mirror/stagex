@@ -8,13 +8,13 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
 
 FROM fetch AS build
-COPY --from=stagex/busybox . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/make . /
-COPY --from=stagex/npth . /
-COPY --from=stagex/libgpg-error . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/user-npth . /
+COPY --from=stagex/user-libgpg-error . /
 RUN tar -xvf $SRC_FILE
 WORKDIR /libksba-${VERSION}
 RUN --network=none <<-EOF
@@ -34,9 +34,9 @@ RUN --network=none make DESTDIR=/rootfs install
 
 FROM base AS test
 COPY --from=install /rootfs/. /
-COPY --from=stagex/zlib . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/busybox . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-busybox . /
 RUN /bin/sh <<-EOF
 	set -eux
 	LIBKSBA_FILES_FOUND=\$(ls /usr/lib/ | grep libksba || true)
@@ -46,5 +46,5 @@ RUN /bin/sh <<-EOF
 	fi
 EOF
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /

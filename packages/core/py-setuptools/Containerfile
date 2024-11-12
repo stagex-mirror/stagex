@@ -8,10 +8,10 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch AS build
-COPY --from=stagex/busybox . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/python . /
-COPY --from=stagex/zlib . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-zlib . /
 RUN tar -xzf ${SRC_FILE}
 WORKDIR /setuptools-${VERSION}
 RUN python setup.py build
@@ -19,5 +19,5 @@ RUN python setup.py build
 FROM build AS install
 RUN --network=none python setup.py install --root=/rootfs
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /

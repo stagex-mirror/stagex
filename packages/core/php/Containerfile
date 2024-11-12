@@ -10,43 +10,43 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch AS build
-COPY --from=stagex/libunwind . /
-COPY --from=stagex/acl . /
-COPY --from=stagex/automake . /
-COPY --from=stagex/bash . /
-COPY --from=stagex/bc . /
-COPY --from=stagex/busybox . /
-COPY --from=stagex/libzstd . /
-COPY --from=stagex/lld . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/llvm . /
-COPY --from=stagex/curl . /
-COPY --from=stagex/clang . /
-COPY --from=stagex/bison . /
-COPY --from=stagex/gdbm . /
-COPY --from=stagex/lmdb . /
-COPY --from=stagex/pkgconf . /
-COPY --from=stagex/autoconf . /
-COPY --from=stagex/make . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/gmp . /
-COPY --from=stagex/icu . /
-COPY --from=stagex/gettext . /
-COPY --from=stagex/openssl . /
-COPY --from=stagex/expat . /
-COPY --from=stagex/libxml2 . /
-COPY --from=stagex/re2c . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/perl . /
-COPY --from=stagex/m4 . /
-COPY --from=stagex/zlib . /
-COPY --from=stagex/lzip . /
-COPY --from=stagex/pcre2 . /
-COPY --from=stagex/bzip2 . /
-COPY --from=stagex/python . /
-COPY --from=stagex/libedit . /
-COPY --from=stagex/linux-headers . /
-COPY --from=stagex/sqlite3 . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-acl . /
+COPY --from=stagex/core-automake . /
+COPY --from=stagex/core-bash . /
+COPY --from=stagex/core-bc . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-lld . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-curl . /
+COPY --from=stagex/core-clang . /
+COPY --from=stagex/core-bison . /
+COPY --from=stagex/core-gdbm . /
+COPY --from=stagex/core-lmdb . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-autoconf . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-gmp . /
+COPY --from=stagex/core-icu . /
+COPY --from=stagex/core-gettext . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-expat . /
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-re2c . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-m4 . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-lzip . /
+COPY --from=stagex/core-pcre2 . /
+COPY --from=stagex/core-bzip2 . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-libedit . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-sqlite3 . /
 RUN tar -xf php-${VERSION}.tar.gz
 WORKDIR /php-src-php-${VERSION}
 COPY *.patch .
@@ -174,8 +174,8 @@ RUN /bin/sh -c 'set -eux; \
 		exit 1; \
 	fi'
 
-FROM stagex/filesystem AS package
-COPY --from=stagex/busybox . /
+FROM stagex/core-filesystem AS package
+COPY --from=stagex/core-busybox . /
 USER root
 RUN rm -rf /var/run
 RUN mkdir -p /var && mkdir -p /var/run && chown -R root:root /var/run && chmod -R 755 /var/run

@@ -8,16 +8,16 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
 
 FROM fetch AS build
-COPY --from=stagex/busybox . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/make . /
-COPY --from=stagex/npth . /
-COPY --from=stagex/libksba . /
-COPY --from=stagex/libgpg-error . /
-COPY --from=stagex/libassuan . /
-COPY --from=stagex/libgcrypt . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/user-npth . /
+COPY --from=stagex/user-libksba . /
+COPY --from=stagex/user-libgpg-error . /
+COPY --from=stagex/user-libassuan . /
+COPY --from=stagex/user-libgcrypt . /
 RUN tar -xf $SRC_FILE
 WORKDIR /gnupg-${VERSION}
 RUN --network=none <<-EOF
@@ -37,14 +37,14 @@ RUN make DESTDIR=/rootfs install
 
 FROM base AS test
 COPY --from=install /rootfs/. /
-COPY --from=stagex/zlib . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/busybox . /
-COPY --from=stagex/npth . /
-COPY --from=stagex/libksba . /
-COPY --from=stagex/libgpg-error . /
-COPY --from=stagex/libassuan . /
-COPY --from=stagex/libgcrypt . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/user-npth . /
+COPY --from=stagex/user-libksba . /
+COPY --from=stagex/user-libgpg-error . /
+COPY --from=stagex/user-libassuan . /
+COPY --from=stagex/user-libgcrypt . /
 
 RUN /bin/sh <<-EOF
 	set -eux
@@ -56,5 +56,5 @@ RUN /bin/sh <<-EOF
 	fi
 EOF
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /

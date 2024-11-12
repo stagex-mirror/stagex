@@ -9,11 +9,11 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch AS build
-COPY --from=stagex/busybox . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/make . /
-COPY --from=stagex/gcc . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-gcc . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR /jq-${VERSION}
 RUN --network=none <<-EOF
@@ -35,5 +35,5 @@ RUN --network=none <<-EOF
     make DESTDIR="/rootfs" install
 EOF
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /

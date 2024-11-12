@@ -9,20 +9,20 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
 
 FROM fetch AS build
-COPY --from=stagex/musl . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/busybox . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/make . /
-COPY --from=stagex/expat . /
-COPY --from=stagex/gdbm . /
-COPY --from=stagex/openldap . /
-COPY --from=stagex/sqlite3 . /
-COPY --from=stagex/openssl . /
-COPY --from=stagex/postgresql . /
-COPY --from=stagex/apr . /
-COPY --from=stagex/libtool . /
-COPY --from=stagex/util-linux . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-expat . /
+COPY --from=stagex/core-gdbm . /
+COPY --from=stagex/core-sqlite3 . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-libtool . /
+COPY --from=stagex/user-openldap . /
+COPY --from=stagex/user-postgresql . /
+COPY --from=stagex/user-apr . /
+COPY --from=stagex/user-util-linux . /
 
 RUN tar -xf ${SRC_FILE}
 WORKDIR /apr-util-${VERSION}
@@ -49,5 +49,5 @@ FROM build AS install
 RUN make DESTDIR=/rootfs install
 RUN find /rootfs -exec touch -hcd "@0" "{}" +
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /

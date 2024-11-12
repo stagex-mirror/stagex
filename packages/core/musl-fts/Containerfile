@@ -8,17 +8,17 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch AS build
-COPY --from=stagex/busybox . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/make . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/perl . /
-COPY --from=stagex/autoconf . /
-COPY --from=stagex/automake . /
-COPY --from=stagex/libtool . /
-COPY --from=stagex/pkgconf . /
-COPY --from=stagex/m4 . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-autoconf . /
+COPY --from=stagex/core-automake . /
+COPY --from=stagex/core-libtool . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-m4 . /
 RUN tar -xzf ${SRC_FILE}
 WORKDIR /musl-fts-${VERSION}
 RUN --network=none <<-EOF
@@ -41,5 +41,5 @@ RUN <<-EOF
 	install -Dm644 musl-fts.pc -t /rootfs/usr/lib/pkgconfig/
 EOF
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /

@@ -8,9 +8,9 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch AS build
-COPY --from=stagex/busybox . /
-COPY --from=stagex/go . /
-COPY --from=stagex/ca-certificates . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-go . /
+COPY --from=stagex/core-ca-certificates . /
 RUN tar -xvf ${SRC_FILE}
 WORKDIR /go-md2man-${VERSION}
 ENV PWD=/home/user/go-md2man-${VERSION}
@@ -23,7 +23,7 @@ ENV CGO_ENABLED=0
 ENV GOHOSTOS=linux
 ENV GOHOSTARCH=amd64
 RUN mkdir -p ${GOPATH}
-RUN go build -o bin/go-md2man 
+RUN go build -o bin/go-md2man
 
 FROM build AS install
 RUN <<-EOF
@@ -31,5 +31,5 @@ RUN <<-EOF
     cp bin/go-md2man /rootfs/usr/bin/
 EOF
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/./ /

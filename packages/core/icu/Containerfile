@@ -15,12 +15,12 @@ ADD --checksum=sha256:${SRC_DATA_BIN_B_HASH} ${SRC_SITE}/icu4c-74_2-data-bin-b.z
 ADD --checksum=sha256:${SRC_DATA_BIN_L_HASH} ${SRC_SITE}/icu4c-74_2-data-bin-l.zip .
 
 FROM fetch AS build
-COPY --from=stagex/bash . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/busybox . /
-COPY --from=stagex/make . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/gcc . /
+COPY --from=stagex/core-bash . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
 RUN tar -xzf ${SRC_FILE}
 WORKDIR /icu/source
 RUN --network=none <<-EOF
@@ -44,5 +44,5 @@ RUN --network=none <<-EOF
     install -D -m644 /icu4c-74_2-data-bin-l.zip /rootfs/usr/share/icu/74.2/
 EOF
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs /

@@ -8,16 +8,16 @@ FROM base AS fetch
 ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
 
 FROM fetch AS build
-COPY --from=stagex/busybox . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/cmake . /
-COPY --from=stagex/ninja . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/python . /
-COPY --from=stagex/py-setuptools . /
-COPY --from=stagex/zlib . /
-COPY --from=stagex/openssl . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/core-ninja . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-py-setuptools . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-openssl . /
 RUN tar -xf ${SRC_FILE}
 WORKDIR /llvm-project-${VERSION}.src
 ADD *.patch .
@@ -71,5 +71,5 @@ RUN --network=none <<-EOF
 	ln -s lit /rootfs/usr/bin/llvm-lit
 EOF
 
-FROM stagex/filesystem AS package
+FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/. /
