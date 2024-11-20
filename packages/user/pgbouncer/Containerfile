@@ -1,0 +1,36 @@
+FROM scratch AS base
+ENV VERSION=1.23.1
+ENV SRC_HASH=1963b497231d9a560a62d266e4a2eae6881ab401853d93e5d292c3740eec5084
+ENV SRC_FILE=pgbouncer-${VERSION}.tar.gz
+ENV SRC_SITE=https://www.pgbouncer.org/downloads/files/1.23.1/pgbouncer-${VERSION}.tar.gz
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/user-libevent . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-openssl . /
+
+RUN tar -xf ${SRC_FILE}
+WORKDIR /pgbouncer-${VERSION}
+RUN --network=none <<-EOF
+    set -eux
+    ./configure \
+        --build=x86_64-linux-musl \
+        --host=x86_64-linux-musl \
+        --prefix=/usr \
+        --mandir=/usr/share/man
+    make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN --network=none make install DESTDIR=/rootfs
+
+FROM stagex/filesystem AS package
+COPY --from=install /rootfs/. /
