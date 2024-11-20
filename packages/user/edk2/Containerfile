@@ -1,0 +1,112 @@
+FROM scratch AS base
+ARG ARCH=x86_64
+ENV VERSION=202408
+ENV VERSION_OPENSSL=3.0.9
+ENV VERSION_SOFTFLOAT=3e
+ENV VERSION_MIPISYST=370b5944c046bab043dd8b133727b2135af7747a
+ENV VERSION_MBEDTLS=8c89224991adff88d53cd380f42a2baa36f91454
+ENV VERSION_LIBSPDM=50924a4c8145fc721e17208f55814d2b38766fe6
+ENV SRC_HASH=63c99b6f9f7aa94e8d76c432bea05d0d4dd6600af78d6fd59a1aec5ce9cea8ce
+ENV SRC_HASH_MIPISYST=9fda3b9a78343ab2be6f06ce6396536e7e065abac29b47c8eb2e42cbb4c4f00b
+ENV SRC_HASH_SOFTFLOAT=21130ce885d35c1fe73fc1e1bf2244178167e05c6747cad5f450cc991714c746
+ENV SRC_HASH_OPENSSL=eb1ab04781474360f77c318ab89d8c5a03abc38e63d65a603cabbf1b00a1dc90
+ENV SRC_HASH_MBEDTLS=b5c7e7c54e013c168f4aae036e59912785f11b4aeebd57f6165a14e879b9a82c
+ENV SRC_HASH_LIBSPDM=962aefeeddb130deeb68c6c60c4848ddedd09d7715ed1ba8a8dadabd032d6232
+ENV SRC_FILE=edk2-stable${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/tianocore/edk2/archive/refs/tags/${SRC_FILE}
+ENV SRC_FILE_MIPISYST=${VERSION_MIPISYST}.tar.gz
+ENV SRC_SITE_MIPISYST=https://github.com/MIPI-Alliance/public-mipi-sys-t/archive/${SRC_FILE_MIPISYST}
+ENV SRC_FILE_SOFTFLOAT=SoftFloat-${VERSION_SOFTFLOAT}.zip
+ENV SRC_SITE_SOFTFLOAT=https://www.jhauser.us/arithmetic/${SRC_FILE_SOFTFLOAT}
+ENV SRC_FILE_OPENSSL=openssl-${VERSION_OPENSSL}.tar.gz
+ENV SRC_SITE_OPENSSL=https://www.openssl.org/source/${SRC_FILE_OPENSSL}
+ENV SRC_FILE_MBEDTLS=${VERSION_MBEDTLS}.tar.gz
+ENV SRC_SITE_MBEDTLS=https://github.com/Mbed-TLS/mbedtls/archive/${SRC_FILE_MBEDTLS}
+ENV SRC_FILE_LIBSPDM=${VERSION_LIBSPDM}.tar.gz
+ENV SRC_SITE_LIBSPDM=https://github.com/DMTF/libspdm/archive/${SRC_FILE_LIBSPDM}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+ADD --checksum=sha256:${SRC_HASH_OPENSSL} ${SRC_SITE_OPENSSL} .
+ADD --checksum=sha256:${SRC_HASH_SOFTFLOAT} ${SRC_SITE_SOFTFLOAT} .
+ADD --checksum=sha256:${SRC_HASH_MIPISYST} ${SRC_SITE_MIPISYST} .
+ADD --checksum=sha256:${SRC_HASH_MBEDTLS} ${SRC_SITE_MBEDTLS} .
+ADD --checksum=sha256:${SRC_HASH_LIBSPDM} ${SRC_SITE_LIBSPDM} .
+
+FROM fetch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-git . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-bash . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/user-nasm . /
+COPY --from=stagex/user-acpica . /
+COPY --from=stagex/user-util-linux . /
+RUN tar -xf ${SRC_FILE}
+RUN tar -xf ${SRC_FILE_OPENSSL}
+RUN tar -xf ${SRC_FILE_MIPISYST}
+RUN tar -xf ${SRC_FILE_MBEDTLS}
+RUN tar -xf ${SRC_FILE_LIBSPDM}
+RUN unzip ${SRC_FILE_SOFTFLOAT}
+WORKDIR /edk2-edk2-stable${VERSION}
+ENV WORKDIR=/edk2-edk2-stable${VERSION}
+ENV PACKAGES_PATH=$WORKDIR
+ENV WORKSPACE=$WORKDIR
+ENV EDK_TOOLS_PATH=${WORKDIR}/BaseTools
+ENV PATH=${EDK_TOOLS_PATH}/BinWrappers/PosixLike/:$PATH
+ENV PYTHON_COMMAND=python3
+ENV PLATFORMS="ShellPkg/ShellPkg.dsc OvmfPkg/OvmfPkgX64.dsc OvmfPkg/OvmfXen.dsc"
+ENV TOOLCHAIN="GCC5"
+ENV RELEASE="RELEASE"
+ENV TARGET_ARCH=X64
+RUN --network=none <<-EOF
+    set -ex
+    rm -rf CryptoPkg/Library/OpensslLib/openssl
+    ln -s /openssl-${VERSION_OPENSSL} CryptoPkg/Library/OpensslLib/openssl
+    rm -rf CryptoPkg/Library/MbedTlsLib/mbedtls
+    ln -s /mbedtls-${VERSION_MBEDTLS} CryptoPkg/Library/MbedTlsLib/mbedtls
+    rm -rf SecurityPkg/DeviceSecurity/SpdmLib/libspdm
+    ln -s /libspdm-${VERSION_LIBSPDM} SecurityPkg/DeviceSecurity/SpdmLib/libspdm
+    rm -rf ArmPkg/Library/ArmSoftFloatLib/berkeley-softfloat-3
+    ln -s /SoftFloat-${VERSION_SOFTFLOAT} \
+        ArmPkg/Library/ArmSoftFloatLib/berkeley-softfloat-3
+    rm -rf MdePkg/Library/MipiSysTLib/mipisyst
+    ln -s /public-mipi-sys-t-${VERSION_MIPISYST} \
+        MdePkg/Library/MipiSysTLib/mipisyst
+    sed -e '/BrotliCompress/d' -i BaseTools/Source/C/GNUmakefile
+    sed -e '/BrotliCustomDecompressLib/d' -i MdeModulePkg/MdeModulePkg.dec
+    sed -e 's/\r$//' -i BaseTools/Source/C/VfrCompile/VfrUtilityLib.cpp \
+        BaseTools/Source/C/VolInfo/VolInfo.c
+    bash -c ". edksetup.sh"
+    make -C BaseTools
+    for platform in $PLATFORMS; do
+        echo "Building Plaform Files: $platform"
+        command build -b $RELEASE \
+            -a $TARGET_ARCH  \
+            -t $TOOLCHAIN \
+            -p $platform \
+            -n "$(nproc)" \
+            -DSECURE_BOOT_ENABLE=TRUE \
+            -DTPM2_ENABLE=TRUE
+    done
+EOF
+
+FROM build AS install
+RUN <<-EOF
+    mkdir -p /rootfs/usr/bin \
+    /rootfs/usr/share/edk2/Conf \
+    /rootfs/usr/share/edk2/Scripts
+    install BaseTools/Source/C/bin/* BaseTools/BinWrappers/PosixLike/LzmaF86Compress \
+        /rootfs/usr/bin
+    install BaseTools/BuildEnv /rootfs/usr/share/edk2/
+    install BaseTools/Conf/*.template /rootfs/usr/share/edk2/Conf
+    install BaseTools/Scripts/GccBase.lds /rootfs/usr/share/edk2/Scripts
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

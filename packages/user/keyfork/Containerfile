@@ -1,0 +1,53 @@
+FROM scratch AS base
+ENV VERSION=0.2.3
+ENV SRC_HASH=0beafb5ee6c7cab77295c40b25f58d709187ef11d849e0646281b57d2a6b5523
+ENV SRC_FILE=keyfork-v${VERSION}.tar.gz
+ENV SRC_SITE=https://git.distrust.co/public/keyfork/archive/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+COPY --from=stagex/core-rust . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-ca-certificates . /
+RUN tar xf ${SRC_FILE}
+WORKDIR /keyfork
+ADD <<-EOF /.cargo/config.toml
+	[registries.distrust]
+	index = "https://git.distrust.co/public/_cargo-index.git"
+	EOF
+RUN cargo fetch
+
+FROM fetch AS build
+COPY --from=stagex/core-clang . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-gmp . /
+COPY --from=stagex/user-nettle . /
+COPY --from=stagex/user-pcsc-lite . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-binutils . /
+ENV RUST_BACKTRACE=1
+ENV NETTLE_STATIC=yes
+ENV PCSC_LIB_NAME=static=pcsclite
+ENV RUSTFLAGS='-C codegen-units=1 -C target-feature=+crt-static'
+RUN --network=none \
+    cargo build \
+        --frozen \
+        --release \
+        --target x86_64-unknown-linux-musl \
+        --bin keyfork
+
+FROM build AS install
+RUN <<-EOF
+    set -eux
+    mkdir -p /rootfs/usr/bin
+    cp target/x86_64-unknown-linux-musl/release/keyfork /rootfs/usr/bin/keyfork
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

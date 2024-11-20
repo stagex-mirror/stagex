@@ -1,0 +1,40 @@
+FROM scratch AS base
+ARG ARCH=x86_64
+ENV VERSION=1.23
+ENV SRC_HASH=74b1081d21fff13ae4bd7c16e5d6e504a4c26f7cde1dca0d963a484174bbcacd
+ENV SRC_FILE=gdbm-${VERSION}.tar.gz
+ENV SRC_SITE=https://ftp.gnu.org/gnu/gdbm/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch AS build
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-bash . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-openssl . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR /gdbm-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--build=${ARCH}-linux-musl \
+		--host=${ARCH}-linux-musl \
+		--prefix=/usr \
+		--enable-libgdbm-compat \
+		--disable-largefile \
+		--disable-dependency-tracking \
+		--enable-fast-install
+	make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN make DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

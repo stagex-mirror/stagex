@@ -1,0 +1,44 @@
+FROM scratch AS base
+ENV VERSION=0.73
+ENV SRC_HASH=ad5edc38bf004807843622fddbf67bd5ac604fc16e14c2bfefa7b07718ad21f3
+ENV SRC_FILE=v${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/mquinson/po4a/archive/refs/tags/${SRC_FILE}
+ENV SOURCE_DATE_EPOCH=1
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-perl-module-build . /
+COPY --from=stagex/core-perl-pod-parser . /
+COPY --from=stagex/core-diffutils . /
+COPY --from=stagex/core-gettext . /
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-libxslt . /
+COPY --from=stagex/core-docbook-xml . /
+COPY --from=stagex/core-docbook-xsl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-m4 . /
+COPY --from=stagex/core-autoconf . /
+COPY --from=stagex/core-pkgconf . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR /po4a-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+    perl Build.PL \
+        --installdirs=vendor \
+        --create_packlist=0
+    LC_ALL=en_US.UTF-8 perl Build
+EOF
+
+FROM build AS install
+RUN --network=none ./Build install --destdir="/rootfs"
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

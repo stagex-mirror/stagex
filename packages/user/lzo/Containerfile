@@ -1,0 +1,38 @@
+FROM scratch AS base
+ENV VERSION=2.10
+ENV SRC_HASH=c0f892943208266f9b6543b3ae308fab6284c5c90e627931446fb49b4221a072
+ENV SRC_FILE=lzo-${VERSION}.tar.gz
+ENV SRC_SITE=https://www.oberhumer.com/opensource/lzo/download/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/core-ninja . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-zlib . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR /lzo-${VERSION}
+RUN <<-EOF
+	set -eux
+	cmake -B build -G Ninja \
+        -DBUILD_TESTING=ON \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DCMAKE_BUILD_TYPE=Release \
+        -DENABLE_SHARED=ON
+	cmake --build build
+EOF
+
+FROM build AS install
+RUN --network=none DESTDIR="/rootfs" cmake --install build
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

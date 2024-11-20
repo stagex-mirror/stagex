@@ -1,0 +1,29 @@
+FROM scratch AS base
+ENV VERSION=1.4.18
+ENV SRC_HASH=ab2633921a5cd38e48797bf5521ad259bdc4b979078034a3b790d7fec5493fab
+ENV SRC_FILE=m4-${VERSION}.tar.gz
+ENV SRC_SITE=https://ftp.gnu.org/gnu/m4/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+RUN tar -xzf ${SRC_FILE}
+WORKDIR /m4-${VERSION}
+RUN --network=none <<-EOF
+	set -eux; \
+	./configure \
+		--prefix=/usr; \
+	make -j "$(nproc)";
+EOF
+
+FROM build AS install
+RUN --network=none make DESTDIR=/rootfs install
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

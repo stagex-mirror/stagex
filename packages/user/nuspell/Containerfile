@@ -1,0 +1,44 @@
+FROM scratch AS base
+ARG ARCH=x86_64
+ENV VERSION=5.1.6
+ENV SRC_HASH=5d4baa1daf833a18dc06ae0af0571d9574cc849d47daff6b9ce11dac0a5ded6a
+ENV SRC_FILE=nuspell-${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/nuspell/nuspell/archive/refs/tags/v${VERSION}.tar.gz
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/core-ninja . /
+COPY --from=stagex/core-samurai . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-icu . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-m4 . /
+COPY --from=stagex/core-gcc . /
+RUN tar -xf v${VERSION}.tar.gz
+WORKDIR /nuspell-${VERSION}
+RUN --network=none <<-EOF
+	set -ex
+	CXXFLAGS="$CXXFLAGS -flto=auto" \
+	cmake -B build -G Ninja \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DBUILD_SHARED_LIBS=True \
+		-DCMAKE_BUILD_TYPE=None \
+		-DBUILD_TESTING="$(want_check && echo ON || echo OFF)" \
+		-DBUILD_DOCS=OFF
+	cmake --build build
+EOF
+
+FROM build AS install
+RUN --network=none DESTDIR="/rootfs" cmake --install build
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

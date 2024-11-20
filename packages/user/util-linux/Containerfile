@@ -1,0 +1,52 @@
+FROM scratch AS base
+ENV VERSION=2.39.3
+ENV SRC_HASH=d3315ff701890f4fa1dd38ea387767fcb9e1aaeb763eb904677c03d2a7a5bdc1
+ENV SRC_FILE=util-linux-${VERSION}.tar.gz
+ENV SRC_SITE=https://codeload.github.com/util-linux/util-linux/legacy.tar.gz/v${VERSION}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-autoconf . /
+COPY --from=stagex/core-automake . /
+COPY --from=stagex/core-gettext . /
+COPY --from=stagex/core-bison . /
+COPY --from=stagex/core-libtool . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-m4 . /
+COPY --from=stagex/core-make . /
+RUN mkdir util-linux
+RUN tar -xvf $SRC_FILE --strip-components=1 -C util-linux
+WORKDIR /util-linux
+RUN --network=none <<-EOF
+	set -eux
+    ./autogen.sh
+	./configure \
+		--build=x86_64-unknown-linux-musl \
+		--host=x86_64-unknown-linux-musl \
+		--prefix=/usr \
+        --exec-prefix=/usr \
+        --sbindir=/usr/sbin \
+        --bindir=/usr/bin \
+        --libdir=/usr/lib \
+        --with-vendordir=/usr/lib \
+        --enable-fs-paths-extra=/usr/sbin \
+        --disable-nls \
+        --disable-silent-rules \
+        --disable-gtk-doc \
+        --enable-newgrp
+	make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN --network=none make DESTDIR=/rootfs install
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

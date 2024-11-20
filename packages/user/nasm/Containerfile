@@ -1,0 +1,33 @@
+FROM scratch AS base
+ENV VERSION=2.16.03
+ENV SRC_HASH=1412a1c760bbd05db026b6c0d1657affd6631cd0a63cddb6f73cc6d4aa616148
+ENV SRC_FILE=nasm-${VERSION}.tar.xz
+ENV SRC_SITE=https://www.nasm.us/pub/nasm/releasebuilds/${VERSION}/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-perl . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR /nasm-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
+RUN --network=none <<-EOF
+    set -eux
+    ./configure \
+        --build=x86_64-linux-musl \
+        --host=x86_64-linux-musl \
+        --prefix=/usr
+    make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN --network=none DESTDIR=/rootfs make install
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

@@ -1,0 +1,41 @@
+FROM scratch AS base
+ENV VERSION=1.25.0
+ENV SRC_HASH=7064631a512610b52250a4d3ff1bd81551d6d1431c4eb7b72e734df6c74f4262
+ENV SRC_FILE=hatchling-${VERSION}.tar.gz
+ENV SRC_SITE=https://files.pythonhosted.org/packages/source/h/hatchling/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/core-libffi . /
+COPY --from=stagex/core-py-installer . /
+COPY --from=stagex/core-py-packaging . /
+COPY --from=stagex/core-py-flit . /
+COPY --from=stagex/core-py-wheel . /
+COPY --from=stagex/core-py-gpep517 . /
+COPY --from=stagex/user-py-trove-classifiers . /
+COPY --from=stagex/user-py-pathspec . /
+COPY --from=stagex/user-py-pluggy . /
+RUN tar -xzf ${SRC_FILE}
+WORKDIR /hatchling-${VERSION}
+RUN gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+
+FROM build AS install
+RUN --network=none <<-EOF
+    set -eux
+    python -m installer -d /rootfs .dist/*.whl
+    find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

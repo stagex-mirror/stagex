@@ -1,0 +1,29 @@
+FROM scratch AS base
+ENV VERSION=4.9
+ENV SRC_HASH=6e226b732e1cd739464ad6862bd1a1aba42d7982922da7a53519631d24975181
+ENV SRC_FILE=sed-${VERSION}.tar.xz
+ENV SRC_SITE=https://ftp.gnu.org/gnu/sed/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+RUN tar -xf sed-${VERSION}.tar.xz
+WORKDIR /sed-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--prefix=/usr; \
+	make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN --network=none make DESTDIR=/rootfs install
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

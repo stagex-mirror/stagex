@@ -1,0 +1,5 @@
+FROM stagex/core-filesystem as package
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-python . /
+
+ENTRYPOINT ["/usr/bin/python"]

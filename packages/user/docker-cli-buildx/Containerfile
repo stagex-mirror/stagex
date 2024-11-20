@@ -1,0 +1,46 @@
+FROM scratch AS base
+ENV VERSION=0.16.2
+ENV SRC_FILE=v${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/docker/buildx/archive/${SRC_FILE}
+ENV SRC_HASH=f314635765f3dc5efe089244280cd24a577e83d339fec1970fed16977bf28382
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-bash . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-go . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-pkgconf . /
+RUN tar -xf ${SRC_FILE}
+ENV GOPROXY=https://proxy.golang.org,direct
+ENV GOSUMDB=sum.golang.org
+ENV GOPATH=/cache/go
+ENV GOBIN=${GOPATH}/bin
+ENV PATH=${GOBIN}:${PATH}
+WORKDIR /buildx-${VERSION}
+RUN <<-EOF
+    set -eux
+    mkdir -p out
+    go build \
+        -v \
+        -modcacherw \
+        --ldflags=" \
+            -w -s -buildid= \
+		    -X github.com/moby/buildkit/version.Version=${VERSION} \
+		    -X github.com/moby/buildkit/version.Revision=stagex \
+		    -X github.com/moby/buildkit/version.PKG=github.com/docker/buildx \
+        " \
+        -o docker-buildx \
+        ./cmd/buildx
+EOF
+
+FROM build AS install
+RUN install -Dm755 docker-buildx -t /rootfs/usr/libexec/docker/cli-plugins/
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

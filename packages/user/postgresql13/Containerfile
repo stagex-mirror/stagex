@@ -1,0 +1,59 @@
+FROM scratch AS base
+ENV VERSION=13.16
+ENV SRC_HASH=33647543546202825bdf89bfb71523b5aea12b3b0153a689f694a08ed02aa204
+ENV SRC_FILE=postgresql-${VERSION}.tar.gz
+ENV SRC_SITE=https://ftp.postgresql.org/pub/source/v${VERSION}/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-icu . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-clang . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-ncurses . /
+COPY --from=stagex/core-bison . /
+COPY --from=stagex/core-flex . /
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-readline . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-tcl . /
+COPY --from=stagex/user-util-linux . /
+COPY --from=stagex/user-e2fsprogs . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR /postgresql-${VERSION}
+RUN --network=none <<-EOF
+    set -eux
+    ./configure \
+        --build=x86_64-linux-musl \
+        --host=x86_64-linux-musl \
+        --prefix=/usr \
+        --mandir=/usr/share/man \
+        --with-libxml \
+        --with-openssl \
+        --with-uuid=e2fs \
+        --disable-rpath \
+        --with-llvm \
+        --with-perl \
+        --with-python \
+        --with-icu \
+        --with-tcl \
+        --with-readline
+    make -j "$(nproc)" world
+EOF
+
+FROM build AS install
+RUN --network=none make install-world DESTDIR=/rootfs
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

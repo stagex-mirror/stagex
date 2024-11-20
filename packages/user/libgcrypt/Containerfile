@@ -1,0 +1,48 @@
+FROM scratch AS base
+ENV VERSION=1.11.0
+ENV SRC_HASH=09120c9867ce7f2081d6aaa1775386b98c2f2f246135761aae47d81f58685b9c
+ENV SRC_FILE=libgcrypt-${VERSION}.tar.bz2
+ENV SRC_SITE=https://gnupg.org/ftp/gcrypt/libgcrypt/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/user-libgpg-error . /
+RUN tar -xvf $SRC_FILE
+WORKDIR /libgcrypt-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--build=x86_64-unknown-linux-musl \
+		--host=x86_64-unknown-linux-musl \
+		--prefix=/usr \
+		--bindir=/usr/bin \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info
+	make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN --network=none make DESTDIR=/rootfs install
+
+FROM base AS test
+COPY --from=install /rootfs/. /
+COPY --from=stagex/core-busybox . /
+RUN /bin/sh <<-EOF
+	set -eux
+	LIBGCRYPT_FILES_FOUND=\$(ls /usr/lib/ | grep libgcrypt || true)
+	if [ -z "\$LIBGCRYPT_FILES_FOUND" ]; then
+	    echo "libgcrypt not found"
+	    exit 1
+	fi
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

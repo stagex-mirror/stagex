@@ -1,0 +1,54 @@
+FROM scratch AS base
+ENV VERSION=2.15.31
+ENV SRC_HASH=6507f894a30036ad002b54e12f49959c592c8507765405c52cf7b4ba4dc2509d
+ENV SRC_FILE=${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/aws/aws-cli/archive/refs/tags/${VERSION}/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-sqlite3 . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libffi . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-py-flit . /
+COPY --from=stagex/core-py-gpep517 . /
+COPY --from=stagex/core-py-installer . /
+COPY --from=stagex/core-py-distro . /
+COPY --from=stagex/core-py-dateutil . /
+COPY --from=stagex/core-py-urllib3 . /
+COPY --from=stagex/core-py-cffi . /
+COPY --from=stagex/user-py-jmespath . /
+COPY --from=stagex/user-py-six . /
+COPY --from=stagex/user-py-botocore . /
+COPY --from=stagex/user-py-awscrt . /
+COPY --from=stagex/user-py-certifi . /
+COPY --from=stagex/user-py-cryptography . /
+COPY --from=stagex/user-py-colorama . /
+COPY --from=stagex/user-py-docutils . /
+COPY --from=stagex/user-py-wcwidth . /
+COPY --from=stagex/user-py-prompt_toolkit . /
+COPY --from=stagex/user-py-ruamel.yaml . /
+RUN tar -xzf ${SRC_FILE}
+WORKDIR /aws-cli-${VERSION}
+RUN --network=none \
+    gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+
+FROM build AS install
+RUN --network=none <<-EOF
+    set -eu
+    python -m installer -d /rootfs .dist/*.whl
+    find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+    rm /rootfs/usr/lib/python*/site-packages/awscli-*.dist-info/RECORD
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

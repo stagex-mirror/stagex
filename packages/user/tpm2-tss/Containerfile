@@ -1,0 +1,55 @@
+FROM scratch AS base
+ENV VERSION=4.1.0
+ENV SRC_HASH=4f6c53010b9f422107235d748178daf77817bd2bbe856befa3d54cab9f2f07e4
+ENV SRC_FILE=${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/tpm2-software/tpm2-tss/archive/refs/tags/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-autoconf . /
+COPY --from=stagex/core-automake . /
+COPY --from=stagex/core-libtool . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-m4 . /
+COPY --from=stagex/core-curl . /
+COPY --from=stagex/user-util-linux . /
+COPY --from=stagex/user-json-c . /
+COPY --from=stagex/user-autoconf-archive . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR /tpm2-tss-${VERSION}
+RUN --network=none <<-EOF
+    set -eux
+    printf "${VERSION}" > VERSION
+    cat bootstrap | grep -ve ^git > bootstrap-nogit
+    sh bootstrap-nogit
+    ./configure \
+        --build=x86_64-unknown-linux-musl \
+        --host=x86_64-unknown-linux-musl \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        --with-tctidefaultmodule=device \
+		--with-tctidefaultconfig=/dev/tpmrm0 \
+		--with-crypto=ossl
+    make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN --network=none <<-EOF
+    set -eux
+    make DESTDIR=/rootfs install
+    rm -rf /rootfs/var/run
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

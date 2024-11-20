@@ -1,0 +1,32 @@
+FROM scratch AS base
+ENV VERSION=1.16.5
+ENV SRC_HASH=f01d58cd6d9d77fbdca9eb4bbd5ead1988228fdb73d6f7a201f5f8d6b118b469
+ENV SRC_FILE=automake-${VERSION}.tar.xz
+ENV SRC_SITE=https://ftp.gnu.org/gnu/automake/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-m4 . /
+COPY --from=stagex/core-autoconf . /
+RUN tar -xf automake-${VERSION}.tar.xz
+WORKDIR /automake-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
+RUN --network=none <<-EOF
+	set -eux
+	./configure --prefix=/usr
+	make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN --network=none make DESTDIR=/rootfs install
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

@@ -1,0 +1,28 @@
+FROM scratch AS base
+ENV VERSION=1.67
+ENV SRC_HASH=5deccbf55d750ce65588cd211c1a03fa1ef3aaa15d1ac2b8d85383a42c1427ea
+ENV SRC_FILE=Pod-Parser-${VERSION}.tar.gz
+ENV SRC_SITE=https://search.cpan.org/CPAN/authors/id/M/MA/MAREKR/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-perl . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR /Pod-Parser-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
+RUN --network=none <<-EOF
+    set -eux
+    perl Makefile.PL installdirs=vendor
+    make
+EOF
+
+FROM build AS install
+RUN --network=none make DESTDIR="/rootfs" install
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

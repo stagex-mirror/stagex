@@ -1,0 +1,33 @@
+FROM scratch AS base
+ENV VERSION=2.10.0
+ENV SRC_HASH=bdabb6d336998cbb378d4b9db3a4b56a1e3235701dc05ea2690d9a997ed5041c
+ENV SRC_FILE=semantic_version-${VERSION}.tar.gz
+ENV SRC_SITE=https://files.pythonhosted.org/packages/source/s/semantic_version/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-libffi . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-py-flit . /
+COPY --from=stagex/core-py-wheel . /
+COPY --from=stagex/core-py-setuptools . /
+COPY --from=stagex/core-py-gpep517 . /
+COPY --from=stagex/core-py-installer . /
+RUN tar -xzf ${SRC_FILE}
+WORKDIR /semantic_version-${VERSION}
+RUN gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+
+FROM build AS install
+RUN --network=none <<-EOF
+    set -eu
+    python -m installer -d /rootfs .dist/*.whl
+    find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

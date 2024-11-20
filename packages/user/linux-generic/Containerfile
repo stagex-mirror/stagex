@@ -1,0 +1,73 @@
+FROM scratch AS base
+ENV VERSION=6.6
+ENV SRC_HASH=d926a06c63dd8ac7df3f86ee1ffc2ce2a3b81a2d168484e76b5b389aba8e56d0
+ENV SRC_FILE=linux-${VERSION}.tar.xz
+ENV SRC_SITE=http://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-m4 . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-bison . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-flex . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-coreutils . /
+COPY --from=stagex/core-findutils . /
+COPY --from=stagex/core-diffutils . /
+COPY --from=stagex/core-tar . /
+COPY --from=stagex/core-gzip . /
+COPY --from=stagex/core-xz . /
+COPY --from=stagex/core-sed . /
+COPY --from=stagex/core-grep . /
+COPY --from=stagex/core-gawk . /
+COPY --from=stagex/core-bc . /
+COPY --from=stagex/core-bash . /
+COPY --from=stagex/core-bash /bin/bash /bin/sh
+COPY --from=stagex/user-elfutils . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR /linux-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
+ENV KBUILD_BUILD_HOST=stagex
+ENV KBUILD_BUILD_USER=user
+ENV KBUILD_BUILD_TIMESTAMP="Thu Jan  1 12:00:00 AM GMT 1970"
+RUN <<-EOF
+	set -eux
+	unsetConfs='
+		CONFIG_BLK_DEV_INITRD
+	'
+	make defconfig
+	for conf in $unsetConfs; do
+		sed -i \
+			-e "s!^$conf=.*\$!# $conf is not set!" \
+			.config
+	done
+	make oldconfig
+	for conf in $unsetConfs; do
+		! grep -q "^$conf=" .config
+	done
+	make oldconfig
+	make -j "$(nproc)" bzImage
+	make -j "$(nproc)" modules INSTALL_MOD_PATH=/rootfs
+EOF
+
+FROM build AS install
+RUN <<-EOF
+	set -eux
+    mkdir -p /rootfs/usr/lib/modules
+    make INSTALL_MOD_PATH=/rootfs/usr modules_install
+	cp .config /rootfs/linux.config
+	cp arch/x86_64/boot/bzImage /rootfs
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

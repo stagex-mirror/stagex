@@ -1,0 +1,25 @@
+FROM scratch AS base
+ENV VERSION=0.43.0
+ENV SRC_HASH=465ef92c69fa5c5da2d1cf8ac40559a8c940886afcef87dcf14b9470862f1d85
+ENV SRC_FILE=wheel-${VERSION}.tar.gz
+ENV SRC_SITE=https://files.pythonhosted.org/packages/source/w/wheel/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS install
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-py-setuptools . /
+COPY --from=stagex/core-zlib . /
+RUN tar -xzf ${SRC_FILE}
+WORKDIR /wheel-${VERSION}
+RUN --network=none <<-EOF
+	set -eu
+    python setup.py install --root=/rootfs
+    find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

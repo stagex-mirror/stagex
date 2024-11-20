@@ -1,0 +1,37 @@
+FROM scratch AS base
+ENV VERSION=2.70
+ENV SRC_HASH=18f00ea97c7541af86379dec9d4d8ea838aac4a1f70177d81d91657e4e43b808
+ENV SRC_FILE=libcap-${VERSION}.tar.gz
+ENV SRC_SITE=https://git.kernel.org/pub/scm/libs/libcap/libcap.git/snapshot/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/core-bash . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-gcc . /
+RUN tar -xzf ${SRC_FILE}
+WORKDIR /libcap-${VERSION}
+RUN --network=none make -j "$(nproc)" lib=lib prefix=/usr GOLANG=no DESTDIR=/rootfs
+
+FROM build AS install
+RUN --network=none make lib=lib prefix=/usr GOLANG=no DESTDIR=/rootfs install
+
+FROM scratch AS test
+COPY --from=install /rootfs /
+RUN --network=none <<-EOF
+	set -eux
+	getcap --license | grep LICENSE || true
+	setcap -l | grep LICENSE || true
+	getpcaps --license | grep LICENSE || true
+	capsh --license | grep License || true
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs /

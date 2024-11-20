@@ -1,0 +1,60 @@
+FROM scratch AS base
+ENV VERSION=2.5.1
+ENV SRC_HASH=8a34bb318499867962c939e156666ada93ed81f01926590ac68f3ff79178375e
+ENV SRC_FILE=gnupg-${VERSION}.tar.bz2
+ENV SRC_SITE=https://gnupg.org/ftp/gcrypt/gnupg/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/user-npth . /
+COPY --from=stagex/user-libksba . /
+COPY --from=stagex/user-libgpg-error . /
+COPY --from=stagex/user-libassuan . /
+COPY --from=stagex/user-libgcrypt . /
+RUN tar -xf $SRC_FILE
+WORKDIR /gnupg-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--build=x86_64-unknown-linux-musl \
+		--host=x86_64-unknown-linux-musl \
+		--prefix=/usr \
+		--bindir=/usr/bin \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info
+	make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN make DESTDIR=/rootfs install
+
+FROM base AS test
+COPY --from=install /rootfs/. /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/user-npth . /
+COPY --from=stagex/user-libksba . /
+COPY --from=stagex/user-libgpg-error . /
+COPY --from=stagex/user-libassuan . /
+COPY --from=stagex/user-libgcrypt . /
+
+RUN /bin/sh <<-EOF
+	set -eux
+	EXPECTED_GPG_VERSION="gpg version ${VERSION}"
+	GPG_VERSION=\$(gpg --version)
+	if [ "\$GPG_VERSION" != "\$EXPECTED_GPG_VERSION" ]; then
+	    echo "Expected gpg version is \$EXPECTED_GPG_VERSION, but got \$GPG_VERSION"
+	    exit 1
+	fi
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

@@ -1,0 +1,64 @@
+FROM scratch AS base
+ENV VERSION=9.8p1
+ENV SRC_HASH=dd8bd002a379b5d499dfb050dd1fa9af8029e80461f4bb6c523c49973f5a39f3
+ENV SRC_FILE=openssh-${VERSION}.tar.gz
+ENV SRC_SITE=https://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-bison . /
+COPY --from=stagex/core-libtool . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-flex . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-autoconf . /
+COPY --from=stagex/core-automake . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-gettext . /
+COPY --from=stagex/core-m4 . /
+COPY --from=stagex/core-argp-standalone . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-musl-fts . /
+COPY --from=stagex/core-musl-obstack . /
+COPY --from=stagex/core-linux-headers . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR /openssh-${VERSION}
+ADD *.patch .
+RUN --network=none <<-EOF
+    set -eux
+    autoreconf -vif
+    ./configure \
+        --build="x86_64-linux-musl" \
+        --host="x86_64-linux-musl" \
+        --prefix=/usr \
+        --sysconfdir=/etc/ssh \
+        --libexecdir=/usr/lib/ssh \
+        --mandir=/usr/share/man \
+        --with-cflags="$(pkg-config --cflags --static utmps)" \
+        --with-libs="$(pkg-config --libs --static utmps)" \
+        --with-privsep-path=/var/empty \
+        --with-pid-dir=/run \
+        --with-mantype=doc \
+        --with-xauth=/usr/bin/xauth \
+        --with-default-path='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' \
+        --disable-utmp \
+        --disable-wtmp \
+        --disable-lastlog \
+        --disable-strip \
+        --with-ssl-engine
+    make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN --network=none make DESTDIR=/rootfs install
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

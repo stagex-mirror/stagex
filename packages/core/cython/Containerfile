@@ -1,0 +1,42 @@
+FROM scratch AS base
+ENV VERSION=3.0.11-1
+ENV SRC_HASH=a6bcfc81ae0487c3d0de4226e0c5aff7c7d0a5e344cc7b75c17bbb6e713f154b
+ENV SRC_FILE=${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/cython/cython/archive/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/core-libffi . /
+COPY --from=stagex/core-py-setuptools . /
+COPY --from=stagex/core-py-installer . /
+COPY --from=stagex/core-py-flit . /
+COPY --from=stagex/core-py-gpep517 . /
+COPY --from=stagex/core-py-wheel . /
+COPY --from=stagex/core-py-distro . /
+COPY --from=stagex/core-py-dateutil . /
+COPY --from=stagex/core-py-urllib3 . /
+COPY --from=stagex/core-py-cffi . /
+RUN tar -xzf ${SRC_FILE}
+WORKDIR /cython-${VERSION}
+RUN gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+#
+FROM build AS install
+RUN --network=none <<-EOF
+    set -eux
+    python -m installer -d /rootfs .dist/*.whl
+    find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

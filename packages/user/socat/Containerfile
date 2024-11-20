@@ -1,0 +1,32 @@
+FROM scratch AS base
+ENV VERSION=1.8.0.1
+ENV SRC_HASH=dc350411e03da657269e529c4d49fe23ba7b4610b0b225c020df4cf9b46e6982
+ENV SRC_FILE=socat-${VERSION}.tar.gz
+ENV SRC_SITE=http://www.dest-unreach.org/socat/download/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+RUN tar -xvf $SRC_FILE
+WORKDIR /socat-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--build=x86_64-unknown-linux-musl \
+		--host=x86_64-unknown-linux-musl \
+		--prefix=/usr/
+	make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN --network=none make DESTDIR=/rootfs install
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

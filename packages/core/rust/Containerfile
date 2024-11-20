@@ -1,0 +1,243 @@
+FROM scratch AS base
+ARG VERSION=1.82.0
+ENV SRC_SITE=https://static.rust-lang.org/dist
+ENV MRUSTC_VERSION=16d744fd62e74a2d4356df864b5850bf782918da
+ENV MRUSTC_SRC_HASH=88d5d022875d279a75fa1e9c95d0de779cb3ad3bb587f2edeb85e6f59e99d528
+ENV MRUSTC_SRC_SITE=https://codeload.github.com/lrvick/mrustc/legacy.tar.gz/${MRUSTC_VERSION}
+ENV MRUSTC_SRC_FILE=mrustc.tar.gz
+ENV SRC_HASH_1_54_0=ac8511633e9b5a65ad030a1a2e5bdaa841fdfe3132f2baaa52cc04e71c6c6976
+ENV SRC_HASH_1_55_0=b2379ac710f5f876ee3c3e03122fe33098d6765d371cac6c31b1b6fc8e43821e
+ENV SRC_HASH_1_56_0=cd0fd72d698deb3001c18e0f4bf8261d8f86420097eef94ca3a1fe047f2df43f
+ENV SRC_HASH_1_57_0=3546f9c3b91b1f8b8efd26c94d6b50312c08210397b4072ed2748e2bd4445c1a
+ENV SRC_HASH_1_58_0=0ad531a32f3c2e996b9322c6b7262a9cfe557e49ff3363adea07b575106cd770
+ENV SRC_HASH_1_59_0=a7c8eeaee85bfcef84c96b02b3171d1e6540d15179ff83dddd9eafba185f85f9
+ENV SRC_HASH_1_60_0=20ca826d1cf674daf8e22c4f8c4b9743af07973211c839b85839742314c838b7
+ENV SRC_HASH_1_61_0=ad0b4351675aa9abdf4c7e066613bd274c4391c5506db152983426376101daed
+ENV SRC_HASH_1_62_0=7d0878809b64d206825acae3eb7f60afb2212d81e3de1adf4c11c6032b36c027
+ENV SRC_HASH_1_63_0=1f9580295642ef5da7e475a8da2397d65153d3f2cb92849dbd08ed0effca99d0
+ENV SRC_HASH_1_64_0=b3cd9f481e1a2901bf6f3808d30c69cc4ea80d93c4cc4e2ed52258b180381205
+ENV SRC_HASH_1_65_0=5828bb67f677eabf8c384020582b0ce7af884e1c84389484f7f8d00dd82c0038
+ENV SRC_HASH_1_66_0=3b3cd3ea5a82a266e75d0b35f0b54c16021576d9eb78d384052175a772935a48
+ENV SRC_HASH_1_67_0=d029f14fce45a2ec7a9a605d2a0a40aae4739cb2fdae29ee9f7a6e9025a7fde4
+ENV SRC_HASH_1_68_0=eaf4d8b19f23a232a4770fb53ab5e7acdedec11da1d02b0e5d491ca92ca96d62
+ENV SRC_HASH_1_69_0=fb05971867ad6ccabbd3720279f5a94b99f61024923187b56bb5c455fa3cf60f
+ENV SRC_HASH_1_70_0=b2bfae000b7a5040e4ec4bbc50a09f21548190cb7570b0ed77358368413bd27c
+ENV SRC_HASH_1_71_0=a667e4abdc5588ebfea35c381e319d840ffbf8d2dbfb79771730573642034c96
+ENV SRC_HASH_1_72_0=ea9d61bbb51d76b6ea681156f69f0e0596b59722f04414b01c6e100b4b5be3a1
+ENV SRC_HASH_1_73_0=96d62e6d1f2d21df7ac8acb3b9882411f9e7c7036173f7f2ede9e1f1f6b1bb3a
+ENV SRC_HASH_1_74_0=882b584bc321c5dcfe77cdaa69f277906b936255ef7808fcd5c7492925cf1049
+ENV SRC_HASH_1_75_0=5b739f45bc9d341e2d1c570d65d2375591e22c2d23ef5b8a37711a0386abc088
+ENV SRC_HASH_1_76_0=9e5cff033a7f0d2266818982ad90e4d3e4ef8f8ee1715776c6e25073a136c021
+ENV SRC_HASH_1_77_0=0d6ccd1fa845fe3456b9ed4d483fc06acf9bbae9417e396b5144488c1a522d87
+ENV SRC_HASH_1_78_0=ff544823a5cb27f2738128577f1e7e00ee8f4c83f2a348781ae4fc355e91d5a9
+ENV SRC_HASH_1_79_0=172ecf3c7d1f9d9fb16cd2a628869782670416ded0129e524a86751f961448c0
+ENV SRC_HASH_1_80_0=6f606c193f230f6b2cae4576f7b24d50f5f9b25dff11dbf9b22f787d3521d672
+ENV SRC_HASH_1_81_0=872448febdff32e50c3c90a7e15f9bb2db131d13c588fe9071b0ed88837ccfa7
+ENV SRC_HASH_1_82_0=7c53f4509eda184e174efa6ba7d5eeb586585686ce8edefc781a2b11a7cf512a
+
+FROM base AS fetch
+COPY --from=stagex/core-busybox . /
+ADD --checksum=sha256:${MRUSTC_SRC_HASH} ${MRUSTC_SRC_SITE} ${MRUSTC_SRC_FILE}
+ADD --checksum=sha256:${SRC_HASH_1_54_0} ${SRC_SITE}/rustc-1.54.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_55_0} ${SRC_SITE}/rustc-1.55.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_56_0} ${SRC_SITE}/rustc-1.56.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_57_0} ${SRC_SITE}/rustc-1.57.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_58_0} ${SRC_SITE}/rustc-1.58.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_59_0} ${SRC_SITE}/rustc-1.59.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_60_0} ${SRC_SITE}/rustc-1.60.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_61_0} ${SRC_SITE}/rustc-1.61.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_62_0} ${SRC_SITE}/rustc-1.62.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_63_0} ${SRC_SITE}/rustc-1.63.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_64_0} ${SRC_SITE}/rustc-1.64.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_65_0} ${SRC_SITE}/rustc-1.65.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_66_0} ${SRC_SITE}/rustc-1.66.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_67_0} ${SRC_SITE}/rustc-1.67.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_68_0} ${SRC_SITE}/rustc-1.68.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_69_0} ${SRC_SITE}/rustc-1.69.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_70_0} ${SRC_SITE}/rustc-1.70.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_71_0} ${SRC_SITE}/rustc-1.71.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_72_0} ${SRC_SITE}/rustc-1.72.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_73_0} ${SRC_SITE}/rustc-1.73.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_74_0} ${SRC_SITE}/rustc-1.74.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_75_0} ${SRC_SITE}/rustc-1.75.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_76_0} ${SRC_SITE}/rustc-1.76.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_77_0} ${SRC_SITE}/rustc-1.77.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_78_0} ${SRC_SITE}/rustc-1.78.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_79_0} ${SRC_SITE}/rustc-1.79.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_80_0} ${SRC_SITE}/rustc-1.80.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_81_0} ${SRC_SITE}/rustc-1.81.0-src.tar.gz .
+ADD --checksum=sha256:${SRC_HASH_1_82_0} ${SRC_SITE}/rustc-1.82.0-src.tar.gz .
+
+FROM fetch AS build-base
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-bash . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-py-setuptools . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-musl . /
+
+FROM build-base AS build-mrustc
+COPY --from=stagex/core-llvm13 . /
+ADD gcc_version.patch .
+RUN tar -xzf ${MRUSTC_SRC_FILE}
+RUN mv lrvick-mrustc-* mrustc
+ENV MRUSTC_TARGET_VER=1.54
+ENV RUSTC_VERSION=1.54.0
+ENV RUSTC_TARGET=x86_64-unknown-linux-musl
+ENV MRUSTC_DEBUG=Expand
+ENV MRUSTC_DUMP_PROCMACRO=dump_prefix
+ENV RUSTC_INSTALL_BINDIR=bin
+ENV OUTDIR_SUF=
+RUN <<-EOF
+	set -eux
+	cp rustc-1.54.0-src.tar.gz mrustc
+	cd mrustc
+	patch -p1 < ../gcc_version.patch
+	tar -xzf rustc-1.54.0-src.tar.gz
+	cd rustc-1.54.0-src
+	patch -p0 < ../rustc-1.54.0-src.patch
+	cd ..
+	make -j "$(nproc)"
+	make -j "$(nproc)" -f minicargo.mk LIBS
+	make -j "$(nproc)" test local_tests
+	make -j "$(nproc)" -f minicargo.mk LLVM_CONFIG=/usr/bin/llvm-config output/rustc
+	make -j "$(nproc)" -f minicargo.mk LLVM_CONFIG=/usr/bin/llvm-config output/cargo
+	make -j "$(nproc)" -C run_rustc LLVM_CONFIG=/usr/bin/llvm-config
+	mkdir ../rust-1.54.0
+	cp -R run_rustc/output/prefix ../rust-1.54.0/usr
+EOF
+
+FROM build-base AS build-script
+ENV CONFIGURE_FLAGS=
+COPY <<-'EOF' build.sh
+	set -eux
+	VERSION=${1}
+	BUILD_VERSION=${2}
+	TOOLS=${3:-cargo}
+	PATCHES=${4:-}
+	PREFIX=/rust-${VERSION}/usr
+	BUILD_PREFIX=/rust-${BUILD_VERSION}/usr
+	#HACK because rust build seemindly ignores LD_LIBRARY_PATH
+	cp ${BUILD_PREFIX}/lib/rustlib/x86_64-unknown-linux-musl/lib/*.so /usr/lib
+	tar -xzf rustc-${VERSION}-src.tar.gz
+	cd rustc-${VERSION}-src
+	[[ -z "$PATCHES" ]] || for name in ${PATCHES//,/ }; do
+		patch -p1 < ../${name}.patch
+	done
+	./configure \
+		--build="x86_64-unknown-linux-musl" \
+		--host="x86_64-unknown-linux-musl" \
+		--target="x86_64-unknown-linux-musl" \
+		--enable-local-rust \
+		--llvm-root="/usr/lib" \
+		--disable-docs \
+		--tools="${TOOLS}" \
+		--enable-llvm-link-shared \
+		--enable-option-checking \
+		--enable-locked-deps \
+		--enable-vendor \
+		--dist-compression-formats=gz \
+		--python="python3" \
+		--local-rust-root="${BUILD_PREFIX}" \
+		--prefix="${PREFIX}/usr" \
+		--sysconfdir="${PREFIX}/etc" \
+		--release-channel="stable" \
+		--set="install.prefix=${PREFIX}" \
+		--set="build.extended=true" \
+		--set="rust.musl-root=/usr" \
+		--set="rust.backtrace-on-ice=true" \
+		--set="rust.codegen-units=1" \
+		--set="rust.codegen-units-std=1" \
+		--set="rust.deny-warnings=false" \
+		--set="rust.parallel-compiler=false" \
+		--set="rust.remap-debuginfo=true" \
+		--set="rust.llvm-libunwind=system" \
+		--set="build.full-bootstrap=true" \
+		--set="target.x86_64-unknown-linux-musl.crt-static=false" \
+		--set="target.x86_64-unknown-linux-musl.musl-root=/usr" \
+		--set="target.x86_64-unknown-linux-musl.llvm-config=/usr/bin/llvm-config" \
+		--set="target.x86_64-unknown-linux-musl.cc=cc" \
+		--set="target.x86_64-unknown-linux-musl.cxx=c++" \
+		--set="target.x86_64-unknown-linux-musl.ar=ar" \
+		--set="target.x86_64-unknown-linux-musl.linker=cc" \
+		$CONFIGURE_FLAGS
+	python3 x.py dist
+	python3 x.py install
+EOF
+
+FROM build-script AS build-llvm13
+COPY --from=stagex/core-llvm13 . /
+COPY --from=build-mrustc /rust-1.54.0 /rust-1.54.0
+RUN sh build.sh 1.55.0 1.54.0
+RUN sh build.sh 1.56.0 1.55.0
+RUN sh build.sh 1.57.0 1.56.0
+RUN sh build.sh 1.58.0 1.57.0
+RUN sh build.sh 1.59.0 1.58.0
+RUN sh build.sh 1.60.0 1.59.0
+RUN sh build.sh 1.61.0 1.60.0
+RUN sh build.sh 1.62.0 1.61.0
+RUN sh build.sh 1.63.0 1.62.0
+RUN sh build.sh 1.64.0 1.63.0
+RUN sh build.sh 1.65.0 1.64.0
+RUN sh build.sh 1.66.0 1.65.0
+RUN sh build.sh 1.67.0 1.66.0
+RUN sh build.sh 1.68.0 1.67.0
+
+FROM build-script AS build-llvm16
+COPY --from=stagex/core-llvm16 . /
+COPY --from=stagex/core-llvm13 /usr/lib/libLLVM-13.so /usr/lib/
+COPY --from=build-llvm13 /rust-1.68.0 /rust-1.68.0
+RUN sh build.sh 1.69.0 1.68.0
+RUN sh build.sh 1.70.0 1.69.0
+RUN sh build.sh 1.71.0 1.70.0
+RUN sh build.sh 1.72.0 1.71.0
+RUN sh build.sh 1.73.0 1.72.0
+RUN sh build.sh 1.74.0 1.73.0
+# HACK: Required by Rust 1.75.0
+# https://github.com/rust-lang/rust/issues/117885
+RUN mkdir -p $HOME/.cargo/registry/src/index.crates.io-6f17d22bba15001f/
+RUN sh build.sh 1.75.0 1.74.0
+RUN sh build.sh 1.76.0 1.75.0
+RUN sh build.sh 1.77.0 1.76.0
+
+FROM build-script AS build
+# lld, ninja, ca-certificates required post-1.80
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-lld . /
+COPY --from=stagex/core-ninja . /
+COPY --from=stagex/core-ca-certificates . /
+COPY --from=stagex/core-llvm16 /usr/lib/libLLVM-16.so /usr/lib/
+COPY --from=build-llvm16 /rust-1.77.0 /rust-1.77.0
+RUN sh build.sh 1.78.0 1.77.0
+RUN sh build.sh 1.79.0 1.78.0
+RUN sh build.sh 1.80.0 1.79.0
+
+ENV CONFIGURE_FLAGS="--set=rust.lld=false --set=rust.use-lld=external"
+
+RUN sh build.sh 1.81.0 1.80.0
+
+ADD no-default-static.patch .
+RUN sh build.sh 1.82.0 1.81.0 cargo,clippy,rustdoc,rustfmt,rust-demangler no-default-static
+
+FROM build AS install
+RUN <<-EOF
+	mv /rust-${VERSION} /rootfs
+	cd /rootfs/usr/lib/rustlib
+	rm install.log
+	sort -o manifest-cargo manifest-cargo
+	sort -o manifest-rustc manifest-rustc
+	sort -o \
+		manifest-rust-std-x86_64-unknown-linux-musl \
+		manifest-rust-std-x86_64-unknown-linux-musl
+	rm -f x86_64-unknown-linux-musl/lib/self-contained/libunwind.a
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

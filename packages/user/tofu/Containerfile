@@ -1,0 +1,36 @@
+FROM scratch AS base
+ENV VERSION=1.6.0-beta4
+ENV SRC_HASH=b14f151839d90d06f95ba4257be159857606daf522d99e9285ddb248f814393f
+ENV SRC_FILE=v${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/opentofu/opentofu/archive/refs/tags/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-go . /
+COPY --from=stagex/core-ca-certificates . /
+RUN tar -xvf v${VERSION}.tar.gz
+WORKDIR /opentofu-${VERSION}
+ENV PWD=/home/user/opentofu-${VERSION}
+ENV GOPATH=${PWD}/cache/go
+ENV GOCACHE=${PWD}/cache/
+ENV GOWORK=off
+ENV GOPROXY=https://proxy.golang.org,direct
+ENV GOSUMDB=sum.golang.org
+ENV CGO_ENABLED=0
+ENV GOHOSTOS=linux
+ENV GOHOSTARCH=amd64
+ENV GOFLAGS=-trimpath
+RUN mkdir -p ${GOPATH}
+RUN go build -o bin/tofu ./cmd/tofu
+
+FROM build AS install
+RUN <<-EOF
+    mkdir -p /rootfs/usr/bin/
+    cp bin/tofu /rootfs/usr/bin/
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/./ /

@@ -1,0 +1,41 @@
+FROM scratch AS base
+ENV VERSION=1.2.12
+ENV SRC_HASH=4868cd908627279da5a634f468701625be8cc251d84262c7e5b6a218391ad0d2
+ENV SRC_FILE=alsa-lib-${VERSION}.tar.bz2
+ENV SRC_SITE=https://alsa-project.org/files/pub/lib/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR /alsa-lib-${VERSION}
+RUN --network=none <<-EOF
+	set -eux; \
+	./configure \
+        --build=x86_64-linux-musl \
+        --host=x86_64-linux-musl \
+		--prefix=/usr \
+		--libdir=/usr/lib \
+        --disable-python \
+        --disable-static \
+        --disable-resmgr \
+        --enable-rawmidi \
+        --enable-seq \
+        --enable-aload \
+        --disable-dependency-tracking \
+        --without-versioned
+	make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN --network=none make DESTDIR=/rootfs install
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

@@ -1,0 +1,58 @@
+FROM scratch AS base
+ARG ARCH=x86_64
+ENV VERSION=10.44
+ENV SRC_HASH=07a002e8216382a96f722bc4a831f3d77457fe3e9e62a6dff250a2dd0e9c5e6d
+ENV SRC_FILE=pcre2-${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/PCRE2Project/pcre2/archive/refs/tags/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
+
+FROM fetch AS build
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-gawk . /
+COPY --from=stagex/core-bzip2 . /
+COPY --from=stagex/core-readline . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-autoconf . /
+COPY --from=stagex/core-automake . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-libtool . /
+COPY --from=stagex/core-m4 . /
+COPY --from=stagex/core-libedit . /
+COPY --from=stagex/core-ncurses . /
+RUN tar -xf $SRC_FILE
+WORKDIR /pcre2-pcre2-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	./autogen.sh
+	./configure \
+		CFLAGS="-O3" \
+		--disable-shared \
+		--build=${ARCH}-unknown-linux-musl \
+		--host=${ARCH}-unknown-linux-musl \
+		--prefix=/usr \
+		--docdir=/usr/share/doc/pcre2-10.43 \
+		--htmldir=/usr/share/doc/pcre2-10.43/html \
+		--enable-pcre2-16 \
+		--enable-pcre2-32 \
+		--enable-pcre2grep-libz \
+		--enable-pcre2test-libedit \
+		# --enable-jit
+	make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN make DESTDIR=/rootfs install
+RUN find /rootfs -exec touch -hcd "@0" "{}" +
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /
+
+

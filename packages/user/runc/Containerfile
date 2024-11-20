@@ -1,0 +1,40 @@
+FROM scratch AS base
+ENV VERSION=1.1.13
+ENV COMMIT=58aa9203c123022138b22cf96540c284876a7910
+ENV SRC_FILE=runc-v${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/opencontainers/runc/archive/v${VERSION}/${SRC_FILE}
+ENV SRC_HASH=789d5749a08ef1fbe5d1999b67883206a68a4e58e6ca0151c411d678f3480b25
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-bash . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-go . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/user-libseccomp . /
+COPY --from=stagex/user-go-md2man . /
+RUN tar -xf ${SRC_FILE}
+WORKDIR /runc-${VERSION}
+RUN <<-EOF
+    set -eux
+    make EXTRA_LDFLAGS="-w -s -buildid=" COMMIT=${COMMIT} -j "$(nproc)"
+    make man
+EOF
+
+FROM build AS install
+RUN <<-EOF
+    set -eux
+    install -Dsm755 runc /rootfs/usr/bin/runc
+    install -d /rootfs/usr/share/man/man8
+    install -Dm644 man/man8/* /rootfs/usr/share/man/man8/
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

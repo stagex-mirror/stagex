@@ -1,0 +1,182 @@
+FROM scratch AS base
+ARG ARCH=x86_64
+ENV PKG_NAME=php83
+ENV VERSION=8.3.4
+ENV SRC_HASH=4e633d4709afa5301d84d3821471bfb136f281bb71f9acca2fe9d29cc0407d2a
+ENV SRC_FILE=php-${VERSION}.tar.gz
+ENV SRC_SITE=https://github.com/php/php-src/archive/refs/tags/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-acl . /
+COPY --from=stagex/core-automake . /
+COPY --from=stagex/core-bash . /
+COPY --from=stagex/core-bc . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-lld . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-curl . /
+COPY --from=stagex/core-clang . /
+COPY --from=stagex/core-bison . /
+COPY --from=stagex/core-gdbm . /
+COPY --from=stagex/core-lmdb . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-autoconf . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-gmp . /
+COPY --from=stagex/core-icu . /
+COPY --from=stagex/core-gettext . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-expat . /
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-re2c . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-m4 . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-lzip . /
+COPY --from=stagex/core-pcre2 . /
+COPY --from=stagex/core-bzip2 . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-libedit . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-sqlite3 . /
+RUN tar -xf php-${VERSION}.tar.gz
+WORKDIR /php-src-php-${VERSION}
+COPY *.patch .
+ENV SOURCE_DATE_EPOCH=1
+ENV PHP_UNAME="Linux stagex"
+ENV PHP_BUILD_SYSTEM="${PHP_UNAME}"
+RUN --network=none <<-EOF
+	set -eux
+	export CFLAGS="-O2"
+	export CXXFLAGS="-O2"
+	patch -p1 fix-lfs64-2.patch
+	patch -p1 fix-tests-devserver.patch
+	patch -p1 includedir.patch
+	patch -p1 install-pear.patch
+	patch -p1 php83-fpm-verison-suffix.patch
+	patch -p1 phpinfo-avif.patch
+	patch -p1 sharedir.patch
+	export CC=clang-18
+	export CXX=clang++-18
+	./buildconf --force
+	EXTENSION_DIR=/usr/lib/modules ./configure \
+		--build=x86_64-linux-musl \
+		--host=x86_64-linux-musl \
+		--prefix=/usr \
+		--program-suffix=php83#php \
+		--libdir=/usr/lib \
+		--datadir=/usr/share/php83 \
+		--sysconfdir=/etc/php83 \
+		--localstatedir=/var \
+		--with-layout=GNU \
+		--with-pic \
+		--with-config-file-path=/etc/php83 \
+		--with-config-file-scan-dir=/etc/php83/conf.d \
+		--disable-rpath \
+		--disable-short-tags \
+		\
+		--disable-all \
+		--enable-bcmath=shared \
+		--with-bz2=shared \
+		--enable-calendar=shared \
+		--enable-ctype=shared \
+		--with-curl=shared \
+		# --enable-dba=shared \
+		# 	--with-dbmaker=shared \
+		# 	--with-gdbm \
+		# 	--with-lmdb \
+		# --enable-dom=shared \
+		# --with-enchant=shared \
+		# --enable-exif=shared \
+		# --with-ffi=shared \
+		# --enable-fileinfo=shared \
+		# --enable-ftp=shared \
+		# --enable-gd=shared \
+		# 	--with-avif \
+		# 	--with-freetype \
+		# 	--with-jpeg \
+		# 	--with-webp \
+		# 	--with-xpm \
+		# 	--disable-gd-jis-conv \
+		# --with-gettext=shared \
+		# --with-gmp=shared \
+		# --with-iconv=shared \
+		# --with-imap=shared \
+		# 	--with-imap-ssl \
+		# --enable-intl=shared \
+		# --with-ldap=shared \
+		# 	--with-ldap-sasl \
+		# --with-libedit \
+		# --with-libxml \
+		# --enable-mbstring=shared \
+		# --with-mysqli=shared \
+		# 	--with-mysql-sock=/run/mysqld/mysqld.sock \
+		# --enable-mysqlnd=shared \
+		# --enable-opcache=shared \
+		# --with-openssl=shared  \
+		# 	--with-kerberos \
+		# 	--with-system-ciphers \
+		# --with-password-argon2 \
+		# --enable-pcntl=shared \
+		# --with-external-pcre \
+		# 	#$without_pcre_jit \
+		# --enable-pdo=shared \
+		# 	--with-pdo-dblib=shared,/usr \
+		# 	--with-pdo-mysql=shared,mysqlnd \
+		# 	--with-pdo-odbc=shared,unixODBC,/usr \
+		# 	--with-pdo-pgsql=shared \
+		# 	--with-pdo-sqlite=shared \
+		# --with-pgsql=shared \
+		# --enable-phar=shared \
+		# --enable-posix=shared \
+		# --with-pspell=shared \
+		# --without-readline \
+		# --enable-session=shared \
+		# --enable-shmop=shared \
+		# --enable-simplexml=shared \
+		# --with-snmp=shared \
+		# --enable-soap=shared \
+		# --with-sodium=shared \
+		# --enable-sockets=shared \
+		# --with-sqlite3=shared \
+		# --enable-sysvmsg=shared \
+		# --enable-sysvsem=shared \
+		# --enable-sysvshm=shared \
+		# --with-tidy=shared \
+		# --enable-tokenizer=shared \
+		# --with-unixODBC=shared,/usr \
+		# --enable-xml=shared \
+		# --enable-xmlreader=shared \
+		# --enable-xmlwriter=shared \
+		# --with-xsl=shared \
+		# --with-zip=shared \
+		# --with-zlib \
+		# --enable-zend-test=shared \
+		"$@"
+    make -j "$(nproc)"
+EOF
+
+FROM build AS install
+RUN --network=none make INSTALL_ROOT=/rootfs install
+
+FROM build AS test
+RUN /bin/sh -c 'set -eux; \
+	if ! make TEST_PHP_ARGS=-j$(nproc) test; then \
+		echo "PHP test failed"; \
+		exit 1; \
+	fi'
+
+FROM stagex/core-filesystem AS package
+COPY --from=stagex/core-busybox . /
+USER root
+RUN rm -rf /var/run
+RUN mkdir -p /var && mkdir -p /var/run && chown -R root:root /var/run && chmod -R 755 /var/run
+COPY --from=install /rootfs/. /

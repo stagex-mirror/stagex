@@ -1,0 +1,34 @@
+FROM scratch AS base
+ENV VERSION=0.2.13
+ENV SRC_HASH=72ea0c06399eb286d978fdedb6923a9eb47e1c486ce63e9b4e64fc18303972b5
+ENV SRC_FILE=wcwidth-${VERSION}.tar.gz
+ENV SRC_SITE=https://files.pythonhosted.org/packages/source/w/wcwidth/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-libffi . /
+COPY --from=stagex/core-py-setuptools . /
+COPY --from=stagex/core-py-installer . /
+COPY --from=stagex/core-py-flit . /
+COPY --from=stagex/core-py-wheel . /
+COPY --from=stagex/core-py-gpep517 . /
+RUN tar -xzf ${SRC_FILE}
+WORKDIR /wcwidth-${VERSION}
+RUN --network=none gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+
+FROM build AS install
+RUN --network=none <<-EOF
+    set -eu
+    python -m installer -d /rootfs .dist/*.whl
+    find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /

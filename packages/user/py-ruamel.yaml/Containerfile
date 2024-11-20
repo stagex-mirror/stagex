@@ -1,0 +1,33 @@
+FROM scratch AS base
+ENV VERSION=0.17.28
+ENV SRC_HASH=3bf6df1c481d2463a633be6ee86e8aece941bb3298a9a0cd6d0865f47b1ddce6
+ENV SRC_FILE=ruamel.yaml-${VERSION}.tar.gz
+ENV SRC_SITE=https://files.pythonhosted.org/packages/source/r/ruamel.yaml/${SRC_FILE}
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-libffi . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-py-flit . /
+COPY --from=stagex/core-py-setuptools . /
+COPY --from=stagex/core-py-wheel . /
+COPY --from=stagex/core-py-installer . /
+COPY --from=stagex/core-py-gpep517 . /
+COPY --from=stagex/core-zlib . /
+RUN tar -xzf ${SRC_FILE}
+WORKDIR /ruamel.yaml-${VERSION}
+RUN gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+
+FROM build AS install
+RUN --network=none <<-EOF
+    set -eu
+    python -m installer -d /rootfs .dist/*.whl
+    find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /
