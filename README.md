@@ -24,43 +24,68 @@ For a full list of images see the "packages" directory.
 
 ### Examples
 
-Get a shell in our x86_64 Stage3 bootstrap image:
+#### Get a shell in our x86_64 Stage3 bootstrap image:
 
 ```shell
 docker run -it stagex/stage3
 ```
 
-To get a Python shell, you can use the Python pallet:
+#### Get a Python shell by using the Python Pallet
 
 ```sh
 docker run -it stagex/pallet-python -c "print('hello, world!')"
 ```
 
-Make a hello world OCI container image with Rust:
-<!--author: panekj -->
+#### Make a hello world OCI container image with the Rust pallet
 
 ```dockerfile
-FROM stagex/pallet-rust
+FROM stagex/pallet-rust AS build
 
-COPY <<-EOF ./hello.rs
-  fn main(){
-    println!("Hello World!");
-  }
+RUN ["cargo", "new", "--bin", "pattern_matcher"]
+WORKDIR /pattern_matcher
+RUN ["cargo", "add", "regex"]
+
+COPY <<-EOF /pattern_matcher/src/main.rs
+use regex::Regex;
+
+fn main() {
+    let mut args = std::env::args();
+    args.next();
+    let pattern = args.next().expect("pattern not given");
+    let text = args.next().expect("text to match not given");
+    let re = Regex::new(&pattern).expect("given pattern is invalid regex");
+    if let Some(r#match) = re.find(&text) {
+        println!("Found match: {match:?}");
+    }
+}
 EOF
-RUN ["rustc","-C","target-feature=+crt-static","-o","hello","hello.rs"]
 
-FROM scratch
-COPY --from=build /hello .
-ENTRYPOINT ["/hello"]
+ENV RUSTFLAGS="-C target-feature=+crt-static"
+RUN ["cargo", "build", "--release"]
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /pattern_matcher/target/release/pattern_matcher /usr/bin/pattern_matcher
+ENTRYPOINT ["/usr/bin/pattern_matcher"]
 ```
-<!--author: panekj -->
 
 Note the difference between the "build" and the final image: `build` has to
 pull the `rust` pallet, which includes just the binaries required to build a
 Rust program, but the final OCI image only contains the statically compiled
 Rust binary, and is tiny as a result.
 
-### Package Management
+#### Add dependencies using container-native workflows
+
+Oftentimes, you'll need dependencies that aren't included by default, such as
+`clang` when building crates using Rust's `bindgen` crate. StageX makes adding
+packages super simple. In your `build` phase, add the following line:
+
+```dockerfile
+COPY --from=stagex/core-clang . /
+```
+
+No `RUN` commands needed.
+
+### Package Management Policies
 
 Unlike most linux distros, stagex was built for determinism, minimalism, and
 containers first, and thus has no concept of a traditional package manager.
