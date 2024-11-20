@@ -30,35 +30,17 @@ Get a shell in our x86_64 Stage3 bootstrap image:
 docker run -it stagex/stage3
 ```
 
-For a bare Python shell you'll need a simple `Containerfile`:
-```Dockerfile
-FROM stagex/filesystem
+To get a Python shell, you can use the Python pallet:
 
-COPY --from=stagex/musl . /
-COPY --from=stagex/python . /
-
-ENTRYPOINT ["python"]
-```
-
-Build and run it with:
 ```sh
-docker build . -f Containerfile -t stagex-python
-docker run -it stagex-python -c "print('hello, world!')"
+docker run -it stagex/pallet-python -c "print('hello, world!')"
 ```
 
 Make a hello world OCI container image with Rust:
 <!--author: panekj -->
 
 ```dockerfile
-FROM scratch AS build
-
-COPY --from=stagex/rust . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/libunwind . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/llvm . /
-COPY --from=stagex/zlib . /
+FROM stagex/pallet-rust
 
 COPY <<-EOF ./hello.rs
   fn main(){
@@ -74,14 +56,14 @@ ENTRYPOINT ["/hello"]
 <!--author: panekj -->
 
 Note the difference between the "build" and the final image: `build` has to
-pull `gcc`, `libunwind`, `llvm`, etc. The final OCI image only contains the
-statically compiled Rust binary, and is tiny as a result.
+pull the `rust` pallet, which includes just the binaries required to build a
+Rust program, but the final OCI image only contains the statically compiled
+Rust binary, and is tiny as a result.
 
 ### Package Management
 
 Unlike most linux distros, stagex was built for determinism, minimalism, and
 containers first, and thus has no concept of a traditional package manager.
-
 In fact, stagex ships no first-party code at all. We just package things in the
 most "stock" way possible with exceptions only to maintain determinism.
 
@@ -92,7 +74,7 @@ By default you always get the latest updates to dependencies on the fly, but
 you retain the option for bit-for-bit reproducible builds by locking any given
 dependency at a particular tag or image hash.
 
-If you want an old version of rust with a recent version of Gcc to work around
+If you want an old version of rust with a recent version of GCC to work around
 some problem build, you can do that without resorting to low security \
 "curl | bash" style solutions like rustup.
 
