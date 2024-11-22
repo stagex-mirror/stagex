@@ -37,7 +37,7 @@ $(bootstrap_targets): %: out/%/index.json
 $(foreach target,$(bootstrap_targets),$(eval $(call target-gen,$(target))))
 
 core_targets := $(shell $(call target-list,core))
-core: $(toolchain_targets)
+core: $(core_targets)
 $(core_targets): %: out/%/index.json
 $(foreach target,$(core_targets),$(eval $(call target-gen,$(target))))
 
