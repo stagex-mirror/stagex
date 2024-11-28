@@ -43,13 +43,13 @@ define dep-list
 	$(eval CATEGORY := $(1))
 	$(eval NAME := $(2))
 	grep -Ri \
-		-e "^COPY --from=stagex/"
-		-e "FROM stagex/.* AS package" \
+		-e "^COPY --from=stagex/" \
+		-e "^FROM stagex/.* AS package" \
 		packages/$(CATEGORY)/$(NAME)/Containerfile \
 	| sed \
 		-e 's/COPY --from=stagex\/\([^ ]\+\) .*/\1/g' \
-		-e 's/FROM stagex\/\([^ ]\+\).*/\1/g'
-	| uniq \
+		-e 's/FROM stagex\/\([^ ]\+\).*/\1/g' \
+	| sort -u \
 	| while IFS= read -r package; \
 		do \
 			printf "out/$${package}/index.json "; \
@@ -77,12 +77,12 @@ define build-context-args
 	$(eval NAME := $(2))
 	grep -Ri \
 		-e "^COPY --from=stagex/"
-		-e "FROM stagex/.* AS package" \
+		-e "^FROM stagex/.* AS package" \
 		packages/$(CATEGORY)/$(NAME)/Containerfile \
 	| sed \
 		-e 's/COPY --from=stagex\/\([^ ]\+\) .*/\1/g' \
 		-e 's/FROM stagex\/\([^ ]\+\).*/\1/g'
-	| uniq \
+	| sort -u \
 	| sed 's/\([a-z]\)-\(.*\)/\1,\2/g' \
 	| while IFS=, read -r category name; do \
 		if [ "$${category}-$${name}" = "$(CATEGORY)-$(NAME)" ]; then
