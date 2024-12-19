@@ -1,13 +1,5 @@
-FROM scratch AS base
-ENV VERSION=1.8.10
-ENV SRC_FILE=iptables-${VERSION}.tar.xz
-ENV SRC_SITE=https://netfilter.org/projects/iptables/files/${SRC_FILE}
-ENV SRC_HASH=5cc255c189356e317d070755ce9371eb63a1b783c34498fb8c30264f3cc59c9c
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-binutils . /
@@ -22,30 +14,23 @@ COPY --from=stagex/core-m4 . /
 COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/user-libnftnl . /
 COPY --from=stagex/user-libmnl . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf iptables-${VERSION}.tar.xz
 WORKDIR /iptables-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	/usr/bin/autoreconf -vif
 	./configure \
-        --build=x86_64-linux-musl \
-        --host=x86_64-linux-musl \
 		--prefix=/usr \
 		--mandir=/usr/share/man \
 		--sysconfdir=/etc \
 		--sbindir=/usr/sbin \
-        --without-kernel \
-        --enable-devel \
-        --enable-libipq \
-        --enable-shared
+    --without-kernel \
+    --enable-devel \
+    --enable-libipq \
+    --enable-shared
 	make -j "$(nproc)"
+	make install DESTDIR=/rootfs
 EOF
-
-FROM build AS install
-RUN <<-EOF
-	set -eux
-    make install DESTDIR=/rootfs
-EOF
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

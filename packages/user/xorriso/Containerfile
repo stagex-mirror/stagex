@@ -1,43 +1,20 @@
-FROM scratch AS base
-ENV VERSION=1.5.6
-ENV SRC_HASH=786f9f5df9865cc5b0c1fecee3d2c0f5e04cab8c9a859bd1c9c7ccd4964fdae1
-ENV SRC_FILE=xorriso-${VERSION}.pl02.tar.gz
-ENV SRC_SITE=https://ftp.gnu.org/gnu/xorriso/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-linux-headers . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf xorriso-${VERSION}.pl02.tar.gz
 WORKDIR /xorriso-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./configure \
 		--prefix=/usr
 	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
 EOF
-
-FROM build AS install
-RUN --network=none make DESTDIR=/rootfs install
-
-FROM base AS test
-COPY --from=install /rootfs/. /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-busybox . /
-RUN /bin/sh <<-EOF
-	set -eux
-	XORRISO_VERSION=$(xorriso --version | grep 'xorriso version' | sed -E 's/^.*: +([^ ]+).*$/\1/')
-	if [ "${VERSION}.pl02" != "\$XORRISO_VERSION" ]; then
-		echo "Expected xorriso version is \$VERSION.pl02, but got \$XORRISO_VERSION"
-		exit 1
-	fi
-EOF
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

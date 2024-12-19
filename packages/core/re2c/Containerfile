@@ -1,13 +1,5 @@
-FROM scratch AS base
-ENV VERSION=3.1
-ENV SRC_HASH=087c44de0400fb15caafde09fd72edc7381e688a35ef505ee65e0e3d2fac688b
-ENV SRC_FILE=${VERSION}.tar.gz
-ENV SRC_SITE=https://github.com/skvadrik/re2c/archive/refs/tags/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-autoconf . /
 COPY --from=stagex/core-automake . /
 COPY --from=stagex/core-binutils . /
@@ -19,7 +11,8 @@ COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-m4 . /
 COPY --from=stagex/core-musl . /
-RUN tar -xvf $SRC_FILE
+COPY --from=fetch . .
+RUN tar -xvf re2c-${VERSION}.tar.gz
 WORKDIR /re2c-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
@@ -27,11 +20,7 @@ RUN --network=none <<-EOF
 	./configure \
 		--prefix=/usr
 	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
 EOF
-
-FROM build AS install
-RUN make DESTDIR=/rootfs install
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

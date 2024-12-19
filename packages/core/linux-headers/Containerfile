@@ -1,26 +1,16 @@
-FROM scratch AS base
-ENV VERSION=6.6
-ENV SRC_HASH=d926a06c63dd8ac7df3f86ee1ffc2ce2a3b81a2d168484e76b5b389aba8e56d0
-ENV SRC_FILE=linux-${VERSION}.tar.xz
-ENV SRC_SITE=https://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/bootstrap-stage3 . /
+COPY --from=fetch . .
 RUN tar -xf linux-${VERSION}.tar.xz
 WORKDIR /linux-${VERSION}
-RUN --network=none make headers
-
-FROM build AS install
 RUN <<-EOF
 	set -eux
+	make headers
 	mkdir -p /rootfs/usr
 	cp -a usr/include /rootfs/usr/
 	find /rootfs/usr/include/ ! -iname "*.h" -type f -exec rm -v {} \+
 	rm -rf /rootfs/usr/include/drm
 EOF
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

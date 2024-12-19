@@ -103,9 +103,8 @@ COPY --chmod=644 <<-EOF etc/os-release
 	SUPPORT_URL="https://codeberg.org/stagex/stagex/src/branch/main/README.md"
 	BUG_REPORT_URL="https://codeberg.org/stagex/stagex/issues"
 EOF
-
 FROM scratch AS package
-COPY --from=build /rootfs/. /
+COPY --from=build /rootfs/ /
 USER 1000:1000
 ENTRYPOINT ["/bin/sh"]
 ENV PS1="[Stageˣ] $ "

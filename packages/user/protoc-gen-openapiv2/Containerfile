@@ -1,17 +1,10 @@
-FROM scratch AS base
-ENV VERSION=2.22.0
-ENV SRC_HASH=509c86f389f4da5ac5ce06c6e2e85834070e4f774b4bb4c5c0536c464911ae25
-ENV SRC_FILE=v${VERSION}.tar.gz
-ENV SRC_SITE=https://github.com/grpc-ecosystem/grpc-gateway/archive/refs/tags/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-go . /
 COPY --from=stagex/core-ca-certificates . /
-RUN tar -xvf v${VERSION}.tar.gz
+COPY --from=fetch . .
+RUN tar -xvf protoc-gen-openapiv2-${VERSION}.tar.gz
 WORKDIR /grpc-gateway-${VERSION}
 ENV GOPATH=/cache/go
 ENV GOCACHE=/cache/
@@ -23,14 +16,12 @@ ENV GOHOSTOS=linux
 ENV GOHOSTARCH=amd64
 ENV GOFLAGS=-trimpath
 RUN mkdir -p ${GOPATH}
-RUN go build -o bin/protoc-gen-openapiv2 ./protoc-gen-openapiv2
-
-FROM build AS install
+RUN go mod download
 RUN <<-EOF
-    set -eux
-    mkdir -p /rootfs/usr/bin/
-    cp bin/protoc-gen-openapiv2 /rootfs/usr/bin/
+	set -eux
+	go build -o bin/protoc-gen-openapiv2 ./protoc-gen-openapiv2
+	mkdir -p /rootfs/usr/bin/
+	cp bin/protoc-gen-openapiv2 /rootfs/usr/bin/
 EOF
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/./ /
+COPY --from=build /rootfs/ /

@@ -1,18 +1,6 @@
-FROM scratch AS base
-ENV VERSION=5.19.6
-ENV SRC_HASH=41a4f824af614460c429a7c723e8dcbb0e042f0047d328c18b4ed6f2b4efa63a
-ENV SRC_FILE=linux-${VERSION}.tar.xz
-ENV SRC_SITE=http://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/${SRC_FILE}
-ENV NSM_VERSION=ed24913346a34d719afa2031299253160a2e3460
-ENV NSM_SRC_HASH=720916a640f7579a1e9a972ddd43448d201b9ce4d4750079d8256e83be3e937c
-ENV NSM_SRC_FILE=nsm.tgz
-ENV NSM_SRC_SITE=https://codeload.github.com/aws/aws-nitro-enclaves-sdk-bootstrap/legacy.tar.gz/${NSM_VERSION}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-ADD --checksum=sha256:${NSM_SRC_HASH} ${NSM_SRC_SITE} ${NSM_SRC_FILE}
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
+ARG NSM_VERSION
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-binutils . /
@@ -39,9 +27,10 @@ COPY --from=stagex/core-bc . /
 COPY --from=stagex/core-bash . /
 COPY --from=stagex/core-bash /bin/bash /bin/sh
 COPY --from=stagex/user-elfutils . /
+COPY --from=fetch . .
 RUN mkdir nitro-bootstrap
-RUN tar -xf ${NSM_SRC_FILE} -C nitro-bootstrap --strip-components 1
-RUN tar -xf ${SRC_FILE}
+RUN tar -xf nsm-${NSM_VERSION}.tar.xz -C nitro-bootstrap --strip-components 1
+RUN tar -xf linux-${VERSION}.tar.xz
 WORKDIR /linux-${VERSION}
 ADD linux.config .config
 ENV SOURCE_DATE_EPOCH=1
@@ -55,16 +44,11 @@ RUN <<-EOF
 	make -j "$(nproc)" modules_prepare
 	cd ../nitro-bootstrap
 	make -C ../linux-${VERSION} M=../nitro-bootstrap/nsm-driver
-EOF
-
-FROM build AS install
-RUN <<-EOF
-	set -eux
+	cd ../linux-${VERSION}
 	mkdir /rootfs
 	cp .config /rootfs/linux.config
-	cp arch/x86_64/boot/bzImage /rootfs
+	cp "arch/$(uname -m)/boot/bzImage" /rootfs
 	cp /nitro-bootstrap/nsm-driver/nsm.ko /rootfs
 EOF
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

@@ -1,37 +1,24 @@
-FROM scratch AS base
-ARG ARCH=x86_64
-ENV VERSION=4.0.45
-ENV SRC_HASH=0b008a96bd0efe0e542fa4383d469af66bc4a93394990b103730a8160a67d618
-ENV SRC_FILE=mtools-${VERSION}.tar.bz2
-ENV SRC_SITE=https://ftp.gnu.org/gnu/mtools/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-gcc . /
-RUN tar -xjf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xjf mtools-${VERSION}.tar.bz2
 WORKDIR /mtools-${VERSION}
 ENV FORCE_UNSAFE_CONFIGURE=1
 RUN --network=none <<-EOF
 	set -ex
 	./configure \
-		--build=${ARCH}-linux-musl \
-		--host=${ARCH}-linux-musl \
 		--prefix=/usr \
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info \
-        --sysconfdir=/etc/mtools \
-        --without-x
+    --sysconfdir=/etc/mtools \
+    --without-x
 	make -j "$(nproc)"
+	make DESTDIR="/rootfs" install
 EOF
-
-FROM build AS install
-RUN --network=none make DESTDIR="/rootfs" install
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

@@ -1,34 +1,24 @@
-FROM scratch AS base
-ENV VERSION=0.21
-ENV SRC_HASH=d20fcbb537e02dcf1383197ba05bd0734ef7bf5db06bdb241eb69b7d16b73192
-ENV SRC_FILE=gettext-${VERSION}.tar.xz
-ENV SRC_SITE=https://mirrors.kernel.org/gnu/gettext/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-libxml2 . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf gettext-${VERSION}.tar.xz
 WORKDIR /gettext-${VERSION}
 RUN <<-EOF
 	set -eux
 	./configure \
 		--prefix=/usr \
-        --enable-threads=posix \
-        --disable-java \
-        --enable-static \
-        --with-included-libxml=no
+		--enable-threads=posix \
+		--disable-java \
+		--enable-static \
+		--with-included-libxml=no
 	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
 EOF
-
-FROM build AS install
-RUN --network=none make DESTDIR=/rootfs install
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

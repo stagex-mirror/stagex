@@ -1,13 +1,5 @@
-FROM scratch AS base
-ENV VERSION=16.2
-ENV SRC_HASH=2b8201047ec81acd1bad29dba278d788e7891b9c3e8232eda16bb29dec8131c7
-ENV SRC_FILE=postgresql-${VERSION}.tar.gz
-ENV SRC_SITE=https://ftp.postgresql.org/pub/source/v16.2/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-make . /
@@ -30,30 +22,26 @@ COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/core-tcl . /
 COPY --from=stagex/user-util-linux . /
 COPY --from=stagex/user-e2fsprogs . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf postgresql-${VERSION}.tar.gz
 WORKDIR /postgresql-${VERSION}
 RUN --network=none <<-EOF
-    set -eux
-    ./configure \
-        --build=x86_64-linux-musl \
-        --host=x86_64-linux-musl \
-        --prefix=/usr \
-        --mandir=/usr/share/man \
-        --with-libxml \
-        --with-openssl \
-        --with-uuid=e2fs \
-        --disable-rpath \
-        --with-llvm \
-        --with-perl \
-        --with-python \
-        --with-icu \
-        --with-tcl \
-        --with-readline
-    make -j "$(nproc)" world
+	set -eux
+	./configure \
+		--prefix=/usr \
+		--mandir=/usr/share/man \
+		--with-libxml \
+		--with-openssl \
+		--with-uuid=e2fs \
+		--disable-rpath \
+		--with-llvm \
+		--with-perl \
+		--with-python \
+		--with-icu \
+		--with-tcl \
+		--with-readline
+	make -j "$(nproc)" world
+	make install-world DESTDIR=/rootfs
 EOF
-
-FROM build AS install
-RUN --network=none make install-world DESTDIR=/rootfs
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

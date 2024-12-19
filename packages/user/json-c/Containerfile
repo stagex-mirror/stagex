@@ -1,41 +1,31 @@
-FROM scratch AS base
-ENV VERSION=0.17
-ENV SRC_HASH=7550914d58fb63b2c3546f3ccfbe11f1c094147bd31a69dcd23714d7956159e6
-ENV SRC_FILE=json-c-${VERSION}.tar.gz
-ENV SRC_SITE=https://s3.amazonaws.com/json-c_releases/releases/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-cmake . /
-COPY --from=stagex/core-ninja . /
+COPY --from=stagex/core-samurai . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-zlib . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf json-c-${VERSION}.tar.gz
 WORKDIR /json-c-${VERSION}
 RUN <<-EOF
-    set -eux
-    cmake \
-        -B build \
-        -G Ninja \
-        -Wno-dev \
+	set -eux
+	cmake \
+		-B build \
+		-G Ninja \
+		-Wno-dev \
 		-DCMAKE_INSTALL_PREFIX=/usr/ \
 		-DCMAKE_INSTALL_LIBDIR=lib \
 		-DBUILD_SHARED_LIBS=ON \
 		-DBUILD_STATIC_LIBS=ON \
-        -DCMAKE_SYSTEM_NAME=Linux \
-        -DCMAKE_HOST_SYSTEM_NAME=Linux
+		-DCMAKE_SYSTEM_NAME=Linux \
+		-DCMAKE_HOST_SYSTEM_NAME=Linux
 	cmake --build build --target all
+	DESTDIR="/rootfs" cmake --install build
 EOF
-
-FROM build AS install
-RUN --network=none DESTDIR="/rootfs" cmake --install build
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

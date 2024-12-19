@@ -1,40 +1,18 @@
-FROM scratch AS base
-ENV VERSION=1.23.1
-ENV SRC_HASH=6ee44e298379d146a5e5aa6b1c5b5d5f5d0a3365eabdd70741e6e21340ec3b0d
-ENV SRC_FILE=go${VERSION}.src.tar.gz
-ENV SRC_SITE=https://storage.googleapis.com/golang/${SRC_FILE}
-ENV VERSION_BOOTSTRAP_3=1.20.6
-ENV SRC_HASH_BOOTSTRAP_3=62ee5bc6fb55b8bae8f705e0cb8df86d6453626b4ecf93279e2867092e0b7f70
-ENV SRC_FILE_BOOTSTRAP_3=go${VERSION_BOOTSTRAP_3}.src.tar.gz
-ENV SRC_SITE_BOOTSTRAP_3=https://storage.googleapis.com/golang/${SRC_FILE_BOOTSTRAP_3}
-ENV VERSION_BOOTSTRAP_2=1.19.11
-ENV SRC_HASH_BOOTSTRAP_2=e25c9ab72d811142b7f41ff6da5165fec2d1be5feec3ef2c66bc0bdecb431489
-ENV SRC_FILE_BOOTSTRAP_2=go${VERSION_BOOTSTRAP_2}.src.tar.gz
-ENV SRC_SITE_BOOTSTRAP_2=https://storage.googleapis.com/golang/${SRC_FILE_BOOTSTRAP_2}
-ENV VERSION_BOOTSTRAP_1=1.4-bootstrap-20171003
-ENV SRC_HASH_BOOTSTRAP_1=f4ff5b5eb3a3cae1c993723f3eab519c5bae18866b5e5f96fe1102f0cb5c3e52
-ENV SRC_FILE_BOOTSTRAP_1=go${VERSION_BOOTSTRAP_1}.tar.gz
-ENV SRC_SITE_BOOTSTRAP_1=https://dl.google.com/go/${SRC_FILE_BOOTSTRAP_1}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH_BOOTSTRAP_1} ${SRC_SITE_BOOTSTRAP_1} .
-ADD --checksum=sha256:${SRC_HASH_BOOTSTRAP_2} ${SRC_SITE_BOOTSTRAP_2} .
-ADD --checksum=sha256:${SRC_HASH_BOOTSTRAP_3} ${SRC_SITE_BOOTSTRAP_3} .
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-bash . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-binutils . /
+COPY --from=fetch . .
 RUN <<-EOF
 	set -eux
-	tar -xzf go${VERSION_BOOTSTRAP_1}.tar.gz
+	tar -xzf go1.4.src.tar.gz
 	mv go go-bootstrap-1-src
-	tar -xzf go${VERSION_BOOTSTRAP_2}.src.tar.gz
+	tar -xzf go1.19.11.src.tar.gz
 	mv go go-bootstrap-2-src
-	tar -xzf go${VERSION_BOOTSTRAP_3}.src.tar.gz
+	tar -xzf go1.20.6.src.tar.gz
 	mv go go-bootstrap-3-src
 	tar -xzf go${VERSION}.src.tar.gz; \
 	mv go go-src
@@ -97,28 +75,10 @@ RUN --network=none <<-EOF
 	set -eux
 	cd src
 	bash make.bash
-EOF
-
-FROM build AS install
-RUN <<-EOF
-	set -eux
+	cd ..
 	mkdir -p /rootfs/usr
 	cp -R pkg src /rootfs
-    cp -R bin lib /rootfs/usr
+	cp -R bin lib /rootfs/usr
 EOF
-
-FROM base AS test
-COPY --from=install /rootfs/. /
-COPY <<-EOF test.go
-	package main
-	import "fmt"
-	func main() { fmt.Println("Success") }
-EOF
-RUN <<-EOF
-	set -eux
-	go build test.go
-	./test | grep "Success"
-EOF
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

@@ -1,14 +1,5 @@
-FROM scratch AS base
-ENV VERSION=8.9.1
-ENV SRC_HASH=f292f6cc051d5bbabf725ef85d432dfeacc8711dd717ea97612ae590643801e5
-ENV SRC_FILE=curl-${VERSION}.tar.xz
-ENV SRC_SITE=https://curl.se/download/${SRC_FILE}
-ENV SOURCE_DATE_EPOCH=1
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-make . /
@@ -17,25 +8,22 @@ COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-ca-certificates . /
+COPY --from=fetch . .
 RUN tar -xf curl-${VERSION}.tar.xz
 WORKDIR /curl-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
-    set -eux
-    ./configure \
-        --build=x86_64-linux-musl \
-        --host=x86_64-linux-musl \
-        --prefix=/usr \
-        --sysconfdir=/etc \
-        --mandir=/usr/share/man \
-        --infodir=/usr/share/info \
-        --with-ca-bundle=/etc/ssl/certs/ca-certificates.crt \
-        --with-openssl \
-        --enable-static-link
-    make -j "$(nproc)"
+	set -eux
+	./configure \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--with-ca-bundle=/etc/ssl/certs/ca-certificates.crt \
+		--with-openssl \
+		--enable-static-link
+	make -j "$(nproc)"
+	make install DESTDIR=/rootfs
 EOF
-
-FROM build AS install
-RUN --network=none make install DESTDIR=/rootfs
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

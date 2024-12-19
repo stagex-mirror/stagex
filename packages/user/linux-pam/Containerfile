@@ -1,14 +1,5 @@
-FROM scratch AS base
-ARG ARCH=x86_64
-ENV VERSION=1.6.1
-ENV SRC_HASH=f8923c740159052d719dbfc2a2f81942d68dd34fcaf61c706a02c9b80feeef8e
-ENV SRC_FILE=Linux-PAM-${VERSION}.tar.xz
-ENV SRC_SITE=https://github.com/linux-pam/linux-pam/releases/download/v${VERSION}/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-busybox . /
@@ -25,15 +16,14 @@ COPY --from=stagex/core-gettext . /
 COPY --from=stagex/core-flex . /
 COPY --from=stagex/core-pkgconf . /
 COPY --from=stagex/user-utmps . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf linux-pam-${VERSION}.tar.xz
 WORKDIR /Linux-PAM-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	export CFLAGS="-flto=auto $(pkg-config --cflags utmps)"
 	export LDFLAGS=$(pkg-config --libs utmps)
 	./configure \
-		--build=${ARCH}-linux-musl \
-		--host=${ARCH}-linux-musl \
 		--prefix=/usr \
 		--libdir=/usr/lib \
 		--sysconfdir=/etc \
@@ -46,11 +36,7 @@ RUN --network=none <<-EOF
 		--sbindir=/usr/sbin \
 		--enable-securedir=/usr/lib/security
 	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
 EOF
-
-FROM build AS install
-RUN make DESTDIR=/rootfs install
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

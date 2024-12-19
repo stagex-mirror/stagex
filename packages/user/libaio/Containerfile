@@ -1,14 +1,5 @@
-FROM scratch AS base
-ARG ARCH=x86_64
-ENV VERSION=0.3.113
-ENV SRC_HASH=716c7059703247344eb066b54ecbc3ca2134f0103307192e6c2b7dab5f9528ab
-ENV SRC_FILE=libaio-libaio-${VERSION}.tar.gz
-ENV SRC_SITE=https://pagure.io/libaio/archive/libaio-${VERSION}/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-bash . /
 COPY --from=stagex/core-gcc . /
@@ -16,17 +7,14 @@ COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-linux-headers . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf libaio-${VERSION}.tar.gz
 WORKDIR /libaio-libaio-${VERSION}
 COPY *.patch .
 RUN --network=none <<-EOF
 	set -eux
 	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
 EOF
-
-FROM build AS install
-RUN make DESTDIR=/rootfs install
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

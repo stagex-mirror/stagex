@@ -1,47 +1,23 @@
-FROM scratch AS base
-ENV VERSION=3.0.1
-ENV SRC_HASH=c8f0f42e6103dea4b1a6a483cb556654e97302c7465308f58363778f95f194b1
-ENV SRC_FILE=libassuan-${VERSION}.tar.bz2
-ENV SRC_SITE=https://gnupg.org/ftp/gcrypt/libassuan/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/user-libgpg-error . /
-RUN tar -xvf $SRC_FILE
+COPY --from=fetch . .
+RUN tar -xvf libassuan-${VERSION}.tar.bz2
 WORKDIR /libassuan-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./configure \
-		--build=x86_64-unknown-linux-musl \
-		--host=x86_64-unknown-linux-musl \
 		--prefix=/usr \
 		--bindir=/usr/bin \
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info
 	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
 EOF
-
-FROM build AS install
-RUN --network=none make DESTDIR=/rootfs install
-
-FROM base AS test
-COPY --from=install /rootfs/. /
-COPY --from=stagex/core-busybox . /
-RUN /bin/sh <<-EOF
-	set -eux
-	LIBASSUAN_FILES_FOUND=\$(ls /usr/lib/ | grep libassuan || true)
-	if [ -z "\$LIBASSUAN_FILES_FOUND" ]; then
-	    echo "libassuan not found"
-	    exit 1
-	fi
-EOF
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

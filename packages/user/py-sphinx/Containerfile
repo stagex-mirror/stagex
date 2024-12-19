@@ -1,13 +1,5 @@
-FROM scratch AS base
-ENV VERSION=7.2.6
-ENV SRC_HASH=b41c04543148937b887097f396d7b2b54ae49d0597b68625f06ffdf702d4d917
-ENV SRC_FILE=v${VERSION}.tar.gz
-ENV SRC_SITE=https://github.com/sphinx-doc/sphinx/archive/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-python . /
@@ -15,16 +7,14 @@ COPY --from=stagex/core-py-flit . /
 COPY --from=stagex/core-py-gpep517 . /
 COPY --from=stagex/core-py-installer . /
 COPY --from=stagex/core-zlib . /
-RUN tar -xzf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xzf py-sphinx-${VERSION}.tar.gz
 WORKDIR /sphinx-${VERSION}
-RUN gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
-
-FROM build AS install
 RUN --network=none <<-EOF
 	set -eu
-    python -m installer -d /rootfs .dist/*.whl
-    find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+	python -m installer -d /rootfs .dist/*.whl
+	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

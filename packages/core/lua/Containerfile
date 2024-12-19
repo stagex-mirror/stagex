@@ -1,14 +1,5 @@
-FROM scratch AS base
-ARG ARCH=x86_64
-ENV VERSION=5.4.6
-ENV SRC_HASH=7d5ea1b9cb6aa0b59ca3dde1c6adcb57ef83a1ba8e5432c0ecd06bf439b3ad88
-ENV SRC_FILE=lua-${VERSION}.tar.gz
-ENV SRC_SITE=https://www.lua.org/ftp/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-gcc . /
@@ -23,41 +14,36 @@ COPY --from=stagex/core-m4 . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-cmake . /
 COPY --from=stagex/core-zlib . /
-RUN tar -xvf $SRC_FILE
+COPY --from=fetch . .
+RUN tar -xvf lua-${VERSION}.tar.gz
 WORKDIR /lua-${VERSION}
 COPY <<-EOF configure.ac
-    top_buildir=.
-    AC_INIT(src/luaconf.h)
-    AC_PROG_LIBTOOL
-    AC_OUTPUT()
+	top_buildir=.
+	AC_INIT(src/luaconf.h)
+	AC_PROG_LIBTOOL
+	AC_OUTPUT()
 EOF
 RUN --network=none <<-EOF
 	set -eu
-    libtoolize --force --install
-    aclocal
-    autoconf
+	libtoolize --force --install
+	aclocal
+	autoconf
 	./configure \
-		--build=${ARCH}-unknown-linux-musl \
-		--host=${ARCH}-unknown-linux-musl \
 		--prefix=/usr
 	make \
-        -j "$(nproc)" \
-        V="${VERSION}" \
-        LDFLAGS="-lncurses" \
-        CFLAGS="-DLUA_USE_LINUX -DLUA_COMPAT_5_2 -DLUA_USE_LINENOISE" \
+		-j "$(nproc)" \
+		V="${VERSION}" \
+		LDFLAGS="-lncurses" \
+		CFLAGS="-DLUA_USE_LINUX -DLUA_COMPAT_5_2 -DLUA_USE_LINENOISE" \
 		RPATH="/usr/lib" \
 		LIB_LIBS="-lpthread -lm -ldl -llinenoise" \
 		linux
-EOF
-
-FROM build AS install
-RUN --network=none \
-    make \
-        V="${VERSION}" \
+	make \
+		V="${VERSION}" \
 		INSTALL_TOP="/rootfs/usr" \
 		INSTALL_INC="/rootfs/usr/include/lua" \
 		INSTALL_LIB="/rootfs/usr/lib/lua" \
 		install
-
+EOF
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

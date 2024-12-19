@@ -1,23 +1,16 @@
-FROM scratch AS base
-ENV VERSION=0.0.5
-ENV SRC_FILE=v${VERSION}.tar.gz
-ENV SRC_SITE=https://codeberg.org/stagex/sxctl/archive/${SRC_FILE}
-ENV SRC_HASH=26f0dd95e72b632036c598d055ef6b78cec88c497dd67ede30d1498bb8229412
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-go . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf sxctl-${VERSION}.tar.gz
 WORKDIR /sxctl/cmd/sxctl
-RUN go build -o sxctl
-
-FROM build AS install
-WORKDIR //rootfs
-RUN cp /sxctl/cmd/sxctl/sxctl .
-
+RUN go get ./...
+RUN --network=none <<-EOF
+	go build -o sxctl
+	mkdir /rootfs/
+	cp /sxctl/cmd/sxctl/sxctl /rootfs/
+EOF
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /
 ENTRYPOINT ["/sxctl"]

@@ -1,13 +1,5 @@
-FROM scratch AS base
-ENV VERSION=0.190
-ENV SRC_HASH=8e00a3a9b5f04bc1dc273ae86281d2d26ed412020b391ffcc23198f10231d692
-ENV SRC_FILE=elfutils-${VERSION}.tar.bz2
-ENV SRC_SITE=https://sourceware.org/elfutils/ftp/${VERSION}/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-binutils . /
@@ -28,7 +20,8 @@ COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-musl-fts . /
 COPY --from=stagex/core-musl-obstack . /
 COPY --from=stagex/core-linux-headers . /
-RUN tar -xjf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xjf elfutils-${VERSION}.tar.bz2
 WORKDIR /elfutils-${VERSION}
 ADD *.patch .
 RUN --network=none <<-EOF
@@ -37,8 +30,6 @@ RUN --network=none <<-EOF
 	autoreconf -vif
 	CFLAGS="-D_GNU_SOURCE -Wno-error -Wno-null-dereference" \
 	./configure \
-		--build="x86_64-linux-musl" \
-		--host="x86_64-linux-musl" \
 		--prefix=/usr \
 		--sysconfdir=/etc \
 		--mandir=/usr/share/man \
@@ -52,10 +43,7 @@ RUN --network=none <<-EOF
 		--disable-debuginfod \
 		--with-zstd
 	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
 EOF
-
-FROM build AS install
-RUN --network=none make DESTDIR=/rootfs install
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

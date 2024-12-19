@@ -1,36 +1,14 @@
-FROM scratch AS base
-ENV GCC_VERSION=13.1.0
-ENV GCC_HASH=61d684f0aa5e76ac6585ad8898a2427aade8979ed5e7f85492286c4dfc13ee86
-ENV GCC_FILE=gcc-$GCC_VERSION.tar.xz
-ENV GCC_SITE=https://mirrors.kernel.org/gnu/gcc/gcc-${GCC_VERSION}/${GCC_FILE}
-ENV GMP_VERSION=6.2.1
-ENV GMP_HASH=eae9326beb4158c386e39a356818031bd28f3124cf915f8c5b1dc4c7a36b4d7c
-ENV GMP_FILE=gmp-${GMP_VERSION}.tar.bz2
-ENV GMP_SITE=https://gcc.gnu.org/pub/gcc/infrastructure/${GMP_FILE}
-ENV MPFR_VERSION=4.1.0
-ENV MPFR_HASH=feced2d430dd5a97805fa289fed3fc8ff2b094c02d05287fd6133e7f1f0ec926
-ENV MPFR_FILE=mpfr-${MPFR_VERSION}.tar.bz2
-ENV MPFR_SITE=https://gcc.gnu.org/pub/gcc/infrastructure/${MPFR_FILE}
-ENV MPC_VERSION=1.2.1
-ENV MPC_HASH=17503d2c395dfcf106b622dc142683c1199431d095367c6aacba6eec30340459
-ENV MPC_FILE=mpc-${MPC_VERSION}.tar.gz
-ENV MPC_SITE=https://gcc.gnu.org/pub/gcc/infrastructure/${MPC_FILE}
-ENV ISL_VERSION=0.24
-ENV ISL_HASH=fcf78dd9656c10eb8cf9fbd5f59a0b6b01386205fe1934b3b287a0a1898145c0
-ENV ISL_FILE=isl-${ISL_VERSION}.tar.bz2
-ENV ISL_SITE=https://gcc.gnu.org/pub/gcc/infrastructure/${ISL_FILE}
-ENV MUSL_VERSION=1.2.4
-ENV MUSL_FILE=musl-${MUSL_VERSION}.tar.gz
-ENV MUSL_SITE=http://musl.libc.org/releases/${MUSL_FILE}
-ENV MUSL_HASH=7a35eae33d5372a7c0da1188de798726f68825513b7ae3ebe97aaaa52114f039
-ENV LINUX_VERSION=6.6
-ENV LINUX_HASH=d926a06c63dd8ac7df3f86ee1ffc2ce2a3b81a2d168484e76b5b389aba8e56d0
-ENV LINUX_FILE=linux-${LINUX_VERSION}.tar.xz
-ENV LINUX_SITE=https://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/${LINUX_FILE}
-ENV BINUTILS_VERSION=2.35
-ENV BINUTILS_HASH=1b11659fb49e20e18db460d44485f09442c8c56d5df165de9461eb09c8302f85
-ENV BINUTILS_FILE=binutils-${BINUTILS_VERSION}.tar.xz
-ENV BINUTILS_SITE=https://ftp.gnu.org/gnu/binutils/${BINUTILS_FILE}
+FROM scratch AS build
+ARG GCC_SOURCE
+ARG GCC_VERSION
+ARG LINUX_SOURCE
+ARG LINUX_VERSION
+ARG MUSL_SOURCE
+ARG MUSL_VERSION
+ARG BUSYBOX_SOURCE
+ARG BUSYBOX_VERSION
+ARG BINUTILS_SOURCE
+ARG BINUTILS_VERSION
 ENV TARGET_ARCH=x86_64
 ENV HOST_ARCH=i386
 ENV BUILD=${HOST_ARCH}-unknown-linux-musl
@@ -48,26 +26,15 @@ ENV GCC_DIR=${HOME}/build-gcc
 ENV LINUX_DIR=${HOME}/build-linux
 ENV BINUTILS_DIR=${HOME}/build-binutils
 ENV MUSL_DIR=${HOME}/build-musl
-
-FROM base AS fetch
 WORKDIR /${HOME}
-ADD --checksum=sha256:${LINUX_HASH} ${LINUX_SITE} .
-ADD --checksum=sha256:${MUSL_HASH} ${MUSL_SITE} .
-ADD --checksum=sha256:${BINUTILS_HASH} ${BINUTILS_SITE} .
-ADD --checksum=sha256:${GCC_HASH} ${GCC_SITE} .
-ADD --checksum=sha256:${GMP_HASH} ${GMP_SITE} .
-ADD --checksum=sha256:${MPFR_HASH} ${MPFR_SITE} .
-ADD --checksum=sha256:${MPC_HASH} ${MPC_SITE} .
-ADD --checksum=sha256:${ISL_HASH} ${ISL_SITE} .
-
-FROM fetch AS build
+COPY --from=fetch . .
 COPY --from=stagex/bootstrap-stage1 . /
 RUN --network=none <<-EOF
     set -eux
-    tar -xf ${LINUX_FILE}
-    tar -xzf ${MUSL_FILE}
-    tar -xf ${BINUTILS_FILE}
-    tar -xf ${GCC_FILE}
+    tar -xf ${LINUX_SOURCE}
+    tar -xzf ${MUSL_SOURCE}
+    tar -xf ${BINUTILS_SOURCE}
+    tar -xf ${GCC_SOURCE}
     cd gcc-${GCC_VERSION}
     mv ../*.tar.* .; \
     ./contrib/download_prerequisites
@@ -182,8 +149,6 @@ RUN --network=none <<-EOF
     rm usr/include/headers_check.pl
     cp -rv usr/include ${LINUX_DIR}
 EOF
-
-FROM build AS install
 WORKDIR /${HOME}
 COPY --from=stagex/bootstrap-stage1 . /rootfs/
 RUN <<-EOF
@@ -198,8 +163,8 @@ RUN <<-EOF
     ln -s /${TARGET}/lib/ld-musl-${TARGET_ARCH}.so.1 /rootfs/lib/ld-musl-${TARGET_ARCH}.so.1
 EOF
 
-FROM base AS package
-COPY --from=install /rootfs/ /
+FROM scratch AS package
+COPY --from=build /rootfs/ /
 USER 1000:1000
 ENTRYPOINT ["/bin/bash"]
 ENV PS1="stage2 $ "

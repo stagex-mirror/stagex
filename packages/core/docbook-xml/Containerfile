@@ -1,20 +1,5 @@
-FROM scratch AS base
-ENV VERSION=4.5
-ENV SRC_HASH_4_5=4e4e037a2b83c98c6c94818390d4bdd3f6e10f6ec62dd79188594e26190dc7b4
-ENV SRC_HASH_4_4=02f159eb88c4254d95e831c51c144b1863b216d909b5ff45743a1ce6f5273090
-ENV SRC_HASH_4_3=23068a94ea6fd484b004c5a73ec36a66aa47ea8f0d6b62cc1695931f5c143464
-ENV SRC_HASH_4_2=acc4601e4f97a196076b7e64b368d9248b07c7abf26b34a02cca40eeebe60fa2
-ENV SRC_HASH_4_1_2=30f0644064e0ea71751438251940b1431f46acada814a062870f486c772e7772
-ENV SRC_SITE=https://docbook.org/xml
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH_4_5} ${SRC_SITE}/4.5/docbook-xml-4.5.zip .
-ADD --checksum=sha256:${SRC_HASH_4_4} ${SRC_SITE}/4.4/docbook-xml-4.4.zip .
-ADD --checksum=sha256:${SRC_HASH_4_3} ${SRC_SITE}/4.3/docbook-xml-4.3.zip .
-ADD --checksum=sha256:${SRC_HASH_4_2} ${SRC_SITE}/4.2/docbook-xml-4.2.zip .
-ADD --checksum=sha256:${SRC_HASH_4_1_2} ${SRC_SITE}/4.1.2/docbkx412.zip .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-binutils . /
@@ -26,23 +11,21 @@ COPY --from=stagex/core-libtool . /
 COPY --from=stagex/core-libxml2 . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-m4 . /
+COPY --from=fetch . .
 RUN --network=none <<-EOF
-    set -eux
-    mkdir -p out
-	for version in 4.1.2 4.2 4.3 4.4 4.5; do
-		case $version in
-			4.1.2) filename=docbkx412.zip;;
-			*) filename=docbook-xml-$version.zip;;
-		esac
-		mkdir -p docbook-xml-$version
-		cd docbook-xml-$version
-		unzip ../$filename
-        mkdir -p "../out/usr/share/xml/docbook/xml-dtd-$version"
-        cp -af docbook.cat *.dtd ent/ *.mod ../out/usr/share/xml/docbook/xml-dtd-$version/
-        cd ..
+	set -eux
+	mkdir -p out
+	for version in 4.1.2 4.2 4.3 4.4 ${VERSION}; do
+		filename=docbook-xml-${version}.zip;
+		mkdir -p docbook-xml-${version}
+		cd docbook-xml-${version}
+		unzip ../${filename}
+		mkdir -p "../out/usr/share/xml/docbook/xml-dtd-${version}"
+		cp -af docbook.cat *.dtd ent/ *.mod ../out/usr/share/xml/docbook/xml-dtd-${version}/
+		cd ..
 	done
-    chmod 755 out/usr/share/xml/docbook/xml-dtd-*/ent
-    mkdir -p out/etc/xml
+	chmod 755 out/usr/share/xml/docbook/xml-dtd-*/ent
+	mkdir -p out/etc/xml
 	export XML_CATALOG_FILES=""
 	xmlcatalog --noout --create out/etc/xml/docbook-xml
 	xmlcatalog --noout --add \
@@ -50,7 +33,6 @@ RUN --network=none <<-EOF
 		"-//OASIS//DTD DocBook XML V4.1.2//EN" \
 		"http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" \
 		out/etc/xml/docbook-xml
-
 	xmlcatalog --noout --add "public" \
 		"-//OASIS//DTD DocBook XML CALS Table Model V4.1.2//EN" \
 		"http://www.oasis-open.org/docbook/xml/4.1.2/calstblx.dtd" \
@@ -259,27 +241,24 @@ RUN --network=none <<-EOF
 		"http://www.oasis-open.org/docbook/xml/4.5" \
 		"file:///usr/share/xml/docbook/xml-dtd-4.5" \
 		out/etc/xml/docbook-xml
-    xmlcatalog --noout --create out/etc/xml/catalog
-    xmlcatalog --noout --add "delegatePublic" \
-        "-//OASIS//ENTITIES DocBook XML" \
-        "file:///etc/xml/docbook-xml" \
-        out/etc/xml/catalog
-    xmlcatalog --noout --add "delegatePublic" \
-        "-//OASIS//DTD DocBook XML" \
-        "file:///etc/xml/docbook-xml" \
-        out/etc/xml/catalog
-    xmlcatalog --noout --add "delegateSystem" \
-        "http://www.oasis-open.org/docbook/" \
-        "file:///etc/xml/docbook-xml" \
-        out/etc/xml/catalog
-    xmlcatalog --noout --add "delegateURI" \
-        "http://www.oasis-open.org/docbook/" \
-        "file:///etc/xml/docbook-xml" \
-        out/etc/xml/catalog
+	xmlcatalog --noout --create out/etc/xml/catalog
+	xmlcatalog --noout --add "delegatePublic" \
+		"-//OASIS//ENTITIES DocBook XML" \
+		"file:///etc/xml/docbook-xml" \
+		out/etc/xml/catalog
+	xmlcatalog --noout --add "delegatePublic" \
+		"-//OASIS//DTD DocBook XML" \
+		"file:///etc/xml/docbook-xml" \
+		out/etc/xml/catalog
+	xmlcatalog --noout --add "delegateSystem" \
+		"http://www.oasis-open.org/docbook/" \
+		"file:///etc/xml/docbook-xml" \
+		out/etc/xml/catalog
+	xmlcatalog --noout --add "delegateURI" \
+		"http://www.oasis-open.org/docbook/" \
+		"file:///etc/xml/docbook-xml" \
+		out/etc/xml/catalog
+	mv out/ /rootfs
 EOF
-
-FROM build AS install
-RUN --network=none mv out/ /rootfs
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

@@ -1,20 +1,13 @@
-FROM scratch AS base
-ENV VERSION=1.34.68
-ENV SRC_HASH=e7ae9d69cc3e7b31d926e6a1a9ae673ba02da263e35cf12ff2bae35a21755cc6
-ENV SRC_FILE=botocore-${VERSION}.tar.gz
-ENV SRC_SITE=https://files.pythonhosted.org/packages/source/b/botocore/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS install
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-python . /
 COPY --from=stagex/core-py-flit . /
 COPY --from=stagex/core-py-gpep517 . /
 COPY --from=stagex/core-zlib . /
-RUN tar -xzf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xzf py-botocore-${VERSION}.tar.gz
 WORKDIR /botocore-${VERSION}
 RUN <<-EOF
 	set -eu
@@ -23,6 +16,5 @@ RUN <<-EOF
 	cp -a botocore "/rootfs/$sitedir"
     find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

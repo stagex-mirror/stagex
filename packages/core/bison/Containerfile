@@ -1,13 +1,5 @@
-FROM scratch AS base
-ENV VERSION=3.4.2
-ENV SRC_HASH=27d05534699735dc69e86add5b808d6cb35900ad3fd63fa82e3eb644336abfa0
-ENV SRC_FILE=bison-${VERSION}.tar.xz
-ENV SRC_SITE=http://mirrors.kernel.org/gnu/bison/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-gcc . /
@@ -17,19 +9,17 @@ COPY --from=stagex/core-autoconf . /
 COPY --from=stagex/core-automake . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-m4 . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf bison-${VERSION}.tar.xz
 WORKDIR /bison-${VERSION}
 ENV M4=/usr/bin/m4
 RUN --network=none <<-EOF
 	set -eux
 	./configure \
 		--prefix=/usr \
-        --disable-nls
+		--disable-nls
 	make -j1 MAKEINFO=false
+	make DESTDIR=/rootfs install
 EOF
-
-FROM build AS install
-RUN --network=none make DESTDIR=/rootfs install
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

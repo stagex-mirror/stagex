@@ -1,14 +1,5 @@
-FROM scratch AS base
-ARG ARCH=x86_64
-ENV VERSION=1.6.3
-ENV SRC_HASH=a41076e3710746326c3945042994ad9a4fcac0ce0277dd8fea076fec3c9772b5
-ENV SRC_FILE=apr-util-${VERSION}.tar.bz2
-ENV SRC_SITE=https://www.apache.org/dist/apr/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-busybox . /
@@ -23,8 +14,8 @@ COPY --from=stagex/user-openldap . /
 COPY --from=stagex/user-postgresql . /
 COPY --from=stagex/user-apr . /
 COPY --from=stagex/user-util-linux . /
-
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf apr-util-${VERSION}.tar.bz2
 WORKDIR /apr-util-${VERSION}
 COPY *.patch .
 RUN --network=none <<-EOF
@@ -43,11 +34,7 @@ RUN --network=none <<-EOF
 		--with-dbm=ndbm \
 		--with-ndbm
 	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
 EOF
-
-FROM build AS install
-RUN make DESTDIR=/rootfs install
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

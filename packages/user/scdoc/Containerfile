@@ -1,31 +1,18 @@
-FROM scratch AS base
-ARG ARCH=x86_64
-ENV VERSION=1.11.3
-ENV SRC_HASH=4c5c6136540384e5455b250f768e7ca11b03fdba1a8efc2341ee0f1111e57612
-ENV SRC_FILE=${VERSION}.tar.gz
-ENV SRC_SITE=https://git.sr.ht/~sircmpwn/scdoc/archive/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-make . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf scdoc-${VERSION}.tar.gz
 WORKDIR /scdoc-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	set -eux
 	make PREFIX="/usr" -j "$(nproc)"
+	make DESTDIR=/rootfs install
 EOF
-
-FROM build AS install
-RUN make DESTDIR=/rootfs install
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
-
+COPY --from=build /rootfs/ /

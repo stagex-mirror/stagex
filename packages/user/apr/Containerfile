@@ -1,21 +1,13 @@
-FROM scratch AS base
-ARG ARCH=x86_64
-ENV VERSION=1.7.5
-ENV SRC_HASH=cd0f5d52b9ab1704c72160c5ee3ed5d3d4ca2df4a7f8ab564e3cb352b67232f2
-ENV SRC_FILE=apr-${VERSION}.tar.bz2
-ENV SRC_SITE=https://www.apache.org/dist/apr/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/user-util-linux . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf apr-${VERSION}.tar.bz2
 WORKDIR /apr-${VERSION}
 COPY *.patch .
 RUN --network=none <<-EOF
@@ -28,11 +20,7 @@ RUN --network=none <<-EOF
 		--enable-nonportable-atomics=no \
 		--with-devrandom=/dev/urandom
 	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
 EOF
-
-FROM build AS install
-RUN make DESTDIR=/rootfs install
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

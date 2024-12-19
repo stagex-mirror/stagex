@@ -1,45 +1,31 @@
-FROM scratch AS base
-ARG ARCH=x86_64
-ENV VERSION=9.4
-ENV SRC_HASH=ea613a4cf44612326e917201bbbcdfbd301de21ffc3b59b6e5c07e040b275e52
-ENV SRC_FILE=coreutils-${VERSION}.tar.xz
-ENV SRC_SITE=https://ftp.gnu.org/gnu/coreutils/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-gcc . /
+COPY --from=fetch . .
 RUN tar -xf coreutils-${VERSION}.tar.xz
 WORKDIR /coreutils-${VERSION}
 ENV FORCE_UNSAFE_CONFIGURE=1
 RUN --network=none <<-EOF
 	set -ex
 	./configure \
-		--build=${ARCH}-linux-musl \
-		--host=${ARCH}-linux-musl \
-		--target=${ARCH}-linux-musl \
 		--with-build-sysroot= \
 		--with-sysroot=/ \
 		--prefix=/usr \
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info \
-        --disable-nls \
-        --with-openssl \
-        --enable-single-binary=symlinks \
+		--disable-nls \
+		--with-openssl \
+		--enable-single-binary=symlinks \
 		--enable-single-binary-exceptions=env \
-        gl_cv_func_getcwd_path_max="no, but it is partly working" \
-        gl_cv_prog_perl="no"
+		gl_cv_func_getcwd_path_max="no, but it is partly working" \
+		gl_cv_prog_perl="no"
 	make -j "$(nproc)"
+	make DESTDIR="/rootfs" install
 EOF
-
-FROM build AS install
-RUN --network=none make DESTDIR="/rootfs" install
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

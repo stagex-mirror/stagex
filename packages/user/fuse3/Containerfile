@@ -1,14 +1,5 @@
-FROM scratch AS base
-ARG ARCH=x86_64
-ENV VERSION=3.16.2
-ENV SRC_HASH=f797055d9296b275e981f5f62d4e32e089614fc253d1ef2985851025b8a0ce87
-ENV SRC_FILE=fuse-${VERSION}.tar.gz
-ENV SRC_SITE=https://github.com/libfuse/libfuse/releases/download/fuse-${VERSION}/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-python . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-bzip2 . /
@@ -34,25 +25,22 @@ COPY --from=stagex/core-expat . /
 COPY --from=stagex/core-libxml2 . /
 COPY --from=stagex/core-libxslt . /
 COPY --from=stagex/core-gettext . /
-COPY --from=stagex/core-ninja . /
+COPY --from=stagex/core-samurai . /
 COPY --from=stagex/user-rhash . /
 COPY --from=stagex/user-util-linux . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf fuse3-${VERSION}.tar.gz
 WORKDIR /fuse-${VERSION}
 COPY *.patch .
 RUN --network=none <<-EOF
 	set -eux
-    meson setup \
+	meson setup \
 		--default-library=shared \
 		--prefix=/usr \
 		-Dinitscriptdir="" \
 		. output
 	meson compile -C output
+	DESTDIR=/rootfs meson install --no-rebuild -C output
 EOF
-
-FROM build AS install
-RUN DESTDIR=/rootfs meson install --no-rebuild -C output
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

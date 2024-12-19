@@ -1,32 +1,20 @@
-FROM scratch AS base
-ENV VERSION=2023.02.20
-ENV SRC_HASH=71d4048479ae28f1f5794619c3d72df9c01df49b1c628ef85fde37596dc31a33
-ENV SRC_FILE=autoconf-archive-${VERSION}.tar.xz
-ENV SRC_SITE=https://ftp.gnu.org/gnu/autoconf-archive/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf autoconf-archive-${VERSION}.tar.xz
 WORKDIR /autoconf-archive-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./configure \
-        --build=x86_64-linux-musl \
-        --host=x86_64-linux-musl \
 		--sysconfdir=/etc \
 		--localstatedir=/etc \
 		--mandir=/usr/share/man \
 		--prefix=/usr
 	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
 EOF
-
-FROM build AS install
-RUN --network=none make DESTDIR=/rootfs install
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

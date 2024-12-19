@@ -1,15 +1,7 @@
-FROM scratch AS base
-ARG ARCH=x86_64
-ENV VERSION=2.43.1
-ENV SRC_HASH=13f74202a3c4c51118b797a39ea4200d3f6cfbe224da6d1d95bb938480132dfd
-ENV SRC_FILE=binutils-${VERSION}.tar.xz
-ENV SRC_SITE=https://ftp.gnu.org/gnu/binutils/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/bootstrap-stage3 . /
+COPY --from=fetch . .
 RUN tar -xf binutils-${VERSION}.tar.xz
 WORKDIR /binutils-${VERSION}
 RUN --network=none <<-EOF
@@ -17,9 +9,9 @@ RUN --network=none <<-EOF
 	CFLAGS='-Os -Wformat -Werror=format-security -O2' \
 	CXXFLAGS='-Os -Wformat -Werror=format-security -O2' \
 	./configure \
-		--build=${ARCH}-linux-musl \
-		--host=${ARCH}-linux-musl \
-		--target=${ARCH}-linux-musl \
+        --build=$(uname -m)-linux-musl \
+        --host=$(uname -m)-linux-musl \
+        --target=$(uname -m)-linux-musl \
 		--with-build-sysroot= \
 		--with-sysroot=/ \
 		--prefix=/usr \
@@ -47,10 +39,7 @@ RUN --network=none <<-EOF
 		--with-mmap \
 		--with-pic
 	make -j "$(nproc)"
+	make DESTDIR="/rootfs" install
 EOF
-
-FROM build AS install
-RUN --network=none make DESTDIR="/rootfs" install
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

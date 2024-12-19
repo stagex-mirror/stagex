@@ -1,13 +1,5 @@
-FROM scratch AS base
-ENV VERSION=3.0.11-1
-ENV SRC_HASH=a6bcfc81ae0487c3d0de4226e0c5aff7c7d0a5e344cc7b75c17bbb6e713f154b
-ENV SRC_FILE=${VERSION}.tar.gz
-ENV SRC_SITE=https://github.com/cython/cython/archive/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-zlib . /
@@ -27,16 +19,14 @@ COPY --from=stagex/core-py-distro . /
 COPY --from=stagex/core-py-dateutil . /
 COPY --from=stagex/core-py-urllib3 . /
 COPY --from=stagex/core-py-cffi . /
-RUN tar -xzf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xzf cython-${VERSION}.tar.gz
 WORKDIR /cython-${VERSION}
-RUN gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
-#
-FROM build AS install
 RUN --network=none <<-EOF
-    set -eux
-    python -m installer -d /rootfs .dist/*.whl
-    find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+	set -eux
+	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+	python -m installer -d /rootfs .dist/*.whl
+	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

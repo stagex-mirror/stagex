@@ -1,14 +1,5 @@
-FROM scratch AS base
-ARG ARCH=x86_64
-ENV VERSION=0.9.0
-ENV SRC_HASH=9679ca171e8aaa3c4e4053e8bc1d10c8dabf0220bd4b16aba78743511c25f731
-ENV SRC_FILE=v${VERSION}.tar.gz
-ENV SRC_SITE=https://github.com/stefanberger/swtpm/archive/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-musl . /
@@ -37,24 +28,20 @@ COPY --from=stagex/user-json-glib . /
 COPY --from=stagex/user-expect . /
 COPY --from=stagex/user-socat . /
 COPY --from=stagex/user-libseccomp . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf swtpm-${VERSION}.tar.gz
 WORKDIR /swtpm-${VERSION}
 RUN --network=none <<-EOF
-    set -ex
-    NOCONFIGURE=1 ./autogen.sh
-    ./configure \
-        --build=${ARCH}-linux-musl \
-        --host=${ARCH}-linux-musl \
-        --prefix=/usr \
-        --libdir=/usr/lib \
-        --with-openssl \
-        --with-tss-user=root \
-        --with-tss-group=root
-    make -j "$(nproc)"
+	set -ex
+	NOCONFIGURE=1 ./autogen.sh
+	./configure \
+		--prefix=/usr \
+		--libdir=/usr/lib \
+		--with-openssl \
+		--with-tss-user=root \
+		--with-tss-group=root
+	make -j "$(nproc)"
+	make DESTDIR="/rootfs" install
 EOF
-
-FROM build AS install
-RUN --network=none make DESTDIR="/rootfs" install
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

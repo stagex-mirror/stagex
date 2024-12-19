@@ -1,0 +1,10 @@
+[package]
+name = "linux-server"
+version = "6.10.7"
+description = "TODO"
+
+[sources.linux]
+hash = "900d567ff01824708ce24c3b37faaef03e6f6145411dd447a6ff2edc8c5db3a9"
+format = "tar.xz"
+file = "linux-{version}.{format}"
+mirrors = [ "http://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/linux-{version}.{format}",]

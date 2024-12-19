@@ -1,14 +1,5 @@
-FROM scratch AS base
-ARG ARCH=x86_64
-ENV VERSION=1.1.0
-ENV SRC_HASH=e720a6ca29428b803f4ad165371771f5398faba397edf6778837a18599ea13ff
-ENV SRC_FILE=v${VERSION}.tar.gz
-ENV SRC_SITE=https://github.com/google/brotli/archive/refs/tags/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-busybox . /
@@ -17,32 +8,26 @@ COPY --from=stagex/core-make . /
 COPY --from=stagex/core-samurai . /
 COPY --from=stagex/core-cmake . /
 COPY --from=stagex/core-openssl . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf brotli-${VERSION}.tar.gz
 WORKDIR /brotli-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
-    cmake -B build -G Ninja \
+	cmake -B build -G Ninja \
 		-DCMAKE_BUILD_TYPE=None \
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DBUILD_SHARED_LIBS=OFF
 	cmake --build build
-
 	cmake -B build -G Ninja \
 		-DCMAKE_BUILD_TYPE=None \
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DBUILD_SHARED_LIBS=ON
 	cmake --build build
-EOF
-
-FROM build AS install
-RUN <<-EOF
-    set -eux
-    DESTDIR=/rootfs cmake --install build
-    for file in common dec enc; do
+	DESTDIR=/rootfs cmake --install build
+	for file in common dec enc; do
 		install -D -m 755 build/libbrotli$file.a /rootfs/usr/lib64
 	done
-    mv /rootfs/usr/lib64 /rootfs/usr/lib
+	mv /rootfs/usr/lib64 /rootfs/usr/lib
 EOF
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

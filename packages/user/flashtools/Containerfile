@@ -1,31 +1,22 @@
-FROM scratch AS base
-ENV VERSION=d1e6f12568cb23387144a4b7a6535fe1bc1e79b1
-ENV SRC_HASH=a68cdb4a2e312f96862119a6d829ac900b53d0cbc80caa5632efd43b5b7eed6c
-ENV SRC_FILE=${VERSION}.tar.gz
-ENV SRC_SITE=https://github.com/osresearch/flashtools/archive/${SRC_FILE}
-
-FROM base AS fetch
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-gcc . /
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-RUN tar -xvf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xvf flashtools-${VERSION}.tar.gz
 WORKDIR /flashtools-${VERSION}
-
-FROM fetch AS build
-RUN --network=none make all
-
-FROM build AS install
-RUN <<-EOF
-    mkdir -p /rootfs/usr/bin/
-    install -D -m 0755 flashtool /rootfs/usr/bin/
-    install -D -m 0755 peek /rootfs/usr/bin/
-    install -D -m 0755 poke /rootfs/usr/bin/
-    install -D -m 0755 cbfs /rootfs/usr/bin/
-    install -D -m 0755 uefi /rootfs/usr/bin/
+RUN --network=none <<-EOF
+	set -eux
+	make all
+  mkdir -p /rootfs/usr/bin/
+  install -D -m 0755 flashtool /rootfs/usr/bin/
+  install -D -m 0755 peek /rootfs/usr/bin/
+  install -D -m 0755 poke /rootfs/usr/bin/
+  install -D -m 0755 cbfs /rootfs/usr/bin/
+  install -D -m 0755 uefi /rootfs/usr/bin/
 EOF
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/./ /
+COPY --from=build /rootfs// /

@@ -1,0 +1,10 @@
+[package]
+name = "kubectl"
+version = "1.29.3"
+description = "TODO"
+
+[sources.kubectl]
+hash = "401d29af71cb962eb328cefd5166695587f195f9bd960edd1ede630f7e98bf7a"
+format = "tar.gz"
+file = "kubectl-{version}.{format}"
+mirrors = [ "https://github.com/kubernetes/kubernetes/archive/refs/tags/v{version}.{format}",]

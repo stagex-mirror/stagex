@@ -1,31 +1,24 @@
-FROM scratch AS base
-ENV VERSION=1.5.5
-ENV SRC_FILE=v${VERSION}.tar.gz
-ENV SRC_SITE=https://github.com/facebook/zstd/archive/${SRC_FILE}
-ENV SRC_HASH=98e9c3d949d1b924e28e01eccb7deed865eefebf25c2f21c702e5cd5b63b85e1
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-python . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-meson . /
-COPY --from=stagex/core-ninja . /
+COPY --from=stagex/core-samurai . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-pkgconf . /
 COPY --from=stagex/core-zlib . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf libzstd-${VERSION}.tar.gz
 WORKDIR /zstd-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	meson env2mfile \
 		--native \
 		--system=linux \
-		--cpu-family=x86_64 \
-		--cpu=x86_64 \
+		--cpu-family=$(uname -m) \
+		--cpu=$(uname -m) \
 		--endian=little \
 		-o meson.cross
 	meson setup \
@@ -65,10 +58,7 @@ RUN --network=none <<-EOF
 		build/meson \
 		output
 	meson compile -C output
+	DESTDIR=/rootfs meson install --no-rebuild -C output
 EOF
-
-FROM build AS install
-RUN --network=none DESTDIR=/rootfs meson install --no-rebuild -C output
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

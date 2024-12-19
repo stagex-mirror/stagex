@@ -1,21 +1,13 @@
-FROM scratch AS base
-ARG ARCH=x86_64
-ENV VERSION=0.1.2.2
-ENV SRC_HASH=f7ffa3714c65973bb95fbcf1501c06fc0478d93a51cea1b373ec6811c2425f52
-ENV SRC_FILE=utmps-${VERSION}.tar.gz
-ENV SRC_SITE=https://skarnet.org/software/utmps/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/user-skalibs . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf utmps-${VERSION}.tar.gz
 WORKDIR /utmps-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
@@ -29,11 +21,7 @@ RUN --network=none <<-EOF
 		--with-lib=/usr/lib \
 		--with-dynlib=/lib
     make -j "$(nproc)"
+		make DESTDIR=/rootfs install
 EOF
-
-FROM build AS install
-RUN make DESTDIR=/rootfs install
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

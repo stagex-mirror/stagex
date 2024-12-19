@@ -1,13 +1,5 @@
-FROM scratch AS base
-ENV VERSION=4.33
-ENV SRC_HASH=507eb7b8d1015fbec5b935f34ebed15bf346bed04a11ab82b8eee848c4205aea
-ENV SRC_FILE=libev-${VERSION}.tar.gz
-ENV SRC_SITE=http://dist.schmorp.de/libev/Attic/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-musl . /
@@ -18,27 +10,22 @@ COPY --from=stagex/core-autoconf . /
 COPY --from=stagex/core-automake . /
 COPY --from=stagex/core-libtool . /
 COPY --from=stagex/core-m4 . /
-
-RUN --network=none tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN --network=none tar -xf libev-${VERSION}.tar.gz
 WORKDIR /libev-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<EOF
 	set -eux
-    libtoolize --force
-    aclocal -I m4
-    autoheader
-    autoconf
-    automake --add-missing
+	libtoolize --force
+	aclocal -I m4
+	autoheader
+	autoconf
+	automake --add-missing
 	./configure \
-        --build=x86_64-linux-musl \
-        --host=x86_64-linux-musl \
-        --prefix=/usr \
-        --sysconfdir=/etc
+		--prefix=/usr \
+		--sysconfdir=/etc
 	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
 EOF
-
-FROM build AS install
-RUN --network=none make DESTDIR=/rootfs install
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

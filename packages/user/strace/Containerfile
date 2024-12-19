@@ -1,37 +1,24 @@
-FROM scratch AS base
-ARG ARCH=x86_64
-ENV VERSION=6.7
-ENV SRC_HASH=2090201e1a3ff32846f4fe421c1163b15f440bb38e31355d09f82d3949922af7
-ENV SRC_FILE=strace-${VERSION}.tar.xz
-ENV SRC_SITE=https://github.com/strace/strace/releases/download/v${VERSION}/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-gcc . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf strace-${VERSION}.tar.xz
 WORKDIR /strace-${VERSION}
 RUN --network=none <<-EOF
 	set -ex
 	./configure \
-        --build=${ARCH}-linux-musl \
-        --host=${ARCH}-linux-musl \
 		--prefix=/usr \
-        --sysconfdir=/etc \
-        --mandir=/usr/share/man \
-        --localstatedir=/var \
-        --enable-mpers=no
+    --sysconfdir=/etc \
+    --mandir=/usr/share/man \
+    --localstatedir=/var \
+    --enable-mpers=no
 	make -j "$(nproc)"
+	make DESTDIR="/rootfs" install
 EOF
-
-FROM build AS install
-RUN --network=none make DESTDIR="/rootfs" install
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /
