@@ -1,20 +1,13 @@
-FROM scratch AS base
-ENV VERSION=1.0.1
-ENV SRC_HASH=90261b206d6defd58fdd5e85f478bf633a2901798906be2ad389150c5c60edbe
-ENV SRC_FILE=jmespath-${VERSION}.tar.gz
-ENV SRC_SITE=https://files.pythonhosted.org/packages/source/j/jmespath/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS install
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-python . /
 COPY --from=stagex/core-py-flit . /
 COPY --from=stagex/core-py-gpep517 . /
 COPY --from=stagex/core-zlib . /
-RUN tar -xzf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xzf py-jmespath-${VERSION}.tar.gz
 WORKDIR /jmespath-${VERSION}
 RUN --network=none <<-EOF
 	set -eu
@@ -23,6 +16,5 @@ RUN --network=none <<-EOF
 	cp -a jmespath "/rootfs/$sitedir"
     find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

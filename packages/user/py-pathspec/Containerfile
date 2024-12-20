@@ -1,13 +1,5 @@
-FROM scratch AS base
-ENV VERSION=0.12.1
-ENV SRC_HASH=a482d51503a1ab33b1c67a6c3813a26953dbdc71c31dacaef9a838c4e29f5712
-ENV SRC_FILE=pathspec-${VERSION}.tar.gz
-ENV SRC_SITE=https://files.pythonhosted.org/packages/source/p/pathspec/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-zlib . /
@@ -22,16 +14,14 @@ COPY --from=stagex/core-py-installer . /
 COPY --from=stagex/core-py-flit . /
 COPY --from=stagex/core-py-wheel . /
 COPY --from=stagex/core-py-gpep517 . /
-RUN tar -xzf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xzf py-pathspec-${VERSION}.tar.gz
 WORKDIR /pathspec-${VERSION}
 RUN gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
-
-FROM build AS install
 RUN --network=none <<-EOF
     set -eu
     python -m installer -d /rootfs .dist/*.whl
     find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

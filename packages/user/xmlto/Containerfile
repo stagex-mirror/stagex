@@ -1,14 +1,5 @@
-FROM scratch AS base
-ARG ARCH=x86_64
-ENV VERSION=0.0.29
-ENV SRC_HASH=40504db68718385a4eaa9154a28f59e51e59d006d1aa14f5bc9d6fded1d6017a
-ENV SRC_FILE=xmlto-${VERSION}.tar.gz
-ENV SRC_SITE=https://www.pagure.io/xmlto/archive/${VERSION}/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-bash . /
 COPY --from=stagex/core-gettext . /
@@ -28,22 +19,17 @@ COPY --from=stagex/core-libxml2 . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/user-glib . /
 COPY --from=stagex/user-perl-yaml-syck . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf xmlto-${VERSION}.tar.gz
 WORKDIR /xmlto-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	autoreconf -vfi
 	./configure \
-		--build=${ARCH}-linux-musl \
-		--host=${ARCH}-linux-musl \
 		--prefix=/usr \
 		--mandir=/usr/share/man
 	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
 EOF
-
-FROM build AS install
-RUN make DESTDIR=/rootfs install
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

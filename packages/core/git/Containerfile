@@ -1,13 +1,5 @@
-FROM scratch AS base
-ENV VERSION=2.47.0
-ENV SRC_HASH=1ce114da88704271b43e027c51e04d9399f8c88e9ef7542dae7aebae7d87bc4e
-ENV SRC_FILE=git-${VERSION}.tar.xz
-ENV SRC_SITE=http://mirrors.edge.kernel.org/pub/software/scm/git/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-gcc . /
@@ -18,14 +10,13 @@ COPY --from=stagex/core-make . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-gettext . /
-RUN tar -xvf $SRC_FILE
+COPY --from=fetch . .
+RUN tar -xvf git-${VERSION}.tar.xz
 WORKDIR /git-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	set -eux
 	./configure \
-		--build=x86_64-unknown-linux-musl \
-		--host=x86_64-unknown-linux-musl \
 		--prefix=/usr \
 		--bindir=/usr/bin \
 		--mandir=/usr/share/man \
@@ -36,25 +27,7 @@ RUN --network=none <<-EOF
 		--without-bash-malloc \
 		--without-tcltk
 	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
 EOF
-
-FROM build AS install
-RUN make DESTDIR=/rootfs install
-
-FROM base AS test
-COPY --from=install /rootfs/. /
-COPY --from=stagex/core-zlib . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-busybox . /
-RUN /bin/sh <<-EOF
-	set -eux
-	EXPECTED_GIT_VERSION="git version ${VERSION}"
-	GIT_VERSION=\$(git --version)
-	if [ "\$GIT_VERSION" != "\$EXPECTED_GIT_VERSION" ]; then
-	    echo "Expected git version is \$EXPECTED_GIT_VERSION, but got \$GIT_VERSION"
-	    exit 1
-	fi
-EOF
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

@@ -1,13 +1,5 @@
-FROM scratch AS base
-ENV VERSION=3.9.1_release_20230601
-ENV SRC_HASH=7278dd8fb89cae88552e1dc4a6294f1c62a8a9548a18f635515242f389797fed
-ENV SRC_FILE=nettle-nettle_${VERSION}.tar.gz
-ENV SRC_SITE=https://git.lysator.liu.se/nettle/nettle/-/archive/nettle_${VERSION}/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-musl . /
@@ -19,18 +11,18 @@ COPY --from=stagex/core-libtool . /
 COPY --from=stagex/core-m4 . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-gmp . /
-RUN --network=none tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf nettle-${VERSION}.tar.gz
 WORKDIR /nettle-nettle_${VERSION}
-RUN --network=none <<EOF
-set -eux
-ls
-autoreconf -vfi
-./configure --prefix=/usr --libdir=/usr/lib --enable-public-key
-make -j "$(nproc)"
+RUN --network=none <<-EOF
+	set -eux
+	autoreconf -vfi
+	./configure \
+		--prefix=/usr \
+		--libdir=/usr/lib \
+		--enable-public-key
+	make -j "$(nproc)"
+	DESTDIR=/rootfs make install
 EOF
-
-FROM build AS install
-RUN --network=none DESTDIR=/rootfs make install
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

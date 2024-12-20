@@ -1,13 +1,5 @@
-FROM scratch AS base
-ENV VERSION=3.2.14
-ENV SRC_HASH=8da4319102f24abbf7fff5ce9c416af848df163b29590e666d334cc1927f006f
-ENV SRC_FILE=eudev-${VERSION}.tar.gz
-ENV SRC_SITE=https://github.com/eudev-project/eudev/releases/download/v${VERSION}/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-musl . /
@@ -15,17 +7,14 @@ COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/user-gperf . /
-
-RUN --network=none tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf eudev-${VERSION}.tar.gz
 WORKDIR /eudev-${VERSION}
 RUN --network=none <<EOF
 	set -eux
 	./configure
 	make -j "$(nproc)"
+	DESTDIR=/rootfs make install
 EOF
-
-FROM build AS install
-RUN --network=none DESTDIR=/rootfs make install
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

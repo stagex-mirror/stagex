@@ -1,27 +1,17 @@
-FROM scratch AS base
-ARG ARCH=x86_64
-ENV VERSION=4.1.1
-ENV SRC_HASH=da448ed4f52aba6bcb0cd48cac0dd51b8692bccc4cd127431402fca6f8171e8e
-ENV SRC_FILE=qrencode-${VERSION}.tar.gz
-ENV SRC_SITE=https://fukuchi.org/works/qrencode/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-gcc . /
-RUN tar -xzf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xzf libqrencode-${VERSION}.tar.gz
 WORKDIR /qrencode-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./configure \
-		--build=${ARCH}-linux-musl \
-		--host=${ARCH}-linux-musl \
 		--prefix=/usr \
 		--sysconfdir=/etc \
 		--mandir=/usr/share/man \
@@ -29,10 +19,7 @@ RUN --network=none <<-EOF
 		--localstatedir=/var \
 		--with-tests
 	make -j "$(nproc)"
+	make DESTDIR="/rootfs" install
 EOF
-
-FROM build AS install
-RUN --network=none make DESTDIR="/rootfs" install
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

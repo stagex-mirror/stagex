@@ -1,13 +1,5 @@
-FROM scratch AS base
-ENV VERSION=1.5.0
-ENV SRC_FILE=${VERSION}.tar.gz
-ENV SRC_SITE=https://github.com/argp-standalone/argp-standalone/archive/refs/tags/${SRC_FILE}
-ENV SRC_HASH=c29eae929dfebd575c38174f2c8c315766092cec99a8f987569d0cad3c6d64f6
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-binutils . /
@@ -17,7 +9,8 @@ COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-autoconf . /
 COPY --from=stagex/core-automake . /
 COPY --from=stagex/core-m4 . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf argp-standalone-${VERSION}.tar.gz
 WORKDIR /argp-standalone-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
@@ -30,14 +23,8 @@ RUN --network=none <<-EOF
 		--infodir=/usr/share/info \
 		--localstatedir=/var
 	make -j "$(nproc)"
-EOF
-
-FROM build AS install
-RUN <<-EOF
-	set -eux
 	install -D -m644 argp.h /rootfs/usr/include/argp.h
 	install -D -m755 libargp.a /rootfs/usr/lib/libargp.a
 EOF
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

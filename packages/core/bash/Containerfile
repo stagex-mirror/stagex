@@ -1,25 +1,16 @@
-FROM scratch AS base
-ENV VERSION=5.2.37
-ENV SRC_HASH=9599b22ecd1d5787ad7d3b7bf0c59f312b3396d1e281175dd1f8a4014da621ff
-ENV SRC_FILE=bash-${VERSION}.tar.gz
-ENV SRC_SITE=https://ftp.gnu.org/gnu/bash/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-make . /
-RUN tar -xzf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xzf bash-${VERSION}.tar.gz
 WORKDIR /bash-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./configure \
-		--build=x86_64-unknown-linux-musl \
-		--host=x86_64-unknown-linux-musl \
 		--prefix=/usr \
 		--bindir=/usr/bin \
 		--mandir=/usr/share/man \
@@ -29,10 +20,7 @@ RUN --network=none <<-EOF
 		--without-curses \
 		--without-bash-malloc
 	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
 EOF
-
-FROM build AS install
-RUN --network=none make DESTDIR=/rootfs install
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

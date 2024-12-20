@@ -1,13 +1,5 @@
-FROM scratch AS base
-ENV VERSION=3.0.12
-ENV SRC_HASH=f93c9e8edde5e9166119de31755fc87b4aa34863662f67ddfcba14d0b6b69b61
-ENV SRC_FILE=openssl-${VERSION}.tar.gz
-ENV SRC_SITE=https://www.openssl.org/source/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-binutils . /
@@ -15,12 +7,14 @@ COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-linux-headers . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf openssl-${VERSION}.tar.gz
 WORKDIR /openssl-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	set -eux
-	export CC='gcc -fPIE -pie'
+	CC='gcc -fPIE -pie'
+	ARCH="$(uname -m)"
 	perl ./Configure \
 		--prefix=/usr \
 		--libdir=lib \
@@ -38,12 +32,9 @@ RUN --network=none <<-EOF
 		no-ssl3 \
 		no-seed \
 		no-weak-ssl-ciphers \
-		linux-x86_64
+		linux-${ARCH}
 	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
 EOF
-
-FROM build AS install
-RUN --network=none make DESTDIR=/rootfs install
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

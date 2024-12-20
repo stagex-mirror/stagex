@@ -1,15 +1,8 @@
-FROM scratch AS base
-ENV VERSION=4.4
-ENV SRC_FILE=make-${VERSION}.tar.gz
-ENV SRC_SITE=https://ftp.gnu.org/gnu/make/${SRC_FILE}
-ENV SRC_HASH=581f4d4e872da74b3941c874215898a7d35802f03732bdccee1d4a7979105d18
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/bootstrap-stage3 . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf make-${VERSION}.tar.gz
 WORKDIR /make-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
@@ -19,10 +12,7 @@ RUN --network=none <<-EOF
 		--infodir=/usr/share/info \
 		--disable-nls
 	make -j "$(nproc)"
+	make DESTDIR="/rootfs" install
 EOF
-
-FROM build AS install
-RUN --network=none make DESTDIR="/rootfs" install
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

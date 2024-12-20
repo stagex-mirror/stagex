@@ -1,13 +1,5 @@
-FROM scratch AS base
-ENV VERSION=1.7.2
-ENV SRC_HASH=fd6fcc25e8140f613b3bf44b02eda4a8a429ee4939fb777f474e2c829f7b472c
-ENV SRC_FILE=pcsc-tools-${VERSION}.tar.bz2
-ENV SRC_SITE=https://pcsc-tools.apdu.fr/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-m4 . /
 COPY --from=stagex/core-musl . /
@@ -18,7 +10,8 @@ COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-flex . /
 COPY --from=stagex/core-pkgconf . /
 COPY --from=stagex/user-pcsc-lite . /
-RUN tar -xvjf $SRC_FILE
+COPY --from=fetch . .
+RUN tar -xvjf pcsc-tools-${VERSION}.tar.bz2
 WORKDIR /pcsc-tools-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
@@ -28,10 +21,7 @@ RUN --network=none <<-EOF
 		--mandir=/usr/share/man \
 		--localstatedir=/var
 	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
 EOF
-
-FROM build AS install
-RUN --network=none make DESTDIR=/rootfs install
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

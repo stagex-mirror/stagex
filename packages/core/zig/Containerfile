@@ -1,13 +1,5 @@
-FROM scratch AS base
-ENV VERSION=0.13.0
-ENV SRC_HASH=06c73596beeccb71cc073805bdb9c0e05764128f16478fa53bf17dfabc1d4318
-ENV SRC_FILE=zig-${VERSION}.tar.xz
-ENV SRC_SITE=https://ziglang.org/download/${VERSION}/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-clang . /
@@ -20,30 +12,27 @@ COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-zlib . /
-COPY --from=stagex/core-ninja . /
-
-RUN --network=none tar -xf ${SRC_FILE}
+COPY --from=stagex/core-samurai . /
+COPY --from=fetch . .
+RUN tar -xf zig-${VERSION}.tar.xz
 WORKDIR /zig-${VERSION}
 ADD *.patch .
 RUN --network=none <<-EOF
-    set -eux
-    patch -p1 < fix-pie-support-detection.patch
-    cmake -B build -G Ninja \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_PREFIX_PATH=/usr \
-      -DCMAKE_INSTALL_PREFIX=/usr \
-      -DCMAKE_VERBOSE_MAKEFILE=ON \
-      -DZIG_PIE=ON \
-      -DZIG_VERSION="${VERSION}" \
-      -DZIG_SHARED_LLVM=ON \
-      -DZIG_USE_LLVM_CONFIG=ON \
-      -DZIG_TARGET_MCPU=baseline \
-      -DZIG_TARGET_TRIPLE=native-linux.6.1-musl
-    cmake --build build
+	set -eux
+	patch -p1 < fix-pie-support-detection.patch
+	cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_PREFIX_PATH=/usr \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_VERBOSE_MAKEFILE=ON \
+		-DZIG_PIE=ON \
+		-DZIG_VERSION="${VERSION}" \
+		-DZIG_SHARED_LLVM=ON \
+		-DZIG_USE_LLVM_CONFIG=ON \
+		-DZIG_TARGET_MCPU=baseline \
+		-DZIG_TARGET_TRIPLE=native-linux.6.1-musl
+	cmake --build build
+	DESTDIR=/rootfs cmake --install build
 EOF
-
-FROM build AS install
-RUN --network=none DESTDIR=/rootfs cmake --install build
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

@@ -1,13 +1,5 @@
-FROM scratch AS base
-ENV VERSION=6.04-pre1
-ENV SRC_HASH=3f6d50a57f3ed47d8234fd0ab4492634eb7c9aaf7dd902f33d3ac33564fd631d
-ENV SRC_FILE=syslinux-${VERSION}.tar.xz
-ENV SRC_SITE=https://www.kernel.org/pub/linux/utils/boot/syslinux/Testing/6.04/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-binutils . /
@@ -16,30 +8,22 @@ COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/user-util-linux . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf syslinux-${VERSION}.tar.xz
 WORKDIR /syslinux-${VERSION}
 COPY *.patch .
 RUN --network=none <<-EOF
-    patch -p1 < fix-sysmacros.patch
-    patch -p1 < prevent-pow-optimization.patch
-    patch -p1 < gcc-10.patch
-    make -j1 bios efi64 installer
+	patch -p1 < fix-sysmacros.patch
+	patch -p1 < prevent-pow-optimization.patch
+	patch -p1 < gcc-10.patch
+	make -j1 bios efi64 installer
+	make \
+	INSTALLROOT="/rootfs" \
+	MANDIR=/usr/share/man \
+	BINDIR=/usr/bin \
+	SBINDIR=/usr/sbin \
+	LIBDIR=/usr/lib \
+	install
 EOF
-
-FROM build AS install
-RUN make -j1 \
-    INSTALLROOT="/rootfs" \
-    MANDIR=/usr/share/man \
-    BINDIR=/usr/bin \
-    SBINDIR=/usr/sbin \
-    LIBDIR=/usr/lib \
-    install
-
-FROM base AS test
-COPY --from=install /rootfs/. /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-busybox . /
-RUN syslinux --version
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

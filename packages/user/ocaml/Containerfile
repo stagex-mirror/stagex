@@ -1,22 +1,15 @@
-FROM scratch AS base
-ENV VERSION=5.2.0
-ENV SRC_HASH=48554abfd530fcdaa08f23f801b699e4f74c320ddf7d0bd56b0e8c24e55fc911
-ENV SRC_FILE=${VERSION}.tar.gz
-ENV SRC_SITE=https://github.com/ocaml/ocaml/archive/refs/tags/${SRC_FILE}
+FROM scratch AS build
+ARG VERSION
 ENV SOURCE_DATE_EPOCH=1
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-libzstd . /
-RUN tar -xf ${SRC_FILE}
-WORKDIR //ocaml-${VERSION}
+COPY --from=fetch . .
+RUN tar -xf ocaml-${VERSION}.tar.gz
+WORKDIR /ocaml-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	CFLAGS="-fPIC" \
@@ -27,14 +20,7 @@ RUN --network=none <<-EOF
 		--infodir=/usr/share/info \
 		--localstatedir=/var
 	make -j "$(nproc)"
-EOF
-
-FROM build AS install
-RUN --network=none <<-EOF
-	set -eux
-
 	make install DESTDIR=/rootfs
 EOF
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

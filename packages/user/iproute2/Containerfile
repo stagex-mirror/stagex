@@ -1,13 +1,5 @@
-FROM scratch AS base
-ENV VERSION=6.10.0
-ENV SRC_HASH=91a62f82737b44905a00fa803369c447d549e914e9a2a4018fdd75b1d54e8dce
-ENV SRC_FILE=iproute2-${VERSION}.tar.xz
-ENV SRC_SITE=http://mirrors.edge.kernel.org/pub/linux/utils/net/iproute2/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-gcc . /
@@ -18,17 +10,15 @@ COPY --from=stagex/core-m4 . /
 COPY --from=stagex/core-bison . /
 COPY --from=stagex/core-flex . /
 COPY --from=stagex/user-elfutils . /
-RUN tar -xvf $SRC_FILE
+COPY --from=fetch . .
+RUN tar -xvf iproute2-${VERSION}.tar.xz
 WORKDIR /iproute2-${VERSION}
-RUN --network=none make -j "$(nproc)" V=1
-
-FROM build AS install
-RUN <<-EOF
-    make DESTDIR=/rootfs install
-    mv /rootfs/sbin /rootfs/usr/sbin
-    install -D -m644 include/libnetlink.h /rootfs/usr/include/libnetlink.h
+RUN --network=none <<-EOF
+	make -j "$(nproc)" V=1
+	make DESTDIR=/rootfs install
+	mv /rootfs/sbin /rootfs/usr/sbin
+	install -D -m644 include/libnetlink.h /rootfs/usr/include/libnetlink.h
 	install -D -m644 lib/libnetlink.a /rootfs/usr/lib/libnetlink.a
 EOF
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

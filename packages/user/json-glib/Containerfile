@@ -1,14 +1,5 @@
-FROM scratch AS base
-ARG ARCH=x86_64
-ENV VERSION=1.8.0
-ENV SRC_HASH=97ef5eb92ca811039ad50a65f06633f1aae64792789307be7170795d8b319454
-ENV SRC_FILE=json-glib-${VERSION}.tar.xz
-ENV SRC_SITE=https://download.gnome.org/sources/json-glib/1.8/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-python . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-bzip2 . /
@@ -34,26 +25,22 @@ COPY --from=stagex/core-expat . /
 COPY --from=stagex/core-libxml2 . /
 COPY --from=stagex/core-libxslt . /
 COPY --from=stagex/core-gettext . /
-COPY --from=stagex/core-ninja . /
+COPY --from=stagex/core-samurai . /
 COPY --from=stagex/user-rhash . /
 COPY --from=stagex/user-util-linux . /
 COPY --from=stagex/user-glib . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf json-glib-${VERSION}.tar.xz
 WORKDIR /json-glib-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
-    meson setup \
+  meson setup \
 		--default-library=shared \
 		--prefix=/usr \
 		-Dgtk_doc=disabled \
 		. output
 	meson compile -C output
-	meson install --no-rebuild -C output
+	DESTDIR=/rootfs meson install --no-rebuild -C output
 EOF
-
-FROM build AS install
-RUN DESTDIR=/rootfs meson install --no-rebuild -C output
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

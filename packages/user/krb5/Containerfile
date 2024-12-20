@@ -1,14 +1,5 @@
-FROM scratch AS base
-ARG ARCH=x86_64
-ENV VERSION=1.21.2
-ENV SRC_HASH=9560941a9d843c0243a71b17a7ac6fe31c7cebb5bce3983db79e52ae7e850491
-ENV SRC_FILE=krb5-${VERSION}.tar.gz
-ENV SRC_SITE=https://kerberos.org/dist/krb5/1.21/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-bash . /
 COPY --from=stagex/core-m4 . /
@@ -32,15 +23,14 @@ COPY --from=stagex/user-openldap . /
 COPY --from=stagex/user-groff . /
 COPY --from=stagex/user-libevent . /
 COPY --from=stagex/user-libverto . /
-RUN tar -xf $SRC_FILE
+COPY --from=fetch . .
+RUN tar -xf krb5-${VERSION}.tar.gz
 WORKDIR /krb5-${VERSION}/src
 RUN --network=none <<-EOF
 	set -eux
 	./configure \
 		CPPFLAGS="-fPIC -I/usr/include/et" \
 		WARN_CFLAGS= \
-		--build=${ARCH}-linux-musl \
-		--host=${ARCH}-linux-musl \
 		--prefix=/usr \
 		--localstatedir=/var/lib \
 		--enable-shared \
@@ -53,11 +43,7 @@ RUN --network=none <<-EOF
 		--without-tcl \
 		--with-ldap
 	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
 EOF
-
-FROM build AS install
-RUN make DESTDIR=/rootfs install
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

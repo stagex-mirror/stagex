@@ -1,21 +1,13 @@
-FROM scratch AS base
-ARG ARCH=x86_64
-ENV VERSION=1.2
-ENV SRC_HASH=3b8cf51548dfc49b7efe035e191ff5e1963ebc4fe8f6064a5eefc5343eaf78a5
-ENV SRC_FILE=samurai-${VERSION}.tar.gz
-ENV SRC_SITE=https://github.com/michaelforney/samurai/releases/download/${VERSION}/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-pkgconf . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf samurai-${VERSION}.tar.gz
 WORKDIR /samurai-${VERSION}
 COPY *.patch .
 RUN --network=none <<-EOF
@@ -23,11 +15,8 @@ RUN --network=none <<-EOF
 	patch -p1 CVE-2021-30218.patch
 	patch -p1 CVE-2021-30219.patch
 	make CFLAGS="-O2" CC=gcc -j "$(nproc)"
+	make PREFIX="/usr" DESTDIR=/rootfs install
+	ln -s samu /rootfs/usr/bin/ninja
 EOF
-
-FROM build AS install
-RUN make DESTDIR=/rootfs install
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

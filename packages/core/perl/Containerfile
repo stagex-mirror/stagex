@@ -1,21 +1,14 @@
-FROM scratch AS base
-ENV VERSION=5.38.0
-ENV SRC_HASH=eca551caec3bc549a4e590c0015003790bdd1a604ffe19cc78ee631d51f7072e
-ENV SRC_FILE=perl-${VERSION}.tar.xz
-ENV SRC_SITE=https://www.cpan.org/src/5.0/${SRC_FILE}
-ENV SOURCE_DATE_EPOCH=1
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf perl-${VERSION}.tar.xz
 WORKDIR /perl-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	set -eux
 	printf '
@@ -25,7 +18,7 @@ RUN --network=none <<-EOF
 	cf_by="builder"
 	cf_time="0"
 	' > config.over
-    cat config.over
+	cat config.over
 	./Configure \
 		-des \
 		-Dcccdlflags='-fPIC' \
@@ -54,20 +47,7 @@ RUN --network=none <<-EOF
 		-Ud_off64_t \
 		-Dusenm
 	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
 EOF
-
-FROM build AS install
-RUN --network=none make DESTDIR=/rootfs install
-
-FROM scratch AS test
-COPY --from=install /rootfs/. /
-COPY --from=stagex/core-musl . /
-COPY <<-EOF test.pl
-	use strict;
-	use warnings;
-	print("Success\n");
-EOF
-RUN perl test.pl | grep "Success"
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

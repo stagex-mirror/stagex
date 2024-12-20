@@ -1,24 +1,17 @@
-FROM scratch AS base
-ENV VERSION=1.3.1
-ENV SRC_FILE=meson-${VERSION}.tar.gz
-ENV SRC_SITE=https://github.com/mesonbuild/meson/releases/download/${VERSION}/${SRC_FILE}
-ENV SRC_HASH=6020568bdede1643d4fb41e28215be38eff5d52da28ac7d125457c59e0032ad7
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-python . /
 COPY --from=stagex/core-py-setuptools . /
 COPY --from=stagex/core-zlib . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf meson-${VERSION}.tar.gz
 WORKDIR /meson-${VERSION}
-RUN python setup.py build
-
-FROM build AS install
-RUN --network=none python setup.py install --root=/rootfs
-
+RUN <<-EOF
+	set -eux
+	python setup.py build
+	python setup.py install --root=/rootfs
+EOF
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

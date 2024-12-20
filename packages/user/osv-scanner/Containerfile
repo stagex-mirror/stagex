@@ -1,13 +1,5 @@
-FROM scratch AS base
-ENV VERSION=1.9.0
-ENV SRC_FILE=osv-scanner-${VERSION}.tar.gz
-ENV SRC_SITE=https://github.com/google/osv-scanner/archive/v${VERSION}/${SRC_FILE}
-ENV SRC_HASH=85ce158b6dce22cddc19b652bdc5150145b57119e3acfa8e3ae5ba1cfa449a3f
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-bash . /
 COPY --from=stagex/core-busybox . /
@@ -17,28 +9,25 @@ COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-pkgconf . /
 COPY --from=stagex/core-ca-certificates . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf osv-scanner-${VERSION}.tar.gz
 ENV GOPROXY=https://proxy.golang.org,direct
 ENV GOSUMDB=sum.golang.org
 ENV GOPATH=/cache/go
 ENV GOBIN=${GOPATH}/bin
 ENV PATH=${GOBIN}:${PATH}
 WORKDIR /osv-scanner-${VERSION}
-RUN <<-EOF
-    set -eux
-    mkdir -p out
-    go build -v \
-        --ldflags="-w -s -buildid= " \
-        -o out/ \
-        ./cmd/...
+RUN go mod download
+RUN --network=none <<-EOF
+	set -eux
+	mkdir -p out
+	go build -v \
+		--ldflags="-w -s -buildid= " \
+		-o out/ \
+		./cmd/...
+	set -eux
+	mkdir -p /rootfs
+	install -Dm755 ./out/osv-scanner -t /rootfs/usr/bin/
 EOF
-
-FROM build AS install
-RUN <<-EOF
-    set -eux
-    mkdir -p /rootfs
-    install -Dm755 ./out/osv-scanner -t /rootfs/usr/bin/
-EOF
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

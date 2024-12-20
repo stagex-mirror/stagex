@@ -1,26 +1,17 @@
-FROM scratch AS base
-ARG ARCH=x86_64
-ENV VERSION=2.5.2
-ENV SRC_HASH=39bf67452fa41d0948c2197601053f48b3d78a029389734332a6309a680c6c87
-ENV SRC_FILE=attr-${VERSION}.tar.gz
-ENV SRC_SITE=https://download.savannah.nongnu.org/releases/attr/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-perl . /
-
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf attr-${VERSION}.tar.gz
 WORKDIR /attr-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
-    ./configure \
+	./configure \
 		--prefix=/usr \
 		--exec-prefix=/ \
 		--sbindir=/bin \
@@ -33,11 +24,7 @@ RUN --network=none <<-EOF
 		--datadir=/usr/share \
 		--disable-nls
 	make -j "$(nproc)"
+    make DESTDIR=/rootfs install
 EOF
-
-FROM build AS install
-RUN make DESTDIR=/rootfs install
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

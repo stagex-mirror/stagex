@@ -1,66 +1,53 @@
-FROM scratch AS base
-ENV VERSION=1.36.1
-ENV SRC_HASH=b8cc24c9574d809e7279c3be349795c5d5ceb6fdf19ca709f80cde50e47de314
-ENV SRC_FILE=busybox-${VERSION}.tar.bz2
-ENV SRC_SITE=https://busybox.net/downloads/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/bootstrap-stage3 . /
-RUN tar -xjf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xjf busybox-${VERSION}.tar.bz2
 WORKDIR /busybox-${VERSION}
 ENV KCONFIG_NOTIMESTAMP=1
 RUN --network=none <<-EOF
-    set -eux
-    setConfs='
-        CONFIG_LAST_SUPPORTED_WCHAR=0
-        CONFIG_STATIC=y
-    '
-    unsetConfs='
-        CONFIG_FEATURE_SYNC_FANCY
-        CONFIG_FEATURE_HAVE_RPC
-        CONFIG_FEATURE_INETD_RPC
-        CONFIG_FEATURE_UTMP
-        CONFIG_FEATURE_WTMP
-    '
-    make defconfig
-    for conf in $unsetConfs; do
-        sed -i \
-            -e "s!^$conf=.*\$!# $conf is not set!" \
-            .config
-    done
-    for confV in $setConfs; do
-        conf="${confV%=*}"
-        sed -i \
-            -e "s!^$conf=.*\$!$confV!" \
-            -e "s!^# $conf is not set\$!$confV!" \
-            .config
-        if ! grep -q "^$confV\$" .config; then
-            echo "$confV" >> .config
-        fi
-    done
-    make oldconfig
-    for conf in $unsetConfs; do
-        ! grep -q "^$conf=" .config
-    done
-    for confV in $setConfs; do
-        grep -q "^$confV\$" .config
-    done
-    make
+	set -eux
+	setConfs='
+	    CONFIG_LAST_SUPPORTED_WCHAR=0
+	    CONFIG_STATIC=y
+	'
+	unsetConfs='
+	    CONFIG_FEATURE_SYNC_FANCY
+	    CONFIG_FEATURE_HAVE_RPC
+	    CONFIG_FEATURE_INETD_RPC
+	    CONFIG_FEATURE_UTMP
+	    CONFIG_FEATURE_WTMP
+	'
+	make defconfig
+	for conf in $unsetConfs; do
+		sed -i \
+			-e "s!^$conf=.*\$!# $conf is not set!" \
+		.config
+	done
+	for confV in $setConfs; do
+		conf="${confV%=*}"
+		sed -i \
+			-e "s!^$conf=.*\$!$confV!" \
+			-e "s!^# $conf is not set\$!$confV!" \
+			.config
+		if ! grep -q "^$confV\$" .config; then
+			echo "$confV" >> .config
+		fi
+	done
+	make oldconfig
+	for conf in $unsetConfs; do
+		! grep -q "^$conf=" .config
+	done
+	for confV in $setConfs; do
+		grep -q "^$confV\$" .config
+	done
+	make
+	mkdir -p /rootfs/usr/bin
+	cp busybox /rootfs/usr/bin
+	cp busybox /usr/bin
+	cd /rootfs
+	/usr/bin/busybox --install -s usr/bin
 EOF
-
-FROM build AS install
-RUN --network=none <<-EOF
-    set -eux
-    mkdir -p /rootfs/usr/bin
-    cp busybox /rootfs/usr/bin
-    cp busybox /usr/bin
-    cd /rootfs
-    /usr/bin/busybox --install -s usr/bin
-EOF
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /
 ENTRYPOINT ["/bin/sh"]

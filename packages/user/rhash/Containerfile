@@ -1,14 +1,5 @@
-FROM scratch AS base
-ARG ARCH=x86_64
-ENV VERSION=1.4.4
-ENV SRC_HASH=8e7d1a8ccac0143c8fe9b68ebac67d485df119ea17a613f4038cda52f84ef52a
-ENV SRC_FILE=v${VERSION}.tar.gz
-ENV SRC_SITE=https://github.com/rhash/RHash/archive/refs/tags/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-bash . /
@@ -16,7 +7,8 @@ COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-openssl . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf rhash-${VERSION}.tar.gz
 WORKDIR /RHash-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
@@ -26,11 +18,7 @@ RUN --network=none <<-EOF
 		--enable-openssl \
 		--disable-openssl-runtime
 	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
 EOF
-
-FROM build AS install
-RUN make DESTDIR=/rootfs install
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

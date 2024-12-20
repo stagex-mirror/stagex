@@ -1,13 +1,5 @@
-FROM scratch AS base
-ENV VERSION=4.2
-ENV SRC_HASH=64926eebf90092dca21b14259a5301b7b98e7b1943e8a201c7d726084809b527
-ENV SRC_FILE=dosfstools-${VERSION}.tar.gz
-ENV SRC_SITE=https://github.com/dosfstools/dosfstools/releases/download/v${VERSION}/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-binutils . /
@@ -18,24 +10,20 @@ COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-autoconf . /
 COPY --from=stagex/core-automake . /
 COPY --from=stagex/core-musl . /
-RUN tar -xzf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xzf dosfstools-${VERSION}.tar.gz
 WORKDIR /dosfstools-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./autogen.sh
 	./configure \
-		--build=x86_64-unknown-linux-musl \
-		--host=x86_64-unknown-linux-musl \
 		--prefix=/usr \
 		--sbindir=/usr/sbin \
 		--sysconfdir=/etc \
 		--mandir=/usr/share/man \
 		--localstatedir=/var \
-        --enable-compat-symlinks
+    --enable-compat-symlinks
+	make DESTDIR=/rootfs install
 EOF
-
-FROM build AS install
-RUN --network=none make DESTDIR=/rootfs install
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

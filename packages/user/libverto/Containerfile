@@ -1,14 +1,5 @@
-FROM scratch AS base
-ARG ARCH=x86_64
-ENV VERSION=0.3.2
-ENV SRC_HASH=8d1756fd704f147549f606cd987050fb94b0b1ff621ea6aa4d6bf0b74450468a
-ENV SRC_FILE=libverto-${VERSION}.tar.gz
-ENV SRC_SITE=https://github.com/latchset/libverto/releases/download/0.3.2/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-bash . /
 COPY --from=stagex/core-m4 . /
@@ -40,24 +31,19 @@ COPY --from=stagex/user-e2fsprogs . /
 COPY --from=stagex/user-openldap . /
 COPY --from=stagex/user-groff . /
 COPY --from=stagex/user-libevent . /
-RUN tar -xf $SRC_FILE
+COPY --from=fetch . .
+RUN tar -xf libverto-${VERSION}.tar.gz
 WORKDIR /libverto-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./configure \
-		--build=${ARCH}-linux-musl \
-		--host=${ARCH}-linux-musl \
 		--prefix=/usr \
 		--localstatedir=/var/lib \
 		--with-libdev \
 		--with-libevent
 	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
+	mv /rootfs/usr/lib/libverto-libevent.so.* /rootfs/usr/lib/
 EOF
-
-FROM build AS install
-RUN make DESTDIR=/rootfs install
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
-RUN mv /rootfs/usr/lib/libverto-libevent.so.* /rootfs/usr/lib/
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

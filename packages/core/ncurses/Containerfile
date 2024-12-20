@@ -1,63 +1,47 @@
-FROM scratch AS base
-ARG ARCH=x86_64
-ENV VERSION=6.5
-ENV SRC_HASH=136d91bc269a9a5785e5f9e980bc76ab57428f604ce3e5a5a90cebc767971cc6
-ENV SRC_FILE=ncurses-${VERSION}.tar.gz
-ENV SRC_SITE=https://ftp.gnu.org/gnu/ncurses/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-gcc . /
-RUN tar -xzf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xzf ncurses-${VERSION}.tar.gz
 WORKDIR /ncurses-${VERSION}
 ENV ARFLAGS=-crv
 RUN --network=none <<-EOF
 	set -eux
 	./configure \
-		--build=${ARCH}-linux-musl \
-		--host=${ARCH}-linux-musl \
 		--prefix=/usr \
-        --disable-root-access \
-        --disable-root-environ \
-        --disable-setuid-environ \
-        --without-ada \
-        --without-debug \
-        --without-tests \
-        --with-versioned-syms \
-        --with-pkg-config-libdir=/usr/lib/pkgconfig \
-        --with-cxx-binding \
-        --with-cxx-shared \
-        --with-shared \
-        --with-terminfo-dirs="/etc/terminfo:/usr/share/terminfo:/lib/terminfo:/usr/lib/terminfo" \
-        --enable-pc-files \
-        --enable-shared \
-        --enable-widec
+		--disable-root-access \
+		--disable-root-environ \
+		--disable-setuid-environ \
+		--without-ada \
+		--without-debug \
+		--without-tests \
+		--with-versioned-syms \
+		--with-pkg-config-libdir=/usr/lib/pkgconfig \
+		--with-cxx-binding \
+		--with-cxx-shared \
+		--with-shared \
+		--with-terminfo-dirs="/etc/terminfo:/usr/share/terminfo:/lib/terminfo:/usr/lib/terminfo" \
+		--enable-pc-files \
+		--enable-shared \
+		--enable-widec
 	make -j "$(nproc)"
-EOF
-
-FROM build AS install
-RUN --network=none <<-EOF
-    set -eu
-    make DESTDIR="/rootfs" install
-    cd /rootfs
-    # force link against *w.so
-    for lib in ncurses ncurses++ form panel menu; do
+	make DESTDIR="/rootfs" install
+	cd /rootfs
+	# force link against *w.so
+	for lib in ncurses ncurses++ form panel menu; do
 		ln -s ${lib}w.pc usr/lib/pkgconfig/$lib.pc
 		ln -s lib${lib}w.a usr/lib/lib$lib.a
 		echo "INPUT(-l${lib}w)" > usr/lib/lib$lib.so
 	done
-    # link curses -> ncurses
-    ln -s libncurses.a usr/lib/libcurses.a
-    ln -s libncurses.so usr/lib/libcurses.so
-    echo 'INPUT(-lncursesw)' > usr/lib/libcursesw.so
+	# link curses -> ncurses
+	ln -s libncurses.a usr/lib/libcurses.a
+	ln -s libncurses.so usr/lib/libcurses.so
+	echo 'INPUT(-lncursesw)' > usr/lib/libcursesw.so
 EOF
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

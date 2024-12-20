@@ -1,14 +1,5 @@
-FROM scratch AS base
-ARG ARCH=x86_64
-ENV VERSION=7.1
-ENV SRC_HASH=deeec9f19f159e046fdf8ad22231981806dac332cc372f1c763504ad82b30953
-ENV SRC_FILE=texinfo-${VERSION}.tar.xz
-ENV SRC_SITE=https://ftp.gnu.org/gnu/texinfo/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-coreutils . /
@@ -26,20 +17,16 @@ COPY --from=stagex/core-findutils . /
 COPY --from=stagex/core-bash . /
 COPY --from=stagex/core-bash . /
 COPY --from=stagex/core-bash /bin/bash /bin/sh
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf texinfo-${VERSION}.tar.xz
 WORKDIR /texinfo-${VERSION}
 RUN --network=none <<-EOF
 	set -ex
 	./configure \
-		--build=${ARCH}-linux-musl \
-		--host=${ARCH}-linux-musl \
 		--prefix=/usr \
-        --disable-nls
+		--disable-nls
 	make -j "$(nproc)"
+	make DESTDIR="/rootfs" install
 EOF
-
-FROM build AS install
-RUN --network=none make DESTDIR="/rootfs" install
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

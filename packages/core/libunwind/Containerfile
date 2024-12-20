@@ -1,13 +1,5 @@
-FROM scratch AS base
-ENV VERSION=1.7.2
-ENV SRC_HASH=a18a6a24307443a8ace7a8acc2ce79fbbe6826cd0edf98d6326d0225d6a5d6e6
-ENV SRC_FILE=libunwind-${VERSION}.tar.gz
-ENV SRC_SITE=https://github.com/libunwind/libunwind/releases/download/v${VERSION}/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-make . /
@@ -16,13 +8,12 @@ COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-autoconf . /
 COPY --from=stagex/core-automake . /
 COPY --from=stagex/core-libtool . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf libunwind-${VERSION}.tar.gz
 WORKDIR /libunwind-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./configure \
-		--build=x86_64-unknown-linux-musl \
-		--host=x86_64-unknown-linux-musl \
 		--prefix=/usr \
 		--sysconfdir=/etc \
 		--mandir=/usr/share/man \
@@ -31,10 +22,7 @@ RUN --network=none <<-EOF
 		--disable-tests \
 		--infodir=/usr/share/info || cat config.log
 	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
 EOF
-
-FROM build AS install
-RUN --network=none make DESTDIR=/rootfs install
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

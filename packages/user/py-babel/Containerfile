@@ -1,13 +1,5 @@
-FROM scratch AS base
-ENV VERSION=2.14.0
-ENV SRC_HASH=6919867db036398ba21eb5c7a0f6b28ab8cbc3ae7a73a44ebe34ae74a4e7d363
-ENV SRC_FILE=Babel-${VERSION}.tar.gz
-ENV SRC_SITE=https://files.pythonhosted.org/packages/source/B/Babel/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-zlib . /
@@ -24,16 +16,14 @@ COPY --from=stagex/core-py-packaging . /
 COPY --from=stagex/core-py-flit . /
 COPY --from=stagex/core-py-wheel . /
 COPY --from=stagex/core-py-gpep517 . /
-RUN tar -xzf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xzf py-babel-${VERSION}.tar.gz
 WORKDIR /Babel-${VERSION}
 RUN gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
-
-FROM build AS install
 RUN --network=none <<-EOF
     set -eux
     python -m installer -d /rootfs .dist/*.whl
     find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

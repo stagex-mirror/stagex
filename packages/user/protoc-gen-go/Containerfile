@@ -1,17 +1,10 @@
-FROM scratch AS base
-ENV VERSION=1.5.4
-ENV SRC_HASH=d75e6960ecfabaaa83a7261b1b630d24e9c63aca79615fb15bf33e11b62fd019
-ENV SRC_FILE=v${VERSION}.tar.gz
-ENV SRC_SITE=https://github.com/golang/protobuf/archive/refs/tags/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-go . /
 COPY --from=stagex/core-ca-certificates . /
-RUN tar -xvf v${VERSION}.tar.gz
+COPY --from=fetch . .
+RUN tar -xvf protoc-gen-go-${VERSION}.tar.gz
 WORKDIR /protobuf-${VERSION}
 ENV GOPATH=/cache/go
 ENV GOCACHE=/cache/
@@ -23,14 +16,12 @@ ENV GOHOSTOS=linux
 ENV GOHOSTARCH=amd64
 ENV GOFLAGS=-trimpath
 RUN mkdir -p ${GOPATH}
-RUN go build -o bin/protoc-gen-go ./protoc-gen-go
-
-FROM build AS install
+RUN go mod download
 RUN <<-EOF
-    set -eux
-    mkdir -p /rootfs/usr/bin/
-    cp bin/protoc-gen-go /rootfs/usr/bin/
+  set -eux
+	go build -o bin/protoc-gen-go ./protoc-gen-go
+  mkdir -p /rootfs/usr/bin/
+  cp bin/protoc-gen-go /rootfs/usr/bin/
 EOF
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/./ /
+COPY --from=build /rootfs/ /

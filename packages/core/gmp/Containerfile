@@ -1,13 +1,5 @@
-FROM scratch AS base
-ARG ARCH=x86_64
-ENV VERSION=6.3.0
-ENV SRC_HASH=a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898
-ENV SRC_FILE=gmp-${VERSION}.tar.xz
-ENV SRC_SITE=https://gmplib.org/download/gmp/${SRC_FILE}
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-musl . /
@@ -18,19 +10,16 @@ COPY --from=stagex/core-automake . /
 COPY --from=stagex/core-libtool . /
 COPY --from=stagex/core-m4 . /
 COPY --from=stagex/core-gcc . /
-
-RUN --network=none tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf gmp-${VERSION}.tar.xz
 WORKDIR /gmp-${VERSION}
 RUN --network=none <<EOF
-    set -eux
-    ./configure \
-        --prefix=/usr \
-        --build=${ARCH}-linux-musl
-    make -j "$(nproc)"
+	set -eux
+	./configure \
+		--prefix=/usr \
+		--build=$(uname -m)-linux-musl
+	make -j "$(nproc)"
+	DESTDIR=/rootfs make install
 EOF
-
-FROM build AS install
-RUN --network=none DESTDIR=/rootfs make install
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

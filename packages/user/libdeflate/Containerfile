@@ -1,15 +1,5 @@
-FROM scratch AS base
-ARG ARCH=x86_64
-ENV VERSION=1.20
-ENV PACKAGE_NAME=libdeflate
-ENV SRC_HASH=ed1454166ced78913ff3809870a4005b7170a6fd30767dc478a09b96847b9c2a
-ENV SRC_FILE=v${VERSION}.tar.gz
-ENV SRC_SITE=https://github.com/ebiggers/libdeflate/archive/refs/tags/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-binutils . /
@@ -20,23 +10,20 @@ COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-samurai . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/user-libgcrypt . /
-RUN tar -xf ${SRC_FILE}
-RUN ln -sf /bin/gas /bin/as
-WORKDIR /${PACKAGE_NAME}-${VERSION}
+COPY --from=fetch . .
+RUN tar -xf libdeflate-${VERSION}.tar.gz
+WORKDIR /libdeflate-${VERSION}
 RUN --network=none <<-EOF
 	set -eux; \
-    cmake -B build -G Ninja \
+	ln -sf /bin/gas /bin/as
+  cmake -B build -G Ninja \
 		-DCMAKE_INSTALL_PREFIX=/usr/lib \
 		-DCMAKE_BUILD_TYPE=Release \
-		-DLIBDEFLATE_BUILD_TESTS="$(want_check && echo ON || echo OFF)" \
+		-DLIBDEFLATE_BUILD_TESTS=OFF \
 		-DLIBDEFLATE_BUILD_SHARED_LIB=OFF \
 		-DLIBDEFLATE_USE_SHARED_LIB=OFF
 	cmake --build build
+	DESTDIR="/rootfs" cmake --install build
 EOF
-
-FROM build AS install
-RUN --network=none DESTDIR="/rootfs" cmake --install build
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

@@ -1,14 +1,5 @@
-FROM scratch AS base
-ARG ARCH=x86_64
-ENV VERSION=1.10.0
-ENV SRC_HASH=dd7c556b4d96ca5e682534bc1f1a78a5cfabce0c425b14c1b8549802686a4442
-ENV SRC_FILE=doxygen-${VERSION}.src.tar.gz
-ENV SRC_SITE=https://doxygen.nl/files/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-busybox . /
@@ -26,7 +17,8 @@ COPY --from=stagex/core-libxml2 . /
 COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-m4 . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf doxygen-${VERSION}.tar.gz
 WORKDIR /doxygen-${VERSION}
 COPY *.patch .
 RUN --network=none <<-EOF
@@ -38,11 +30,7 @@ RUN --network=none <<-EOF
 		-DCMAKE_BUILD_TYPE=MinSizeRel \
 		-Dbuild_xmlparser=ON
 	cmake --build build
+	DESTDIR=/rootfs cmake --install build
 EOF
-
-FROM build AS install
-RUN DESTDIR=/rootfs cmake --install build
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

@@ -1,37 +1,24 @@
-FROM scratch AS base
-ENV VERSION=0.19.0
-ENV SRC_HASH=0fd35a7030052acd9f58948d1d900fe1e432ee37103c5561554408bdac6bbf0d
-ENV SRC_FILE=v${VERSION}.tar.gz
-ENV SRC_SITE=https://github.com/krallin/tini/archive/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-cmake . /
-COPY --from=stagex/core-ninja . /
+COPY --from=stagex/core-samurai . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-make . /
-RUN --network=none tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf tini-${VERSION}.tar.gz
 WORKDIR /tini-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 ENV CFLAGS="-DPR_SET_CHILD_SUBREAPER=36 -DPR_GET_CHILD_SUBREAPER=37"
 RUN --network=none <<-EOF
-    set -eux
-    cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=None
-    cmake --build build --target all tini-static
+	set -eux
+	cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=None
+	cmake --build build --target all tini-static
+	install -Dm755 build/tini /rootfs/usr/sbin/tini
+	install -Dm755 build/tini-static /rootfs/usr/sbin/tini-static
 EOF
-
-FROM build AS install
-RUN --network=none <<-EOF
-    set -eux
-    install -Dm755 build/tini /rootfs/usr/sbin/tini
-    install -Dm755 build/tini-static /rootfs/usr/sbin/tini-static
-EOF
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

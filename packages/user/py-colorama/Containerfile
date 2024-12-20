@@ -1,28 +1,20 @@
-FROM scratch AS base
-ENV VERSION=0.4.6
-ENV SRC_HASH=08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44
-ENV SRC_FILE=colorama-${VERSION}.tar.gz
-ENV SRC_SITE=https://files.pythonhosted.org/packages/source/c/colorama/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS install
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-python . /
 COPY --from=stagex/core-py-flit . /
 COPY --from=stagex/core-py-gpep517 . /
 COPY --from=stagex/core-zlib . /
-RUN tar -xzf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xzf py-colorama-${VERSION}.tar.gz
 WORKDIR /colorama-${VERSION}
 RUN --network=none <<-EOF
 	set -eu
 	sitedir="$(python3 -c 'import site;print(site.getsitepackages()[0])')"
 	mkdir -p "/rootfs/${sitedir}"
 	cp -a colorama "/rootfs/$sitedir"
-    find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

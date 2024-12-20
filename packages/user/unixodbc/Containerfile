@@ -1,14 +1,5 @@
-FROM scratch AS base
-ARG ARCH=x86_64
-ENV VERSION=2.3.12
-ENV SRC_HASH=f210501445ce21bf607ba51ef8c125e10e22dffdffec377646462df5f01915ec
-ENV SRC_FILE=unixODBC-${VERSION}.tar.gz
-ENV SRC_SITE=https://www.unixodbc.org/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} ${SRC_FILE}
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-bash . /
 COPY --from=stagex/core-m4 . /
@@ -21,13 +12,12 @@ COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-libtool . /
 COPY --from=stagex/user-postgresql . /
-RUN tar -xf $SRC_FILE
+COPY --from=fetch . .
+RUN tar -xf unixodbc-${VERSION}.tar.gz
 WORKDIR /unixODBC-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	./configure \
-		--build=${ARCH}-linux-musl \
-		--host=${ARCH}-linux-musl \
 		--prefix=/usr \
 		--sysconfdir=/etc \
 		--mandir=/usr/share/man \
@@ -36,11 +26,7 @@ RUN --network=none <<-EOF
 		--enable-gui=no \
 		--enable-static
 	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
 EOF
-
-FROM build AS install
-RUN make DESTDIR=/rootfs install
-RUN find /rootfs -exec touch -hcd "@0" "{}" +
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

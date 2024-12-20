@@ -1,13 +1,5 @@
-FROM scratch AS base
-ENV VERSION=2.5.5
-ENV SRC_HASH=248a2c8a4d9b9858aa6baf52712c34afefcf9c9e94b76dce02c1c9aa25fb3375
-ENV SRC_FILE=libseccomp-${VERSION}.tar.gz
-ENV SRC_SITE=https://github.com/seccomp/libseccomp/releases/download/v${VERSION}/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-linux-headers . /
@@ -18,24 +10,20 @@ COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/user-gperf . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf libseccomp-${VERSION}.tar.gz
 WORKDIR /libseccomp-${VERSION}
 RUN --network=none <<-EOF
-	set -eux;
+	set -eux
 	./configure \
-        --build=x86_64-linux-musl \
-        --host=x86_64-linux-musl \
 		--prefix=/usr \
 		--infodir=/usr/share/info \
 		--sysconfdir=/etc \
 		--localstatedir=/var \
-        --enable-python \
-        --enable-static
+		--enable-python \
+		--enable-static
 	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
 EOF
-
-FROM build AS install
-RUN --network=none make DESTDIR=/rootfs install
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

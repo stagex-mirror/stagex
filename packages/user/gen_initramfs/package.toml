@@ -1,0 +1,10 @@
+[package]
+name = "gen_initramfs"
+version = "6.11.2"
+description = "TODO"
+
+[sources.linux]
+hash = "ec9ef7a0b9cebb55940e1ef87a1f9e1004b10456a119dc386bb3e565b0d39c42"
+format = "tar.xz"
+file = "linux-{version}.{format}"
+mirrors = [ "http://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/linux-{version}.{format}",]

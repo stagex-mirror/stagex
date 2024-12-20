@@ -1,13 +1,5 @@
-FROM scratch AS base
-ENV VERSION=2.15.31
-ENV SRC_HASH=6507f894a30036ad002b54e12f49959c592c8507765405c52cf7b4ba4dc2509d
-ENV SRC_FILE=${VERSION}.tar.gz
-ENV SRC_SITE=https://github.com/aws/aws-cli/archive/refs/tags/${VERSION}/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-zlib . /
@@ -35,20 +27,17 @@ COPY --from=stagex/user-py-docutils . /
 COPY --from=stagex/user-py-wcwidth . /
 COPY --from=stagex/user-py-prompt_toolkit . /
 COPY --from=stagex/user-py-ruamel.yaml . /
-RUN tar -xzf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xzf aws-cli-${VERSION}.tar.gz
 WORKDIR /aws-cli-${VERSION}
-RUN --network=none \
-    gpep517 build-wheel \
+RUN --network=none <<-EOF
+	set -eux
+	gpep517 build-wheel \
 		--wheel-dir .dist \
 		--output-fd 3 3>&1 >&2
-
-FROM build AS install
-RUN --network=none <<-EOF
-    set -eu
-    python -m installer -d /rootfs .dist/*.whl
-    find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
-    rm /rootfs/usr/lib/python*/site-packages/awscli-*.dist-info/RECORD
+	python -m installer -d /rootfs .dist/*.whl
+  find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+  rm /rootfs/usr/lib/python*/site-packages/awscli-*.dist-info/RECORD
 EOF
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

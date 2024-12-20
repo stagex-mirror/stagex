@@ -1,35 +1,23 @@
-FROM scratch AS base
-ENV VERSION=2.15
-ENV SRC_HASH=efa50ef983137eefc0a02fdb51509d624b5e3295c980aa127ceee4183455499e
-ENV SRC_FILE=cpio-${VERSION}.tar.gz
-ENV SRC_SITE=https://ftp.gnu.org/gnu/cpio/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
-RUN tar -xzf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xzf cpio-${VERSION}.tar.gz
 WORKDIR /cpio-${VERSION}
 RUN --network=none <<-EOF
-    set -eux
-    ./configure \
-        --build=x86_64-unknown-linux-musl \
-        --host=x86_64-unknown-linux-musl \
-        --prefix=/usr \
-        --bindir=/usr/bin \
-        --mandir=/usr/share/man \
-        --infodir=/usr/share/info \
-        gl_cv_func_getcwd_path_max="no, but it is partly working"
-    make -j "$(nproc)"
+	set -eux
+	./configure \
+		--prefix=/usr \
+		--bindir=/usr/bin \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		gl_cv_func_getcwd_path_max="no, but it is partly working"
+	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
 EOF
-
-FROM build AS install
-RUN --network=none make DESTDIR=/rootfs install
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /

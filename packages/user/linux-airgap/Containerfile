@@ -1,13 +1,5 @@
-FROM scratch AS base
-ENV VERSION=6.7
-ENV SRC_HASH=ef31144a2576d080d8c31698e83ec9f66bf97c677fa2aaf0d5bbb9f3345b1069
-ENV SRC_FILE=linux-${VERSION}.tar.xz
-ENV SRC_SITE=http://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/${SRC_FILE}
-
-FROM base AS fetch
-ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
-
-FROM fetch AS build
+FROM scratch AS build
+ARG VERSION
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-binutils . /
@@ -34,7 +26,8 @@ COPY --from=stagex/core-bc . /
 COPY --from=stagex/core-bash . /
 COPY --from=stagex/core-bash /bin/bash /bin/sh
 COPY --from=stagex/user-elfutils . /
-RUN tar -xf ${SRC_FILE}
+COPY --from=fetch . .
+RUN tar -xf linux-${VERSION}.tar.xz
 WORKDIR /linux-${VERSION}
 ADD linux.config .config
 ENV SOURCE_DATE_EPOCH=1
@@ -44,15 +37,9 @@ ENV KBUILD_BUILD_TIMESTAMP="Thu Jan  1 12:00:00 AM GMT 1970"
 RUN <<-EOF
 	set -eux
 	make -j "$(nproc)" bzImage
-EOF
-
-FROM build AS install
-RUN <<-EOF
-	set -eux
-    mkdir /rootfs
+  mkdir /rootfs
 	cp .config /rootfs/linux.config
-	cp arch/x86_64/boot/bzImage /rootfs
+	cp "arch/$(uname -m)/boot/bzImage" /rootfs
 EOF
-
 FROM stagex/core-filesystem AS package
-COPY --from=install /rootfs/. /
+COPY --from=build /rootfs/ /
