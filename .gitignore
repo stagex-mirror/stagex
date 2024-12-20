@@ -1,4 +1,5 @@
 out
+fetch
 build.log
 graph.svg
 *.tgz

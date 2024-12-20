@@ -1,12 +1,11 @@
-export PLATFORM := linux/amd64
-export BUILDER := $(shell which docker)
-export REGISTRY_LOCAL := stagex-local
-export REGISTRY_REMOTE := stagex
-export CHECK ?= 0
-export NOCACHE ?= 0
-export MIRRORS := \
-	git.distrust.co \
-	hub.docker.com
+export PLATFORM BUILDER REGISTRY CHECK NOCACHE
+export TZ=UTC
+export LANG=C.UTF-8
+export LC_ALL=C
+export SOURCE_DATE_EPOCH=1
+export BUILDKIT_MULTI_PLATFORM=1
+export DOCKER_BUILDKIT=1
+
 ifeq ($(NOCACHE), 1)
 NOCACHE_FLAG=--no-cache
 else
@@ -24,17 +23,14 @@ clean_logs := $(shell rm *.log 2>&1 >/dev/null || :)
 
 DEFAULT_GOAL := default
 .PHONY: default
-default: compat all
+default: compat targets all
 
-.PHONY: all check compat preseed verify sign
+.PHONY: all check compat digests preseed fetch verify sign targets help
 
-include src/macros.mk
+targets: out/targets.mk
+out/targets.mk: out $(shell find packages/)
+	python3 src/targets.py > $@
+-include out/targets.mk
 
 out:
 	mkdir out
-
-all_packages := $(shell $(call folder-list,packages))
-
-$(all_packages): %: out/%/index.json
-
-$(foreach package,$(all_packages),$(eval $(call gen-target,$(package))))

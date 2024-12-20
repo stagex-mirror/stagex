@@ -1,0 +1,36 @@
+FROM scratch AS build
+ARG VERSION
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-flex . /
+COPY --from=stagex/core-bison . /
+COPY --from=stagex/core-coreutils . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/core-samurai . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-m4 . /
+COPY --from=fetch . .
+RUN tar -xf doxygen-${VERSION}.tar.gz
+WORKDIR /doxygen-${VERSION}
+COPY *.patch .
+RUN --network=none <<-EOF
+	set -eux \
+	patch -p1 remove-usage-of-fstat64.patch
+	cmake -B build -G Ninja \
+		-DGIT_EXECUTABLE=/bin/false \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_BUILD_TYPE=MinSizeRel \
+		-Dbuild_xmlparser=ON
+	cmake --build build
+	DESTDIR=/rootfs cmake --install build
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

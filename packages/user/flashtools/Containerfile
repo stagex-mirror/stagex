@@ -1,0 +1,22 @@
+FROM scratch AS build
+ARG VERSION
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-gcc . /
+COPY --from=fetch . .
+RUN tar -xvf flashtools-${VERSION}.tar.gz
+WORKDIR /flashtools-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	make all
+  mkdir -p /rootfs/usr/bin/
+  install -D -m 0755 flashtool /rootfs/usr/bin/
+  install -D -m 0755 peek /rootfs/usr/bin/
+  install -D -m 0755 poke /rootfs/usr/bin/
+  install -D -m 0755 cbfs /rootfs/usr/bin/
+  install -D -m 0755 uefi /rootfs/usr/bin/
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs// /

@@ -1,0 +1,10 @@
+[package]
+name = "linux-guest"
+version = "6.7"
+description = "TODO"
+
+[sources.linux]
+hash = "ef31144a2576d080d8c31698e83ec9f66bf97c677fa2aaf0d5bbb9f3345b1069"
+format = "tar.xz"
+file = "linux-{version}.{format}"
+mirrors = [ "http://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/linux-{version}.{format}",]

@@ -1,0 +1,57 @@
+FROM scratch AS build
+ARG VERSION
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-meson . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-libxslt . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-samurai . /
+COPY --from=stagex/user-libcap . /
+COPY --from=fetch . .
+RUN tar -xzf iputils-${VERSION}.tar.gz
+WORKDIR /iputils-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	ARCH="$(uname -m)"
+	./configure
+	meson env2mfile \
+		--native \
+		--system=linux \
+		--cpu-family=${ARCH} \
+		--cpu=${ARCH} \
+		--endian=little \
+		-o meson.cross
+	meson setup \
+		--prefix=/usr \
+		--libdir=/usr/lib \
+		--libexecdir=/usr/libexec \
+		--bindir=/usr/bin \
+		--sbindir=/usr/sbin \
+		--includedir=/usr/include \
+		--datadir=/usr/share \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--localedir=/usr/share/locale \
+		--sysconfdir=/etc \
+		--localstatedir=/var \
+		--sharedstatedir=/var/lib \
+		--buildtype=plain \
+		--auto-features=auto \
+		--wrap-mode=nodownload \
+		--default-library=both \
+		--cross-file=meson.cross \
+		-Db_lto=false \
+		-DNO_SETCAP_OR_SUID=true \
+		-DBUILD_MANS=false \
+		-DUSE_IDN=false \
+		-DUSE_GETTEXT=false \
+		. output
+	meson compile -C output
+	DESTDIR=/rootfs meson install --no-rebuild -C output
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs /

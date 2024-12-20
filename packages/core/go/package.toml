@@ -1,0 +1,24 @@
+[package]
+name = "go"
+version = "1.23.1"
+description = "TODO"
+
+[sources.go]
+hash = "6ee44e298379d146a5e5aa6b1c5b5d5f5d0a3365eabdd70741e6e21340ec3b0d"
+mirrors = [ "https://storage.googleapis.com/golang/go{version}.src.tar.gz",]
+
+[sources.go1_20_6]
+hash = "62ee5bc6fb55b8bae8f705e0cb8df86d6453626b4ecf93279e2867092e0b7f70"
+version = "1.20.6"
+mirrors = [ "https://storage.googleapis.com/golang/go{version}.src.tar.gz",]
+
+[sources.go1_19_11]
+hash = "e25c9ab72d811142b7f41ff6da5165fec2d1be5feec3ef2c66bc0bdecb431489"
+version = "1.19.11"
+mirrors = [ "https://storage.googleapis.com/golang/go{version}.src.tar.gz",]
+
+[sources.go1_4]
+hash = "f4ff5b5eb3a3cae1c993723f3eab519c5bae18866b5e5f96fe1102f0cb5c3e52"
+version = "1.4"
+file = "go{version}.src.tar.gz"
+mirrors = [ "https://dl.google.com/go/go{version}-bootstrap-20171003.tar.gz",]

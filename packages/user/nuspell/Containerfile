@@ -1,0 +1,32 @@
+FROM scratch AS build
+ARG VERSION
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/core-samurai . /
+COPY --from=stagex/core-samurai . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-icu . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-m4 . /
+COPY --from=stagex/core-gcc . /
+COPY --from=fetch . .
+RUN tar -xf nuspell-${VERSION}.tar.gz
+WORKDIR /nuspell-${VERSION}
+RUN --network=none <<-EOF
+	set -ex
+	CXXFLAGS="$CXXFLAGS -flto=auto" \
+	cmake -B build -G Ninja \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DBUILD_SHARED_LIBS=True \
+		-DCMAKE_BUILD_TYPE=None \
+		-DBUILD_TESTING=OFF \
+		-DBUILD_DOCS=OFF
+	cmake --build build
+	DESTDIR="/rootfs" cmake --install build
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

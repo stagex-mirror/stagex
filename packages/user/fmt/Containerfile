@@ -1,0 +1,33 @@
+FROM scratch AS build
+ARG VERSION
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/core-samurai . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/user-postgresql . /
+COPY --from=stagex/user-doxygen . /
+COPY --from=fetch . .
+RUN tar -xf fmt-${VERSION}.tar.gz
+WORKDIR /fmt-${VERSION}
+COPY *.patch .
+RUN --network=none <<-EOF
+	set -eux
+	patch -p1 fix-handling-of-static-separator.patch
+	# Build in-tree so the prebuilt docs get installed correctly.
+	# See https://github.com/fmtlib/fmt/issues/2837
+	cmake -B . -G Ninja \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DBUILD_SHARED_LIBS=True \
+		-DCMAKE_BUILD_TYPE=None \
+		CMAKE_CROSSOPTS="-DCMAKE_SYSTEM_NAME=Linux -DCMAKE_HOST_SYSTEM_NAME=Linux"
+	cmake --build .
+	DESTDIR=/rootfs cmake --install .
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

@@ -1,0 +1,23 @@
+FROM scratch AS build
+ARG VERSION
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-gcc . /
+COPY --from=fetch . .
+RUN tar -xf jq-${VERSION}.tar.gz
+WORKDIR /jq-${VERSION}
+RUN --network=none <<-EOF
+	set -ex
+	./configure \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--localstatedir=/etc \
+		--mandir=/usr/share/man \
+    --disable-docs
+	make -j "$(nproc)"
+  make DESTDIR="/rootfs" install
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

@@ -1,0 +1,47 @@
+FROM scratch AS build
+ARG VERSION
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-icu . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-clang . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-ncurses . /
+COPY --from=stagex/core-bison . /
+COPY --from=stagex/core-flex . /
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-readline . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-tcl . /
+COPY --from=stagex/user-util-linux . /
+COPY --from=stagex/user-e2fsprogs . /
+COPY --from=fetch . .
+RUN tar -xf postgresql-${VERSION}.tar.gz
+WORKDIR /postgresql-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--prefix=/usr \
+		--mandir=/usr/share/man \
+		--with-libxml \
+		--with-openssl \
+		--with-uuid=e2fs \
+		--disable-rpath \
+		--with-llvm \
+		--with-perl \
+		--with-python \
+		--with-icu \
+		--with-tcl \
+		--with-readline
+	make -j "$(nproc)" world
+	make install-world DESTDIR=/rootfs
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

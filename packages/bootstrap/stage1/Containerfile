@@ -1,0 +1,68 @@
+ARG LIVE_BOOTSTRAP_SOURCE
+
+# HACK: stage0 tar is currently incompatible with symlinks and github tgz files
+#FROM base AS extract
+#COPY --from=stagex/stage0 . /
+#COPY --from=fetch distfiles/live-bootstrap.tgz .
+#SHELL ["/x86/bin/kaem","--verbose","--strict","--file"]
+#COPY <<-EOF extract.kaem
+#	set -ex
+#	PATH=/x86/bin
+#	ungz --file live-bootstrap.tgz --output live-bootstrap.tar
+#	untar --non-strict --file live-bootstrap.tar
+#	echo "" > lrvick-live-bootstrap-fc6eeb6/steps/lwext4-1.0.0-lb1/files/fiwix-file-list.txt
+#EOF
+#RUN --network=none ./extract.kaem
+FROM debian@sha256:bac353db4cc04bc672b14029964e686cd7bad56fe34b51f432c1a1304b9928da AS extract
+ARG LIVE_BOOTSTRAP_SOURCE
+COPY --from=fetch ${LIVE_BOOTSTRAP_SOURCE} .
+RUN --network=none tar -xvf ${LIVE_BOOTSTRAP_SOURCE}
+# HACK: fixed in live-bootstrap upstream and can be dropped on next source bump
+RUN echo "" > lrvick-live-bootstrap-fc6eeb6/steps/lwext4-1.0.0-lb1/files/fiwix-file-list.txt
+
+FROM scratch AS build
+USER 0:0
+ENV CORES=1
+COPY --from=stagex/bootstrap-stage0 . /
+COPY --from=fetch . external/distfiles/
+COPY --from=extract /lrvick-live-bootstrap-fc6eeb6/seed/* .
+COPY --from=extract /lrvick-live-bootstrap-fc6eeb6/steps steps
+COPY <<-EOF steps/bootstrap.cfg
+	FORCE_TIMESTAMPS=False
+	CHROOT=True
+	UPDATE_CHECKSUMS=False
+	JOBS=${CORES}
+	SWAP_SIZE=0
+	FINAL_JOBS=${CORES}
+	INTERNAL_CI=False
+	INTERACTIVE=False
+	BARE_METAL=False
+	EXTERNAL_SOURCES=True
+	DISK=sda1
+	KERNEL_BOOTSTRAP=False
+	BUILD_KERNELS=False
+EOF
+ENV ARCH_DIR=x86
+ENV ARCH=x86
+SHELL ["/x86/bin/kaem","--verbose","--strict","--file"]
+RUN --network=none ./after.kaem
+
+FROM build AS install
+USER 0:0
+COPY <<-EOF install.kaem
+	set -ex
+    PATH=/bin:/usr/sbin:/usr/bin
+    mkdir -p /rootfs/etc /rootfs/home/user /rootfs/tmp
+    chown -R 1000:1000 /rootfs/home/user /rootfs/tmp
+    cp -R lib usr bin var etc /rootfs/
+    rm /rootfs/etc/hosts
+    rm /rootfs/etc/resolv.conf
+    # HACK: This has been fixed upstream and can be dropped on next source bump
+    rm -rf /rootfs/usr/lib/python3.4/__pycache__
+    rm -rf /rootfs/usr/lib/python3.8/__pycache__
+EOF
+SHELL ["/x86/bin/kaem","--verbose","--strict","--file"]
+RUN --network=none ./install.kaem
+
+FROM scratch AS package
+COPY --from=install /rootfs /

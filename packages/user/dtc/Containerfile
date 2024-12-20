@@ -1,0 +1,31 @@
+FROM scratch AS build
+ARG VERSION
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-m4 . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-bison . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-flex . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-coreutils . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-py-setuptools . /
+COPY --from=fetch . .
+RUN tar -xf dtc-${VERSION}.tar.xz
+WORKDIR /dtc-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+  sed -i s:-Werror::g Makefile
+	sed -i "s|@VERSION@|${VERSION}|" setup.py
+  make -j "$(nproc)"
+  make DESTDIR=/rootfs PREFIX=/usr install
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
