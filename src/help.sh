@@ -1,5 +1,4 @@
-#!/bin/bash
-#TODO: find a masochist willing rewrite this as POSIX compliant to drop bash
+#!/bin/sh
 
 # Display pretty help text for a Makefile.
 # Usage: ./help.sh Makefile
@@ -28,7 +27,6 @@ help() {
 
 # Function to display targets information
 _help_targets() {
-    local pattern
     pattern='^[a-zA-Z0-9._-]+:.*?##.*$'
     echo "Target(s):"
     grep -E "$pattern" "$1" | sort | while read -r line; do
@@ -41,7 +39,6 @@ _help_targets() {
 
 # Function to display variables information
 _help_variables() {
-    local pattern
     pattern='^[a-zA-Z0-9_-]+ [:?!+]?=.*?##.*$'
     echo "Variable(s):"
     grep -E "$pattern" "$1" | sort | while read -r line; do
@@ -61,7 +58,7 @@ _help_examples() {
 }
 
 # Call main function
-help "Makefile"
+help "$1"
 
 # Return exit code indicating success
 exit 0

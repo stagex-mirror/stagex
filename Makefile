@@ -32,4 +32,4 @@ fetch: ## Fetch and hash verify all external source files
 	@./src/fetch.py
 
 help:
-	@./src/help.sh
+	@./src/help.sh Makefile
