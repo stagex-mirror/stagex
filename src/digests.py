@@ -23,5 +23,5 @@ for stage,elements in digests.items():
   filename = "digests/%s.txt" % stage
   with open(filename, 'a') as file:
     for element in sorted(elements,key=operator.itemgetter(0)):
-      file.write("%s %s\n" % (element[1],element[0]))
-  print("> %s" % filename)
+      file.write("%s %s-%s\n" % (element[1],stage,element[0]))
+  print("> %s" % filename),
