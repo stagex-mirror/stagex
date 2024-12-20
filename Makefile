@@ -7,6 +7,7 @@ CHECK ?= 0## Run build with syntax checking enabled
 NOCACHE ?= 0## Run build ignoring all existing cache
 
 include src/global.mk
+include src/macros.mk
 
 all: $(STAGES) ## Build entire tree (default)
 
