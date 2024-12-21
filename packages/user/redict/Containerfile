@@ -1,0 +1,29 @@
+FROM scratch AS base 
+ENV VERSION=7.3.1
+ENV SRC_FILE=${VERSION}.tar.gz
+ENV SRC_SITE=https://codeberg.org/redict/redict/archive/${SRC_FILE}
+ENV SRC_HASH=6dbe80d28503a9252048ab81856efcfec109cdf3f924e840411c30237cf8f634
+
+FROM base AS fetch
+ADD --checksum=sha256:${SRC_HASH} ${SRC_SITE} .
+
+FROM fetch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-openssl . /
+RUN tar -xvzf ${SRC_FILE}
+WORKDIR /redict
+ENV SOURCE_DATE_EPOCH=1
+RUN make BUILD_TLS=yes all
+
+FROM build AS install
+RUN --network=none make install PREFIX="/rootfs" INSTALL_BIN="/rootfs/usr/bin"
+
+FROM stagex/core-filesystem AS package
+COPY --from=install /rootfs/. /
+
