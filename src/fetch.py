@@ -50,8 +50,10 @@ def download(url, filename=None):
     urlretrieve(url, filename, download_status_hook)
 
 
-def verify(filename, compare):
-    with open(filename, "rb", buffering=0) as f:
+def verify(filepath, compare):
+    if not filepath.is_file():
+        return False
+    with open(filepath, "rb", buffering=0) as f:
         digest = file_digest(f, "sha256").hexdigest()
     if digest == compare:
         return True
@@ -84,8 +86,8 @@ for package_file in package_files:
         version = package["sources"][source].get("version", version)
         version_under = version.replace(".", "_")
         version_dash = version.replace(".", "-")
-        path = "fetch/%s/%s/" % (stage, name)
-        Path(path).mkdir(parents=True, exist_ok=True)
+        path = Path("fetch").joinpath(stage, name)
+        path.mkdir(parents=True, exist_ok=True)
         for mirror in mirrors:
             urlfile = urlsplit(mirror).path.split("/")[-1]
             file = (
@@ -105,14 +107,18 @@ for package_file in package_files:
                 format=format,
                 file=file,
             )
-            filepath = path + file
-            if isfile(filepath):
+            filepath = path.joinpath(file)
+            if filepath.is_file():
                 if not verify(filepath, digest):
                     failed.append([file, digest, url, "verify_existing"])
                 continue
             print("\nDownloading: %s" % file)
             print("Mirror: %s" % url)
-            download(url, filepath)
+            try:
+                download(url, filepath)
+            except:
+                print("Failed downloading from mirror")
+                continue
             if not verify(filepath, digest):
                 failed.append([file, digest, url, "verify_download"])
 
