@@ -1,14 +1,9 @@
 #!/bin/python3
 import glob
-import os
-import re
 import sys
-import time
 import toml
 from pathlib import Path
 from urllib.parse import urlsplit
-from urllib.request import urlopen, urlretrieve
-from email.message import Message
 
 replacements = {
     "\n":"",
@@ -17,6 +12,7 @@ replacements = {
     "ADD --checksum=sha256:":"",
     "${":"{",
 }
+
 skip_list = [
         'pallet',
         'bootstrap',

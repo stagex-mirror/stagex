@@ -1,6 +1,5 @@
 #!/bin/python3
 import glob
-import re
 import sys
 import time
 import tomllib

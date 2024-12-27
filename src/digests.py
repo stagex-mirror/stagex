@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
-from glob import glob
 import json
 import operator
+from glob import glob
 from os import mkdir
 from shutil import rmtree
+from typing import MutableMapping
+from typing import Tuple
 
-digests = {}
+digests: MutableMapping[str, Tuple[str, str]] = dict[str, Tuple[str, str]]()
+
 for filename in glob('out/**/index.json',recursive=True):
   fullname = filename.split('/')[1]
   stage = fullname.split('-')[0]
@@ -20,8 +23,8 @@ for filename in glob('out/**/index.json',recursive=True):
 rmtree('digests')
 mkdir('digests')
 for stage,elements in digests.items():
-  filename = "digests/%s.txt" % stage
+  filename = f"digests/{stage}.txt"
   with open(filename, 'a') as file:
     for element in sorted(elements,key=operator.itemgetter(0)):
-      file.write("%s %s-%s\n" % (element[1],stage,element[0]))
-  print("> %s" % filename),
+      file.write(f"{element[1]} {stage}-{element[0]}\n")
+  print(f"> {filename}"),

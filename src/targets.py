@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-from glob import glob
 import tomllib
-from sys import argv, stderr
+from glob import glob
 from urllib.parse import urlsplit
 
 def toml_read(filename: str):
