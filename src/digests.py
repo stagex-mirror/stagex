@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import json
 import operator
-import os
 from glob import glob
 from os import mkdir
 from shutil import rmtree
