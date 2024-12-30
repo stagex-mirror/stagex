@@ -1,29 +1,11 @@
 #!/usr/bin/env python3
 import os
-import tomllib
-from dataclasses import dataclass
-from dataclasses import field
+from common import CommonUtils
+from common import PackageInfo
 from typing import Any
 from typing import List
-from typing import Mapping
 from typing import MutableMapping
 from urllib.parse import urlsplit
-
-
-@dataclass
-class SourcesInfo(object):
-  hash: str
-  format: str
-  file: str
-  mirrors: List[str] = field(default_factory=list)
-  version: str = field(default_factory=str)
-
-
-@dataclass
-class PackageInfo(object):
-  version: str
-  sources: MutableMapping[str, SourcesInfo] = field(default_factory=dict)
-  deps: List[str] = field(default_factory=list)
 
 
 class TargetGenerator(object):
@@ -98,11 +80,10 @@ class TargetGenerator(object):
             self.packages[stage] = dict[str, PackageInfo]()
 
           try:
-            package_data = TargetGenerator.toml_read(f"{root_path}/{stage}/{name}/package.toml")
+            package_data = CommonUtils.toml_read(f"{root_path}/{stage}/{name}/package.toml")
           except FileNotFoundError:
             continue
 
-          version: str = package_data["package"].get("version", None)
           deps: List[str] = list()
           with open(container_file_path, "r") as file:
             for line in file:
@@ -114,17 +95,10 @@ class TargetGenerator(object):
                     deps.append(dep.split("/")[1])
               if line.startswith("FROM stagex/"):
                 deps.append(line.split(" ")[1].split("/")[1])
-          sources_toml: Mapping[str, Mapping[str, str | List[str]]] = package_data.get("sources", None)
-          source_info: MutableMapping[str, SourcesInfo] = dict[str, SourcesInfo]()
-          if sources_toml is not None:
-            for source_name, source_description in sources_toml.items():
-              source_info[source_name] = SourcesInfo(
-                hash=source_description["hash"],
-                format=source_description.get("format", ""),
-                file=source_description.get("file", ""),
-                mirrors=source_description["mirrors"],
-                version=source_description.get("version", ""))
-          self.packages[stage][name] = PackageInfo(version, source_info, deps)
+
+          package_info = CommonUtils.parse_package_toml_no_deps(package_data)
+          package_info.deps = deps
+          self.packages[stage][name] = package_info
 
   @staticmethod
   def get_context_args(package: PackageInfo, stage: str, name: str) -> str:
@@ -137,39 +111,28 @@ class TargetGenerator(object):
   @staticmethod
   def get_build_args(package: PackageInfo) -> str:
     sources = package.sources
-    package_version = package.version
-    version_under = None
-    version_dash = None
     args: List[str] = list()
-    if package_version:
-        version_under = package_version.replace(".", "_")
-        version_dash = package_version.replace(".", "-")
-        args.append(f"--build-arg VERSION={package_version}")
-        args.append(f"--build-arg VERSION_UNDER={version_under}")
-        args.append(f"--build-arg VERSION_DASH={version_dash}")
+    if package.version:
+        args.append(f"--build-arg VERSION={package.version}")
+        args.append(f"--build-arg VERSION_UNDER={package.version_under}")
+        args.append(f"--build-arg VERSION_DASH={package.version_dash}")
 
     for source_name, source_info in sources.items():
         source_format = source_info.format
         mirrors = source_info.mirrors
         urlfile = urlsplit(mirrors[0]).path.split("/")[-1]
-        sources_version = source_info.version
         # We assume that version == "" means no version was provided in toml
-        if sources_version != "":
-            args.append(f"--build-arg {source_name.upper()}_VERSION={sources_version}")
+        if source_info.version != "":
+            args.append(f"--build-arg {source_name.upper()}_VERSION={source_info.version}")
             file = source_info.file if source_info.file != "" else urlfile
             file = file.format(
-                    version=sources_version,
-                    version_dash=version_dash,
-                    version_under=version_under,
+                    version=source_info.version,
+                    version_dash=package.version_dash,
+                    version_under=package.version_under,
                     format=source_format,
                 )
             args.append(f"--build-arg {source_name.upper()}_SOURCE={file}")
     return " \\\n\t  ".join(args)
-
-  @staticmethod
-  def toml_read(filename: str) -> dict[str, Any]:
-    with open(filename, "rb") as f_in:
-      return tomllib.load(f_in)
 
 
 if __name__ == "__main__":

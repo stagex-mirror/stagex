@@ -1,0 +1,68 @@
+import tomllib
+from dataclasses import dataclass
+from dataclasses import field
+from typing import Any
+from typing import List
+from typing import Mapping
+from typing import MutableMapping
+
+
+@dataclass()
+class WithVersion(object):
+  version: str = field(default_factory=str)
+
+  @property
+  def version_under(self) -> str:
+    return CommonUtils.version_to_under(self.version) if self.version else ""
+
+  @property
+  def version_dash(self) -> str:
+    return CommonUtils.version_to_dash(self.version) if self.version else ""
+
+
+@dataclass(kw_only=True)
+class SourcesInfo(WithVersion):
+  hash: str
+  format: str
+  file: str
+  mirrors: List[str] = field(default_factory=list)
+
+
+@dataclass(kw_only=True)
+class PackageInfo(WithVersion):
+  name: str
+  sources: MutableMapping[str, SourcesInfo] = field(default_factory=dict)
+  deps: List[str] = field(default_factory=list)
+
+
+
+class CommonUtils(object):
+  @staticmethod
+  def version_to_under(version: str) -> str:
+    return version.replace(".", "_")
+
+  @staticmethod
+  def version_to_dash(version: str) -> str:
+    return version.replace(".", "-")
+
+  @staticmethod
+  def toml_read(filename: str) -> dict[str, Any]:
+    with open(filename, "rb") as f_in:
+      return tomllib.load(f_in)
+
+  @staticmethod
+  def parse_package_toml_no_deps(toml_dict: MutableMapping[str, Any]) -> PackageInfo:
+    version: str = toml_dict["package"].get("version", None)
+    name: str = toml_dict["package"]["name"]
+    sources_toml: Mapping[str, Mapping[str, str | List[str]]] = toml_dict.get("sources", None)
+    source_info: MutableMapping[str, SourcesInfo] = dict[str, SourcesInfo]()
+    if sources_toml is not None:
+      for source_name, source_description in sources_toml.items():
+        source_info[source_name] = SourcesInfo(
+          hash=source_description["hash"],
+          format=source_description.get("format", ""),
+          file=source_description.get("file", ""),
+          mirrors=source_description["mirrors"],
+          version=source_description.get("version", ""))
+    return PackageInfo(name=name, version=version, sources=source_info, deps=list())
+
