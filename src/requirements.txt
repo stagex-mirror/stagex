@@ -1,9 +1,0 @@
-# stagex generally avoid using any external libraries, but at times it is necessary
-# as re-implementing functionality can be quite outside the scope of the core work
-# of stagex.  Please ensure that libraries are stricly versioned, i.e., using '==' in order
-# to ensure that there is no inadvertent upgrades as well as document the the reason WHY
-# a particular library was needed
-
-# the python3 builtin tomllib does not support writing, hence it is necessary to include the
-# 3rd party toml library in order to be able to write out toml files in gen_packagetoml.py
-toml == 0.10.2
