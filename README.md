@@ -340,7 +340,7 @@ make sign
 
 ### Alternatives
 
-- [Bitcoin Optech: Reproducible Builds](https://bitcoinops.org/en/topics/eproducible-builds/)
+- [Bitcoin Optech: Reproducible Builds](https://bitcoinops.org/en/topics/reproducible-builds/)
 - [Arch Linux: Reproducible Builds](https://wiki.archlinux.org/title/Reproducible_builds)
 - [NixOS: Reproducible Builds](https://reproducible.nixos.org/)
 - [Guix: Reproducible Builds](https://qa.guix.gnu.org/reproducible-builds)
