@@ -82,7 +82,7 @@ class ResourceFetcher(object):
     speed = int(progress_size / (1024 * duration))
     percent = int((count * block_size * 100) / total_size)
     sys.stdout.write(
-      f"\r...{percent}%%, {progress_size / (1024 * 1024)} MB, "
+      f"\r...{percent}%, {progress_size / (1024 * 1024)} MB, "
       f"{speed} KB/s, {duration} seconds passed"
     )
     sys.stdout.flush()

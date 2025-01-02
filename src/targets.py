@@ -10,31 +10,31 @@ from urllib.parse import urlsplit
 
 class TargetGenerator(object):
   TARGET_TEMPLATE = """
-        .PHONY: {name} {stage}-{name}
-        {name}: out/{stage}-{name}/index.json
-        {stage}-{name}: out/{stage}-{name}/index.json
-        out/{stage}-{name}/index.json: {deps}
-        \trm -rf out/{stage}-{name} && \\
-        \tmkdir -p out/{stage}-{name} && \\
-        \tmkdir -p fetch/{stage}/{name} && \\
-        \tpython3 src/fetch.py {name} && \\
-        \t$(BUILDER) \\
-        \t  build \\
-        \t  --ulimit nofile=2048:16384 \\
-        \t  --tag stagex/{stage}-{name}:{version} \\
-        \t  --output \\
-        \t    name={name},type=oci,rewrite-timestamp=true,force-compression=true,annotation.org.opencontainers.image.revision=$(shell git rev-list HEAD -1 packages/{stage}/{name}),annotation.org.opencontainers.image.version={version},tar=true,dest=- \\
-        \t  {context_args} \\
-        \t  {build_args} \\
-        \t  $(EXTRA_ARGS) \\
-        \t  $(NOCACHE_FLAG) \\
-        \t  $(CHECK_FLAG) \\
-        \t  --platform=$(PLATFORM) \\
-        \t  --progress=$(PROGRESS) \\
-        \t  -f packages/{stage}/{name}/Containerfile \\
-        \t  packages/{stage}/{name} \\
-        \t| tar -C out/{stage}-{name} -mx
-        """
+.PHONY: {name} {stage}-{name}
+{name}: out/{stage}-{name}/index.json
+{stage}-{name}: out/{stage}-{name}/index.json
+out/{stage}-{name}/index.json: {deps}
+\trm -rf out/{stage}-{name} && \\
+\tmkdir -p out/{stage}-{name} && \\
+\tmkdir -p fetch/{stage}/{name} && \\
+\tpython3 src/fetch.py {name} && \\
+\t$(BUILDER) \\
+\t  build \\
+\t  --ulimit nofile=2048:16384 \\
+\t  --tag stagex/{stage}-{name}:{version} \\
+\t  --output \\
+\t    name={name},type=oci,rewrite-timestamp=true,force-compression=true,annotation.org.opencontainers.image.revision=$(shell git rev-list HEAD -1 packages/{stage}/{name}),annotation.org.opencontainers.image.version={version},tar=true,dest=- \\
+\t  {context_args} \\
+\t  {build_args} \\
+\t  $(EXTRA_ARGS) \\
+\t  $(NOCACHE_FLAG) \\
+\t  $(CHECK_FLAG) \\
+\t  --platform=$(PLATFORM) \\
+\t  --progress=$(PROGRESS) \\
+\t  -f packages/{stage}/{name}/Containerfile \\
+\t  packages/{stage}/{name} \\
+\t| tar -C out/{stage}-{name} -mx
+"""
 
   def __init__(self):
     self.packages: MutableMapping[str, MutableMapping[str, PackageInfo]] = dict[str, MutableMapping[str, PackageInfo]]()
