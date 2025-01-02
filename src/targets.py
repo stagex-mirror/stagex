@@ -1,133 +1,141 @@
 #!/usr/bin/env python3
-from glob import glob
-import tomllib
-from sys import argv, stderr
+import os
+from common import CommonUtils
+from common import PackageInfo
+from typing import Any
+from typing import List
+from typing import MutableMapping
 from urllib.parse import urlsplit
 
 
-def toml_read(filename: str):
-    with open(filename, "rb") as f_in:
-        return tomllib.load(f_in)
+class TargetGenerator(object):
+  TARGET_TEMPLATE = """
+        .PHONY: {name} {stage}-{name}
+        {name}: out/{stage}-{name}/index.json
+        {stage}-{name}: out/{stage}-{name}/index.json
+        out/{stage}-{name}/index.json: {deps}
+        \trm -rf out/{stage}-{name} && \\
+        \tmkdir -p out/{stage}-{name} && \\
+        \tmkdir -p fetch/{stage}/{name} && \\
+        \tpython3 src/fetch.py {name} && \\
+        \t$(BUILDER) \\
+        \t  build \\
+        \t  --ulimit nofile=2048:16384 \\
+        \t  --tag stagex/{stage}-{name}:{version} \\
+        \t  --output \\
+        \t    name={name},type=oci,rewrite-timestamp=true,force-compression=true,annotation.org.opencontainers.image.revision=$(shell git rev-list HEAD -1 packages/{stage}/{name}),annotation.org.opencontainers.image.version={version},tar=true,dest=- \\
+        \t  {context_args} \\
+        \t  {build_args} \\
+        \t  $(EXTRA_ARGS) \\
+        \t  $(NOCACHE_FLAG) \\
+        \t  $(CHECK_FLAG) \\
+        \t  --platform=$(PLATFORM) \\
+        \t  --progress=$(PROGRESS) \\
+        \t  -f packages/{stage}/{name}/Containerfile \\
+        \t  packages/{stage}/{name} \\
+        \t| tar -C out/{stage}-{name} -mx
+        """
 
+  def __init__(self):
+    self.packages: MutableMapping[str, MutableMapping[str, PackageInfo]] = dict[str, MutableMapping[str, PackageInfo]]()
+    self.init_packages("packages")
 
-def get_packages():
-    packages = {}
-    for filename in glob("packages/**/Containerfile", recursive=True):
-        _, stage, name, _ = filename.split("/")
-        if stage not in packages:
-            packages[stage] = {}
-        try:
-            package_data = toml_read("packages/%s/%s/package.toml" % (stage, name))
-        except FileNotFoundError:
-            continue
-        version = package_data["package"].get("version", None)
-        deps = []
-        with open(filename, "r") as file:
-            for line in file:
-                if line.startswith("COPY"):
-                    first_arg = line.split(" ")[1]
-                    if first_arg.startswith("--from"):
-                        _, dep = first_arg.split("=")
-                        if dep.startswith("stagex/"):
-                            deps.append(dep.split("/")[1])
-                if line.startswith("FROM stagex/"):
-                    deps.append(line.split(" ")[1].split("/")[1])
-        packages[stage][name] = {}
-        packages[stage][name]["deps"] = deps
-        packages[stage][name]["version"] = version
-        packages[stage][name]["sources"] = package_data.get("sources", [])
-    return packages
+    for stage, stage_packages in self.packages.items():
+      print(f"\n\n.PHONY: {stage}\n{stage}:", end="")
+      for name, _ in stage_packages.items():
+        print(f" \\\n\t {name}", end="")
 
+    print("\n\n.PHONY: all\nall:", end="")
 
-def get_build_args(package):
-    sources = package["sources"]
-    version = package["version"]
-    version_under = None
-    version_dash = None
-    args = []
-    if version:
-        version_under = version.replace(".", "_")
-        version_dash = version.replace(".", "-")
-        args.append("--build-arg VERSION=%s" % (version))
-        args.append("--build-arg VERSION_UNDER=%s" % (version_under))
-        args.append("--build-arg VERSION_DASH=%s" % (version_dash))
-    for source in sources:
-        format = sources[source].get("format", "")
-        mirrors = sources[source]["mirrors"]
-        urlfile = urlsplit(mirrors[0]).path.split("/")[-1]
-        version = sources[source].get("version", version)
-        if version:
-            args.append("--build-arg %s_VERSION=%s" % (source.upper(), version))
-            file = (
-                sources[source]
-                .get("file", urlfile)
-                .format(
-                    version=version,
-                    version_dash=version_dash,
-                    version_under=version_under,
-                    format=format,
-                )
-            )
-            args.append("--build-arg %s_SOURCE=%s" % (source.upper(), file))
-    return " \\\n\t  ".join(args)
+    for stage, stage_packages in self.packages.items():
+      for name, _ in stage_packages.items():
+        print(f" \\\n\t {name}", end="")
 
-
-def get_context_args(package, stage, name):
-    args = []
-    args.append("--build-context fetch=fetch/%s/%s" % (stage, name))
-    for dep in package["deps"]:
-        args.append("--build-context stagex/%s=oci-layout://./out/%s" % (dep, dep))
-    return " \\\n\t  ".join(args)
-
-
-template = """
-.PHONY: {name} {stage}-{name}
-{name}: out/{stage}-{name}/index.json
-{stage}-{name}: out/{stage}-{name}/index.json
-out/{stage}-{name}/index.json: {deps}
-\trm -rf out/{stage}-{name} && \\
-\tmkdir -p out/{stage}-{name} && \\
-\tmkdir -p fetch/{stage}/{name} && \\
-\tpython3 src/fetch.py {name} && \\
-\t$(BUILDER) \\
-\t  build \\
-\t  --ulimit nofile=2048:16384 \\
-\t  --tag stagex/{stage}-{name}:{version} \\
-\t  --output \\
-\t    name={name},type=oci,rewrite-timestamp=true,force-compression=true,annotation.org.opencontainers.image.revision=$(shell git rev-list HEAD -1 packages/{stage}/{name}),annotation.org.opencontainers.image.version={version},tar=true,dest=- \\
-\t  {context_args} \\
-\t  {build_args} \\
-\t  $(EXTRA_ARGS) \\
-\t  $(NOCACHE_FLAG) \\
-\t  $(CHECK_FLAG) \\
-\t  --platform=$(PLATFORM) \\
-\t  --progress=$(PROGRESS) \\
-\t  -f packages/{stage}/{name}/Containerfile \\
-\t  packages/{stage}/{name} \\
-\t| tar -C out/{stage}-{name} -mx
-"""
-packages = get_packages()
-for stage, stage_packages in packages.items():
-    print("\n\n.PHONY: %s\n%s:" % (stage, stage), end="")
-    for name, _ in stage_packages.items():
-        print(" \\\n\t %s" % name, end="")
-print("\n\n.PHONY: all\nall:", end="")
-for stage, stage_packages in packages.items():
-    for name, _ in stage_packages.items():
-        print(" \\\n\t %s" % name, end="")
-for stage, stage_packages in packages.items():
-    for name, package in stage_packages.items():
+    for stage, stage_packages in self.packages.items():
+      for name, package in stage_packages.items():
         print(
-            template.format(
-                **{
-                    "stage": stage,
-                    "name": name,
-                    "version": package["version"] or "latest",
-                    "deps": "".join(
-                        " \\\n\tout/%s/index.json" % dep for dep in package["deps"]
-                    ),
-                    "build_args": get_build_args(package),
-                    "context_args": get_context_args(package, stage, name),
-                }
-            )
+          TargetGenerator.TARGET_TEMPLATE.format(
+            **{
+              "stage": stage,
+              "name": name,
+              "version": package.version or "latest",
+              "deps": "".join(
+                f" \\\n\tout/{dep}/index.json" for dep in package.deps
+              ),
+              "build_args": TargetGenerator.get_build_args(package),
+              "context_args": TargetGenerator.get_context_args(package, stage, name),
+            }
+          )
         )
+
+
+  def init_packages(self, root_path: str = "packages"):
+    for base_dir, sub_dirs, file_list in os.walk(root_path):
+      for file_name in file_list:
+        if file_name == "Containerfile":
+          container_file_path = os.path.join(base_dir, file_name)
+          _, stage, name, _ = container_file_path.split(os.path.sep)
+          package_data: MutableMapping[str, Any] | None = None
+          if stage not in self.packages:
+            self.packages[stage] = dict[str, PackageInfo]()
+
+          try:
+            package_data = CommonUtils.toml_read(f"{root_path}/{stage}/{name}/package.toml")
+          except FileNotFoundError:
+            continue
+
+          deps: List[str] = list()
+          with open(container_file_path, "r") as file:
+            for line in file:
+              if line.startswith("COPY"):
+                first_arg = line.split(" ")[1]
+                if first_arg.startswith("--from"):
+                  _, dep = first_arg.split("=")
+                  if dep.startswith("stagex/"):
+                    deps.append(dep.split("/")[1])
+              if line.startswith("FROM stagex/"):
+                deps.append(line.split(" ")[1].split("/")[1])
+
+          package_info = CommonUtils.parse_package_toml_no_deps(package_data)
+          package_info.deps = deps
+          self.packages[stage][name] = package_info
+
+  @staticmethod
+  def get_context_args(package: PackageInfo, stage: str, name: str) -> str:
+    args: List[str] = list()
+    args.append(f"--build-context fetch=fetch/{stage}/{name}")
+    for dep in package.deps:
+      args.append(f"--build-context stagex/{dep}=oci-layout://./out/{dep}")
+    return " \\\n\t  ".join(args)
+
+  @staticmethod
+  def get_build_args(package: PackageInfo) -> str:
+    sources = package.sources
+    args: List[str] = list()
+    if package.version:
+        args.append(f"--build-arg VERSION={package.version}")
+        args.append(f"--build-arg VERSION_UNDER={package.version_under}")
+        args.append(f"--build-arg VERSION_DASH={package.version_dash}")
+
+    for source_name, source_info in sources.items():
+        source_format = source_info.format
+        mirrors = source_info.mirrors
+        urlfile = urlsplit(mirrors[0]).path.split("/")[-1]
+        # We assume that version == "" means no version was provided in toml
+        if source_info.version != "":
+            args.append(f"--build-arg {source_name.upper()}_VERSION={source_info.version}")
+            file = source_info.file if source_info.file != "" else urlfile
+            file = file.format(
+                    version=source_info.version,
+                    version_dash=package.version_dash,
+                    version_under=package.version_under,
+                    format=source_format,
+                )
+            args.append(f"--build-arg {source_name.upper()}_SOURCE={file}")
+    return " \\\n\t  ".join(args)
+
+
+if __name__ == "__main__":
+  tg = TargetGenerator()
+
+
