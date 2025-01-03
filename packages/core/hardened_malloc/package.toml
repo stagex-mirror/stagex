@@ -1,0 +1,10 @@
+[package]
+name = "hardened_malloc"
+version = "13"
+description = "Hardened allocator designed for modern systems. It has integration into Android's Bionic libc and can be used externally with musl and glibc as a dynamic library for use on other Linux-based platforms. It will gain more portability / integration over time."
+
+[sources.curl]
+hash = "1c485dbfd397db68081f95182cde18e1fa54a091dca7e67ee8c9356c6c5db798"
+format = "tar.gz"
+file = "{version}.{format}"
+mirrors = [ "https://github.com/GrapheneOS/hardened_malloc/archive/refs/tags/{file}", ]
