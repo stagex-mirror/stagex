@@ -14,7 +14,7 @@ ENV CGO_ENABLED=0
 ENV GOHOSTOS=linux
 ENV GOHOSTARCH=amd64
 ENV GOPATH="/kubernetes-${VERSION}"
-ENV GOLDFLAGS=-X 'k8s.io/client-go/pkg/version.gitVersion=${VERSION}' -X 'k8s.io/component-base/version.gitVersion=${VERSION}'
+ENV GOLDFLAGS="-X 'k8s.io/client-go/pkg/version.gitVersion=${VERSION}' -X 'k8s.io/component-base/version.gitVersion=${VERSION}'"
 WORKDIR /kubernetes-${VERSION}
 RUN go mod download
 RUN --network=none <<-EOF
