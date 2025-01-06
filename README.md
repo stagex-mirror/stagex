@@ -314,6 +314,8 @@ make sign
 ## Examples
 - [Sui Blockchain Fullnode](https://github.com/MystenLabs/sui/blob/main/docker/sui-node-deterministic/Dockerfile)
   - Large rust application w/ C dependencies
+- [Nimiq Blockchain Protocol](https://github.com/nimiq/core-rs-albatross/blob/albatross/build/Containerfile)
+  - Large rust application implementing all supporting software for the Nimiq blockchain protocol
 - [QuorumOS](https://github.com/tkhq/qos/tree/main/src/images)
   - Nitro Enclave Framework w/ minimal rust init system and support applications
 - [EnclaveOS](https://git.distrust.co/public/enclaveos)
@@ -401,7 +403,8 @@ https://arxiv.org/abs/1506.02822)
 
 - [Breaking Bitcoin: The Bitcoin Build System](http://diyhpl.us/wiki/transcripts/breaking-bitcoin/2019/bitcoin-build-system/)
   - Carl Dong | 2020
-
+- [Expanding (Dis)trust](https://antonlivaja.com/videos/2024-incyber-stagex-talk.mp4)
+  - Anton Livaja | 2024
 ## Sponsors
 
 - [Turnkey](https://turnkey.com)
