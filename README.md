@@ -330,9 +330,9 @@ make sign
 ### Blogs
 
 - [Reproducible builds made easy: introducing StageX](https://quorum.tkhq.xyz/posts/reproducible-builds-made-easy-introducing-stagex/)
-  - Arnuad Brousseau | 2024
+  - Arnaud Brousseau | 2024
 - [Remote attestations are useless without reproducible builds](https://quorum.tkhq.xyz/posts/remote-attestations-useless-without-reproducible-builds/)
-  - Arnuad Brousseau | 2024
+  - Arnaud Brousseau | 2024
 
 ### Organizations
 
