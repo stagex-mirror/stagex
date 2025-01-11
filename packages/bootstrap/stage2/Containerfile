@@ -59,7 +59,7 @@ RUN --network=none <<-EOF
         --enable-ld=default \
         --enable-install-libiberty \
         --enable-deterministic-archives
-    make all
+    make -j$(nproc) all
 EOF
 
 # Phase 2: Prepare build sysroot
@@ -106,7 +106,7 @@ RUN --network=none <<-EOF
         RANLIB_FOR_TARGET=${BINUTILS_DIR}/binutils/ranlib \
         READELF_FOR_TARGET=${BINUTILS_DIR}/binutils/readelf \
         STRIP_FOR_TARGET=${BINUTILS_DIR}/binutils/strip-new
-    make all-gcc
+    make -j$(nproc) all-gcc
 EOF
 
 # Phase 4: Install musl libc headers to build-sysroot for use by libgcc
@@ -123,13 +123,13 @@ EOF
 
 # Phase 5: Compile libgcc
 WORKDIR /${GCC_DIR}
-RUN --network=none make MAKE="make enable_shared=no" all-target-libgcc
+RUN --network=none make -j$(nproc) MAKE="make enable_shared=no" all-target-libgcc
 
 # Phase 5: Compile musl libc and install to sysroot
 WORKDIR /${MUSL_DIR}
 RUN --network=none <<-EOF
     set -eux
-    make \
+    make -j$(nproc) \
         AR=${BINUTILS_DIR}/binutils/ar \
         RANLIB=${BINUTILS_DIR}/binutils/ranlib
     make DESTDIR=${SYSROOT_DIR} install
@@ -137,7 +137,7 @@ EOF
 
 # Phase 6: Compile remaining gcc targets
 WORKDIR /${GCC_DIR}
-RUN make all
+RUN make -j$(nproc) all
 
 # Phase 7: Generate linux headers
 WORKDIR /${HOME}/linux-${LINUX_VERSION}
