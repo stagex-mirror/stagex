@@ -4,3 +4,4 @@ build.log
 graph.svg
 *.tgz
 TODO
+__pycache__
