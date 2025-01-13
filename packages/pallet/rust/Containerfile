@@ -6,5 +6,7 @@ COPY --from=stagex/core-libunwind . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-ca-certificates . /
 
-ENTRYPOINT ["/usr/bin/rustc"]
+ENTRYPOINT ["/usr/bin/cargo"]

@@ -24,64 +24,71 @@ For a full list of images see the "packages" directory.
 
 ### Examples
 
-Get a shell in our x86_64 Stage3 bootstrap image:
+#### Get a shell in our x86_64 Stage3 bootstrap image:
 
 ```shell
 docker run -it stagex/stage3
 ```
 
-For a bare Python shell you'll need a simple `Containerfile`:
-```Dockerfile
-FROM stagex/filesystem
+#### Get a Python shell by using the Python Pallet
 
-COPY --from=stagex/musl . /
-COPY --from=stagex/python . /
-
-ENTRYPOINT ["python"]
-```
-
-Build and run it with:
 ```sh
-docker build . -f Containerfile -t stagex-python
-docker run -it stagex-python -c "print('hello, world!')"
+docker run -it stagex/pallet-python -c "print('hello, world!')"
 ```
 
-Make a hello world OCI container image with Rust:
-<!--author: panekj -->
+#### Make a hello world OCI container image with the Rust pallet
 
 ```dockerfile
-FROM scratch AS build
+FROM stagex/pallet-rust AS build
 
-COPY --from=stagex/rust . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/libunwind . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/llvm . /
-COPY --from=stagex/zlib . /
+RUN ["cargo", "new", "--bin", "pattern_matcher"]
+WORKDIR /pattern_matcher
+RUN ["cargo", "add", "regex"]
 
-COPY <<-EOF ./hello.rs
-  fn main(){
-    println!("Hello World!");
-  }
+COPY <<-EOF /pattern_matcher/src/main.rs
+use regex::Regex;
+
+fn main() {
+    let mut args = std::env::args();
+    args.next();
+    let pattern = args.next().expect("pattern not given");
+    let text = args.next().expect("text to match not given");
+    let re = Regex::new(&pattern).expect("given pattern is invalid regex");
+    if let Some(r#match) = re.find(&text) {
+        println!("Found match: {match:?}");
+    }
+}
 EOF
-RUN ["rustc","-C","target-feature=+crt-static","-o","hello","hello.rs"]
 
-FROM scratch
-COPY --from=build /hello .
-ENTRYPOINT ["/hello"]
+ENV RUSTFLAGS="-C target-feature=+crt-static"
+RUN ["cargo", "build", "--release"]
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /pattern_matcher/target/release/pattern_matcher /usr/bin/pattern_matcher
+ENTRYPOINT ["/usr/bin/pattern_matcher"]
 ```
-<!--author: panekj -->
 
 Note the difference between the "build" and the final image: `build` has to
-pull `gcc`, `libunwind`, `llvm`, etc. The final OCI image only contains the
-statically compiled Rust binary, and is tiny as a result.
+pull the `rust` pallet, which includes just the binaries required to build a
+Rust program, but the final OCI image only contains the statically compiled
+Rust binary, and is tiny as a result.
 
-### Package Management
+#### Add dependencies using container-native workflows
+
+Oftentimes, you'll need dependencies that aren't included by default, such as
+`clang` when building crates using Rust's `bindgen` crate. StageX makes adding
+packages super simple. In your `build` phase, add the following line:
+
+```dockerfile
+COPY --from=stagex/core-clang . /
+```
+
+No `RUN` commands needed.
+
+### Package Management Policies
 
 Unlike most linux distros, stagex was built for determinism, minimalism, and
 containers first, and thus has no concept of a traditional package manager.
-
 In fact, stagex ships no first-party code at all. We just package things in the
 most "stock" way possible with exceptions only to maintain determinism.
 
@@ -92,7 +99,7 @@ By default you always get the latest updates to dependencies on the fly, but
 you retain the option for bit-for-bit reproducible builds by locking any given
 dependency at a particular tag or image hash.
 
-If you want an old version of rust with a recent version of Gcc to work around
+If you want an old version of rust with a recent version of GCC to work around
 some problem build, you can do that without resorting to low security \
 "curl | bash" style solutions like rustup.
 
