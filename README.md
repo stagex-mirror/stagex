@@ -11,7 +11,7 @@ images of common open source software toolchains full-source bootstrapped from
 Stage 0 all the way up.
 
 If you want to build or deploy software on a foundation of minimalism and
-determinism with reasonable security, stagex might be the foundation you are
+determinism with reasonable security, stagex might be the solution you are
 looking for.
 
 ## Usage
@@ -196,28 +196,36 @@ seminal paper by Ken Thomson, [Reflections on Trusting Trust](https://www.cs.cmu
 
 A comparison of `stagex` to other distros in some of the areas we care about:
 
-| Distro | Containerized | Signatures | Libc  | Bootstrapped | Reproducible | Rust Deps |
-|--------|---------------|------------|-------|--------------|--------------|-----------|
-| Stagex | Native        | 2+ Human   | Musl  | Yes          | Yes          | 4         |
-| Guix   | No            | 1 Human    | Glibc | Yes          | Yes          | 4         |
-| Nix    | No            | 1 Bot      | Glibc | Partial      | Mostly       | 4         |
-| Debian | Adapted       | 1 Human    | Glibc | No           | Partial      | 232       |
-| Arch   | Adapted       | 1 Human    | Glibc | No           | Partial      | 262       |
-| Fedora | Adapted       | 1 Bot      | Glibc | No           | No           | 166       |
-| Alpine | Adapted       | None       | Musl  | No           | No           | 32        |
+| Distro    | Trust Model   | OCI       | Packaging   | Bootstrapped | Reproducible |
+|-----------|---------------|-----------|-------------|--------------|--------------|
+| Stagex    | Decentralized | Native    | Declarative | Yes          | Yes          | 
+| Guix      | Distributed   | Exported  | Declarative | Yes          | Mostly       |
+| Debian    | Distributed   | Published | Imperative  | No           | Mostly       |
+| Arch      | Distributed   | Published | Imperative  | No           | Mostly       |
+| Nix       | Centralized   | Exported  | Declarative | Partial      | Mostly       | 
+| Yocto     | Centralized   | Exported  | None        | No           | No           | 
+| Buildroot | Centralized   | Exported  | None        | No           | No           |
+| Alpine    | Centralized   | Published | Imperative  | No           | No           | 
+| Fedora    | Centralized   | Published | Imperative  | No           | No           | 
 
 ### Notes
 
-- “Bootstrapped”: Can the entire distro be full-source-bootstrapped from Stage0
-- “Reproducible”: Is the entire distro reproducible bit-for-bit identically
-- “Rust Deps”: the number of total dependencies installed to use rustc
-    - Rust is a worst case example for compiler deps and build complexity
-        - It is kind of a nightmare most distros skip
-        - See: [Guix documenting their process](https://guix.gnu.org/en/blog/2018/bootstrapping-rust/) (similar to ours)
-    - Nix, guix, and our distro get away with only 4 deps because:
-        - Rustc -does- need ~20 dependencies to build
-        - The final resulting rust builds can run standalone
-        - We only actually need musl libc, llvm, and gcc to build most projects
+- “Trust Model”: 
+  - "Decentralized": No single system or individual is trusted
+  - "Centralized": One single system or individual is trusted
+  - "Distributed": All members of a system or organization are trusted
+- "OCI"
+  - "Native": OCI layers are the native package management system
+  - "Exported": Has the capability to export OCI from non-OCI build system
+  - "Published": Has published official OCI images
+- "Packaging"
+  - "Declarative": Can declare exact dependency chain at time of usage
+  - "Imperative": Packaging system chooses dependencies for you at build time
+  - "None": No packages at all, only source code
+- “Bootstrapped”
+  - Can the entire distro be full-source-bootstrapped from Stage0
+- “Reproducible”
+  - Is the entire distro reproducible bit-for-bit identically
 
 ### Signatures
 
@@ -310,37 +318,100 @@ Do this after successfully reproducing all packages and stages:
 make sign
 ```
 
-## Packaging
+## Examples
+- [Sui Blockchain Fullnode](https://github.com/MystenLabs/sui/blob/main/docker/sui-node-deterministic/Dockerfile)
+  - Large rust application w/ C dependencies
+- [Nimiq Blockchain Protocol](https://github.com/nimiq/core-rs-albatross/blob/albatross/build/Containerfile)
+  - Large rust application implementing all supporting software for the Nimiq blockchain protocol
+- [QuorumOS](https://github.com/tkhq/qos/tree/main/src/images)
+  - Nitro Enclave Framework w/ minimal rust init system and support applications
+- [EnclaveOS](https://git.distrust.co/public/enclaveos)
+  - Mininmal Nitro Enclave Hello World
+- [AirgapOS](https://git.distrust.co/public/airgap)
+  - Standalone minimal bootable Linux ISO for workstations
+- [ReproOS](https://codeberg.org/stagex/repros)
+  - Server Linux image w/ minimal hypervisor guest image
 
-Every package should have a minimum of 5 stages as follows
+## Resources
 
-* base
-    * based on busybox or bootstrap
-    * Runs as unprivileged user 1000 (user)
-    * Sets environment to be shared with fetch, build, and install stages
-    * Imports dependencies for fetch, build, and install stages
-* fetch
-    * Based on "base"
-    * Runs as unprivileged user 1000 (user)
-    * Has internet access
-    * Obtains any needed source files from the internet
-    * Verifies sources against hardcoded hashes
-* build
-    * Based on "fetch"
-    * Runs as unprivileged user 1000 (user)
-    * Extract sources
-    * Apply any patches as needed
-    * Build any artifacts as needed
-* install
-    * Based on "build"
-    * Elevates privileges to user 0:0 (root)
-    * Installs all files in /home/user/rootfs owned by root
-    * Sets all timestamps in /home/user/rootfs to @0 (Unix Epoch)
-* package
-    * Based on scratch
-    * Copies /home/user/rootfs from "install" to /
-    * Sets runtime user/perms/env as needed
+### Blogs
 
+- [Reproducible builds made easy: introducing StageX](https://quorum.tkhq.xyz/posts/reproducible-builds-made-easy-introducing-stagex/)
+  - Arnaud Brousseau | 2024
+- [Remote attestations are useless without reproducible builds](https://quorum.tkhq.xyz/posts/remote-attestations-useless-without-reproducible-builds/)
+  - Arnaud Brousseau | 2024
+
+### Organizations
+
+- [Bootstrappable Builds Project](https://bootstrappable.org)
+- [Reproducible Builds Project](https://reproducible-builds.org)
+- [SLSA Framework](https://slsa.dev)
+
+### Alternatives
+
+- [Bitcoin Optech: Reproducible Builds](https://bitcoinops.org/en/topics/reproducible-builds/)
+- [Arch Linux: Reproducible Builds](https://wiki.archlinux.org/title/Reproducible_builds)
+- [NixOS: Reproducible Builds](https://reproducible.nixos.org/)
+- [Guix: Reproducible Builds](https://qa.guix.gnu.org/reproducible-builds)
+- [Debian: Reproducible Builds](https://wiki.debian.org/ReproducibleBuilds)
+
+## References
+
+### Academic
+
+- [SoK: Analysis of Software Supply Chain Security by Establishing Secure Design Properties](https://arxiv.org/abs/2406.10109)
+  - Chinenye Okafor, Taylor R. Schorlemmer, Santiago Torres-Arias, James C. Davis | June 2024
+- [A Review of Attacks Against Language-Based Package Managers](https://arxiv.org/abs/2302.08959)
+  - Aarnav M. Bos | February 2023
+- [Software supply chain: review of attacks, risk assessment strategies and security controls](https://arxiv.org/abs/2305.14157)
+  - Betul Gokkaya, Leonardo Aniello, Basel Halak | May 2023
+- [Enhancing Software Supply Chain Resilience: Strategy For Mitigating Software Supply Chain Security Risks And Ensuring Security Continuity In Development Lifecycle](https://arxiv.org/abs/2407.13785)
+  - Ahmed Akinsola, Abdullah Akinde | July 2024
+- [What is Software Supply Chain Security](https://arxiv.org/abs/2209.04006)
+  - Marcela S. Melara and Mic Bowman | September 2022
+- [An Industry Interview Study of Software Signing for Supply Chain Security](
+https://arxiv.org/abs/2406.08198)
+  - Kelechi G. Kalu, Tanya Singla, Chinenye Okafor, Santiago Torres-Arias, James C. Davis | June 2024
+- [Journey to the Center of Software Supply Chain Attacks](https://arxiv.org/abs/2304.05200)
+  - Piergiorgio Ladisa, Serena Elisa Ponta, Antonino Sabetta, Matias Martinez, Olivier Barais | April 2023
+- [SoK: A Defense-Oriented Evaluation of Software Supply Chain Security](https://arxiv.org/abs/2405.14993)
+  - Eman Abu Ishgair, Marcela S. Melara, Santiago Torres-Arias | May 2024
+- [S3C2 Summit 2023-02: Industry Secure Supply Chain Summit](https://arxiv.org/abs/2307.16557)
+  - Trevor Dunlap, Yasemin Acar, Michel Cucker, William Enck, Alexandros Kapravelos, Christian Kastner, Laurie Williams | July 2023
+- [An Integrity-Focused Threat Model for Software Development Pipelines](https://arxiv.org/abs/2211.06249)
+  - B. M. Reichert (1) and R. R. Obelheiro (1) ((1) Graduate Program in Applied Computing, State University of Santa Catarina) | November 2022
+- [Dirty-Waters: Detecting Software Supply Chain Smells](https://arxiv.org/abs/2410.16049)
+  - Raphina Liu, Sofia Bobadilla, Benoit Baudry, Martin Monperrus | October 2024
+- [A Systematic Literature Review on Trust in the Software Ecosystem](https://arxiv.org/abs/2203.05678)
+  - Fang Hou, Slinger Jansen | March 2022
+- [Backstabber's Knife Collection: A Review of Open Source Software Supply Chain Attacks](https://arxiv.org/abs/2005.09535)
+  - Marc Ohm, Henrik Plate, Arnold Sykosch, Michael Meier | May 2020
+- [Reproducible Builds: Increasing the Integrity of Software Supply Chains](
+https://arxiv.org/abs/2104.06020)
+  - Chris Lamb, Stefano Zacchiroli (DGD-I, UP) | April 2021
+- [Reproducibility of Build Environments through Space and Time](https://arxiv.org/abs/2402.00424)
+  - Julien Malka (IP Paris, LTCI, ACES), Stefano Zacchiroli (IP Paris, LTCI, ACES), Th'eo Zimmermann (ACES, INFRES, IP Paris) | February 2024
+- [Levels of Binary Equivalence for the Comparison of Binaries from Alternative Builds](https://arxiv.org/abs/2410.08427)
+  - Jens Dietrich, Tim White, Behnaz Hassanshahi, Paddy Krishnan | October 2024
+- [Repro: An Open-Source Library for Improving the Reproducibility and Usability of Publicly Available Research Code](https://arxiv.org/abs/2204.13848)
+  - Daniel Deutsch and Dan Roth | April 2022
+- [Reproducible and User-Controlled Software Environments in HPC with Guix](
+https://arxiv.org/abs/1506.02822)
+  - Ludovic Court`es (INRIA Bordeaux - Sud-Ouest), Ricardo Wurmus | June 2015
+- [Reflections on trusting trust](https://dl.acm.org/doi/10.1145/358198.358210)
+  - Ken Thompson | 1984
+
+### Blogs
+
+- [The Full-Source Bootstrap: Building from source all the way down](https://guix.gnu.org/en/blog/2023/the-full-source-bootstrap-building-from-source-all-the-way-down/)
+  - Janneke Nieuwenhuizen, Ludovic Courtès | 2023
+
+### Presentations
+
+- [Breaking Bitcoin: The Bitcoin Build System](http://diyhpl.us/wiki/transcripts/breaking-bitcoin/2019/bitcoin-build-system/)
+  - Carl Dong | 2020
+- [Expanding (Dis)trust](https://antonlivaja.com/videos/2024-incyber-stagex-talk.mp4)
+  - Anton Livaja | 2024
 ## Sponsors
 
 - [Turnkey](https://turnkey.com)
