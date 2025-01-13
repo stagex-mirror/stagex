@@ -2,7 +2,6 @@ FROM scratch AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-bash . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-binutils . /
 COPY --from=fetch . .
@@ -18,8 +17,6 @@ RUN <<-EOF
 	mv go go-src
 EOF
 WORKDIR /go-bootstrap-1-src
-ENV GOOS=linux
-ENV CGO_ENABLED=0
 ENV GOROOT_FINAL=/go-bootstrap-1
 ENV GOROOT=${GOROOT_FINAL}
 ENV DEST=${GOROOT_FINAL}
@@ -27,13 +24,12 @@ ENV GOBIN=${GOROOT_FINAL}/bin
 RUN --network=none <<-EOF
 	set -eux
 	cd src
-	bash make.bash
+	sh make.bash
 	cd ..
 	mkdir -p ${DEST}
 	cp -R bin lib pkg src ${DEST}
 EOF
 WORKDIR /go-bootstrap-2-src
-ENV GO11MODULE=off
 ENV GOROOT_BOOTSTRAP=/go-bootstrap-1
 ENV GOROOT_FINAL=/go-bootstrap-2
 ENV GOROOT=${GOROOT_FINAL}
@@ -42,13 +38,12 @@ ENV GOBIN=${GOROOT_FINAL}/bin
 RUN --network=none <<-EOF
 	set -eux
 	cd src
-	bash make.bash
+	sh make.bash
 	cd ..
 	mkdir -p ${DEST}
 	cp -R bin lib pkg src ${DEST}
 EOF
 WORKDIR /go-bootstrap-3-src
-ENV GO11MODULE=off
 ENV GOROOT_BOOTSTRAP=/go-bootstrap-2
 ENV GOROOT_FINAL=/go-bootstrap-3
 ENV GOROOT=${GOROOT_FINAL}
@@ -57,16 +52,12 @@ ENV GOBIN=${GOROOT_FINAL}/bin
 RUN --network=none <<-EOF
 	set -eux
 	cd src
-	bash make.bash
+	sh make.bash
 	cd ..
 	mkdir -p ${DEST}
 	cp -R bin lib pkg src ${DEST}
 EOF
 WORKDIR /go-src
-ENV GOPROXY=off
-ENV GOTOOLCHAIN=local
-ENV GOFLAGS=-mod=vendor
-ENV GO11MODULE=on
 ENV GOROOT_BOOTSTRAP=/go-bootstrap-3
 ENV GOROOT_FINAL="/lib/go"
 ENV GOBIN=${GOROOT_FINAL}/bin
@@ -74,7 +65,7 @@ ENV GOROOT=/go-bootstrap-3
 RUN --network=none <<-EOF
 	set -eux
 	cd src
-	bash make.bash
+	sh make.bash
 	cd ..
 	mkdir -p /rootfs/usr
 	cp -R pkg src /rootfs
