@@ -233,11 +233,11 @@ mirrors = ["https://github.com/mikaku/Fiwix/releases/download/v1.5.0-lb1/fiwix-1
 
 [sources.flex2_5_11]
 hash = "bc79b890f35ca38d66ff89a6e3758226131e51ccbd10ef78d5ff150b7bd73689"
-mirrors = ["http://download.nust.na/pub2/openpkg1/sources/DST/flex/flex-2.5.11.tar.gz"]
+mirrors = ["http://download.nust.na/pub2/openpkg1/sources/DST/flex/flex-2.5.11.tar.gz", "https://ostm.panekj.dev/f/flex/flex-2.5.11.tar.gz"]
 
 [sources.flex2_5_33]
 hash = "c40385e142989c91989413f3c5a31282b2ffdca16b69cd3ecfde537b8a474921"
-mirrors = ["http://download.nust.na/pub2/openpkg1/sources/DST/flex/flex-2.5.33.tar.gz"]
+mirrors = ["http://download.nust.na/pub2/openpkg1/sources/DST/flex/flex-2.5.33.tar.gz", "https://ostm.panekj.dev/f/flex/flex-2.5.33.tar.gz"]
 
 [sources.flex2_6_4]
 hash = "e87aae032bf07c26f85ac0ed3250998c37621d95f8bd748b31f15b33c45ee995"
