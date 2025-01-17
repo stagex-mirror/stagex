@@ -16,13 +16,9 @@ FROM scratch AS seeds
 ARG STAGE0_POSIX_X86_VERSION
 COPY --from=sources /stage0-posix-x86-${STAGE0_POSIX_X86_VERSION} /x86
 ADD hex0-seed .
-ADD kaem-seed .
 WORKDIR /build
-COPY <<-EOF kaem.x86
-	/hex0-seed /x86/hex0_x86.hex0 hex0
-	./hex0 /x86/kaem-minimal.hex0 kaem-minimal
-EOF
-RUN ["/kaem-seed"]
+RUN ["/hex0-seed", "/x86/hex0_x86.hex0", "hex0"]
+RUN ["./hex0", "/x86/kaem-minimal.hex0", "kaem-minimal"]
 
 FROM scratch AS build
 ARG STAGE0_POSIX_X86_VERSION
