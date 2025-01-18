@@ -64,6 +64,7 @@ class ResourceFetcher(object):
         try:
           ResourceFetcher.download(url, filepath)
         except:
+          failed_fetch.append((file, source_info.hash, url, "download"))
           print("Failed downloading from mirror")
           continue
         if not ResourceFetcher.verify(filepath, source_info.hash):
