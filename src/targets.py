@@ -18,7 +18,7 @@ out/{stage}-{name}/index.json: {deps}
 \tmkdir -p out/{stage}-{name} && \\
 \tmkdir -p fetch/{stage}/{name} && \\
 \tpython3 src/fetch.py {name} && \\
-\tcp -lR fetch/{stage}/{name}/* packages/{stage}/{name}/ && \\
+\t(cp -lR fetch/{stage}/{name}/* packages/{stage}/{name}/ || true) && \\
 \t$(BUILDER) \\
 \t  build \\
 \t  --ulimit nofile=2048:16384 \\
