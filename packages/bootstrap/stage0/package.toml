@@ -30,7 +30,7 @@ mirrors = ["https://github.com/oriansj/M2libc/archive/{version}.tar.gz",]
 hash = "e70ec728f495148ca9d069f9a1af6560be9f0489124c4b39b594653fd6817537"
 version = "08d5a0679fa4dc00babe02306f1bc50703083389"
 file = "mescc-tools-{version}.tar.gz"
-mirrors = ["https://git.savannah.nongnu.org/cgit/mescc-tools.git/snapshot/mescc-tools-{version}.tar.gz"]
+mirrors = ["https://github.com/oriansj/mescc-tools/archive/{version}.tar.gz", "https://git.savannah.nongnu.org/cgit/mescc-tools.git/snapshot/mescc-tools-{version}.tar.gz"]
 
 [sources.mescc_tools_extra]
 hash = "bf13ddcbce743b7b81dfea668910e30016fc25e92f61a6d695c2a9a4f524d0cd"
