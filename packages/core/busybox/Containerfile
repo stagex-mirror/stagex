@@ -41,7 +41,7 @@ RUN --network=none <<-EOF
 	for confV in $setConfs; do
 		grep -q "^$confV\$" .config
 	done
-	make
+	make -j$(nproc)
 	mkdir -p /rootfs/usr/bin
 	cp busybox /rootfs/usr/bin
 	cp busybox /usr/bin

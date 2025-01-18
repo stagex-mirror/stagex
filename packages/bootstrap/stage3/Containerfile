@@ -48,7 +48,7 @@ RUN --network=none <<-EOF
 		--prefix=/usr \
 		--build=${BUILD} \
 		--host=${TARGET}
-	make
+	make -j$(nproc)
 EOF
 WORKDIR /${BINUTILS_DIR}
 RUN --network=none <<-EOF
@@ -152,7 +152,7 @@ RUN --network=none <<-EOF
     for confV in $setConfs; do
         grep -q "^$confV\$" .config
     done
-    make CROSS_COMPILE=${TARGET}-
+    make -j$(nproc) CROSS_COMPILE=${TARGET}-
 EOF
 WORKDIR /${HOME}/linux-${LINUX_VERSION}
 RUN --network=none <<-EOF
