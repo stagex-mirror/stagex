@@ -204,6 +204,130 @@ RUN build automake-1.15.1 pass1.sh
 RUN build binutils-2.30 pass1.sh
 RUN build musl-1.1.24 pass3.sh
 RUN build tcc-0.9.27 pass5.sh
+
+# Fix to make copying Go toolchain files work
+COPY copy-escape.patch /steps/
+RUN ["bash", "-c", "patch -p1 < copy-escape.patch"]
+
+COPY --chmod=644 <<-EOF go-1.4/pass1.sh
+	src_compile() {
+		cd src
+		CC=tcc \\
+		GOHOSTARCH=386 \\
+		GOROOT="${PREFIX}/lib/go" \\
+		GOROOT_FINAL="${PREFIX}/lib/go" \\
+		GOBIN="${PREFIX}/lib/go/bin" \\
+		bash -- make.bash -v=1 -d
+		cd ..
+	}
+
+	src_install() {
+		mkdir -p ${DESTDIR}${PREFIX}/lib/go
+
+		rm -rf src/testdata
+
+		cp -a bin lib pkg src ${DESTDIR}${PREFIX}/lib/go
+	}
+EOF
+COPY --chmod=644 <<-EOF go-1.4/sources
+	go1.4.src.tar.gz f4ff5b5eb3a3cae1c993723f3eab519c5bae18866b5e5f96fe1102f0cb5c3e52
+EOF
+RUN build go-1.4 pass1.sh
+
+COPY --chmod=644 <<-EOF go-1.19/pass1.sh
+	src_compile() {
+		cd src
+		CGO_ENABLED=0 \\
+		GOHOSTARCH=386 \\
+		GOROOT_BOOTSTRAP=${PREFIX}/lib/go \\
+		GOROOT_FINAL=${PREFIX}/lib/go \\
+		bash -- make.bash -v=1 -d
+		cd ..
+	}
+
+	src_install() {
+		# Remove previous Go version, removing from / also required
+		rm -rf ${PREFIX}/lib/go
+		rm -rf ${DESTDIR}${PREFIX}/lib/go
+		rm -rf ${DESTDIR}/tmp
+		mkdir -p ${DESTDIR}${PREFIX}/lib/go
+
+		# Remove paths that contain special files
+		# that fail to copy
+		rm -rf src/testdata
+		rm -rf src/cmd/go/testdata
+
+		cp -a bin lib pkg src ${DESTDIR}${PREFIX}/lib/go
+	}
+EOF
+COPY --chmod=644 <<-EOF go-1.19/sources
+	go1.19.11.src.tar.gz e25c9ab72d811142b7f41ff6da5165fec2d1be5feec3ef2c66bc0bdecb431489
+EOF
+RUN build go-1.19 pass1.sh
+
+COPY --chmod=644 <<-EOF go-1.20/pass1.sh
+	src_compile() {
+		cd src
+		CGO_ENABLED=0 \\
+		GOHOSTARCH=386 \\
+		GOROOT_BOOTSTRAP=${PREFIX}/lib/go \\
+		GOROOT_FINAL=${PREFIX}/lib/go \\
+		bash -- make.bash -v=1 -d
+		rm -rf /tmp/.cache /tmp/.config
+		cd ..
+	}
+
+	src_install() {
+		# Remove previous Go version, removing from / also required
+		rm -rf ${PREFIX}/lib/go
+		rm -rf ${DESTDIR}${PREFIX}/lib/go
+		rm -rf ${DESTDIR}/tmp
+		mkdir -p ${DESTDIR}${PREFIX}/lib/go
+
+		# Remove paths that contain special files
+		# that fail to copy
+		rm -rf src/testdata
+		rm -rf src/cmd/go/testdata
+
+		cp -a bin lib pkg src ${DESTDIR}${PREFIX}/lib/go
+	}
+EOF
+COPY --chmod=644 <<-EOF go-1.20/sources
+	go1.20.6.src.tar.gz 62ee5bc6fb55b8bae8f705e0cb8df86d6453626b4ecf93279e2867092e0b7f70
+EOF
+RUN build go-1.20 pass1.sh
+
+COPY --chmod=644 <<-EOF go/pass1.sh
+	src_compile() {
+		cd src
+		GOHOSTARCH=386 \\
+		GOROOT_BOOTSTRAP=${PREFIX}/lib/go \\
+		GOROOT_FINAL=${PREFIX}/lib/go \\
+		bash -- make.bash -v=1 -d
+		rm -rf /tmp/.cache /tmp/.config
+		cd ..
+	}
+
+	src_install() {
+		# Remove previous Go version, removing from / also required
+		rm -rf ${PREFIX}/lib/go
+		rm -rf ${DESTDIR}${PREFIX}/lib/go
+		rm -rf ${DESTDIR}/tmp
+		mkdir -p ${DESTDIR}${PREFIX}/lib/go
+
+		# Remove paths that contain special files
+		# that fail to copy
+		rm -rf src/testdata
+		rm -rf src/cmd/go/testdata
+
+		cp -a bin lib pkg src ${DESTDIR}${PREFIX}/lib/go
+	}
+EOF
+COPY --chmod=644 <<-EOF go/sources
+	go1.23.5.src.tar.gz a6f3f4bbd3e6bdd626f79b668f212fbb5649daf75084fb79b678a0ae4d97423b
+EOF
+RUN build go pass1.sh
+
 RUN build gcc-4.0.4 pass1.sh
 RUN build findutils-4.2.33 pass1.sh
 RUN build musl-1.2.4 pass1.sh
