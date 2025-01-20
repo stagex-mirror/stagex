@@ -112,20 +112,37 @@ RUN pass1.kaem
 
 WORKDIR /steps
 
-SHELL ["/usr/bin/bash"]
 ENV SHELL=/usr/bin/bash
 ENV HOME=/tmp
 ENV SOURCE_DATE_EPOCH=0
 ENV KBUILD_BUILD_TIMESTAMP='@0'
 ENV DESTDIR=/tmp/destdir
-RUN /steps/improve/setup_repo.sh
-RUN /steps/improve/merged_usr.sh
-RUN /steps/improve/populate_device_nodes.sh
+ENV LIBDIR=""
 COPY --chmod=644 <<-EOF /etc/passwd
 	root:x:0:0:root:/root:/bin/sh
 EOF
 COPY --chmod=644 <<-EOF /etc/group
 	root:x:0:
+EOF
+SHELL ["/usr/bin/bash","-c"]
+RUN <<-'EOF'
+	set -eux
+	mkdir -p /external/repo
+	tar -cf - \
+		--exclude='/external/repo/*' \
+		--exclude='/external/repo-preseeded/*' \
+		--exclude='/external/distfiles/*' \
+		--exclude='/dev/*' \
+		--exclude='/proc/*' \
+		--exclude='/sys/*' \
+		--exclude='/tmp/*' \
+		/ \
+	| bzip2 --best \
+	> /external/repo/base.tar.bz2
+	ln -s bin /usr/sbin
+	for d in bin lib sbin; do
+		ln -s "usr/${d}" "/${d}" || true;
+	done
 EOF
 COPY --chmod=755 <<-'EOF' /shell.sh
 	#!/usr/bin/bash
@@ -269,7 +286,8 @@ RUN build gawk-5.3.0 pass1.sh
 RUN build m4-1.4.19 pass1.sh
 
 FROM build AS install
-COPY <<-EOF install.kaem
+WORKDIR /
+COPY --chmod=755 <<-EOF install.kaem
 	set -ex
 	PATH=/bin:/usr/sbin:/usr/bin
 	mkdir -p /rootfs/etc /rootfs/tmp

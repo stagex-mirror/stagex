@@ -5,166 +5,176 @@ ARG LINUX_SOURCE
 ARG LINUX_VERSION
 ARG MUSL_SOURCE
 ARG MUSL_VERSION
-ARG BUSYBOX_SOURCE
-ARG BUSYBOX_VERSION
 ARG BINUTILS_SOURCE
 ARG BINUTILS_VERSION
-ENV TARGET_ARCH=x86_64
-ENV HOST_ARCH=i386
-ENV BUILD=${HOST_ARCH}-unknown-linux-musl
-ENV HOST=${HOST_ARCH}-unknown-linux-musl
-ENV TARGET=${TARGET_ARCH}-linux-musl
-ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-ENV USER=user
-ENV HOME=/home/${USER}
+ENV ARCH=x86_64
+ENV TARGET=${ARCH}-linux-musl
 ENV TZ=UTC
 ENV LANG=C.UTF-8
 ENV SOURCE_DATE_EPOCH=1
 ENV KCONFIG_NOTIMESTAMP=1
-ENV SYSROOT_DIR=${HOME}/build-sysroot
-ENV GCC_DIR=${HOME}/build-gcc
-ENV LINUX_DIR=${HOME}/build-linux
-ENV BINUTILS_DIR=${HOME}/build-binutils
-ENV MUSL_DIR=${HOME}/build-musl
-WORKDIR /${HOME}
+ENV SYSROOT=/opt/cross
+ENV PATH=${SYSROOT}/bin:/usr/sbin:/usr/bin:/sbin:/bin
 COPY --from=fetch . .
 COPY --from=stagex/bootstrap-stage1 . /
 RUN --network=none <<-EOF
-    set -eux
-    tar -xf ${LINUX_SOURCE}
-    tar -xzf ${MUSL_SOURCE}
-    tar -xf ${BINUTILS_SOURCE}
-    tar -xf ${GCC_SOURCE}
-    cd gcc-${GCC_VERSION}
-    mv ../*.tar.* .; \
-    ./contrib/download_prerequisites
+	set -eux
+	tar -xf ${LINUX_SOURCE}
+	tar -xzf ${MUSL_SOURCE}
+	tar -xf ${BINUTILS_SOURCE}
+	tar -xf ${GCC_SOURCE}
+	cd gcc-${GCC_VERSION}
+	mv ../*.tar.* .; \
+	./contrib/download_prerequisites
 EOF
 
-# Phase 1: Build cross binutils in build-binutils
-WORKDIR /${BINUTILS_DIR}
-RUN --network=none <<-EOF
-    set -eux
-    ../binutils-${BINUTILS_VERSION}/configure \
-        --build=${BUILD} \
-        --host=${HOST} \
-        --target=${TARGET} \
-        --with-sysroot=/${TARGET} \
-        --prefix= \
-        --libdir=/lib \
-        --disable-nls \
-        --disable-multilib \
-        --disable-plugins \
-        --disable-gprofng \
-        --enable-64-bit-bfd \
-        --enable-ld=default \
-        --enable-install-libiberty \
-        --enable-deterministic-archives
-    make -j$(nproc) all
-EOF
-
-# Phase 2: Prepare build sysroot
-WORKDIR /${SYSROOT_DIR}
+# Setup sysroot
+WORKDIR ${SYSROOT}
 RUN <<-EOF
-    set -eux
-    mkdir -p include
-    ln -sf . usr
-    ln -sf lib lib32
-    ln -sf lib lib64
+	mkdir -pv bin lib lib32 include "${TARGET}/bin"
+	ln -sfv . usr
 EOF
-
-# Phase 3: Build gcc (without libgcc) in build-gcc
-WORKDIR /${GCC_DIR}
-RUN --network=none <<-EOF
-    set -eux
-    ../gcc-${GCC_VERSION}/configure \
-        --build=${BUILD} \
-        --host=${HOST} \
-        --target=${TARGET} \
-        --with-build-sysroot=${SYSROOT_DIR} \
-        --with-sysroot=/${TARGET} \
-        --prefix= \
-        --libdir=/lib \
-        --disable-multilib \
-        --disable-bootstrap \
-        --disable-assembly \
-        --disable-libmudflap \
-        --disable-libsanitizer \
-        --disable-gnu-indirect-function \
-        --disable-libmpx \
-        --disable-werror \
-        --enable-languages=c,c++ \
-        --enable-tls \
-        --enable-initfini-array \
-        --enable-libstdcxx-time=rt \
-        --enable-deterministic-archives \
-        AR_FOR_TARGET=${BINUTILS_DIR}/binutils/ar \
-        AS_FOR_TARGET=${BINUTILS_DIR}/gas/as-new \
-        LD_FOR_TARGET=${BINUTILS_DIR}/ld/ld-new \
-        NM_FOR_TARGET=${BINUTILS_DIR}/binutils/nm-new \
-        OBJCOPY_FOR_TARGET=${BINUTILS_DIR}/binutils/objcopy \
-        OBJDUMP_FOR_TARGET=${BINUTILS_DIR}/binutils/objdump \
-        RANLIB_FOR_TARGET=${BINUTILS_DIR}/binutils/ranlib \
-        READELF_FOR_TARGET=${BINUTILS_DIR}/binutils/readelf \
-        STRIP_FOR_TARGET=${BINUTILS_DIR}/binutils/strip-new
-    make -j$(nproc) all-gcc
-EOF
-
-# Phase 4: Install musl libc headers to build-sysroot for use by libgcc
-WORKDIR /${MUSL_DIR}
-RUN --network=none <<-EOF
-    set -eux
-    ../musl-${MUSL_VERSION}/configure \
-        CC="${GCC_DIR}/gcc/xgcc -B ${GCC_DIR}/gcc" \
-        LIBCC="${GCC_DIR}/${TARGET}/libgcc/libgcc.a" \
-        --prefix= \
-        --host=${TARGET}
-    make DESTDIR=${SYSROOT_DIR} install-headers
-EOF
-
-# Phase 5: Compile libgcc
-WORKDIR /${GCC_DIR}
-RUN --network=none make -j$(nproc) MAKE="make enable_shared=no" all-target-libgcc
-
-# Phase 5: Compile musl libc and install to sysroot
-WORKDIR /${MUSL_DIR}
-RUN --network=none <<-EOF
-    set -eux
-    make -j$(nproc) \
-        AR=${BINUTILS_DIR}/binutils/ar \
-        RANLIB=${BINUTILS_DIR}/binutils/ranlib
-    make DESTDIR=${SYSROOT_DIR} install
-EOF
-
-# Phase 6: Compile remaining gcc targets
-WORKDIR /${GCC_DIR}
-RUN make -j$(nproc) all
-
-# Phase 7: Generate linux headers
-WORKDIR /${HOME}/linux-${LINUX_VERSION}
-RUN --network=none <<-EOF
-    set -eux
-    make ARCH=${TARGET_ARCH} headers
-    find usr/include -name '.*' -delete
-    rm usr/include/Makefile
-    rm usr/include/headers_check.pl
-    cp -rv usr/include ${LINUX_DIR}
-EOF
-WORKDIR /${HOME}
-COPY --from=stagex/bootstrap-stage1 . /rootfs/
+WORKDIR ${SYSROOT}/${TARGET}
 RUN <<-EOF
-    set -eux
-    rm /rootfs/lib
-    env -C build-musl make DESTDIR=/rootfs/${TARGET} install
-    env -C build-gcc make DESTDIR=/rootfs/ install
-    env -C build-binutils make DESTDIR=/rootfs/ install
-    cp -Rv ${LINUX_DIR}/* /rootfs/${TARGET}/include
-    ln -s /usr/lib/ld-musl-${HOST_ARCH}.so.1 /rootfs/lib/libc.so
-    ln -s /usr/lib/ld-musl-${HOST_ARCH}.so.1 /rootfs/lib/ld-musl-${HOST_ARCH}.so.1
-    ln -s /${TARGET}/lib/ld-musl-${TARGET_ARCH}.so.1 /rootfs/lib/ld-musl-${TARGET_ARCH}.so.1
+	ln -sfv ../lib lib
+	ln -sfv ../lib32 lib32
+	ln -sfv ../include include
+EOF
+
+# Install musl headers
+WORKDIR /musl-${MUSL_VERSION}
+RUN --network=none \
+	make \
+		ARCH="${ARCH}" \
+		prefix="" \
+		DESTDIR="${SYSROOT}" \
+		install-headers
+
+# Build and install cross binutils
+WORKDIR /build-binutils
+RUN --network=none <<-EOF
+	set -eux
+	/binutils-${BINUTILS_VERSION}/configure \
+		--target="${TARGET}" \
+		--prefix="" \
+		--exec-prefix="" \
+		--sbindir=/bin \
+		--libexecdir=/lib \
+		--datarootdir=/_tmp \
+		--with-sysroot=/ \
+		--with-build-sysroot="${SYSROOT}" \
+		--disable-nls \
+		--disable-multilib \
+		--disable-plugins \
+		--disable-gprofng \
+		--enable-64-bit-bfd \
+		--enable-ld=default \
+		--enable-install-libiberty \
+		--enable-deterministic-archives
+	make -j$(nproc) all-binutils all-gas all-ld
+	make \
+		DESTDIR="${SYSROOT}" \
+		install-strip-binutils \
+		install-strip-gas \
+		install-strip-ld
+EOF
+
+# Build and install cross gcc and bootstrap libgcc
+WORKDIR /build-gcc
+RUN --network=none <<-EOF
+	set -eux
+	/gcc-${GCC_VERSION}/configure \
+	--prefix="" \
+	--exec-prefix="" \
+	--sbindir=/bin \
+	--libexecdir=/lib \
+	--datarootdir=/_tmp \
+	--target=${TARGET} \
+	--disable-multilib \
+	--disable-bootstrap \
+	--disable-assembly \
+	--disable-libmudflap \
+	--disable-libsanitizer \
+	--disable-gnu-indirect-function \
+	--disable-libmpx \
+	--disable-werror \
+	--enable-languages=c,c++ \
+	--enable-tls \
+	--enable-initfini-array \
+	--enable-libstdcxx-time=rt \
+	--enable-deterministic-archives \
+	--with-build-sysroot=${SYSROOT} \
+	--with-sysroot=/
+	make -j$(nproc) \
+		all-gcc
+	make -j$(nproc) \
+		enable_shared=no \
+		all-target-libgcc
+	make \
+		DESTDIR="${SYSROOT}" \
+		install-strip-gcc \
+		install-strip-target-libgcc
+EOF
+
+# Build and install cross musl
+WORKDIR /build-musl
+RUN --network=none <<-EOF
+	ARCH="${ARCH}" \
+  CC="${TARGET}-gcc" \
+  CROSS_COMPILE="${TARGET}-" \
+  LIBCC="${SYSROOT}/lib/gcc/${TARGET}/${GCC_VERSION}/libgcc.a" \
+	/musl-${MUSL_VERSION}/configure \
+		--host="${TARGET}" \
+		--prefix="" \
+		--disable-wrapper
+	make \
+		AR="${TARGET}-ar" \
+		RANLIB="${TARGET}-ranlib"
+	make \
+		AR="${TARGET}-ar" \
+		RANLIB="${TARGET}-ranlib" \
+		DESTDIR="${SYSROOT}" \
+		install-libs
+	rm -f "${SYSROOT}"/lib/ld-musl-${ARCH}.so.1
+	cp -af \
+		"${SYSROOT}/usr/lib/libc.so" \
+		"${SYSROOT}/lib/ld-musl-${ARCH}.so.1"
+EOF
+
+# Build and install final libgcc/libstdc++
+WORKDIR /build-gcc
+RUN --network=none <<-EOF
+	make -C "${TARGET}/libgcc" distclean
+	make \
+		enable_shared=yes \
+		all-target-libgcc \
+		all-target-libstdc++-v3
+	make \
+		DESTDIR="${SYSROOT}" \
+		install-strip-target-libgcc \
+		install-strip-target-libstdc++-v3
+EOF
+
+# Build and install linux headers
+WORKDIR /linux-${LINUX_VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	make ARCH="${ARCH}" headers
+	find usr/include ! -name '*.h' -type f -delete
+	cp -af usr/include "${SYSROOT}/usr"
+	cp -Rv usr/include/* "${SYSROOT}/include/"
+EOF
+RUN rm -rf "${SYSROOT}/_tmp"
+
+WORKDIR /rootfs/${SYSROOT}
+RUN <<-EOF
+	mv ${SYSROOT}/* .
+	mkdir -p /rootfs/usr/bin
+	for bin_path in $(find bin -name ${TARGET}-*); do
+		bin_name=$(basename "$bin_path")
+		ln -s /opt/cross/bin/${bin_name} /rootfs/usr/bin/${bin_name}
+	done
 EOF
 
 FROM scratch AS package
 COPY --from=build /rootfs/ /
-USER 1000:1000
-ENTRYPOINT ["/bin/bash"]
-ENV PS1="stage2 $ "

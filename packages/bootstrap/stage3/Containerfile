@@ -16,7 +16,6 @@ ENV BUILD=i386-unknown-linux-musl
 ENV TARGET=${ARCH}-linux-musl
 ENV HOST=${TARGET}
 ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-ENV USER=user
 ENV HOME=/home/${USER}
 ENV TZ=UTC
 ENV LANG=C.UTF-8
@@ -30,6 +29,7 @@ ENV MAKE_DIR=${HOME}/build-make
 ENV GCC_DIR=${HOME}/build-gcc
 WORKDIR /${HOME}
 COPY --from=fetch . .
+COPY --from=stagex/bootstrap-stage1 . /
 COPY --from=stagex/bootstrap-stage2 . /
 RUN --network=none <<-EOF
 	set -eux
@@ -184,6 +184,3 @@ EOF
 
 FROM scratch AS package
 COPY --from=build /rootfs/ /
-USER 1000:1000
-ENTRYPOINT ["/bin/sh"]
-ENV PS1="stage3 $ "
