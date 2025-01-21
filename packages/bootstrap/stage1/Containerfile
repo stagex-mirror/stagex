@@ -257,16 +257,14 @@ RUN build binutils-2.41 pass2.sh
 RUN build gcc-13.1.0 pass1.sh
 
 FROM build AS install
-WORKDIR /
-COPY --chmod=755 <<-EOF install.kaem
+WORKDIR /rootfs
+SHELL ["/usr/bin/bash","-c"]
+RUN <<-EOF
 	set -ex
-	PATH=/bin:/usr/sbin:/usr/bin
-	mkdir -p /rootfs/etc /rootfs/tmp
-	cp -R lib usr bin etc /rootfs/
-	rm /rootfs/etc/hosts
-	rm /rootfs/etc/resolv.conf
+	mkdir -p tmp
+	cp -R /lib /usr /bin /etc .
+	rm etc/hosts etc/resolv.conf
 EOF
-RUN --network=none ./install.kaem
 
 FROM scratch AS package
 COPY --from=install /rootfs /
