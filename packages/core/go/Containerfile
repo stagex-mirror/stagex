@@ -1,75 +1,23 @@
 FROM scratch AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-binutils . /
+COPY --from=stagex/bootstrap-stage3 . /
 COPY --from=fetch . .
 RUN <<-EOF
 	set -eux
-	tar -xzf go1.4.src.tar.gz
-	mv go go-bootstrap-1-src
-	tar -xzf go1.19.11.src.tar.gz
-	mv go go-bootstrap-2-src
-	tar -xzf go1.20.6.src.tar.gz
-	mv go go-bootstrap-3-src
-	tar -xzf go${VERSION}.src.tar.gz; \
-	mv go go-src
+	tar -xzf go${VERSION}.src.tar.gz
 EOF
-WORKDIR /go-bootstrap-1-src
-ENV GOROOT_FINAL=/go-bootstrap-1
-ENV GOROOT=${GOROOT_FINAL}
-ENV DEST=${GOROOT_FINAL}
-ENV GOBIN=${GOROOT_FINAL}/bin
+WORKDIR /go
+ENV GOROOT_BOOTSTRAP=/usr/lib/go
 RUN --network=none <<-EOF
 	set -eux
 	cd src
 	sh make.bash
 	cd ..
-	mkdir -p ${DEST}
-	cp -R bin lib pkg src ${DEST}
-EOF
-WORKDIR /go-bootstrap-2-src
-ENV GOROOT_BOOTSTRAP=/go-bootstrap-1
-ENV GOROOT_FINAL=/go-bootstrap-2
-ENV GOROOT=${GOROOT_FINAL}
-ENV DEST=${GOROOT_FINAL}
-ENV GOBIN=${GOROOT_FINAL}/bin
-RUN --network=none <<-EOF
-	set -eux
-	cd src
-	sh make.bash
-	cd ..
-	mkdir -p ${DEST}
-	cp -R bin lib pkg src ${DEST}
-EOF
-WORKDIR /go-bootstrap-3-src
-ENV GOROOT_BOOTSTRAP=/go-bootstrap-2
-ENV GOROOT_FINAL=/go-bootstrap-3
-ENV GOROOT=${GOROOT_FINAL}
-ENV DEST=${GOROOT_FINAL}
-ENV GOBIN=${GOROOT_FINAL}/bin
-RUN --network=none <<-EOF
-	set -eux
-	cd src
-	sh make.bash
-	cd ..
-	mkdir -p ${DEST}
-	cp -R bin lib pkg src ${DEST}
-EOF
-WORKDIR /go-src
-ENV GOROOT_BOOTSTRAP=/go-bootstrap-3
-ENV GOROOT_FINAL="/lib/go"
-ENV GOBIN=${GOROOT_FINAL}/bin
-ENV GOROOT=/go-bootstrap-3
-RUN --network=none <<-EOF
-	set -eux
-	cd src
-	sh make.bash
-	cd ..
-	mkdir -p /rootfs/usr
-	cp -R pkg src /rootfs
-	cp -R bin lib /rootfs/usr
+	mkdir -p /rootfs/usr/lib/go
+	cp -a bin lib pkg src /rootfs/usr/lib/go
+	mkdir -p /rootfs/usr/bin
+	ln -s /usr/lib/go/bin/go /rootfs/usr/bin/go
+	ln -s /usr/lib/go/bin/gofmt /rootfs/usr/bin/gofmt
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
