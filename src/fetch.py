@@ -30,6 +30,7 @@ class ResourceFetcher(object):
       source_path = Path("fetch").joinpath(stage, package_info.name)
       source_path.mkdir(parents=True, exist_ok=True)
 
+      error = None
       for mirror in source_info.mirrors:
         urlfile = urlsplit(mirror).path.split(os.path.sep)[-1]
         if not source_info.version:
@@ -57,18 +58,27 @@ class ResourceFetcher(object):
         filepath = source_path.joinpath(file)
         if filepath.is_file():
           if not ResourceFetcher.verify(filepath, source_info.hash):
-            failed_fetch.append((file, source_info.hash, url, "verify_existing"))
-          continue
+            print("Failed verifying stored file, removing")
+            filepath.unlink()
+          else:
+            break
+
         print(f"\nDownloading: {file}")
         print(f"Mirror: {url}")
         try:
           ResourceFetcher.download(url, filepath)
         except:
-          failed_fetch.append((file, source_info.hash, url, "download"))
+          error = (file, source_info.hash, url, "download")
           print("Failed downloading from mirror")
           continue
         if not ResourceFetcher.verify(filepath, source_info.hash):
-          failed_fetch.append((file, source_info.hash, url, "verify_download"))
+          error = (file, source_info.hash, url, "verify_download")
+          print("Failed verifying downloaded file")
+          continue
+        error = None
+        break
+      if error:
+        failed_fetch.append(error)
 
     return failed_fetch
 
@@ -131,6 +141,7 @@ if __name__ == "__main__":
   for package_file in package_files:
     rf = ResourceFetcher(package_file)
     failed = rf.fetch_resource()
+    print()
     if len(failed):
       for fail in failed:
         print(f"\nFailed: {fail}")
