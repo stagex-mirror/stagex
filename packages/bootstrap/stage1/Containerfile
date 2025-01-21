@@ -6,8 +6,8 @@ ARG M2LIBC_VERSION
 COPY --from=stagex/bootstrap-stage0 /bin /usr/bin
 
 FROM base as sources
-ADD ${M2LIBC_SOURCE} .
-ADD ${LIVE_BOOTSTRAP_SOURCE} .
+ADD fetch/${M2LIBC_SOURCE} .
+ADD fetch/${LIVE_BOOTSTRAP_SOURCE} .
 
 FROM base as build
 COPY --from=fetch . /external/distfiles/
@@ -209,16 +209,10 @@ RUN build findutils-4.2.33 pass1.sh
 RUN build musl-1.2.4 pass1.sh
 RUN build linux-headers-4.14.341-openela pass1.sh
 RUN build gcc-4.0.4 pass2.sh
-RUN build util-linux-2.19.1 pass1.sh
-RUN build e2fsprogs-1.45.7 pass1.sh
-RUN build dhcpcd-10.0.1 pass1.sh
 RUN build kbd-1.15 pass1.sh
 RUN build make-3.82 pass2.sh
-RUN build ed-1.4 pass1.sh
-RUN build bc-1.07.1 pass1.sh
 RUN ["/usr/bin/bash","-c","/usr/bin/bash","/steps/improve/clean_sources.sh"]
 RUN build musl-1.2.4 pass2.sh
-RUN build curl-8.5.0 pass1.sh
 RUN build bash-5.2.15 pass1.sh
 RUN build xz-5.4.1 pass1.sh
 RUN build file-5.44 pass1.sh
@@ -239,9 +233,6 @@ RUN build dist-3.5-236 pass1.sh
 RUN build perl-5.32.1 pass1.sh
 RUN uninstall perl-5.6.2 perl-5.10.1
 RUN build libarchive-3.5.2 pass1.sh
-RUN build openssl-3.0.13 pass1.sh
-RUN build ca-certificates-3.99 pass1.sh
-RUN build curl-8.5.0 pass2.sh
 RUN build zlib-1.2.13 pass1.sh
 RUN build automake-1.16.3 pass1.sh
 RUN build autoconf-2.71 pass1.sh
@@ -261,29 +252,9 @@ RUN build grep-3.7 pass1.sh
 RUN build sed-4.8 pass1.sh
 RUN build autogen-5.18.16 pass1.sh
 RUN build musl-1.2.4 pass3.sh
-RUN build python-2.0.1 pass1.sh
-RUN build python-2.0.1 pass2.sh
-RUN build python-2.3.7 pass1.sh
-RUN build python-2.3.7 pass2.sh
-RUN build python-2.5.6 pass1.sh
-RUN build python-3.1.5 pass1.sh
-RUN build python-3.1.5 pass2.sh
-RUN build python-3.3.7 pass1.sh
-RUN build python-3.4.10 pass1.sh
-RUN build python-3.8.16 pass1.sh
-RUN build python-3.11.1 pass1.sh
-RUN uninstall python-2.0.1 python-2.3.7 python-3.1.5 python-3.3.7 python-3.4.10 python-3.8.16
 RUN build gcc-10.4.0 pass1.sh
 RUN build binutils-2.41 pass2.sh
 RUN build gcc-13.1.0 pass1.sh
-RUN build libmd-1.1.0 pass1.sh
-RUN build libbsd-0.11.8 pass1.sh
-RUN build shadow-4.14.3 pass1.sh
-RUN build opendoas-6.8.2 pass1.sh
-RUN build gzip-1.13 pass1.sh
-RUN build diffutils-3.10 pass1.sh
-RUN build gawk-5.3.0 pass1.sh
-RUN build m4-1.4.19 pass1.sh
 
 FROM build AS install
 WORKDIR /
@@ -291,7 +262,7 @@ COPY --chmod=755 <<-EOF install.kaem
 	set -ex
 	PATH=/bin:/usr/sbin:/usr/bin
 	mkdir -p /rootfs/etc /rootfs/tmp
-	cp -R lib usr bin var etc /rootfs/
+	cp -R lib usr bin etc /rootfs/
 	rm /rootfs/etc/hosts
 	rm /rootfs/etc/resolv.conf
 EOF

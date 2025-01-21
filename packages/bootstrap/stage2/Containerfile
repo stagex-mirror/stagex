@@ -45,6 +45,7 @@ EOF
 WORKDIR /musl-${MUSL_VERSION}
 RUN --network=none \
 	make \
+		-j$(nproc) \
 		ARCH="${ARCH}" \
 		prefix="" \
 		DESTDIR="${SYSROOT}" \
@@ -71,8 +72,13 @@ RUN --network=none <<-EOF
 		--enable-ld=default \
 		--enable-install-libiberty \
 		--enable-deterministic-archives
-	make -j$(nproc) all-binutils all-gas all-ld
 	make \
+		-j$(nproc) \
+		all-binutils \
+		all-gas \
+		all-ld
+	make \
+		-j$(nproc) \
 		DESTDIR="${SYSROOT}" \
 		install-strip-binutils \
 		install-strip-gas \
@@ -105,12 +111,15 @@ RUN --network=none <<-EOF
 	--enable-deterministic-archives \
 	--with-build-sysroot=${SYSROOT} \
 	--with-sysroot=/
-	make -j$(nproc) \
+	make \
+		-j$(nproc) \
 		all-gcc
-	make -j$(nproc) \
+	make \
+		-j$(nproc) \
 		enable_shared=no \
 		all-target-libgcc
 	make \
+		-j$(nproc) \
 		DESTDIR="${SYSROOT}" \
 		install-strip-gcc \
 		install-strip-target-libgcc
@@ -128,9 +137,11 @@ RUN --network=none <<-EOF
 		--prefix="" \
 		--disable-wrapper
 	make \
+		-j$(nproc) \
 		AR="${TARGET}-ar" \
 		RANLIB="${TARGET}-ranlib"
 	make \
+		-j$(nproc) \
 		AR="${TARGET}-ar" \
 		RANLIB="${TARGET}-ranlib" \
 		DESTDIR="${SYSROOT}" \
@@ -146,10 +157,12 @@ WORKDIR /build-gcc
 RUN --network=none <<-EOF
 	make -C "${TARGET}/libgcc" distclean
 	make \
+		-j$(nproc) \
 		enable_shared=yes \
 		all-target-libgcc \
 		all-target-libstdc++-v3
 	make \
+		-j$(nproc) \
 		DESTDIR="${SYSROOT}" \
 		install-strip-target-libgcc \
 		install-strip-target-libstdc++-v3
@@ -159,7 +172,7 @@ EOF
 WORKDIR /linux-${LINUX_VERSION}
 RUN --network=none <<-EOF
 	set -eux
-	make ARCH="${ARCH}" headers
+	make -j$(nproc) ARCH="${ARCH}" headers
 	find usr/include ! -name '*.h' -type f -delete
 	cp -af usr/include "${SYSROOT}/usr"
 	cp -Rv usr/include/* "${SYSROOT}/include/"

@@ -1,5 +1,6 @@
 out
 fetch
+packages/*/*/fetch/*
 build.log
 graph.svg
 *.TXT
