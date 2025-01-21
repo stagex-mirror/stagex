@@ -582,7 +582,7 @@ mirrors = [ "https://mirrors.kernel.org/pub/linux/utils/util-linux/v2.19/{file}"
 [sources.flex_2511]
 hash = "bc79b890f35ca38d66ff89a6e3758226131e51ccbd10ef78d5ff150b7bd73689"
 file = "flex-2.5.11.tar.gz"
-mirrors = [ "http://ftp-tel.sjtu.edu.cn/sites/ftp.openpkg.org/sources/DST/flex/{file}",]
+mirrors = [ "http://ftp-tel.sjtu.edu.cn/sites/ftp.openpkg.org/sources/DST/flex/{file}","https://ostm.panekj.dev/f/flex/flex-2.5.11.tar.gz" ]
 
 [sources.patch_276]
 hash = "ac610bda97abe0d9f6b7c963255a11dcb196c25e337c61f94e4778d632f1d8fd"
