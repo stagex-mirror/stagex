@@ -155,7 +155,10 @@ EOF
 # Build and install final libgcc/libstdc++
 WORKDIR /build-gcc
 RUN --network=none <<-EOF
-	make -C "${TARGET}/libgcc" distclean
+	make \
+		-j $(nproc) \
+		-C "${TARGET}/libgcc" \
+		distclean
 	make \
 		-j$(nproc) \
 		enable_shared=yes \
