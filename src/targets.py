@@ -25,7 +25,7 @@ out/{stage}-{name}/index.json: {deps}
 \t  --ulimit nofile=2048:16384 \\
 \t  --tag stagex/{stage}-{name}:{version} \\
 \t  --output \\
-\t    name={name},type=oci,rewrite-timestamp=true,force-compression=true,annotation.org.opencontainers.image.revision=$(shell git rev-list HEAD -1 packages/{stage}/{name}),annotation.org.opencontainers.image.version={version},tar=true,dest=- \\
+\t    name={name},type=oci,rewrite-timestamp=true,force-compression=true,annotation.org.opencontainers.image.version={version},tar=true,dest=- \\
 \t  {context_args} \\
 \t  {build_args} \\
 \t  $(EXTRA_ARGS) \\
