@@ -1,7 +1,16 @@
 out
 fetch
+packages/*/*/fetch/*
 build.log
 graph.svg
+*.TXT
+*.tar
+*.zip
 *.tgz
+*.gz
+*.txt
+*.bz2
+*.lzma
+*.xz
 TODO
 __pycache__

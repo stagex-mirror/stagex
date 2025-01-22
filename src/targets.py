@@ -18,12 +18,14 @@ out/{stage}-{name}/index.json: {deps}
 \tmkdir -p out/{stage}-{name} && \\
 \tmkdir -p fetch/{stage}/{name} && \\
 \tpython3 src/fetch.py {name} && \\
+\t mkdir -p packages/{stage}/{name}/fetch && \\
+\t(cp -lR fetch/{stage}/{name}/* packages/{stage}/{name}/fetch || true) && \\
 \t$(BUILDER) \\
 \t  build \\
 \t  --ulimit nofile=2048:16384 \\
 \t  --tag stagex/{stage}-{name}:{version} \\
 \t  --output \\
-\t    name={name},type=oci,rewrite-timestamp=true,force-compression=true,annotation.org.opencontainers.image.revision=$(shell git rev-list HEAD -1 packages/{stage}/{name}),annotation.org.opencontainers.image.version={version},tar=true,dest=- \\
+\t    name={name},type=oci,rewrite-timestamp=true,force-compression=true,annotation.org.opencontainers.image.version={version},tar=true,dest=- \\
 \t  {context_args} \\
 \t  {build_args} \\
 \t  $(EXTRA_ARGS) \\
