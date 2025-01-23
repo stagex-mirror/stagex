@@ -11,6 +11,7 @@ ARG BINUTILS_SOURCE
 ARG BINUTILS_VERSION
 ARG MAKE_SOURCE
 ARG MAKE_VERSION
+ARG GO_SOURCE
 ENV ARCH=x86_64
 ENV BUILD=i386-unknown-linux-musl
 ENV TARGET=${ARCH}-linux-musl
@@ -31,6 +32,7 @@ RUN --network=none <<-EOF
 	tar -kxjf ${BUSYBOX_SOURCE}
 	tar -kxzf ${MUSL_SOURCE}
 	tar -kxzf ${MAKE_SOURCE}
+	tar -kxzf ${GO_SOURCE}
 EOF
 WORKDIR /build-musl
 RUN --network=none <<-EOF
@@ -154,6 +156,26 @@ RUN --network=none <<-EOF
 	rm usr/include/Makefile
 	rm usr/include/headers_check.pl
 	cp -rv usr/include /build-linux
+EOF
+WORKDIR ${HOME}/go
+RUN --network=none <<-EOF
+	set -eux
+	cd src
+	GOROOT_BOOTSTRAP=/usr/lib/go \
+	GOHOSTARCH=386 GOARCH=`echo ${ARCH} | sed 's/x86_64/amd64/'` \
+	bash -- make.bash
+EOF
+RUN --network=none <<-EOF
+	set -eux
+	rm -rf src/testdata
+	mkdir -p /rootfs/usr/lib/go
+	export GO_TARGET=`echo ${ARCH} | sed 's/x86_64/amd64/'`
+	cp bin/linux_$GO_TARGET/* bin
+	rm -rf bin/linux_$GO_TARGET
+	cp -a bin lib pkg src /rootfs/usr/lib/go
+	mkdir -p /rootfs/usr/bin
+	ln -s /usr/lib/go/bin/go /rootfs/usr/bin/go
+	ln -s /usr/lib/go/bin/gofmt /rootfs/usr/bin/gofmt
 EOF
 RUN --network=none <<-EOF
 	set -eux
