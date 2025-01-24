@@ -5,6 +5,7 @@ from common import PackageInfo
 from typing import Any
 from typing import List
 from typing import MutableMapping
+from dataclasses import replace
 from urllib.parse import urlsplit
 
 
@@ -16,10 +17,10 @@ class TargetGenerator(object):
 out/{stage}-{name}/index.json: {deps}
 \trm -rf out/{stage}-{name} && \\
 \tmkdir -p out/{stage}-{name} && \\
-\tmkdir -p fetch/{stage}/{name} && \\
-\tpython3 src/fetch.py {name} && \\
-\t mkdir -p packages/{stage}/{name}/fetch && \\
-\t(cp -lR fetch/{stage}/{name}/* packages/{stage}/{name}/fetch || true) && \\
+\tmkdir -p fetch/{stage}/{origin} && \\
+\tpython3 src/fetch.py {origin} && \\
+\t mkdir -p packages/{stage}/{origin}/fetch && \\
+\t(cp -lR fetch/{stage}/{origin}/* packages/{stage}/{origin}/fetch || true) && \\
 \t$(BUILDER) \\
 \t  build \\
 \t  --ulimit nofile=2048:16384 \\
@@ -33,8 +34,8 @@ out/{stage}-{name}/index.json: {deps}
 \t  $(CHECK_FLAG) \\
 \t  --platform=$(PLATFORM) \\
 \t  --progress=$(PROGRESS) \\
-\t  -f packages/{stage}/{name}/Containerfile \\
-\t  packages/{stage}/{name} \\
+\t  -f packages/{stage}/{origin}/Containerfile \\
+\t  packages/{stage}/{origin} \\
 \t| tar -C out/{stage}-{name} -mx
 """
 
@@ -60,12 +61,13 @@ out/{stage}-{name}/index.json: {deps}
             **{
               "stage": stage,
               "name": name,
+              "origin": package.origin or package.name,
               "version": package.version or "latest",
               "deps": "".join(
                 f" \\\n\tout/{dep}/index.json" for dep in package.deps
               ),
               "build_args": TargetGenerator.get_build_args(package),
-              "context_args": TargetGenerator.get_context_args(package, stage, name),
+              "context_args": TargetGenerator.get_context_args(package, stage, package.origin or package.name),
             }
           )
         )
@@ -100,7 +102,15 @@ out/{stage}-{name}/index.json: {deps}
 
           package_info = CommonUtils.parse_package_toml_no_deps(package_data)
           package_info.deps = deps
-          self.packages[stage][name] = package_info
+          if len(package_info.subpackages):
+            for subpackage in package_info.subpackages:
+              self.packages[stage][subpackage] = replace(package_info)
+              self.packages[stage][subpackage].origin = package_info.name
+              self.packages[stage][subpackage].name = subpackage
+              self.packages[stage][subpackage].subpackages = []
+              print(self.packages[stage][subpackage])
+          else:
+            self.packages[stage][name] = package_info
 
   @staticmethod
   def get_context_args(package: PackageInfo, stage: str, name: str) -> str:
@@ -114,6 +124,9 @@ out/{stage}-{name}/index.json: {deps}
   def get_build_args(package: PackageInfo) -> str:
     sources = package.sources
     args: List[str] = list()
+    if package.origin:
+        args.append(f"--target package-{package.name}")
+
     if package.version:
         args.append(f"--build-arg VERSION={package.version}")
         args.append(f"--build-arg VERSION_UNDER={package.version_under}")
