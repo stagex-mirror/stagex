@@ -6,3 +6,11 @@ description = "The Go programming language"
 [sources.go]
 hash = "a6f3f4bbd3e6bdd626f79b668f212fbb5649daf75084fb79b678a0ae4d97423b"
 mirrors = [ "https://storage.googleapis.com/golang/go{version}.src.tar.gz",]
+
+[sources.go-linux-amd64]
+hash = "cbcad4a6482107c7c7926df1608106c189417163428200ce357695cc7e01d091"
+mirrors = [ "https://storage.googleapis.com/golang/go{version}.linux-amd64.tar.gz",]
+
+[sources.go-linux-arm64]
+hash = "47c84d332123883653b70da2db7dd57d2a865921ba4724efcdf56b5da7021db0"
+mirrors = [ "https://storage.googleapis.com/golang/go{version}.linux-arm64.tar.gz",]

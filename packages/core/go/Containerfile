@@ -15,5 +15,17 @@ RUN --network=none <<-EOF
 	ln -s /usr/lib/go/bin/go /rootfs/usr/bin/go
 	ln -s /usr/lib/go/bin/gofmt /rootfs/usr/bin/gofmt
 EOF
+
+ARG TARGETARCH
+ADD fetch/go${VERSION}.linux-${TARGETARCH}.tar.gz /tmp/go-binaries
+RUN --network=none <<-EOF
+	set -eux
+	cd /tmp/go-binaries/go
+	find bin pkg/tool -type f -exec sha512sum {} + > /tmp/go-sums
+	cd /rootfs/usr/lib/go
+	# Verify all binaries from the official build are found and match
+	sha512sum -c /tmp/go-sums
+EOF
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
