@@ -29,7 +29,8 @@ RUN --network=none <<-EOF
 		--frozen \
 		--release \
 		--target "${ARCH}-unknown-linux-musl" \
-		--bin sq-wot
+		--bin sq-wot \
+		--features sequoia-openpgp/crypto-nettle
 	mkdir -p /rootfs/usr/bin
 	cp target/${ARCH}-unknown-linux-musl/release/sq-wot /rootfs/usr/bin/sq-wot
 EOF
