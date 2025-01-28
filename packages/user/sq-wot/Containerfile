@@ -15,6 +15,7 @@ COPY --from=stagex/core-gmp . /
 COPY --from=stagex/user-nettle . /
 COPY --from=stagex/core-pkgconf . /
 COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-sqlite3 . /
 COPY --from=fetch . .
 RUN tar xf sequoia-wot-${VERSION}.tar.gz
 WORKDIR /sequoia-wot-sequoia-wot-v${VERSION}
