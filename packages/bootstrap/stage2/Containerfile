@@ -7,16 +7,15 @@ ARG MUSL_SOURCE
 ARG MUSL_VERSION
 ARG BINUTILS_SOURCE
 ARG BINUTILS_VERSION
-ENV ARCH=x86_64
-ENV TARGET=${ARCH}-linux-musl
 ENV TZ=UTC
 ENV LANG=C.UTF-8
 ENV SOURCE_DATE_EPOCH=1
 ENV KCONFIG_NOTIMESTAMP=1
-ENV SYSROOT=/opt/cross
-ENV PATH=${SYSROOT}/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV BASE_PATH=/usr/sbin:/usr/bin:/sbin:/bin
+ENV PATH=${BASE_PATH}
 COPY --from=fetch . .
 COPY --from=stagex/bootstrap-stage1 . /
+
 RUN --network=none <<-EOF
 	set -eux
 	tar -xf ${LINUX_SOURCE}
@@ -28,33 +27,61 @@ RUN --network=none <<-EOF
 	./contrib/download_prerequisites
 EOF
 
-# Setup sysroot
-WORKDIR ${SYSROOT}
-RUN <<-EOF
-	mkdir -pv bin lib lib32 include "${TARGET}/bin"
-	ln -sfv . usr
+# Set environment variables based on target (gcc target format, like x86_64 or aarch64)
+COPY --chmod=755 <<-'EOF' /env.sh
+	export TARGET=${TARGET_ARCH}-linux-musl
+	export SYSROOT=/usr/${TARGET}
+	export PATH=${SYSROOT}/bin:${BASE_PATH}
 EOF
-WORKDIR ${SYSROOT}/${TARGET}
-RUN <<-EOF
+
+ARG TARGET_LIST="x86_64 aarch64"
+
+# Setup sysroot
+COPY --chmod=755 <<-'EOF' /sysroot.sh
+	set -eux
+	. /env.sh
+	mkdir -p ${SYSROOT}
+	cd ${SYSROOT}
+	mkdir -pv bin lib lib32 include usr "${TARGET}/bin"
+	ln -sfv ../bin ../lib ../lib32 ../include usr
+	cd ${SYSROOT}/${TARGET}
 	ln -sfv ../lib lib
 	ln -sfv ../lib32 lib32
 	ln -sfv ../include include
 EOF
+RUN --network=none <<-EOF
+	set -eux
+	for arch in ${TARGET_LIST}; do
+		TARGET_ARCH=$arch /sysroot.sh
+	done
+EOF
 
 # Install musl headers
-WORKDIR /musl-${MUSL_VERSION}
-RUN --network=none \
+COPY --chmod=755 <<-'EOF' /musl1.sh
+	set -eux
+	. /env.sh
+	cd /musl-${MUSL_VERSION}
+	make clean distclean
 	make \
 		-j$(nproc) \
-		ARCH="${ARCH}" \
+		ARCH="${TARGET_ARCH}" \
 		prefix="" \
 		DESTDIR="${SYSROOT}" \
 		install-headers
-
-# Build and install cross binutils
-WORKDIR /build-binutils
+EOF
 RUN --network=none <<-EOF
 	set -eux
+	for arch in ${TARGET_LIST}; do
+		TARGET_ARCH=$arch /musl1.sh
+	done
+EOF
+
+# Build and install cross binutils
+COPY --chmod=755 <<-'EOF' /binutils.sh
+	set -eux
+	. /env.sh
+	mkdir -p /build-binutils-${TARGET_ARCH}
+	cd /build-binutils-${TARGET_ARCH}
 	/binutils-${BINUTILS_VERSION}/configure \
 		--target="${TARGET}" \
 		--prefix="" \
@@ -84,11 +111,19 @@ RUN --network=none <<-EOF
 		install-strip-gas \
 		install-strip-ld
 EOF
-
-# Build and install cross gcc and bootstrap libgcc
-WORKDIR /build-gcc
 RUN --network=none <<-EOF
 	set -eux
+	for arch in ${TARGET_LIST}; do
+		TARGET_ARCH=$arch /binutils.sh
+	done
+EOF
+
+# Build and install cross gcc and bootstrap libgcc
+COPY --chmod=755 <<-'EOF' /gcc1.sh
+	set -eux
+	. /env.sh
+	mkdir -p /build-gcc-${TARGET_ARCH}
+	cd /build-gcc-${TARGET_ARCH}
 	/gcc-${GCC_VERSION}/configure \
 	--prefix="" \
 	--exec-prefix="" \
@@ -124,14 +159,23 @@ RUN --network=none <<-EOF
 		install-strip-gcc \
 		install-strip-target-libgcc
 EOF
+RUN --network=none <<-EOF
+	set -eux
+	for arch in ${TARGET_LIST}; do
+		TARGET_ARCH=$arch /gcc1.sh
+	done
+EOF
 
 # Build and install cross musl
-WORKDIR /build-musl
-RUN --network=none <<-EOF
-	ARCH="${ARCH}" \
-  CC="${TARGET}-gcc" \
-  CROSS_COMPILE="${TARGET}-" \
-  LIBCC="${SYSROOT}/lib/gcc/${TARGET}/${GCC_VERSION}/libgcc.a" \
+COPY --chmod=755 <<-'EOF' /musl2.sh
+	set -eux
+	. /env.sh
+	mkdir -p /build-musl-${TARGET_ARCH}
+	cd /build-musl-${TARGET_ARCH}
+	ARCH="${TARGET_ARCH}" \
+	CC="${TARGET}-gcc" \
+	CROSS_COMPILE="${TARGET}-" \
+	LIBCC="${SYSROOT}/lib/gcc/${TARGET}/${GCC_VERSION}/libgcc.a" \
 	/musl-${MUSL_VERSION}/configure \
 		--host="${TARGET}" \
 		--prefix="" \
@@ -146,15 +190,24 @@ RUN --network=none <<-EOF
 		RANLIB="${TARGET}-ranlib" \
 		DESTDIR="${SYSROOT}" \
 		install-libs
-	rm -f "${SYSROOT}"/lib/ld-musl-${ARCH}.so.1
+	rm -f "${SYSROOT}"/lib/ld-musl-${TARGET_ARCH}.so.1
 	cp -af \
 		"${SYSROOT}/usr/lib/libc.so" \
-		"${SYSROOT}/lib/ld-musl-${ARCH}.so.1"
+		"${SYSROOT}/lib/ld-musl-${TARGET_ARCH}.so.1"
+EOF
+RUN --network=none <<-EOF
+	set -eux
+	for arch in ${TARGET_LIST}; do
+		TARGET_ARCH=$arch /musl2.sh
+	done
 EOF
 
 # Build and install final libgcc/libstdc++
-WORKDIR /build-gcc
-RUN --network=none <<-EOF
+COPY --chmod=755 <<-'EOF' /gcc2.sh
+	set -eux
+	. /env.sh
+	mkdir -p /build-gcc-${TARGET_ARCH}
+	cd /build-gcc-${TARGET_ARCH}
 	make \
 		-j $(nproc) \
 		-C "${TARGET}/libgcc" \
@@ -170,27 +223,52 @@ RUN --network=none <<-EOF
 		install-strip-target-libgcc \
 		install-strip-target-libstdc++-v3
 EOF
-
-# Build and install linux headers
-WORKDIR /linux-${LINUX_VERSION}
 RUN --network=none <<-EOF
 	set -eux
-	make -j$(nproc) ARCH="${ARCH}" headers
-	find usr/include ! -name '*.h' -type f -delete
-	cp -af usr/include "${SYSROOT}/usr"
-	cp -Rv usr/include/* "${SYSROOT}/include/"
+	for arch in ${TARGET_LIST}; do
+		TARGET_ARCH=$arch /gcc2.sh
+	done
 EOF
-RUN rm -rf "${SYSROOT}/_tmp"
 
-WORKDIR /rootfs/${SYSROOT}
-RUN <<-EOF
+# Build and install linux headers
+COPY --chmod=755 <<-'EOF' /linux.sh
+	set -eux
+	. /env.sh
+	cp -r /linux-${LINUX_VERSION} /linux-build-${TARGET_ARCH}
+	cd /linux-build-${TARGET_ARCH}
+	set -eux
+	make -j$(nproc) ARCH="$(echo ${TARGET_ARCH} | sed 's/aarch64/arm64/')" headers
+	find usr/include ! -name '*.h' -type f -delete
+	cp -Rv usr/include/* "${SYSROOT}/include/"
+	rm -rf "${SYSROOT}/_tmp"
+EOF
+RUN --network=none <<-EOF
+	set -eux
+	for arch in ${TARGET_LIST}; do
+		TARGET_ARCH=$arch /linux.sh
+	done
+EOF
+
+# Finalize installation, copy prefixed binaries to /usr/bin
+COPY --chmod=755 <<-'EOF' /install.sh
+	set -eux
+	. /env.sh
+	rm -rf "${SYSROOT}/_tmp"
+	mkdir -p /rootfs/${SYSROOT}
+	cd /rootfs/${SYSROOT}
 	mv ${SYSROOT}/* .
 	mkdir -p /rootfs/usr/bin
 	for bin_path in $(find bin -name ${TARGET}-*); do
 		bin_name=$(basename "$bin_path")
-		ln -s /opt/cross/bin/${bin_name} /rootfs/usr/bin/${bin_name}
+		ln -s ${SYSROOT}/bin/${bin_name} /rootfs/usr/bin/${bin_name}
+	done
+EOF
+RUN --network=none <<-EOF
+	set -eux
+	for arch in ${TARGET_LIST}; do
+		TARGET_ARCH=$arch /install.sh
 	done
 EOF
 
-FROM scratch AS package
+FROM stagex/bootstrap-stage1 AS package
 COPY --from=build /rootfs/ /

@@ -99,6 +99,8 @@ out/{stage}-{name}/index.json: {deps}
                     deps.append(dep.split("/")[1])
               if line.startswith("FROM stagex/"):
                 deps.append(line.split(" ")[1].split("/")[1].strip())
+              if line.startswith("FROM --platform=linux/386 stagex/"):
+                deps.append(line.split(" ")[2].split("/")[1].strip())
 
           package_info = CommonUtils.parse_package_toml_no_deps(package_data)
           package_info.deps = deps
