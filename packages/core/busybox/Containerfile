@@ -1,8 +1,7 @@
 FROM scratch AS build
 ARG VERSION
 COPY --from=stagex/bootstrap-stage3 . /
-COPY --from=fetch . .
-RUN tar -xjf busybox-${VERSION}.tar.bz2
+ADD fetch/busybox-${VERSION}.tar.bz2 .
 WORKDIR /busybox-${VERSION}
 ENV KCONFIG_NOTIMESTAMP=1
 RUN --network=none <<-EOF

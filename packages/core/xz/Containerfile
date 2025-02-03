@@ -12,8 +12,7 @@ COPY --from=stagex/core-automake . /
 COPY --from=stagex/core-libtool . /
 COPY --from=stagex/core-gettext . /
 COPY --from=stagex/core-po4a . /
-COPY --from=fetch . .
-RUN tar -xf xz-${VERSION}.tar.gz
+ADD fetch/xz-${VERSION}.tar.gz .
 WORKDIR /xz-${VERSION}
 RUN --network=none <<-EOF
 	set -ex

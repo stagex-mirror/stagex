@@ -9,8 +9,7 @@ COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-openssl . /
-COPY --from=fetch . .
-RUN tar -xf cmake-${VERSION}.tar.gz
+ADD fetch/cmake-${VERSION}.tar.gz .
 WORKDIR /cmake-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

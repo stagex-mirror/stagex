@@ -7,8 +7,8 @@ COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-perl . /
-COPY --from=fetch . .
-RUN tar -xf ca-certificates-${BUILD_VERSION}.tar.gz
+ADD fetch/ca-certificates-${BUILD_VERSION}.tar.gz .
+ADD fetch/certdata.txt .
 WORKDIR /ca-certificates-${BUILD_VERSION}
 ADD *.patch .
 RUN --network=none <<-EOF

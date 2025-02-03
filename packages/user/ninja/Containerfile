@@ -1,14 +1,8 @@
-FROM scratch AS build
+FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-make . /
 COPY --from=stagex/core-python . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-openssl . /
-COPY --from=fetch . .
-RUN tar -xf ninja-${VERSION}.tar.gz
+ADD fetch/ninja-${VERSION}.tar.gz .
 WORKDIR /ninja-${VERSION}
 ADD *.patch .
 RUN --network=none <<-EOF

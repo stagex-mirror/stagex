@@ -3,8 +3,7 @@ ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
-COPY --from=fetch . .
-RUN tar -xf autoconf-archive-${VERSION}.tar.xz
+ADD fetch/autoconf-archive-${VERSION}.tar.xz .
 WORKDIR /autoconf-archive-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

@@ -1,14 +1,7 @@
-FROM scratch AS build
+FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-linux-headers . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-gcc . /
 COPY --from=stagex/user-gperf . /
-COPY --from=fetch . .
-RUN tar -xf eudev-${VERSION}.tar.gz
+ADD fetch/eudev-${VERSION}.tar.gz .
 WORKDIR /eudev-${VERSION}
 RUN --network=none <<EOF
 	set -eux

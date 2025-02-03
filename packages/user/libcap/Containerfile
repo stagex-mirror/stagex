@@ -1,15 +1,7 @@
-FROM scratch AS build
-ARG VERSION
+FROM stagex/pallet-gcc-gnu-busybox AS build
 COPY --from=stagex/core-bash . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-linux-headers . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-perl . /
-COPY --from=stagex/core-gcc . /
-COPY --from=fetch . .
-RUN tar -xzf libcap-${VERSION}.tar.gz
+ARG VERSION
+ADD fetch/libcap-${VERSION}.tar.gz .
 WORKDIR /libcap-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

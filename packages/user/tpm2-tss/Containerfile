@@ -1,24 +1,11 @@
-FROM scratch AS build
+FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-linux-headers . /
-COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-openssl . /
-COPY --from=stagex/core-autoconf . /
-COPY --from=stagex/core-automake . /
-COPY --from=stagex/core-libtool . /
-COPY --from=stagex/core-pkgconf . /
-COPY --from=stagex/core-m4 . /
 COPY --from=stagex/core-curl . /
-COPY --from=stagex/user-util-linux . /
 COPY --from=stagex/user-json-c . /
 COPY --from=stagex/user-autoconf-archive . /
-COPY --from=fetch . .
-RUN tar -xf tpm2-tss-${VERSION}.tar.gz
+COPY --from=stagex/user-util-linux . /
+ADD fetch/tpm2-tss-${VERSION}.tar.gz .
 WORKDIR /tpm2-tss-${VERSION}
 RUN --network=none <<-EOF
     set -eux

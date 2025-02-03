@@ -6,8 +6,7 @@ COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/user-skalibs . /
-COPY --from=fetch . .
-RUN tar -xf utmps-${VERSION}.tar.gz
+ADD fetch/utmps-${VERSION}.tar.gz .
 WORKDIR /utmps-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

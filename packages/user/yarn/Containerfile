@@ -2,8 +2,7 @@ FROM scratch AS build
 ARG VERSION
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-busybox . /
-COPY --from=fetch . .
-RUN tar -xf yarn-${VERSION}.tar.gz
+ADD fetch/yarn-${VERSION}.tar.gz .
 WORKDIR /yarn-v${VERSION}
 ENV DESTDIR=/rootfs
 RUN --network=none <<-EOF

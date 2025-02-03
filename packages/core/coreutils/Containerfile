@@ -6,8 +6,7 @@ COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-gcc . /
-COPY --from=fetch . .
-RUN tar -xf coreutils-${VERSION}.tar.xz
+ADD fetch/coreutils-${VERSION}.tar.xz .
 WORKDIR /coreutils-${VERSION}
 ENV FORCE_UNSAFE_CONFIGURE=1
 RUN --network=none <<-EOF

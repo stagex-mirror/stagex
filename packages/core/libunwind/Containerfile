@@ -8,8 +8,7 @@ COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-autoconf . /
 COPY --from=stagex/core-automake . /
 COPY --from=stagex/core-libtool . /
-COPY --from=fetch . .
-RUN tar -xf libunwind-${VERSION}.tar.gz
+ADD fetch/libunwind-${VERSION}.tar.gz .
 WORKDIR /libunwind-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

@@ -10,8 +10,7 @@ COPY --from=stagex/core-pkgconf . /
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-libev . /
 COPY --from=stagex/core-c-ares . /
-COPY --from=fetch . .
-RUN --network=none tar -xf libnghttp2-${VERSION}.tar.gz
+ADD fetch/libnghttp2-${VERSION}.tar.gz .
 WORKDIR /nghttp2-${VERSION}
 RUN --network=none <<EOF
 	set -eux

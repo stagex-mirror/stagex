@@ -1,17 +1,11 @@
-FROM scratch AS build
+FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-make . /
 COPY --from=stagex/user-npth . /
 COPY --from=stagex/user-libksba . /
 COPY --from=stagex/user-libgpg-error . /
 COPY --from=stagex/user-libassuan . /
 COPY --from=stagex/user-libgcrypt . /
-COPY --from=fetch . .
-RUN tar -xf gpg-${VERSION}.tar.bz2
+ADD fetch/gpg-${VERSION}.tar.bz2 .
 WORKDIR /gnupg-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

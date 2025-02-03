@@ -3,8 +3,7 @@ ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-go . /
 COPY --from=stagex/core-ca-certificates . /
-COPY --from=fetch . .
-RUN tar -xvf buf-${VERSION}.tar.gz
+ADD fetch/buf-${VERSION}.tar.gz .
 WORKDIR /buf-${VERSION}
 ENV PWD=/home/user/buf-${VERSION}
 ENV GOPATH=${PWD}/cache/go

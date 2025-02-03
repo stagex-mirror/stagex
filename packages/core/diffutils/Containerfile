@@ -5,8 +5,7 @@ COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-gcc . /
-COPY --from=fetch . .
-RUN tar -xf diffutils-${VERSION}.tar.xz
+ADD fetch/diffutils-${VERSION}.tar.xz .
 WORKDIR /diffutils-${VERSION}
 RUN --network=none <<-EOF
 	set -ex

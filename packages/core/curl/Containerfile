@@ -8,8 +8,7 @@ COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-ca-certificates . /
-COPY --from=fetch . .
-RUN tar -xf curl-${VERSION}.tar.xz
+ADD fetch/curl-${VERSION}.tar.xz .
 WORKDIR /curl-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF

@@ -8,8 +8,7 @@ COPY --from=stagex/core-make . /
 COPY --from=stagex/core-samurai . /
 COPY --from=stagex/core-cmake . /
 COPY --from=stagex/core-openssl . /
-COPY --from=fetch . .
-RUN tar -xf brotli-${VERSION}.tar.gz
+ADD fetch/brotli-${VERSION}.tar.gz .
 WORKDIR /brotli-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

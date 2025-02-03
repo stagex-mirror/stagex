@@ -11,8 +11,7 @@ COPY --from=stagex/core-python . /
 COPY --from=stagex/core-py-setuptools . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-openssl . /
-COPY --from=fetch . .
-RUN tar -xf llvm-${VERSION}.tar.xz
+ADD fetch/llvm-${VERSION}.tar.xz .
 WORKDIR /llvm-project-${VERSION}.src
 ADD *.patch .
 RUN --network=none <<-EOF

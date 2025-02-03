@@ -18,8 +18,7 @@ COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-m4 . /
 COPY --from=stagex/core-autoconf . /
 COPY --from=stagex/core-pkgconf . /
-COPY --from=fetch . .
-RUN tar -xf po4a-${VERSION}.tar.gz
+ADD fetch/po4a-${VERSION}.tar.gz .
 WORKDIR /po4a-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF

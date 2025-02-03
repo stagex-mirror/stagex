@@ -7,8 +7,7 @@ COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-gcc . /
-COPY --from=fetch . .
-RUN tar -xf grep-${VERSION}.tar.xz
+ADD fetch/grep-${VERSION}.tar.xz .
 WORKDIR /grep-${VERSION}
 RUN --network=none <<-EOF
 	set -ex

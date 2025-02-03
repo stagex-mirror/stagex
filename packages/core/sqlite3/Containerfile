@@ -6,8 +6,7 @@ COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-tcl . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
-COPY --from=fetch . .
-RUN tar -xf sqlite3-${VERSION}.tar.gz
+ADD fetch/sqlite3-${VERSION}.tar.gz .
 WORKDIR /sqlite-vesion-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

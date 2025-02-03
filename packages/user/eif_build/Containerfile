@@ -1,19 +1,6 @@
-FROM scratch AS build
+FROM stagex/pallet-rust AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-libunwind . /
-COPY --from=stagex/core-zlib . /
-COPY --from=stagex/core-openssl . /
-COPY --from=stagex/core-ca-certificates . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-llvm . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-pkgconf . /
-COPY --from=stagex/core-git . /
-COPY --from=stagex/core-rust . /
-COPY --from=fetch . .
-RUN tar -xzf eif_build-${VERSION}.tgz
+ADD fetch/eif_build-${VERSION}.tgz .
 RUN mv tkhq-eif_build-* eif_build
 WORKDIR /eif_build
 RUN cargo fetch --locked

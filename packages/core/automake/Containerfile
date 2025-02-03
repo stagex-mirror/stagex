@@ -8,8 +8,7 @@ COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-m4 . /
 COPY --from=stagex/core-autoconf . /
-COPY --from=fetch . .
-RUN tar -xf automake-${VERSION}.tar.xz
+ADD fetch/automake-${VERSION}.tar.xz .
 WORKDIR /automake-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF

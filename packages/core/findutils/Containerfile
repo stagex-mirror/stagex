@@ -5,8 +5,7 @@ COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-gcc . /
-COPY --from=fetch . .
-RUN tar -xf findutils-${VERSION}.tar.xz
+ADD fetch/findutils-${VERSION}.tar.xz .
 WORKDIR /findutils-${VERSION}
 RUN --network=none <<-EOF
 	set -ex

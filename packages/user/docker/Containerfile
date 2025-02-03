@@ -1,67 +1,90 @@
-FROM scratch AS build
-ARG VERSION
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-bash . /
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-go . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-linux-headers . /
-COPY --from=stagex/core-pkgconf . /
-COPY --from=stagex/core-ca-certificates . /
+FROM stagex/pallet-cgo AS base
 COPY --from=stagex/user-libseccomp . /
-COPY --from=fetch . .
-RUN tar -xf docker-${VERSION}.tar.gz
-RUN tar -xf docker-cli-${VERSION}.tar.gz
-ENV GO11MODULE=off
+ARG VERSION
 ENV CGO_ENABLED=1
-ENV AUTO_GOPATH=1
-ENV GITCOMMIT=${VERSION}
-ENV DOCKER_GITCOMMIT=${VERSION}
-ENV DOCKER_BUILDTAGS=seccomp
-ENV DISABLE_WARN_OUTSIDE_CONTAINER=1
-ENV GOPROXY=https://proxy.golang.org,direct
-ENV GOSUMDB=sum.golang.org
-ENV GOPATH=/cache/go
-ENV GOBIN=${GOPATH}/bin
-ENV PATH=${GOBIN}:${PATH}
-ENV SOURCE_DATE_EPOCH=1
-ENV LDFLAGS="-w -s -buildid="
-ENV GO_LDFLAGS=${LDFLAGS}
+ENV GO11MODULE=on
+
+FROM base as build-dockerd
+ADD fetch/docker-${VERSION}.tar.gz .
 WORKDIR /moby-${VERSION}
-RUN <<-EOF
-	set -eux
-	sed -i '98iLDFLAGS=${GO_LDFLAGS}' hack/make.sh
-	hack/make.sh dynbinary
+COPY <<-EOF go.mod
+	module github.com/docker/docker
+	go 1.22.0
 EOF
+RUN <<-EOF
+	go mod tidy -modfile=vendor.mod
+	go mod vendor -modfile=vendor.mod
+EOF
+RUN --network=none <<-EOF
+	set -eux
+	go build \
+		-mod=vendor \
+		-modfile=vendor.mod \
+		-o /build/dockerd \
+		-tags seccomp \
+		-gcflags='' \
+		-ldflags " \
+			${GO_LDFLAGS} \
+			-X \"github.com/docker/docker/dockerversion.Version=${VERSION}\" \
+			-X \"github.com/docker/docker/dockerversion.GitCommit=${VERSION}\" \
+			-X \"github.com/docker/docker/dockerversion.BuildTime=\" \
+		" \
+		github.com/docker/docker/cmd/dockerd
+	go build \
+		-mod=vendor \
+		-modfile=vendor.mod \
+		-o /build/docker-proxy \
+		-tags seccomp \
+		-gcflags='' \
+		-ldflags " \
+			${GO_LDFLAGS} \
+			-X \"github.com/docker/docker/dockerversion.Version=${VERSION}\" \
+			-X \"github.com/docker/docker/dockerversion.GitCommit=${VERSION}\" \
+			-X \"github.com/docker/docker/dockerversion.BuildTime=\" \
+		" \
+		github.com/docker/docker/cmd/docker-proxy
+
+EOF
+
+FROM base as build-docker
+ADD fetch/docker-cli-${VERSION}.tar.gz .
 WORKDIR /cli-${VERSION}
-RUN <<-EOF
-	set -eux
-	mkdir -p "$GOPATH"/src/github.com/docker/
-	ln -sf /cli-${VERSION} "$GOPATH"/src/github.com/docker/cli
-	make -j "$(nproc)" VERSION=${VERSION} dynbinary
-	make manpages
+ENV GO_LINKMODE=dynamic
+COPY <<-EOF go.mod
+	module github.com/docker/cli
+	go 1.22.0
 EOF
+RUN <<-EOF
+	go mod tidy -modfile=vendor.mod
+	go mod vendor -modfile=vendor.mod
+EOF
+RUN --network=none <<-EOF
+	set -eux
+	go build \
+		-mod=vendor \
+		-modfile=vendor.mod \
+		-o /build/docker \
+		-tags ' pkcs11' \
+		-ldflags " \
+			${GO_LDFLAGS} \
+			-buildmode=pie \
+			-X \"github.com/docker/cli/cli/version.Version=${VERSION}\" \
+			-X \"github.com/docker/cli/cli/version.GitCommit=${VERSION}\" \
+			-X \"github.com/docker/cli/cli/version.BuildTime=\" \
+		" \
+		github.com/docker/cli/cmd/docker
+EOF
+
+FROM base AS install
+COPY --from=build-docker /build/ /build/
+COPY --from=build-dockerd /build/ /build/
 WORKDIR /
 RUN <<-EOF
 	set -eux
-	install -Dm644 cli-${VERSION}/contrib/completion/fish/docker.fish \
-		/rootfs/usr/share/fish/vendor_completions.d/docker.fish
-	install -Dm644 cli-${VERSION}/contrib/completion/zsh/_docker \
-		/rootfs/usr/share/zsh/site-functions/_docker
-	install -Dm644 cli-${VERSION}/contrib/completion/bash/docker \
-		/rootfs/usr/share/bash-completion/completions/docker
-	install -Dm644 cli-${VERSION}/man/man1/* \
-		-t /rootfs/usr/share/man/man1/
-	# 'build/docker' is a symlink to 'docker-linux-$arch' e.g. 'docker-linux-amd64'
-	install -Dm755 cli-${VERSION}/build/docker \
-		/rootfs/usr/bin/docker
-	install -Dm755 -t /rootfs/usr/bin \
-		moby-${VERSION}/bundles/dynbinary-daemon/dockerd \
-		moby-${VERSION}/bundles/dynbinary-daemon/docker-proxy
+	install -Dm755 /build/docker /rootfs/usr/bin/docker
+	install -Dm755 -t /rootfs/usr/bin /build/dockerd /build/docker-proxy
 	# symlink externally provided tini-static binary
 	ln -sf /sbin/tini-static /rootfs/usr/bin/docker-init
 EOF
 FROM stagex/core-filesystem AS package
-COPY --from=build /rootfs/ /
+COPY --from=install /rootfs/ /

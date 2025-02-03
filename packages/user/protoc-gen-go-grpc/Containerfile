@@ -3,8 +3,7 @@ ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-go . /
 COPY --from=stagex/core-ca-certificates . /
-COPY --from=fetch . .
-RUN tar -xvf protoc-gen-go-grpc-${VERSION}.tar.gz
+ADD fetch/protoc-gen-go-grpc-${VERSION}.tar.gz .
 WORKDIR /grpc-go-${VERSION}/cmd/protoc-gen-go-grpc
 ENV GOPATH=/cache/go
 ENV GOCACHE=/cache/

@@ -7,8 +7,7 @@ COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-perl . /
-COPY --from=fetch . .
-RUN tar -xf perl-module-build-${VERSION}.tar.gz
+ADD fetch/perl-module-build-${VERSION}.tar.gz .
 WORKDIR /Module-Build-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

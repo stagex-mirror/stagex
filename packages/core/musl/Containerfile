@@ -1,8 +1,7 @@
 FROM scratch AS build
 ARG VERSION
 COPY --from=stagex/bootstrap-stage3 . /
-COPY --from=fetch . .
-RUN tar -xzf musl-${VERSION}.tar.gz
+ADD fetch/musl-${VERSION}.tar.gz .
 WORKDIR /musl-${VERSION}
 ADD *.patch .
 RUN --network=none <<-EOF

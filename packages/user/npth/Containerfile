@@ -1,12 +1,6 @@
-FROM scratch AS build
+FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-make . /
-COPY --from=fetch . .
-RUN tar -xvf npth-${VERSION}.tar.bz2
+ADD fetch/npth-${VERSION}.tar.bz2 .
 WORKDIR /npth-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

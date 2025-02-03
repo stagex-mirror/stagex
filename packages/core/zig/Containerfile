@@ -13,8 +13,7 @@ COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-samurai . /
-COPY --from=fetch . .
-RUN tar -xf zig-${VERSION}.tar.xz
+ADD fetch/zig-${VERSION}.tar.xz .
 WORKDIR /zig-${VERSION}
 ADD *.patch .
 RUN --network=none <<-EOF

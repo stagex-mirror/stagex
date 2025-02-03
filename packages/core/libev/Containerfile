@@ -10,8 +10,7 @@ COPY --from=stagex/core-autoconf . /
 COPY --from=stagex/core-automake . /
 COPY --from=stagex/core-libtool . /
 COPY --from=stagex/core-m4 . /
-COPY --from=fetch . .
-RUN --network=none tar -xf libev-${VERSION}.tar.gz
+ADD fetch/libev-${VERSION}.tar.gz .
 WORKDIR /libev-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<EOF

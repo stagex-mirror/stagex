@@ -9,8 +9,7 @@ COPY --from=stagex/core-make . /
 COPY --from=stagex/core-pkgconf . /
 COPY --from=stagex/core-m4 . /
 COPY --from=stagex/core-gawk . /
-COPY --from=fetch . .
-RUN tar -xf util-macros-${VERSION}.tar.xz
+ADD fetch/util-macros-${VERSION}.tar.xz .
 WORKDIR /util-macros-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

@@ -5,8 +5,7 @@ COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-python . /
 COPY --from=stagex/core-py-setuptools . /
 COPY --from=stagex/core-zlib . /
-COPY --from=fetch . .
-RUN tar -xzf py-flit-${VERSION}.tar.gz
+ADD fetch/py-flit-${VERSION}.tar.gz .
 WORKDIR /flit-${VERSION}/flit_core
 RUN --network=none <<-EOF
 	set -eux

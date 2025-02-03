@@ -1,21 +1,8 @@
-FROM scratch AS build
+FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-m4 . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-perl . /
-COPY --from=stagex/core-flex . /
-COPY --from=stagex/core-pkgconf . /
-COPY --from=stagex/core-autoconf . /
-COPY --from=stagex/core-automake . /
-COPY --from=stagex/core-libtool . /
-COPY --from=stagex/user-autoconf-archive . /
 COPY --from=stagex/user-libusb . /
-COPY --from=fetch . .
-RUN tar -xvf pcsc-lite-${VERSION}.tar.xz
+COPY --from=stagex/user-autoconf-archive . /
+ADD fetch/pcsc-lite-${VERSION}.tar.xz .
 WORKDIR /pcsc-lite-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

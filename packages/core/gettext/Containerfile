@@ -6,8 +6,7 @@ COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-libxml2 . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
-COPY --from=fetch . .
-RUN tar -xf gettext-${VERSION}.tar.xz
+ADD fetch/gettext-${VERSION}.tar.xz .
 WORKDIR /gettext-${VERSION}
 RUN <<-EOF
 	set -eux

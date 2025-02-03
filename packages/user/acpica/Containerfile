@@ -1,15 +1,6 @@
-FROM scratch AS build
+FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-bison . /
-COPY --from=stagex/core-flex . /
-COPY --from=stagex/core-m4 . /
-COPY --from=fetch . .
-RUN tar -xf acpica-${VERSION}.tar.gz
+ADD fetch/acpica-${VERSION}.tar.gz .
 WORKDIR /acpica-unix-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 ENV LDFLAGS="-Wl,-z,pack-relative-relocs"

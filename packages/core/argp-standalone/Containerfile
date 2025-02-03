@@ -9,8 +9,7 @@ COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-autoconf . /
 COPY --from=stagex/core-automake . /
 COPY --from=stagex/core-m4 . /
-COPY --from=fetch . .
-RUN tar -xf argp-standalone-${VERSION}.tar.gz
+ADd fetch/argp-standalone-${VERSION}.tar.gz .
 WORKDIR /argp-standalone-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

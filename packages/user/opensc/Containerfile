@@ -1,26 +1,11 @@
-FROM scratch AS build
+FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-linux-headers . /
-COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-ncurses . /
 COPY --from=stagex/core-readline . /
-COPY --from=stagex/core-autoconf . /
-COPY --from=stagex/core-gettext . /
-COPY --from=stagex/core-automake . /
-COPY --from=stagex/core-libtool . /
-COPY --from=stagex/core-pkgconf . /
-COPY --from=stagex/core-m4 . /
-COPY --from=stagex/core-zlib . /
 COPY --from=stagex/user-util-linux . /
 COPY --from=stagex/user-pcsc-lite . /
-COPY --from=fetch . .
-RUN tar -xf opensc-${VERSION}.tar.gz
+ADD fetch/opensc-${VERSION}.tar.gz .
 WORKDIR /OpenSC-${VERSION}
 ENV CFLAGS="-U_FORTIFY_SOURCE -Wno-error"
 RUN --network=none <<-EOF

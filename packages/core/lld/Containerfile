@@ -13,8 +13,7 @@ COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-clang . /
 COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-zlib . /
-COPY --from=fetch . .
-RUN tar -xf lld-${VERSION}.tar.xz
+ADD fetch/lld-${VERSION}.tar.xz .
 WORKDIR /llvm-project-${VERSION}.src
 RUN <<-EOF
 	set -eux

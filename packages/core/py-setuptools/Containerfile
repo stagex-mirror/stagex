@@ -4,8 +4,7 @@ COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-python . /
 COPY --from=stagex/core-zlib . /
-COPY --from=fetch . .
-RUN tar -xzf py-setuptools-${VERSION}.tar.gz
+ADD fetch/py-setuptools-${VERSION}.tar.gz .
 WORKDIR /setuptools-${VERSION}
 RUN --network=none <<-EOF
 	python setup.py build

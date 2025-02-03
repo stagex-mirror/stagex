@@ -5,8 +5,7 @@ COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-python . /
 COPY --from=stagex/core-py-setuptools . /
 COPY --from=stagex/core-zlib . /
-COPY --from=fetch . .
-RUN tar -xf meson-${VERSION}.tar.gz
+ADD fetch/meson-${VERSION}.tar.gz .
 WORKDIR /meson-${VERSION}
 RUN <<-EOF
 	set -eux

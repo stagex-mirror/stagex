@@ -3,8 +3,7 @@ ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-go . /
 COPY --from=stagex/core-ca-certificates . /
-COPY --from=fetch . .
-RUN tar -xvf kubeconform-${VERSION}.tar.gz
+ADD fetch/kubeconform-${VERSION}.tar.gz .
 WORKDIR /kubeconform-${VERSION}
 ENV GOPATH=/cache/go
 ENV GOCACHE=/cache/
