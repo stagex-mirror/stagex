@@ -1,6 +1,7 @@
 [package]
 name = "stage0"
 description = "TODO"
+platforms = ["linux/386"]
 
 [sources.stage0_posix_x86]
 hash = "e5e75dda7de2cab00508b789a238054bdfa65ccad6ebe21286dcf94a7896788e"
