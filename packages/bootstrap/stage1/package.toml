@@ -2,6 +2,7 @@
 name = "stage1"
 version = "fc6eeb6bd75ea0d0025a79ea9fe45614bd60ba14"
 description = "TODO"
+platforms = ["linux/i386"]
 
 [sources.live_bootstrap]
 hash = "b526a4b6caac16d63ccf8d861ff69b1e14a06bf5cc04e1e824562e3e10c8b6ac"

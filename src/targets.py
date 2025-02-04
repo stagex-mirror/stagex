@@ -32,7 +32,7 @@ out/{stage}-{name}/index.json: {deps}
 \t  $(EXTRA_ARGS) \\
 \t  $(NOCACHE_FLAG) \\
 \t  $(CHECK_FLAG) \\
-\t  --platform=$(PLATFORM) \\
+\t  --platform={platforms} \\
 \t  --progress=$(PROGRESS) \\
 \t  -f packages/{stage}/{origin}/Containerfile \\
 \t  packages/{stage}/{origin} \\
@@ -61,6 +61,7 @@ out/{stage}-{name}/index.json: {deps}
             **{
               "stage": stage,
               "name": name,
+              "platforms": ",".join(package.platforms),
               "origin": package.origin or package.name,
               "version": package.version or "latest",
               "deps": "".join(
