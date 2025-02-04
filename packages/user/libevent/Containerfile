@@ -1,14 +1,7 @@
-FROM scratch AS build
-ARG VERSION
-COPY --from=stagex/core-bash . /
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-make . /
+FROM stagex/pallet-gcc-gnu-busybox AS build
 COPY --from=stagex/core-openssl . /
-COPY --from=fetch . .
-RUN tar -xf libevent-${VERSION}.tar.gz
+ARG VERSION
+ADD fetch/libevent-${VERSION}.tar.gz .
 WORKDIR /libevent-${VERSION}-stable
 RUN --network=none <<-EOF
 	set -eux

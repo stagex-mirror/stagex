@@ -11,17 +11,20 @@ COPY --from=stagex/core-libtool . /
 COPY --from=stagex/core-libxml2 . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-m4 . /
-COPY --from=fetch . .
+ADD fetch/docbook-xml-4.1.2.zip .
+ADD fetch/docbook-xml-4.2.zip .
+ADD fetch/docbook-xml-4.3.zip .
+ADD fetch/docbook-xml-4.4.zip .
+ADD fetch/docbook-xml-4.5.zip .
 RUN --network=none <<-EOF
 	set -eux
-	mkdir -p out
 	for version in 4.1.2 4.2 4.3 4.4 ${VERSION}; do
-		filename=docbook-xml-${version}.zip;
-		mkdir -p docbook-xml-${version}
-		cd docbook-xml-${version}
-		unzip ../${filename}
+		name=docbook-xml-${version}
+		mkdir -p ${name}
+		cd ${name}
+		unzip ../${name}.zip
 		mkdir -p "../out/usr/share/xml/docbook/xml-dtd-${version}"
-		cp -af docbook.cat *.dtd ent/ *.mod ../out/usr/share/xml/docbook/xml-dtd-${version}/
+		cp -af docbook.cat *.dtd ent/ *.mod "../out/usr/share/xml/docbook/xml-dtd-${version}/"
 		cd ..
 	done
 	chmod 755 out/usr/share/xml/docbook/xml-dtd-*/ent

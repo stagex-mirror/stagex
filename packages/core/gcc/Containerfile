@@ -1,13 +1,22 @@
 FROM scratch AS build
 ARG VERSION
+ARG GMP_VERSION
+ARG MPFR_VERSION
+ARG MPC_VERSION
+ARG ISL_VERSION
 COPY --from=stagex/bootstrap-stage3 . /
-COPY --from=fetch . .
-RUN tar -xf gcc-${VERSION}.tar.xz
+ADD fetch/gcc-${VERSION}.tar.xz .
+ADD fetch/gmp-${GMP_VERSION}.tar.bz2 .
+ADD fetch/mpfr-${MPFR_VERSION}.tar.bz2 .
+ADD fetch/mpc-${MPC_VERSION}.tar.gz .
+ADD fetch/isl-${ISL_VERSION}.tar.bz2 .
 WORKDIR /gcc-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
-	mv ../*.tar.* .
-	./contrib/download_prerequisites
+	mv ../gmp-${GMP_VERSION} gmp
+	mv ../mpfr-${MPFR_VERSION} mpfr
+	mv ../mpc-${MPC_VERSION} mpc
+	mv ../isl-${ISL_VERSION} isl
 	./configure \
 		--target=x86_64-linux-musl \
 		--build=x86_64-linux-musl \

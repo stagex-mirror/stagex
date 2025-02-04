@@ -16,8 +16,7 @@ COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-samurai . /
 COPY --from=stagex/core-libxml2 . /
 COPY --from=stagex/core-samurai . /
-COPY --from=fetch . .
-RUN tar -xf clang-${VERSION}.tar.xz
+ADD fetch/clang-${VERSION}.tar.xz .
 WORKDIR /llvm-project-${VERSION}.src
 RUN --network=none <<-EOF
 	set -eux

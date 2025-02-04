@@ -1,5 +1,9 @@
 FROM scratch AS build
 ARG GCC_VERSION
+ARG GMP_VERSION
+ARG MPFR_VERSION
+ARG MPC_VERSION
+ARG ISL_VERSION
 ARG BINUTILS_VERSION
 ARG GLIBC_VERSION
 ENV ARCH=x86_64
@@ -25,15 +29,20 @@ COPY --from=stagex/core-m4 . /
 COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-python . /
 COPY --from=stagex/core-grep . /
-COPY --from=fetch . .
+ADD fetch/binutils-${BINUTILS_VERSION}.tar.xz .
+ADD fetch/gcc-${GCC_VERSION}.tar.xz .
+ADD fetch/glibc-${GLIBC_VERSION}.tar.gz .
+ADD fetch/gmp-${GMP_VERSION}.tar.bz2 .
+ADD fetch/mpfr-${MPFR_VERSION}.tar.bz2 .
+ADD fetch/mpc-${MPC_VERSION}.tar.gz .
+ADD fetch/isl-${ISL_VERSION}.tar.bz2 .
+WORKDIR /gcc-${GCC_VERSION}
 RUN --network=none <<-EOF
 	set -eux
-	tar -kxf binutils-${BINUTILS_VERSION}.tar.xz
-	tar -kxf gcc-${GCC_VERSION}.tar.xz
-	tar -kxzf glibc-${GLIBC_VERSION}.tar.gz
-	cd gcc-${GCC_VERSION}
-	mv ../*.tar.* .; \
-	./contrib/download_prerequisites
+	mv ../gmp-${GMP_VERSION} gmp
+	mv ../mpfr-${MPFR_VERSION} mpfr
+	mv ../mpc-${MPC_VERSION} mpc
+	mv ../isl-${ISL_VERSION} isl
 EOF
 # HACK: libgcc.a embeds .o files with timestamps ignoring SOURCE_DATE_EPOCH
 COPY --from=stagex/core-libfaketime . /

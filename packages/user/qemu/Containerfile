@@ -62,8 +62,7 @@ COPY --from=stagex/user-glib . /
 COPY --from=stagex/user-lzo . /
 COPY --from=stagex/user-dtc . /
 COPY --from=stagex/user-numactl . /
-COPY --from=fetch . .
-RUN tar -xf qemu-${VERSION}.tar.xz
+ADD fetch/qemu-${VERSION}.tar.xz .
 WORKDIR /qemu-${VERSION}
 ADD *.patch .
 ENV SOURCE_DATE_EPOCH=1

@@ -1,24 +1,12 @@
-FROM scratch AS build
+FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-perl . /
-COPY --from=stagex/core-bash . /
-COPY --from=stagex/core-m4 . /
-COPY --from=stagex/core-autoconf . /
-COPY --from=stagex/core-automake . /
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-libtool . /
-COPY --from=stagex/core-libedit . /
 COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-pcre2 . /
 COPY --from=stagex/user-unixodbc . /
 COPY --from=stagex/user-libevent . /
 COPY --from=stagex/user-argon2 . /
 COPY --from=stagex/user-groff . /
-COPY --from=fetch . .
-RUN tar -xf openldap-${VERSION}.tgz
+ADD fetch/openldap-${VERSION}.tgz .
 WORKDIR /openldap-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF

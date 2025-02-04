@@ -6,8 +6,7 @@ COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-gcc . /
-COPY --from=fetch . .
-RUN tar -xf strace-${VERSION}.tar.xz
+ADD fetch/strace-${VERSION}.tar.xz .
 WORKDIR /strace-${VERSION}
 RUN --network=none <<-EOF
 	set -ex

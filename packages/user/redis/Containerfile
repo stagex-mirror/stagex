@@ -8,8 +8,7 @@ COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-pkgconf . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-openssl . /
-COPY --from=fetch . .
-RUN tar -xf redis-${VERSION}.tar.gz
+ADD fetch/redis-${VERSION}.tar.gz .
 WORKDIR /redis-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF

@@ -1,17 +1,7 @@
-FROM scratch AS build
+FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-linux-headers . /
-COPY --from=stagex/core-m4 . /
-COPY --from=stagex/core-bison . /
-COPY --from=stagex/core-flex . /
 COPY --from=stagex/user-elfutils . /
-COPY --from=fetch . .
-RUN tar -xvf iproute2-${VERSION}.tar.xz
+ADD fetch/iproute2-${VERSION}.tar.xz .
 WORKDIR /iproute2-${VERSION}
 RUN --network=none <<-EOF
 	make -j "$(nproc)" V=1

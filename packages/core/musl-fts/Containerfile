@@ -11,8 +11,7 @@ COPY --from=stagex/core-automake . /
 COPY --from=stagex/core-libtool . /
 COPY --from=stagex/core-pkgconf . /
 COPY --from=stagex/core-m4 . /
-COPY --from=fetch . .
-RUN tar -xzf musl-fts-${VERSION}.tar.gz
+ADD fetch/musl-fts-${VERSION}.tar.gz .
 WORKDIR /musl-fts-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

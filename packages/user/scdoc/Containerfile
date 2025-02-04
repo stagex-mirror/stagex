@@ -5,8 +5,7 @@ COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-make . /
-COPY --from=fetch . .
-RUN tar -xf scdoc-${VERSION}.tar.gz
+ADD fetch/scdoc-${VERSION}.tar.gz .
 WORKDIR /scdoc-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF

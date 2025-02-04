@@ -1,18 +1,9 @@
-FROM scratch AS build
+FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-libtool . /
-COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/core-readline . /
 COPY --from=stagex/core-openssl . /
-COPY --from=stagex/core-perl . /
 COPY --from=stagex/user-unixodbc . /
-COPY --from=fetch . .
-RUN tar -xf freetds-${VERSION}.tar.bz2
+ADD fetch/freetds-${VERSION}.tar.bz2 .
 WORKDIR /freetds-${VERSION}
 RUN --network=none <<-EOF
 	set -ex

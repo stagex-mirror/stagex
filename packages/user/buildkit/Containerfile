@@ -1,15 +1,6 @@
-FROM scratch AS build
+FROM stagex/pallet-go AS build
 ARG VERSION
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-bash . /
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-go . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-pkgconf . /
-COPY --from=fetch . .
-RUN tar -xf buildkit-${VERSION}.tar.gz
+ADD fetch/buildkit-${VERSION}.tar.gz .
 ENV GOPROXY=https://proxy.golang.org,direct
 ENV GOSUMDB=sum.golang.org
 ENV GOPATH=/cache/go

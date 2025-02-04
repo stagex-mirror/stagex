@@ -2,8 +2,7 @@ FROM scratch AS build
 ARG VERSION
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-busybox . /
-COPY --from=fetch . .
-RUN tar -xf npm-${VERSION}.tgz
+ADD fetch/npm-${VERSION}.tgz .
 WORKDIR /package
 ADD *.patch .
 ENV DESTDIR=/rootfs

@@ -28,8 +28,7 @@ COPY --from=stagex/user-json-glib . /
 COPY --from=stagex/user-expect . /
 COPY --from=stagex/user-socat . /
 COPY --from=stagex/user-libseccomp . /
-COPY --from=fetch . .
-RUN tar -xf swtpm-${VERSION}.tar.gz
+ADD fetch/swtpm-${VERSION}.tar.gz .
 WORKDIR /swtpm-${VERSION}
 RUN --network=none <<-EOF
 	set -ex

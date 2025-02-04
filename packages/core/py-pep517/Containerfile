@@ -5,8 +5,7 @@ COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-python . /
 COPY --from=stagex/core-py-setuptools . /
 COPY --from=stagex/core-zlib . /
-COPY --from=fetch . .
-RUN tar -xzf py-pep517-${VERSION}.tar.gz
+ADD fetch/py-pep517-${VERSION}.tar.gz .
 WORKDIR /pep517-${VERSION}
 RUN --network=none <<-EOF
 	set -eu

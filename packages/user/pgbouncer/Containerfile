@@ -1,15 +1,8 @@
-FROM scratch AS build
+FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-pkgconf . /
-COPY --from=stagex/user-libevent . /
-COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-openssl . /
-COPY --from=fetch . .
-RUN tar -xf pgbouncer-${VERSION}.tar.gz
+COPY --from=stagex/user-libevent . /
+ADD fetch/pgbouncer-${VERSION}.tar.gz .
 WORKDIR /pgbouncer-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

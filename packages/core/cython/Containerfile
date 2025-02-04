@@ -19,8 +19,7 @@ COPY --from=stagex/core-py-distro . /
 COPY --from=stagex/core-py-dateutil . /
 COPY --from=stagex/core-py-urllib3 . /
 COPY --from=stagex/core-py-cffi . /
-COPY --from=fetch . .
-RUN tar -xzf cython-${VERSION}.tar.gz
+ADD fetch/cython-${VERSION}.tar.gz .
 WORKDIR /cython-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

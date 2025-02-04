@@ -1,11 +1,7 @@
 FROM scratch AS build
 ARG VERSION
 COPY --from=stagex/bootstrap-stage3 . /
-COPY --from=fetch . .
-RUN <<-EOF
-	set -eux
-	tar -xzf go${VERSION}.src.tar.gz
-EOF
+ADD fetch/go${VERSION}.src.tar.gz .
 WORKDIR /go
 ENV GOROOT_BOOTSTRAP=/usr/lib/go
 RUN --network=none <<-EOF

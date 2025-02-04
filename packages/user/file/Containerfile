@@ -1,18 +1,7 @@
-FROM scratch AS build
+FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
 ARG VERSION_UNDER
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-perl . /
-COPY --from=stagex/core-autoconf . /
-COPY --from=stagex/core-automake . /
-COPY --from=stagex/core-libtool . /
-COPY --from=stagex/core-m4 . /
-COPY --from=stagex/core-gcc . /
-COPY --from=fetch . .
-RUN tar -xf file-${VERSION}.tar.gz
+ADD fetch/file-${VERSION}.tar.gz .
 WORKDIR /file-FILE${VERSION_UNDER}/
 RUN --network=none <<-EOF
 	set -eux

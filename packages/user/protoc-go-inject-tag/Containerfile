@@ -3,8 +3,7 @@ ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-go . /
 COPY --from=stagex/core-ca-certificates . /
-COPY --from=fetch . .
-RUN tar -xvf protoc-go-inject-tag-${VERSION}.tar.gz
+ADD fetch/protoc-go-inject-tag-${VERSION}.tar.gz .
 WORKDIR /protoc-go-inject-tag-${VERSION}
 ENV GOPATH=/cache/go
 ENV GOCACHE=/cache/

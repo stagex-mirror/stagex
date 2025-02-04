@@ -1,12 +1,6 @@
-FROM scratch AS build
+FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-gcc . /
-COPY --from=fetch . .
-RUN tar -xf jq-${VERSION}.tar.gz
+ADD fetch/jq-${VERSION}.tar.gz .
 WORKDIR /jq-${VERSION}
 RUN --network=none <<-EOF
 	set -ex

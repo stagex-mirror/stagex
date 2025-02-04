@@ -17,8 +17,7 @@ COPY --from=stagex/core-findutils . /
 COPY --from=stagex/core-bash . /
 COPY --from=stagex/core-bash . /
 COPY --from=stagex/core-bash /bin/bash /bin/sh
-COPY --from=fetch . .
-RUN tar -xf texinfo-${VERSION}.tar.xz
+ADD fetch/texinfo-${VERSION}.tar.xz .
 WORKDIR /texinfo-${VERSION}
 RUN --network=none <<-EOF
 	set -ex

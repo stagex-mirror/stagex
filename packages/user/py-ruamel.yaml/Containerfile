@@ -10,8 +10,7 @@ COPY --from=stagex/core-py-wheel . /
 COPY --from=stagex/core-py-installer . /
 COPY --from=stagex/core-py-gpep517 . /
 COPY --from=stagex/core-zlib . /
-COPY --from=fetch . .
-RUN tar -xzf py-ruamel-yaml-${VERSION}.tar.gz
+ADD fetch/py-ruamel-yaml-${VERSION}.tar.gz .
 WORKDIR /ruamel.yaml-${VERSION}
 RUN --network=none <<-EOF
 	set -eu

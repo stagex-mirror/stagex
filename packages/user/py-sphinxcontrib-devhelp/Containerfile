@@ -10,8 +10,7 @@ COPY --from=stagex/core-py-installer . /
 COPY --from=stagex/core-py-setuptools . /
 COPY --from=stagex/core-py-wheel . /
 COPY --from=stagex/core-zlib . /
-COPY --from=fetch . .
-RUN tar -xzf py-sphinxcontrib-devhelp-${VERSION}.tar.gz
+ADD fetch/py-sphinxcontrib-devhelp-${VERSION}.tar.gz .
 WORKDIR /sphinxcontrib-devhelp-${VERSION}
 RUN --network=none <<-EOF
 	set -eu

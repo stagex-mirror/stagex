@@ -6,8 +6,7 @@ COPY --from=stagex/core-python . /
 COPY --from=stagex/core-py-flit . /
 COPY --from=stagex/core-py-gpep517 . /
 COPY --from=stagex/core-zlib . /
-COPY --from=fetch . .
-RUN tar -xzf py-dateutil-${VERSION}.tar.gz
+ADD fetch/py-dateutil-${VERSION}.tar.gz .
 WORKDIR /python-dateutil-${VERSION}/src
 RUN --network=none <<-EOF
 	set -eu

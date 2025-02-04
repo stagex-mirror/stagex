@@ -16,8 +16,7 @@ COPY --from=stagex/core-py-packaging . /
 COPY --from=stagex/core-py-flit . /
 COPY --from=stagex/core-py-wheel . /
 COPY --from=stagex/core-py-gpep517 . /
-COPY --from=fetch . .
-RUN tar -xzf py-requests-${VERSION}.tar.gz
+ADD fetch/py-requests-${VERSION}.tar.gz .
 WORKDIR /requests-${VERSION}
 RUN --network=none <<-EOF
 	set -eu

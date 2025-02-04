@@ -1,8 +1,7 @@
 FROM scratch AS build
 ARG VERSION
 COPY --from=stagex/bootstrap-stage3 . /
-COPY --from=fetch . .
-RUN tar -xf linux-${VERSION}.tar.xz
+ADD fetch/linux-${VERSION}.tar.xz .
 WORKDIR /linux-${VERSION}
 RUN <<-EOF
 	set -eux

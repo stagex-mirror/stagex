@@ -17,13 +17,13 @@ COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-curl . /
 COPY --from=stagex/core-libunwind . /
 COPY --from=stagex/core-musl . /
-COPY --from=fetch . .
-
 FROM build-base AS build-mrustc
 COPY --from=stagex/core-llvm13 . /
-ADD gcc_version.patch .
-RUN tar -xzf mrustc-${MRUSTC_VERSION}.tar.gz
+ADD fetch/mrustc-${MRUSTC_VERSION}.tar.gz .
 RUN mv lrvick-mrustc-* mrustc
+WORKDIR mrustc
+ADD gcc_version.patch .
+COPY fetch/rustc-1.54.0-src.tar.gz .
 RUN <<-EOF
 	set -eux
 	export ARCH="$(uname -m)"
@@ -34,13 +34,7 @@ RUN <<-EOF
 	export RUSTC_INSTALL_BINDIR=bin
 	export OUTDIR_SUF=
 	export RUSTC_TARGET="${ARCH}-unknown-linux-musl"
-	cp rustc-1.54.0-src.tar.gz mrustc
-	cd mrustc
-	patch -p1 < ../gcc_version.patch
-	tar -xzf rustc-1.54.0-src.tar.gz
-	cd rustc-1.54.0-src
-	patch -p0 < ../rustc-1.54.0-src.patch
-	cd ..
+	patch -p1 < gcc_version.patch
 	make -j "$(nproc)"
 	make -j "$(nproc)" -f minicargo.mk LIBS
 	make -j "$(nproc)" test local_tests
@@ -64,7 +58,6 @@ COPY <<-'EOF' build.sh
 	BUILD_PREFIX=/rust-${BUILD_VERSION}/usr
 	#HACK because rust build seemindly ignores LD_LIBRARY_PATH
 	cp ${BUILD_PREFIX}/lib/rustlib/${ARCH}-unknown-linux-musl/lib/*.so /usr/lib
-	tar -xzf rustc-${VERSION}-src.tar.gz
 	cd rustc-${VERSION}-src
 	[[ -z "$PATCHES" ]] || for name in ${PATCHES//,/ }; do
 		patch -p1 < ../${name}.patch
@@ -113,36 +106,80 @@ EOF
 FROM build-script AS build-llvm13
 COPY --from=stagex/core-llvm13 . /
 COPY --from=build-mrustc /rust-1.54.0 /rust-1.54.0
+ADD fetch/rustc-1.55.0-src.tar.gz .
 RUN sh build.sh 1.55.0 1.54.0
+
+ADD fetch/rustc-1.56.0-src.tar.gz .
 RUN sh build.sh 1.56.0 1.55.0
+
+ADD fetch/rustc-1.57.0-src.tar.gz .
 RUN sh build.sh 1.57.0 1.56.0
+
+ADD fetch/rustc-1.58.0-src.tar.gz .
 RUN sh build.sh 1.58.0 1.57.0
+
+ADD fetch/rustc-1.59.0-src.tar.gz .
 RUN sh build.sh 1.59.0 1.58.0
+
+ADD fetch/rustc-1.60.0-src.tar.gz .
 RUN sh build.sh 1.60.0 1.59.0
+
+ADD fetch/rustc-1.61.0-src.tar.gz .
 RUN sh build.sh 1.61.0 1.60.0
+
+ADD fetch/rustc-1.62.0-src.tar.gz .
 RUN sh build.sh 1.62.0 1.61.0
+
+ADD fetch/rustc-1.63.0-src.tar.gz .
 RUN sh build.sh 1.63.0 1.62.0
+
+ADD fetch/rustc-1.64.0-src.tar.gz .
 RUN sh build.sh 1.64.0 1.63.0
+
+ADD fetch/rustc-1.65.0-src.tar.gz .
 RUN sh build.sh 1.65.0 1.64.0
+
+ADD fetch/rustc-1.66.0-src.tar.gz .
 RUN sh build.sh 1.66.0 1.65.0
+
+ADD fetch/rustc-1.67.0-src.tar.gz .
 RUN sh build.sh 1.67.0 1.66.0
+
+ADD fetch/rustc-1.68.0-src.tar.gz .
 RUN sh build.sh 1.68.0 1.67.0
 
 FROM build-script AS build-llvm16
 COPY --from=stagex/core-llvm16 . /
 COPY --from=stagex/core-llvm13 /usr/lib/libLLVM-13.so /usr/lib/
 COPY --from=build-llvm13 /rust-1.68.0 /rust-1.68.0
+ADD fetch/rustc-1.69.0-src.tar.gz .
 RUN sh build.sh 1.69.0 1.68.0
+
+ADD fetch/rustc-1.70.0-src.tar.gz .
 RUN sh build.sh 1.70.0 1.69.0
+
+ADD fetch/rustc-1.71.0-src.tar.gz .
 RUN sh build.sh 1.71.0 1.70.0
+
+ADD fetch/rustc-1.72.0-src.tar.gz .
 RUN sh build.sh 1.72.0 1.71.0
+
+ADD fetch/rustc-1.73.0-src.tar.gz .
 RUN sh build.sh 1.73.0 1.72.0
+
+ADD fetch/rustc-1.74.0-src.tar.gz .
 RUN sh build.sh 1.74.0 1.73.0
+
 # HACK: Required by Rust 1.75.0
 # https://github.com/rust-lang/rust/issues/117885
 RUN mkdir -p $HOME/.cargo/registry/src/index.crates.io-6f17d22bba15001f/
+ADD fetch/rustc-1.75.0-src.tar.gz .
 RUN sh build.sh 1.75.0 1.74.0
+
+ADD fetch/rustc-1.76.0-src.tar.gz .
 RUN sh build.sh 1.76.0 1.75.0
+
+ADD fetch/rustc-1.77.0-src.tar.gz .
 RUN sh build.sh 1.77.0 1.76.0
 
 FROM build-script AS build
@@ -153,13 +190,23 @@ COPY --from=stagex/core-samurai . /
 COPY --from=stagex/core-ca-certificates . /
 COPY --from=stagex/core-llvm16 /usr/lib/libLLVM-16.so /usr/lib/
 COPY --from=build-llvm16 /rust-1.77.0 /rust-1.77.0
+ADD fetch/rustc-1.78.0-src.tar.gz .
 RUN sh build.sh 1.78.0 1.77.0
+
+ADD fetch/rustc-1.79.0-src.tar.gz .
 RUN sh build.sh 1.79.0 1.78.0
+
+ADD fetch/rustc-1.80.0-src.tar.gz .
 RUN sh build.sh 1.80.0 1.79.0
+
 ENV CONFIGURE_FLAGS="--set=rust.lld=false --set=rust.use-lld=external"
+ADD fetch/rustc-1.81.0-src.tar.gz .
 RUN sh build.sh 1.81.0 1.80.0
+
 ADD no-default-static.patch .
+ADD fetch/rustc-1.82.0-src.tar.gz .
 RUN sh build.sh 1.82.0 1.81.0 cargo,clippy,rustdoc,rustfmt,rust-demangler no-default-static
+
 RUN <<-EOF
 	ARCH="$(uname -m)"
 	mv /rust-${VERSION} /rootfs

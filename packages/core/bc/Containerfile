@@ -19,8 +19,7 @@ COPY --from=stagex/core-findutils . /
 COPY --from=stagex/core-sed . /
 COPY --from=stagex/core-bash . /
 COPY --from=stagex/core-bash /bin/bash /bin/sh
-COPY --from=fetch . .
-RUN tar -xf bc-${VERSION}.tar.gz
+ADD fetch/bc-${VERSION}.tar.gz .
 WORKDIR /bc-${VERSION}
 RUN --network=none <<-EOF
 	set -ex

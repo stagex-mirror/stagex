@@ -9,8 +9,7 @@ COPY --from=stagex/core-autoconf . /
 COPY --from=stagex/core-automake . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-m4 . /
-COPY --from=fetch . .
-RUN tar -xf bison-${VERSION}.tar.xz
+ADD fetch/bison-${VERSION}.tar.xz .
 WORKDIR /bison-${VERSION}
 ENV M4=/usr/bin/m4
 RUN --network=none <<-EOF

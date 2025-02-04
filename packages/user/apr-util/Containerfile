@@ -1,21 +1,13 @@
-FROM scratch AS build
+FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-make . /
 COPY --from=stagex/core-expat . /
 COPY --from=stagex/core-gdbm . /
 COPY --from=stagex/core-sqlite3 . /
 COPY --from=stagex/core-openssl . /
-COPY --from=stagex/core-libtool . /
+COPY --from=stagex/user-apr . /
 COPY --from=stagex/user-openldap . /
 COPY --from=stagex/user-postgresql . /
-COPY --from=stagex/user-apr . /
-COPY --from=stagex/user-util-linux . /
-COPY --from=fetch . .
-RUN tar -xf apr-util-${VERSION}.tar.bz2
+ADD fetch/apr-util-${VERSION}.tar.bz2 .
 WORKDIR /apr-util-${VERSION}
 COPY *.patch .
 RUN --network=none <<-EOF

@@ -11,8 +11,7 @@ COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/core-pkgconf . /
 COPY --from=stagex/user-libseccomp . /
 COPY --from=stagex/user-go-md2man . /
-COPY --from=fetch . .
-RUN tar -xf runc-${VERSION}.tar.gz
+ADD fetch/runc-${VERSION}.tar.gz .
 WORKDIR /runc-${VERSION}
 RUN <<-EOF
     set -eux

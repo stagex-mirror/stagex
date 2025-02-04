@@ -8,8 +8,7 @@ COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/user-util-linux . /
-COPY --from=fetch . .
-RUN tar -xf syslinux-${VERSION}.tar.xz
+ADD fetch/syslinux-${VERSION}.tar.xz .
 WORKDIR /syslinux-${VERSION}
 COPY *.patch .
 RUN --network=none <<-EOF

@@ -5,8 +5,7 @@ COPY --from=stagex/core-docbook-xml . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-libxml2 . /
 COPY --from=stagex/core-musl . /
-COPY --from=fetch . .
-RUN tar -xf docbook-xsl-${VERSION}.tar.gz
+ADD fetch/docbook-xsl-${VERSION}.tar.gz .
 WORKDIR /docbook-xsl-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

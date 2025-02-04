@@ -1,12 +1,6 @@
-FROM scratch AS build
+FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-gcc . /
-COPY --from=fetch . .
-RUN tar -xjf mtools-${VERSION}.tar.bz2
+ADD fetch/mtools-${VERSION}.tar.bz2 .
 WORKDIR /mtools-${VERSION}
 ENV FORCE_UNSAFE_CONFIGURE=1
 RUN --network=none <<-EOF

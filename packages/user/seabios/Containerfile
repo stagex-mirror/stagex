@@ -6,8 +6,7 @@ COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-python . /
-COPY --from=fetch . .
-RUN tar -xf seabios-${VERSION}.tar.gz
+ADD fetch/seabios-${VERSION}.tar.gz .
 WORKDIR /seabios-rel-${VERSION}
 ADD config.* .
 RUN --network=none <<-EOF

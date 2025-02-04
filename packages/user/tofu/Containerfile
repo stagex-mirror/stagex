@@ -3,8 +3,7 @@ ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-go . /
 COPY --from=stagex/core-ca-certificates . /
-COPY --from=fetch . .
-RUN tar -xvf tofu-${VERSION}.tar.gz
+ADD fetch/tofu-${VERSION}.tar.gz .
 WORKDIR /opentofu-${VERSION}
 ENV PWD=/home/user/opentofu-${VERSION}
 ENV GOPATH=${PWD}/cache/go

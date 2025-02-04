@@ -1,13 +1,7 @@
-FROM scratch AS build
+FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-make . /
 COPY --from=stagex/user-libgpg-error . /
-COPY --from=fetch . .
-RUN tar -xvf libgcrypt-${VERSION}.tar.bz2
+ADD fetch/libgcrypt-${VERSION}.tar.bz2 .
 WORKDIR /libgcrypt-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF

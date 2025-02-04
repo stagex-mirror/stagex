@@ -7,8 +7,10 @@ COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-gcc . /
-COPY --from=fetch . .
-RUN tar -xzf icu4c-${VERSION_UNDER}-src.tgz
+ADD fetch/icu4c-${VERSION_UNDER}-src.tgz .
+ADD fetch/icu4c-${VERSION_UNDER}-data.zip .
+ADD fetch/icu4c-${VERSION_UNDER}-data-bin-l.zip .
+ADD fetch/icu4c-${VERSION_UNDER}-data-bin-b.zip .
 WORKDIR /icu/source
 RUN --network=none <<-EOF
 	./configure \

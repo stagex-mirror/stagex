@@ -1,18 +1,8 @@
-FROM scratch AS build
+FROM stagex/pallet-cgo AS build
 ARG VERSION
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-bash . /
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-go . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-linux-headers . /
-COPY --from=stagex/core-pkgconf . /
 COPY --from=stagex/user-libseccomp . /
 COPY --from=stagex/user-go-md2man . /
-COPY --from=fetch . .
-RUN tar -xf containerd-${VERSION}.tar.gz
+ADD fetch/containerd-${VERSION}.tar.gz .
 WORKDIR /containerd-${VERSION}
 ENV GO11MODULE=on
 RUN <<-EOF

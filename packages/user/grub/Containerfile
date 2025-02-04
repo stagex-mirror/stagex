@@ -1,24 +1,10 @@
-FROM scratch AS build
+FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-bison . /
-COPY --from=stagex/core-flex . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-gawk . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-python . /
-COPY --from=stagex/core-m4 . /
-COPY --from=stagex/core-perl . /
-COPY --from=stagex/core-pkgconf . /
-COPY --from=stagex/core-automake . /
-COPY --from=stagex/core-autoconf . /
+COPY --from=stagex/pallet-python . /
 COPY --from=stagex/core-gettext . /
 COPY --from=stagex/core-xz . /
-COPY --from=stagex/core-linux-headers . /
-COPY --from=fetch . .
-RUN tar -xf grub-${VERSION}.tar.gz
+COPY --from=stagex/core-gawk . /
+ADD fetch/grub-${VERSION}.tar.gz .
 WORKDIR /grub-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

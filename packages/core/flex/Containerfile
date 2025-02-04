@@ -12,8 +12,7 @@ COPY --from=stagex/core-automake . /
 COPY --from=stagex/core-bison . /
 COPY --from=stagex/core-gettext . /
 COPY --from=stagex/core-musl . /
-COPY --from=fetch . .
-RUN tar -xzf flex-${VERSION}.tar.gz
+ADD fetch/flex-${VERSION}.tar.gz .
 WORKDIR /flex-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

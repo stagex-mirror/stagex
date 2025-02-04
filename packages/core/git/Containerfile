@@ -10,8 +10,7 @@ COPY --from=stagex/core-make . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-gettext . /
-COPY --from=fetch . .
-RUN tar -xvf git-${VERSION}.tar.xz
+ADD fetch/git-${VERSION}.tar.xz .
 WORKDIR /git-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF

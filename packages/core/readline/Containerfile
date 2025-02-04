@@ -7,8 +7,17 @@ COPY --from=stagex/core-ncurses . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-gcc . /
-COPY --from=fetch . .
-RUN --network=none tar -xf readline-${VERSION}.tar.gz
+ADD fetch/readline-${VERSION}.tar.gz .
+ADD fetch/readline82-001 .
+ADD fetch/readline82-002 .
+ADD fetch/readline82-003 .
+ADD fetch/readline82-004 .
+ADD fetch/readline82-005 .
+ADD fetch/readline82-006 .
+ADD fetch/readline82-007 .
+ADD fetch/readline82-008 .
+ADD fetch/readline82-009 .
+ADD fetch/readline82-010 .
 WORKDIR /readline-${VERSION}
 ADD *.patch .
 ENV PATCH_LEVEL=10

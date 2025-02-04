@@ -1,39 +1,15 @@
-FROM scratch AS base
+FROM stagex/pallet-gcc-gnu-gnu AS base
 ARG VERSION
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/core-openssl . /
-COPY --from=stagex/core-perl . /
-COPY --from=stagex/core-m4 . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-bison . /
 COPY --from=stagex/core-libzstd . /
-COPY --from=stagex/core-zlib . /
-COPY --from=stagex/core-flex . /
-COPY --from=stagex/core-pkgconf . /
-COPY --from=stagex/core-coreutils . /
-COPY --from=stagex/core-findutils . /
-COPY --from=stagex/core-diffutils . /
-COPY --from=stagex/core-tar . /
-COPY --from=stagex/core-gzip . /
-COPY --from=stagex/core-xz . /
-COPY --from=stagex/core-sed . /
-COPY --from=stagex/core-grep . /
-COPY --from=stagex/core-gawk . /
-COPY --from=stagex/core-bc . /
-COPY --from=stagex/core-bash . /
-COPY --from=stagex/core-bash /bin/bash /bin/sh
 COPY --from=stagex/user-elfutils . /
-COPY --from=fetch . .
-RUN tar -xf linux-${VERSION}.tar.xz
+ADD fetch/linux-${VERSION}.tar.xz .
 ENV SOURCE_DATE_EPOCH=1
 ENV KBUILD_BUILD_HOST=stagex
 ENV KBUILD_BUILD_USER=user
 ENV KBUILD_BUILD_TIMESTAMP="Thu Jan  1 12:00:00 AM GMT 1970"
 COPY --chmod=775 <<-EOF /usr/bin/build-static
-	#!/bin/bash
+	#!/bin/sh
 	set -eux
 	make -j "$(nproc)" bzImage
   mkdir /rootfs
@@ -41,7 +17,7 @@ COPY --chmod=775 <<-EOF /usr/bin/build-static
 	cp "arch/$(uname -m)/boot/bzImage" /rootfs
 EOF
 COPY --chmod=775 <<-EOF /usr/bin/build-dynamic
-	#!/bin/bash
+	#!/bin/sh
 	set -eux
 	ARCH="$(uname -m)"
 	make defconfig

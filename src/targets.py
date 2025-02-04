@@ -98,7 +98,7 @@ out/{stage}-{name}/index.json: {deps}
                   if dep.startswith("stagex/"):
                     deps.append(dep.split("/")[1])
               if line.startswith("FROM stagex/"):
-                deps.append(line.split(" ")[1].split("/")[1])
+                deps.append(line.split(" ")[1].split("/")[1].strip())
 
           package_info = CommonUtils.parse_package_toml_no_deps(package_data)
           package_info.deps = deps
@@ -108,7 +108,6 @@ out/{stage}-{name}/index.json: {deps}
               self.packages[stage][subpackage].origin = package_info.name
               self.packages[stage][subpackage].name = subpackage
               self.packages[stage][subpackage].subpackages = []
-              print(self.packages[stage][subpackage])
           else:
             self.packages[stage][name] = package_info
 
