@@ -25,6 +25,9 @@ out/{stage}-{name}/index.json: {deps}
 \t  build \\
 \t  --ulimit nofile=2048:16384 \\
 \t  --tag stagex/{stage}-{name}:{version} \\
+\t  --provenance=false \\
+\t  --build-arg SOURCE_DATE_EPOCH=1 \\
+\t  --build-arg BUILDKIT_MULTI_PLATFORM=1 \\
 \t  --output \\
 \t    name={name},type=oci,rewrite-timestamp=true,force-compression=true,annotation.org.opencontainers.image.version={version},tar=true,dest=- \\
 \t  {context_args} \\
