@@ -1,6 +1,7 @@
 [package]
 name = "stage2"
 description = "TODO"
+platforms = ["linux/386"]
 
 [sources.musl]
 version = "1.1.24"

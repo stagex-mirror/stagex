@@ -25,6 +25,9 @@ out/{stage}-{name}/index.json: {deps}
 \t  build \\
 \t  --ulimit nofile=2048:16384 \\
 \t  --tag stagex/{stage}-{name}:{version} \\
+\t  --provenance=false \\
+\t  --build-arg SOURCE_DATE_EPOCH=1 \\
+\t  --build-arg BUILDKIT_MULTI_PLATFORM=1 \\
 \t  --output \\
 \t    name={name},type=oci,rewrite-timestamp=true,force-compression=true,annotation.org.opencontainers.image.version={version},tar=true,dest=- \\
 \t  {context_args} \\
@@ -32,7 +35,7 @@ out/{stage}-{name}/index.json: {deps}
 \t  $(EXTRA_ARGS) \\
 \t  $(NOCACHE_FLAG) \\
 \t  $(CHECK_FLAG) \\
-\t  --platform=$(PLATFORM) \\
+\t  --platform={platform_arg} \\
 \t  --progress=$(PROGRESS) \\
 \t  -f packages/{stage}/{origin}/Containerfile \\
 \t  packages/{stage}/{origin} \\
@@ -56,6 +59,12 @@ out/{stage}-{name}/index.json: {deps}
 
     for stage, stage_packages in self.packages.items():
       for name, package in stage_packages.items():
+        platform = "$(PLATFORM)"
+        # Force platform(s) for bootstrap packages which are only available for certain architectures
+        # and later cross-compile subsequent stages for the user's desired platform
+        if len(package.platforms) > 0:
+          platform = ",".join(package.platforms)
+
         print(
           TargetGenerator.TARGET_TEMPLATE.format(
             **{
@@ -68,6 +77,7 @@ out/{stage}-{name}/index.json: {deps}
               ),
               "build_args": TargetGenerator.get_build_args(package),
               "context_args": TargetGenerator.get_context_args(package, stage, package.origin or package.name),
+              "platform_arg": platform
             }
           )
         )
@@ -99,6 +109,8 @@ out/{stage}-{name}/index.json: {deps}
                     deps.append(dep.split("/")[1])
               if line.startswith("FROM stagex/"):
                 deps.append(line.split(" ")[1].split("/")[1].strip())
+              if line.startswith("FROM --platform=linux/386 stagex/"):
+                deps.append(line.split(" ")[2].split("/")[1].strip())
 
           package_info = CommonUtils.parse_package_toml_no_deps(package_data)
           package_info.deps = deps

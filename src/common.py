@@ -32,6 +32,7 @@ class SourcesInfo(WithVersion):
 class PackageInfo(WithVersion):
   name: str
   origin: str = None
+  platforms: List[str] = field(default_factory=list)
   subpackages: List[str] = field(default_factory=list)
   sources: MutableMapping[str, SourcesInfo] = field(default_factory=dict)
   deps: List[str] = field(default_factory=list)
@@ -57,6 +58,7 @@ class CommonUtils(object):
     version: str = toml_dict["package"].get("version", None)
     name: str = toml_dict["package"]["name"]
     origin: str = None
+    platforms: list = toml_dict["package"].get("platforms",[])
     subpackages: list = toml_dict["package"].get("subpackages",[])
     sources_toml: Mapping[str, Mapping[str, str | List[str]]] = toml_dict.get("sources", None)
     source_info: MutableMapping[str, SourcesInfo] = dict[str, SourcesInfo]()
@@ -68,5 +70,5 @@ class CommonUtils(object):
           file=source_description.get("file", ""),
           mirrors=source_description["mirrors"],
           version=source_description.get("version", ""))
-    return PackageInfo(name=name, origin=origin, subpackages=subpackages, version=version, sources=source_info, deps=list())
+    return PackageInfo(name=name, origin=origin, subpackages=subpackages, version=version, platforms=platforms, sources=source_info, deps=list())
 
