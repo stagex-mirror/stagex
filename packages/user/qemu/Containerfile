@@ -62,6 +62,7 @@ COPY --from=stagex/user-glib . /
 COPY --from=stagex/user-lzo . /
 COPY --from=stagex/user-dtc . /
 COPY --from=stagex/user-numactl . /
+COPY --from=stagex/user-qemu-canokey . /
 ADD fetch/qemu-${VERSION}.tar.xz .
 WORKDIR /qemu-${VERSION}
 ADD *.patch .
@@ -113,6 +114,7 @@ RUN --network=none <<-EOF
 		--python=/usr/bin/python \
 		--cc=gcc \
 		--audio-drv-list=oss,alsa \
+		--enable-canokey \
 		--enable-curses \
 		--enable-modules \
 		--enable-tpm \
