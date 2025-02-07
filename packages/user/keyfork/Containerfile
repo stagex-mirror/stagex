@@ -11,9 +11,6 @@ ADD <<-EOF /.cargo/config.toml
 EOF
 RUN cargo fetch
 ENV RUST_BACKTRACE=1
-ENV NETTLE_STATIC=yes
-ENV PCSC_LIB_NAME=static=pcsclite
-ENV RUSTFLAGS='-C codegen-units=1 -C target-feature=+crt-static'
 RUN --network=none <<-EOF
 	set -eux
 	ARCH="$(uname -m)"
