@@ -4,8 +4,6 @@ COPY --from=stagex/core-gmp . /
 COPY --from=stagex/user-nettle . /
 COPY --from=stagex/user-pcsc-lite . /
 ADD fetch/openpgp-card-tools-${VERSION}.tar.gz .
-ENV PCSC_LIB_NAME=static=pcsclite
-ENV RUSTFLAGS='-C codegen-units=1 -C target-feature=+crt-static'
 WORKDIR /openpgp-card-tools
 RUN cargo fetch
 RUN --network=none <<-EOF
