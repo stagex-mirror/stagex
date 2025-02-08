@@ -2,7 +2,7 @@
 
 set -eux
 
-if ! git status --porcelain;
+if ! git status --porcelain; then
   echo 'Unclean tree! Aborting!'
   exit 1
 fi
@@ -24,4 +24,4 @@ branch="release/${date}.${release}"
 
 git fetch origin staging
 git checkout origin/staging
-git switch "${branch}"
+git switch -c "${branch}"
