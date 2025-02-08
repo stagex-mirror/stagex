@@ -62,7 +62,7 @@ COPY --from=stagex/user-glib . /
 COPY --from=stagex/user-lzo . /
 COPY --from=stagex/user-dtc . /
 COPY --from=stagex/user-numactl . /
-COPY --from=stagex/user-qemu-canokey . /
+COPY --from=stagex/user-canokey-qemu . /
 ADD fetch/qemu-${VERSION}.tar.xz .
 WORKDIR /qemu-${VERSION}
 ADD *.patch .
