@@ -7,14 +7,17 @@ from typing import List
 from typing import MutableMapping
 from dataclasses import replace
 from urllib.parse import urlsplit
-
+from glob import glob
+from os.path import isfile
+from subprocess import check_output
 
 class TargetGenerator(object):
   TARGET_TEMPLATE = """
 .PHONY: {name} {stage}-{name}
 {name}: out/{stage}-{name}/index.json
 {stage}-{name}: out/{stage}-{name}/index.json
-out/{stage}-{name}/index.json: {deps}
+out/{stage}-{name}/index.json: \\
+\t{files} {deps}
 \trm -rf out/{stage}-{name} && \\
 \tmkdir -p out/{stage}-{name} && \\
 \tmkdir -p fetch/{stage}/{origin} && \\
@@ -102,6 +105,7 @@ registry-{stage}-{name}:
               "deps": "".join(
                 f" \\\n\tout/{dep}/index.json" for dep in package.deps
               ),
+              "files": "\\\n\t".join(check_output(["git","ls-tree","-r","HEAD","--name-only","packages/{}/{}".format(stage,name)],text=True).splitlines()),
               "build_args": TargetGenerator.get_build_args(package),
               "context_args": TargetGenerator.get_context_args(package, stage, package.origin or package.name, False),
               "context_args_registry": TargetGenerator.get_context_args(package, stage, package.origin or package.name, True),
