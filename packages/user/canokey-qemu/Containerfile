@@ -39,8 +39,7 @@ RUN --network=none <<-EOF
         mkdir build/
         cd build
         cmake -DCMAKE_INSTALL_PREFIX=/usr \
-                -DCMAKE_INSTALL_LIBDIR=lib \
-                -DCMAKE_BUILD_TYPE=Release ..
+                -DCMAKE_INSTALL_LIBDIR=lib
         make -j "$(nproc)"
         make DESTDIR=/rootfs install
 EOF
