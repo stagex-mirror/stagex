@@ -1,12 +1,12 @@
-FROM stagex/pallet-gcc-cmake-busybox AS build                                                
-ARG VERSION                                                                                  
-ARG CANOKEY_CORE_SOURCE                                                                      
-ARG CANOKEY_CRYPTO_SOURCE                                                                    
-ARG MBEDTLS_SOURCE                                                                           
-ARG LITTLEFS_SOURCE                                                                          
-ARG TINYCBOR_SOURCE                                                                          
-                                                                                             
-COPY --from=stagex/core-openssl . /                                                          
+FROM stagex/pallet-gcc-cmake-busybox AS build
+ARG VERSION
+ARG CANOKEY_CORE_SOURCE
+ARG CANOKEY_CRYPTO_SOURCE
+ARG MBEDTLS_SOURCE
+ARG LITTLEFS_SOURCE
+ARG TINYCBOR_SOURCE
+
+COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-zlib . /
 
@@ -21,7 +21,7 @@ RUN mv canokey-crypto* canokey-qemu/canokey-core/canokey-crypto
 ADD fetch/${MBEDTLS_SOURCE} .
 RUN rm -rf canokey-qemu/canokey-core/canokey-crypto/mbedtls
 RUN mv mbedtls* canokey-qemu/canokey-core/canokey-crypto/mbedtls
-ADD fetch/${LITTLEFS_SOURCE} . 
+ADD fetch/${LITTLEFS_SOURCE} .
 RUN rm -rf canokey-qemu/canokey-core/littlefs
 RUN mv littlefs* canokey-qemu/canokey-core/littlefs
 ADD fetch/${TINYCBOR_SOURCE} .
@@ -39,7 +39,7 @@ RUN --network=none <<-EOF
         mkdir build/
         cd build
         cmake -DCMAKE_INSTALL_PREFIX=/usr \
-                -DCMAKE_INSTALL_LIBDIR=lib
+            -DCMAKE_INSTALL_LIBDIR=lib ..
         make -j "$(nproc)"
         make DESTDIR=/rootfs install
 EOF
