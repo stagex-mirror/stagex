@@ -20,7 +20,6 @@ RUN --network=none <<-EOF
 		--target "${ARCH}-unknown-linux-musl"
 	mkdir -p /rootfs/usr/bin /rootfs/etc/icepick
 	cp icepick.toml /rootfs/etc/icepick/
-	cp target/${ARCH}-unknown-linux-musl/release/workflows.yaml /rootfs/etc/icepick/
 	find \
 		target/${ARCH}-unknown-linux-musl \
 		-type f \
