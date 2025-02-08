@@ -1,5 +1,5 @@
 [package]
-name = "sq-wot"
+name = "sequoia-sq-wot"
 version = "0.13.2"
 description = "A program for authenticating bindings between User IDs and certificates using OpenPGP's web of trust."
 
