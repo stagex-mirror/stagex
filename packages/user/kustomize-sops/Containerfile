@@ -3,8 +3,7 @@ ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-go . /
 COPY --from=stagex/core-ca-certificates . /
-COPY --from=fetch . .
-RUN tar -xvf kustomize-sops-${VERSION}.tar.gz
+ADD fetch/kustomize-sops-${VERSION}.tar.gz .
 WORKDIR /kustomize-sops-${VERSION}
 ENV GOPATH=/cache/go
 ENV GOCACHE=/cache/

@@ -16,8 +16,7 @@ COPY --from=stagex/core-libnghttp2 . /
 COPY --from=stagex/core-brotli . /
 COPY --from=stagex/core-c-ares . /
 COPY --from=stagex/core-pkgconf . /
-COPY --from=fetch . .
-RUN tar -xf nodejs-${VERSION}.tar.gz
+ADD fetch/nodejs-${VERSION}.tar.gz .
 WORKDIR /node-v${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 ENV LDFLAGS=" \

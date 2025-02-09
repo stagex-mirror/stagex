@@ -12,8 +12,7 @@ COPY --from=stagex/core-make . /
 COPY --from=stagex/core-python . /
 COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/core-linux-headers /usr/include /linux-headers
-COPY --from=fetch . .
-RUN tar -xzf glibc-${VERSION}.tar.gz
+ADD fetch/glibc-${VERSION}.tar.gz .
 WORKDIR glibc-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

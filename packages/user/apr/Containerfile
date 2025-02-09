@@ -1,13 +1,6 @@
-FROM scratch AS build
+FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/user-util-linux . /
-COPY --from=fetch . .
-RUN tar -xf apr-${VERSION}.tar.bz2
+ADD fetch/apr-${VERSION}.tar.bz2 .
 WORKDIR /apr-${VERSION}
 COPY *.patch .
 RUN --network=none <<-EOF

@@ -3,8 +3,7 @@ ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-go . /
 COPY --from=stagex/core-ca-certificates . /
-COPY --from=fetch . .
-RUN tar -xvf kustomize-${VERSION}.tar.gz
+ADD fetch/kustomize-${VERSION}.tar.gz .
 WORKDIR /kustomize-${VERSION}/kustomize
 ENV SRC_HASH=04e7b957e764ba7d32ae182d0b290e75c8785c18ab922ae6ac7087de103fd8de
 ENV SRC_FILE=v${VERSION}.tar.gz

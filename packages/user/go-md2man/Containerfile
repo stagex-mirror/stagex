@@ -3,8 +3,7 @@ ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-go . /
 COPY --from=stagex/core-ca-certificates . /
-COPY --from=fetch . .
-RUN tar -xvf go-md2man-${VERSION}.tar.gz
+ADD fetch/go-md2man-${VERSION}.tar.gz .
 WORKDIR /go-md2man-${VERSION}
 ENV PWD=/home/user/go-md2man-${VERSION}
 ENV GOPATH=${PWD}/cache/go

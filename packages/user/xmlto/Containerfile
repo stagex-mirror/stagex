@@ -19,8 +19,7 @@ COPY --from=stagex/core-libxml2 . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/user-glib . /
 COPY --from=stagex/user-perl-yaml-syck . /
-COPY --from=fetch . .
-RUN tar -xf xmlto-${VERSION}.tar.gz
+ADD fetch/xmlto-${VERSION}.tar.gz .
 WORKDIR /xmlto-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

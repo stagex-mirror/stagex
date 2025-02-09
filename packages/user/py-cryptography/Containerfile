@@ -23,8 +23,7 @@ COPY --from=stagex/user-py-cparser . /
 COPY --from=stagex/user-py-semantic-version . /
 COPY --from=stagex/user-py-typing-extensions . /
 COPY --from=stagex/user-py-setuptools-rust . /
-COPY --from=fetch . .
-RUN tar -xzf py-cryptography-${VERSION}.tar.gz
+ADD fetch/py-cryptography-${VERSION}.tar.gz .
 WORKDIR /cryptography-${VERSION}
 RUN gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 RUN --network=none <<-EOF

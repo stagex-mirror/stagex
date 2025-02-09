@@ -1,16 +1,7 @@
-FROM scratch AS build
+FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-bash . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-pkgconf . /
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-linux-headers . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-gcc . /
 COPY --from=stagex/user-util-linux . /
-COPY --from=fetch . .
-RUN tar -xzf e2fsprogs-${VERSION}.tar.gz
+ADD fetch/e2fsprogs-${VERSION}.tar.gz .
 WORKDIR /e2fsprogs-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

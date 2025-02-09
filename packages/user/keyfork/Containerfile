@@ -1,23 +1,9 @@
-FROM scratch AS build
+FROM stagex/pallet-rust AS build
 ARG VERSION
-COPY --from=stagex/core-rust . /
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-llvm . /
-COPY --from=stagex/core-libunwind . /
-COPY --from=stagex/core-openssl . /
-COPY --from=stagex/core-zlib . /
-COPY --from=stagex/core-ca-certificates . /
-COPY --from=stagex/core-clang . /
-COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/core-gmp . /
 COPY --from=stagex/user-nettle . /
 COPY --from=stagex/user-pcsc-lite . /
-COPY --from=stagex/core-pkgconf . /
-COPY --from=stagex/core-binutils . /
-COPY --from=fetch . .
-RUN tar xf keyfork-${VERSION}.tar.gz
+ADD fetch/keyfork-${VERSION}.tar.gz .
 WORKDIR /keyfork
 ADD <<-EOF /.cargo/config.toml
 	[registries.distrust]
@@ -25,9 +11,6 @@ ADD <<-EOF /.cargo/config.toml
 EOF
 RUN cargo fetch
 ENV RUST_BACKTRACE=1
-ENV NETTLE_STATIC=yes
-ENV PCSC_LIB_NAME=static=pcsclite
-ENV RUSTFLAGS='-C codegen-units=1 -C target-feature=+crt-static'
 RUN --network=none <<-EOF
 	set -eux
 	ARCH="$(uname -m)"

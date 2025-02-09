@@ -12,8 +12,7 @@ COPY --from=stagex/core-py-wheel . /
 COPY --from=stagex/core-py-setuptools . /
 COPY --from=stagex/core-py-gpep517 . /
 COPY --from=stagex/core-py-installer . /
-COPY --from=fetch . .
-RUN tar -xzf py-cffi-${VERSION}.tar.gz
+ADD fetch/py-cffi-${VERSION}.tar.gz .
 WORKDIR /cffi-${VERSION}
 RUN --network=none <<-EOF
 	set -eu

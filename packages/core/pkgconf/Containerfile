@@ -5,8 +5,7 @@ COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
-COPY --from=fetch . .
-RUN tar -xf pkgconf-${VERSION}.tar.xz
+ADD fetch/pkgconf-${VERSION}.tar.xz .
 WORKDIR /pkgconf-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

@@ -3,8 +3,7 @@ ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-go . /
 COPY --from=stagex/core-ca-certificates . /
-COPY --from=fetch . .
-RUN tar -xvf sops-${VERSION}.tar.gz
+ADD fetch/sops-${VERSION}.tar.gz .
 WORKDIR /sops-${VERSION}
 ENV PWD=/home/user/sops-${VERSION}
 ENV GOPATH=${PWD}/cache/go

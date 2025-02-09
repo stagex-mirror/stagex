@@ -1,13 +1,6 @@
-FROM scratch AS build
+FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-perl . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-gcc . /
-COPY --from=fetch . .
-RUN tar -xf aspell-${VERSION}.tar.gz
+ADD fetch/aspell-${VERSION}.tar.gz .
 WORKDIR /aspell-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF

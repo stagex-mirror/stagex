@@ -5,8 +5,7 @@ COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
-COPY --from=fetch . .
-RUN tar -xzf m4-${VERSION}.tar.gz
+ADD fetch/m4-${VERSION}.tar.gz .
 WORKDIR /m4-${VERSION}
 RUN --network=none <<-EOF
 	set -eux; \

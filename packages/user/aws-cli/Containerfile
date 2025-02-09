@@ -1,21 +1,6 @@
-FROM scratch AS build
+FROM stagex/pallet-cython AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-zlib . /
-COPY --from=stagex/core-sqlite3 . /
-COPY --from=stagex/core-python . /
-COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-libunwind . /
-COPY --from=stagex/core-libffi . /
-COPY --from=stagex/core-openssl . /
-COPY --from=stagex/core-py-flit . /
-COPY --from=stagex/core-py-gpep517 . /
-COPY --from=stagex/core-py-installer . /
-COPY --from=stagex/core-py-distro . /
-COPY --from=stagex/core-py-dateutil . /
-COPY --from=stagex/core-py-urllib3 . /
-COPY --from=stagex/core-py-cffi . /
 COPY --from=stagex/user-py-jmespath . /
 COPY --from=stagex/user-py-six . /
 COPY --from=stagex/user-py-botocore . /
@@ -27,8 +12,7 @@ COPY --from=stagex/user-py-docutils . /
 COPY --from=stagex/user-py-wcwidth . /
 COPY --from=stagex/user-py-prompt_toolkit . /
 COPY --from=stagex/user-py-ruamel.yaml . /
-COPY --from=fetch . .
-RUN tar -xzf aws-cli-${VERSION}.tar.gz
+ADD fetch/aws-cli-${VERSION}.tar.gz .
 WORKDIR /aws-cli-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

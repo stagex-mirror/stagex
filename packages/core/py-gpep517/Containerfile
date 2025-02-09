@@ -4,8 +4,7 @@ COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-python . /
 COPY --from=stagex/core-zlib . /
-COPY --from=fetch . .
-RUN tar -xzf py-gpep517-${VERSION}.tar.gz
+ADD fetch/py-gpep517-${VERSION}.tar.gz .
 WORKDIR /gpep517-${VERSION}
 COPY <<-'EOF' gpep517-cli
 	#!/usr/bin/python3

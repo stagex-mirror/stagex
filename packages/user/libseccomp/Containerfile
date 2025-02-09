@@ -1,17 +1,8 @@
-FROM scratch AS build
+FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-linux-headers . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-python . /
-COPY --from=stagex/core-cython . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-zlib . /
+COPY --from=stagex/pallet-cython . /
 COPY --from=stagex/user-gperf . /
-COPY --from=fetch . .
-RUN tar -xf libseccomp-${VERSION}.tar.gz
+ADD fetch/libseccomp-${VERSION}.tar.gz .
 WORKDIR /libseccomp-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
@@ -24,6 +15,8 @@ RUN --network=none <<-EOF
 		--enable-static
 	make -j "$(nproc)"
 	make DESTDIR=/rootfs install
+	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+	rm /rootfs/usr/lib/python3.11/site-packages/install_files.txt
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

@@ -11,8 +11,7 @@ COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-m4 . /
 COPY --from=stagex/core-musl . /
-COPY --from=fetch . .
-RUN tar -xvf re2c-${VERSION}.tar.gz
+ADD fetch/re2c-${VERSION}.tar.gz .
 WORKDIR /re2c-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

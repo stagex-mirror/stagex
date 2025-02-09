@@ -1,17 +1,6 @@
-FROM scratch AS build
+FROM stagex/pallet-rust AS build
 ARG VERSION
-COPY --from=stagex/core-rust . /
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-llvm . /
-COPY --from=stagex/core-libunwind . /
-COPY --from=stagex/core-openssl . /
-COPY --from=stagex/core-zlib . /
-COPY --from=stagex/core-ca-certificates . /
-COPY --from=stagex/core-binutils . /
-COPY --from=fetch . .
-RUN tar xf mdbook-${VERSION}.tar.gz
+ADD fetch/mdbook-${VERSION}.tar.gz .
 WORKDIR /mdBook-${VERSION}
 ENV RUST_BACKTRACE=1
 ENV RUSTFLAGS='-C codegen-units=1 -C target-feature=+crt-static'

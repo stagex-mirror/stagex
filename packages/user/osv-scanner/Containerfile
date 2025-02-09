@@ -1,16 +1,6 @@
-FROM scratch AS build
+FROM stagex/pallet-cgo AS build
 ARG VERSION
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-bash . /
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-go . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-pkgconf . /
-COPY --from=stagex/core-ca-certificates . /
-COPY --from=fetch . .
-RUN tar -xf osv-scanner-${VERSION}.tar.gz
+ADD fetch/osv-scanner-${VERSION}.tar.gz .
 ENV GOPROXY=https://proxy.golang.org,direct
 ENV GOSUMDB=sum.golang.org
 ENV GOPATH=/cache/go

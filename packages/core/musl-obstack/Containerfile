@@ -11,8 +11,7 @@ COPY --from=stagex/core-automake . /
 COPY --from=stagex/core-libtool . /
 COPY --from=stagex/core-pkgconf . /
 COPY --from=stagex/core-m4 . /
-COPY --from=fetch . .
-RUN tar -xzf musl-obstack-${VERSION}.tar.gz
+ADD fetch/musl-obstack-${VERSION}.tar.gz .
 WORKDIR /musl-obstack-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

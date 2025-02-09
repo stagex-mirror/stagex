@@ -1,15 +1,6 @@
-FROM scratch AS build
+FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-bash . /
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-pkgconf . /
-COPY --from=stagex/core-perl . /
-COPY --from=stagex/core-make . /
-COPY --from=fetch . .
-RUN tar -xf perl-dbi-${VERSION}.tar.gz
+ADD fetch/perl-dbi-${VERSION}.tar.gz .
 WORKDIR /DBI-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF

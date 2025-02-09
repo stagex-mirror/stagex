@@ -7,8 +7,7 @@ COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-gcc . /
-COPY --from=fetch . .
-RUN tar -xzf tcl-${VERSION}.tar.gz
+ADD fetch/tcl-${VERSION}.tar.gz .
 WORKDIR /tcl${VERSION}/unix
 RUN --network=none <<-EOF
 	./configure \

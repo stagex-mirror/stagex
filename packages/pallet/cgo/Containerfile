@@ -1,0 +1,2 @@
+FROM stagex/pallet-go
+COPY --from=stagex/pallet-gcc-gnu-busybox . /

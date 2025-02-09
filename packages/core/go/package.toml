@@ -1,24 +1,16 @@
 [package]
 name = "go"
-version = "1.23.1"
-description = "TODO"
+version = "1.23.6"
+description = "The Go programming language"
 
 [sources.go]
-hash = "6ee44e298379d146a5e5aa6b1c5b5d5f5d0a3365eabdd70741e6e21340ec3b0d"
+hash = "039c5b04e65279daceee8a6f71e70bd05cf5b801782b6f77c6e19e2ed0511222"
 mirrors = [ "https://storage.googleapis.com/golang/go{version}.src.tar.gz",]
 
-[sources.go1_20_6]
-hash = "62ee5bc6fb55b8bae8f705e0cb8df86d6453626b4ecf93279e2867092e0b7f70"
-version = "1.20.6"
-mirrors = [ "https://storage.googleapis.com/golang/go{version}.src.tar.gz",]
+[sources.go-linux-amd64]
+hash = "9379441ea310de000f33a4dc767bd966e72ab2826270e038e78b2c53c2e7802d"
+mirrors = [ "https://storage.googleapis.com/golang/go{version}.linux-amd64.tar.gz",]
 
-[sources.go1_19_11]
-hash = "e25c9ab72d811142b7f41ff6da5165fec2d1be5feec3ef2c66bc0bdecb431489"
-version = "1.19.11"
-mirrors = [ "https://storage.googleapis.com/golang/go{version}.src.tar.gz",]
-
-[sources.go1_4]
-hash = "f4ff5b5eb3a3cae1c993723f3eab519c5bae18866b5e5f96fe1102f0cb5c3e52"
-version = "1.4"
-file = "go{version}.src.tar.gz"
-mirrors = [ "https://dl.google.com/go/go{version}-bootstrap-20171003.tar.gz",]
+[sources.go-linux-arm64]
+hash = "561c780e8f4a8955d32bf72e46af0b5ee5e0debe1e4633df9a03781878219202"
+mirrors = [ "https://storage.googleapis.com/golang/go{version}.linux-arm64.tar.gz",]

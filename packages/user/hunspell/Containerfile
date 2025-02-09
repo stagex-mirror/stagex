@@ -1,14 +1,7 @@
-FROM scratch AS build
+FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-bash . /
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-make . /
 COPY --from=stagex/core-openssl . /
-COPY --from=fetch . .
-RUN tar -xf hunspell-${VERSION}.tar.gz
+ADD fetch/hunspell-${VERSION}.tar.gz .
 WORKDIR /hunspell-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

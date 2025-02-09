@@ -12,8 +12,7 @@ ENV GO11MODULE=on
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-go . /
 COPY --from=stagex/core-ca-certificates . /
-COPY --from=fetch . .
-RUN tar -xvf helm-${VERSION}.tar.gz
+ADD fetch/helm-${VERSION}.tar.gz .
 WORKDIR /helm-${VERSION}
 RUN go get ./...
 RUN <<-EOF

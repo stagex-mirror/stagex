@@ -15,8 +15,7 @@ COPY --from=stagex/core-py-setuptools . /
 COPY --from=stagex/core-py-flit . /
 COPY --from=stagex/core-py-wheel . /
 COPY --from=stagex/core-py-gpep517 . /
-COPY --from=fetch . .
-RUN tar -xzf py-trove-classifiers-${VERSION}.tar.gz
+ADD fetch/py-trove-classifiers-${VERSION}.tar.gz .
 WORKDIR /trove-classifiers-${VERSION}
 RUN --network=none <<-EOF
 	set -eu

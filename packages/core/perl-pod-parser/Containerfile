@@ -4,8 +4,7 @@ COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-perl . /
-COPY --from=fetch . .
-RUN tar -xf perl-pod-parser-${VERSION}.tar.gz
+ADD fetch/perl-pod-parser-${VERSION}.tar.gz .
 WORKDIR /Pod-Parser-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF

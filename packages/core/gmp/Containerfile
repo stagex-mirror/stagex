@@ -10,8 +10,7 @@ COPY --from=stagex/core-automake . /
 COPY --from=stagex/core-libtool . /
 COPY --from=stagex/core-m4 . /
 COPY --from=stagex/core-gcc . /
-COPY --from=fetch . .
-RUN tar -xf gmp-${VERSION}.tar.xz
+ADD fetch/gmp-${VERSION}.tar.xz .
 WORKDIR /gmp-${VERSION}
 RUN --network=none <<EOF
 	set -eux

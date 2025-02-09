@@ -6,8 +6,7 @@ COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-m4 . /
-COPY --from=fetch . .
-RUN tar -xf libtool-${VERSION}.tar.xz
+ADD fetch/libtool-${VERSION}.tar.xz .
 WORKDIR /libtool-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

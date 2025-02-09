@@ -10,8 +10,7 @@ COPY --from=stagex/core-py-installer . /
 COPY --from=stagex/core-py-setuptools . /
 COPY --from=stagex/core-py-wheel . /
 COPY --from=stagex/core-zlib . /
-COPY --from=fetch . .
-RUN tar -xzf py-sphinx_rtd_theme-${VERSION}.tar.gz
+ADD fetch/py-sphinx_rtd_theme-${VERSION}.tar.gz .
 WORKDIR /sphinx_rtd_theme-${VERSION}
 RUN --network=none <<-EOF
 	set -eu

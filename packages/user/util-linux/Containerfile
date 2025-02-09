@@ -14,9 +14,8 @@ COPY --from=stagex/core-libtool . /
 COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/core-m4 . /
 COPY --from=stagex/core-make . /
-RUN mkdir util-linux
-COPY --from=fetch . .
-RUN tar -xvf util-linux-${VERSION}.tar.gz --strip-components=1 -C util-linux
+ADD fetch/util-linux-${VERSION}.tar.gz .
+RUN mv /util-linux-* util-linux
 WORKDIR /util-linux
 RUN --network=none <<-EOF
 	set -eux

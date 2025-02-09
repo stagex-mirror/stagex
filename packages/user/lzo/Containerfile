@@ -1,17 +1,7 @@
-FROM scratch AS build
+FROM stagex/pallet-gcc-cmake-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-linux-headers . /
-COPY --from=stagex/core-cmake . /
-COPY --from=stagex/core-samurai . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-openssl . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-zlib . /
-COPY --from=fetch . .
-RUN tar -xf lzo-${VERSION}.tar.gz
+ADD fetch/lzo-${VERSION}.tar.gz .
 WORKDIR /lzo-${VERSION}
 RUN <<-EOF
 	set -eux

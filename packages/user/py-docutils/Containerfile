@@ -10,8 +10,7 @@ COPY --from=stagex/core-py-installer . /
 COPY --from=stagex/core-py-setuptools . /
 COPY --from=stagex/core-py-gpep517 . /
 COPY --from=stagex/core-zlib . /
-COPY --from=fetch . .
-RUN tar -xzf py-docutils-${VERSION}.tar.gz
+ADD fetch/py-docutils-${VERSION}.tar.gz .
 WORKDIR /docutils-${VERSION}
 RUN gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 RUN --network=none <<-EOF

@@ -2,8 +2,7 @@ FROM scratch AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-go . /
-COPY --from=fetch . .
-RUN tar -xf sxctl-${VERSION}.tar.gz
+ADD fetch/sxctl-${VERSION}.tar.gz .
 WORKDIR /sxctl/cmd/sxctl
 RUN go get ./...
 RUN --network=none <<-EOF

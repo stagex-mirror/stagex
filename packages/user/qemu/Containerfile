@@ -62,8 +62,8 @@ COPY --from=stagex/user-glib . /
 COPY --from=stagex/user-lzo . /
 COPY --from=stagex/user-dtc . /
 COPY --from=stagex/user-numactl . /
-COPY --from=fetch . .
-RUN tar -xf qemu-${VERSION}.tar.xz
+COPY --from=stagex/user-canokey-qemu . /
+ADD fetch/qemu-${VERSION}.tar.xz .
 WORKDIR /qemu-${VERSION}
 ADD *.patch .
 ENV SOURCE_DATE_EPOCH=1
@@ -114,6 +114,7 @@ RUN --network=none <<-EOF
 		--python=/usr/bin/python \
 		--cc=gcc \
 		--audio-drv-list=oss,alsa \
+		--enable-canokey \
 		--enable-curses \
 		--enable-modules \
 		--enable-tpm \

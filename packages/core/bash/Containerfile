@@ -5,8 +5,7 @@ COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-make . /
-COPY --from=fetch . .
-RUN tar -xzf bash-${VERSION}.tar.gz
+ADD fetch/bash-${VERSION}.tar.gz .
 WORKDIR /bash-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

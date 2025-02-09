@@ -11,8 +11,7 @@ COPY --from=stagex/core-bzip2 . /
 COPY --from=stagex/core-ncurses . /
 COPY --from=stagex/core-sqlite3 . /
 COPY --from=stagex/core-libffi . /
-COPY --from=fetch . .
-RUN tar -xf python-${VERSION}.tar.xz
+ADD fetch/python-${VERSION}.tar.xz .
 WORKDIR /Python-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 ENV PYTHONHASHSEED=0

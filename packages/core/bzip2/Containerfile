@@ -5,8 +5,7 @@ COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-gcc . /
-COPY --from=fetch . .
-RUN tar -xf bzip2-${VERSION}.tar.gz
+ADD fetch/bzip2-${VERSION}.tar.gz .
 WORKDIR /bzip2-${VERSION}
 RUN --network=none <<-EOF
 	set -ex

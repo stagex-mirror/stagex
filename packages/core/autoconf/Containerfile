@@ -7,8 +7,7 @@ COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-m4 . /
 COPY --from=stagex/core-perl . /
-COPY --from=fetch . .
-RUN tar -xf autoconf-${VERSION}.tar.xz
+ADD fetch/autoconf-${VERSION}.tar.xz .
 WORKDIR /autoconf-${VERSION}
 ENV M4=/usr/bin/m4
 RUN --network=none <<-EOF

@@ -1,16 +1,7 @@
-FROM scratch AS build
+FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-pkgconf . /
-COPY --from=stagex/core-m4 . /
-COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/user-libmnl . /
-COPY --from=fetch . .
-RUN tar -xf dhcpcd-${VERSION}.tar.xz
+ADD fetch/dhcpcd-${VERSION}.tar.xz .
 WORKDIR /dhcpcd-${VERSION}
 RUN --network=none <<-EOF
 	set -eux

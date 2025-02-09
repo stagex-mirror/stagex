@@ -1,18 +1,8 @@
-FROM scratch AS build
+FROM stagex/pallet-gcc-meson-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-meson . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-python . /
-COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-libxslt . /
-COPY --from=stagex/core-linux-headers . /
-COPY --from=stagex/core-samurai . /
 COPY --from=stagex/user-libcap . /
-COPY --from=fetch . .
-RUN tar -xzf iputils-${VERSION}.tar.gz
+ADD fetch/iputils-${VERSION}.tar.gz .
 WORKDIR /iputils-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
