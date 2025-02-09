@@ -5,11 +5,11 @@ ARG M2LIBC_SOURCE
 ARG M2LIBC_VERSION
 COPY --from=stagex/bootstrap-stage0 /bin /usr/bin
 
-FROM base as sources
+FROM base AS sources
 ADD fetch/${M2LIBC_SOURCE} .
 ADD fetch/${LIVE_BOOTSTRAP_SOURCE} .
 
-FROM base as build
+FROM base AS build
 COPY --from=fetch . /external/distfiles/
 COPY --from=sources M2libc-${M2LIBC_VERSION} /M2libc
 COPY --from=sources live-bootstrap-${LIVE_BOOTSTRAP_VERSION}/steps steps

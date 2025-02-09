@@ -30,26 +30,26 @@ COPY --chmod=775 <<-EOF /usr/bin/build-dynamic
 EOF
 WORKDIR /linux-${VERSION}
 
-FROM base as build-linux-generic
+FROM base AS build-linux-generic
 RUN build-dynamic
 
-FROM base as build-linux-airgap
+FROM base AS build-linux-airgap
 ADD airgap.config .config
 RUN build-static
 
-FROM base as build-linux-server
+FROM base AS build-linux-server
 ADD server.config .config
 RUN build-static
 
-FROM base as build-linux-guest
+FROM base AS build-linux-guest
 ADD guest.config .config
 RUN build-static
 
-FROM base as build-linux-nitro
+FROM base AS build-linux-nitro
 ADD nitro.config .config
 RUN build-static
 
-FROM base as build-gen_initramfs
+FROM base AS build-gen_initramfs
 RUN --network=none <<-EOF
 	set -eux
 	gcc usr/gen_init_cpio.c -o usr/gen_init_cpio
