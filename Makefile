@@ -6,6 +6,7 @@ REGISTRY_USERNAME := 127.0.0.1:5000/stagex## Example for registry-* targets
 REGISTRY := stagex## Registry url/namespace to build/publish for
 CHECK ?= 0## Run build with syntax checking enabled
 NOCACHE ?= 0## Run build ignoring all existing cache
+RELEASE := 0## Set release version for release targets
 
 include src/global.mk
 include src/macros.mk

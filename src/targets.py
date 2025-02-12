@@ -46,6 +46,7 @@ out/{stage}-{name}/index.json: \\
 
 # use: make registry-{stage}-{name} BUILDER="docker buildx" REGISTRY_USERNAME=127.0.0.1:5005/stagex
 # doesn't work well with docker build
+.PHONY: registry-{stage}-{name}
 registry-{stage}-{name}:
 \tmkdir -p fetch/{stage}/{origin} && \\
 \tpython3 src/fetch.py {origin} && \\
@@ -70,6 +71,20 @@ registry-{stage}-{name}:
 \t  --progress=$(PROGRESS) \\
 \t  -f packages/{stage}/{origin}/Containerfile \\
 \t  packages/{stage}/{origin}
+
+.PHONY: publish-{stage}-{name}
+publish-{stage}-{name}: out/{stage}-{name}/index.json
+\t [ "$(RELEASE)" != "0" ] || {{ echo "Error: RELEASE is not set"; exit 1; }}
+\t digest="$$(jq -r '.manifests[0].digest | split(":")[1]' out/{stage}-{name}/index.json)"; \\
+\t signum="$$(ls -1 signatures/stagex/{stage}-{name}@sha256=$${{digest}} | wc -l )"; \\
+\t [ $${{signum}} -ge 2 ] || {{ echo "Error: Minimum signatures not met for {stage}-{name}"; exit 1; }}; \\
+\t env -C out/{stage}-{name} tar -cf - . | docker load
+\t docker tag stagex/{stage}-{name}:{version} stagex/{stage}-{name}:latest
+\t docker push stagex/{stage}-{name}:{version}
+\t docker tag stagex/{stage}-{name}:latest stagex/{stage}-{name}:sx$(RELEASE)
+\t docker push stagex/{stage}-{name}:sx$(RELEASE)
+\t docker push stagex/{stage}-{name}:latest
+
 """
 
   def __init__(self):
@@ -86,6 +101,12 @@ registry-{stage}-{name}:
     for stage, stage_packages in self.packages.items():
       for name, _ in stage_packages.items():
         print(f" \\\n\t {name}", end="")
+
+    print("\n\n.PHONY: publish\npublish:", end="")
+
+    for stage, stage_packages in self.packages.items():
+      for name, _ in stage_packages.items():
+        print(f" \\\n\t publish-{stage}-{name}", end="")
 
     for stage, stage_packages in self.packages.items():
       for name, package in stage_packages.items():
