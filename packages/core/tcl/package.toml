@@ -1,10 +1,9 @@
 [package]
 name = "tcl"
-version = "8.6.15"
+version = "8.6.16"
 description = "TODO"
 
 [sources.tcl]
-hash = "861e159753f2e2fbd6ec1484103715b0be56be3357522b858d3cbb5f893ffef1"
-format = "tar.gz"
-file = "tcl-{version}.{format}"
-mirrors = [ "https://fossies.org/linux/misc/tcl{version}-src.{format}",]
+hash = "91cb8fa61771c63c262efb553059b7c7ad6757afa5857af6265e4b0bdc2a14a5"
+file = "tcl-{version}.tar.gz"
+mirrors = [ "https://fossies.org/linux/misc/tcl{version}-src.tar.gz",]
