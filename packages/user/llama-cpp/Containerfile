@@ -1,0 +1,21 @@
+FROM stagex/pallet-gcc-cmake-busybox AS build
+ARG VERSION
+ADD fetch/llama.cpp-${VERSION}.tar.gz .
+WORKDIR /llama.cpp-${VERSION}
+RUN <<-EOF
+	set -eux
+	mkdir -p .git
+	touch .git/index
+	cmake -B build -G Ninja \
+    -DBUILD_TESTING=ON \
+		-DGGML_BUILD_NUMBER=1 \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DGGML_NATIVE=OFF \
+    -DENABLE_SHARED=ON
+	cmake --build build
+	DESTDIR="/rootfs" cmake --install build
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
