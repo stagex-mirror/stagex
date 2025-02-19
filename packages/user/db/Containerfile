@@ -1,0 +1,22 @@
+FROM stagex/pallet-gcc-gnu-busybox AS build
+ARG VERSION
+ADD fetch/db-${VERSION}.tar.gz .
+WORKDIR /db-${VERSION}
+ENV CFLAGS=" -fpermissive"
+ADD atomic.patch .
+RUN --network=none <<-EOF
+	set -eux
+	patch -p1 < atomic.patch
+	cd build_unix
+	../dist/configure \
+		--prefix=/usr \
+		--bindir=/usr/bin \
+		--mandir=/usr/share/man \
+		--enable-compat185 \
+		--enable-shared \
+		--enable-cxx
+	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
