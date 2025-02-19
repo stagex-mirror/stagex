@@ -3,6 +3,8 @@ import glob
 import os
 import sys
 import time
+import signal
+from functools import partial
 from common import CommonUtils
 from pathlib import Path
 from hashlib import file_digest
@@ -12,7 +14,7 @@ from email.message import Message
 from typing import List
 from typing import Tuple
 
-
+# fmt: off
 class ResourceFetcher(object):
   START_TIME: 0
   def __init__(self, package_file_path: str):
@@ -123,8 +125,19 @@ class ResourceFetcher(object):
       with open(file_path, "rb") as f:
           return expected_digest == file_digest(f, "sha256").hexdigest()
 
+def interrupt_handler(signum, frame, ask=True):
+    print(f"Handling signal {signum} ({signal.Signals(signum).name}).")
+    if ask:
+        signal.signal(signal.SIGINT, partial(interrupt_handler, ask=False))
+        print("To confirm interrupt, press ctrl-c again.")
+        return
+
+    print("Cleaning/exiting...")
+    time.sleep(1)
+    sys.exit(0)
 
 if __name__ == "__main__":
+  signal.signal(signal.SIGINT, interrupt_handler)
   package_files: List[str] = list()
   if len(sys.argv) > 1:
       packages = sys.argv[1:]
@@ -146,6 +159,3 @@ if __name__ == "__main__":
       for fail in failed:
         print(f"\nFailed: {fail}")
       exit(1)
-
-
-
