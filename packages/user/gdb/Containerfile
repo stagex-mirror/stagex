@@ -1,0 +1,29 @@
+FROM stagex/pallet-gcc-gnu-busybox AS build
+ARG VERSION
+COPY --from=stagex/pallet-python . /
+COPY --from=stagex/core-gettext . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-readline . /
+COPY --from=stagex/core-ncurses . /
+COPY --from=stagex/core-gmp . /
+COPY --from=stagex/user-mpfr . /
+ADD fetch/gdb-${VERSION}.tar.gz .
+WORKDIR /gdb-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--localstatedir=/var \
+		--disable-werror \
+		--disable-nls \
+		--enable-targets=all \
+		--with-system-readline \
+		--with-system-zlib
+	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
