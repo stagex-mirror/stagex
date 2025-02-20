@@ -1,0 +1,16 @@
+FROM stagex/pallet-gcc-gnu-busybox AS build
+ARG VERSION
+ADD fetch/chrpath-${VERSION}.tar.gz .
+WORKDIR /chrpath-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info
+	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
