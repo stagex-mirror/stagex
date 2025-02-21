@@ -1,0 +1,9 @@
+[package]
+name = "py-ptyprocess"
+version = "0.7.0"
+description = "TODO"
+
+[sources.py-ptyprocess]
+hash = "5c5d0a3b48ceee0b48485e0c26037c0acd7d29765ca3fbb5cb3831d347423220"
+file = "py-ptyprocess-{version}.tar.gz"
+mirrors = [ "https://files.pythonhosted.org/packages/source/p/ptyprocess/ptyprocess-{version}.tar.gz",]

@@ -1,0 +1,10 @@
+[package]
+name = "rr"
+version = "5.9.0"
+description = "TODO"
+
+[sources.rr]
+hash = "e3a7ea10fc72a74fe9949baa8f2598192c4ee77e50ed229b88d6c3ee34381a39"
+format = "tar.gz"
+file = "rr-{version}.tar.gz"
+mirrors = [ "https://github.com/rr-debugger/rr/archive/refs/tags/{version}.tar.gz" ]

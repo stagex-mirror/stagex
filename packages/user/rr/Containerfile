@@ -1,0 +1,28 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+COPY --from=stagex/core-readline . /
+COPY --from=stagex/core-ncurses . /
+COPY --from=stagex/core-gmp . /
+COPY --from=stagex/core-swig . /
+COPY --from=stagex/user-mpfr . /
+COPY --from=stagex/user-gdb . /
+COPY --from=stagex/user-lldb . /
+COPY --from=stagex/user-capnproto . /
+COPY --from=stagex/user-py-expect . /
+COPY --from=stagex/user-py-ptyprocess . /
+ARG VERSION
+ADD fetch/rr-${VERSION}.tar.gz .
+WORKDIR /rr-${VERSION}
+RUN <<-EOF
+	set -eux
+	export CPPFLAGS="-D_LARGEFILE64_SOURCE"
+	cmake -B build -G Ninja \
+		-Wno-dev \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DCMAKE_BUILD_TYPE=Release \
+		-Ddisable32bit=ON
+	cmake --build build
+	DESTDIR="/rootfs" cmake --install build
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
