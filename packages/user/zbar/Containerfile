@@ -5,7 +5,7 @@ COPY --from=stagex/core-linux-headers . /
 WORKDIR /zbar-${VERSION}
 RUN autoreconf -vfi
 
-FROM base AS zbarcam
+FROM base AS build-zbarcam
 RUN --network=none <<-EOF
 	./configure \
 		--prefix=/usr \
@@ -28,9 +28,9 @@ RUN --network=none <<-EOF
 	make DESTDIR=/rootfs install
 EOF
 FROM stagex/core-filesystem AS package-zbarcam
-COPY --from=build /rootfs/ /
+COPY --from=build-zbarcam /rootfs/ /
 
-FROM base AS libzbar
+FROM base AS build-libzbar
 RUN --network=none <<-EOF
 	./configure \
 		--prefix=/usr \
@@ -54,9 +54,9 @@ RUN --network=none <<-EOF
 	make DESTDIR=/rootfs install
 EOF
 FROM stagex/core-filesystem AS package-libzbar
-COPY --from=build /rootfs/ /
+COPY --from=build-libzbar /rootfs/ /
 
-FROM base AS libzbar-optimized-qrcode
+FROM base AS build-libzbar-optimized-qrcode
 RUN --network=none <<-EOF
 	./configure \
 		--prefix=/usr \
@@ -81,4 +81,4 @@ RUN --network=none <<-EOF
 	make DESTDIR=/rootfs install
 EOF
 FROM stagex/core-filesystem AS package-libzbar-optimized-qrcode
-COPY --from=build /rootfs/ /
+COPY --from=build-libzbar-optimized-qrcode /rootfs/ /
