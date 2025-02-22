@@ -2,6 +2,7 @@ FROM stagex/pallet-gcc-gnu-busybox AS base
 ARG VERSION
 ADD fetch/zbar-${VERSION}.tar.gz .
 COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-gettext . /
 WORKDIR /zbar-${VERSION}
 RUN autoreconf -vfi
 
