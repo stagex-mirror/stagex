@@ -1,0 +1,11 @@
+[package]
+name = "zbarcam"
+version = "0.23.93"
+description = "Reading bar codes from various sources"
+subpackages = ["libzbar", "libzbar-optimized-qrcode"]
+
+[sources.zbarcam]
+hash = "212dfab527894b8bcbcc7cd1d43d63f5604a07473d31a5f02889e372614ebe28"
+format = "tar.gz"
+file = "zbar-{version}.{format}"
+mirrors = [ "https://codeload.github.com/mchehab/zbar/{format}/refs/tags/{version}" ]

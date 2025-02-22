@@ -1,0 +1,124 @@
+FROM stagex/pallet-gcc-gnu-busybox AS build
+ARG VERSION
+ADD fetch/zbar-${VERSION}.tar.gz .
+COPY --from=stagex/core-linux-headers . /
+WORKDIR /zbar-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	autoreconf -vfi
+	./configure \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--without-x \
+		--without-xshm \
+		--without-dbus \
+		--without-jpeg \
+		--without-imagemagick \
+		--without-graphicsmagick \
+		--without-napi \
+		--without-gtk \
+		--without-gir \
+		--without-python \
+		--without-qt \
+		--without-java
+	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
+
+FROM stagex/pallet-gcc-gnu-busybox AS build-libzbar
+ARG VERSION
+ADD fetch/zbar-${VERSION}.tar.gz .
+WORKDIR /zbar-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	autoreconf -vfi
+	./configure \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--without-x \
+		--without-xshm \
+		--without-dbus \
+		--without-jpeg \
+		--without-imagemagick \
+		--without-graphicsmagick \
+		--without-napi \
+		--without-gtk \
+		--without-gir \
+		--without-python \
+		--without-qt \
+		--without-java \
+		--without-v4l
+	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
+
+FROM stagex/pallet-gcc-gnu-busybox AS build-libzbar
+ARG VERSION
+ADD fetch/zbar-${VERSION}.tar.gz .
+WORKDIR /zbar-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	autoreconf -vfi
+	./configure \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--without-x \
+		--without-xshm \
+		--without-dbus \
+		--without-jpeg \
+		--without-imagemagick \
+		--without-graphicsmagick \
+		--without-napi \
+		--without-gtk \
+		--without-gir \
+		--without-python \
+		--without-qt \
+		--without-java \
+		--without-v4l
+	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
+EOF
+FROM stagex/core-filesystem AS package-libzbar
+COPY --from=build /rootfs/ /
+
+FROM stagex/pallet-gcc-gnu-busybox AS build-libzbar-optimized-qrcode
+ARG VERSION
+ADD fetch/zbar-${VERSION}.tar.gz .
+WORKDIR /zbar-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	autoreconf -vfi
+	./configure \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--without-x \
+		--without-xshm \
+		--without-dbus \
+		--without-jpeg \
+		--without-imagemagick \
+		--without-graphicsmagick \
+		--without-napi \
+		--without-gtk \
+		--without-gir \
+		--without-python \
+		--without-qt \
+		--without-java \
+		--without-v4l \
+		--enable-codecs=qrcode
+	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
+EOF
+FROM stagex/core-filesystem AS package-libzbar-optimized-qrcode
+COPY --from=build /rootfs/ /
