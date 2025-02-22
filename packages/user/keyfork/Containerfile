@@ -3,6 +3,7 @@ ARG VERSION
 COPY --from=stagex/core-gmp . /
 COPY --from=stagex/user-nettle . /
 COPY --from=stagex/user-pcsc-lite . /
+COPY --from=stagex/user-libzbar-optimized-qrcode . /
 ADD fetch/keyfork-${VERSION}.tar.gz .
 WORKDIR /keyfork
 ADD <<-EOF /.cargo/config.toml
@@ -18,6 +19,7 @@ RUN --network=none <<-EOF
 		--frozen \
 		--release \
 		--target "${ARCH}-unknown-linux-musl" \
+		--features qrcode-decode-backend-zbar \
 		--bin keyfork
 	mkdir -p /rootfs/usr/bin
 	cp target/${ARCH}-unknown-linux-musl/release/keyfork /rootfs/usr/bin/keyfork
