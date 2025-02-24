@@ -1,0 +1,9 @@
+[package]
+name = "llama-cpp"
+version = "b4663"
+description = "TODO"
+
+[sources.llama_cpp]
+hash = "c630e767ce858e0ea16980bc38a1fa008c25a320610d07aa136b147446a1b3ef"
+file = "llama.cpp-{version}.tar.gz"
+mirrors = [ "https://github.com/ggerganov/llama.cpp/archive/refs/tags/{version}.tar.gz" ]
