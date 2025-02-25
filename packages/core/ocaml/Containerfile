@@ -1,7 +1,12 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM scratch AS build
 ARG VERSION
 ENV SOURCE_DATE_EPOCH=1
-COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/busybox . /
+COPY --from=stagex/binutils . /
+COPY --from=stagex/make . /
+COPY --from=stagex/musl . /
+COPY --from=stagex/gcc . /
+COPY --from=stagex/libzstd . /
 ADD fetch/ocaml-${VERSION}.tar.gz .
 WORKDIR /ocaml-${VERSION}
 RUN --network=none <<-EOF
@@ -14,7 +19,7 @@ RUN --network=none <<-EOF
 		--infodir=/usr/share/info \
 		--localstatedir=/var
 	make -j "$(nproc)"
-	make install DESTDIR=/rootfs
+	make DESTDIR="/rootfs" install
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
