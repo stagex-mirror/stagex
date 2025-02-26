@@ -1,9 +1,9 @@
 [package]
 name = "icepick"
-version = "5224bc00a3cc909d376fba9ba08c5431041a2e45"
+version = "e12d655245ab5f00656cdbb907f71fbf11fc3ea5"
 description = "TODO"
 
 [sources.icepick]
-hash = "80fd3a9bb2209edb14b6e9891b6ce6e60b530416e1e414ff9fd722c780692e8f"
+hash = "efa632071b8a2ec22e8a277dd44eb6d2beebd01e4fc83f2659f8899553efaef0"
 file = "icepick-{version}.tar.gz"
 mirrors = [ "https://git.distrust.co/public/icepick/archive/{version}.tar.gz",]
