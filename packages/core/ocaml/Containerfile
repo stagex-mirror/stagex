@@ -1,12 +1,12 @@
 FROM scratch AS build
 ARG VERSION
 ENV SOURCE_DATE_EPOCH=1
-COPY --from=stagex/busybox . /
-COPY --from=stagex/binutils . /
-COPY --from=stagex/make . /
-COPY --from=stagex/musl . /
-COPY --from=stagex/gcc . /
-COPY --from=stagex/libzstd . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-libzstd . /
 ADD fetch/ocaml-${VERSION}.tar.gz .
 WORKDIR /ocaml-${VERSION}
 RUN --network=none <<-EOF
