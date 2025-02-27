@@ -9,6 +9,10 @@ COPY --from=stagex/core-gmp . /
 COPY --from=stagex/user-mpfr . /
 ADD fetch/gdb-${VERSION}.tar.gz .
 WORKDIR /gdb-${VERSION}
+ENV LDFLAGS="-Wl,-O1 -Wl,--sort-common"
+ENV CFLAGS="-march=x86-64 -mtune=generic"
+ENV CXXFLAGS="$CFLAGS"
+ENV CPPFLAGS="$CXXFLAGS"
 RUN --network=none <<-EOF
 	set -eux
 	./configure \
