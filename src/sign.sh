@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 set -eu
 
 # Generate container image signatures in PGP sigstore format

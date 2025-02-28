@@ -1,0 +1,85 @@
+FROM stagex/pallet-gcc-gnu-busybox AS base
+ARG VERSION
+ADD fetch/zbar-${VERSION}.tar.gz .
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-gettext . /
+WORKDIR /zbar-${VERSION}
+RUN autoreconf -vfi
+
+FROM base AS build-zbarcam
+RUN --network=none <<-EOF
+	./configure \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--without-x \
+		--without-xshm \
+		--without-dbus \
+		--without-jpeg \
+		--without-imagemagick \
+		--without-graphicsmagick \
+		--without-napi \
+		--without-gtk \
+		--without-gir \
+		--without-python \
+		--without-qt \
+		--without-java
+	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
+EOF
+FROM stagex/core-filesystem AS package-zbarcam
+COPY --from=build-zbarcam /rootfs/ /
+
+FROM base AS build-libzbar
+RUN --network=none <<-EOF
+	./configure \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--without-x \
+		--without-xshm \
+		--without-dbus \
+		--without-jpeg \
+		--without-imagemagick \
+		--without-graphicsmagick \
+		--without-napi \
+		--without-gtk \
+		--without-gir \
+		--without-python \
+		--without-qt \
+		--without-java \
+		--without-v4l
+	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
+EOF
+FROM stagex/core-filesystem AS package-libzbar
+COPY --from=build-libzbar /rootfs/ /
+
+FROM base AS build-libzbar-optimized-qrcode
+RUN --network=none <<-EOF
+	./configure \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--without-x \
+		--without-xshm \
+		--without-dbus \
+		--without-jpeg \
+		--without-imagemagick \
+		--without-graphicsmagick \
+		--without-napi \
+		--without-gtk \
+		--without-gir \
+		--without-python \
+		--without-qt \
+		--without-java \
+		--without-v4l \
+		--enable-codecs=qrcode
+	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
+EOF
+FROM stagex/core-filesystem AS package-libzbar-optimized-qrcode
+COPY --from=build-libzbar-optimized-qrcode /rootfs/ /

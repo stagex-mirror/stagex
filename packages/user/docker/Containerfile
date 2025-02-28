@@ -4,7 +4,7 @@ ARG VERSION
 ENV CGO_ENABLED=1
 ENV GO11MODULE=on
 
-FROM base as build-dockerd
+FROM base AS build-dockerd
 ADD fetch/docker-${VERSION}.tar.gz .
 WORKDIR /moby-${VERSION}
 COPY <<-EOF go.mod
@@ -46,7 +46,7 @@ RUN --network=none <<-EOF
 
 EOF
 
-FROM base as build-docker
+FROM base AS build-docker
 ADD fetch/docker-cli-${VERSION}.tar.gz .
 WORKDIR /cli-${VERSION}
 ENV GO_LINKMODE=dynamic
