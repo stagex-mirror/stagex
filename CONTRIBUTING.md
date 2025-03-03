@@ -1,7 +1,8 @@
 ![[Stage<sup>x</sup>]](https://codeberg.org/repo-avatars/02eca12ad01b1b867ca7708117645b4d9791a7f7a30abd6d8e1dc20900f7b0d7)
-# Contributing to Stagex 
 
-We'd be happy to have you join the community! 
+# Contributing to Stagex
+
+We'd be happy to have you join the community!
 Below are the steps and processes that we follow.
 
 ## Topics
@@ -20,9 +21,9 @@ Before reporting an issue, check our backlog of
 to see if someone else has already reported it. If so, feel free to add
 your scenario, or additional information, to the discussion or simply
 "subscribe" to it to be notified when it is updated.
-If you find a new issue with the project we'd love to hear about it! 
+If you find a new issue with the project we'd love to hear about it!
 The most important aspect of a bug report is that it includes enough information for
-us to reproduce it. 
+us to reproduce it.
 Please don't include any private/sensitive information in your issue!
 
 ## Working On Issues
@@ -32,24 +33,26 @@ backlog of [open issues](https://codeberg.org/stagex/stagex/issues) looking
 for any that do not have an "In Progress" label attached to it.  Often issues
 will be assigned to someone, to be worked on at a later time.
 
-## Contributing to Stagex as package maintainer 
+## Contributing to Stagex as package maintainer
 
-This section describes how to start a contribution to Stagex. 
+This section describes how to start a contribution to Stagex.
 These instructions are geared towards using a Linux development machine,
 preferably Debian, which is required for setting up your development tools.
 
-### Fork and clone Stagex 
+### Fork and clone Stagex
 
 First you need to fork this project on Codeberg.
 Then clone your fork locally:
+
 ```shell
-$ git clone git@codeberg.com:<you>/stagex 
-$ cd  stagex
+git clone git@codeberg.com:<you>/stagex 
+cd  stagex
 ```
 
 ### Prepare your environment
-```
-$ sh ./src/setup-debian-12.sh
+
+```shell
+sh ./src/setup-debian-12.sh
 ```
 
 ### Deal with make
@@ -57,21 +60,25 @@ $ sh ./src/setup-debian-12.sh
 Stagex uses a Makefile to build everything.
 
 Populate your local registry by building from scratch
+
 ```shell
-$ make all
+make all
 ```
+
 |
 OR
 |
 Prepopulate your docker local registry
+
 ```shell
-$ make preseed 
-$ rm -rf ./out/sxctl
-$ make sxctl
+make preseed 
+rm -rf ./out/sxctl
+make sxctl
 ```
 
-Find if there is a relevant package that you can use as a boilerplate for the 
+Find if there is a relevant package that you can use as a boilerplate for the
 new addition.
+
 ```sh
 cp -R packages/python packages/cython
 vim packages/cython/Containerfile
@@ -90,18 +97,21 @@ the package you are contributing in `packages.mk`
 ## Helpful one liners
 <!--author: Lance R. Vick -->
 
-- see contents of a package:
+* see contents of a package:
+
 ```sh
 package=somepackage tar -tvf $(find out/${package} -type f -printf '%s %p\n' | sort -nr | head -n1 | awk '{ print $2 }') | less
 ```
 
-- test package for reproducibility:
+* test package for reproducibility:
+
 ```sh
 mkdir out2;
 package=somepackage; rm -rf out{,2}/${package}; make NOCACHE=1 ${package}; mv out/${package} out2/${package}; make NOCACHE=1 ${package}; diffoscope $(find out*/${package} -type f -printf '%s %p\n' | sort -nr | head -n2 | awk '{ print $2 }' | tr '\n' ' ')
 ```
 
-- make svg graph of dependency tree for a single package
+* make svg graph of dependency tree for a single package
+
 ```sh
 package=somepackage; make -Bnd ${package} | make2graph | dot -Tsvg -o ${package}-graph.svg
 ```
@@ -123,6 +133,7 @@ larger PRs into smaller ones - it's easier to review smaller
 code changes. But only if those smaller ones make sense as stand-alone PRs.
 
 Regardless of the type of PR, all PRs should include:
+
 * well documented code changes.
 
 PRs that fix issues should include a reference like `Closes #XXXX` in the
@@ -132,7 +143,7 @@ when the PR is merged.
 PRs will be approved by a [maintainer] listed in [`MAINTAINERS`](MAINTAINERS).
 
 In case you're only changing docs, make sure to prefix the PR title with
-"[CI:DOCS]". 
+"[CI:DOCS]".
 
 ### Describe your Changes in Commit Messages
 
@@ -155,15 +166,13 @@ it on as an open-source patch.
 If you set your `user.name` and `user.email` git configs, you can sign your
 commit automatically with `git commit -s`.
 
-
 ## Communications
 
 For general questions and discussion, please use the
 [matrix://#stagex:matrix.org](https://matrix.to/#/#stagex:matrix.org) | [ircs://irc.oftc.net:6697#stagex](https://webchat.oftc.net/?channels=stagex&uio=MT11bmRlZmluZWQmMTE9MTk14d)
 
-For discussions around issues/bugs and features, you can use Codeberg 
+For discussions around issues/bugs and features, you can use Codeberg
 [issues](https://codeberg.org/stagex/stagex/issues)
 and
 [PRs](https://codeberg.org/stagex/stagex/pulls)
 tracking system.
-
