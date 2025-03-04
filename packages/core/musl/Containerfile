@@ -10,9 +10,7 @@ RUN --network=none <<-EOF
 	CFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security"
 	CXXFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security -D_GLIBCXX_ASSERTIONS=1 -D_LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS=1 -D_LIBCPP_ENABLE_HARDENED_MODE=1"
 	LDFLAGS="-Wl,--as-needed,-O1,--sort-common -Wl,-soname,libc.musl-${ARCH}.so.1"
-	patch -p1 < lfs64.patch
-	patch -p1 < lfs64-2.patch
-	patch -p1 < relr-typedefs.patch
+	patch -p1 < CVE-2025-26519.patch
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \
