@@ -13,6 +13,8 @@ COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-clang . /
 COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-libffi . /
 ADD fetch/lld-${VERSION}.tar.xz .
 WORKDIR /llvm-project-${VERSION}.src
 RUN <<-EOF

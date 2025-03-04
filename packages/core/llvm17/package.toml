@@ -1,0 +1,9 @@
+[package]
+name = "llvm17"
+version = "17.0.6"
+description = "TODO"
+
+[sources.llvm17]
+hash = "58a8818c60e6627064f312dbf46c02d9949956558340938b71cf731ad8bc0813"
+file = "llvm17-{version}.tar.xz"
+mirrors = [ "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/llvm-project-{version}.src.tar.xz",]
