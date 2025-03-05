@@ -123,6 +123,7 @@ RUN --network=none <<-EOF
 		--enable-linux-user \
 		--enable-slirp \
 		--enable-tcg \
+		--enable-guest-agent \
 		--disable-install-blobs \
 		--disable-docs \
 		--disable-sdl \
