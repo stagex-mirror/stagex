@@ -1,6 +1,6 @@
 [package]
 name = "rust"
-version = "1.84.0"
+version = "1.85.0"
 description = "TODO"
 
 [sources.mrustc]
@@ -52,3 +52,7 @@ mirrors = [ "https://static.rust-lang.org/dist/rustc-1.83.0-src.tar.gz",]
 [sources.rust1_84_0]
 hash = "15cee7395b07ffde022060455b3140366ec3a12cbbea8f1ef2ff371a9cca51bf"
 mirrors = [ "https://static.rust-lang.org/dist/rustc-1.84.0-src.tar.gz",]
+
+[sources.rust1_85_0]
+hash = "2f4f3142ffb7c8402139cfa0796e24baaac8b9fd3f96b2deec3b94b4045c6a8a"
+mirrors = [ "https://static.rust-lang.org/dist/rustc-1.85.0-src.tar.gz",]

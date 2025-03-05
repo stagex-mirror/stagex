@@ -150,9 +150,12 @@ COPY --from=build-llvm17 /rust-1.82.0 /rust-1.82.0
 ADD fetch/rustc-1.83.0-src.tar.gz .
 RUN ./build 1.83.0 1.82.0
 
+ADD fetch/rustc-1.84.0-src.tar.gz .
+RUN ./build 1.84.0 1.83.0
+
 ADD no-default-static.patch .
 ADD fetch/rustc-${VERSION}-src.tar.gz .
-RUN ./build ${VERSION} 1.83.0 cargo,clippy,rustdoc,rustfmt,rust-demangler no-default-static
+RUN ./build ${VERSION} 1.84.0 cargo,clippy,rustdoc,rustfmt,rust-demangler no-default-static
 
 RUN <<-EOF
 	mv /rust-${VERSION} /rootfs
