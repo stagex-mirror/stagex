@@ -6,6 +6,7 @@ set -eu
 REGISTRY=${1?}
 NAME=${2?}
 GPG=${STAGEX_GPG:-gpg}
+GPG_SIGN=${STAGEX_GPG_SIGN:-${GPG}}
 GPGV=${STAGEX_GPGV:-gpgv}
 
 ID=$(cat out/${NAME}/index.json | jq -r '.manifests[].digest | sub ("sha256:";"")')
@@ -69,6 +70,6 @@ if dir-has-no-sig "$DIR" "$FPR"; then
   printf \
       '[{"critical":{"identity":{"docker-reference":"%s/%s"},"image":{"docker-manifest-digest":"%s"},"type":"pgp container image signature"},"optional":null}]' \
       "$REGISTRY" "$NAME" "$ID" \
-      | $GPG --sign > "$TEMPFILE"
+      | $GPG_SIGN --sign > "$TEMPFILE"
   mv "$TEMPFILE" "$FILENAME"
 fi
