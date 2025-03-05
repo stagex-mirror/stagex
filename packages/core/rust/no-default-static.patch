@@ -1,43 +1,43 @@
-From: Jakub Jirutka <jakub@jirutka.cz>
-Date: Sat, 08 Aug 2016 15:06:00 +0200
-Subject: [PATCH] Fix linux_musl_base for native musl host
+From 87bfbc2c988e8f5ecaeb0af2bd0da1ebfe9e8388 Mon Sep 17 00:00:00 2001
+From: "Lance R. Vick" <lance@distrust.co>
+Date: Tue, 4 Mar 2025 23:46:14 -0800
+Subject: [PATCH] Dynamic linking for musl by default
 
-See https://github.com/rust-lang/rust/pull/40113
+---
+ .../rustc_target/src/spec/base/linux_musl.rs  |  8 ++-----
+ compiler/rustc_target/src/spec/crt_objects.rs | 22 -------------------
+ 2 files changed, 2 insertions(+), 28 deletions(-)
 
+diff --git a/compiler/rustc_target/src/spec/base/linux_musl.rs b/compiler/rustc_target/src/spec/base/linux_musl.rs
+index e020bb85238..c0155286c3e 100644
 --- a/compiler/rustc_target/src/spec/base/linux_musl.rs
 +++ b/compiler/rustc_target/src/spec/base/linux_musl.rs
-@@ -1,15 +1,16 @@
--use crate::spec::{base, crt_objects, LinkSelfContainedDefault, TargetOptions};
-+use crate::spec::{base, crt_objects, TargetOptions};
+@@ -1,15 +1,11 @@
+-use crate::spec::{LinkSelfContainedDefault, TargetOptions, base, crt_objects};
++use crate::spec::{TargetOptions, base};
  
- pub fn opts() -> TargetOptions {
+ pub(crate) fn opts() -> TargetOptions {
      let mut base = base::linux::opts();
  
      base.env = "musl".into();
 -    base.pre_link_objects_self_contained = crt_objects::pre_musl_self_contained();
 -    base.post_link_objects_self_contained = crt_objects::post_musl_self_contained();
 -    base.link_self_contained = LinkSelfContainedDefault::InferredForMusl;
-+    // Do not include musl crt objects by default, do not build self-contained binaries
-+    // base.pre_link_objects_self_contained = crt_objects::pre_musl_self_contained();
-+    // base.post_link_objects_self_contained = crt_objects::post_musl_self_contained();
-+    // base.link_self_contained = LinkSelfContainedDefault::InferredForMusl;
  
 -    // These targets statically link libc by default
 -    base.crt_static_default = true;
-+    // Explicitly: do not static link libc by default
 +    base.crt_static_default = false;
  
      base
  }
+diff --git a/compiler/rustc_target/src/spec/crt_objects.rs b/compiler/rustc_target/src/spec/crt_objects.rs
+index e3b6430a463..13a96e2cb7e 100644
 --- a/compiler/rustc_target/src/spec/crt_objects.rs
 +++ b/compiler/rustc_target/src/spec/crt_objects.rs
-@@ -58,28 +61,6 @@
-         (LinkOutputKind::StaticPicExe, &[obj]),
-         (LinkOutputKind::DynamicDylib, &[obj]),
-         (LinkOutputKind::StaticDylib, &[obj]),
--    ])
--}
--
+@@ -62,28 +62,6 @@ pub(super) fn all(obj: &'static str) -> CrtObjects {
+     ])
+ }
+ 
 -pub(super) fn pre_musl_self_contained() -> CrtObjects {
 -    new(&[
 -        (LinkOutputKind::DynamicNoPicExe, &["crt1.o", "crti.o", "crtbegin.o"]),
@@ -57,6 +57,12 @@ See https://github.com/rust-lang/rust/pull/40113
 -        (LinkOutputKind::StaticPicExe, &["crtendS.o", "crtn.o"]),
 -        (LinkOutputKind::DynamicDylib, &["crtendS.o", "crtn.o"]),
 -        (LinkOutputKind::StaticDylib, &["crtendS.o", "crtn.o"]),
-     ])
- }
- 
+-    ])
+-}
+-
+ pub(super) fn pre_mingw_self_contained() -> CrtObjects {
+     new(&[
+         (LinkOutputKind::DynamicNoPicExe, &["crt2.o", "rsbegin.o"]),
+-- 
+2.39.5
+
