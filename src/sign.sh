@@ -1,26 +1,20 @@
 #!/usr/bin/bash
 set -eu
-
 # Generate container image signatures in PGP sigstore format
-
-# Usage
 usage() {
-    echo "Usage:"
-    echo "$0 <registry|repo_url> <package name> <branch_name> <file_name> [commit_message]"
-    echo "One does not simply run this script without the proper arguments!"
+    echo "
+    $0 <registry|repo_url> <package name> <branch_name> [commit_message]
+    For testing it run: \n$0 sigs.stagex.tools.git bootstrap-stage0"
     exit 1
 }
-
-# Successful?
 check_command() {
     if [ $? -ne 0 ]; then
-        echo "Oh no! Something went wrong: $1. Do or do not. There is no try!"
+        echo -e "Do or do not. Something went wrong: $1."
         exit 1
     fi
 }
-
 # Check for required arguments
-if [ "$#" -lt 3 ]; then
+if [ "$#" -lt 2 ]; then
     usage
 fi
 
@@ -30,53 +24,41 @@ get-primary-fp() {
     $GPG --list-keys --with-colons "$FP" | grep fpr | cut -d: -f10 | head -n1
   fi
 }
-
 # Variables
+RED='\033[0;31m' # for echo color
+NC='\033[0m' # No color
 GPG=${STAGEX_GPG:-gpg}
 GPG_SIGN=${STAGEX_GPG_SIGN:-${GPG}}
 GPGV=${STAGEX_GPGV:-gpgv}
 RELEASE=$(date '+%Y-%m-'0)
-FPR="$(get-primary-fp "$SIGNING_KEY")"
+SIGNER=$(git config user.name) || { echo "Failed to find user for signing"; exit 1; }
 SIGNING_KEY="$(git config user.signingkey)"
-SIGNER=$(git config user.name) || { echo "Failed to find signer, are you sure you are not a hobbit?"; exit 1; }
+FPR="$(get-primary-fp ${SIGNING_KEY})"
 test ! -z "$FPR"
-
 TEMPFILE="$(mktemp)"
-# SIGNATURES := https://codeberg.org/stagex/sigs.stagex.tools.git from MAKEFILE
+#From SIGNATURES := https://codeberg.org/stagex/sigs.stagex.tools.git from MAKEFILE
+# SIGNATURES="git@codeberg.org:stagex/sigs.stagex.tools.git"
 REGISTRY=${1?}
 PACKAGE_NAME=${2?}
 BRANCH_NAME="${3:-$SIGNER/$RELEASE}"
-COMMIT_MESSAGE="${5:-Add signatures for release $RELEASE by: $SIGNER}"  
+
+if git ls-remote --heads https://codeberg.org/stagex/sigs.stagex.tools.git "refs/heads/${BRANCH_NAME}"| grep -q ${BRANCH_NAME}; then 
+  echo "${BRANCH_NAME} exists"; 
+  echo "Bye!"; 
+  exit; 
+fi
+
+COMMIT_MESSAGE="${4:-Add signatures for release $RELEASE by: $SIGNER}"  
 ID=$(cat out/${PACKAGE_NAME}/index.json | jq -r '.manifests[].digest | sub ("sha256:";"")')
-DIR="signatures/${REGISTRY}/${NAME}@sha256=${ID}
+DIR="signatures/${REGISTRY}/${PACKAGE_NAME}@sha256=${ID}"
 
-get-signing-fp() {
-  FILE="$1"
-  ($GPGV "$FILE" >/dev/null || :) 2>&1 | awk '$4 == "key" { print $5 }'
-}
-
-echo "
-GPG=$GPG
-GPGV=$GPGV
-RELEASE=$RELEASE
-USER=$SIGNER
-SIGNING_KEY=$SIGNING
-FPR=$FPR
-TEMPFILE=$TEMPFILE
-REGISTRY=$REGISTRY
-PACKAGE_NAME=$PACKAGE_NAME
-BRANCH_NAME=$BRANCH_NAME
-COMMIT_MESSAGE=$COMMIT_MESSAGE  
-ID=$ID
-DIR=$DIR
-"
-
-# Clone the repository into the temporary directory
-git clone "$SIGNATURES" "signatures/$REGISTRY"
-check_command "Failed to clone the repository. Did you forget the URL, or is it just a trap set by the Sith?"
+echo -e "${RED}<========CLONING SIGNATURES REPO=========>${NC}"
+echo -e "${RED}<========CLONING TAP the button ssh=========>${NC}"
+git clone "$SIGNATURES" "signatures/$REGISTRY" # Clone repo to make signatures
+check_command "Failed to clone the repository"
 
 mkdir -p "${DIR}"
-check_command "Failed to create signatures, how is this possible?"
+check_command "Failed to create signatures folder"
 
 get-filename() {
   DIR="$1"
@@ -92,6 +74,10 @@ get-filename() {
   echo "${DIR}/signature-${SIGNUM}"
 }
 
+get-signing-fp() {
+  FILE="$1"
+  ($GPGV "$FILE" >/dev/null || :) 2>&1 | awk '$4 == "key" { print $5 }'
+}
 
 dir-has-no-sig() {
   echo "$DIR" >/dev/stderr
@@ -101,7 +87,7 @@ dir-has-no-sig() {
     # We want to check if a fingerprint matches, we don't need to check if
     # the signature is valid.
     SIGNING_FP="$(get-signing-fp $file)"
-    CERT_FP="$(get-primary-fp "$SIGNING_FP")"
+    CERT_FP="$(get-primary-fp '$SIGNING_FP')"
     if test "$FP" = "$CERT_FP"; then
       echo "found matching signature: $file" >/dev/stderr
       return 1
@@ -110,10 +96,11 @@ dir-has-no-sig() {
   return 0
 }
 
-cd "signatures/$REGISTRY" || { echo "Failed to enter the secret lair."; exit 1; }
+cd "signatures/$REGISTRY" || { echo "Failed to enter signatures dir"; exit 1; }
+DIR="${PACKAGE_NAME}@sha256=${ID}"
 # Check if the branch already exists
 if git show-ref --verify --quiet "refs/heads/$BRANCH_NAME"; then
-    echo "Whoa there! The branch '$BRANCH_NAME' already exists!"
+    echo "The branch '$BRANCH_NAME' already exists!"
     cd ..
     rm -rf "${DIR}"
     exit 1
@@ -121,32 +108,37 @@ fi
 
 # Create a new branch
 git checkout -b "$BRANCH_NAME"
-check_command "Failed to create a new branch. 'You shall not pass\!'"
+check_command "${RED}Failed to create a new branch"
 
 if dir-has-no-sig "$DIR" "$FPR"; then
-  echo "Signing: $NAME"
+  echo -e "${RED}<=========== Signing: $PACKAGE_NAME ==============>${NC}"
+  echo -e "${RED}<=========== Signing: yes tap the button!==============>${NC}"
   FILENAME="$(get-filename "$DIR")"
   printf \
       '[{"critical":{"identity":{"docker-reference":"%s/%s"},"image":{"docker-manifest-digest":"%s"},"type":"pgp container image signature"},"optional":null}]' \
-      "$REGISTRY" "$NAME" "$ID" \
-      | $GPG_SIGN --sign > "$TEMPFILE"
+      "$REGISTRY" "$PACKAGE_NAME" "$ID" | $GPG --sign > "$TEMPFILE"
   mv "$TEMPFILE" "$FILENAME"
 fi
 
 # Add the file to staging
+echo -e "${RED}<=========== ADD to start Commit=========>${NC}"
 git add "$FILENAME"
-check_command "Failed to add the file to staging. Are you trying to convince a Cylon to join the Resistance?"
+check_command "${RED}Failed to add the file to staging${NC}"
 
 # Commit the changes
+echo -e "${RED}<=========== COMMIT=========${NC}"
+echo -e "${RED}<=========== COMMIT yes tap the button!=========>${NC}"
 git commit -m "$COMMIT_MESSAGE"
-check_command "Failed to commit changes. Did the Dark Side tempt you?"
+check_command "${RED}Failed to commit changes${NC}"
 
 # Push the new branch to the remote repository
+echo -e "${RED}<=========== PUSH=============================>${NC}"
+echo -e "${RED}<=========== PUSH yes tap the button!=========>${NC}"
 git push origin "$BRANCH_NAME"
-check_command "Failed to push changes. Is the internet down, or did the Death Star just blow up your Wi-Fi?"
+check_command "${RED}Failed to push changes${NC}"
 
 # Clean up: remove the temporary directory
 cd ..
+echo -e "${RED}<============== finally =============================>${NC}"
 rm -rf "signatures/${REGISTRY}"
-
-echo "🎉 Huzzah! Successfully created branch '$BRANCH_NAME', signed and pushed changes. You are the chosen one, destined to bring balance to a reproducible future!"
+echo ${RED}"🎉 Huzzah!${NC} Successfully created branch ${BRANCH_NAME}, signed and pushed changes. You are the chosen one, destined to bring balance to a reproducible future!"
