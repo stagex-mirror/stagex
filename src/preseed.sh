@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-date="$(date '+%D %T')"
+date="$(date '+%F %T')"
 
 fetch(){
 	line=${1?}
