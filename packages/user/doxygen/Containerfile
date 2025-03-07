@@ -3,10 +3,8 @@ ARG VERSION
 COPY --from=stagex/core-libxml2 . /
 ADD fetch/doxygen-${VERSION}.tar.gz .
 WORKDIR /doxygen-${VERSION}
-COPY *.patch .
 RUN --network=none <<-EOF
-	set -eux \
-	patch -p1 remove-usage-of-fstat64.patch
+	set -eux
 	cmake -B build -G Ninja \
 		-DGIT_EXECUTABLE=/bin/false \
 		-DCMAKE_INSTALL_PREFIX=/usr \
