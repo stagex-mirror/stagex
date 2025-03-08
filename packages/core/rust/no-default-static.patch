@@ -1,18 +1,20 @@
-From 87bfbc2c988e8f5ecaeb0af2bd0da1ebfe9e8388 Mon Sep 17 00:00:00 2001
+From 221126502a2876377d661e4cbc24c0969b704ed2 Mon Sep 17 00:00:00 2001
 From: "Lance R. Vick" <lance@distrust.co>
-Date: Tue, 4 Mar 2025 23:46:14 -0800
+Date: Tue, 4 Mar 2025 15:29:53 -0800
 Subject: [PATCH] Dynamic linking for musl by default
 
 ---
- .../rustc_target/src/spec/base/linux_musl.rs  |  8 ++-----
+ .../rustc_target/src/spec/base/linux_musl.rs  |  5 +----
  compiler/rustc_target/src/spec/crt_objects.rs | 22 -------------------
- 2 files changed, 2 insertions(+), 28 deletions(-)
+ .../targets/aarch64_unknown_linux_musl.rs     |  3 ---
+ .../spec/targets/x86_64_unknown_linux_musl.rs |  2 --
+ 4 files changed, 1 insertion(+), 31 deletions(-)
 
 diff --git a/compiler/rustc_target/src/spec/base/linux_musl.rs b/compiler/rustc_target/src/spec/base/linux_musl.rs
-index e020bb85238..c0155286c3e 100644
+index 1a854fe362d..5de2cfb9e64 100644
 --- a/compiler/rustc_target/src/spec/base/linux_musl.rs
 +++ b/compiler/rustc_target/src/spec/base/linux_musl.rs
-@@ -1,15 +1,11 @@
+@@ -1,12 +1,9 @@
 -use crate::spec::{LinkSelfContainedDefault, TargetOptions, base, crt_objects};
 +use crate::spec::{TargetOptions, base};
  
@@ -23,10 +25,6 @@ index e020bb85238..c0155286c3e 100644
 -    base.pre_link_objects_self_contained = crt_objects::pre_musl_self_contained();
 -    base.post_link_objects_self_contained = crt_objects::post_musl_self_contained();
 -    base.link_self_contained = LinkSelfContainedDefault::InferredForMusl;
- 
--    // These targets statically link libc by default
--    base.crt_static_default = true;
-+    base.crt_static_default = false;
  
      base
  }
@@ -63,6 +61,33 @@ index e3b6430a463..13a96e2cb7e 100644
  pub(super) fn pre_mingw_self_contained() -> CrtObjects {
      new(&[
          (LinkOutputKind::DynamicNoPicExe, &["crt2.o", "rsbegin.o"]),
+diff --git a/compiler/rustc_target/src/spec/targets/aarch64_unknown_linux_musl.rs b/compiler/rustc_target/src/spec/targets/aarch64_unknown_linux_musl.rs
+index 4fefdfa5c5e..bb65048a56d 100644
+--- a/compiler/rustc_target/src/spec/targets/aarch64_unknown_linux_musl.rs
++++ b/compiler/rustc_target/src/spec/targets/aarch64_unknown_linux_musl.rs
+@@ -12,9 +12,6 @@ pub(crate) fn target() -> Target {
+         | SanitizerSet::MEMORY
+         | SanitizerSet::THREAD;
+ 
+-    // FIXME(compiler-team#422): musl targets should be dynamically linked by default.
+-    base.crt_static_default = true;
+-
+     Target {
+         llvm_target: "aarch64-unknown-linux-musl".into(),
+         metadata: crate::spec::TargetMetadata {
+diff --git a/compiler/rustc_target/src/spec/targets/x86_64_unknown_linux_musl.rs b/compiler/rustc_target/src/spec/targets/x86_64_unknown_linux_musl.rs
+index 8dcdc5be8a9..8be0f335db9 100644
+--- a/compiler/rustc_target/src/spec/targets/x86_64_unknown_linux_musl.rs
++++ b/compiler/rustc_target/src/spec/targets/x86_64_unknown_linux_musl.rs
+@@ -14,8 +14,6 @@ pub(crate) fn target() -> Target {
+         | SanitizerSet::MEMORY
+         | SanitizerSet::THREAD;
+     base.supports_xray = true;
+-    // FIXME(compiler-team#422): musl targets should be dynamically linked by default.
+-    base.crt_static_default = true;
+ 
+     Target {
+         llvm_target: "x86_64-unknown-linux-musl".into(),
 -- 
 2.39.5
 
