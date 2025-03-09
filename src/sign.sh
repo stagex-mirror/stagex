@@ -2,9 +2,8 @@
 set -eu
 # Generate container image signatures in PGP sigstore format
 usage() {
-    echo "
-    $0 <registry|repo_url> <package name> <branch_name> [commit_message]
-    For testing it run: \n$0 sigs.stagex.tools.git bootstrap-stage0"
+    printf "%s <registry|repo_url> <package name> <branch_name> [commit_message]
+    To test it run: \n %s sigs.stagex.tools.git bootstrap-stage0" "$0" "$0"
     exit 1
 }
 check_command() {
@@ -30,26 +29,26 @@ NC='\033[0m' # No color
 GPG=${STAGEX_GPG:-gpg}
 GPG_SIGN=${STAGEX_GPG_SIGN:-${GPG}}
 GPGV=${STAGEX_GPGV:-gpgv}
-RELEASE=$(date '+%Y-%m-'0)
+RELEASE=$(date '+%Y-%m-0')
 SIGNER=$(git config user.name) || { echo "Failed to find user for signing"; exit 1; }
 SIGNING_KEY="$(git config user.signingkey)"
-FPR="$(get-primary-fp ${SIGNING_KEY})"
+FPR="$(get-primary-fp "${SIGNING_KEY}")"
 test ! -z "$FPR"
 TEMPFILE="$(mktemp)"
 #From SIGNATURES := https://codeberg.org/stagex/sigs.stagex.tools.git from MAKEFILE
-# SIGNATURES="git@codeberg.org:stagex/sigs.stagex.tools.git"
+SIGNATURES="git@codeberg.org:stagex/sigs.stagex.tools.git"
 REGISTRY=${1?}
 PACKAGE_NAME=${2?}
 BRANCH_NAME="${3:-$SIGNER/$RELEASE}"
 
-if git ls-remote --heads https://codeberg.org/stagex/sigs.stagex.tools.git "refs/heads/${BRANCH_NAME}"| grep -q ${BRANCH_NAME}; then 
+if git ls-remote --heads https://codeberg.org/stagex/sigs.stagex.tools.git "refs/heads/${BRANCH_NAME}"| grep -q "${BRANCH_NAME}"; then 
   echo "${BRANCH_NAME} exists"; 
   echo "Bye!"; 
   exit; 
 fi
 
 COMMIT_MESSAGE="${4:-Add signatures for release $RELEASE by: $SIGNER}"  
-ID=$(cat out/${PACKAGE_NAME}/index.json | jq -r '.manifests[].digest | sub ("sha256:";"")')
+ID=$(cmd out/"${PACKAGE_NAME}"/index.json | jq -r '.manifests[].digest | sub ("sha256:";"")')
 DIR="signatures/${REGISTRY}/${PACKAGE_NAME}@sha256=${ID}"
 
 echo -e "${RED}<========CLONING SIGNATURES REPO=========>${NC}"
@@ -63,14 +62,18 @@ check_command "Failed to create signatures folder"
 get-filename() {
   DIR="$1"
   SIGNUM=1
-  [ -f "${DIR}/signature-1" ] \
-      && LASTSIGNUM=$( \
-          find ${DIR} -type f -printf "%f\n" \
-          | sort -t- -k2 -n \
-          | tail -n1 \
-          | sed 's/signature-//' \
-      ) \
-      && let "SIGNUM=LASTSIGNUM+1"
+  if [ -f "${DIR}/signature-1" ] 
+  then 
+    LASTSIGNUM=$( \
+      find "${DIR}" -type f -printf "%f\n" \
+      | sort -t- -k2 -n \
+      | tail -n1 \
+      | sed 's/signature-//' \
+    ) \
+      && (("SIGNUM=LASTSIGNUM+1")) 
+  else 
+    true
+  fi
   echo "${DIR}/signature-${SIGNUM}"
 }
 
@@ -86,8 +89,8 @@ dir-has-no-sig() {
   for file in "${DIR}"/*; do
     # We want to check if a fingerprint matches, we don't need to check if
     # the signature is valid.
-    SIGNING_FP="$(get-signing-fp $file)"
-    CERT_FP="$(get-primary-fp '$SIGNING_FP')"
+    signing_FP="$(get-signing-fp "$file")"
+    CERT_FP="$(get-primary-fp "$signing_FP")"
     if test "$FP" = "$CERT_FP"; then
       echo "found matching signature: $file" >/dev/stderr
       return 1
@@ -141,4 +144,4 @@ check_command "${RED}Failed to push changes${NC}"
 cd ..
 echo -e "${RED}<============== finally =============================>${NC}"
 rm -rf "signatures/${REGISTRY}"
-echo ${RED}"🎉 Huzzah!${NC} Successfully created branch ${BRANCH_NAME}, signed and pushed changes. You are the chosen one, destined to bring balance to a reproducible future!"
+echo -e "${RED} 🎉 Huzzah!${NC} Successfully created branch ${BRANCH_NAME}, signed and pushed changes. You are the chosen one, destined to bring balance to a reproducible future!"
