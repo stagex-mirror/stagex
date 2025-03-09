@@ -1,0 +1,18 @@
+--- a/tool/rbinstall.rb
++++ b/tool/rbinstall.rb
+@@ -990,6 +990,7 @@
+   end
+ end
+ 
++=begin
+ install?(:ext, :comm, :gem, :'bundled-gems') do
+   gem_dir = Gem.default_dir
+   install_dir = with_destdir(gem_dir)
+@@ -1057,6 +1058,7 @@
+     puts "skipped bundled gems: #{gems.join(' ')}"
+   end
+ end
++=end
+ 
+ parse_args()
+ 

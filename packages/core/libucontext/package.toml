@@ -1,0 +1,9 @@
+[package]
+name = "libucontext"
+version = "1.3.2"
+description = "ucontext function implementations"
+
+[sources.libucontext]
+hash = "96beee6f7fa0e8532f3bacee658124e142dcbad4f73f0a5d894b47d0ce20b96a"
+file = "libucontext-{version}.tar.xz"
+mirrors = ["https://distfiles.ariadne.space/libucontext/{file}"]
