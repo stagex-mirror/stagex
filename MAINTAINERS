@@ -48,6 +48,14 @@ email = "contact@shane.gg"
 matrix = "@singlerider:matrix.org"
 keyoxide = "https://keyoxide.org/3D7C8D39E8C4DF771583D3F0A8A091FD346001CA"
 
+[people.conyel]
+name = "Konstantinos Geles"
+location = "Lille, France"
+email = "bioinformaticiannextdoor@gmail.com"
+matrix = "@bioinformatician_next_door:matrix.org"
+fediverse = "@bioinformatician_next_door@kafeneio.social"
+website = "https://silvertides.net"
+
 [keys]
 
 [keys.lancevick.personal]
@@ -101,6 +109,15 @@ algorithm = "RSA4096"
 servers = "openpgp.org"
 devices = "Yubikey 5 NFC, Yubikey 5C Nano, flexSecure Java Card Implant"
 offline-ca = false
+backup = true
+interaction = true
+
+[keys.conyel.personal]
+id = "8208F8E4F9D61005F5706A4E28E42797A19977AC"
+algorithm = "ED25519"
+servers = "openpgp.org"
+devices = "YubiKey 5 NFC"
+offline-ca = true
 backup = true
 interaction = true
 
@@ -214,3 +231,14 @@ cores = 12
 os = "Arch Linux"
 runtime = "Docker"
 
+[machines.conyel.remote1]
+owner = "Konstantinos Geles"
+location = "EMEA"
+type = "vm"
+arch = "x86_64"
+brand = "AMD"
+model = "EPYC Rome"
+ghz = 2
+cores = 32
+os = "Proxmox/Debian"
+runtime = "Docker"
