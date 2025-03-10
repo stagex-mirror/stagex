@@ -1,9 +1,9 @@
 [package]
 name = "cross-x86_64-gnu-rust"
 description = "TODO"
-version = "1.84.0"
+version = "1.85.0"
 
 [sources.rust]
-hash = "15cee7395b07ffde022060455b3140366ec3a12cbbea8f1ef2ff371a9cca51bf"
+hash = "2f4f3142ffb7c8402139cfa0796e24baaac8b9fd3f96b2deec3b94b4045c6a8a"
 file = "rustc-{version}-src.tar.gz"
 mirrors = ["https://static.rust-lang.org/dist/{file}"]

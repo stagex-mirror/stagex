@@ -32,8 +32,14 @@ RUN <<EOF
 		--build="${ARCH}-unknown-linux-musl" \
 		--host="${ARCH}-unknown-linux-musl" \
 		--target="${ARCH}-unknown-linux-gnu" \
-		--enable-local-rust \
+		--prefix="/usr" \
 		--llvm-root="/usr" \
+		--llvm-libunwind="system" \
+		--sysconfdir="/rootfs/etc" \
+		--libdir="/opt/cross/lib/${ARCH}-linux-gnu" \
+		--enable-local-rust \
+		--enable-clang \
+		--enable-lld \
 		--disable-docs \
 		--enable-llvm-link-shared \
 		--enable-option-checking \
@@ -41,29 +47,11 @@ RUN <<EOF
 		--enable-vendor \
 		--dist-compression-formats=gz \
 		--release-channel="stable" \
-		--python="python3" \
-		--prefix="/usr" \
-		--sysconfdir="/rootfs/etc" \
-		--libdir="/opt/cross/lib/${ARCH}-linux-gnu" \
-		--set="install.prefix=/rootfs" \
-		--set="target.${ARCH}-unknown-linux-gnu.llvm-config=/usr/bin/llvm-config" \
-		--set="target.${ARCH}-unknown-linux-gnu.cc=${ARCH}-linux-gnu-gcc" \
-		--set="target.${ARCH}-unknown-linux-gnu.cxx=${ARCH}-linux-gnu-c++" \
-		--set="target.${ARCH}-unknown-linux-gnu.ar=${ARCH}-linux-gnu-ar" \
-		--set="target.${ARCH}-unknown-linux-gnu.linker=${ARCH}-linux-gnu-gcc" \
-		--set="build.extended=true" \
-		--set="rust.backtrace-on-ice=true" \
-		--set="rust.codegen-units=1" \
-		--set="rust.codegen-units-std=1" \
-		--set="rust.deny-warnings=false" \
-		--set="rust.parallel-compiler=false" \
-		--set="rust.remap-debuginfo=true" \
-		--set="rust.llvm-libunwind=system" \
-		--set="build.full-bootstrap=true"
+		--set="install.prefix=/rootfs"
 	python3 x.py build --stage 0 --target ${ARCH}-unknown-linux-gnu library
 	mkdir -p /rootfs/usr/lib/rustlib/
 	cp -r \
-		/rustc-${VERSION}-src/build/${ARCH}-unknown-linux-musl/stage0-sysroot/lib64/rustlib/${ARCH}-unknown-linux-gnu \
+		/rustc-${VERSION}-src/build/${ARCH}-unknown-linux-musl/stage0-sysroot/lib/rustlib/${ARCH}-unknown-linux-gnu \
 		/rootfs/usr/lib/rustlib/
 EOF
 FROM stagex/core-filesystem AS package
