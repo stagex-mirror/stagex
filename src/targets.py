@@ -200,6 +200,7 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
         args.append(f"--build-arg VERSION_DASH={package.version_dash}")
         args.append(f"--build-arg VERSION_MAJOR={package.version_major}")
         args.append(f"--build-arg VERSION_MAJOR_MINOR={package.version_major_minor}")
+        args.append(f"--build-arg VERSION_STRIP_SUFFIX={package.version_strip_suffix}")
 
     for source_name, source_info in sources.items():
         source_format = source_info.format

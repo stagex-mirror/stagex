@@ -27,6 +27,10 @@ class WithVersion(object):
   def version_major_minor(self) -> str:
     return CommonUtils.version_to_major_minor(self.version) if self.version else ""
 
+  @property
+  def version_strip_suffix(self) -> str:
+    return CommonUtils.version_strip_suffix(self.version) if self.version else ""
+
 @dataclass(kw_only=True)
 class SourcesInfo(WithVersion):
   hash: str
@@ -65,6 +69,11 @@ class CommonUtils(object):
     parts = version.split(".")
     if len(parts) >= 2:
         return ".".join(parts[:2])
+
+  @staticmethod
+  def version_strip_suffix(version: str) -> str:
+    parts = s.rsplit("-", 1)
+    return parts[0]
 
   @staticmethod
   def toml_read(filename: str) -> dict[str, Any]:
