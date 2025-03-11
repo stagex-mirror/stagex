@@ -7,4 +7,4 @@ description = "TODO"
 hash = "fece24563f697870fbb982ea8bf17482c9d5f855d8c9bf0b82463d76c9e8d0cc"
 format = "tar.gz"
 file = "cmake-{version}.{format}"
-mirrors = [ "https://cmake.org/files/v3.27/{file}",]
+mirrors = [ "https://cmake.org/files/v{version_major_minor}/{file}",]
