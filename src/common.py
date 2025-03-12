@@ -38,7 +38,6 @@ class SourcesInfo(WithVersion):
   file: str
   mirrors: List[str] = field(default_factory=list)
 
-
 @dataclass(kw_only=True)
 class PackageInfo(WithVersion):
   name: str
@@ -47,8 +46,6 @@ class PackageInfo(WithVersion):
   subpackages: List[str] = field(default_factory=list)
   sources: MutableMapping[str, SourcesInfo] = field(default_factory=dict)
   deps: List[str] = field(default_factory=list)
-
-
 
 class CommonUtils(object):
   @staticmethod
@@ -72,7 +69,7 @@ class CommonUtils(object):
 
   @staticmethod
   def version_strip_suffix(version: str) -> str:
-    parts = s.rsplit("-", 1)
+    parts = version.split("-", 1)
     return parts[0]
 
   @staticmethod
