@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-date="$(date '+%D %T')"
+date="$(date '+%F %T')"
 
 fetch(){
 	line=${1?}
@@ -16,6 +16,6 @@ fetch(){
 
 while read line; do
 	fetch "${line}"
-done < digests.txt
+done < digests/bootstrap.txt < digests/core.txt < digests/pallet.txt < digests/user.txt
 
 find out -type f -exec touch -d "$date" {} +

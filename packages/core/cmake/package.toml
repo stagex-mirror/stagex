@@ -4,6 +4,7 @@ version = "3.31.5"
 description = "TODO"
 
 [sources.cmake]
-hash = "66fb53a145648be56b46fa9e8ccade3a4d0dfc92e401e52ce76bdad1fea43d27"
-file = "cmake-{version}.tar.gz"
-mirrors = [ "https://cmake.org/files/v3.31/{file}",]
+hash = "fece24563f697870fbb982ea8bf17482c9d5f855d8c9bf0b82463d76c9e8d0cc"
+format = "tar.gz"
+file = "cmake-{version}.{format}"
+mirrors = [ "https://cmake.org/files/v{version_major_minor}/{file}",]
