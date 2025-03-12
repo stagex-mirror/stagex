@@ -1,0 +1,19 @@
+FROM scratch AS build
+ARG VERSION
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-gcc . /
+ADD fetch/xxhash-${VERSION}.tar.gz .
+WORKDIR /xxHash-${VERSION}
+ARG TARGETARCH
+RUN --network=none <<EOF
+	set -eux
+	export DISPATCH=0
+	[[ "$TARGETARCH" == "amd64" ]] && export DISPATCH=1
+	make -j "$(nproc)" DISPATCH="$DISPATCH"
+	make DESTDIR=/rootfs PREFIX=/usr install
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

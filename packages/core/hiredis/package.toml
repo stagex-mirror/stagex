@@ -1,0 +1,9 @@
+[package]
+name = "hiredis"
+version = "1.2.0"
+description = "TODO"
+
+[sources.hiredis]
+hash = "82ad632d31ee05da13b537c124f819eb88e18851d9cb0c30ae0552084811588c"
+file = "hiredis-{version}.tar.gz"
+mirrors = [ "https://github.com/redis/hiredis/archive/v{version}.tar.gz"]

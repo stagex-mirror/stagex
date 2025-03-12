@@ -1,6 +1,6 @@
 [package]
 name = "cmake"
-version = "3.27.8"
+version = "3.31.5"
 description = "TODO"
 
 [sources.cmake]

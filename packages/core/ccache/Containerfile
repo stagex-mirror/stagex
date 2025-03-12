@@ -1,0 +1,29 @@
+FROM scratch AS build
+ARG VERSION
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-samurai . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-xxhash . /
+COPY --from=stagex/core-doctest . /
+COPY --from=stagex/core-hiredis . /
+ADD fetch/ccache-${VERSION}.tar.xz .
+WORKDIR /ccache-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	cmake \
+		-G Ninja \
+		-B build \
+		-DCCACHE_DEV_MODE=OFF \
+		-DCMAKE_BUILD_TYPE=MinSizeRel \
+		-DCMAKE_INSTALL_PREFIX=/usr
+	cmake --build build
+	DESTDIR=/rootfs cmake --install build
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
