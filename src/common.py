@@ -72,7 +72,7 @@ class CommonUtils(object):
 
   @staticmethod
   def version_strip_suffix(version: str) -> str:
-    parts = s.rsplit("-", 1)
+    parts = s.split("-", 1)
     return parts[0]
 
   @staticmethod
