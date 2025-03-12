@@ -1,0 +1,11 @@
+FROM stagex/pallet-gcc-gnu-busybox AS build
+ARG VERSION
+ADD fetch/libucontext-${VERSION}.tar.xz .
+WORKDIR /libucontext-${VERSION}
+RUN --network=none <<-EOF
+        set -eux
+        make ARCH="$(uname -m)" -j "$(nproc)"
+        make DESTDIR=/rootfs install
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
