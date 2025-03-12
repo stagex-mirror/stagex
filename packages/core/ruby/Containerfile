@@ -24,7 +24,6 @@ COPY *.patch .
 RUN --network=none <<-EOF
         set -eux
 				patch -p1 dont-install-bundled-gems.patch
-#				patch -p1 < fix-get_main_stack.patch
         export CFLAGS="${CFLAGS/-Os/-O2} -fno-omit-frame-pointer -fno-strict-aliasing"
         export CPPFLAGS="${CPPFLAGS/-Os/-O2} -fno-omit-frame-pointer -fno-strict-aliasing"
 
