@@ -6,4 +6,4 @@ description = "An object-oriented language for quick and easy programming"
 [sources.ruby]
 hash = "8dc48fffaf270f86f1019053f28e51e4da4cce32a36760a0603a9aee67d7fd8d"
 file = "ruby-{version}.tar.gz"
-mirrors = ["https://cache.ruby-lang.org/pub/ruby/3.3/filename"]
+mirrors = ["https://cache.ruby-lang.org/pub/ruby/3.3/{file}"]
