@@ -46,6 +46,9 @@ class ResourceFetcher(object):
           version=source_info.version,
           version_under=source_info.version_under,
           version_dash=source_info.version_dash,
+          version_major=source_info.version_major,
+          version_major_minor=source_info.version_major_minor,
+          version_strip_suffix=source_info.version_strip_suffix,
           format=source_info.format,
         )
 
@@ -53,6 +56,9 @@ class ResourceFetcher(object):
           version=source_info.version,
           version_under=source_info.version_under,
           version_dash=source_info.version_dash,
+          version_major=source_info.version_major,
+          version_major_minor=source_info.version_major_minor,
+          version_strip_suffix=source_info.version_strip_suffix,
           format=source_info.format,
           file=file,
         )

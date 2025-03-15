@@ -32,7 +32,7 @@ out/{stage}-{name}/index.json: \\
 \t  --build-arg SOURCE_DATE_EPOCH=1 \\
 \t  --build-arg BUILDKIT_MULTI_PLATFORM=1 \\
 \t  --output \\
-\t    name={name},type=oci,rewrite-timestamp=true,force-compression=true,annotation.org.opencontainers.image.version={version},tar=true,dest=- \\
+\t    name={name},type=oci,rewrite-timestamp=true,force-compression=true,annotation.containerd.io/distribution.source.docker.io=stagex/{name},annotation.org.opencontainers.image.version={version},annotation.org.opencontainers.image.created=1970-01-01T00:00:01Z,tar=true,dest=- \\
 \t  {context_args} \\
 \t  {build_args} \\
 \t  $(EXTRA_ARGS) \\
@@ -126,7 +126,7 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
               "deps": "".join(
                 f" \\\n\tout/{dep}/index.json" for dep in package.deps
               ),
-              "files": "\\\n\t".join(check_output(["git","ls-tree","-r","HEAD","--name-only","packages/{}/{}".format(stage,name)],text=True).splitlines()),
+              "files": "\\\n\t".join(check_output(["git","ls-files","packages/{}/{}".format(stage,name)],text=True).splitlines()),
               "build_args": TargetGenerator.get_build_args(package),
               "context_args": TargetGenerator.get_context_args(package, stage, package.origin or package.name, False),
               "context_args_registry": TargetGenerator.get_context_args(package, stage, package.origin or package.name, True),
@@ -198,6 +198,9 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
         args.append(f"--build-arg VERSION={package.version}")
         args.append(f"--build-arg VERSION_UNDER={package.version_under}")
         args.append(f"--build-arg VERSION_DASH={package.version_dash}")
+        args.append(f"--build-arg VERSION_MAJOR={package.version_major}")
+        args.append(f"--build-arg VERSION_MAJOR_MINOR={package.version_major_minor}")
+        args.append(f"--build-arg VERSION_STRIP_SUFFIX={package.version_strip_suffix}")
 
     for source_name, source_info in sources.items():
         source_format = source_info.format

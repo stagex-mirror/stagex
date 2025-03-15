@@ -1,6 +1,6 @@
 FROM scratch AS build
 ARG VERSION
-ENV PKG_NAME=php83
+ENV PKG_NAME=php84
 COPY --from=stagex/core-libunwind . /
 COPY --from=stagex/core-acl . /
 COPY --from=stagex/core-automake . /
@@ -28,6 +28,7 @@ COPY --from=stagex/core-expat . /
 COPY --from=stagex/core-libxml2 . /
 COPY --from=stagex/core-re2c . /
 COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-libffi . /
 COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-m4 . /
 COPY --from=stagex/core-zlib . /
@@ -44,8 +45,8 @@ COPY *.patch .
 ENV SOURCE_DATE_EPOCH=1
 ENV PHP_UNAME="Linux stagex"
 ENV PHP_BUILD_SYSTEM="${PHP_UNAME}"
-ENV CC=clang-18
-ENV CXX=clang++-18
+ENV CC=clang
+ENV CXX=clang++
 ENV EXTENSION_DIR=/usr/lib/modules
 ENV CFLAGS="-O2"
 ENV CXXFLAGS="-O2"

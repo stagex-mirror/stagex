@@ -7,6 +7,7 @@ COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
 ADD fetch/libfaketime-${VERSION}.tar.gz .
 WORKDIR /libfaketime-${VERSION}
+ENV CFLAGS="-D_LARGEFILE64_SOURCE"
 RUN --network=none <<-EOF
 	set -eux
 	make -j "$(nproc)" PREFIX=/usr

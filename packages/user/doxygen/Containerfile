@@ -1,18 +1,30 @@
-FROM stagex/pallet-gcc-cmake-busybox AS build
+FROM stagex/pallet-clang-cmake-busybox AS build
 ARG VERSION
+ARG VERSION_UNDER
 COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-flex . /
+COPY --from=stagex/core-bison . /
+COPY --from=stagex/core-m4 . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-sqlite3 . /
 ADD fetch/doxygen-${VERSION}.tar.gz .
 WORKDIR /doxygen-${VERSION}
-COPY *.patch .
 RUN --network=none <<-EOF
-	set -eux \
-	patch -p1 remove-usage-of-fstat64.patch
-	cmake -B build -G Ninja \
+	set -eux
+	cmake \
+		-B build \
+		-G Ninja \
+    -W no-dev  \
 		-DGIT_EXECUTABLE=/bin/false \
-		-DCMAKE_INSTALL_PREFIX=/usr \
-		-DCMAKE_BUILD_TYPE=MinSizeRel \
-		-Dbuild_xmlparser=ON
-	cmake --build build
+		-DCMAKE_INSTALL_PREFIX:PATH=/usr \
+    -DCMAKE_BUILD_TYPE:STRING=None \
+    -DDOC_INSTALL_DIR:PATH=share/doc/doxygen \
+    -Dbuild_doc:BOOL=OFF \
+    -Dbuild_wizard:BOOL=OFF \
+		-Dbuild_xmlparserBOOL=ON \
+    -Duse_sys_spdlog:BOOL=OFF \
+    -Duse_sys_sqlite3:BOOL=ON
+	cmake --build build --verbose
 	DESTDIR=/rootfs cmake --install build
 EOF
 FROM stagex/core-filesystem AS package

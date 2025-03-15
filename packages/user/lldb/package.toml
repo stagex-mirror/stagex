@@ -1,0 +1,14 @@
+[package]
+name = "lldb"
+version = "19.1.7"
+description = "TODO"
+
+[sources.lldb]
+hash = "376d583c781f83384135ad415d0ccd2b31fe3031711fbc75ed751c65f04c3094"
+file = "lldb-{version}.tar.xz"
+mirrors = [ "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/lldb-{version}.src.tar.xz",]
+
+[sources.cmake]
+hash = "11c5a28f90053b0c43d0dec3d0ad579347fc277199c005206b963c19aae514e3"
+file = "cmake-{version}.tar.xz"
+mirrors = [ "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/cmake-{version}.src.tar.xz",]

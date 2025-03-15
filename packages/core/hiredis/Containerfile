@@ -1,0 +1,17 @@
+FROM scratch AS build
+ARG VERSION
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-make . /
+ADD fetch/hiredis-${VERSION}.tar.gz .
+WORKDIR /hiredis-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	make USE_SSL=1 PREFIX=/usr
+	make USE_SSL=1 PREFIX=/rootfs/usr install
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
