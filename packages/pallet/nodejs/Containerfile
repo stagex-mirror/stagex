@@ -1,4 +1,4 @@
-FROM stagex/core-filesystem AS package
+FROM stagex/core-filesystem AS base
 COPY --from=stagex/core-brotli . /
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-c-ares . /
@@ -7,11 +7,20 @@ COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-icu . /
 COPY --from=stagex/core-libnghttp2 . /
 COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-nodejs . /
 COPY --from=stagex/core-npm . /
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-zlib . /
 
+FROM base AS package-nodejs
+COPY --from=stagex/core-nodejs . /
 WORKDIR /home/user/
 RUN npm config set cafile /etc/ssl/certs/ca-certificates.crt
 ENTRYPOINT ["/usr/bin/node"]
+
+FROM base AS package-nodejs-lts
+COPY --from=stagex/core-nodejs-lts . /
+WORKDIR /home/user/
+RUN npm config set cafile /etc/ssl/certs/ca-certificates.crt
+ENTRYPOINT ["/usr/bin/node"]
+
+FROM package-nodejs-lts AS package-nodejs-lts-jod

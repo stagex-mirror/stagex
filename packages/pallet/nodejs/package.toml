@@ -1,3 +1,4 @@
 [package]
 name = "nodejs"
 description = "Basic Node.js ('Current Release') runtime with shell"
+subpackages = ["nodejs", "nodejs-lts", "nodejs-lts-jod"]

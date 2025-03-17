@@ -1,5 +1,6 @@
-FROM scratch AS build
+FROM scratch AS base
 ARG VERSION
+ARG NODEJS_LTS_VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-binutils . /
@@ -16,8 +17,6 @@ COPY --from=stagex/core-libnghttp2 . /
 COPY --from=stagex/core-brotli . /
 COPY --from=stagex/core-c-ares . /
 COPY --from=stagex/core-pkgconf . /
-ADD fetch/nodejs-${VERSION}.tar.gz .
-WORKDIR /node-v${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 ENV LDFLAGS=" \
 	-Wl,-O1 -Wl,--sort-common -Wl,--as-needed -Wl,-z,relro \
@@ -31,8 +30,9 @@ ENV CFLAGS=" \
 ENV CXXFLAGS="$CFLAGS -Wp,-D_GLIBCXX_ASSERTIONS"
 ENV CPPFLAGS="$CXXFLAGS"
 ENV LTOFLAGS="-flto=auto"
-RUN --network=none <<-EOF
-	set -eux
+COPY <<-EOF /usr/bin/build
+	#!/bin/sh
+	set -x
 	python configure.py \
 		--prefix=/usr \
 		--ninja \
@@ -45,9 +45,27 @@ RUN --network=none <<-EOF
 		--without-corepack \
 		--with-intl=system-icu \
 		--with-icu-default-data-dir=$(icu-config --icudatadir) \
-		--openssl-use-def-ca-store
+		--openssl-use-def-ca-store \
+		${BUILD_EXTRA_ARGS}
 	make BUILDTYPE=Release -j $(nproc)
 	make DESTDIR=/rootfs install
 EOF
-FROM stagex/core-filesystem AS package
-COPY --from=build /rootfs/ /
+RUN chmod +x /usr/bin/build
+
+FROM base AS build-nodejs
+ADD fetch/nodejs-${VERSION}.tar.gz .
+WORKDIR /node-v${VERSION}
+RUN --network=none build
+
+FROM base AS build-nodejs-lts
+ADD fetch/nodejs-${NODEJS_LTS_VERSION}.tar.gz .
+WORKDIR /node-v${NODEJS_LTS_VERSION}
+RUN --network=none build
+
+FROM stagex/core-filesystem AS package-nodejs
+COPY --from=build-nodejs /rootfs/ /
+
+FROM stagex/core-filesystem AS package-nodejs-lts
+COPY --from=build-nodejs-lts /rootfs/ /
+
+FROM package-nodejs-lts AS package-nodejs-lts-jod

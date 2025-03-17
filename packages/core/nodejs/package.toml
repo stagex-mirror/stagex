@@ -2,9 +2,19 @@
 name = "nodejs"
 version = "23.10.0"
 description = "Evented I/O for V8 javascript ('Current' release)"
+license = "MIT"
+subpackages = ["nodejs", "nodejs-lts", "nodejs-lts-jod"]
 
 [sources.nodejs]
 hash = "27fea91e7df3f3a18875f76afb63ba4ac60926ffb10ad2be557160ef48787266"
+format = "tar.gz"
+file = "nodejs-{version}.{format}"
+mirrors = [ "https://nodejs.org/dist/v{version}/node-v{version}.{format}",]
+
+[sources.nodejs_lts]
+hash = "6c4e31ed5702dc45cfd8c435af56a36a474427e1bd7afe74c346136060beba8a"
+version = "22.14.0"
+description = "Evented I/O for V8 javascript ('Active LTS' release: Jod)"
 format = "tar.gz"
 file = "nodejs-{version}.{format}"
 mirrors = [ "https://nodejs.org/dist/v{version}/node-v{version}.{format}",]
