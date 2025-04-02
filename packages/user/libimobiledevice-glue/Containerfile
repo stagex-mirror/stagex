@@ -1,0 +1,15 @@
+FROM stagex/pallet-gcc-gnu-busybox AS build
+ARG VERSION
+COPY --from=stagex/user-libplist . /
+ADD fetch/libimobiledevice-glue-${VERSION}.tar.bz2 .
+WORKDIR /libimobiledevice-glue-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--prefix=/usr \
+		--disable-static
+	make -j "$(nproc)"
+	DESTDIR=/rootfs make install
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
