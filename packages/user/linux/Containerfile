@@ -77,6 +77,9 @@ COPY --from=build-linux-server /rootfs/ /
 FROM stagex/core-filesystem AS package-linux-guest
 COPY --from=build-linux-guest /rootfs/ /
 
+FROM stagex/core-filesystem AS package-linux-guest-net
+COPY --from=build-linux-guest-net /rootfs/ /
+
 FROM stagex/core-filesystem AS package-linux-nitro
 COPY --from=build-linux-nitro /rootfs/ /
 
