@@ -153,10 +153,12 @@ RUN ./build 1.83.0 1.82.0
 ADD fetch/rustc-1.84.0-src.tar.gz .
 RUN ./build 1.84.0 1.83.0
 
+ADD fetch/rustc-1.85.0-src.tar.gz .
+RUN ./build 1.85.0 1.84.0 cargo skip-submodule-updates
+
 ADD no-default-static.patch .
 ADD skip-submodule-updates.patch .
-ADD fetch/rustc-${VERSION}-src.tar.gz .
-RUN ./build ${VERSION} 1.84.0 cargo,clippy,rustdoc,rustfmt,rust-demangler no-default-static,skip-submodule-updates
+RUN ./build ${VERSION} 1.85.0 cargo,clippy,rustdoc,rustfmt,rust-demangler no-default-static,skip-submodule-updates
 
 RUN <<-EOF
 	mv /rust-${VERSION} /rootfs
