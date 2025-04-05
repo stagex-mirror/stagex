@@ -1,0 +1,3 @@
+[package]
+name = "nodejs"
+description = "Basic Node.js ('Current Release') runtime with shell"
