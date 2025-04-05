@@ -26,9 +26,7 @@ out/{stage}-{name}/index.json: \\
 \t(cp -lR fetch/{stage}/{origin}/* packages/{stage}/{origin}/fetch || true) && \\
 \t$(BUILDER) \\
 \t  build \\
-\t  --ulimit nofile=2048:16384 \\
 \t  --tag stagex/{stage}-{name}:{version} \\
-\t  --provenance=false \\
 \t  --build-arg SOURCE_DATE_EPOCH=1 \\
 \t  --build-arg BUILDKIT_MULTI_PLATFORM=1 \\
 \t  --output \\
@@ -54,10 +52,8 @@ registry-{stage}-{name}:
 \t(cp -lR fetch/{stage}/{origin}/* packages/{stage}/{origin}/fetch || true) && \\
 \t$(BUILDER) \\
 \t  build \\
-\t  --ulimit nofile=2048:16384 \\
 \t  --tag $(REGISTRY_USERNAME)/{stage}-{name}:{version} \\
 \t  --tag $(REGISTRY_USERNAME)/{stage}-{name}:latest \\
-\t  --provenance=false \\
 \t  --build-arg SOURCE_DATE_EPOCH=1 \\
 \t  --build-arg BUILDKIT_MULTI_PLATFORM=1 \\
 \t  --output \\
@@ -222,5 +218,3 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
 
 if __name__ == "__main__":
   tg = TargetGenerator()
-
-

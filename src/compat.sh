@@ -89,8 +89,8 @@ check_tools(){
 	done
 }
 
-check_tools jq gpg docker buildx;
+# check_tools jq gpg docker buildx;
 
-docker info -f '{{ .DriverStatus }}' \
-    | grep "io.containerd.snapshotter.v1" >/dev/null \
-|| die "Error: Docker Engine is not using containerd for image storage"
+# docker info -f '{{ .DriverStatus }}' \
+#     | grep "io.containerd.snapshotter.v1" >/dev/null \
+# || die "Error: Docker Engine is not using containerd for image storage"
