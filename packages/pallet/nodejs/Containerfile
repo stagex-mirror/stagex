@@ -13,6 +13,5 @@ COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-zlib . /
 
 WORKDIR /home/user/
-RUN npm config set cafile /etc/ssl/certs/ca-certificates.crt
-RUN rm -rf $HOME/.npm/_logs 
+RUN npm config set cafile /etc/ssl/certs/ca-certificates.crt && rm -rf $HOME/.npm/_logs 
 ENTRYPOINT ["/usr/bin/node"]
