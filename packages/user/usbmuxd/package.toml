@@ -1,0 +1,9 @@
+[package]
+name = "usbmuxd"
+version = "1.1.1"
+description = "TODO"
+
+[sources.usbmuxd]
+hash = "c0ec9700172bf635ccb5bed98daae607d2925c2bc3597f25706ecd9dfbfd2d9e"
+file = "usbmuxd-{version}.tar.bz2"
+mirrors = [ "https://github.com/libimobiledevice/usbmuxd/releases/download/{version}/{file}",]
