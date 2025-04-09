@@ -8,6 +8,7 @@ COPY --from=stagex/core-m4 . /
 COPY --from=stagex/core-pkgconf . /
 COPY --from=stagex/core-sqlite3 . /
 ADD fetch/doxygen-${VERSION}.tar.gz .
+ENV SOURCE_DATE_EPOCH=1
 WORKDIR /doxygen-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
