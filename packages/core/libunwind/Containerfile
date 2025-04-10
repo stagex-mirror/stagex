@@ -39,7 +39,12 @@ WORKDIR /libunwind-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	ARCH=$(uname -m)
+	CC=/opt/cross/bin/x86_64-linux-gnu-gcc \
+	CXX=/opt/cross/bin/x86_64-linux-gnu-g++ \
 	./configure \
+		--build=x86_64-linux-musl \
+		--host=x86_64-linux-musl \
+		--target=x86_64-linux-gnu \
 		--prefix=/usr \
 		--includedir=/opt/cross/include/${ARCH}-linux-gnu \
 		--libdir=/opt/cross/lib/${ARCH}-linux-gnu \
