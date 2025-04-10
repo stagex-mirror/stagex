@@ -23,5 +23,38 @@ RUN --network=none <<-EOF
 	make -j "$(nproc)"
 	make DESTDIR=/rootfs install
 EOF
-FROM stagex/core-filesystem AS package
+
+FROM scratch AS build-glibc
+ARG VERSION
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-autoconf . /
+COPY --from=stagex/core-automake . /
+COPY --from=stagex/core-libtool . /
+ADD fetch/libunwind-${VERSION}.tar.gz .
+WORKDIR /libunwind-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	ARCH=$(uname -m)
+	./configure \
+		--prefix=/usr \
+		--includedir=/opt/cross/include/${ARCH}-linux-gnu \
+		--libdir=/opt/cross/lib/${ARCH}-linux-gnu \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--localstatedir=/usr/share/man \
+		--enable-cxx-exceptions \
+		--disable-tests \
+		--infodir=/usr/share/info || cat config.log
+	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
+EOF
+
+FROM stagex/core-filesystem AS package-libunwind
 COPY --from=build /rootfs/ /
+
+FROM stagex/core-filesystem AS package-cross-x86_64-gnu-libunwind
+COPY --from=build-glibc /rootfs/ /
