@@ -1,9 +1,10 @@
 FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-ADD fetch/libqrencode-${VERSION}.tar.gz .
-WORKDIR /qrencode-${VERSION}
+ADD fetch/v${VERSION}.tar.gz .
+WORKDIR /libqrencode-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
+	autoreconf -fvi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \
