@@ -1,0 +1,22 @@
+FROM stagex/pallet-gcc-gnu-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/user-libusbmuxd . /
+COPY --from=stagex/user-libplist . /
+COPY --from=stagex/user-libimobiledevice-glue . /
+ADD fetch/libimobiledevice-${VERSION}.tar.bz2 .
+ADD libplist-fix-redecs.patch .
+WORKDIR /libimobiledevice-${VERSION}
+ENV CFLAGS="-Wno-error=int-conversion -Wno-deprecated-declarations"
+RUN --network=none <<-EOF
+	set -eux
+	patch -p1 < /libplist-fix-redecs.patch
+	./configure \
+		--prefix=/usr \
+		--disable-static \
+		--without-cython
+	make -j "$(nproc)"
+	DESTDIR=/rootfs make install
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

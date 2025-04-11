@@ -1,0 +1,9 @@
+[package]
+name = "libusbmuxd"
+version = "2.1.0"
+description = "TODO"
+
+[sources.libusbmuxd]
+hash = "c35bf68f8e248434957bd5b234c389b02206a06ecd9303a7fb931ed7a5636b16"
+file = "libusbmuxd-{version}.tar.bz2"
+mirrors = [ "https://github.com/libimobiledevice/libusbmuxd/releases/download/{version}/{file}",]

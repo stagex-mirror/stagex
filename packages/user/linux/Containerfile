@@ -45,6 +45,10 @@ FROM base AS build-linux-guest
 ADD guest.config .config
 RUN build-static
 
+FROM base AS build-linux-guest-net
+ADD guest-net.config .config
+RUN build-static
+
 FROM base AS build-linux-nitro
 ADD nitro.config .config
 RUN build-static
@@ -72,6 +76,9 @@ COPY --from=build-linux-server /rootfs/ /
 
 FROM stagex/core-filesystem AS package-linux-guest
 COPY --from=build-linux-guest /rootfs/ /
+
+FROM stagex/core-filesystem AS package-linux-guest-net
+COPY --from=build-linux-guest-net /rootfs/ /
 
 FROM stagex/core-filesystem AS package-linux-nitro
 COPY --from=build-linux-nitro /rootfs/ /

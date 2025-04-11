@@ -43,6 +43,12 @@ out/{stage}-{name}/index.json: \\
 \t  -f packages/{stage}/{origin}/Containerfile \\
 \t  packages/{stage}/{origin} \\
 \t| tar -C out/{stage}-{name} -mx
+\t
+\t$(if $(filter $(IMPORT),1),$(call import,{stage},{name},{version}),)
+
+.PHONY: import-{stage}-{name}
+import-{stage}-{name}:
+\t$(call import,{stage},{name},{version})
 
 # use: make registry-{stage}-{name} BUILDER="docker buildx" REGISTRY_USERNAME=127.0.0.1:5005/stagex
 # doesn't work well with docker build

@@ -2,7 +2,7 @@
 name = "linux"
 version = "6.6"
 description = "TODO"
-subpackages = ["linux-generic","linux-airgap","linux-server","linux-guest","linux-nitro","gen_initramfs"]
+subpackages = ["linux-generic","linux-airgap","linux-server","linux-guest","linux-guest-net","linux-nitro","gen_initramfs"]
 
 [sources.linux]
 hash = "d926a06c63dd8ac7df3f86ee1ffc2ce2a3b81a2d168484e76b5b389aba8e56d0"

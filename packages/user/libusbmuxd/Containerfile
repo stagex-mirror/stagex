@@ -1,0 +1,17 @@
+FROM stagex/pallet-gcc-gnu-busybox AS build
+ARG VERSION
+COPY --from=stagex/user-libusb . /
+COPY --from=stagex/user-libplist . /
+COPY --from=stagex/user-libimobiledevice-glue . /
+ADD fetch/libusbmuxd-${VERSION}.tar.bz2 .
+WORKDIR /libusbmuxd-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--prefix=/usr \
+		--disable-static
+	make -j "$(nproc)"
+	DESTDIR=/rootfs make install
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
