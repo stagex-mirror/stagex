@@ -1,0 +1,28 @@
+FROM stagex/pallet-gcc-gnu-busybox AS build
+COPY --from=stagex/user-util-macros . /
+COPY --from=stagex/user-xorgproto . /
+COPY --from=stagex/user-libx11 . /
+COPY --from=stagex/user-libxcb . /
+COPY --from=stagex/user-libxdmcp . /
+COPY --from=stagex/user-libxau . /
+COPY --from=stagex/core-bash . /
+COPY --from=stagex/user-xmlto . /
+
+ARG VERSION
+ADD fetch/libXext-${VERSION}.tar.xz .
+WORKDIR /libXext-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--enable-static \
+		--with-xmlto \
+		--without-fop
+	make -j "$(nproc)"
+	make install DESTDIR=/rootfs
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

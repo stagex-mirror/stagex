@@ -1,0 +1,10 @@
+[package]
+name = "py-ply"
+version = "3.11"
+description = "Python Lex & Yacc"
+
+[sources.py-ply]
+hash = "928c5642612f4710b168d3c49c25f6ece2913a5e8d1c5e37fde5d6162fec3fd2"
+format = "tar.gz"
+file = "{version}.{format}"
+mirrors = [ "https://github.com/dabeaz/ply/archive/{file}", ]

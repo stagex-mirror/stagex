@@ -1,19 +1,18 @@
 FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-ADD fetch/v${VERSION}.tar.gz .
-WORKDIR /libqrencode-${VERSION}
+COPY --from=stagex/user-xorgproto . /
+COPY --from=stagex/user-util-macros . /
+ADD fetch/bdftopcf-${VERSION}.tar.xz .
+WORKDIR /bdftopcf-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
-	autoreconf -fvi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \
 		--mandir=/usr/share/man \
-		--infodir=/usr/share/info \
-		--localstatedir=/var \
-		--with-tests
+		--localstatedir=/var
 	make -j "$(nproc)"
-	make DESTDIR="/rootfs" install
+	make DESTDIR=/rootfs install
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

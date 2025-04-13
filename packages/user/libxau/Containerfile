@@ -1,0 +1,15 @@
+FROM stagex/pallet-gcc-meson-busybox AS build
+ARG VERSION
+COPY --from=stagex/user-xorgproto . /
+ADD fetch/libXau-${VERSION}.tar.xz .
+WORKDIR /libXau-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	meson setup build --prefix=/usr
+	meson setup \
+		. output
+	ninja -C build
+	DESTDIR=/rootfs ninja -C build install
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

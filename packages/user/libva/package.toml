@@ -1,0 +1,10 @@
+[package]
+name = "libva"
+version = "2.22.0"
+description = "Video Acceleration (VA) API for Linux"
+
+[sources.libva]
+hash = "467c418c2640a178c6baad5be2e00d569842123763b80507721ab87eb7af8735"
+format = "tar.gz"
+file = "{version}.{format}"
+mirrors = [ "https://github.com/intel/libva/archive/{file}",]

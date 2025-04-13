@@ -1,0 +1,21 @@
+FROM stagex/pallet-rust AS build
+ARG VERSION
+COPY --from=stagex/core-bash . /
+ADD fetch/v${VERSION}.tar.gz .
+WORKDIR /rust-bindgen-${VERSION}
+RUN cargo fetch
+ENV RUST_BACKTRACE=1
+RUN --network=none <<-EOF
+	set -eux
+	ARCH="$(uname -m)"
+	cargo build \
+		--frozen \
+		--release \
+		--target "${ARCH}-unknown-linux-musl" \
+		--bin bindgen
+	mkdir -p /rootfs/usr/bin
+	cp target/${ARCH}-unknown-linux-musl/release/bindgen /rootfs/usr/bin/bindgen
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

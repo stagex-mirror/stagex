@@ -1,0 +1,10 @@
+[package]
+name = "vulkan-headers"
+version = "1.4.304.1"
+description = "Vulkan header files"
+
+[sources.vulkan-headers]
+hash = "7db4ea1c9c0860a1c1c9ccf34477f496d2929f8e705423f951131921bedfb51c"
+format = "tar.gz"
+file = "vulkan-headers-{version}.{format}"
+mirrors = [ "https://github.com/khronosgroup/vulkan-headers/archive/refs/tags/vulkan-sdk-{version}/{file}", ]

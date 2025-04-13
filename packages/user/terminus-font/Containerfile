@@ -1,0 +1,18 @@
+FROM stagex/pallet-gcc-gnu-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-bdftopcf . /
+ADD fetch/terminus-font-${VERSION}.tar.gz .
+WORKDIR /terminus-font-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--prefix=/usr \
+		--x11dir=/usr/share/fonts/misc \
+		--otbdir=/usr/share/fonts/misc \
+		--psfdir=/usr/share/consolefonts
+	make all otb -j "$(nproc)"
+	make DESTDIR=/rootfs install
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

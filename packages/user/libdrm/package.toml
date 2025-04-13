@@ -1,0 +1,10 @@
+[package]
+name = "libdrm"
+version = "2.4.124"
+description = "Userspace interface to kernel DRM services"
+
+[sources.libdrm]
+hash = "49c077f3938147e7c321fe89255eb189c1be68f6ed0aa36e29d38e3db0e84e08"
+format = "tar.gz"
+file = "drm-libdrm-{version}.{format}"
+mirrors = [ "https://gitlab.freedesktop.org/mesa/drm/-/archive/libdrm-{version}/{file}",]

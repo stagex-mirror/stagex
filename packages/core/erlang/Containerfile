@@ -1,0 +1,27 @@
+FROM stagex/pallet-gcc-gnu-busybox AS build
+ARG VERSION
+COPY --from=stagex/user-terminus-font . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-ncurses . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-zlib . /
+ADD fetch/otp_src_${VERSION}.tar.gz .
+WORKDIR /otp_src_${VERSION}
+ENV CFLAGS="-O2 -D_BSD_SOURCE"
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--enable-pie \
+		--enable-threads \
+		--enable-shared-zlib \
+		--enable-ssl=dynamic-ssl-lib
+	make -j "$(nproc)"
+	make DOC_TARGETS="chunks man" docs
+	make install DESTDIR=/rootfs
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

@@ -1,0 +1,10 @@
+[package]
+name = "glslang"
+version = "1.4.304.0"
+description = "Khronos reference front-end for GLSL, ESSL, and sample SPIR-V generator"
+
+[sources.vulkan-sdk]
+hash = "30f6557836308d9c8e8ea7e8905d2d430bd60752506b01ed9be6c4e82fe732ac"
+format = "tar.gz"
+file = "{version}.{format}"
+mirrors = [ "https://github.com/KhronosGroup/glslang/archive/refs/tags/vulkan-sdk-{file}",]

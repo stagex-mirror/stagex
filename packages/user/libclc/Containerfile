@@ -1,0 +1,27 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-samurai . /
+COPY --from=stagex/user-spirv-llvm-translator . /
+COPY --from=stagex/user-spirv-tools . /
+ARG VERSION
+ARG VERSION_MAJOR
+ADD fetch/libclc-${VERSION}.src.tar.xz .
+ADD fetch/cmake-${VERSION}.src.tar.xz .
+WORKDIR /libclc-${VERSION}.src
+RUN --network=none <<-EOF
+	set -eux
+		cmake -B build -G Ninja \
+			-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DLIBCLC_TARGETS_TO_BUILD="amdgcn--;amdgcn--amdhsa;amdgcn-mesa-mesa3d;r600--;nvptx--;nvptx64--;nvptx--nvidiacl;nvptx64--nvidiacl;spirv-mesa3d-;spirv64-mesa3d-" \
+		-DLLVM_CONFIG="llvm-config-${VERSION_MAJOR}" \
+		-DLLVM_SPIRV=/usr/bin/llvm-spirv \
+		-DCMAKE_MODULE_PATH="/cmake-${VERSION}.src/Modules"
+	cmake --build build
+
+	DESTDIR=/rootfs cmake --install build
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

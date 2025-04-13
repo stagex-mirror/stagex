@@ -1,0 +1,10 @@
+[package]
+name = "wayland"
+version = "1.23.1"
+description = "A computer display server protocol"
+
+[sources.wayland]
+hash = "864fb2a8399e2d0ec39d56e9d9b753c093775beadc6022ce81f441929a81e5ed"
+format = "tar.xz"
+file = "wayland-{version}.{format}"
+mirrors = [ "https://gitlab.freedesktop.org/wayland/wayland/-/releases/{version}/downloads/{file}", ]
