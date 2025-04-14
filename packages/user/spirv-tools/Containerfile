@@ -6,6 +6,7 @@ ARG VERSION
 ADD fetch/vulkan-sdk-${VERSION}.tar.gz .
 WORKDIR /SPIRV-Tools-vulkan-sdk-${VERSION}
 ENV CXXFLAGS="-g1 -flto=auto"
+ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	set -eux
 	cmake -B build -G Ninja \

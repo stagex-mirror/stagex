@@ -8,6 +8,7 @@ COPY --from=stagex/core-zlib . /
 ADD fetch/otp_src_${VERSION}.tar.gz .
 WORKDIR /otp_src_${VERSION}
 ENV CFLAGS="-O2 -D_BSD_SOURCE"
+ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	set -eux
 	./configure \
