@@ -56,6 +56,7 @@ COPY --from=stagex/user-libaio . /
 COPY --from=stagex/user-libseccomp . /
 COPY --from=stagex/user-libcap-ng . /
 COPY --from=stagex/user-libslirp . /
+COPY --from=stagex/user-libusb . /
 COPY --from=stagex/user-alsa-lib . /
 COPY --from=stagex/user-openssh . /
 COPY --from=stagex/user-glib . /
@@ -122,6 +123,7 @@ RUN --network=none <<-EOF
 		--enable-attr \
 		--enable-linux-user \
 		--enable-slirp \
+		--enable-libusb \
 		--enable-tcg \
 		--enable-guest-agent \
 		--disable-install-blobs \
