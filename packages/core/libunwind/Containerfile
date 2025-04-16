@@ -19,7 +19,7 @@ RUN --network=none <<-EOF
 		--localstatedir=/usr/share/man \
 		--enable-cxx-exceptions \
 		--disable-tests \
-		--infodir=/usr/share/info || cat config.log
+		--infodir=/usr/share/info || (cat config.log; exit 1)
 	make -j "$(nproc)"
 	make DESTDIR=/rootfs install
 EOF
@@ -28,6 +28,8 @@ FROM scratch AS build-glibc
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-cross-x86_64-gnu-gcc . /
+#COPY --from=stagex/core-cross-x86_64-gnu-linux-headers . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-binutils . /
@@ -39,21 +41,21 @@ WORKDIR /libunwind-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	ARCH=$(uname -m)
+	ls -la /opt/cross/x86_64-linux-gnu/include
 	CC=/opt/cross/bin/x86_64-linux-gnu-gcc \
 	CXX=/opt/cross/bin/x86_64-linux-gnu-g++ \
 	./configure \
 		--build=x86_64-linux-musl \
-		--host=x86_64-linux-musl \
-		--target=x86_64-linux-gnu \
-		--prefix=/usr \
-		--includedir=/opt/cross/include/${ARCH}-linux-gnu \
-		--libdir=/opt/cross/lib/${ARCH}-linux-gnu \
+		--host=x86_64-linux-gnu \
+		--prefix=/opt/cross/usr \
+		--includedir=/opt/cross/${ARCH}-linux-gnu/include \
+		--libdir=/opt/cross/${ARCH}-linux-gnu/lib \
 		--sysconfdir=/etc \
 		--mandir=/usr/share/man \
 		--localstatedir=/usr/share/man \
 		--enable-cxx-exceptions \
 		--disable-tests \
-		--infodir=/usr/share/info || cat config.log
+		--infodir=/usr/share/info || (cat config.log; exit 1)
 	make -j "$(nproc)"
 	make DESTDIR=/rootfs install
 EOF
