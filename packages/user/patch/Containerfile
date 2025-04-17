@@ -1,7 +1,7 @@
 FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-ADD fetch/libmd-${VERSION}.tar.xz .
-WORKDIR /libmd-${VERSION}
+ADD fetch/patch-${VERSION}.tar.xz .
+WORKDIR /patch-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	set -eux
@@ -10,7 +10,6 @@ RUN --network=none <<-EOF
 		--prefix=/usr \
 		--sysconfdir=/etc \
 		--mandir=/usr/share/man \
-		--infodir=/usr/share/info \
 		--localstatedir=/var
 	make -j "$(nproc)"
 	make install DESTDIR=/rootfs
