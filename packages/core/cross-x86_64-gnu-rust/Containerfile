@@ -19,7 +19,6 @@ COPY --from=stagex/core-ca-certificates . /
 COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-libunwind . /
-COPY --from=stagex/core-cross-x86_64-gnu-libunwind . /
 COPY --from=stagex/core-cross-x86_64-gnu-gcc . /
 ADD fetch/rustc-${VERSION}-src.tar.gz .
 WORKDIR rustc-${VERSION}-src
@@ -34,7 +33,7 @@ RUN <<EOF
 		--target="${ARCH}-unknown-linux-gnu" \
 		--prefix="/usr" \
 		--llvm-root="/usr" \
-		--llvm-libunwind="system" \
+		--llvm-libunwind="in-tree" \
 		--sysconfdir="/rootfs/etc" \
 		--libdir="/opt/cross/lib/${ARCH}-linux-gnu" \
 		--enable-local-rust \
