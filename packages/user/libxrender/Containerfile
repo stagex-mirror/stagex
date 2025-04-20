@@ -1,12 +1,12 @@
 FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/user-xorgproto . /
+COPY --from=stagex/core-xorgproto . /
 COPY --from=stagex/user-libx11 . /
 COPY --from=stagex/user-libxcb . /
 COPY --from=stagex/user-libxdmcp . /
 COPY --from=stagex/user-libxau . /
 COPY --from=stagex/user-libxext . /
-COPY --from=stagex/user-util-macros . /
+COPY --from=stagex/core-util-macros . /
 
 ADD fetch/libXrender-${VERSION}.tar.xz .
 WORKDIR /libXrender-${VERSION}

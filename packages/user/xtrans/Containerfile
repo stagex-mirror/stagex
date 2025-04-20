@@ -1,7 +1,7 @@
 FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
 COPY --from=stagex/user-xmlto . /
-COPY --from=stagex/user-util-macros . /
+COPY --from=stagex/core-util-macros . /
 ADD fetch/xtrans-${VERSION}.tar.xz .
 WORKDIR /xtrans-${VERSION}
 RUN --network=none <<-EOF

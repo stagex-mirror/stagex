@@ -1,7 +1,7 @@
 FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/user-xorgproto . /
-COPY --from=stagex/user-util-macros . /
+COPY --from=stagex/core-xorgproto . /
+COPY --from=stagex/core-util-macros . /
 ADD fetch/bdftopcf-${VERSION}.tar.xz .
 WORKDIR /bdftopcf-${VERSION}
 RUN --network=none <<-EOF

@@ -1,7 +1,7 @@
 FROM stagex/pallet-gcc-meson-busybox AS build
 ARG VERSION
 COPY --from=stagex/user-libx11 . /
-COPY --from=stagex/user-xorgproto . /
+COPY --from=stagex/core-xorgproto . /
 COPY --from=stagex/user-libxcb . /
 COPY --from=stagex/user-libxdmcp . /
 COPY --from=stagex/user-libxau . /
