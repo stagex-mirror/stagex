@@ -1,6 +1,6 @@
 FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/user-terminus-font . /
+COPY --from=stagex/core-terminus-font . /
 COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/core-ncurses . /
 COPY --from=stagex/core-openssl . /
