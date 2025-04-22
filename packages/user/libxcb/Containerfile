@@ -4,10 +4,10 @@ COPY --from=stagex/user-libxdmcp . /
 COPY --from=stagex/core-libxslt . /
 COPY --from=stagex/core-python . /
 COPY --from=stagex/user-xcb-proto . /
-COPY --from=stagex/core-xorgproto . /
+COPY --from=stagex/user-xorgproto . /
 COPY --from=stagex/user-libxau . /
 COPY --from=stagex/core-libxslt . /
-COPY --from=stagex/core-util-macros . /
+COPY --from=stagex/user-util-macros . /
 ADD fetch/libxcb-${VERSION}.tar.xz .
 WORKDIR /libxcb-${VERSION}
 RUN --network=none <<-EOF

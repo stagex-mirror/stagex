@@ -1,7 +1,7 @@
 FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
 COPY --from=stagex/core-python . /
-COPY --from=stagex/core-bdftopcf . /
+COPY --from=stagex/user-bdftopcf . /
 ADD fetch/terminus-font-${VERSION}.tar.gz .
 WORKDIR /terminus-font-${VERSION}
 RUN --network=none <<-EOF

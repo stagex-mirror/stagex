@@ -1,8 +1,8 @@
 FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-util-macros . /
+COPY --from=stagex/user-util-macros . /
 COPY --from=stagex/user-xmlto . /
-COPY --from=stagex/core-xorgproto . /
+COPY --from=stagex/user-xorgproto . /
 
 ADD fetch/libXdmcp-${VERSION}.tar.xz .
 WORKDIR /libXdmcp-${VERSION}

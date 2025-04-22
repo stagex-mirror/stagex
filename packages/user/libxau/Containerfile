@@ -1,6 +1,6 @@
 FROM stagex/pallet-gcc-meson-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-xorgproto . /
+COPY --from=stagex/user-xorgproto . /
 ADD fetch/libXau-${VERSION}.tar.xz .
 WORKDIR /libXau-${VERSION}
 RUN --network=none <<-EOF
