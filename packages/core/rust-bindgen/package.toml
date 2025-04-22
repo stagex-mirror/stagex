@@ -1,0 +1,10 @@
+[package]
+name = "rust-bindgen"
+version = "0.71.1"
+description = "automatically generates Rust FFI bindings to C (and some C++) libraries"
+
+[sources.rust-bindgen]
+hash = "620d80c32b6aaf42d12d85de86fc56950c86b2a13a5b943c10c29d30c4f3efb0"
+format = "tar.gz"
+file = "v{version}.{format}"
+mirrors = [ "https://github.com/rust-lang/rust-bindgen/archive/{file}", ]

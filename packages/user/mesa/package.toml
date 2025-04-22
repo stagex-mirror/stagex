@@ -1,0 +1,11 @@
+[package]
+name = "mesa"
+version = "24.3.4"
+description = "TODO"
+subpackages = ["mesa", "osmesa"]
+
+[sources.mesa]
+hash = "e641ae27191d387599219694560d221b7feaa91c900bcec46bf444218ed66025"
+format = "tar.xz"
+file = "mesa-{version}.{format}"
+mirrors = [ "https://archive.mesa3d.org/{file}",]

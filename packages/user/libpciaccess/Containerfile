@@ -1,0 +1,17 @@
+FROM stagex/pallet-gcc-meson-busybox AS build
+COPY --from=stagex/user-hwdata . /
+ARG VERSION
+ADD fetch/libpciaccess-${VERSION}.tar.xz .
+WORKDIR /libpciaccess-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	meson setup \
+		--prefix=/usr \
+		-Db_lto=true \
+		. output
+
+	meson compile -C output
+	DESTDIR=/rootfs meson install --no-rebuild -C output
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

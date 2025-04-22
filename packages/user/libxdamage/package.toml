@@ -1,0 +1,10 @@
+[package]
+name = "libxdamage"
+version = "1.1.6"
+description = "X11 damaged region extension library"
+
+[sources.libxdamage]
+hash = "52733c1f5262fca35f64e7d5060c6fcd81a880ba8e1e65c9621cf0727afb5d11"
+format = "tar.xz"
+file = "libXdamage-{version}.{format}"
+mirrors = [ "https://www.x.org/releases/individual/lib/{file}", ]

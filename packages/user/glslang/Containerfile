@@ -1,0 +1,32 @@
+FROM stagex/pallet-gcc-cmake-busybox AS build
+ARG VERSION
+ADD fetch/${VERSION}.tar.gz .
+WORKDIR /glslang-vulkan-sdk-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+		cmake -B build-shared -G Ninja \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DCMAKE_BUILD_TYPE=MinSizeRel \
+		-DBUILD_EXTERNAL=OFF \
+		-DBUILD_SHARED_LIBS=ON \
+		-DALLOW_EXTERNAL_SPIRV_TOOLS=YES \
+		-DGLSLANG_TESTS="$(want_check && echo ON || echo OFF)"
+	cmake --build build-shared
+
+	cmake -B build-static -G Ninja \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DCMAKE_BUILD_TYPE=MinSizeRel \
+		-DBUILD_EXTERNAL=OFF \
+		-DBUILD_SHARED_LIBS=OFF \
+		-DALLOW_EXTERNAL_SPIRV_TOOLS=YES \
+		-DGLSLANG_TESTS="$(want_check && echo ON || echo OFF)"
+	cmake --build build-static
+
+	DESTDIR=/rootfs cmake --install build-shared
+	DESTDIR=/rootfs cmake --install build-static
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

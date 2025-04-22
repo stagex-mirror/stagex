@@ -1,0 +1,10 @@
+[package]
+name = "erlang"
+version = "27.3.2"
+description = "General-purpose programming language and runtime environment"
+
+[sources.erlang]
+hash = "7997a0900d149c82ae3d0f523d7dfa960ac3cd58acf0b158519c108eb5c65661"
+format = "tar.gz"
+file = "otp_src_{version}.{format}"
+mirrors = [ "https://github.com/erlang/otp/releases/download/OTP-{version}/{file}", ]

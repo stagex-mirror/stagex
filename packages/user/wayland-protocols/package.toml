@@ -1,0 +1,10 @@
+[package]
+name = "wayland-protocols"
+version = "1.42"
+description = "Protocols and protocol extensions complementing the Wayland core protocol"
+
+[sources.wayland-protocols]
+hash = "23ba80d410d1200a86fe29592c19766eae8f1c350b67289999e9e7ea12d9f7aa"
+format = "tar.xz"
+file = "wayland-protocols-{version}.{format}"
+mirrors = [ "https://gitlab.freedesktop.org/wayland/wayland-protocols/-/releases/{version}/downloads/{file}", ]

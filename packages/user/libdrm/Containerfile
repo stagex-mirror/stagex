@@ -1,0 +1,36 @@
+FROM stagex/pallet-gcc-meson-busybox AS build
+ARG VERSION
+COPY --from=stagex/user-libpciaccess . /
+COPY --from=stagex/user-eudev . /
+COPY --from=stagex/user-xmlto . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-bash . /
+COPY --from=stagex/core-libtool . /
+ADD fetch/drm-libdrm-${VERSION}.tar.gz .
+WORKDIR /drm-libdrm-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	meson setup \
+		--prefix=/usr \
+		-Db_lto=true \
+		-Dintel=enabled \
+		-Dradeon=enabled \
+		-Damdgpu=enabled \
+		-Dnouveau=enabled \
+		-Dvmwgfx=enabled \
+		-Domap=enabled \
+		-Dexynos=enabled \
+		-Dfreedreno=enabled \
+		-Dtegra=enabled \
+		-Dvc4=enabled \
+		-Detnaviv=enabled \
+		-Dudev=true \
+		-Dinstall-test-programs=true \
+		-Dtests=true \
+		. output
+
+	ninja -C output
+	DESTDIR=/rootfs meson install --no-rebuild -C output
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

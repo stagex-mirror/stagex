@@ -1,0 +1,10 @@
+[package]
+name = "libice"
+version = "1.1.2"
+description = "X11 Inter-Client Exchange library"
+
+[sources.libice]
+hash = "974e4ed414225eb3c716985df9709f4da8d22a67a2890066bc6dfc89ad298625"
+format = "tar.xz"
+file = "libICE-{version}.{format}"
+mirrors = [ "https://www.x.org/releases/individual/lib/{file}", ]

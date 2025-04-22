@@ -1,0 +1,10 @@
+[package]
+name = "libsm"
+version = "1.2.5"
+description = "X11 Session Management library"
+
+[sources.libsm]
+hash = "2af9e12da5ef670dc3a7bce1895c9c0f1bfb0cb9e64e8db40fcc33f883bd20bc"
+format = "tar.xz"
+file = "libSM-{version}.{format}"
+mirrors = [ "https://www.x.org/releases/individual/lib/{file}", ]

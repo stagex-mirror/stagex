@@ -1,0 +1,27 @@
+FROM stagex/pallet-gcc-meson-busybox AS build
+ARG VERSION
+COPY --from=stagex/user-mesa . /
+COPY --from=stagex/user-osmesa . /
+COPY --from=stagex/core-expat . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/user-elfutils . /
+COPY --from=stagex/core-samurai . /
+ADD fetch/glu-${VERSION}.tar.xz .
+WORKDIR /glu-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	meson setup \
+		--prefix=/usr \
+		-Db_lto=true \
+		-Ddefault_library=shared \
+		-Dgl_provider=osmesa \
+		. output
+	meson compile -C output
+	DESTDIR=/rootfs meson install --no-rebuild -C output
+EOF
+
+FROM stagex/core-filesystem AS package-osmesa
+COPY --from=build /rootfs/ /
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
