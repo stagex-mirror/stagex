@@ -1,12 +1,8 @@
 FROM scratch AS build
 ARG VERSION
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-make . /
-COPY --from=stagex/core-perl . /
-COPY --from=stagex/core-autoconf . /
-COPY --from=stagex/core-automake . /
-COPY --from=stagex/core-libtool . /
-COPY --from=stagex/core-pkgconf . /
-COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-erlang . /
 COPY --from=stagex/core-ncurses . /
