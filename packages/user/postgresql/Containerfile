@@ -25,8 +25,10 @@ RUN --network=none <<-EOF
 		--with-icu \
 		--with-tcl \
 		--with-readline
-	make -j "$(nproc)" world
-	make install-world DESTDIR=/rootfs
+	make -j "$(nproc)" src config contrib all 
+	make DESTDIR=/rootfs install
+	make -C contrib DESTDIR=/roofs install
+	install -Dm 644 COPYRIGHT /rootfs/usr/share/licenses/postgresql
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
