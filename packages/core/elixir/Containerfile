@@ -9,7 +9,7 @@ COPY --from=stagex/core-ncurses . /
 ADD fetch/v${VERSION}.tar.gz .
 WORKDIR /elixir-${VERSION}
 ENV ERLC_OPTIONS="+deterministic"
-
+ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	set -eux
 	LANG="en_US.UTF-8" make -j "$(nproc)"
