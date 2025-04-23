@@ -8,11 +8,11 @@ COPY --from=stagex/core-erlang . /
 COPY --from=stagex/core-ncurses . /
 ADD fetch/v${VERSION}.tar.gz .
 WORKDIR /elixir-${VERSION}
-ENV ERLC_OPTIONS="+deterministic"
-
+ENV ERL_COMPILER_OPTIONS="deterministic"
+ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	set -eux
-	LANG="en_US.UTF-8" make -j "$(nproc)"
+	make -j "$(nproc)"
 	make DESTDIR=/rootfs install
 EOF
 FROM stagex/core-filesystem AS package
