@@ -41,6 +41,9 @@ ADD fetch/libunwind-${VERSION}.tar.gz .
 WORKDIR /libunwind-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
+	CC=/opt/cross/bin/x86_64-linux-gnu-gcc \
+	CPP=/opt/cross/bin/x86_64-linux-gnu-cpp \
+	CPPFLAGS='-nostdinc -isystem /opt/cross/x86_64-linux-gnu/include' \
 	./configure \
 		--build=x86_64-linux-musl \
 		--host=x86_64-linux-gnu \
@@ -50,8 +53,8 @@ RUN --network=none <<-EOF
 		--localstatedir=/usr/share/man \
 		--enable-cxx-exceptions \
 		--disable-tests \
-		--infodir=/usr/share/info || cat config.log
-	make -j "$(nproc)"
+		--infodir=/usr/share/info || (cat config.log; exit 1)
+	make -j "$(nproc)" || (cat config.log; exit 1)
 	make DESTDIR=/rootfs install
 EOF
 FROM stagex/core-filesystem AS package-cross-x86_64-gnu-libunwind
