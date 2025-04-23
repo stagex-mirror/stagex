@@ -42,7 +42,7 @@ WORKDIR /libunwind-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	CC=/opt/cross/bin/x86_64-linux-gnu-gcc \
-	CPP=/opt/cross/bin/x86_64-linux-gnu-cpp \
+	CPP='/opt/cross/bin/x86_64-linux-gnu-gcc -E' \
 	CPPFLAGS='-nostdinc -isystem /opt/cross/x86_64-linux-gnu/include' \
 	./configure \
 		--build=x86_64-linux-musl \
