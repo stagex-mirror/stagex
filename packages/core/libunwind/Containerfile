@@ -41,9 +41,9 @@ ADD fetch/libunwind-${VERSION}.tar.gz .
 WORKDIR /libunwind-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
+	# TODO: how to fix getting gcc version?
 	CC=/opt/cross/bin/x86_64-linux-gnu-gcc \
-	CPP='/opt/cross/bin/x86_64-linux-gnu-cpp' \
-	CPPFLAGS="-nostdinc -isystem /opt/cross/x86_64-linux-gnu/include -isystem /opt/cross/lib/gcc/x86_64-linux-gnu/${VERSION}/include/" \
+	CPPFLAGS="-nostdinc -isystem /opt/cross/x86_64-linux-gnu/include -isystem /opt/cross/lib/gcc/x86_64-linux-gnu/13.1.0/include/" \
 	./configure \
 		--build=x86_64-linux-musl \
 		--host=x86_64-linux-gnu \
