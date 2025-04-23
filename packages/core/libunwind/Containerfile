@@ -47,13 +47,10 @@ RUN --network=none <<-EOF
 	./configure \
 		--build=x86_64-linux-musl \
 		--host=x86_64-linux-gnu \
-		--prefix=/usr \
+		--prefix=/opt/cross/x86_64-linux-gnu \
 		--sysconfdir=/etc \
-		--mandir=/usr/share/man \
-		--localstatedir=/usr/share/man \
 		--enable-cxx-exceptions \
-		--disable-tests \
-		--infodir=/usr/share/info || (cat config.log; exit 1)
+		--disable-tests || (cat config.log; exit 1)
 	make -j "$(nproc)" || (cat config.log; exit 1)
 	make DESTDIR=/rootfs install
 EOF
