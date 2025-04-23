@@ -4,6 +4,12 @@ COPY --from=stagex/core-expat . /
 COPY --from=stagex/core-libxml2 . /
 ADD fetch/wayland-${VERSION}.tar.xz .
 WORKDIR /wayland-${VERSION}
+# LTO is currently non-deterministic
+ENV DISABLE_LTO="-Wno-error=odr -Wno-error=lto-type-mismatch -Wno-error=strict-aliasing -fno-lto"
+ENV CFLAGS="${CFLAGS} ${DISABLE_LTO}"
+ENV CXXFLAGS="${CXXFLAGS} ${DISABLE_LTO}"
+ENV FCFLAGS="${FCFLAGS} ${DISABLE_LTO}"
+ENV FFLAGS="${FFLAGS} ${DISABLE_LTO}"
 RUN --network=none <<-EOF
 	set -eux
 	meson setup \
@@ -12,7 +18,6 @@ RUN --network=none <<-EOF
 		-Ddocumentation=false \
 		-Ddefault_library=both \
 		. output
-
 	meson compile -C output
 	DESTDIR=/rootfs meson install --no-rebuild -C output
 EOF
