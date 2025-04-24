@@ -9,12 +9,12 @@ on:
 
 defaults:
   run:
-    shell: 'sh -e {0}'
+    shell: "sh -e {0}"
 
 jobs:
   check:
     name: Check if non-staging -> main
-    runs-on: shell
+    runs-on: codeberg-tiny-lazy
     if: github.base_ref == 'main' && !startsWith(github.ref, 'refs/heads/release/') && github.head_ref != 'staging'
     steps:
       - name: Check if non-staging -> main
