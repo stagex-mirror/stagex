@@ -24,6 +24,7 @@ COPY --from=stagex/core-libfaketime . /
 COPY --from=stagex/core-cross-x86_64-gnu-libunwind . /
 COPY --from=stagex/core-clang . /
 COPY --from=stagex/core-lld . /
+COPY --from=stagex/core-libffi . /
 ADD fetch/rustc-${VERSION}-src.tar.gz .
 WORKDIR rustc-${VERSION}-src
 ADD *.patch .
