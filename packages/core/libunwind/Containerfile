@@ -37,12 +37,16 @@ COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-autoconf . /
 COPY --from=stagex/core-automake . /
 COPY --from=stagex/core-libtool . /
+COPY --from=stagex/core-libfaketime . /
+ENV LD_PRELOAD=/usr/local/lib/faketime/libfaketime.so.1
+ENV FAKETIME="1970-01-01 00:00:01 GMT"
 ADD fetch/libunwind-${VERSION}.tar.gz .
 WORKDIR /libunwind-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	# TODO: how to fix getting gcc version?
 	CC=/opt/cross/bin/x86_64-linux-gnu-gcc \
+	CFLAGS="-mtune=generic" \
 	CPPFLAGS="-nostdinc -isystem /opt/cross/x86_64-linux-gnu/include -isystem /opt/cross/lib/gcc/x86_64-linux-gnu/13.1.0/include/" \
 	./configure \
 		--build=x86_64-linux-musl \
