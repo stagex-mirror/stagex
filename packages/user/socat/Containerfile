@@ -10,7 +10,9 @@ WORKDIR /socat-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	set -eux
-	./configure --prefix=/usr/
+	./configure \
+		--prefix=/usr/ \
+		--enable-vsock
 	make -j "$(nproc)"
 	make DESTDIR=/rootfs install
 EOF
