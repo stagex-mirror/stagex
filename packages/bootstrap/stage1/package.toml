@@ -23,7 +23,7 @@ mirrors = ["https://github.com/oriansj/M2libc/archive/{version}.tar.gz",]
 [sources.libatomic_ops_7610]
 hash = "587edf60817f56daf1e1ab38a4b3c729b8e846ff67b4f62a6157183708f099af"
 file = "libatomic_ops-7.6.10.tar.gz"
-mirrors = [ "https://github.com/ivmai/libatomic_ops/releases/download/v7.6.10/{file}",]
+mirrors = [ "https://github.com/bdwgc/libatomic_ops/releases/download/v7.6.10/{file}",]
 
 [sources.autoconf_253]
 hash = "6b217a064c6d06603d50a3ad05129aef9435367810c10894210b8dad965d2306"
