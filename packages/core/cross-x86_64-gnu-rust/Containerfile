@@ -21,11 +21,21 @@ COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-libunwind . /
 COPY --from=stagex/core-cross-x86_64-gnu-gcc . /
 COPY --from=stagex/core-libfaketime . /
+COPY --from=stagex/core-cross-x86_64-gnu-libunwind . /
+COPY --from=stagex/core-clang . /
+COPY --from=stagex/core-lld . /
+COPY --from=stagex/core-libffi . /
 ADD fetch/rustc-${VERSION}-src.tar.gz .
 WORKDIR rustc-${VERSION}-src
 ADD *.patch .
 ENV LD_PRELOAD=/usr/local/lib/faketime/libfaketime.so.1
 ENV FAKETIME="1970-01-01 00:00:01 GMT"
+ENV CFLAGS="-march=x86-64 -mtune=generic"
+ENV CXXFLAGS="$CFLAGS"
+ENV CPPFLAGS="$CXXFLAGS"
+ENV CC=clang
+ENV CXX=clang++
+ENV RUSTFLAGS="-C link-arg=-fuse-ld=lld -C link-arg=-Wl,--threads=1"
 RUN <<EOF
 	set -eux
 	PREFIX=/rust-${VERSION}/usr
@@ -36,7 +46,7 @@ RUN <<EOF
 		--target="${ARCH}-unknown-linux-gnu" \
 		--prefix="/usr" \
 		--llvm-root="/usr" \
-		--llvm-libunwind="in-tree" \
+		--llvm-libunwind="system" \
 		--sysconfdir="/rootfs/etc" \
 		--libdir="/opt/cross/lib/${ARCH}-linux-gnu" \
 		--enable-local-rust \
