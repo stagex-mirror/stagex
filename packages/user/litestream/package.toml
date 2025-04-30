@@ -1,0 +1,11 @@
+[package]
+name = "litestream"
+version = "0.3.13"
+description = "Streaming replication for SQLite"
+license = "Apache-2.0"
+
+[sources.litestream]
+hash = "92cb22323b8168f6efdfcad270772fea9e78c709a7149b1bf35d81fcb88bdaf9"
+format = "tar.gz"
+file = "litestream-v{version}.{format}"
+mirrors = ["https://github.com/benbjohnson/litestream/archive/refs/tags/v{version}.{format}"]
