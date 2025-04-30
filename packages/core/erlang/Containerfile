@@ -9,7 +9,7 @@ COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-busybox . /
 ADD fetch/otp_src_${VERSION}.tar.gz .
 WORKDIR /otp_src_${VERSION}
-ENV CFLAGS="-O2 -D_BSD_SOURCE"
+ENV CFLAGS="-O2 -D_BSD_SOURCE -mtune=generic"
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	set -eux
