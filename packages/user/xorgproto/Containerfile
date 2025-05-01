@@ -1,0 +1,14 @@
+FROM stagex/pallet-gcc-meson-busybox AS build
+ARG VERSION
+ADD fetch/xorgproto-${VERSION}.tar.gz .
+WORKDIR /xorgproto-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	meson setup \
+		--datadir=/usr/lib \
+		. output
+	meson compile -C output
+	DESTDIR=/rootfs meson install --no-rebuild -C output
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

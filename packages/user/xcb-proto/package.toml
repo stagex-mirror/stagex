@@ -1,0 +1,10 @@
+[package]
+name = "xcb-proto"
+version = "1.17.0"
+description = "XML-XCB protocol descriptions"
+
+[sources.curl]
+hash = "2c1bacd2110f4799f74de6ebb714b94cf6f80fb112316b1219480fd22562148c"
+format = "tar.xz"
+file = "xcb-proto-{version}.{format}"
+mirrors = [ "https://xorg.freedesktop.org/archive/individual/proto/{file}" ]

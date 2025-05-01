@@ -1,0 +1,26 @@
+FROM stagex/pallet-gcc-gnu-busybox AS build
+ARG VERSION
+COPY --from=stagex/user-libxcb . /
+COPY --from=stagex/user-xorgproto . /
+COPY --from=stagex/user-xcb-proto . /
+COPY --from=stagex/user-xmlto . /
+COPY --from=stagex/user-util-macros . /
+COPY --from=stagex/user-xtrans . /
+COPY --from=stagex/user-libxdmcp . /
+COPY --from=stagex/user-libxau . /
+ADD fetch/libX11-${VERSION}.tar.xz .
+WORKDIR /libX11-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--localstatedir=/var \
+		--disable-xf86bigfont
+	make -j "$(nproc)"
+	make install DESTDIR=/rootfs
+EOF
+ENTRYPOINT ["bin/sh"]
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

@@ -86,10 +86,16 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
 \t [ $${{signum}} -ge 2 ] || {{ echo "Error: Minimum signatures not met for {stage}-{name}"; exit 1; }}; \\
 \t env -C out/{stage}-{name} tar -cf - . | docker load
 \t docker tag stagex/{stage}-{name}:{version} stagex/{stage}-{name}:latest
-\t docker push stagex/{stage}-{name}:{version}
 \t docker tag stagex/{stage}-{name}:latest stagex/{stage}-{name}:sx$(RELEASE)
+\t docker tag stagex/{stage}-{name}:{version} quay.io/stagex/{stage}-{name}:latest
+\t docker tag stagex/{stage}-{name}:{version} quay.io/stagex/{stage}-{name}:{version}
+\t docker tag stagex/{stage}-{name}:latest quay.io/stagex/{stage}-{name}:sx$(RELEASE)
+\t docker push stagex/{stage}-{name}:{version}
 \t docker push stagex/{stage}-{name}:sx$(RELEASE)
 \t docker push stagex/{stage}-{name}:latest
+\t docker push quay.io/stagex/{stage}-{name}:{version}
+\t docker push quay.io/stagex/{stage}-{name}:sx$(RELEASE)
+\t docker push quay.io/stagex/{stage}-{name}:latest
 
 """
 

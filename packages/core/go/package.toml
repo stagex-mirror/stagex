@@ -1,16 +1,16 @@
 [package]
 name = "go"
-version = "1.24.0"
+version = "1.24.2"
 description = "The Go programming language"
 
 [sources.go]
-hash = "d14120614acb29d12bcab72bd689f257eb4be9e0b6f88a8fb7e41ac65f8556e5"
-mirrors = [ "https://storage.googleapis.com/golang/go{version}.src.tar.gz",]
+hash = "9dc77ffadc16d837a1bf32d99c624cb4df0647cee7b119edd9e7b1bcc05f2e00"
+mirrors = [ "https://storage.googleapis.com/golang/go{version}.src.tar.gz", "https://go.dev/dl/go{version}.src.tar.gz",]
 
 [sources.go-linux-amd64]
-hash = "dea9ca38a0b852a74e81c26134671af7c0fbe65d81b0dc1c5bfe22cf7d4c8858"
+hash = "68097bd680839cbc9d464a0edce4f7c333975e27a90246890e9f1078c7e702ad"
 mirrors = [ "https://storage.googleapis.com/golang/go{version}.linux-amd64.tar.gz",]
 
 [sources.go-linux-arm64]
-hash = "c3fa6d16ffa261091a5617145553c71d21435ce547e44cc6dfb7470865527cc7"
+hash = "756274ea4b68fa5535eb9fe2559889287d725a8da63c6aae4d5f23778c229f4b"
 mirrors = [ "https://storage.googleapis.com/golang/go{version}.linux-arm64.tar.gz",]

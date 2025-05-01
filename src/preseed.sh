@@ -14,8 +14,8 @@ fetch(){
 	docker save ${ref} | tar -xC out/${package}
 }
 
-while read line; do
+cat digests/* | while read line; do
 	fetch "${line}"
-done < digests/bootstrap.txt < digests/core.txt < digests/pallet.txt < digests/user.txt
+done
 
 find out -type f -exec touch -d "$date" {} +

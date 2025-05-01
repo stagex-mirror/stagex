@@ -1,0 +1,31 @@
+FROM stagex/pallet-gcc-cmake-busybox AS build
+COPY --from=stagex/pallet-rust . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/user-spirv-headers . /
+COPY --from=stagex/user-spirv-tools . /
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-libffi . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-samurai . /
+ARG VERSION
+ARG VERSION_MAJOR
+ADD fetch/llvm-translator-${VERSION}.tar.gz .
+WORKDIR /SPIRV-LLVM-Translator-${VERSION}
+ENV CC=clang
+ENV	CXX=clang++
+RUN --network=none <<-EOF
+	set -eux
+	cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DBUILD_SHARED_LIBS=True \
+		-DLLVM_SPIRV_INCLUDE_TESTS=1 \
+		-DLLVM_EXTERNAL_LIT=/usr/lib/llvm${VERSION_MAJOR}/bin/lit \
+		-DLLVM_EXTERNAL_SPIRV_HEADERS_SOURCE_DIR=/usr/include/spirv
+	cmake --build build
+
+	DESTDIR=/rootfs cmake --install build
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

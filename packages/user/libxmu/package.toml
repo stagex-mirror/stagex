@@ -1,0 +1,10 @@
+[package]
+name = "libxmu"
+version = "1.2.1"
+description = "X11 miscellaneous micro-utility library"
+
+[sources.libxmu]
+hash = "fcb27793248a39e5fcc5b9c4aec40cc0734b3ca76aac3d7d1c264e7f7e14e8b2"
+format = "tar.xz"
+file = "libXmu-{version}.{format}"
+mirrors = [ "https://www.x.org/releases/individual/lib/{file}", ]

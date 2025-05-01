@@ -1,0 +1,10 @@
+[package]
+name = "glu"
+version = "9.0.3"
+description = "Mesa OpenGL Utility library"
+
+[sources.libzstd]
+hash = "bd43fe12f374b1192eb15fe20e45ff456b9bc26ab57f0eee919f96ca0f8a330f"
+format = "tar.xz"
+file = "glu-{version}.{format}"
+mirrors = [ "https://mesa.freedesktop.org/archive/glu/{file}" ]
