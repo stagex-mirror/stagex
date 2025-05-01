@@ -90,12 +90,12 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
 \t docker tag stagex/{stage}-{name}:{version} quay.io/stagex/{stage}-{name}:latest
 \t docker tag stagex/{stage}-{name}:{version} quay.io/stagex/{stage}-{name}:{version}
 \t docker tag stagex/{stage}-{name}:latest quay.io/stagex/{stage}-{name}:sx$(RELEASE)
-\t docker push stagex/{stage}-{name}:{version}
-\t docker push stagex/{stage}-{name}:sx$(RELEASE)
-\t docker push stagex/{stage}-{name}:latest
-\t docker push quay.io/stagex/{stage}-{name}:{version}
-\t docker push quay.io/stagex/{stage}-{name}:sx$(RELEASE)
-\t docker push quay.io/stagex/{stage}-{name}:latest
+\t bash src/has-manifest.sh stagex/{stage}-{name}:{version} out/{stage}-{name} || docker push stagex/{stage}-{name}:{version}
+\t bash src/has-manifest.sh stagex/{stage}-{name}:sx$(RELEASE) out/{stage}-{name} || docker push stagex/{stage}-{name}:sx$(RELEASE)
+\t bash src/has-manifest.sh stagex/{stage}-{name}:latest out/{stage}-{name} || docker push stagex/{stage}-{name}:latest
+\t bash src/has-manifest.sh quay.io/stagex/{stage}-{name}:{version} out/{stage}-{name} || docker push quay.io/stagex/{stage}-{name}:{version}
+\t bash src/has-manifest.sh quay.io/stagex/{stage}-{name}:sx$(RELEASE) out/{stage}-{name} || docker push quay.io/stagex/{stage}-{name}:sx$(RELEASE)
+\t bash src/has-manifest.sh quay.io/stagex/{stage}-{name}:latest out/{stage}-{name} || docker push quay.io/stagex/{stage}-{name}:latest
 
 """
 
