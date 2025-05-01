@@ -90,12 +90,12 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
 \t docker tag stagex/{stage}-{name}:{version} quay.io/stagex/{stage}-{name}:latest
 \t docker tag stagex/{stage}-{name}:{version} quay.io/stagex/{stage}-{name}:{version}
 \t docker tag stagex/{stage}-{name}:latest quay.io/stagex/{stage}-{name}:sx$(RELEASE)
-\t docker push stagex/{stage}-{name}:{version}
-\t docker push stagex/{stage}-{name}:sx$(RELEASE)
-\t docker push stagex/{stage}-{name}:latest
-\t docker push quay.io/stagex/{stage}-{name}:{version}
-\t docker push quay.io/stagex/{stage}-{name}:sx$(RELEASE)
-\t docker push quay.io/stagex/{stage}-{name}:latest
+\t$(call push-image,stagex/{stage}-{name}:{version})
+\t$(call push-image,stagex/{stage}-{name}:sx$(RELEASE))
+\t$(call push-image,stagex/{stage}-{name}:latest)
+\t$(call push-image,quay.io/stagex/{stage}-{name}:{version})
+\t$(call push-image,quay.io/stagex/{stage}-{name}:sx$(RELEASE))
+\t$(call push-image,quay.io/stagex/{stage}-{name}:latest)
 
 """
 
