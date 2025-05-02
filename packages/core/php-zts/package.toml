@@ -1,0 +1,10 @@
+[package]
+name = "php-zts"
+version = "8.4.6"
+description = "A popular general-purpose scripting language that is especially suited to web development."
+
+[sources.php]
+hash = "49be0f2f45c9b07c9b921d023bf28b1fc781700c829869725681300e72e3faa8"
+format = "tar.gz"
+file = "php-{version}.{format}"
+mirrors = [ "https://www.php.net/distributions/{file}" ]
