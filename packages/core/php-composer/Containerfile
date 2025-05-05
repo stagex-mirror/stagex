@@ -1,0 +1,133 @@
+FROM scratch AS build
+ARG VERSION
+ARG COMPOSER_BOOT_VERSION
+
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-ca-certificates . /
+COPY --from=stagex/core-curl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-sqlite3 . /
+COPY --from=stagex/user-argon2 . /
+COPY --from=stagex/user-libiconv . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-php-zts . /
+
+# Build the composer boot
+ADD fetch/composer-boot-${COMPOSER_BOOT_VERSION}.tar.gz ./composer-boot
+
+WORKDIR /composer-boot/composer-${COMPOSER_BOOT_VERSION}
+ARG PHP_PACKAGE_COMPOSER_CA_BUNDLE_SOURCE
+ADD fetch/${PHP_PACKAGE_COMPOSER_CA_BUNDLE_SOURCE} ./vendor/composer
+ARG PHP_PACKAGE_COMPOSER_CLASS_MAP_GENERATOR_SOURCE
+ADD fetch/${PHP_PACKAGE_COMPOSER_CLASS_MAP_GENERATOR_SOURCE} ./vendor/composer
+ARG PHP_PACKAGE_COMPOSER_METADATA_MINIFIER_SOURCE
+ADD fetch/${PHP_PACKAGE_COMPOSER_METADATA_MINIFIER_SOURCE} ./vendor/composer
+ARG PHP_PACKAGE_COMPOSER_PCRE_SOURCE
+ADD fetch/${PHP_PACKAGE_COMPOSER_PCRE_SOURCE} ./vendor/composer
+ARG PHP_PACKAGE_COMPOSER_SEMVER_SOURCE
+ADD fetch/${PHP_PACKAGE_COMPOSER_SEMVER_SOURCE} ./vendor/composer
+ARG PHP_PACKAGE_COMPOSER_SPDX_LICENSES_SOURCE
+ADD fetch/${PHP_PACKAGE_COMPOSER_SPDX_LICENSES_SOURCE} ./vendor/composer
+ARG PHP_PACKAGE_COMPOSER_XDEBUG_HANDLER_SOURCE
+ADD fetch/${PHP_PACKAGE_COMPOSER_XDEBUG_HANDLER_SOURCE} ./vendor/composer
+ARG PHP_PACKAGE_JUSTINRAINBOW_JSON_SCHEMA_SOURCE
+ADD fetch/${PHP_PACKAGE_JUSTINRAINBOW_JSON_SCHEMA_SOURCE} ./vendor/justinrainbow
+ARG PHP_PACKAGE_MARC_MABE_PHP_ENUM_SOURCE
+ADD fetch/${PHP_PACKAGE_MARC_MABE_PHP_ENUM_SOURCE} ./vendor/marc-mabe
+ARG PHP_PACKAGE_PSR_CONTAINER_SOURCE
+ADD fetch/${PHP_PACKAGE_PSR_CONTAINER_SOURCE} ./vendor/psr
+ARG PHP_PACKAGE_PSR_LOG_SOURCE
+ADD fetch/${PHP_PACKAGE_PSR_LOG_SOURCE} ./vendor/psr
+ARG PHP_PACKAGE_REACT_PROMISE_SOURCE
+ADD fetch/${PHP_PACKAGE_REACT_PROMISE_SOURCE} ./vendor/react
+ARG PHP_PACKAGE_SELD_JSONLINT_SOURCE
+ADD fetch/${PHP_PACKAGE_SELD_JSONLINT_SOURCE} ./vendor/seld
+ARG PHP_PACKAGE_SELD_PHAR_UTILS_SOURCE
+ADD fetch/${PHP_PACKAGE_SELD_PHAR_UTILS_SOURCE} ./vendor/seld
+ARG PHP_PACKAGE_SELD_SIGNAL_HANDLER_SOURCE
+ADD fetch/${PHP_PACKAGE_SELD_SIGNAL_HANDLER_SOURCE} ./vendor/seld
+ARG PHP_PACKAGE_SYMFONY_CONSOLE_SOURCE
+ADD fetch/${PHP_PACKAGE_SYMFONY_CONSOLE_SOURCE} ./vendor/symfony
+ARG PHP_PACKAGE_SYMFONY_DEPRECATION_CONTRACTS_SOURCE
+ADD fetch/${PHP_PACKAGE_SYMFONY_DEPRECATION_CONTRACTS_SOURCE} ./vendor/symfony
+ARG PHP_PACKAGE_SYMFONY_FILESYSTEM_SOURCE
+ADD fetch/${PHP_PACKAGE_SYMFONY_FILESYSTEM_SOURCE} ./vendor/symfony
+ARG PHP_PACKAGE_SYMFONY_FINDER_SOURCE
+ADD fetch/${PHP_PACKAGE_SYMFONY_FINDER_SOURCE} ./vendor/symfony
+ARG PHP_PACKAGE_SYMFONY_POLYFILL_CTYPE_SOURCE
+ADD fetch/${PHP_PACKAGE_SYMFONY_POLYFILL_CTYPE_SOURCE} ./vendor/symfony
+ARG PHP_PACKAGE_SYMFONY_POLYFILL_INTL_GRAPHEME_SOURCE
+ADD fetch/${PHP_PACKAGE_SYMFONY_POLYFILL_INTL_GRAPHEME_SOURCE} ./vendor/symfony
+ARG PHP_PACKAGE_SYMFONY_POLYFILL_INTL_NORMALIZER_SOURCE
+ADD fetch/${PHP_PACKAGE_SYMFONY_POLYFILL_INTL_NORMALIZER_SOURCE} ./vendor/symfony
+ARG PHP_PACKAGE_SYMFONY_POLYFILL_MBSTRING_SOURCE
+ADD fetch/${PHP_PACKAGE_SYMFONY_POLYFILL_MBSTRING_SOURCE} ./vendor/symfony
+ARG PHP_PACKAGE_SYMFONY_POLYFILL_PHP73_SOURCE
+ADD fetch/${PHP_PACKAGE_SYMFONY_POLYFILL_PHP73_SOURCE} ./vendor/symfony
+ARG PHP_PACKAGE_SYMFONY_POLYFILL_PHP80_SOURCE
+ADD fetch/${PHP_PACKAGE_SYMFONY_POLYFILL_PHP80_SOURCE} ./vendor/symfony
+ARG PHP_PACKAGE_SYMFONY_POLYFILL_PHP81_SOURCE
+ADD fetch/${PHP_PACKAGE_SYMFONY_POLYFILL_PHP81_SOURCE} ./vendor/symfony
+ARG PHP_PACKAGE_SYMFONY_PROCESS_SOURCE
+ADD fetch/${PHP_PACKAGE_SYMFONY_PROCESS_SOURCE} ./vendor/symfony
+ARG PHP_PACKAGE_SYMFONY_SERVICE_CONTRACTS_SOURCE
+ADD fetch/${PHP_PACKAGE_SYMFONY_SERVICE_CONTRACTS_SOURCE} ./vendor/symfony
+ARG PHP_PACKAGE_SYMFONY_STRING_SOURCE
+ADD fetch/${PHP_PACKAGE_SYMFONY_STRING_SOURCE} ./vendor/symfony
+
+# Strip sha1 from git archive directory name
+RUN <<-EOF
+	set -eux
+	path="./vendor"
+
+  find "$path" -type d -maxdepth 2 -mindepth 2 | while read -r dir; do
+    dirname=$(basename "$dir")
+
+    # Check if directory name ends with a git commit SHA1 (40 hex chars)
+    if [[ "$dirname" =~ -[0-9a-f]{40}$ ]]; then
+      # Remove the SHA1 part using sed
+      newname=$(echo "$dir" | sed 's/-[0-9a-f]\{40\}$//')
+
+      # Rename the directory
+      if [ "$dir" != "$newname" ]; then
+        mv "$dir" "$newname"
+        echo "Renamed: $dir > $newname"
+      fi
+    fi
+  done
+EOF
+
+COPY boot/*.patch .
+COPY boot/bootstrap-autoloader.php ./vendor/autoload.php
+RUN <<-EOF
+	set -eux
+	patch -p1 < bootstrap-autoloader.patch
+	php ./bin/composer about
+EOF
+
+# Build and compile the real ${VERSION} composer using composer boot
+ADD fetch/composer-${VERSION}.tar.gz /
+WORKDIR /composer-${VERSION}
+RUN <<-EOF
+	set -eux
+	php /composer-boot/composer-${COMPOSER_BOOT_VERSION}/bin/composer install --no-dev --no-interaction
+EOF
+
+COPY *.patch .
+ENV STAGEX_COMPOSER_VERSION=${VERSION}
+RUN <<-EOF
+	set -eux
+	patch -p1 < remove-timestamp-from-compile.patch
+	patch -p1 < remove-git-call-from-compiler.patch
+	php -dphar.readonly=0 bin/compile
+
+	install -Dm755 composer.phar /rootfs/usr/bin/composer
+	/rootfs/usr/bin/composer completion bash > completions.bash
+	install -Dm644 completions.bash /rootfs/usr/share/bash-completion/completions/composer
+
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

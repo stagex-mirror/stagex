@@ -1,0 +1,45 @@
+Index: src/Composer/Compiler.php
+<+>UTF-8
+===================================================================
+diff --git a/src/Composer/Compiler.php b/src/Composer/Compiler.php
+--- a/src/Composer/Compiler.php	(revision 29e47ed68cea82a0006c1c8949d85c7b15b11a0e)
++++ b/src/Composer/Compiler.php	(date 1746221810913)
+@@ -49,35 +49,9 @@
+             unlink($pharFile);
+         }
+
+-        $process = new ProcessExecutor();
+-
+-        if (0 !== $process->execute(['git', 'log', '--pretty=%H', '-n1', 'HEAD'], $output, dirname(dirname(__DIR__)))) {
+-            throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
+-        }
+-        $this->version = trim($output);
+-
+-        if (0 !== $process->execute(['git', 'log', '-n1', '--pretty=%ci', 'HEAD'], $output, dirname(dirname(__DIR__)))) {
+-            throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
+-        }
+-
+-        $this->versionDate = new \DateTime(trim($output));
+-        $this->versionDate->setTimezone(new \DateTimeZone('UTC'));
+-
+-        if (0 === $process->execute(['git', 'describe', '--tags', '--exact-match', 'HEAD'], $output, dirname(dirname(__DIR__)))) {
+-            $this->version = trim($output);
+-        } else {
+-            // get branch-alias defined in composer.json for dev-main (if any)
+-            $localConfig = __DIR__.'/../../composer.json';
+-            $file = new JsonFile($localConfig);
+-            $localConfig = $file->read();
+-            if (isset($localConfig['extra']['branch-alias']['dev-main'])) {
+-                $this->branchAliasVersion = $localConfig['extra']['branch-alias']['dev-main'];
+-            }
+-        }
+-
+-        if ('' === $this->version) {
+-            throw new \UnexpectedValueException('Version detection failed');
+-        }
++        $this->versionDate = new \DateTime();
++        $this->versionDate->setTimestamp(0);
++        $this->version = getenv('STAGEX_COMPOSER_VERSION');
+
+         $phar = new \Phar($pharFile, 0, 'composer.phar');
+         $phar->setSignatureAlgorithm(\Phar::SHA512);

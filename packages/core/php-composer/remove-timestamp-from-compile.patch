@@ -1,0 +1,15 @@
+Index: bin/compile
+<+>UTF-8
+===================================================================
+diff --git a/bin/compile b/bin/compile
+--- a/bin/compile	(revision 29e47ed68cea82a0006c1c8949d85c7b15b11a0e)
++++ b/bin/compile	(date 1746221810904)
+@@ -4,7 +4,7 @@
+ $cwd = getcwd();
+ assert(is_string($cwd));
+ chdir(__DIR__.'/../');
+-$ts = rtrim(exec('git log -n1 --pretty=%ct HEAD'));
++$ts = 0;
+ if (!is_numeric($ts)) {
+     echo 'Could not detect date using "git log -n1 --pretty=%ct HEAD"'.PHP_EOL;
+     exit(1);
