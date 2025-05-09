@@ -29,3 +29,13 @@ define import
 		stagex/$(STAGE)-$(NAME):$(VERSION) \
 		stagex/$(STAGE)-$(NAME):local
 endef
+
+# Push an image
+define push-image
+	$(eval IMAGE := $(1))
+	while true; do \
+		docker push $(IMAGE) && break; \
+		echo "Push failed, retrying in 5 seconds..."; \
+		sleep 5; \
+	done
+endef
