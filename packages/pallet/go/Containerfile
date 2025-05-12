@@ -1,4 +1,4 @@
-FROM scratch
+FROM stagex/core-filesystem
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-go . /
 COPY --from=stagex/core-ca-certificates . /

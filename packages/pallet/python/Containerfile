@@ -1,4 +1,4 @@
-FROM scratch
+FROM stagex/core-filesystem
 COPY --from=stagex/core-busybox . /
 # Should be libgcc subpackage
 COPY --from=stagex/core-gcc . /

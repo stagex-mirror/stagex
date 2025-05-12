@@ -1,4 +1,4 @@
-FROM scratch
+FROM stagex/core-filesystem
 
 #HACK: Included only for libgcc
 COPY --from=stagex/core-gcc . /

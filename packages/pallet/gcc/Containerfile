@@ -1,4 +1,4 @@
-FROM scratch
+FROM stagex/core-filesystem
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-musl-fts . /
 COPY --from=stagex/core-musl-obstack . /
