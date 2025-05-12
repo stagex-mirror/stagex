@@ -1,0 +1,10 @@
+[package]
+name = "guestctl"
+version = "0.1.0"
+description = "Guest Virtual Machine Controller"
+
+[sources.guestctl]
+hash = "30ac159f2e12cb9bebf38a5dbb8f95918523da6a9db18d018f9eaa0687a327ac"
+format = "tar.gz"
+file = "guestctl-{version}.{format}"
+mirrors = [ "https://git.distrust.co/public/guestctl/archive/guestctl-v{version}.{format}",]
