@@ -101,7 +101,7 @@ EOF
 
 COPY boot/*.patch .
 COPY boot/bootstrap-autoloader.php ./vendor/autoload.php
-RUN <<-EOF
+RUN --network=none <<-EOF
 	set -eux
 	patch -p1 < bootstrap-autoloader.patch
 	php ./bin/composer about
@@ -117,7 +117,7 @@ EOF
 
 COPY *.patch .
 ENV STAGEX_COMPOSER_VERSION=${VERSION}
-RUN <<-EOF
+RUN --network=none <<-EOF
 	set -eux
 	patch -p1 < remove-timestamp-from-compile.patch
 	patch -p1 < remove-git-call-from-compiler.patch
