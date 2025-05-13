@@ -1,640 +1,235 @@
 <?php
 
-$vendorDir = __DIR__;
-$baseDir = dirname($vendorDir);
+// Official implementation class from the PSR-4 spec
+// https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-4-autoloader-examples.md
+class Psr4AutoloaderClass
+{
+    /**
+     * An associative array where the key is a namespace prefix and the value
+     * is an array of base directories for classes in that namespace.
+     *
+     * @var array
+     */
+    protected array $prefixes = array();
 
-$autoloadFiles = [
-    'a4a119a56e50fbb293281d9a48007e0e' => $vendorDir . '/symfony/polyfill-php80/bootstrap.php',
-    '6e3fae29631ef280660b3cdad06f25a8' => $vendorDir . '/symfony/deprecation-contracts/function.php',
-    '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => $vendorDir . '/symfony/polyfill-mbstring/bootstrap.php',
-    '320cde22f66dd4f5d3fd621d3e88b98f' => $vendorDir . '/symfony/polyfill-ctype/bootstrap.php',
-    '8825ede83f2f289127722d4e842cf7e8' => $vendorDir . '/symfony/polyfill-intl-grapheme/bootstrap.php',
-    'e69f7f6ee287b969198c3c9d6777bd38' => $vendorDir . '/symfony/polyfill-intl-normalizer/bootstrap.php',
-    '0d59ee240a4cd96ddbb4ff164fccea4d' => $vendorDir . '/symfony/polyfill-php73/bootstrap.php',
-    'b6b991a57620e2fb6b2f66f03fe9ddc2' => $vendorDir . '/symfony/string/Resources/functions.php',
-    'ad155f8f1cf0d418fe49e248db8c661b' => $vendorDir . '/react/promise/src/functions_include.php',
-    '23c18046f52bef3eea034657bafda50f' => $vendorDir . '/symfony/polyfill-php81/bootstrap.php',
-];
+    /**
+     * Register loader with SPL autoloader stack.
+     *
+     * @return void
+     */
+    public function register(): void
+    {
+        spl_autoload_register(array($this, 'loadClass'));
+    }
 
-foreach ($autoloadFiles as $ref => $file) {
-    require $file;
-}
+    /**
+     * Adds a base directory for a namespace prefix.
+     *
+     * @param string $prefix The namespace prefix.
+     * @param string $base_dir A base directory for class files in the
+     * namespace.
+     * @param bool $prepend If true, prepend the base directory to the stack
+     * instead of appending it; this causes it to be searched first rather
+     * than last.
+     * @return void
+     */
+    public function addNamespace(string $prefix, string $base_dir, $prepend = false): void
+    {
+        // normalize namespace prefix
+        $prefix = trim($prefix, '\\') . '\\';
 
-spl_autoload_register(function ($class) use ($vendorDir, $baseDir) {
+        // normalize the base directory with a trailing separator
+        $base_dir = rtrim($base_dir, DIRECTORY_SEPARATOR) . '/';
 
-    $classMap = [
-        'Attribute' => $vendorDir . '/symfony/polyfill-php80/Resources/stubs/Attribute.php',
-        'CURLStringFile' => $vendorDir . '/symfony/polyfill-php81/Resources/stubs/CURLStringFile.php',
-        'Composer\\Advisory\\Auditor' => $baseDir . '/src/Composer/Advisory/Auditor.php',
-        'Composer\\Advisory\\IgnoredSecurityAdvisory' => $baseDir . '/src/Composer/Advisory/IgnoredSecurityAdvisory.php',
-        'Composer\\Advisory\\PartialSecurityAdvisory' => $baseDir . '/src/Composer/Advisory/PartialSecurityAdvisory.php',
-        'Composer\\Advisory\\SecurityAdvisory' => $baseDir . '/src/Composer/Advisory/SecurityAdvisory.php',
-        'Composer\\Autoload\\AutoloadGenerator' => $baseDir . '/src/Composer/Autoload/AutoloadGenerator.php',
-        'Composer\\Autoload\\ClassLoader' => $baseDir . '/src/Composer/Autoload/ClassLoader.php',
-        'Composer\\Autoload\\ClassMapGenerator' => $baseDir . '/src/Composer/Autoload/ClassMapGenerator.php',
-        'Composer\\CaBundle\\CaBundle' => $vendorDir . '/composer/ca-bundle/src/CaBundle.php',
-        'Composer\\Cache' => $baseDir . '/src/Composer/Cache.php',
-        'Composer\\ClassMapGenerator\\ClassMap' => $vendorDir . '/composer/class-map-generator/src/ClassMap.php',
-        'Composer\\ClassMapGenerator\\ClassMapGenerator' => $vendorDir . '/composer/class-map-generator/src/ClassMapGenerator.php',
-        'Composer\\ClassMapGenerator\\FileList' => $vendorDir . '/composer/class-map-generator/src/FileList.php',
-        'Composer\\ClassMapGenerator\\PhpFileCleaner' => $vendorDir . '/composer/class-map-generator/src/PhpFileCleaner.php',
-        'Composer\\ClassMapGenerator\\PhpFileParser' => $vendorDir . '/composer/class-map-generator/src/PhpFileParser.php',
-        'Composer\\Command\\AboutCommand' => $baseDir . '/src/Composer/Command/AboutCommand.php',
-        'Composer\\Command\\ArchiveCommand' => $baseDir . '/src/Composer/Command/ArchiveCommand.php',
-        'Composer\\Command\\AuditCommand' => $baseDir . '/src/Composer/Command/AuditCommand.php',
-        'Composer\\Command\\BaseCommand' => $baseDir . '/src/Composer/Command/BaseCommand.php',
-        'Composer\\Command\\BaseDependencyCommand' => $baseDir . '/src/Composer/Command/BaseDependencyCommand.php',
-        'Composer\\Command\\BumpCommand' => $baseDir . '/src/Composer/Command/BumpCommand.php',
-        'Composer\\Command\\CheckPlatformReqsCommand' => $baseDir . '/src/Composer/Command/CheckPlatformReqsCommand.php',
-        'Composer\\Command\\ClearCacheCommand' => $baseDir . '/src/Composer/Command/ClearCacheCommand.php',
-        'Composer\\Command\\CompletionTrait' => $baseDir . '/src/Composer/Command/CompletionTrait.php',
-        'Composer\\Command\\ConfigCommand' => $baseDir . '/src/Composer/Command/ConfigCommand.php',
-        'Composer\\Command\\CreateProjectCommand' => $baseDir . '/src/Composer/Command/CreateProjectCommand.php',
-        'Composer\\Command\\DependsCommand' => $baseDir . '/src/Composer/Command/DependsCommand.php',
-        'Composer\\Command\\DiagnoseCommand' => $baseDir . '/src/Composer/Command/DiagnoseCommand.php',
-        'Composer\\Command\\DumpAutoloadCommand' => $baseDir . '/src/Composer/Command/DumpAutoloadCommand.php',
-        'Composer\\Command\\ExecCommand' => $baseDir . '/src/Composer/Command/ExecCommand.php',
-        'Composer\\Command\\FundCommand' => $baseDir . '/src/Composer/Command/FundCommand.php',
-        'Composer\\Command\\GlobalCommand' => $baseDir . '/src/Composer/Command/GlobalCommand.php',
-        'Composer\\Command\\HomeCommand' => $baseDir . '/src/Composer/Command/HomeCommand.php',
-        'Composer\\Command\\InitCommand' => $baseDir . '/src/Composer/Command/InitCommand.php',
-        'Composer\\Command\\InstallCommand' => $baseDir . '/src/Composer/Command/InstallCommand.php',
-        'Composer\\Command\\LicensesCommand' => $baseDir . '/src/Composer/Command/LicensesCommand.php',
-        'Composer\\Command\\OutdatedCommand' => $baseDir . '/src/Composer/Command/OutdatedCommand.php',
-        'Composer\\Command\\PackageDiscoveryTrait' => $baseDir . '/src/Composer/Command/PackageDiscoveryTrait.php',
-        'Composer\\Command\\ProhibitsCommand' => $baseDir . '/src/Composer/Command/ProhibitsCommand.php',
-        'Composer\\Command\\ReinstallCommand' => $baseDir . '/src/Composer/Command/ReinstallCommand.php',
-        'Composer\\Command\\RemoveCommand' => $baseDir . '/src/Composer/Command/RemoveCommand.php',
-        'Composer\\Command\\RequireCommand' => $baseDir . '/src/Composer/Command/RequireCommand.php',
-        'Composer\\Command\\RunScriptCommand' => $baseDir . '/src/Composer/Command/RunScriptCommand.php',
-        'Composer\\Command\\ScriptAliasCommand' => $baseDir . '/src/Composer/Command/ScriptAliasCommand.php',
-        'Composer\\Command\\SearchCommand' => $baseDir . '/src/Composer/Command/SearchCommand.php',
-        'Composer\\Command\\SelfUpdateCommand' => $baseDir . '/src/Composer/Command/SelfUpdateCommand.php',
-        'Composer\\Command\\ShowCommand' => $baseDir . '/src/Composer/Command/ShowCommand.php',
-        'Composer\\Command\\StatusCommand' => $baseDir . '/src/Composer/Command/StatusCommand.php',
-        'Composer\\Command\\SuggestsCommand' => $baseDir . '/src/Composer/Command/SuggestsCommand.php',
-        'Composer\\Command\\UpdateCommand' => $baseDir . '/src/Composer/Command/UpdateCommand.php',
-        'Composer\\Command\\ValidateCommand' => $baseDir . '/src/Composer/Command/ValidateCommand.php',
-        'Composer\\Compiler' => $baseDir . '/src/Composer/Compiler.php',
-        'Composer\\Composer' => $baseDir . '/src/Composer/Composer.php',
-        'Composer\\Config' => $baseDir . '/src/Composer/Config.php',
-        'Composer\\Config\\ConfigSourceInterface' => $baseDir . '/src/Composer/Config/ConfigSourceInterface.php',
-        'Composer\\Config\\JsonConfigSource' => $baseDir . '/src/Composer/Config/JsonConfigSource.php',
-        'Composer\\Console\\Application' => $baseDir . '/src/Composer/Console/Application.php',
-        'Composer\\Console\\GithubActionError' => $baseDir . '/src/Composer/Console/GithubActionError.php',
-        'Composer\\Console\\HtmlOutputFormatter' => $baseDir . '/src/Composer/Console/HtmlOutputFormatter.php',
-        'Composer\\Console\\Input\\InputArgument' => $baseDir . '/src/Composer/Console/Input/InputArgument.php',
-        'Composer\\Console\\Input\\InputOption' => $baseDir . '/src/Composer/Console/Input/InputOption.php',
-        'Composer\\DependencyResolver\\Decisions' => $baseDir . '/src/Composer/DependencyResolver/Decisions.php',
-        'Composer\\DependencyResolver\\DefaultPolicy' => $baseDir . '/src/Composer/DependencyResolver/DefaultPolicy.php',
-        'Composer\\DependencyResolver\\GenericRule' => $baseDir . '/src/Composer/DependencyResolver/GenericRule.php',
-        'Composer\\DependencyResolver\\LocalRepoTransaction' => $baseDir . '/src/Composer/DependencyResolver/LocalRepoTransaction.php',
-        'Composer\\DependencyResolver\\LockTransaction' => $baseDir . '/src/Composer/DependencyResolver/LockTransaction.php',
-        'Composer\\DependencyResolver\\MultiConflictRule' => $baseDir . '/src/Composer/DependencyResolver/MultiConflictRule.php',
-        'Composer\\DependencyResolver\\Operation\\InstallOperation' => $baseDir . '/src/Composer/DependencyResolver/Operation/InstallOperation.php',
-        'Composer\\DependencyResolver\\Operation\\MarkAliasInstalledOperation' => $baseDir . '/src/Composer/DependencyResolver/Operation/MarkAliasInstalledOperation.php',
-        'Composer\\DependencyResolver\\Operation\\MarkAliasUninstalledOperation' => $baseDir . '/src/Composer/DependencyResolver/Operation/MarkAliasUninstalledOperation.php',
-        'Composer\\DependencyResolver\\Operation\\OperationInterface' => $baseDir . '/src/Composer/DependencyResolver/Operation/OperationInterface.php',
-        'Composer\\DependencyResolver\\Operation\\SolverOperation' => $baseDir . '/src/Composer/DependencyResolver/Operation/SolverOperation.php',
-        'Composer\\DependencyResolver\\Operation\\UninstallOperation' => $baseDir . '/src/Composer/DependencyResolver/Operation/UninstallOperation.php',
-        'Composer\\DependencyResolver\\Operation\\UpdateOperation' => $baseDir . '/src/Composer/DependencyResolver/Operation/UpdateOperation.php',
-        'Composer\\DependencyResolver\\PolicyInterface' => $baseDir . '/src/Composer/DependencyResolver/PolicyInterface.php',
-        'Composer\\DependencyResolver\\Pool' => $baseDir . '/src/Composer/DependencyResolver/Pool.php',
-        'Composer\\DependencyResolver\\PoolBuilder' => $baseDir . '/src/Composer/DependencyResolver/PoolBuilder.php',
-        'Composer\\DependencyResolver\\PoolOptimizer' => $baseDir . '/src/Composer/DependencyResolver/PoolOptimizer.php',
-        'Composer\\DependencyResolver\\Problem' => $baseDir . '/src/Composer/DependencyResolver/Problem.php',
-        'Composer\\DependencyResolver\\Request' => $baseDir . '/src/Composer/DependencyResolver/Request.php',
-        'Composer\\DependencyResolver\\Rule' => $baseDir . '/src/Composer/DependencyResolver/Rule.php',
-        'Composer\\DependencyResolver\\Rule2Literals' => $baseDir . '/src/Composer/DependencyResolver/Rule2Literals.php',
-        'Composer\\DependencyResolver\\RuleSet' => $baseDir . '/src/Composer/DependencyResolver/RuleSet.php',
-        'Composer\\DependencyResolver\\RuleSetGenerator' => $baseDir . '/src/Composer/DependencyResolver/RuleSetGenerator.php',
-        'Composer\\DependencyResolver\\RuleSetIterator' => $baseDir . '/src/Composer/DependencyResolver/RuleSetIterator.php',
-        'Composer\\DependencyResolver\\RuleWatchChain' => $baseDir . '/src/Composer/DependencyResolver/RuleWatchChain.php',
-        'Composer\\DependencyResolver\\RuleWatchGraph' => $baseDir . '/src/Composer/DependencyResolver/RuleWatchGraph.php',
-        'Composer\\DependencyResolver\\RuleWatchNode' => $baseDir . '/src/Composer/DependencyResolver/RuleWatchNode.php',
-        'Composer\\DependencyResolver\\Solver' => $baseDir . '/src/Composer/DependencyResolver/Solver.php',
-        'Composer\\DependencyResolver\\SolverBugException' => $baseDir . '/src/Composer/DependencyResolver/SolverBugException.php',
-        'Composer\\DependencyResolver\\SolverProblemsException' => $baseDir . '/src/Composer/DependencyResolver/SolverProblemsException.php',
-        'Composer\\DependencyResolver\\Transaction' => $baseDir . '/src/Composer/DependencyResolver/Transaction.php',
-        'Composer\\Downloader\\ArchiveDownloader' => $baseDir . '/src/Composer/Downloader/ArchiveDownloader.php',
-        'Composer\\Downloader\\ChangeReportInterface' => $baseDir . '/src/Composer/Downloader/ChangeReportInterface.php',
-        'Composer\\Downloader\\DownloadManager' => $baseDir . '/src/Composer/Downloader/DownloadManager.php',
-        'Composer\\Downloader\\DownloaderInterface' => $baseDir . '/src/Composer/Downloader/DownloaderInterface.php',
-        'Composer\\Downloader\\DvcsDownloaderInterface' => $baseDir . '/src/Composer/Downloader/DvcsDownloaderInterface.php',
-        'Composer\\Downloader\\FileDownloader' => $baseDir . '/src/Composer/Downloader/FileDownloader.php',
-        'Composer\\Downloader\\FilesystemException' => $baseDir . '/src/Composer/Downloader/FilesystemException.php',
-        'Composer\\Downloader\\FossilDownloader' => $baseDir . '/src/Composer/Downloader/FossilDownloader.php',
-        'Composer\\Downloader\\GitDownloader' => $baseDir . '/src/Composer/Downloader/GitDownloader.php',
-        'Composer\\Downloader\\GzipDownloader' => $baseDir . '/src/Composer/Downloader/GzipDownloader.php',
-        'Composer\\Downloader\\HgDownloader' => $baseDir . '/src/Composer/Downloader/HgDownloader.php',
-        'Composer\\Downloader\\MaxFileSizeExceededException' => $baseDir . '/src/Composer/Downloader/MaxFileSizeExceededException.php',
-        'Composer\\Downloader\\PathDownloader' => $baseDir . '/src/Composer/Downloader/PathDownloader.php',
-        'Composer\\Downloader\\PerforceDownloader' => $baseDir . '/src/Composer/Downloader/PerforceDownloader.php',
-        'Composer\\Downloader\\PharDownloader' => $baseDir . '/src/Composer/Downloader/PharDownloader.php',
-        'Composer\\Downloader\\RarDownloader' => $baseDir . '/src/Composer/Downloader/RarDownloader.php',
-        'Composer\\Downloader\\SvnDownloader' => $baseDir . '/src/Composer/Downloader/SvnDownloader.php',
-        'Composer\\Downloader\\TarDownloader' => $baseDir . '/src/Composer/Downloader/TarDownloader.php',
-        'Composer\\Downloader\\TransportException' => $baseDir . '/src/Composer/Downloader/TransportException.php',
-        'Composer\\Downloader\\VcsCapableDownloaderInterface' => $baseDir . '/src/Composer/Downloader/VcsCapableDownloaderInterface.php',
-        'Composer\\Downloader\\VcsDownloader' => $baseDir . '/src/Composer/Downloader/VcsDownloader.php',
-        'Composer\\Downloader\\XzDownloader' => $baseDir . '/src/Composer/Downloader/XzDownloader.php',
-        'Composer\\Downloader\\ZipDownloader' => $baseDir . '/src/Composer/Downloader/ZipDownloader.php',
-        'Composer\\EventDispatcher\\Event' => $baseDir . '/src/Composer/EventDispatcher/Event.php',
-        'Composer\\EventDispatcher\\EventDispatcher' => $baseDir . '/src/Composer/EventDispatcher/EventDispatcher.php',
-        'Composer\\EventDispatcher\\EventSubscriberInterface' => $baseDir . '/src/Composer/EventDispatcher/EventSubscriberInterface.php',
-        'Composer\\EventDispatcher\\ScriptExecutionException' => $baseDir . '/src/Composer/EventDispatcher/ScriptExecutionException.php',
-        'Composer\\Exception\\IrrecoverableDownloadException' => $baseDir . '/src/Composer/Exception/IrrecoverableDownloadException.php',
-        'Composer\\Exception\\NoSslException' => $baseDir . '/src/Composer/Exception/NoSslException.php',
-        'Composer\\Factory' => $baseDir . '/src/Composer/Factory.php',
-        'Composer\\Filter\\PlatformRequirementFilter\\IgnoreAllPlatformRequirementFilter' => $baseDir . '/src/Composer/Filter/PlatformRequirementFilter/IgnoreAllPlatformRequirementFilter.php',
-        'Composer\\Filter\\PlatformRequirementFilter\\IgnoreListPlatformRequirementFilter' => $baseDir . '/src/Composer/Filter/PlatformRequirementFilter/IgnoreListPlatformRequirementFilter.php',
-        'Composer\\Filter\\PlatformRequirementFilter\\IgnoreNothingPlatformRequirementFilter' => $baseDir . '/src/Composer/Filter/PlatformRequirementFilter/IgnoreNothingPlatformRequirementFilter.php',
-        'Composer\\Filter\\PlatformRequirementFilter\\PlatformRequirementFilterFactory' => $baseDir . '/src/Composer/Filter/PlatformRequirementFilter/PlatformRequirementFilterFactory.php',
-        'Composer\\Filter\\PlatformRequirementFilter\\PlatformRequirementFilterInterface' => $baseDir . '/src/Composer/Filter/PlatformRequirementFilter/PlatformRequirementFilterInterface.php',
-        'Composer\\IO\\BaseIO' => $baseDir . '/src/Composer/IO/BaseIO.php',
-        'Composer\\IO\\BufferIO' => $baseDir . '/src/Composer/IO/BufferIO.php',
-        'Composer\\IO\\ConsoleIO' => $baseDir . '/src/Composer/IO/ConsoleIO.php',
-        'Composer\\IO\\IOInterface' => $baseDir . '/src/Composer/IO/IOInterface.php',
-        'Composer\\IO\\NullIO' => $baseDir . '/src/Composer/IO/NullIO.php',
-
-        ///
-        // Take the class from composer source and not the generated one inside vendor
-        ///
-        'Composer\\InstalledVersions' => $baseDir . '/src/Composer/InstalledVersions.php',
-
-        'Composer\\Installer' => $baseDir . '/src/Composer/Installer.php',
-        'Composer\\Installer\\BinaryInstaller' => $baseDir . '/src/Composer/Installer/BinaryInstaller.php',
-        'Composer\\Installer\\BinaryPresenceInterface' => $baseDir . '/src/Composer/Installer/BinaryPresenceInterface.php',
-        'Composer\\Installer\\InstallationManager' => $baseDir . '/src/Composer/Installer/InstallationManager.php',
-        'Composer\\Installer\\InstallerEvent' => $baseDir . '/src/Composer/Installer/InstallerEvent.php',
-        'Composer\\Installer\\InstallerEvents' => $baseDir . '/src/Composer/Installer/InstallerEvents.php',
-        'Composer\\Installer\\InstallerInterface' => $baseDir . '/src/Composer/Installer/InstallerInterface.php',
-        'Composer\\Installer\\LibraryInstaller' => $baseDir . '/src/Composer/Installer/LibraryInstaller.php',
-        'Composer\\Installer\\MetapackageInstaller' => $baseDir . '/src/Composer/Installer/MetapackageInstaller.php',
-        'Composer\\Installer\\NoopInstaller' => $baseDir . '/src/Composer/Installer/NoopInstaller.php',
-        'Composer\\Installer\\PackageEvent' => $baseDir . '/src/Composer/Installer/PackageEvent.php',
-        'Composer\\Installer\\PackageEvents' => $baseDir . '/src/Composer/Installer/PackageEvents.php',
-        'Composer\\Installer\\PluginInstaller' => $baseDir . '/src/Composer/Installer/PluginInstaller.php',
-        'Composer\\Installer\\ProjectInstaller' => $baseDir . '/src/Composer/Installer/ProjectInstaller.php',
-        'Composer\\Installer\\SuggestedPackagesReporter' => $baseDir . '/src/Composer/Installer/SuggestedPackagesReporter.php',
-        'Composer\\Json\\JsonFile' => $baseDir . '/src/Composer/Json/JsonFile.php',
-        'Composer\\Json\\JsonFormatter' => $baseDir . '/src/Composer/Json/JsonFormatter.php',
-        'Composer\\Json\\JsonManipulator' => $baseDir . '/src/Composer/Json/JsonManipulator.php',
-        'Composer\\Json\\JsonValidationException' => $baseDir . '/src/Composer/Json/JsonValidationException.php',
-        'Composer\\MetadataMinifier\\MetadataMinifier' => $vendorDir . '/composer/metadata-minifier/src/MetadataMinifier.php',
-        'Composer\\PHPStan\\ConfigReturnTypeExtension' => $baseDir . '/src/Composer/PHPStan/ConfigReturnTypeExtension.php',
-        'Composer\\PHPStan\\RuleReasonDataReturnTypeExtension' => $baseDir . '/src/Composer/PHPStan/RuleReasonDataReturnTypeExtension.php',
-        'Composer\\Package\\AliasPackage' => $baseDir . '/src/Composer/Package/AliasPackage.php',
-        'Composer\\Package\\Archiver\\ArchivableFilesFilter' => $baseDir . '/src/Composer/Package/Archiver/ArchivableFilesFilter.php',
-        'Composer\\Package\\Archiver\\ArchivableFilesFinder' => $baseDir . '/src/Composer/Package/Archiver/ArchivableFilesFinder.php',
-        'Composer\\Package\\Archiver\\ArchiveManager' => $baseDir . '/src/Composer/Package/Archiver/ArchiveManager.php',
-        'Composer\\Package\\Archiver\\ArchiverInterface' => $baseDir . '/src/Composer/Package/Archiver/ArchiverInterface.php',
-        'Composer\\Package\\Archiver\\BaseExcludeFilter' => $baseDir . '/src/Composer/Package/Archiver/BaseExcludeFilter.php',
-        'Composer\\Package\\Archiver\\ComposerExcludeFilter' => $baseDir . '/src/Composer/Package/Archiver/ComposerExcludeFilter.php',
-        'Composer\\Package\\Archiver\\GitExcludeFilter' => $baseDir . '/src/Composer/Package/Archiver/GitExcludeFilter.php',
-        'Composer\\Package\\Archiver\\PharArchiver' => $baseDir . '/src/Composer/Package/Archiver/PharArchiver.php',
-        'Composer\\Package\\Archiver\\ZipArchiver' => $baseDir . '/src/Composer/Package/Archiver/ZipArchiver.php',
-        'Composer\\Package\\BasePackage' => $baseDir . '/src/Composer/Package/BasePackage.php',
-        'Composer\\Package\\Comparer\\Comparer' => $baseDir . '/src/Composer/Package/Comparer/Comparer.php',
-        'Composer\\Package\\CompleteAliasPackage' => $baseDir . '/src/Composer/Package/CompleteAliasPackage.php',
-        'Composer\\Package\\CompletePackage' => $baseDir . '/src/Composer/Package/CompletePackage.php',
-        'Composer\\Package\\CompletePackageInterface' => $baseDir . '/src/Composer/Package/CompletePackageInterface.php',
-        'Composer\\Package\\Dumper\\ArrayDumper' => $baseDir . '/src/Composer/Package/Dumper/ArrayDumper.php',
-        'Composer\\Package\\Link' => $baseDir . '/src/Composer/Package/Link.php',
-        'Composer\\Package\\Loader\\ArrayLoader' => $baseDir . '/src/Composer/Package/Loader/ArrayLoader.php',
-        'Composer\\Package\\Loader\\InvalidPackageException' => $baseDir . '/src/Composer/Package/Loader/InvalidPackageException.php',
-        'Composer\\Package\\Loader\\JsonLoader' => $baseDir . '/src/Composer/Package/Loader/JsonLoader.php',
-        'Composer\\Package\\Loader\\LoaderInterface' => $baseDir . '/src/Composer/Package/Loader/LoaderInterface.php',
-        'Composer\\Package\\Loader\\RootPackageLoader' => $baseDir . '/src/Composer/Package/Loader/RootPackageLoader.php',
-        'Composer\\Package\\Loader\\ValidatingArrayLoader' => $baseDir . '/src/Composer/Package/Loader/ValidatingArrayLoader.php',
-        'Composer\\Package\\Locker' => $baseDir . '/src/Composer/Package/Locker.php',
-        'Composer\\Package\\Package' => $baseDir . '/src/Composer/Package/Package.php',
-        'Composer\\Package\\PackageInterface' => $baseDir . '/src/Composer/Package/PackageInterface.php',
-        'Composer\\Package\\RootAliasPackage' => $baseDir . '/src/Composer/Package/RootAliasPackage.php',
-        'Composer\\Package\\RootPackage' => $baseDir . '/src/Composer/Package/RootPackage.php',
-        'Composer\\Package\\RootPackageInterface' => $baseDir . '/src/Composer/Package/RootPackageInterface.php',
-        'Composer\\Package\\Version\\StabilityFilter' => $baseDir . '/src/Composer/Package/Version/StabilityFilter.php',
-        'Composer\\Package\\Version\\VersionBumper' => $baseDir . '/src/Composer/Package/Version/VersionBumper.php',
-        'Composer\\Package\\Version\\VersionGuesser' => $baseDir . '/src/Composer/Package/Version/VersionGuesser.php',
-        'Composer\\Package\\Version\\VersionParser' => $baseDir . '/src/Composer/Package/Version/VersionParser.php',
-        'Composer\\Package\\Version\\VersionSelector' => $baseDir . '/src/Composer/Package/Version/VersionSelector.php',
-        'Composer\\PartialComposer' => $baseDir . '/src/Composer/PartialComposer.php',
-        'Composer\\Pcre\\MatchAllResult' => $vendorDir . '/composer/pcre/src/MatchAllResult.php',
-        'Composer\\Pcre\\MatchAllStrictGroupsResult' => $vendorDir . '/composer/pcre/src/MatchAllStrictGroupsResult.php',
-        'Composer\\Pcre\\MatchAllWithOffsetsResult' => $vendorDir . '/composer/pcre/src/MatchAllWithOffsetsResult.php',
-        'Composer\\Pcre\\MatchResult' => $vendorDir . '/composer/pcre/src/MatchResult.php',
-        'Composer\\Pcre\\MatchStrictGroupsResult' => $vendorDir . '/composer/pcre/src/MatchStrictGroupsResult.php',
-        'Composer\\Pcre\\MatchWithOffsetsResult' => $vendorDir . '/composer/pcre/src/MatchWithOffsetsResult.php',
-        'Composer\\Pcre\\PHPStan\\InvalidRegexPatternRule' => $vendorDir . '/composer/pcre/src/PHPStan/InvalidRegexPatternRule.php',
-        'Composer\\Pcre\\PHPStan\\PregMatchFlags' => $vendorDir . '/composer/pcre/src/PHPStan/PregMatchFlags.php',
-        'Composer\\Pcre\\PHPStan\\PregMatchParameterOutTypeExtension' => $vendorDir . '/composer/pcre/src/PHPStan/PregMatchParameterOutTypeExtension.php',
-        'Composer\\Pcre\\PHPStan\\PregMatchTypeSpecifyingExtension' => $vendorDir . '/composer/pcre/src/PHPStan/PregMatchTypeSpecifyingExtension.php',
-        'Composer\\Pcre\\PHPStan\\PregReplaceCallbackClosureTypeExtension' => $vendorDir . '/composer/pcre/src/PHPStan/PregReplaceCallbackClosureTypeExtension.php',
-        'Composer\\Pcre\\PHPStan\\UnsafeStrictGroupsCallRule' => $vendorDir . '/composer/pcre/src/PHPStan/UnsafeStrictGroupsCallRule.php',
-        'Composer\\Pcre\\PcreException' => $vendorDir . '/composer/pcre/src/PcreException.php',
-        'Composer\\Pcre\\Preg' => $vendorDir . '/composer/pcre/src/Preg.php',
-        'Composer\\Pcre\\Regex' => $vendorDir . '/composer/pcre/src/Regex.php',
-        'Composer\\Pcre\\ReplaceResult' => $vendorDir . '/composer/pcre/src/ReplaceResult.php',
-        'Composer\\Pcre\\UnexpectedNullMatchException' => $vendorDir . '/composer/pcre/src/UnexpectedNullMatchException.php',
-        'Composer\\Platform\\HhvmDetector' => $baseDir . '/src/Composer/Platform/HhvmDetector.php',
-        'Composer\\Platform\\Runtime' => $baseDir . '/src/Composer/Platform/Runtime.php',
-        'Composer\\Platform\\Version' => $baseDir . '/src/Composer/Platform/Version.php',
-        'Composer\\Plugin\\Capability\\Capability' => $baseDir . '/src/Composer/Plugin/Capability/Capability.php',
-        'Composer\\Plugin\\Capability\\CommandProvider' => $baseDir . '/src/Composer/Plugin/Capability/CommandProvider.php',
-        'Composer\\Plugin\\Capable' => $baseDir . '/src/Composer/Plugin/Capable.php',
-        'Composer\\Plugin\\CommandEvent' => $baseDir . '/src/Composer/Plugin/CommandEvent.php',
-        'Composer\\Plugin\\PluginBlockedException' => $baseDir . '/src/Composer/Plugin/PluginBlockedException.php',
-        'Composer\\Plugin\\PluginEvents' => $baseDir . '/src/Composer/Plugin/PluginEvents.php',
-        'Composer\\Plugin\\PluginInterface' => $baseDir . '/src/Composer/Plugin/PluginInterface.php',
-        'Composer\\Plugin\\PluginManager' => $baseDir . '/src/Composer/Plugin/PluginManager.php',
-        'Composer\\Plugin\\PostFileDownloadEvent' => $baseDir . '/src/Composer/Plugin/PostFileDownloadEvent.php',
-        'Composer\\Plugin\\PreCommandRunEvent' => $baseDir . '/src/Composer/Plugin/PreCommandRunEvent.php',
-        'Composer\\Plugin\\PreFileDownloadEvent' => $baseDir . '/src/Composer/Plugin/PreFileDownloadEvent.php',
-        'Composer\\Plugin\\PrePoolCreateEvent' => $baseDir . '/src/Composer/Plugin/PrePoolCreateEvent.php',
-        'Composer\\Question\\StrictConfirmationQuestion' => $baseDir . '/src/Composer/Question/StrictConfirmationQuestion.php',
-        'Composer\\Repository\\AdvisoryProviderInterface' => $baseDir . '/src/Composer/Repository/AdvisoryProviderInterface.php',
-        'Composer\\Repository\\ArrayRepository' => $baseDir . '/src/Composer/Repository/ArrayRepository.php',
-        'Composer\\Repository\\ArtifactRepository' => $baseDir . '/src/Composer/Repository/ArtifactRepository.php',
-        'Composer\\Repository\\CanonicalPackagesTrait' => $baseDir . '/src/Composer/Repository/CanonicalPackagesTrait.php',
-        'Composer\\Repository\\ComposerRepository' => $baseDir . '/src/Composer/Repository/ComposerRepository.php',
-        'Composer\\Repository\\CompositeRepository' => $baseDir . '/src/Composer/Repository/CompositeRepository.php',
-        'Composer\\Repository\\ConfigurableRepositoryInterface' => $baseDir . '/src/Composer/Repository/ConfigurableRepositoryInterface.php',
-        'Composer\\Repository\\FilesystemRepository' => $baseDir . '/src/Composer/Repository/FilesystemRepository.php',
-        'Composer\\Repository\\FilterRepository' => $baseDir . '/src/Composer/Repository/FilterRepository.php',
-        'Composer\\Repository\\InstalledArrayRepository' => $baseDir . '/src/Composer/Repository/InstalledArrayRepository.php',
-        'Composer\\Repository\\InstalledFilesystemRepository' => $baseDir . '/src/Composer/Repository/InstalledFilesystemRepository.php',
-        'Composer\\Repository\\InstalledRepository' => $baseDir . '/src/Composer/Repository/InstalledRepository.php',
-        'Composer\\Repository\\InstalledRepositoryInterface' => $baseDir . '/src/Composer/Repository/InstalledRepositoryInterface.php',
-        'Composer\\Repository\\InvalidRepositoryException' => $baseDir . '/src/Composer/Repository/InvalidRepositoryException.php',
-        'Composer\\Repository\\LockArrayRepository' => $baseDir . '/src/Composer/Repository/LockArrayRepository.php',
-        'Composer\\Repository\\PackageRepository' => $baseDir . '/src/Composer/Repository/PackageRepository.php',
-        'Composer\\Repository\\PathRepository' => $baseDir . '/src/Composer/Repository/PathRepository.php',
-        'Composer\\Repository\\PearRepository' => $baseDir . '/src/Composer/Repository/PearRepository.php',
-        'Composer\\Repository\\PlatformRepository' => $baseDir . '/src/Composer/Repository/PlatformRepository.php',
-        'Composer\\Repository\\RepositoryFactory' => $baseDir . '/src/Composer/Repository/RepositoryFactory.php',
-        'Composer\\Repository\\RepositoryInterface' => $baseDir . '/src/Composer/Repository/RepositoryInterface.php',
-        'Composer\\Repository\\RepositoryManager' => $baseDir . '/src/Composer/Repository/RepositoryManager.php',
-        'Composer\\Repository\\RepositorySecurityException' => $baseDir . '/src/Composer/Repository/RepositorySecurityException.php',
-        'Composer\\Repository\\RepositorySet' => $baseDir . '/src/Composer/Repository/RepositorySet.php',
-        'Composer\\Repository\\RepositoryUtils' => $baseDir . '/src/Composer/Repository/RepositoryUtils.php',
-        'Composer\\Repository\\RootPackageRepository' => $baseDir . '/src/Composer/Repository/RootPackageRepository.php',
-        'Composer\\Repository\\VcsRepository' => $baseDir . '/src/Composer/Repository/VcsRepository.php',
-        'Composer\\Repository\\Vcs\\FossilDriver' => $baseDir . '/src/Composer/Repository/Vcs/FossilDriver.php',
-        'Composer\\Repository\\Vcs\\GitBitbucketDriver' => $baseDir . '/src/Composer/Repository/Vcs/GitBitbucketDriver.php',
-        'Composer\\Repository\\Vcs\\GitDriver' => $baseDir . '/src/Composer/Repository/Vcs/GitDriver.php',
-        'Composer\\Repository\\Vcs\\GitHubDriver' => $baseDir . '/src/Composer/Repository/Vcs/GitHubDriver.php',
-        'Composer\\Repository\\Vcs\\GitLabDriver' => $baseDir . '/src/Composer/Repository/Vcs/GitLabDriver.php',
-        'Composer\\Repository\\Vcs\\HgDriver' => $baseDir . '/src/Composer/Repository/Vcs/HgDriver.php',
-        'Composer\\Repository\\Vcs\\PerforceDriver' => $baseDir . '/src/Composer/Repository/Vcs/PerforceDriver.php',
-        'Composer\\Repository\\Vcs\\SvnDriver' => $baseDir . '/src/Composer/Repository/Vcs/SvnDriver.php',
-        'Composer\\Repository\\Vcs\\VcsDriver' => $baseDir . '/src/Composer/Repository/Vcs/VcsDriver.php',
-        'Composer\\Repository\\Vcs\\VcsDriverInterface' => $baseDir . '/src/Composer/Repository/Vcs/VcsDriverInterface.php',
-        'Composer\\Repository\\VersionCacheInterface' => $baseDir . '/src/Composer/Repository/VersionCacheInterface.php',
-        'Composer\\Repository\\WritableArrayRepository' => $baseDir . '/src/Composer/Repository/WritableArrayRepository.php',
-        'Composer\\Repository\\WritableRepositoryInterface' => $baseDir . '/src/Composer/Repository/WritableRepositoryInterface.php',
-        'Composer\\Script\\Event' => $baseDir . '/src/Composer/Script/Event.php',
-        'Composer\\Script\\ScriptEvents' => $baseDir . '/src/Composer/Script/ScriptEvents.php',
-        'Composer\\SelfUpdate\\Keys' => $baseDir . '/src/Composer/SelfUpdate/Keys.php',
-        'Composer\\SelfUpdate\\Versions' => $baseDir . '/src/Composer/SelfUpdate/Versions.php',
-        'Composer\\Semver\\Comparator' => $vendorDir . '/composer/semver/src/Comparator.php',
-        'Composer\\Semver\\CompilingMatcher' => $vendorDir . '/composer/semver/src/CompilingMatcher.php',
-        'Composer\\Semver\\Constraint\\Bound' => $vendorDir . '/composer/semver/src/Constraint/Bound.php',
-        'Composer\\Semver\\Constraint\\Constraint' => $vendorDir . '/composer/semver/src/Constraint/Constraint.php',
-        'Composer\\Semver\\Constraint\\ConstraintInterface' => $vendorDir . '/composer/semver/src/Constraint/ConstraintInterface.php',
-        'Composer\\Semver\\Constraint\\MatchAllConstraint' => $vendorDir . '/composer/semver/src/Constraint/MatchAllConstraint.php',
-        'Composer\\Semver\\Constraint\\MatchNoneConstraint' => $vendorDir . '/composer/semver/src/Constraint/MatchNoneConstraint.php',
-        'Composer\\Semver\\Constraint\\MultiConstraint' => $vendorDir . '/composer/semver/src/Constraint/MultiConstraint.php',
-        'Composer\\Semver\\Interval' => $vendorDir . '/composer/semver/src/Interval.php',
-        'Composer\\Semver\\Intervals' => $vendorDir . '/composer/semver/src/Intervals.php',
-        'Composer\\Semver\\Semver' => $vendorDir . '/composer/semver/src/Semver.php',
-        'Composer\\Semver\\VersionParser' => $vendorDir . '/composer/semver/src/VersionParser.php',
-        'Composer\\Spdx\\SpdxLicenses' => $vendorDir . '/composer/spdx-licenses/src/SpdxLicenses.php',
-        'Composer\\Util\\AuthHelper' => $baseDir . '/src/Composer/Util/AuthHelper.php',
-        'Composer\\Util\\Bitbucket' => $baseDir . '/src/Composer/Util/Bitbucket.php',
-        'Composer\\Util\\ComposerMirror' => $baseDir . '/src/Composer/Util/ComposerMirror.php',
-        'Composer\\Util\\ConfigValidator' => $baseDir . '/src/Composer/Util/ConfigValidator.php',
-        'Composer\\Util\\ErrorHandler' => $baseDir . '/src/Composer/Util/ErrorHandler.php',
-        'Composer\\Util\\Filesystem' => $baseDir . '/src/Composer/Util/Filesystem.php',
-        'Composer\\Util\\Git' => $baseDir . '/src/Composer/Util/Git.php',
-        'Composer\\Util\\GitHub' => $baseDir . '/src/Composer/Util/GitHub.php',
-        'Composer\\Util\\GitLab' => $baseDir . '/src/Composer/Util/GitLab.php',
-        'Composer\\Util\\Hg' => $baseDir . '/src/Composer/Util/Hg.php',
-        'Composer\\Util\\HttpDownloader' => $baseDir . '/src/Composer/Util/HttpDownloader.php',
-        'Composer\\Util\\Http\\CurlDownloader' => $baseDir . '/src/Composer/Util/Http/CurlDownloader.php',
-        'Composer\\Util\\Http\\CurlResponse' => $baseDir . '/src/Composer/Util/Http/CurlResponse.php',
-        'Composer\\Util\\Http\\ProxyItem' => $baseDir . '/src/Composer/Util/Http/ProxyItem.php',
-        'Composer\\Util\\Http\\ProxyManager' => $baseDir . '/src/Composer/Util/Http/ProxyManager.php',
-        'Composer\\Util\\Http\\RequestProxy' => $baseDir . '/src/Composer/Util/Http/RequestProxy.php',
-        'Composer\\Util\\Http\\Response' => $baseDir . '/src/Composer/Util/Http/Response.php',
-        'Composer\\Util\\IniHelper' => $baseDir . '/src/Composer/Util/IniHelper.php',
-        'Composer\\Util\\Loop' => $baseDir . '/src/Composer/Util/Loop.php',
-        'Composer\\Util\\MetadataMinifier' => $baseDir . '/src/Composer/Util/MetadataMinifier.php',
-        'Composer\\Util\\NoProxyPattern' => $baseDir . '/src/Composer/Util/NoProxyPattern.php',
-        'Composer\\Util\\PackageInfo' => $baseDir . '/src/Composer/Util/PackageInfo.php',
-        'Composer\\Util\\PackageSorter' => $baseDir . '/src/Composer/Util/PackageSorter.php',
-        'Composer\\Util\\Perforce' => $baseDir . '/src/Composer/Util/Perforce.php',
-        'Composer\\Util\\Platform' => $baseDir . '/src/Composer/Util/Platform.php',
-        'Composer\\Util\\ProcessExecutor' => $baseDir . '/src/Composer/Util/ProcessExecutor.php',
-        'Composer\\Util\\RemoteFilesystem' => $baseDir . '/src/Composer/Util/RemoteFilesystem.php',
-        'Composer\\Util\\Silencer' => $baseDir . '/src/Composer/Util/Silencer.php',
-        'Composer\\Util\\StreamContextFactory' => $baseDir . '/src/Composer/Util/StreamContextFactory.php',
-        'Composer\\Util\\Svn' => $baseDir . '/src/Composer/Util/Svn.php',
-        'Composer\\Util\\SyncHelper' => $baseDir . '/src/Composer/Util/SyncHelper.php',
-        'Composer\\Util\\Tar' => $baseDir . '/src/Composer/Util/Tar.php',
-        'Composer\\Util\\TlsHelper' => $baseDir . '/src/Composer/Util/TlsHelper.php',
-        'Composer\\Util\\Url' => $baseDir . '/src/Composer/Util/Url.php',
-        'Composer\\Util\\Zip' => $baseDir . '/src/Composer/Util/Zip.php',
-        'Composer\\XdebugHandler\\PhpConfig' => $vendorDir . '/composer/xdebug-handler/src/PhpConfig.php',
-        'Composer\\XdebugHandler\\Process' => $vendorDir . '/composer/xdebug-handler/src/Process.php',
-        'Composer\\XdebugHandler\\Status' => $vendorDir . '/composer/xdebug-handler/src/Status.php',
-        'Composer\\XdebugHandler\\XdebugHandler' => $vendorDir . '/composer/xdebug-handler/src/XdebugHandler.php',
-        'JsonException' => $vendorDir . '/symfony/polyfill-php73/Resources/stubs/JsonException.php',
-        'JsonSchema\\ConstraintError' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/ConstraintError.php',
-        'JsonSchema\\Constraints\\BaseConstraint' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Constraints/BaseConstraint.php',
-        'JsonSchema\\Constraints\\CollectionConstraint' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Constraints/CollectionConstraint.php',
-        'JsonSchema\\Constraints\\ConstConstraint' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Constraints/ConstConstraint.php',
-        'JsonSchema\\Constraints\\Constraint' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Constraints/Constraint.php',
-        'JsonSchema\\Constraints\\ConstraintInterface' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Constraints/ConstraintInterface.php',
-        'JsonSchema\\Constraints\\EnumConstraint' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Constraints/EnumConstraint.php',
-        'JsonSchema\\Constraints\\Factory' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Constraints/Factory.php',
-        'JsonSchema\\Constraints\\FormatConstraint' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Constraints/FormatConstraint.php',
-        'JsonSchema\\Constraints\\NumberConstraint' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Constraints/NumberConstraint.php',
-        'JsonSchema\\Constraints\\ObjectConstraint' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Constraints/ObjectConstraint.php',
-        'JsonSchema\\Constraints\\SchemaConstraint' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Constraints/SchemaConstraint.php',
-        'JsonSchema\\Constraints\\StringConstraint' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Constraints/StringConstraint.php',
-        'JsonSchema\\Constraints\\TypeCheck\\LooseTypeCheck' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Constraints/TypeCheck/LooseTypeCheck.php',
-        'JsonSchema\\Constraints\\TypeCheck\\StrictTypeCheck' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Constraints/TypeCheck/StrictTypeCheck.php',
-        'JsonSchema\\Constraints\\TypeCheck\\TypeCheckInterface' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Constraints/TypeCheck/TypeCheckInterface.php',
-        'JsonSchema\\Constraints\\TypeConstraint' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Constraints/TypeConstraint.php',
-        'JsonSchema\\Constraints\\UndefinedConstraint' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Constraints/UndefinedConstraint.php',
-        'JsonSchema\\Entity\\JsonPointer' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Entity/JsonPointer.php',
-        'JsonSchema\\Enum' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Enum.php',
-        'JsonSchema\\Exception\\ExceptionInterface' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Exception/ExceptionInterface.php',
-        'JsonSchema\\Exception\\InvalidArgumentException' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Exception/InvalidArgumentException.php',
-        'JsonSchema\\Exception\\InvalidConfigException' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Exception/InvalidConfigException.php',
-        'JsonSchema\\Exception\\InvalidSchemaException' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Exception/InvalidSchemaException.php',
-        'JsonSchema\\Exception\\InvalidSchemaMediaTypeException' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Exception/InvalidSchemaMediaTypeException.php',
-        'JsonSchema\\Exception\\InvalidSourceUriException' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Exception/InvalidSourceUriException.php',
-        'JsonSchema\\Exception\\JsonDecodingException' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Exception/JsonDecodingException.php',
-        'JsonSchema\\Exception\\ResourceNotFoundException' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Exception/ResourceNotFoundException.php',
-        'JsonSchema\\Exception\\RuntimeException' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Exception/RuntimeException.php',
-        'JsonSchema\\Exception\\UnresolvableJsonPointerException' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Exception/UnresolvableJsonPointerException.php',
-        'JsonSchema\\Exception\\UriResolverException' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Exception/UriResolverException.php',
-        'JsonSchema\\Exception\\ValidationException' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Exception/ValidationException.php',
-        'JsonSchema\\Iterator\\ObjectIterator' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Iterator/ObjectIterator.php',
-        'JsonSchema\\Rfc3339' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Rfc3339.php',
-        'JsonSchema\\SchemaStorage' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/SchemaStorage.php',
-        'JsonSchema\\SchemaStorageInterface' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/SchemaStorageInterface.php',
-        'JsonSchema\\Tool\\DeepComparer' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Tool/DeepComparer.php',
-        'JsonSchema\\Tool\\DeepCopy' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Tool/DeepCopy.php',
-        'JsonSchema\\Tool\\Validator\\RelativeReferenceValidator' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Tool/Validator/RelativeReferenceValidator.php',
-        'JsonSchema\\Tool\\Validator\\UriValidator' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Tool/Validator/UriValidator.php',
-        'JsonSchema\\UriResolverInterface' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/UriResolverInterface.php',
-        'JsonSchema\\UriRetrieverInterface' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/UriRetrieverInterface.php',
-        'JsonSchema\\Uri\\Retrievers\\AbstractRetriever' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Uri/Retrievers/AbstractRetriever.php',
-        'JsonSchema\\Uri\\Retrievers\\Curl' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Uri/Retrievers/Curl.php',
-        'JsonSchema\\Uri\\Retrievers\\FileGetContents' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Uri/Retrievers/FileGetContents.php',
-        'JsonSchema\\Uri\\Retrievers\\PredefinedArray' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Uri/Retrievers/PredefinedArray.php',
-        'JsonSchema\\Uri\\Retrievers\\UriRetrieverInterface' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Uri/Retrievers/UriRetrieverInterface.php',
-        'JsonSchema\\Uri\\UriResolver' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Uri/UriResolver.php',
-        'JsonSchema\\Uri\\UriRetriever' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Uri/UriRetriever.php',
-        'JsonSchema\\Validator' => $vendorDir . '/justinrainbow/json-schema/src/JsonSchema/Validator.php',
-        'MabeEnum\\Enum' => $vendorDir . '/marc-mabe/php-enum/src/Enum.php',
-        'MabeEnum\\EnumMap' => $vendorDir . '/marc-mabe/php-enum/src/EnumMap.php',
-        'MabeEnum\\EnumSerializableTrait' => $vendorDir . '/marc-mabe/php-enum/src/EnumSerializableTrait.php',
-        'MabeEnum\\EnumSet' => $vendorDir . '/marc-mabe/php-enum/src/EnumSet.php',
-        'Normalizer' => $vendorDir . '/symfony/polyfill-intl-normalizer/Resources/stubs/Normalizer.php',
-        'PhpToken' => $vendorDir . '/symfony/polyfill-php80/Resources/stubs/PhpToken.php',
-        'Psr\\Container\\ContainerExceptionInterface' => $vendorDir . '/psr/container/src/ContainerExceptionInterface.php',
-        'Psr\\Container\\ContainerInterface' => $vendorDir . '/psr/container/src/ContainerInterface.php',
-        'Psr\\Container\\NotFoundExceptionInterface' => $vendorDir . '/psr/container/src/NotFoundExceptionInterface.php',
-        'Psr\\Log\\AbstractLogger' => $vendorDir . '/psr/log/Psr/Log/AbstractLogger.php',
-        'Psr\\Log\\InvalidArgumentException' => $vendorDir . '/psr/log/Psr/Log/InvalidArgumentException.php',
-        'Psr\\Log\\LogLevel' => $vendorDir . '/psr/log/Psr/Log/LogLevel.php',
-        'Psr\\Log\\LoggerAwareInterface' => $vendorDir . '/psr/log/Psr/Log/LoggerAwareInterface.php',
-        'Psr\\Log\\LoggerAwareTrait' => $vendorDir . '/psr/log/Psr/Log/LoggerAwareTrait.php',
-        'Psr\\Log\\LoggerInterface' => $vendorDir . '/psr/log/Psr/Log/LoggerInterface.php',
-        'Psr\\Log\\LoggerTrait' => $vendorDir . '/psr/log/Psr/Log/LoggerTrait.php',
-        'Psr\\Log\\NullLogger' => $vendorDir . '/psr/log/Psr/Log/NullLogger.php',
-        'Psr\\Log\\Test\\DummyTest' => $vendorDir . '/psr/log/Psr/Log/Test/DummyTest.php',
-        'Psr\\Log\\Test\\LoggerInterfaceTest' => $vendorDir . '/psr/log/Psr/Log/Test/LoggerInterfaceTest.php',
-        'Psr\\Log\\Test\\TestLogger' => $vendorDir . '/psr/log/Psr/Log/Test/TestLogger.php',
-        'React\\Promise\\Deferred' => $vendorDir . '/react/promise/src/Deferred.php',
-        'React\\Promise\\Exception\\CompositeException' => $vendorDir . '/react/promise/src/Exception/CompositeException.php',
-        'React\\Promise\\Exception\\LengthException' => $vendorDir . '/react/promise/src/Exception/LengthException.php',
-        'React\\Promise\\Internal\\CancellationQueue' => $vendorDir . '/react/promise/src/Internal/CancellationQueue.php',
-        'React\\Promise\\Internal\\FulfilledPromise' => $vendorDir . '/react/promise/src/Internal/FulfilledPromise.php',
-        'React\\Promise\\Internal\\RejectedPromise' => $vendorDir . '/react/promise/src/Internal/RejectedPromise.php',
-        'React\\Promise\\Promise' => $vendorDir . '/react/promise/src/Promise.php',
-        'React\\Promise\\PromiseInterface' => $vendorDir . '/react/promise/src/PromiseInterface.php',
-        'ReturnTypeWillChange' => $vendorDir . '/symfony/polyfill-php81/Resources/stubs/ReturnTypeWillChange.php',
-        'Seld\\JsonLint\\DuplicateKeyException' => $vendorDir . '/seld/jsonlint/src/Seld/JsonLint/DuplicateKeyException.php',
-        'Seld\\JsonLint\\JsonParser' => $vendorDir . '/seld/jsonlint/src/Seld/JsonLint/JsonParser.php',
-        'Seld\\JsonLint\\Lexer' => $vendorDir . '/seld/jsonlint/src/Seld/JsonLint/Lexer.php',
-        'Seld\\JsonLint\\ParsingException' => $vendorDir . '/seld/jsonlint/src/Seld/JsonLint/ParsingException.php',
-        'Seld\\JsonLint\\Undefined' => $vendorDir . '/seld/jsonlint/src/Seld/JsonLint/Undefined.php',
-        'Seld\\PharUtils\\Linter' => $vendorDir . '/seld/phar-utils/src/Linter.php',
-        'Seld\\PharUtils\\Timestamps' => $vendorDir . '/seld/phar-utils/src/Timestamps.php',
-        'Seld\\Signal\\SignalHandler' => $vendorDir . '/seld/signal-handler/src/SignalHandler.php',
-        'Stringable' => $vendorDir . '/marc-mabe/php-enum/stubs/Stringable.php',
-        'Symfony\\Component\\Console\\Application' => $vendorDir . '/symfony/console/Application.php',
-        'Symfony\\Component\\Console\\Attribute\\AsCommand' => $vendorDir . '/symfony/console/Attribute/AsCommand.php',
-        'Symfony\\Component\\Console\\CI\\GithubActionReporter' => $vendorDir . '/symfony/console/CI/GithubActionReporter.php',
-        'Symfony\\Component\\Console\\Color' => $vendorDir . '/symfony/console/Color.php',
-        'Symfony\\Component\\Console\\CommandLoader\\CommandLoaderInterface' => $vendorDir . '/symfony/console/CommandLoader/CommandLoaderInterface.php',
-        'Symfony\\Component\\Console\\CommandLoader\\ContainerCommandLoader' => $vendorDir . '/symfony/console/CommandLoader/ContainerCommandLoader.php',
-        'Symfony\\Component\\Console\\CommandLoader\\FactoryCommandLoader' => $vendorDir . '/symfony/console/CommandLoader/FactoryCommandLoader.php',
-        'Symfony\\Component\\Console\\Command\\Command' => $vendorDir . '/symfony/console/Command/Command.php',
-        'Symfony\\Component\\Console\\Command\\CompleteCommand' => $vendorDir . '/symfony/console/Command/CompleteCommand.php',
-        'Symfony\\Component\\Console\\Command\\DumpCompletionCommand' => $vendorDir . '/symfony/console/Command/DumpCompletionCommand.php',
-        'Symfony\\Component\\Console\\Command\\HelpCommand' => $vendorDir . '/symfony/console/Command/HelpCommand.php',
-        'Symfony\\Component\\Console\\Command\\LazyCommand' => $vendorDir . '/symfony/console/Command/LazyCommand.php',
-        'Symfony\\Component\\Console\\Command\\ListCommand' => $vendorDir . '/symfony/console/Command/ListCommand.php',
-        'Symfony\\Component\\Console\\Command\\LockableTrait' => $vendorDir . '/symfony/console/Command/LockableTrait.php',
-        'Symfony\\Component\\Console\\Command\\SignalableCommandInterface' => $vendorDir . '/symfony/console/Command/SignalableCommandInterface.php',
-        'Symfony\\Component\\Console\\Completion\\CompletionInput' => $vendorDir . '/symfony/console/Completion/CompletionInput.php',
-        'Symfony\\Component\\Console\\Completion\\CompletionSuggestions' => $vendorDir . '/symfony/console/Completion/CompletionSuggestions.php',
-        'Symfony\\Component\\Console\\Completion\\Output\\BashCompletionOutput' => $vendorDir . '/symfony/console/Completion/Output/BashCompletionOutput.php',
-        'Symfony\\Component\\Console\\Completion\\Output\\CompletionOutputInterface' => $vendorDir . '/symfony/console/Completion/Output/CompletionOutputInterface.php',
-        'Symfony\\Component\\Console\\Completion\\Suggestion' => $vendorDir . '/symfony/console/Completion/Suggestion.php',
-        'Symfony\\Component\\Console\\ConsoleEvents' => $vendorDir . '/symfony/console/ConsoleEvents.php',
-        'Symfony\\Component\\Console\\Cursor' => $vendorDir . '/symfony/console/Cursor.php',
-        'Symfony\\Component\\Console\\DependencyInjection\\AddConsoleCommandPass' => $vendorDir . '/symfony/console/DependencyInjection/AddConsoleCommandPass.php',
-        'Symfony\\Component\\Console\\Descriptor\\ApplicationDescription' => $vendorDir . '/symfony/console/Descriptor/ApplicationDescription.php',
-        'Symfony\\Component\\Console\\Descriptor\\Descriptor' => $vendorDir . '/symfony/console/Descriptor/Descriptor.php',
-        'Symfony\\Component\\Console\\Descriptor\\DescriptorInterface' => $vendorDir . '/symfony/console/Descriptor/DescriptorInterface.php',
-        'Symfony\\Component\\Console\\Descriptor\\JsonDescriptor' => $vendorDir . '/symfony/console/Descriptor/JsonDescriptor.php',
-        'Symfony\\Component\\Console\\Descriptor\\MarkdownDescriptor' => $vendorDir . '/symfony/console/Descriptor/MarkdownDescriptor.php',
-        'Symfony\\Component\\Console\\Descriptor\\TextDescriptor' => $vendorDir . '/symfony/console/Descriptor/TextDescriptor.php',
-        'Symfony\\Component\\Console\\Descriptor\\XmlDescriptor' => $vendorDir . '/symfony/console/Descriptor/XmlDescriptor.php',
-        'Symfony\\Component\\Console\\EventListener\\ErrorListener' => $vendorDir . '/symfony/console/EventListener/ErrorListener.php',
-        'Symfony\\Component\\Console\\Event\\ConsoleCommandEvent' => $vendorDir . '/symfony/console/Event/ConsoleCommandEvent.php',
-        'Symfony\\Component\\Console\\Event\\ConsoleErrorEvent' => $vendorDir . '/symfony/console/Event/ConsoleErrorEvent.php',
-        'Symfony\\Component\\Console\\Event\\ConsoleEvent' => $vendorDir . '/symfony/console/Event/ConsoleEvent.php',
-        'Symfony\\Component\\Console\\Event\\ConsoleSignalEvent' => $vendorDir . '/symfony/console/Event/ConsoleSignalEvent.php',
-        'Symfony\\Component\\Console\\Event\\ConsoleTerminateEvent' => $vendorDir . '/symfony/console/Event/ConsoleTerminateEvent.php',
-        'Symfony\\Component\\Console\\Exception\\CommandNotFoundException' => $vendorDir . '/symfony/console/Exception/CommandNotFoundException.php',
-        'Symfony\\Component\\Console\\Exception\\ExceptionInterface' => $vendorDir . '/symfony/console/Exception/ExceptionInterface.php',
-        'Symfony\\Component\\Console\\Exception\\InvalidArgumentException' => $vendorDir . '/symfony/console/Exception/InvalidArgumentException.php',
-        'Symfony\\Component\\Console\\Exception\\InvalidOptionException' => $vendorDir . '/symfony/console/Exception/InvalidOptionException.php',
-        'Symfony\\Component\\Console\\Exception\\LogicException' => $vendorDir . '/symfony/console/Exception/LogicException.php',
-        'Symfony\\Component\\Console\\Exception\\MissingInputException' => $vendorDir . '/symfony/console/Exception/MissingInputException.php',
-        'Symfony\\Component\\Console\\Exception\\NamespaceNotFoundException' => $vendorDir . '/symfony/console/Exception/NamespaceNotFoundException.php',
-        'Symfony\\Component\\Console\\Exception\\RuntimeException' => $vendorDir . '/symfony/console/Exception/RuntimeException.php',
-        'Symfony\\Component\\Console\\Formatter\\NullOutputFormatter' => $vendorDir . '/symfony/console/Formatter/NullOutputFormatter.php',
-        'Symfony\\Component\\Console\\Formatter\\NullOutputFormatterStyle' => $vendorDir . '/symfony/console/Formatter/NullOutputFormatterStyle.php',
-        'Symfony\\Component\\Console\\Formatter\\OutputFormatter' => $vendorDir . '/symfony/console/Formatter/OutputFormatter.php',
-        'Symfony\\Component\\Console\\Formatter\\OutputFormatterInterface' => $vendorDir . '/symfony/console/Formatter/OutputFormatterInterface.php',
-        'Symfony\\Component\\Console\\Formatter\\OutputFormatterStyle' => $vendorDir . '/symfony/console/Formatter/OutputFormatterStyle.php',
-        'Symfony\\Component\\Console\\Formatter\\OutputFormatterStyleInterface' => $vendorDir . '/symfony/console/Formatter/OutputFormatterStyleInterface.php',
-        'Symfony\\Component\\Console\\Formatter\\OutputFormatterStyleStack' => $vendorDir . '/symfony/console/Formatter/OutputFormatterStyleStack.php',
-        'Symfony\\Component\\Console\\Formatter\\WrappableOutputFormatterInterface' => $vendorDir . '/symfony/console/Formatter/WrappableOutputFormatterInterface.php',
-        'Symfony\\Component\\Console\\Helper\\DebugFormatterHelper' => $vendorDir . '/symfony/console/Helper/DebugFormatterHelper.php',
-        'Symfony\\Component\\Console\\Helper\\DescriptorHelper' => $vendorDir . '/symfony/console/Helper/DescriptorHelper.php',
-        'Symfony\\Component\\Console\\Helper\\Dumper' => $vendorDir . '/symfony/console/Helper/Dumper.php',
-        'Symfony\\Component\\Console\\Helper\\FormatterHelper' => $vendorDir . '/symfony/console/Helper/FormatterHelper.php',
-        'Symfony\\Component\\Console\\Helper\\Helper' => $vendorDir . '/symfony/console/Helper/Helper.php',
-        'Symfony\\Component\\Console\\Helper\\HelperInterface' => $vendorDir . '/symfony/console/Helper/HelperInterface.php',
-        'Symfony\\Component\\Console\\Helper\\HelperSet' => $vendorDir . '/symfony/console/Helper/HelperSet.php',
-        'Symfony\\Component\\Console\\Helper\\InputAwareHelper' => $vendorDir . '/symfony/console/Helper/InputAwareHelper.php',
-        'Symfony\\Component\\Console\\Helper\\ProcessHelper' => $vendorDir . '/symfony/console/Helper/ProcessHelper.php',
-        'Symfony\\Component\\Console\\Helper\\ProgressBar' => $vendorDir . '/symfony/console/Helper/ProgressBar.php',
-        'Symfony\\Component\\Console\\Helper\\ProgressIndicator' => $vendorDir . '/symfony/console/Helper/ProgressIndicator.php',
-        'Symfony\\Component\\Console\\Helper\\QuestionHelper' => $vendorDir . '/symfony/console/Helper/QuestionHelper.php',
-        'Symfony\\Component\\Console\\Helper\\SymfonyQuestionHelper' => $vendorDir . '/symfony/console/Helper/SymfonyQuestionHelper.php',
-        'Symfony\\Component\\Console\\Helper\\Table' => $vendorDir . '/symfony/console/Helper/Table.php',
-        'Symfony\\Component\\Console\\Helper\\TableCell' => $vendorDir . '/symfony/console/Helper/TableCell.php',
-        'Symfony\\Component\\Console\\Helper\\TableCellStyle' => $vendorDir . '/symfony/console/Helper/TableCellStyle.php',
-        'Symfony\\Component\\Console\\Helper\\TableRows' => $vendorDir . '/symfony/console/Helper/TableRows.php',
-        'Symfony\\Component\\Console\\Helper\\TableSeparator' => $vendorDir . '/symfony/console/Helper/TableSeparator.php',
-        'Symfony\\Component\\Console\\Helper\\TableStyle' => $vendorDir . '/symfony/console/Helper/TableStyle.php',
-        'Symfony\\Component\\Console\\Input\\ArgvInput' => $vendorDir . '/symfony/console/Input/ArgvInput.php',
-        'Symfony\\Component\\Console\\Input\\ArrayInput' => $vendorDir . '/symfony/console/Input/ArrayInput.php',
-        'Symfony\\Component\\Console\\Input\\Input' => $vendorDir . '/symfony/console/Input/Input.php',
-        'Symfony\\Component\\Console\\Input\\InputArgument' => $vendorDir . '/symfony/console/Input/InputArgument.php',
-        'Symfony\\Component\\Console\\Input\\InputAwareInterface' => $vendorDir . '/symfony/console/Input/InputAwareInterface.php',
-        'Symfony\\Component\\Console\\Input\\InputDefinition' => $vendorDir . '/symfony/console/Input/InputDefinition.php',
-        'Symfony\\Component\\Console\\Input\\InputInterface' => $vendorDir . '/symfony/console/Input/InputInterface.php',
-        'Symfony\\Component\\Console\\Input\\InputOption' => $vendorDir . '/symfony/console/Input/InputOption.php',
-        'Symfony\\Component\\Console\\Input\\StreamableInputInterface' => $vendorDir . '/symfony/console/Input/StreamableInputInterface.php',
-        'Symfony\\Component\\Console\\Input\\StringInput' => $vendorDir . '/symfony/console/Input/StringInput.php',
-        'Symfony\\Component\\Console\\Logger\\ConsoleLogger' => $vendorDir . '/symfony/console/Logger/ConsoleLogger.php',
-        'Symfony\\Component\\Console\\Output\\BufferedOutput' => $vendorDir . '/symfony/console/Output/BufferedOutput.php',
-        'Symfony\\Component\\Console\\Output\\ConsoleOutput' => $vendorDir . '/symfony/console/Output/ConsoleOutput.php',
-        'Symfony\\Component\\Console\\Output\\ConsoleOutputInterface' => $vendorDir . '/symfony/console/Output/ConsoleOutputInterface.php',
-        'Symfony\\Component\\Console\\Output\\ConsoleSectionOutput' => $vendorDir . '/symfony/console/Output/ConsoleSectionOutput.php',
-        'Symfony\\Component\\Console\\Output\\NullOutput' => $vendorDir . '/symfony/console/Output/NullOutput.php',
-        'Symfony\\Component\\Console\\Output\\Output' => $vendorDir . '/symfony/console/Output/Output.php',
-        'Symfony\\Component\\Console\\Output\\OutputInterface' => $vendorDir . '/symfony/console/Output/OutputInterface.php',
-        'Symfony\\Component\\Console\\Output\\StreamOutput' => $vendorDir . '/symfony/console/Output/StreamOutput.php',
-        'Symfony\\Component\\Console\\Output\\TrimmedBufferOutput' => $vendorDir . '/symfony/console/Output/TrimmedBufferOutput.php',
-        'Symfony\\Component\\Console\\Question\\ChoiceQuestion' => $vendorDir . '/symfony/console/Question/ChoiceQuestion.php',
-        'Symfony\\Component\\Console\\Question\\ConfirmationQuestion' => $vendorDir . '/symfony/console/Question/ConfirmationQuestion.php',
-        'Symfony\\Component\\Console\\Question\\Question' => $vendorDir . '/symfony/console/Question/Question.php',
-        'Symfony\\Component\\Console\\SignalRegistry\\SignalRegistry' => $vendorDir . '/symfony/console/SignalRegistry/SignalRegistry.php',
-        'Symfony\\Component\\Console\\SingleCommandApplication' => $vendorDir . '/symfony/console/SingleCommandApplication.php',
-        'Symfony\\Component\\Console\\Style\\OutputStyle' => $vendorDir . '/symfony/console/Style/OutputStyle.php',
-        'Symfony\\Component\\Console\\Style\\StyleInterface' => $vendorDir . '/symfony/console/Style/StyleInterface.php',
-        'Symfony\\Component\\Console\\Style\\SymfonyStyle' => $vendorDir . '/symfony/console/Style/SymfonyStyle.php',
-        'Symfony\\Component\\Console\\Terminal' => $vendorDir . '/symfony/console/Terminal.php',
-        'Symfony\\Component\\Console\\Tester\\ApplicationTester' => $vendorDir . '/symfony/console/Tester/ApplicationTester.php',
-        'Symfony\\Component\\Console\\Tester\\CommandCompletionTester' => $vendorDir . '/symfony/console/Tester/CommandCompletionTester.php',
-        'Symfony\\Component\\Console\\Tester\\CommandTester' => $vendorDir . '/symfony/console/Tester/CommandTester.php',
-        'Symfony\\Component\\Console\\Tester\\Constraint\\CommandIsSuccessful' => $vendorDir . '/symfony/console/Tester/Constraint/CommandIsSuccessful.php',
-        'Symfony\\Component\\Console\\Tester\\TesterTrait' => $vendorDir . '/symfony/console/Tester/TesterTrait.php',
-        'Symfony\\Component\\Filesystem\\Exception\\ExceptionInterface' => $vendorDir . '/symfony/filesystem/Exception/ExceptionInterface.php',
-        'Symfony\\Component\\Filesystem\\Exception\\FileNotFoundException' => $vendorDir . '/symfony/filesystem/Exception/FileNotFoundException.php',
-        'Symfony\\Component\\Filesystem\\Exception\\IOException' => $vendorDir . '/symfony/filesystem/Exception/IOException.php',
-        'Symfony\\Component\\Filesystem\\Exception\\IOExceptionInterface' => $vendorDir . '/symfony/filesystem/Exception/IOExceptionInterface.php',
-        'Symfony\\Component\\Filesystem\\Exception\\InvalidArgumentException' => $vendorDir . '/symfony/filesystem/Exception/InvalidArgumentException.php',
-        'Symfony\\Component\\Filesystem\\Exception\\RuntimeException' => $vendorDir . '/symfony/filesystem/Exception/RuntimeException.php',
-        'Symfony\\Component\\Filesystem\\Filesystem' => $vendorDir . '/symfony/filesystem/Filesystem.php',
-        'Symfony\\Component\\Filesystem\\Path' => $vendorDir . '/symfony/filesystem/Path.php',
-        'Symfony\\Component\\Finder\\Comparator\\Comparator' => $vendorDir . '/symfony/finder/Comparator/Comparator.php',
-        'Symfony\\Component\\Finder\\Comparator\\DateComparator' => $vendorDir . '/symfony/finder/Comparator/DateComparator.php',
-        'Symfony\\Component\\Finder\\Comparator\\NumberComparator' => $vendorDir . '/symfony/finder/Comparator/NumberComparator.php',
-        'Symfony\\Component\\Finder\\Exception\\AccessDeniedException' => $vendorDir . '/symfony/finder/Exception/AccessDeniedException.php',
-        'Symfony\\Component\\Finder\\Exception\\DirectoryNotFoundException' => $vendorDir . '/symfony/finder/Exception/DirectoryNotFoundException.php',
-        'Symfony\\Component\\Finder\\Finder' => $vendorDir . '/symfony/finder/Finder.php',
-        'Symfony\\Component\\Finder\\Gitignore' => $vendorDir . '/symfony/finder/Gitignore.php',
-        'Symfony\\Component\\Finder\\Glob' => $vendorDir . '/symfony/finder/Glob.php',
-        'Symfony\\Component\\Finder\\Iterator\\CustomFilterIterator' => $vendorDir . '/symfony/finder/Iterator/CustomFilterIterator.php',
-        'Symfony\\Component\\Finder\\Iterator\\DateRangeFilterIterator' => $vendorDir . '/symfony/finder/Iterator/DateRangeFilterIterator.php',
-        'Symfony\\Component\\Finder\\Iterator\\DepthRangeFilterIterator' => $vendorDir . '/symfony/finder/Iterator/DepthRangeFilterIterator.php',
-        'Symfony\\Component\\Finder\\Iterator\\ExcludeDirectoryFilterIterator' => $vendorDir . '/symfony/finder/Iterator/ExcludeDirectoryFilterIterator.php',
-        'Symfony\\Component\\Finder\\Iterator\\FileTypeFilterIterator' => $vendorDir . '/symfony/finder/Iterator/FileTypeFilterIterator.php',
-        'Symfony\\Component\\Finder\\Iterator\\FilecontentFilterIterator' => $vendorDir . '/symfony/finder/Iterator/FilecontentFilterIterator.php',
-        'Symfony\\Component\\Finder\\Iterator\\FilenameFilterIterator' => $vendorDir . '/symfony/finder/Iterator/FilenameFilterIterator.php',
-        'Symfony\\Component\\Finder\\Iterator\\LazyIterator' => $vendorDir . '/symfony/finder/Iterator/LazyIterator.php',
-        'Symfony\\Component\\Finder\\Iterator\\MultiplePcreFilterIterator' => $vendorDir . '/symfony/finder/Iterator/MultiplePcreFilterIterator.php',
-        'Symfony\\Component\\Finder\\Iterator\\PathFilterIterator' => $vendorDir . '/symfony/finder/Iterator/PathFilterIterator.php',
-        'Symfony\\Component\\Finder\\Iterator\\RecursiveDirectoryIterator' => $vendorDir . '/symfony/finder/Iterator/RecursiveDirectoryIterator.php',
-        'Symfony\\Component\\Finder\\Iterator\\SizeRangeFilterIterator' => $vendorDir . '/symfony/finder/Iterator/SizeRangeFilterIterator.php',
-        'Symfony\\Component\\Finder\\Iterator\\SortableIterator' => $vendorDir . '/symfony/finder/Iterator/SortableIterator.php',
-        'Symfony\\Component\\Finder\\Iterator\\VcsIgnoredFilterIterator' => $vendorDir . '/symfony/finder/Iterator/VcsIgnoredFilterIterator.php',
-        'Symfony\\Component\\Finder\\SplFileInfo' => $vendorDir . '/symfony/finder/SplFileInfo.php',
-        'Symfony\\Component\\Process\\Exception\\ExceptionInterface' => $vendorDir . '/symfony/process/Exception/ExceptionInterface.php',
-        'Symfony\\Component\\Process\\Exception\\InvalidArgumentException' => $vendorDir . '/symfony/process/Exception/InvalidArgumentException.php',
-        'Symfony\\Component\\Process\\Exception\\LogicException' => $vendorDir . '/symfony/process/Exception/LogicException.php',
-        'Symfony\\Component\\Process\\Exception\\ProcessFailedException' => $vendorDir . '/symfony/process/Exception/ProcessFailedException.php',
-        'Symfony\\Component\\Process\\Exception\\ProcessSignaledException' => $vendorDir . '/symfony/process/Exception/ProcessSignaledException.php',
-        'Symfony\\Component\\Process\\Exception\\ProcessTimedOutException' => $vendorDir . '/symfony/process/Exception/ProcessTimedOutException.php',
-        'Symfony\\Component\\Process\\Exception\\RuntimeException' => $vendorDir . '/symfony/process/Exception/RuntimeException.php',
-        'Symfony\\Component\\Process\\ExecutableFinder' => $vendorDir . '/symfony/process/ExecutableFinder.php',
-        'Symfony\\Component\\Process\\InputStream' => $vendorDir . '/symfony/process/InputStream.php',
-        'Symfony\\Component\\Process\\PhpExecutableFinder' => $vendorDir . '/symfony/process/PhpExecutableFinder.php',
-        'Symfony\\Component\\Process\\PhpProcess' => $vendorDir . '/symfony/process/PhpProcess.php',
-        'Symfony\\Component\\Process\\Pipes\\AbstractPipes' => $vendorDir . '/symfony/process/Pipes/AbstractPipes.php',
-        'Symfony\\Component\\Process\\Pipes\\PipesInterface' => $vendorDir . '/symfony/process/Pipes/PipesInterface.php',
-        'Symfony\\Component\\Process\\Pipes\\UnixPipes' => $vendorDir . '/symfony/process/Pipes/UnixPipes.php',
-        'Symfony\\Component\\Process\\Pipes\\WindowsPipes' => $vendorDir . '/symfony/process/Pipes/WindowsPipes.php',
-        'Symfony\\Component\\Process\\Process' => $vendorDir . '/symfony/process/Process.php',
-        'Symfony\\Component\\Process\\ProcessUtils' => $vendorDir . '/symfony/process/ProcessUtils.php',
-        'Symfony\\Component\\String\\AbstractString' => $vendorDir . '/symfony/string/AbstractString.php',
-        'Symfony\\Component\\String\\AbstractUnicodeString' => $vendorDir . '/symfony/string/AbstractUnicodeString.php',
-        'Symfony\\Component\\String\\ByteString' => $vendorDir . '/symfony/string/ByteString.php',
-        'Symfony\\Component\\String\\CodePointString' => $vendorDir . '/symfony/string/CodePointString.php',
-        'Symfony\\Component\\String\\Exception\\ExceptionInterface' => $vendorDir . '/symfony/string/Exception/ExceptionInterface.php',
-        'Symfony\\Component\\String\\Exception\\InvalidArgumentException' => $vendorDir . '/symfony/string/Exception/InvalidArgumentException.php',
-        'Symfony\\Component\\String\\Exception\\RuntimeException' => $vendorDir . '/symfony/string/Exception/RuntimeException.php',
-        'Symfony\\Component\\String\\Inflector\\EnglishInflector' => $vendorDir . '/symfony/string/Inflector/EnglishInflector.php',
-        'Symfony\\Component\\String\\Inflector\\FrenchInflector' => $vendorDir . '/symfony/string/Inflector/FrenchInflector.php',
-        'Symfony\\Component\\String\\Inflector\\InflectorInterface' => $vendorDir . '/symfony/string/Inflector/InflectorInterface.php',
-        'Symfony\\Component\\String\\LazyString' => $vendorDir . '/symfony/string/LazyString.php',
-        'Symfony\\Component\\String\\Slugger\\AsciiSlugger' => $vendorDir . '/symfony/string/Slugger/AsciiSlugger.php',
-        'Symfony\\Component\\String\\Slugger\\SluggerInterface' => $vendorDir . '/symfony/string/Slugger/SluggerInterface.php',
-        'Symfony\\Component\\String\\UnicodeString' => $vendorDir . '/symfony/string/UnicodeString.php',
-        'Symfony\\Contracts\\Service\\Attribute\\Required' => $vendorDir . '/symfony/service-contracts/Attribute/Required.php',
-        'Symfony\\Contracts\\Service\\Attribute\\SubscribedService' => $vendorDir . '/symfony/service-contracts/Attribute/SubscribedService.php',
-        'Symfony\\Contracts\\Service\\ResetInterface' => $vendorDir . '/symfony/service-contracts/ResetInterface.php',
-        'Symfony\\Contracts\\Service\\ServiceLocatorTrait' => $vendorDir . '/symfony/service-contracts/ServiceLocatorTrait.php',
-        'Symfony\\Contracts\\Service\\ServiceProviderInterface' => $vendorDir . '/symfony/service-contracts/ServiceProviderInterface.php',
-        'Symfony\\Contracts\\Service\\ServiceSubscriberInterface' => $vendorDir . '/symfony/service-contracts/ServiceSubscriberInterface.php',
-        'Symfony\\Contracts\\Service\\ServiceSubscriberTrait' => $vendorDir . '/symfony/service-contracts/ServiceSubscriberTrait.php',
-        'Symfony\\Contracts\\Service\\Test\\ServiceLocatorTest' => $vendorDir . '/symfony/service-contracts/Test/ServiceLocatorTest.php',
-        'Symfony\\Contracts\\Service\\Test\\ServiceLocatorTestCase' => $vendorDir . '/symfony/service-contracts/Test/ServiceLocatorTestCase.php',
-        'Symfony\\Polyfill\\Ctype\\Ctype' => $vendorDir . '/symfony/polyfill-ctype/Ctype.php',
-        'Symfony\\Polyfill\\Intl\\Grapheme\\Grapheme' => $vendorDir . '/symfony/polyfill-intl-grapheme/Grapheme.php',
-        'Symfony\\Polyfill\\Intl\\Normalizer\\Normalizer' => $vendorDir . '/symfony/polyfill-intl-normalizer/Normalizer.php',
-        'Symfony\\Polyfill\\Mbstring\\Mbstring' => $vendorDir . '/symfony/polyfill-mbstring/Mbstring.php',
-        'Symfony\\Polyfill\\Php73\\Php73' => $vendorDir . '/symfony/polyfill-php73/Php73.php',
-        'Symfony\\Polyfill\\Php80\\Php80' => $vendorDir . '/symfony/polyfill-php80/Php80.php',
-        'Symfony\\Polyfill\\Php80\\PhpToken' => $vendorDir . '/symfony/polyfill-php80/PhpToken.php',
-        'Symfony\\Polyfill\\Php81\\Php81' => $vendorDir . '/symfony/polyfill-php81/Php81.php',
-        'UnhandledMatchError' => $vendorDir . '/symfony/polyfill-php80/Resources/stubs/UnhandledMatchError.php',
-        'ValueError' => $vendorDir . '/symfony/polyfill-php80/Resources/stubs/ValueError.php',
-    ];
-
-    foreach ($classMap as $className => $filePath) {
-
-        if ($class !== $className) {
-            continue;
+        // initialize the namespace prefix array
+        if (isset($this->prefixes[$prefix]) === false) {
+            $this->prefixes[$prefix] = array();
         }
 
-        // If the file exists, require it
-        if (file_exists($filePath)) {
-            require $filePath;
-            return; // Class found
+        // retain the base directory for the namespace prefix
+        if ($prepend) {
+            array_unshift($this->prefixes[$prefix], $base_dir);
+        } else {
+            array_push($this->prefixes[$prefix], $base_dir);
         }
     }
-});
+
+    /**
+     * Loads the class file for a given class name.
+     *
+     * @param string $class The fully-qualified class name.
+     * @return string|false The mapped file name on success, or boolean false on
+     * failure.
+     */
+    public function loadClass(string $class): string|false
+    {
+        // the current namespace prefix
+        $prefix = $class;
+
+        // work backwards through the namespace names of the fully-qualified
+        // class name to find a mapped file name
+        while (false !== $pos = strrpos($prefix, '\\')) {
+
+            // retain the trailing namespace separator in the prefix
+            $prefix = substr($class, 0, $pos + 1);
+
+            // the rest is the relative class name
+            $relative_class = substr($class, $pos + 1);
+
+            // try to load a mapped file for the prefix and relative class
+            $mapped_file = $this->loadMappedFile($prefix, $relative_class);
+            if ($mapped_file) {
+                return $mapped_file;
+            }
+
+            // remove the trailing namespace separator for the next iteration
+            // of strrpos()
+            $prefix = rtrim($prefix, '\\');
+        }
+
+        // never found a mapped file
+        return false;
+    }
+
+    /**
+     * Load the mapped file for a namespace prefix and relative class.
+     *
+     * @param string $prefix The namespace prefix.
+     * @param string $relative_class The relative class name.
+     * @return string|false Boolean false if no mapped file can be loaded, or the
+     * name of the mapped file that was loaded.
+     */
+    protected function loadMappedFile(string $prefix, string $relative_class): string|false
+    {
+        // are there any base directories for this namespace prefix?
+        if (isset($this->prefixes[$prefix]) === false) {
+            return false;
+        }
+
+        // look through base directories for this namespace prefix
+        foreach ($this->prefixes[$prefix] as $base_dir) {
+
+            // replace the namespace prefix with the base directory,
+            // replace namespace separators with directory separators
+            // in the relative class name, append with .php
+            $file = $base_dir
+                . str_replace('\\', '/', $relative_class)
+                . '.php';
+
+            // if the mapped file exists, require it
+            if ($this->requireFile($file)) {
+                // yes, we're done
+                return $file;
+            }
+        }
+
+        // never found it
+        return false;
+    }
+
+    /**
+     * If a file exists, require it from the file system.
+     *
+     * @param string $file The file to require.
+     * @return bool True if the file exists, false if not.
+     */
+    protected function requireFile(string $file): bool
+    {
+        if (file_exists($file)) {
+            require $file;
+            return true;
+        }
+        return false;
+    }
+}
+
+// Load the composer.lock file
+try {
+    $lockContent = file_get_contents(dirname(__DIR__) . '/composer.lock');
+    $lockData = json_decode($lockContent, true);
+
+    if (!isset($lockData['packages'])) {
+        throw new Exception("composer.lock does not contain 'packages' section.");
+    }
+
+    $packages = $lockData['packages'];
+} catch (Exception $e) {
+    die("Error parsing composer.lock: " . $e->getMessage());
+}
+
+// Arrays to store namespace to directory mappings
+$filesToRequire = [];
+$autoloader = new Psr4AutoloaderClass();
+
+// Exclude polyfill packages for PHP < 8.4
+$excludedPackages = [
+    'symfony/polyfill-php73',
+    'symfony/polyfill-php80',
+    'symfony/polyfill-php81'
+];
+
+// Build the maps and handle static file and classmap inclusions
+foreach ($packages as $package) {
+    $packageName = $package['name'];
+    $basePath = dirname(__DIR__) . '/vendor/' . $packageName . '/';
+
+    if (in_array($packageName, $excludedPackages)) continue;
+    if (!isset($package['autoload'])) continue;
+
+    $autoload = $package['autoload'];
+
+    // PSR-4
+    if (isset($autoload['psr-4'])) {
+        foreach ($autoload['psr-4'] as $namespace => $relativePath) {
+            $autoloader->addNamespace($namespace, $basePath . $relativePath);
+        }
+    }
+
+    // Classmap
+    if (isset($autoload['classmap'])) {
+        foreach ($autoload['classmap'] as $dir) {
+            $absoluteDir = $basePath . $dir;
+            if (is_dir($absoluteDir)) {
+                $iterator = new RecursiveIteratorIterator(
+                    new RecursiveDirectoryIterator($absoluteDir)
+                );
+
+                foreach ($iterator as $file) {
+                    if ($file->getExtension() === 'php') {
+                        $file = (string) $file;
+                        if (!in_array($file, $filesToRequire)) {
+                            $filesToRequire[] = $file;
+                        }
+                    }
+                }
+            } elseif (is_file($basePath . $dir)) {
+                $file = $basePath . $dir;
+                if (!in_array($file, $filesToRequire)) {
+                    $filesToRequire[] = $file;
+                }
+            }
+        }
+    }
+
+    // Files
+    if (isset($autoload['files'])) {
+        foreach ($autoload['files'] as $file) {
+            $filePath = $basePath . $file;
+            if (is_file($filePath)) {
+                if (!in_array($filePath, $filesToRequire)) {
+                    array_unshift($filesToRequire, $filePath);
+                }
+            }
+        }
+    }
+}
+
+// Add composer own source code
+$autoloader->addNamespace('Composer', dirname(__DIR__) . '/src/Composer', true);
+
+$autoloader->register();
+
+// Require files from classMap or files autoload
+foreach ($filesToRequire as $file) {
+    require $file;
+}
