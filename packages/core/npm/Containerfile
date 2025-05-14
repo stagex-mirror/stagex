@@ -42,6 +42,9 @@ RUN --network=none <<-EOF
 	mv ${destdir}/LICENSE usr/share/licenses/npm/
 	install -D -m644 "$destdir"/lib/utils/completion.sh \
 	usr/share/bash-completion/completions/npm
+	echo 'globalconfig=/etc/npmrc' > "$destdir"/npmrc
+	mkdir etc
+	echo "cafile=/etc/ssl/certs/ca-certificates.crt" > etc/npmrc
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
