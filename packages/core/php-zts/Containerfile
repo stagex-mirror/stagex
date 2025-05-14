@@ -75,6 +75,7 @@ RUN --network=none <<-EOF
 		\
 		--with-pic \
 		\
+		--enable-mysqlnd \
 		--with-password-argon2 \
 		--with-sodium=shared \
 		--with-pdo-sqlite=/usr \
