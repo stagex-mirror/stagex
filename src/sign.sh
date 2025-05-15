@@ -29,7 +29,8 @@ NC='\033[0m' # No color
 GPG=${STAGEX_GPG:-gpg}
 GPG_SIGN=${STAGEX_GPG_SIGN:-${GPG}}
 GPGV=${STAGEX_GPGV:-gpgv}
-RELEASE=$(date '+%Y-%m-0')
+RELNUMBER=$(git ls-remote --tags https://codeberg.org/stagex/stagex.git | cut -f 2 | tr -d 'refs/tags/' |tr -d '^{}`' |  tail -n 1 | cut -d '.' -f 3 |  xargs -I {} echo "{} + 1" | bc)
+RELEASE=$(date "+%Y-%m-$RELNUMBER")
 SIGNER=$(git config user.name) || { echo "Failed to find user for signing"; exit 1; }
 SIGNING_KEY="$(git config user.signingkey)"
 FPR="$(get-primary-fp "${SIGNING_KEY}")"
@@ -42,7 +43,7 @@ PACKAGE_NAME=${2?}
 BRANCH_NAME="${3:-$SIGNER/$RELEASE}"
 
 if git ls-remote --heads https://codeberg.org/stagex/sigs.stagex.tools.git "refs/heads/${BRANCH_NAME}"| grep -q "${BRANCH_NAME}"; then 
-  echo "${BRANCH_NAME} exists"; 
+  echo "${BRANCH_NAME} exists";
   echo "Bye!"; 
   exit; 
 fi
@@ -143,5 +144,6 @@ check_command "${RED}Failed to push changes${NC}"
 # Clean up: remove the temporary directory
 cd ..
 echo -e "${RED}<============== finally =============================>${NC}"
+echo -e "${RED}<============== removing cloned repo =============================>${NC}"
 rm -rf "signatures/${REGISTRY}"
 echo -e "${RED} 🎉 Huzzah!${NC} Successfully created branch ${BRANCH_NAME}, signed and pushed changes. You are the chosen one, destined to bring balance to a reproducible future!"
