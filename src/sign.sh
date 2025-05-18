@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 set -eu
 # Generate container image signatures in PGP sigstore format
 usage() {
@@ -29,8 +29,8 @@ NC='\033[0m' # No color
 GPG=${STAGEX_GPG:-gpg}
 GPG_SIGN=${STAGEX_GPG_SIGN:-${GPG}}
 GPGV=${STAGEX_GPGV:-gpgv}
-RELNUMBER=$(git ls-remote --tags https://codeberg.org/stagex/stagex.git | cut -f 2 | tr -d 'refs/tags/' |tr -d '^{}`' |  tail -n 1 | cut -d '.' -f 3 |  xargs -I {} echo "{} + 1" | bc)
-RELEASE=$(date "+%Y-%m-$RELNUMBER")
+SCRIPT_DIR=$(dirname "$0")
+RELEASE=$("$SCRIPT_DIR"/gen-version.sh)
 SIGNER=$(git config user.name) || { echo "Failed to find user for signing"; exit 1; }
 SIGNING_KEY="$(git config user.signingkey)"
 FPR="$(get-primary-fp "${SIGNING_KEY}")"
@@ -40,22 +40,19 @@ TEMPFILE="$(mktemp)"
 SIGNATURES="git@codeberg.org:stagex/sigs.stagex.tools.git"
 REGISTRY=${1?}
 PACKAGE_NAME=${2?}
-BRANCH_NAME="${3:-$SIGNER/$RELEASE}"
-
-if git ls-remote --heads https://codeberg.org/stagex/sigs.stagex.tools.git "refs/heads/${BRANCH_NAME}"| grep -q "${BRANCH_NAME}"; then 
-  echo "${BRANCH_NAME} exists";
-  echo "Bye!"; 
-  exit; 
-fi
+BRANCH_NAME="${3:-release/$RELEASE}"
+GCO_ARGS=""
 
 COMMIT_MESSAGE="${4:-Add signatures for release $RELEASE by: $SIGNER}"  
-ID=$(cmd out/"${PACKAGE_NAME}"/index.json | jq -r '.manifests[].digest | sub ("sha256:";"")')
+ID=$(cat out/"${PACKAGE_NAME}"/index.json | jq -r '.manifests[].digest | sub ("sha256:";"")')
 DIR="signatures/${REGISTRY}/${PACKAGE_NAME}@sha256=${ID}"
 
-echo -e "${RED}<========CLONING SIGNATURES REPO=========>${NC}"
-echo -e "${RED}<========CLONING TAP the button ssh=========>${NC}"
-git clone "$SIGNATURES" "signatures/$REGISTRY" # Clone repo to make signatures
-check_command "Failed to clone the repository"
+if [ ! -d "signatures/$REGISTRY" ]; then
+  echo -e "${RED}<========CLONING SIGNATURES REPO=========>${NC}"
+  echo -e "${RED}<========CLONING TAP the button ssh=========>${NC}"
+  git clone "$SIGNATURES" "signatures/$REGISTRY" # Clone repo to make signatures
+  check_command "Failed to clone the repository"
+fi
 
 mkdir -p "${DIR}"
 check_command "Failed to create signatures folder"
@@ -103,15 +100,12 @@ dir-has-no-sig() {
 cd "signatures/$REGISTRY" || { echo "Failed to enter signatures dir"; exit 1; }
 DIR="${PACKAGE_NAME}@sha256=${ID}"
 # Check if the branch already exists
-if git show-ref --verify --quiet "refs/heads/$BRANCH_NAME"; then
-    echo "The branch '$BRANCH_NAME' already exists!"
-    cd ..
-    rm -rf "${DIR}"
-    exit 1
+if ! git show-ref --verify --quiet "refs/heads/$BRANCH_NAME"; then
+  GCO_ARGS="-b"
 fi
 
 # Create a new branch
-git checkout -b "$BRANCH_NAME"
+git checkout $GCO_ARGS "$BRANCH_NAME"
 check_command "${RED}Failed to create a new branch"
 
 if dir-has-no-sig "$DIR" "$FPR"; then
@@ -122,6 +116,9 @@ if dir-has-no-sig "$DIR" "$FPR"; then
       '[{"critical":{"identity":{"docker-reference":"%s/%s"},"image":{"docker-manifest-digest":"%s"},"type":"pgp container image signature"},"optional":null}]' \
       "$REGISTRY" "$PACKAGE_NAME" "$ID" | $GPG --sign > "$TEMPFILE"
   mv "$TEMPFILE" "$FILENAME"
+else
+  echo "Nothing to do"
+  exit 0
 fi
 
 # Add the file to staging
