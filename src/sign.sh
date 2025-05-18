@@ -44,13 +44,14 @@ BRANCH_NAME="${3:-release/$RELEASE}"
 GCO_ARGS=""
 
 COMMIT_MESSAGE="${4:-Add signatures for release $RELEASE by: $SIGNER}"  
-ID=$(cat out/"${PACKAGE_NAME}"/index.json | jq -r '.manifests[].digest | sub ("sha256:";"")')
-DIR="signatures/${REGISTRY}/${PACKAGE_NAME}@sha256=${ID}"
+INDEX_ID=$(cat out/"${PACKAGE_NAME}"/index.json | jq -r '.manifests[].digest | sub ("sha256:";"")')
+MANIFEST_ID=$(cat out/"${PACKAGE_NAME}"/blobs/sha256/"${INDEX_ID}" | jq -r '.manifests[].digest | sub ("sha256:";"")')
+DIR="signatures/${REGISTRY}/${PACKAGE_NAME}@sha256=${MANIFEST_ID}"
 
 if [ ! -d "signatures/$REGISTRY" ]; then
   echo -e "${RED}<========CLONING SIGNATURES REPO=========>${NC}"
   echo -e "${RED}<========CLONING TAP the button ssh=========>${NC}"
-  git clone "$SIGNATURES" "signatures/$REGISTRY" # Clone repo to make signatures
+  git clone "$SIGNATURES" "signatures" # Clone repo to make signatures
   check_command "Failed to clone the repository"
 fi
 
@@ -98,7 +99,7 @@ dir-has-no-sig() {
 }
 
 cd "signatures/$REGISTRY" || { echo "Failed to enter signatures dir"; exit 1; }
-DIR="${PACKAGE_NAME}@sha256=${ID}"
+DIR="${PACKAGE_NAME}@sha256=${MANIFEST_ID}"
 # Check if the branch already exists
 if ! git show-ref --verify --quiet "refs/heads/$BRANCH_NAME"; then
   GCO_ARGS="-b"
@@ -114,7 +115,7 @@ if dir-has-no-sig "$DIR" "$FPR"; then
   FILENAME="$(get-filename "$DIR")"
   printf \
       '[{"critical":{"identity":{"docker-reference":"%s/%s"},"image":{"docker-manifest-digest":"%s"},"type":"pgp container image signature"},"optional":null}]' \
-      "$REGISTRY" "$PACKAGE_NAME" "$ID" | $GPG --sign > "$TEMPFILE"
+      "$REGISTRY" "$PACKAGE_NAME" "$MANIFEST_ID" | $GPG --sign > "$TEMPFILE"
   mv "$TEMPFILE" "$FILENAME"
 else
   echo "Nothing to do"
