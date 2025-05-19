@@ -114,8 +114,8 @@ if dir-has-no-sig "$DIR" "$FPR"; then
   echo -e "${RED}<=========== Signing: yes tap the button!==============>${NC}"
   FILENAME="$(get-filename "$DIR")"
   printf \
-      '[{"critical":{"identity":{"docker-reference":"%s/%s"},"image":{"docker-manifest-digest":"%s"},"type":"pgp container image signature"},"optional":null}]' \
-      "$REGISTRY" "$PACKAGE_NAME" "$MANIFEST_ID" | $GPG --sign > "$TEMPFILE"
+      '{"critical":{"identity":{"docker-reference":"%s/%s"},"image":{"docker-manifest-digest":"%s"},"type":"atomic container signature"},"optional":{}}' \
+      "$REGISTRY" "$PACKAGE_NAME" "sha256:$MANIFEST_ID" | $GPG --sign > "$TEMPFILE"
   mv "$TEMPFILE" "$FILENAME"
 else
   echo "Nothing to do"
