@@ -1,7 +1,11 @@
 FROM scratch
 
-#HACK: Included only for libgcc
-COPY --from=stagex/core-gcc . /
+# HACK: Included only for libgcc
+# Can drop this once core is llvm-native
+COPY --from=stagex/core-gcc /usr/lib/libgcc* /usr/lib/
+COPY --from=stagex/core-gcc /usr/lib/libstdc* /usr/lib/
+COPY --from=stagex/core-gcc /usr/lib/gcc/. /usr/lib/gcc/
+COPY --from=stagex/core-gcc /usr/include/. /usr/include/
 
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-musl-fts . /
@@ -12,5 +16,12 @@ COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-libffi . /
 COPY --from=stagex/core-clang . /
 COPY --from=stagex/core-linux-headers . /
+
+ENV CC=clang
+ENV CXX=clang++
+ENV CPP="clang-cpp"
+ENV AS="clang -c"
+ENV AR=llvm-ar
+ENV RANLIB=llvm-ranlib
 
 ENTRYPOINT ["/usr/bin/clang"]

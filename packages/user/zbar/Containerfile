@@ -1,4 +1,4 @@
-FROM stagex/pallet-gcc-gnu-busybox AS base
+FROM stagex/pallet-clang-gnu-busybox AS base
 ARG VERSION
 ADD fetch/zbar-${VERSION}.tar.gz .
 COPY --from=stagex/core-linux-headers . /

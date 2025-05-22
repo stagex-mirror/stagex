@@ -1,4 +1,4 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
 COPY --from=stagex/user-libgpg-error . /
 ADD fetch/libgcrypt-${VERSION}.tar.bz2 .

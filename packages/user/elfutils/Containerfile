@@ -1,4 +1,4 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
 COPY --from=stagex/core-gettext . /
 COPY --from=stagex/core-libzstd . /
@@ -9,7 +9,7 @@ RUN --network=none <<-EOF
 	set -eux
 	patch -p1 < musl-macros.patch
 	autoreconf -vif
-	CFLAGS="-D_GNU_SOURCE -Wno-error -Wno-null-dereference" \
+	CFLAGS="-D_GNU_SOURCE -Wno-error -Wno-unaligned-access -Wno-null-dereference" \
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

@@ -1,10 +1,12 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
 ADD fetch/perl-yaml-syck-${VERSION}.tar.gz .
 WORKDIR /YAML-Syck-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
+ENV AS="clang -c"
 RUN --network=none <<-EOF
 	set -eux
+	ln -s /usr/bin/clang /usr/bin/gcc
 	export CFLAGS=$(perl -MConfig -E 'say $Config{ccflags}')
 	PERL_MM_USE_DEFAULT=1 perl -I. Makefile.PL INSTALLDIRS=vendor
 	make -j "$(nproc)"

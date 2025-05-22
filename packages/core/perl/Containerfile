@@ -1,10 +1,18 @@
 FROM scratch AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-libffi . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-lld . /
+COPY --from=stagex/core-clang . /
+COPY --from=stagex/core-gcc /usr/lib/libgcc* /usr/lib/
+COPY --from=stagex/core-gcc /usr/lib/libstdc* /usr/lib/
+COPY --from=stagex/core-gcc /usr/lib/gcc/. /usr/lib/gcc/
+
 ADD fetch/perl-${VERSION}.tar.xz .
 WORKDIR /perl-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
@@ -17,7 +25,6 @@ RUN --network=none <<-EOF
 	cf_by="builder"
 	cf_time="0"
 	' > config.over
-	cat config.over
 	./Configure \
 		-des \
 		-Dcccdlflags='-fPIC' \
@@ -33,7 +40,11 @@ RUN --network=none <<-EOF
 		-Duselargefiles \
 		-Dusethreads \
 		-Duseshrplib \
-		-Dcc=gcc \
+		-Dcc="clang -fuse-ld=lld" \
+		-Dcpp="clang-cpp -fuse-ld=lld" \
+		-Dar=llvm-ar \
+		-Dnm=llvm-nm \
+		-Dranlib=llvm-ranlib \
 		-Dd_semctl_semun \
 		-Dman1dir=/usr/share/man/man1 \
 		-Dman3dir=/usr/share/man/man3 \

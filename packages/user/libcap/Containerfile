@@ -1,4 +1,4 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 COPY --from=stagex/core-bash . /
 ARG VERSION
 ADD fetch/libcap-${VERSION}.tar.gz .

@@ -1,4 +1,4 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-libedit . /

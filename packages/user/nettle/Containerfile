@@ -1,4 +1,4 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
 COPY --from=stagex/core-gmp . /
 ADD fetch/nettle-${VERSION}.tar.gz .
@@ -9,7 +9,7 @@ RUN --network=none <<-EOF
 	./configure \
 		--prefix=/usr \
 		--libdir=/usr/lib \
-		--enable-public-key
+		--enable-public-key || { cat config.log; exit 1; }
 	make -j "$(nproc)"
 	DESTDIR=/rootfs make install
 EOF
