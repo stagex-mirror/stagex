@@ -28,7 +28,7 @@ file = "libunwind-{version}.tar.gz"
 mirrors = [ "https://github.com/libunwind/libunwind/archive/refs/tags/v{version}.tar.gz" ]
 
 [sources.llvm]
-version = "19.1.7"
-hash = "82401fea7b79d0078043f7598b835284d6650a75b93e64b6f761ea7b63097501"
+version = "20.1.0"
+hash = "4579051e3c255fb4bb795d54324f5a7f3ef79bd9181e44293d7ee9a7f62aad9a"
 file = "llvm-{version}.tar.xz"
 mirrors = [ "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/llvm-project-{version}.src.tar.xz",]
