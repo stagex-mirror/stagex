@@ -1,79 +1,121 @@
 FROM --platform=linux/386 stagex/bootstrap-stage2 AS build
-ARG GCC_SOURCE
-ARG GCC_VERSION
-ARG LINUX_SOURCE
-ARG LINUX_VERSION
-ARG MUSL_SOURCE
-ARG MUSL_VERSION
-ARG BUSYBOX_SOURCE
-ARG BUSYBOX_VERSION
-ARG BINUTILS_SOURCE
-ARG BINUTILS_VERSION
-ARG MAKE_SOURCE
-ARG MAKE_VERSION
-ARG GO_SOURCE
-ENV BUILD=i386-unknown-linux-musl
-ENV PATH=/usr/sbin:/usr/bin:/sbin:/bin
-ENV TZ=UTC
-ENV LANG=C.UTF-8
-ENV SOURCE_DATE_EPOCH=1
-ENV KCONFIG_NOTIMESTAMP=1
-COPY --from=fetch . .
-
-RUN --network=none <<-EOF
-	set -eux
-	tar -xf ${LINUX_SOURCE}
-	tar -kxf ${BINUTILS_SOURCE}
-	tar -kxf ${GCC_SOURCE}
-	tar -kxjf ${BUSYBOX_SOURCE}
-	tar -kxzf ${MUSL_SOURCE}
-	tar -kxzf ${MAKE_SOURCE}
-	tar -kxzf ${GO_SOURCE}
-EOF
-
 ARG TARGETARCH
+COPY <<-'EOF' /etc/profile
+	[[ "$TARGETARCH" == "amd64" ]] \
+		&& ARCH="x86_64" \
+		&& LLVM_TARGETS="X86"
+	[[ "$TARGETARCH" == "arm64" ]] \
+		&& ARCH="aarch64" \
+		&& LLVM_TARGETS="AArch64"
+	export ARCH
+	export LLVM_TARGETS
+	export MAKEFLAGS="-j$(nproc)"
+	export BUILD=i386-unknown-linux-musl
+	export TARGET=${ARCH}-linux-musl
+	export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+	export TZ=UTC
+	export LANG=C.UTF-8
+	export SOURCE_DATE_EPOCH=1
+	export KCONFIG_NOTIMESTAMP=1
+EOF
+SHELL ["/bin/sh","-l","-c"]
+
+ARG MUSL_VERSION
+ADD fetch/musl-${MUSL_VERSION}.tar.gz /
+WORKDIR /musl-${MUSL_VERSION}
 RUN --network=none <<-EOF
-	echo "export TARGET_ARCH=`echo ${TARGETARCH} | sed 's/amd64/x86_64/' | sed 's/arm64/aarch64/'`" >> /.env
-	. /.env
-	echo "export TARGET=$TARGET_ARCH-linux-musl" >> /.env
+	set -eux
+	./configure \
+		--prefix=/usr \
+		--host=${TARGET}
+	make DESTDIR=/rootfs install
 EOF
 
-WORKDIR /build-musl
+ARG XZ_VERSION
+ADD fetch/xz-${XZ_VERSION}.tar.gz /
+WORKDIR /xz-${XZ_VERSION}
 RUN --network=none <<-EOF
 	set -eux
-	. /.env
-	../musl-${MUSL_VERSION}/configure \
+	autoreconf -fi
+	./configure \
 		--prefix=/usr \
-		--build=${BUILD} \
 		--host=${TARGET}
-	make -j$(nproc)
+	make DESTDIR=/rootfs install
 EOF
-WORKDIR /build-binutils
+
+ARG LIBUCONTEXT_VERSION
+ADD fetch/libucontext-${LIBUCONTEXT_VERSION}.tar.gz /
+WORKDIR /libucontext-libucontext-${LIBUCONTEXT_VERSION}
 RUN --network=none <<-EOF
 	set -eux
-	. /.env
-	../binutils-${BINUTILS_VERSION}/configure \
-		--build=${BUILD} \
-		--host=${TARGET} \
+	export CC=${ARCH}-linux-musl-gcc
+	make ARCH=${ARCH} DESTDIR=/rootfs install
+EOF
+
+ARG LIBUNWIND_VERSION
+ADD fetch/libunwind-${LIBUNWIND_VERSION}.tar.gz /
+WORKDIR /libunwind-${LIBUNWIND_VERSION}
+RUN <<-EOF
+	set -eux
+	export CFLAGS="-I/rootfs/usr/include -L/rootfs/usr/lib -L/usr/lib -L/lib -llzma -lucontext"
+	export CXXFLAGS="$CFLAGS"
+	export CPPFLAGS="$CFLAGS"
+	autoreconf -i
+	./configure \
 		--prefix=/usr \
-		--bindir=/usr/bin \
-		--mandir=/usr/share/man \
-		--infodir=/usr/share/info \
-		--sysconfdir=/etc \
-		--disable-nls \
-		--disable-multilib \
-		--disable-plugins \
-		--disable-gprofng \
-		--enable-64-bit-bfd \
-		--enable-ld=default \
-		--enable-install-libiberty \
-		--enable-deterministic-archives
-	make -j$(nproc)
+		--host=${TARGET} \
+		--enable-cxx-exceptions || cat config.log
+	make
+	cp -a src/libunwind.* /rootfs/usr/lib/
 EOF
-WORKDIR /build-make
+
+ARG CMAKE_VERSION
+ADD fetch/cmake-${CMAKE_VERSION}.tar.gz /
+WORKDIR /cmake-${CMAKE_VERSION}/build
 RUN --network=none <<-EOF
 	set -eux
-	. /.env
+	export CXXFLAGS="-latomic"
+	../configure \
+		--prefix=/usr \
+		--no-system-cppdap \
+		--no-system-curl \
+		-- \
+		-DCMAKE_USE_OPENSSL=OFF
+	make
+	make DESTDIR=/rootfs install
+EOF
+
+ARG LLVM_VERSION
+ADD fetch/llvm-${LLVM_VERSION}.tar.xz /
+WORKDIR /llvm-project-${LLVM_VERSION}.src
+RUN --network=none <<-EOF
+	set -eux
+	export PATH=/rootfs/usr/bin:/usr/bin:/usr/sbin
+  export CC="gcc -m32"
+  export CXX="g++ -m32"
+	export CFLAGS=-m32
+	export CXXFLAGS=-m32
+	export LDFLAGS=-m32
+	cmake \
+		-B build \
+		-S llvm \
+		-Wno-dev \
+		-DCMAKE_INSTALL_PREFIX=/usr/ \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DLLVM_TARGETS_TO_BUILD="$LLVM_TARGETS" \
+		-DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra" \
+		-DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi;libunwind" \
+		-DLLVM_BUILD_DOCS=OFF
+#-DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;lld"
+	cmake --build build --parallel $(nproc)
+	DESTDIR="/rootfs" cmake --install build
+EOF
+
+ARG MAKE_VERSION
+ADD fetch/make-${MAKE_VERSION}.tar.gz /
+WORKDIR /make-${MAKE_VERSION}
+RUN --network=none <<-EOF
+	set -eux
 	../make-${MAKE_VERSION}/configure \
 		--build=${BUILD} \
 		--host=${TARGET} \
@@ -82,40 +124,14 @@ RUN --network=none <<-EOF
 		--infodir=/usr/share/info \
 		--disable-nls
 	make -j$(nproc)
+	make DESTDIR=/rootfs install
 EOF
-WORKDIR /build-gcc
-RUN --network=none <<-EOF
-	set -eux
-	. /.env
-	cp ../*.tar.* /gcc-${GCC_VERSION}
-	env -C /gcc-${GCC_VERSION} ./contrib/download_prerequisites
-	/gcc-${GCC_VERSION}/configure \
-		--build=${BUILD} \
-		--host=${TARGET} \
-		--target=${TARGET} \
-		--prefix=/usr \
-		--mandir=/usr/share/man \
-		--infodir=/usr/share/info \
-		--libdir=/usr/lib \
-		--disable-cet \
-		--disable-fixed-point \
-		--disable-libstdcxx-pch \
-		--disable-multilib \
-		--disable-libsanitizer \
-		--disable-nls \
-		--disable-werror \
-		--enable-__cxa_atexit \
-		--enable-default-pie \
-		--enable-default-ssp \
-		--enable-languages=c,c++ \
-		--enable-link-serialization=2 \
-		--enable-linker-build-id
-	make -j$(nproc)
-EOF
-WORKDIR /build-busybox
+
+ARG BUSYBOX_VERSION
+ADD fetch/busybox-${BUSYBOX_VERSION}.tar.bz2 /
+WORKDIR /busybox-${BUSYBOX_VERSION}/build
 RUN --network=none <<-EOF
     set -eux
-	. /.env
     setConfs='
         CONFIG_LAST_SUPPORTED_WCHAR=0
         CONFIG_STATIC=y
@@ -128,8 +144,8 @@ RUN --network=none <<-EOF
         CONFIG_FEATURE_WTMP
     '
     make \
-        -f ../busybox-${BUSYBOX_VERSION}/Makefile \
-        KBUILD_SRC=../busybox-${BUSYBOX_VERSION} \
+        -f ../Makefile \
+        KBUILD_SRC=../ \
         CROSS_COMPILE=${TARGET}- \
         defconfig
     for conf in $unsetConfs; do
@@ -156,6 +172,7 @@ RUN --network=none <<-EOF
     done
     make -j$(nproc) CROSS_COMPILE=${TARGET}-
 EOF
+
 WORKDIR /linux-${LINUX_VERSION}
 RUN --network=none <<-EOF
 	set -eux
@@ -165,6 +182,7 @@ RUN --network=none <<-EOF
 	rm usr/include/headers_check.pl
 	cp -rv usr/include /build-linux
 EOF
+
 WORKDIR ${HOME}/go
 RUN --network=none <<-EOF
 	set -eux
