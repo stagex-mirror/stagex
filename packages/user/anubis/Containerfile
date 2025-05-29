@@ -1,13 +1,21 @@
 FROM stagex/pallet-go AS build
+COPY --from=stagex/pallet-nodejs . /
+COPY --from=stagex/core-bash . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-make . /
 ARG VERSION
 ADD fetch/anubis-${VERSION}.tar.gz .
 WORKDIR /anubis-${VERSION}
-RUN go mod download
+RUN go mod download && npm ci
+ENV CGO_ENABLED=0
 RUN --network=none <<-EOF
 	set -eu
-	go build -o anubis ./cmd/anubis
+	make build
 	mkdir -p /rootfs/usr/bin/
-	cp anubis /rootfs/usr/bin/
+	cp var/anubis /rootfs/usr/bin/
+	install -Dm644 -t /rootfs/usr/share/licenses/anubis/ LICENSE
 EOF
+
 FROM stagex/core-filesystem AS package
-COPY --from=build /rootfs// /
+COPY --from=build /rootfs/ /
+ENTRYPOINT ["/usr/bin/anubis"]
