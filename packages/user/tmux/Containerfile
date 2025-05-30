@@ -1,0 +1,19 @@
+FROM stagex/pallet-gcc-gnu-busybox AS build
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/user-libevent . /
+COPY --from=stagex/core-ncurses . /
+ARG VERSION
+ADD fetch/tmux-${VERSION}.tar.gz .
+WORKDIR /tmux-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	autoreconf -vfi
+	./configure \
+		--prefix=/usr \
+		--sysconfdir=/etc
+	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
+	install -Dm644 -t /rootfs/usr/share/licenses/tmux COPYING
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
