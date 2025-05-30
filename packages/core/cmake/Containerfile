@@ -1,15 +1,14 @@
 FROM scratch AS build
 ARG VERSION
-COPY --from=stagex/bootstrap-stage3 . /
-#COPY --from=stagex/core-samurai . /
-#COPY --from=stagex/core-busybox . /
-#COPY --from=stagex/core-binutils . /
-#COPY --from=stagex/core-musl . /
-#COPY --from=stagex/core-make . /
-#COPY --from=stagex/core-linux-headers . /
-#COPY --from=stagex/core-gcc . /
-#COPY --from=stagex/core-zlib . /
-#COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-samurai . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-openssl . /
 ADD fetch/cmake-${VERSION}.tar.gz .
 WORKDIR /cmake-${VERSION}
 ENV LD_LIBRARY_PATH=/usr/lib:/lib

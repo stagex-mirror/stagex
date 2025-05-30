@@ -357,7 +357,6 @@ RUN build dist-3.5-236 pass1.sh
 RUN build perl-5.32.1 pass1.sh
 RUN uninstall perl-5.6.2 perl-5.10.1
 RUN build libarchive-3.5.2 pass1.sh
-RUN build openssl-3.0.13 pass1.sh 
 RUN build zlib-1.2.13 pass1.sh
 RUN build automake-1.16.3 pass1.sh
 RUN build autoconf-2.71 pass1.sh
@@ -377,18 +376,6 @@ RUN build grep-3.7 pass1.sh
 RUN build sed-4.8 pass1.sh
 RUN build autogen-5.18.16 pass1.sh
 RUN build musl-1.2.4 pass3.sh
-RUN build python-2.0.1 pass1.sh
-RUN build python-2.0.1 pass2.sh
-RUN build python-2.3.7 pass1.sh
-RUN build python-2.3.7 pass2.sh
-RUN build python-2.5.6 pass1.sh
-RUN build python-3.1.5 pass1.sh
-RUN build python-3.1.5 pass2.sh
-RUN build python-3.3.7 pass1.sh
-RUN build python-3.4.10 pass1.sh
-RUN build python-3.8.16 pass1.sh
-RUN build python-3.11.1 pass1.sh
-RUN uninstall python-2.0.1 python-2.3.7 python-3.1.5 python-3.3.7 python-3.4.10 python-3.8.16
 RUN build gcc-10.4.0 pass1.sh
 RUN build binutils-2.41 pass2.sh
 RUN build gcc-13.1.0 pass1.sh
