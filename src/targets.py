@@ -138,7 +138,7 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
               "deps": "".join(
                 f" \\\n\tout/{dep}/index.json" for dep in package.deps
               ),
-              "files": "\\\n\t".join(check_output(["git","ls-files","packages/{}/{}".format(stage,name)],text=True).splitlines()),
+              "files": "\\\n\t".join(check_output(["git","ls-files","packages/{}/{}".format(stage,package.origin or package.name)],text=True).splitlines()),
               "build_args": TargetGenerator.get_build_args(package),
               "context_args": TargetGenerator.get_context_args(package, stage, package.origin or package.name, False),
               "context_args_registry": TargetGenerator.get_context_args(package, stage, package.origin or package.name, True),
