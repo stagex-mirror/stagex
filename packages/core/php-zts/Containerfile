@@ -62,7 +62,6 @@ RUN --network=none <<-EOF
 	set -eux
 	patch -p1 < remove-timestamps-from-phar.patch
 	./buildconf --force
-	./configure --help
 	./configure \
 		--with-config-file-path=/etc/php \
 		--with-config-file-scan-dir=/etc/php/conf.d \
