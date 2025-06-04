@@ -9,7 +9,7 @@ diff --git a/bin/compile b/bin/compile
  assert(is_string($cwd));
  chdir(__DIR__.'/../');
 -$ts = rtrim(exec('git log -n1 --pretty=%ct HEAD'));
-+$ts = 0;
++$ts = intval(getenv('SOURCE_DATE_EPOCH'));
  if (!is_numeric($ts)) {
      echo 'Could not detect date using "git log -n1 --pretty=%ct HEAD"'.PHP_EOL;
      exit(1);

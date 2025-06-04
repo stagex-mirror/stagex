@@ -38,7 +38,7 @@ diff --git a/src/Composer/Compiler.php b/src/Composer/Compiler.php
 -            throw new \UnexpectedValueException('Version detection failed');
 -        }
 +        $this->versionDate = new \DateTime();
-+        $this->versionDate->setTimestamp(0);
++        $this->versionDate->setTimestamp(intval(getenv('SOURCE_DATE_EPOCH')));
 +        $this->version = getenv('STAGEX_COMPOSER_VERSION');
 
          $phar = new \Phar($pharFile, 0, 'composer.phar');

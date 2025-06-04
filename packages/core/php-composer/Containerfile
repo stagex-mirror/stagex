@@ -1,6 +1,7 @@
 FROM scratch AS build
 ARG VERSION
 ARG COMPOSER_BOOT_VERSION
+ARG SOURCE_DATE_EPOCH
 
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-ca-certificates . /
@@ -76,6 +77,8 @@ ARG PHP_PACKAGE_SYMFONY_SERVICE_CONTRACTS_SOURCE
 ADD fetch/${PHP_PACKAGE_SYMFONY_SERVICE_CONTRACTS_SOURCE} ./vendor/symfony
 ARG PHP_PACKAGE_SYMFONY_STRING_SOURCE
 ADD fetch/${PHP_PACKAGE_SYMFONY_STRING_SOURCE} ./vendor/symfony
+
+ENV SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH
 
 # Strip sha1 from git archive directory name
 RUN <<-EOF
