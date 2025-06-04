@@ -1,5 +1,6 @@
 FROM scratch AS build
 ARG VERSION
+ARG SOURCE_DATE_EPOCH=1
 
 COPY --from=stagex/core-libunwind . /
 COPY --from=stagex/core-acl . /
@@ -47,7 +48,7 @@ ADD fetch/php-${VERSION}.tar.gz .
 WORKDIR /php-${VERSION}
 COPY *.patch .
 
-ENV SOURCE_DATE_EPOCH=1
+ENV SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH
 ENV PHP_UNAME="Linux stagex"
 ENV PHP_BUILD_PROVIDER="stagex"
 ENV PHP_BUILD_SYSTEM="${PHP_UNAME}"

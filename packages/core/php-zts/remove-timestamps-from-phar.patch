@@ -21,7 +21,7 @@ index f60b0d6a..12cc7b63 100644
  			+: metadata
  		*/
 -		mytime = time(NULL);
-+		mytime = 0;
++		mytime = getenv("SOURCE_DATE_EPOCH") ? (time_t)strtol(getenv("SOURCE_DATE_EPOCH"), NULL, 10) : time(0);
  		phar_set_32(entry_buffer, entry->uncompressed_filesize);
  		phar_set_32(entry_buffer+4, mytime);
  		phar_set_32(entry_buffer+8, entry->compressed_filesize);
@@ -34,7 +34,7 @@ index 72e633a5..d126d392 100644
  	phar_add_virtual_dirs(phar, path, path_len);
  	etemp.is_modified = 1;
 -	etemp.timestamp = time(0);
-+	etemp.timestamp = 0;
++	etemp.timestamp = getenv("SOURCE_DATE_EPOCH") ? (time_t)strtol(getenv("SOURCE_DATE_EPOCH"), NULL, 10) : time(0);
  	etemp.is_crc_checked = 1;
  	etemp.phar = phar;
  	etemp.filename = estrndup(path, path_len);
