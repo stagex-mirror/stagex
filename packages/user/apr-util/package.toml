@@ -7,4 +7,7 @@ description = "TODO"
 hash = "a41076e3710746326c3945042994ad9a4fcac0ce0277dd8fea076fec3c9772b5"
 format = "tar.bz2"
 file = "apr-util-{version}.{format}"
-mirrors = [ "https://www.apache.org/dist/apr/{file}",]
+mirrors = [
+	"https://www.apache.org/dist/apr/{file}",
+	"https://archive.apache.org/dist/apr/{file}",
+]
