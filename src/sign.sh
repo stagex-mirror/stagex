@@ -37,7 +37,8 @@ FPR="$(get-primary-fp "${SIGNING_KEY}")"
 test ! -z "$FPR"
 TEMPFILE="$(mktemp)"
 #From SIGNATURES := https://codeberg.org/stagex/sigs.stagex.tools.git from MAKEFILE
-SIGNATURES="git@codeberg.org:stagex/signatures.git"
+SIGNATURES="https://codeberg.org/stagex/signatures.git"
+SIGNATURES_SSH="git@codeberg.org/stagex.signatgures.git"
 REGISTRY=${1:-stagex}
 PACKAGE_NAME=${2?}
 BRANCH_NAME="${3:-release/$RELEASE}"
@@ -49,10 +50,11 @@ MANIFEST_ID=$(cat out/"${PACKAGE_NAME}"/blobs/sha256/"${INDEX_ID}" | jq -r '.man
 DIR="signatures/${REGISTRY}/${PACKAGE_NAME}@sha256=${MANIFEST_ID}"
 
 if [ ! -d "signatures/$REGISTRY" ]; then
-  echo -e "${RED}<========CLONING SIGNATURES REPO=========>${NC}"
-  echo -e "${RED}<========CLONING TAP the button ssh=========>${NC}"
   git clone "$SIGNATURES" "signatures" # Clone repo to make signatures
   check_command "Failed to clone the repository"
+  cd signatures
+  git remote set-url --push origin "${SIGNATURES_SSH}"
+  cd ..
 fi
 
 mkdir -p "${DIR}"
@@ -110,8 +112,6 @@ git checkout $GCO_ARGS "$BRANCH_NAME"
 check_command "${RED}Failed to create a new branch"
 
 if dir-has-no-sig "$DIR" "$FPR"; then
-  echo -e "${RED}<=========== Signing: $PACKAGE_NAME ==============>${NC}"
-  echo -e "${RED}<=========== Signing: yes tap the button!==============>${NC}"
   FILENAME="$(get-filename "$DIR")"
   printf \
       '{"critical":{"identity":{"docker-reference":"%s/%s"},"image":{"docker-manifest-digest":"%s"},"type":"atomic container signature"},"optional":{}}' \
@@ -121,27 +121,3 @@ else
   echo "Nothing to do"
   exit 0
 fi
-
-# Add the file to staging
-echo -e "${RED}<=========== ADD to start Commit=========>${NC}"
-git add "$FILENAME"
-check_command "${RED}Failed to add the file to staging${NC}"
-
-# Commit the changes
-echo -e "${RED}<=========== COMMIT=========${NC}"
-echo -e "${RED}<=========== COMMIT yes tap the button!=========>${NC}"
-git commit -m "$COMMIT_MESSAGE"
-check_command "${RED}Failed to commit changes${NC}"
-
-# Push the new branch to the remote repository
-echo -e "${RED}<=========== PUSH=============================>${NC}"
-echo -e "${RED}<=========== PUSH yes tap the button!=========>${NC}"
-git push origin "$BRANCH_NAME"
-check_command "${RED}Failed to push changes${NC}"
-
-# Clean up: remove the temporary directory
-cd ..
-echo -e "${RED}<============== finally =============================>${NC}"
-echo -e "${RED}<============== removing cloned repo =============================>${NC}"
-rm -rf "signatures/${REGISTRY}"
-echo -e "${RED} 🎉 Huzzah!${NC} Successfully created branch ${BRANCH_NAME}, signed and pushed changes. You are the chosen one, destined to bring balance to a reproducible future!"
