@@ -1,6 +1,6 @@
 STAGES := pallet bootstrap core user## Namespaces to build
 PROGRESS := auto## Buildkit progress output style
-PLATFORM := linux/amd64## Platform we are building for
+PLATFORM := linux/amd64,linux/arm64## Platform we are building for
 BUILDER := $(shell command -v docker) ## Build backend to use
 REGISTRY_USERNAME := 127.0.0.1:5000/stagex## Example for registry-* targets
 REGISTRY := stagex## Registry url/namespace to build/publish for

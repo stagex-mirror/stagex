@@ -24,8 +24,11 @@ for filename in glob("out/**/index.json", recursive=True):
     # Get manifest digest from index 
     with open(f"out/{fullname}/blobs/sha256/{digest}") as file:
       data = json.load(file)
-    digest = data["manifests"][0]["digest"].split(":")[1]
-    digests[stage].append((name, digest))
+    for manifest in data["manifests"]:
+      digest = manifest["digest"].split(":")[1]
+      os = manifest["platform"]["os"]
+      arch = manifest["platform"]["architecture"]
+      digests[stage].append((name, digest, os, arch))
 
 rmtree("digests")
 mkdir("digests")
@@ -33,5 +36,5 @@ for stage, elements in digests.items():
     filename = f"digests/{stage}.txt"
     with open(filename, "a") as file:
         for element in sorted(elements, key=operator.itemgetter(0)):
-            file.write(f"{element[1]} {stage}-{element[0]}\n")
+            file.write(f"{element[1]} {stage}-{element[0]}-{element[2]}-{element[3]}\n")
     print(f"> {filename}"),

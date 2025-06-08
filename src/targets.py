@@ -125,7 +125,10 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
         platform = "$(PLATFORM)"
         # Force platform(s) for bootstrap packages which are only available for certain architectures
         # and later cross-compile subsequent stages for the user's desired platform
-        if len(package.platforms) > 0:
+        amd_only = ('bootstrap-stage0', 'bootstrap-stage1', 'bootstrap-stage2')
+        if name in amd_only:
+          platform = "amd64"
+        if len(package.platforms) > 0 and name not in amd_only:
           platform = ",".join(package.platforms)
 
         print(
