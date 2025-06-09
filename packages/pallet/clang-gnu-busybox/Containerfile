@@ -5,7 +5,6 @@ COPY --from=stagex/core-autoconf . /
 COPY --from=stagex/core-automake . /
 COPY --from=stagex/core-libtool . /
 COPY --from=stagex/core-pkgconf . /
-COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-flex . /
