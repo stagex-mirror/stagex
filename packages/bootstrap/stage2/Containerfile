@@ -1,102 +1,165 @@
 FROM stagex/bootstrap-stage1 AS build
-ENV PATH=/rootfs/usr/bin:$PATH
-ENV LD_LIBRARY_PATH=/rootfs/usr/lib:/usr/lib:/lib
-ENV CFLAGS="-L/rootfs/usr/lib -L/usr/lib -L/lib"
-ENV CXXFLAGS="$CFLAGS"
-ENV HOST=i386-linux-musl
+
+COPY <<-'EOF' /etc/profile
+	set -eux
+	export MAKEFLAGS="-j$(nproc)"
+EOF
+SHELL ["/bin/sh","-l","-c"]
+
+ARG CMAKE_VERSION
+ADD fetch/cmake-${CMAKE_VERSION}.tar.gz /
+WORKDIR /cmake-${CMAKE_VERSION}/
+RUN --network=none <<-EOF
+	export CXXFLAGS="-latomic"
+	./configure --prefix=/usr
+	make install
+EOF
 
 ARG XZ_VERSION
 ADD fetch/xz-${XZ_VERSION}.tar.gz /
 WORKDIR /xz-${XZ_VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	autoreconf -fi
 	./configure --prefix=/usr
-	make DESTDIR=/rootfs install
+	make install
 EOF
 
 ARG LIBUCONTEXT_VERSION
 ADD fetch/libucontext-${LIBUCONTEXT_VERSION}.tar.gz /
 WORKDIR /libucontext-libucontext-${LIBUCONTEXT_VERSION}
 RUN --network=none <<-EOF
-	set -eux
-	make ARCH=x86 -j$(nproc)
-	make ARCH=x86 DESTDIR=/rootfs install
+	make ARCH=x86 install
 EOF
 
 ARG LIBUNWIND_VERSION
 ADD fetch/libunwind-${LIBUNWIND_VERSION}.tar.gz /
 WORKDIR /libunwind-${LIBUNWIND_VERSION}
 RUN <<-EOF
-	set -eux
-	export CFLAGS="$CFLAGS -llzma -latomic -lucontext"
+	export CFLAGS="-L/lib -L/usr/lib -latomic -llzma -lucontext"
 	autoreconf -i
 	./configure \
 		--prefix=/usr \
-		--host=${HOST} \
+		--host=i386-linux-musl \
 		--enable-cxx-exceptions
-	make -j$(nproc)
-	cp -a src/libunwind.* /rootfs/usr/lib/
-EOF
-
-ARG CMAKE_VERSION
-ADD fetch/cmake-${CMAKE_VERSION}.tar.gz /
-WORKDIR /cmake-${CMAKE_VERSION}/build
-RUN --network=none <<-EOF
-	set -eux
-	export CXXFLAGS="-latomic"
-	../configure \
-		--prefix=/usr \
-		--no-system-cppdap \
-		--no-system-curl \
-		-- \
-		-DCMAKE_USE_OPENSSL=OFF
-	make -j$(nproc)
-	make DESTDIR=/rootfs install
+	make install
+	install -c -m644 src/libunwind.* /usr/lib/
 EOF
 
 ARG LLVM_VERSION
 ADD fetch/llvm-${LLVM_VERSION}.tar.xz /
 WORKDIR /llvm-project-${LLVM_VERSION}.src
+ADD patches/* .
 RUN --network=none <<-EOF
-	set -eux
+	#patch -p1 < 0001-llvm-always-set-a-larger-stack-size-explicitly.patch
+	#patch -p1 < 0002-llvm-musl-workarounds.patch
+	#patch -p1 < 0003-llvm-fix-some-MF_EXEC-related-test-failures-on-aarch.patch
+	#patch -p1 < 0004-llvm-disable-dependency-on-libexecinfo-everywhere.patch
+	#patch -p1 < 0005-compiler-rt-ppc-sanitizer-fixes.patch
+	#patch -p1 < 0006-compiler-rt-default-to-libc-for-sanitizers.patch
+	#patch -p1 < 0007-compiler-rt-build-crt-in-runtimes-build.patch
+	#patch -p1 < 0008-compiler-rt-lsan-basic-musl-fixes-on-various-archs.patch
+	#patch -p1 < 0009-compiler-rt-HACK-hwasan-build-on-x86_64.patch
+	#patch -p1 < 0010-compiler-rt-libcxx-abi-libunwind-HACK-force-fno-lto.patch
+	#patch -p1 < 0011-compiler-rt-HACK-always-compile-in-gcc_personality_v.patch
+	#patch -p1 < 0012-libc-libc-abi-libunwind-disable-multiarch-locations.patch
+	#patch -p1 < 0013-llvm-fix-isOSGlibc-thinking-musl-is-glibc.patch
+	#patch -p1 < 0014-clang-disable-multiarch-layout-on-musl.patch
+	#patch -p1 < 0015-clang-drop-incorrect-warning-about-vector-equality-r.patch
+	#patch -p1 < 0016-clang-add-fortify-include-paths-for-musl-triplets-en.patch
+	#patch -p1 < 0017-clang-use-as-needed-by-default.patch
+	#patch -p1 < 0018-clang-switch-on-default-now-relro.patch
+	#patch -p1 < 0019-clang-default-to-fno-semantic-interposition.patch
+	#patch -p1 < 0020-clang-implicitly-link-to-libatomic-on-linux-targets.patch
+	#patch -p1 < 0021-clang-use-strong-stack-protector-by-default.patch
+	#patch -p1 < 0022-clang-fix-unwind-chain-inclusion.patch
+	#patch -p1 < 0023-clang-error-when-using-ifunc-attribute-on-unsupporte.patch
+	#patch -p1 < 0024-clang-link-libcxxabi-on-linux-when-using-libc.patch
+	#patch -p1 < 0025-Get-rid-of-spurious-trailing-space-in-__clang_versio.patch
+	#patch -p1 < 0026-clang-implicitly-include-stdc-predef.h.patch
+	#patch -p1 < 0027-32-bit-musl-sanitizer-fixes.patch
+	#patch -p1 < 0028-fix-scan-build.patch
+	#patch -p1 < 0029-libcxx-default-to-type-2.patch
+	#patch -p1 < 8f66fb784291c897a965a9ee4c280e314dc8cee4.patch
 	cmake \
 		-B build \
 		-S llvm \
 		-Wno-dev \
-		-DCMAKE_INSTALL_PREFIX=/usr/ \
-		-DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
+    -DENABLE_LINKER_BUILD_ID=ON \
+		-DLLVM_TARGET_ARCH="X86" \
 		-DLLVM_TARGETS_TO_BUILD="X86" \
-		-DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;lld" \
-		-DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi;libunwind" \
-		-DLLVM_BUILD_DOCS=OFF
-	cmake --build build --parallel $(nproc)
-	DESTDIR="/rootfs" cmake --install build
+		-DLLVM_HOST_TRIPLE="i386-linux-musl" \
+		-DLLVM_RUNTIME_TARGETS="i386-linux-musl" \
+		-DLLVM_BUILTIN_TARGETS="i386-linux-musl" \
+    -DLLVM_ENABLE_PROJECTS="clang;lld" \
+    -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi;libunwind" \
+    -DLLVM_ENABLE_LIBCXX=ON \
+    -DLLVM_ENABLE_RTTI=ON \
+    -DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON \
+    -DLLVM_INSTALL_UTILS=ON \
+    -DLLVM_ENABLE_LLD=OFF \
+    -DLLVM_ENABLE_LIBXML2=OFF \
+    -DLLVM_ENABLE_LIBEDIT=OFF \
+    -DLLVM_ENABLE_LIBPFM=OFF \
+    -DLLVM_BUILD_LLVM_DYLIB=ON \
+    -DLLVM_LINK_LLVM_DYLIB=ON \
+    -DCLANG_DEFAULT_CXX_STDLIB=libc++ \
+    -DCLANG_DEFAULT_UNWINDLIB=libunwind \
+    -DCLANG_DEFAULT_RTLIB=compiler-rt \
+    -DLIBUNWIND_USE_COMPILER_RT=ON \
+		-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="i386-linux-musl" \
+    -DCOMPILER_RT_BUILD_SANITIZERS=OFF \
+    -DCOMPILER_RT_BUILD_XRAY=OFF \
+    -DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
+    -DCOMPILER_RT_BUILD_PROFILE=OFF \
+    -DCOMPILER_RT_BUILD_MEMPROF=OFF \
+    -DCOMPILER_RT_BUILD_CTX_PROFILE=OFF \
+    -DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
+    -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
+    -DCOMPILER_RT_USE_LLVM_UNWINDER=ON \
+    -DLIBCXX_CXX_ABI=libcxxabi \
+    -DLIBCXX_USE_COMPILER_RT=ON \
+    -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=OFF \
+    -DLIBCXX_HAS_MUSL_LIBC=ON \
+    -DLIBCXX_HARDENING_MODE=fast \
+    -DLIBCXXABI_USE_COMPILER_RT=ON \
+    -DLIBCXXABI_USE_LLVM_UNWINDER=ON \
+    -DLIBCXXABI_ENABLE_STATIC_UNWINDER=OFF
 EOF
+RUN --network=none <<-EOF
+	cmake --build build -v --parallel $(nproc) || :
+	cmake --build build -v || :
+EOF
+#RUN --network=none <<-EOF
+#	DESTDIR="/rootfs" cmake --install build
+#EOF
 
-FROM stagex/bootstrap-stage1 AS package
-COPY --from=build /rootfs/ /
-RUN <<-'EOF'
-	cd /usr/bin
-	rm -rf ld cc c++ ar ranlib objdump
-	ln -s lld ld
-	ln -s clang cc
-	ln -s clang++ c++
-	ln -s llvm-ar ar
-	ln -s llvm-ranlib ranlib
-EOF
-ENV PATH=/usr/sbin:/usr/bin:/sbin:/bin
-ENV CC=/usr/bin/clang
-ENV CXX=/usr/bin/clang++
-ENV AR=/usr/bin/llvm-ar
-ENV RANLIB=/usr/bin/llvm-ranlib
-ENV READELF=/usr/bin/llvm-readelf
-ENV OBJDUMP=/usr/bin/llvm-objdump
-COPY <<-'EOF' /etc/profile
-	[[ "$TARGETARCH" == "amd64" ]] && ARCH="x86_64"
-	[[ "$TARGETARCH" == "arm64" ]] && ARCH="aarch64"
-	export ARCH
-	export TARGET=${ARCH}-unknown-linux-musl
-	export MAKEFLAGS="-j$(nproc)"
-EOF
-SHELL ["/bin/sh","-l","-c"]
+FROM build as package
+
+#FROM stagex/bootstrap-stage1 AS package
+#COPY --from=build /rootfs/ /
+#RUN <<-'EOF'
+#	cd /usr/bin
+#	rm -rf ld cc c++ ar ranlib objdump
+#	ln -s lld ld
+#	ln -s clang cc
+#	ln -s clang++ c++
+#	ln -s llvm-ar ar
+#	ln -s llvm-ranlib ranlib
+#EOF
+#ENV PATH=/usr/sbin:/usr/bin:/sbin:/bin
+#ENV CC=/usr/bin/clang
+#ENV CXX=/usr/bin/clang++
+#ENV AR=/usr/bin/llvm-ar
+#ENV RANLIB=/usr/bin/llvm-ranlib
+#ENV READELF=/usr/bin/llvm-readelf
+#ENV OBJDUMP=/usr/bin/llvm-objdump
+#COPY <<-'EOF' /etc/profile
+#	[[ "$TARGETARCH" == "amd64" ]] && ARCH="x86_64"
+#	[[ "$TARGETARCH" == "arm64" ]] && ARCH="aarch64"
+#	export ARCH
+#	export TARGET=${ARCH}-unknown-linux-musl
+#	export MAKEFLAGS="-j$(nproc)"
+#EOF
+#SHELL ["/bin/sh","-l","-c"]
