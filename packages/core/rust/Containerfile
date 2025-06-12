@@ -22,7 +22,7 @@ COPY --from=stagex/core-libunwind . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-libffi . /
 COPY --from=stagex/core-lld . /
-COPY --from=stagex/core-llvm /usr/lib/libLLVM.so.19.1 /usr/lib/
+COPY --from=stagex/core-llvm /usr/lib/libLLVM.so.20.1 /usr/lib/
 COPY <<-'EOF' /etc/profile
 	[[ "$TARGETARCH" == "amd64" ]] && ARCH="x86_64"
 	[[ "$TARGETARCH" == "arm64" ]] && ARCH="aarch64"
@@ -38,20 +38,20 @@ COPY --from=stagex/core-hiredis . /
 COPY --from=stagex/core-xxhash . /
 COPY --from=stagex/core-ccache . /
 ADD fetch/mrustc-${MRUSTC_VERSION}.tar.gz .
-WORKDIR mrustc-${MRUSTC_VERSION}
+WORKDIR /mrustc-${MRUSTC_VERSION}
 ENV MRUSTC_TARGET_VER=1.74
 ENV MRUSTC_CCACHE=1
 ENV OUTDIR_SUF=
 ENV RUSTC_VERSION=1.74.0
-ENV RUSTC_INSTALL_BINDIR=bin 
-ENV LIBGIT2_SYS_USE_PKG_CONFIG=1 
+ENV RUSTC_INSTALL_BINDIR=bin
+ENV LIBGIT2_SYS_USE_PKG_CONFIG=1
 ENV MRUSTC_CCACHE=1
 COPY fetch/rustc-${RUSTC_VERSION}-src.tar.gz .
 RUN <<-EOF
 	set -eux
 	export RUSTC_TARGET=${TARGET}
 	export MAKEFLAGS="-j$(nproc)"
-	make 
+	make
 	make RUSTCSRC
 	make -f minicargo.mk LIBS
 	make -f minicargo.mk LLVM_CONFIG=/usr/bin/llvm-config output/rustc
@@ -92,12 +92,13 @@ COPY --chmod=0755 <<-'EOF' build
 		--llvm-root="/usr/lib" \
 		--llvm-libunwind="system" \
 		--enable-local-rust \
-		--enable-clang \
-		--enable-lld \
 		--enable-option-checking \
 		--enable-locked-deps \
+		--enable-llvm-link-shared \
 		--enable-vendor \
 		--dist-compression-formats=gz \
+		--disable-clang \
+		--disable-lld \
 		--disable-docs \
 		--python="python3" \
 		--prefix="${PREFIX}/usr" \
@@ -143,20 +144,38 @@ RUN ./build 1.81.0 1.80.0
 ADD fetch/rustc-1.82.0-src.tar.gz .
 RUN ./build 1.82.0 1.81.0
 
-FROM build-script AS build
-COPY --from=stagex/core-llvm . /
+FROM build-script AS build-llvm19
+COPY --from=stagex/core-llvm19 . /
 COPY --from=stagex/core-llvm17 /usr/lib/libLLVM-17.so /usr/lib/
 COPY --from=build-llvm17 /rust-1.82.0 /rust-1.82.0
+
 ADD fetch/rustc-1.83.0-src.tar.gz .
 RUN ./build 1.83.0 1.82.0
 
-ADD fetch/rustc-1.84.0-src.tar.gz .
-RUN ./build 1.84.0 1.83.0
+ADD fetch/rustc-1.84.1-src.tar.gz .
+RUN ./build 1.84.1 1.83.0
+
+ADD fetch/rustc-1.85.1-src.tar.gz .
+RUN ./build 1.85.1 1.84.1
+
+ADD fetch/rustc-1.86.0-src.tar.gz .
+RUN ./build 1.86.0 1.85.1
+
+FROM build-script AS build-llvm20
+COPY --from=stagex/core-llvm19 . /
+COPY --from=stagex/core-llvm . /
+COPY --from=build-llvm19 /rust-1.86.0 /rust-1.86.0
+
+ADD fetch/rustc-1.87.0-src.tar.gz .
+RUN ./build 1.87.0 1.86.0
+
+FROM build-script AS build
+COPY --from=stagex/core-llvm . /
+COPY --from=build-llvm20 /rust-1.87.0 /rust-1.87.0
 
 ADD no-default-static.patch .
-ADD skip-submodule-updates.patch .
 ADD fetch/rustc-${VERSION}-src.tar.gz .
-RUN ./build ${VERSION} 1.84.0 cargo,clippy,rustdoc,rustfmt,rust-demangler no-default-static,skip-submodule-updates
+RUN ./build ${VERSION} 1.87.0 cargo,clippy,rustdoc,rustfmt,rust-demangler no-default-static
 
 RUN <<-EOF
 	mv /rust-${VERSION} /rootfs
