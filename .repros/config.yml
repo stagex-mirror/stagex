@@ -1,0 +1,15 @@
+build:
+  command: make digests
+sign:
+  files:
+    - digests/bootstrap.txt
+    - digests/core.txt
+    - digests/pallet.txt
+    - digests/user.txt
+  format: raw
+  method: ssh
+  backing: tpm
+storage:
+  method: git
+  location: self
+  path: .repros/sigs/

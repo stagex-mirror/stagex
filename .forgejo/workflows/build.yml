@@ -1,0 +1,44 @@
+name: stagex-build-on-repros
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: "sh -e {0}"
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Building stagex on ${{ matrix.type }}
+    runs-on: codeberg-small
+    env:
+      GIT_SSH_COMMAND: 'ssh -i ~/.ssh/repros.key'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # - type: AMD
+          #   host: 37.27.131.29
+          # - type: Intel
+          #   host: 37.27.123.226
+          - type: OVH
+            host: 51.222.245.32
+    steps:
+      - uses: actions/checkout@v4
+      - run: mkdir -p ~/.ssh
+      - run: chmod 0700 ~/.ssh
+      - run: ssh-keyscan ${{ matrix.host }} | tee ~/.ssh/known_hosts
+      - run: echo "${{ secrets.SSH_KEY_REPROS }}" > ~/.ssh/repros.key
+      - run: chmod 0600 ~/.ssh/repros.key
+      - run: git remote add repros git@${{ matrix.host }}:repros
+      - run: git checkout -b repros
+      - run: git push repros HEAD:repros
