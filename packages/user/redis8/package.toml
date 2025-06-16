@@ -1,5 +1,5 @@
 [package]
-name = "redis-agpl"
+name = "redis8"
 version = "8.0.2"
 description = "Cache, data structure server, document and vector query engine"
 license = "AGPL"
