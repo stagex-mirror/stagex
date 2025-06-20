@@ -1,0 +1,3 @@
+[package]
+name = "solidity"
+description = "Solidity image containing all required runtime dependencies"
