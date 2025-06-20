@@ -1,0 +1,64 @@
+FROM stagex/pallet-gcc-gnu-busybox AS build
+COPY --from=stagex/core-bzip2 . /
+COPY --from=stagex/core-icu . /
+COPY --from=stagex/core-xz . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-python . /
+
+ARG VERSION_UNDER
+ADD fetch/boost_${VERSION_UNDER}.tar.bz2 .
+WORKDIR /boost_${VERSION_UNDER}
+
+ARG CXX="g++"
+ARG CFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security"
+ARG CXXFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security"
+ARG CXXFLAGS="$CXXFLAGS -D_GLIBCXX_ASSERTIONS=1 -D_LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS=1 -D_LIBCPP_ENABLE_HARDENED_MODE=1"
+ARG LDFLAGS="-Wl,--as-needed,-O1,--sort-common"
+ARG abiflags="$(python3-config --abiflags)"
+
+RUN cat > user-config.jam <<-EOF
+        using gcc : : ${CXX} : <cflags>"${CFLAGS}" <cxxflags>"${CXXFLAGS}" <linkflags>"${LDFLAGS}" ;
+        using python : ${PY3_VERSION} : /usr/bin/python3 : /usr/include/python${PY3_VERSION}${abiflags} : : : : ${abiflags} ;
+EOF
+
+RUN --network=none <<-EOF
+	set -eux
+	PY3_FULL="$(python3 --version 2>&1 | cut -d' ' -f2)"
+	PY3_VERSION="${PY3_FULL%.*}"
+
+	(
+	 cd "./tools/build"
+	 ./bootstrap.sh --cxxflags="$CXXFLAGS $LDFLAGS"
+	)
+
+	(
+	 cd "./tools/bcp"
+	 ../build/b2 -j$(nproc)
+	)
+
+	./bootstrap.sh --with-toolset=gcc --with-icu --with-python=python3
+	./b2 \
+      --user-config=./user-config.jam \
+      --prefix=/rootfs/usr \
+			--libdir=/rootfs/usr/lib \
+			--includedir=/rootfs/usr/include \
+      variant=release \
+      python=${PY3_VERSION} \
+      toolset=gcc \
+      debug-symbols=off \
+      threading=multi \
+      runtime-link=shared \
+      link=shared,static \
+      cflags=-fno-strict-aliasing \
+      --layout=system \
+      --without-graph_parallel \
+      --without-mpi \
+      -q \
+      -j$(nproc) \
+			install
+
+			install -Dm644 -t /rootfs/usr/share/licenses/boost/ LICENSE_1_0.txt
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs /
