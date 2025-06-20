@@ -1,0 +1,37 @@
+FROM scratch AS build
+ARG VERSION
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-samurai . /
+COPY --from=stagex/core-openssl . /
+
+ADD fetch/${VERSION}.tar.gz .
+WORKDIR /range-v3-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	CC=clang
+	CXX=clang++
+	cmake -B build -G Ninja \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DBUILD_SHARED_LIBS=True \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DRANGE_V3_EXAMPLES=OFF \
+		-DRANGE_V3_PERF=OFF \
+		-DRANGE_V3_TESTS=OFF \
+		-DRANGE_V3_HEADER_CHECKS=ON \
+		-DRANGES_ENABLE_WERROR=OFF \
+		-DRANGES_NATIVE=OFF \
+		-DRANGES_DEBUG_INFO=OFF
+	ninja -C build
+	DESTDIR="/rootfs" cmake --install build
+	mv /rootfs/usr/lib64/* /rootfs/usr/lib/
+	rmdir /rootfs/usr/lib64
+	cat /rootfs/usr/lib/range-v3/range-v3-config.cmake
+	install -Dm644 -t /rootfs/usr/share/licenses/range-v3/ LICENSE.txt
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
