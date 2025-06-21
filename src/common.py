@@ -34,6 +34,7 @@ class WithVersion(object):
 @dataclass(kw_only=True)
 class SourcesInfo(WithVersion):
   hash: str
+  git_sha: str
   format: str
   file: str
   mirrors: List[str] = field(default_factory=list)
@@ -90,9 +91,9 @@ class CommonUtils(object):
       for source_name, source_description in sources_toml.items():
         source_info[source_name] = SourcesInfo(
           hash=source_description["hash"],
+          git_sha=source_description.get("git_sha", ""),
           format=source_description.get("format", ""),
           file=source_description.get("file", ""),
           mirrors=source_description["mirrors"],
           version=source_description.get("version", ""))
     return PackageInfo(name=name, origin=origin, subpackages=subpackages, version=version, platforms=platforms, sources=source_info, deps=list())
-

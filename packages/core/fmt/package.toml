@@ -1,0 +1,12 @@
+[package]
+name = "fmt"
+version = "11.2.0"
+description = "Open-source formatting library for C++"
+license = "MIT"
+website = "https://fmt.dev"
+
+[sources.fmt]
+hash = "bc23066d87ab3168f27cef3e97d545fa63314f5c79df5ea444d41d56f962c6af"
+format = "tar.gz"
+file = "fmt-{version}.{format}"
+mirrors = [ "https://github.com/fmtlib/fmt/archive/refs/tags/{version}.{format}",]
