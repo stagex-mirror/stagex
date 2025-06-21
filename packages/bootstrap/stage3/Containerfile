@@ -1,3 +1,4 @@
+# check=skip=FromPlatformFlagConstDisallowed
 FROM --platform=linux/386 stagex/bootstrap-stage2 AS build
 ARG GCC_SOURCE
 ARG GCC_VERSION
@@ -165,7 +166,7 @@ RUN --network=none <<-EOF
 	rm usr/include/headers_check.pl
 	cp -rv usr/include /build-linux
 EOF
-WORKDIR ${HOME}/go
+WORKDIR /go
 RUN --network=none <<-EOF
 	set -eux
 	cd src

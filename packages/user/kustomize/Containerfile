@@ -5,9 +5,6 @@ COPY --from=stagex/core-go . /
 COPY --from=stagex/core-ca-certificates . /
 ADD fetch/kustomize-${VERSION}.tar.gz .
 WORKDIR /kustomize-${VERSION}/kustomize
-ENV SRC_HASH=04e7b957e764ba7d32ae182d0b290e75c8785c18ab922ae6ac7087de103fd8de
-ENV SRC_FILE=v${VERSION}.tar.gz
-ENV SRC_SITE=https://github.com/kubernetes-sigs/kustomize/archive/refs/tags/${SRC_FILE}
 ENV GOPATH=/cache/go
 ENV GOCACHE=/cache/
 ENV GOWORK=off
