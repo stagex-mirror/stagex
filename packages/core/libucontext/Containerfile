@@ -1,5 +1,11 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM scratch AS build
 ARG VERSION
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-binutils . /
+
 ADD fetch/libucontext-${VERSION}.tar.xz .
 WORKDIR /libucontext-${VERSION}
 RUN --network=none <<-EOF
