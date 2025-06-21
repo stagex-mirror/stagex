@@ -16,8 +16,14 @@ for filename in glob("out/**/index.json", recursive=True):
     name = "-".join(fullname.split("-")[1:])
     if stage not in digests:
         digests[stage] = list()
+    # Get index digest from index file
     with open(filename) as file:
         data = json.load(file)
+    digest = data["manifests"][0]["digest"].split(":")[1]
+
+    # Get manifest digest from index 
+    with open(f"out/{fullname}/blobs/sha256/{digest}") as file:
+      data = json.load(file)
     digest = data["manifests"][0]["digest"].split(":")[1]
     digests[stage].append((name, digest))
 
