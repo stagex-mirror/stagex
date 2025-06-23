@@ -1,17 +1,20 @@
 #!/usr/bin/env bash
 set -eu
+
 # Generate container image signatures in PGP sigstore format
 usage() {
     printf "%s <registry|repo_url> <package name> <branch_name> [commit_message]
     To test it run: \n %s sigs.stagex.tools.git bootstrap-stage0" "$0" "$0"
     exit 1
 }
+
 check_command() {
     if [ $? -ne 0 ]; then
         echo -e "Do or do not. Something went wrong: $1."
         exit 1
     fi
 }
+
 # Check for required arguments
 if [ "$#" -lt 2 ]; then
     usage
@@ -23,6 +26,7 @@ get-primary-fp() {
     $GPG --list-keys --with-colons "$FP" | grep fpr | cut -d: -f10 | head -n1
   fi
 }
+
 # Variables
 RED='\033[0;31m' # for echo color
 NC='\033[0m' # No color
@@ -114,7 +118,8 @@ if dir-has-no-sig "$DIR" "$FPR"; then
   FILENAME="$(get-filename "$DIR")"
   printf \
       '{"critical":{"identity":{"docker-reference":"%s/%s"},"image":{"docker-manifest-digest":"%s"},"type":"atomic container signature"},"optional":{}}' \
-      "$REGISTRY" "$PACKAGE_NAME" "sha256:$MANIFEST_ID" | $GPG --sign > "$TEMPFILE"
+      "$REGISTRY" "$PACKAGE_NAME" "sha256:$MANIFEST_ID" | $GPG_SIGN --sign > "$TEMPFILE"
+  check_command "${RED}Failed to sign digest: $PACKAGE_NAME@sha256:$MANIFEST_ID"
   mv "$TEMPFILE" "$FILENAME"
 else
   echo "Nothing to do"
