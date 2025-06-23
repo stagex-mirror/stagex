@@ -42,7 +42,6 @@ SIGNATURES_SSH="git@codeberg.org:stagex/signatures.git"
 REGISTRY=${1:-stagex}
 PACKAGE_NAME=${2?}
 BRANCH_NAME="${3:-release/$RELEASE}"
-GCO_ARGS=""
 
 COMMIT_MESSAGE="${4:-Add signatures for release $RELEASE by: $SIGNER}"  
 INDEX_ID=$(cat out/"${PACKAGE_NAME}"/index.json | jq -r '.manifests[].digest | sub ("sha256:";"")')
@@ -102,14 +101,14 @@ dir-has-no-sig() {
 
 cd "signatures/$REGISTRY" || { echo "Failed to enter signatures dir"; exit 1; }
 DIR="${PACKAGE_NAME}@sha256=${MANIFEST_ID}"
-# Check if the branch already exists
-if ! git show-ref --verify --quiet "refs/heads/$BRANCH_NAME"; then
-  GCO_ARGS="-b"
+# Check if the branch already exists on the remote
+if git show-ref --verify --quiet "refs/remotes/origin/$BRANCH_NAME"; then
+  git checkout "$BRANCH_NAME"
+  check_command "${RED}Failed to check out existing branch: $BRANCH_NAME"
+else
+  git checkout -b "$BRANCH_NAME"
+  check_command "${RED}Failed to create a new branch: $BRANCH_NAME"
 fi
-
-# Create a new branch
-git checkout $GCO_ARGS "$BRANCH_NAME"
-check_command "${RED}Failed to create a new branch"
 
 if dir-has-no-sig "$DIR" "$FPR"; then
   FILENAME="$(get-filename "$DIR")"
