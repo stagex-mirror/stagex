@@ -38,7 +38,7 @@ test ! -z "$FPR"
 TEMPFILE="$(mktemp)"
 #From SIGNATURES := https://codeberg.org/stagex/sigs.stagex.tools.git from MAKEFILE
 SIGNATURES="https://codeberg.org/stagex/signatures.git"
-SIGNATURES_SSH="git@codeberg.org/stagex.signatgures.git"
+SIGNATURES_SSH="git@codeberg.org:stagex/signatures.git"
 REGISTRY=${1:-stagex}
 PACKAGE_NAME=${2?}
 BRANCH_NAME="${3:-release/$RELEASE}"
