@@ -1,0 +1,19 @@
+on:
+  pull_request_target:
+    types: [closed]
+
+jobs:
+  action-if:
+    name: Delete branch if PR was merged
+    runs-on: codeberg-tiny-lazy
+    if: |
+      github.event.pull_request.merged == true
+      && github.event.pull_request.head.repo.owner.name == 'stagex'
+      && !contains(fromJSON('["staging", "main"]'), github.event.pull_request.head.ref)
+    steps:
+      - run: |
+          curl \
+            -X DELETE \
+            -H "Content-Type: application/json" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            'https://codeberg.org/api/v1/repos/stagex/stagex/branches/${{ github.event.pull_request.head.ref }}'
