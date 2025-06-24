@@ -1,18 +1,12 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM scratch AS build
 ARG VERSION
-COPY --from=stagex/core-rust . /
-COPY --from=stagex/core-gdbm . /
-COPY --from=stagex/core-readline . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-libucontext . /
-COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-libffi . /
-COPY --from=stagex/core-libzstd . /
-COPY --from=stagex/core-linux-headers . /
-COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-yaml . /
-COPY --from=stagex/core-zlib . /
-COPY --from=stagex/core-perl . /
 ADD fetch/ruby-${VERSION}.tar.gz .
 WORKDIR /ruby-${VERSION}
 ENV LDFLAGS="-Wl,-O1 -Wl,--sort-common"

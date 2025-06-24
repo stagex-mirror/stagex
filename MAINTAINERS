@@ -56,6 +56,13 @@ matrix = "@bioinformatician_next_door:matrix.org"
 fediverse = "@bioinformatician_next_door@kafeneio.social"
 website = "https://silvertides.net"
 
+[people.logicwax]
+name = "Matthew Brooks"
+location = "San Francisco, USA"
+email = "*@logicwax.com"
+matrix = "@logicwax:matrix.org"
+website = "https://logicwax.com"
+
 [keys]
 
 [keys.lancevick.personal]
@@ -117,6 +124,15 @@ id = "8208F8E4F9D61005F5706A4E28E42797A19977AC"
 algorithm = "ED25519"
 servers = "openpgp.org"
 devices = "YubiKey 5 NFC"
+offline-ca = true
+backup = true
+interaction = true
+
+[keys.logicwax.personal]
+id = "30B0BFDBA72CDEB3E7ADBE842BDE9CDB6D0FAD15"
+algorithm = "RSA4096"
+servers = "openpgp.org"
+devices = "Yubikey 5 NFC, Yubikey 5C"
 offline-ca = true
 backup = true
 interaction = true

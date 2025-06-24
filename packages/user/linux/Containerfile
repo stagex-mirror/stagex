@@ -11,6 +11,7 @@ ENV KBUILD_BUILD_TIMESTAMP="Thu Jan  1 12:00:00 AM GMT 1970"
 COPY --chmod=775 <<-EOF /usr/bin/build-static
 	#!/bin/sh
 	set -eux
+	make olddefconfig
 	make -j "$(nproc)" bzImage
   mkdir /rootfs
 	cp .config /rootfs/linux.config
@@ -20,7 +21,7 @@ COPY --chmod=775 <<-EOF /usr/bin/build-dynamic
 	#!/bin/sh
 	set -eux
 	ARCH="$(uname -m)"
-	make defconfig
+	make olddefconfig
 	make -j "$(nproc)" bzImage
 	make -j "$(nproc)" modules INSTALL_MOD_PATH=/rootfs
 	mkdir -p /rootfs/usr/lib/modules

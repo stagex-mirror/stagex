@@ -229,10 +229,11 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
                     format=source_format,
                 )
             args.append(f"--build-arg {source_name.upper()}_SOURCE={file}")
+        if source_info.git_sha:
+            args.append(f"--build-arg {source_name.upper()}_GIT_SHA={source_info.git_sha}")
+
     return " \\\n\t  ".join(args)
 
 
 if __name__ == "__main__":
   tg = TargetGenerator()
-
-
