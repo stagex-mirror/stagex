@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
-set -eu
+set -u
 
 # Generate container image signatures in PGP sigstore format
 usage() {
     printf "%s <registry|repo_url> <package name> <branch_name> [commit_message]
     To test it run: \n %s sigs.stagex.tools.git bootstrap-stage0" "$0" "$0"
-    exit 1
+    exit 2
 }
 
 check_command() {
     if [ $? -ne 0 ]; then
-        echo -e "Do or do not. Something went wrong: $1."
-        exit 1
+        echo -e "Something went wrong: $1.$NC"
+        exit "${2:-255}"
     fi
 }
 
@@ -55,9 +55,12 @@ DIR="signatures/${REGISTRY}/${PACKAGE_NAME}@sha256=${MANIFEST_ID}"
 if [ ! -d "signatures/$REGISTRY" ]; then
   git clone "$SIGNATURES" "signatures" # Clone repo to make signatures
   check_command "Failed to clone the repository"
-  cd signatures
-  git remote set-url --push origin "${SIGNATURES_SSH}"
-  cd ..
+  git -C signatures remote set-url --push origin "${SIGNATURES_SSH}"
+else
+  if test $(($(stat -c %Y signatures/.git/FETCH_HEAD) + 60*10)) -lt $(date +%s); then
+    git -C signatures fetch
+    check_command "Failed fetch latest repo content"
+  fi
 fi
 
 mkdir -p "${DIR}"
@@ -87,7 +90,6 @@ get-signing-fp() {
 }
 
 dir-has-no-sig() {
-  echo "$DIR" >/dev/stderr
   DIR="$1"
   FP="$2"
   for file in "${DIR}"/*; do
@@ -96,7 +98,6 @@ dir-has-no-sig() {
     signing_FP="$(get-signing-fp "$file")"
     CERT_FP="$(get-primary-fp "$signing_FP")"
     if test "$FP" = "$CERT_FP"; then
-      echo "found matching signature: $file" >/dev/stderr
       return 1
     fi
   done
@@ -105,16 +106,30 @@ dir-has-no-sig() {
 
 cd "signatures/$REGISTRY" || { echo "Failed to enter signatures dir"; exit 1; }
 DIR="${PACKAGE_NAME}@sha256=${MANIFEST_ID}"
-# Check if the branch already exists on the remote
 if git show-ref --verify --quiet "refs/remotes/origin/$BRANCH_NAME"; then
-  git checkout "$BRANCH_NAME"
-  check_command "${RED}Failed to check out existing branch: $BRANCH_NAME"
+  # The remote does have a branch named after this release
+  if test "$(git rev-parse --abbrev-ref HEAD)" = "$BRANCH_NAME"; then
+    # We're on the branch already, fast-forward if we differ
+    if test ! "$(git rev-parse HEAD)" = "$(git rev-parse origin/$BRANCH_NAME)"; then
+      # Fast forward is necessary
+      git merge --ff-only "origin/$BRANCH_NAME"
+      check_command "${RED}Failed to fast-forward remote (bonus local commits?)"
+    else
+      : # We are already at the latest commit on the branch
+    fi
+  else
+    # We're not on the branch, let's set up a local based on the remote
+    git checkout "$BRANCH_NAME"
+    check_command "${RED}Failed to check out existing branch: $BRANCH_NAME"
+  fi
 else
+  # The remote does not have a branch named after this release
   git checkout -b "$BRANCH_NAME"
   check_command "${RED}Failed to create a new branch: $BRANCH_NAME"
 fi
 
 if dir-has-no-sig "$DIR" "$FPR"; then
+  echo "Signing: $DIR" >/dev/stderr
   FILENAME="$(get-filename "$DIR")"
   printf \
       '{"critical":{"identity":{"docker-reference":"%s/%s"},"image":{"docker-manifest-digest":"%s"},"type":"atomic container signature"},"optional":{}}' \
@@ -122,6 +137,5 @@ if dir-has-no-sig "$DIR" "$FPR"; then
   check_command "${RED}Failed to sign digest: $PACKAGE_NAME@sha256:$MANIFEST_ID"
   mv "$TEMPFILE" "$FILENAME"
 else
-  echo "Nothing to do"
   exit 0
 fi
