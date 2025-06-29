@@ -21,7 +21,7 @@ jobs:
     name: Building stagex on ${{ matrix.type }}
     runs-on: codeberg-small
     env:
-      GIT_SSH_COMMAND: 'ssh -i ~/.ssh/repros.key'
+      GIT_SSH_COMMAND: "ssh -i ~/.ssh/repros.key"
     strategy:
       fail-fast: false
       matrix:
@@ -41,4 +41,4 @@ jobs:
       - run: chmod 0600 ~/.ssh/repros.key
       - run: git remote add repros git@${{ matrix.host }}:repros
       - run: git checkout -b repros
-      - run: git push repros HEAD:repros
+      - run: git push repros HEAD
