@@ -21,9 +21,9 @@ RUN --network=none <<-EOF
 		--no-system-cppdap \
 		--no-system-curl \
 		--no-system-jsoncpp \
-		--generator=Ninja || cat /cmake-3.27.8/Bootstrap.cmk/cmake_bootstrap.log
+		--generator=Ninja
 	ninja
 	DESTDIR=/rootfs bin/cmake -P cmake_install.cmake
 EOF
 FROM stagex/core-filesystem AS package
-COPY --from=build /rootfs/ /
+COPY --from=build /rootfs/

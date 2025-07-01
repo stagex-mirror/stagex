@@ -1,0 +1,86 @@
+diff --git a/compiler-rt/cmake/config-ix.cmake b/compiler-rt/cmake/config-ix.cmake
+index cf729c3adb1f..6cb01948c0f2 100644
+--- a/compiler-rt/cmake/config-ix.cmake
++++ b/compiler-rt/cmake/config-ix.cmake
+@@ -8,6 +8,8 @@ include(LLVMCheckCompilerLinkerFlag)
+ include(CheckSymbolExists)
+ include(TestBigEndian)
+ 
++set(COMPILER_RT_HAS_LIBEXECINFO 0)
++
+ # The compiler driver may be implicitly trying to link against libunwind.
+ # This is normally ok (libcxx relies on an unwinder), but if libunwind is
+ # built in the same cmake invocation as compiler-rt and we're using the
+diff --git a/libcxx/include/__config b/libcxx/include/__config
+index a866a7e65183..74a2608a1fe5 100644
+--- a/libcxx/include/__config
++++ b/libcxx/include/__config
+@@ -912,6 +912,8 @@ typedef __char32_t char32_t;
+ #    define _LIBCPP_PROVIDES_DEFAULT_RUNE_TABLE
+ #  endif
+ 
++#  define _LIBCPP_PROVIDES_DEFAULT_RUNE_TABLE
++
+ #  if __has_feature(cxx_atomic) || __has_extension(c_atomic) || __has_keyword(_Atomic)
+ #    define _LIBCPP_HAS_C_ATOMIC_IMP 1
+ #    define _LIBCPP_HAS_GCC_ATOMIC_IMP 0
+diff --git a/libcxx/include/__locale b/libcxx/include/__locale
+index 93187dc1d0d9..bf1dc527c86f 100644
+--- a/libcxx/include/__locale
++++ b/libcxx/include/__locale
+@@ -15,6 +15,7 @@
+ #if _LIBCPP_HAS_LOCALIZATION
+ 
+ #include <__locale_dir/locale_base_api.h>
++#include <__locale_dir/locale_base_api/musl.h>
+ #include <__memory/shared_count.h>
+ #include <__mutex/once_flag.h>
+ #include <__type_traits/make_unsigned.h>
+diff --git a/libcxx/include/__locale_dir/locale_base_api.h b/libcxx/include/__locale_dir/locale_base_api.h
+index 9d92a5ea1f0a..3847b1cb5abf 100644
+--- a/libcxx/include/__locale_dir/locale_base_api.h
++++ b/libcxx/include/__locale_dir/locale_base_api.h
+@@ -137,6 +137,8 @@
+ #      include <__locale_dir/locale_base_api/musl.h>
+ #    endif
+ 
++#    include <__locale_dir/locale_base_api/musl.h>
++
+ #    include <__locale_dir/locale_base_api/bsd_locale_fallbacks.h>
+ 
+ #    include <__cstddef/size_t.h>
+diff --git a/libunwind/include/unwind.h b/libunwind/include/unwind.h
+index b1775d3a3dec..04e4477fa9c5 100644
+--- a/libunwind/include/unwind.h
++++ b/libunwind/include/unwind.h
+@@ -13,7 +13,7 @@
+ #ifndef __UNWIND_H__
+ #define __UNWIND_H__
+ 
+-#include <__libunwind_config.h>
++#include "__libunwind_config.h"
+ 
+ #include <stdint.h>
+ #include <stddef.h>
+@@ -58,7 +58,7 @@ typedef struct _Unwind_Context _Unwind_Context;   // opaque
+ #if defined(_LIBUNWIND_ARM_EHABI)
+ #include <unwind_arm_ehabi.h>
+ #else
+-#include <unwind_itanium.h>
++#include "unwind_itanium.h"
+ #endif
+ 
+ typedef _Unwind_Reason_Code (*_Unwind_Stop_Fn)
+diff --git a/llvm/cmake/config-ix.cmake b/llvm/cmake/config-ix.cmake
+index 767774812ade..7c9cd60524aa 100644
+--- a/llvm/cmake/config-ix.cmake
++++ b/llvm/cmake/config-ix.cmake
+@@ -17,6 +17,8 @@ include(CheckCompilerVersion)
+ include(CheckProblematicConfigurations)
+ include(HandleLLVMStdlib)
+ 
++set(HAVE_BACKTRACE 0)
++
+ if (ANDROID OR CYGWIN OR CMAKE_SYSTEM_NAME MATCHES "AIX|DragonFly|FreeBSD|Haiku|Linux|NetBSD|OpenBSD|SunOS")
+   set(HAVE_MACH_MACH_H 0)
+   set(HAVE_MALLOC_MALLOC_H 0)

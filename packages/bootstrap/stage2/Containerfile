@@ -1,165 +1,274 @@
-FROM stagex/bootstrap-stage1 AS build
+FROM scratch AS build
+ARG GCC_SOURCE
+ARG GCC_VERSION
+ARG LINUX_SOURCE
+ARG LINUX_VERSION
+ARG MUSL_SOURCE
+ARG MUSL_VERSION
+ARG BINUTILS_SOURCE
+ARG BINUTILS_VERSION
+ENV TZ=UTC
+ENV LANG=C.UTF-8
+ENV SOURCE_DATE_EPOCH=1
+ENV KCONFIG_NOTIMESTAMP=1
+ENV BASE_PATH=/usr/sbin:/usr/bin:/sbin:/bin
+ENV PATH=${BASE_PATH}
+COPY --from=fetch . .
+COPY --from=stagex/bootstrap-stage1 . /
 
-COPY <<-'EOF' /etc/profile
+RUN --network=none <<-EOF
 	set -eux
-	export MAKEFLAGS="-j$(nproc)"
-EOF
-SHELL ["/bin/sh","-l","-c"]
-
-ARG CMAKE_VERSION
-ADD fetch/cmake-${CMAKE_VERSION}.tar.gz /
-WORKDIR /cmake-${CMAKE_VERSION}/
-RUN --network=none <<-EOF
-	export CXXFLAGS="-latomic"
-	./configure --prefix=/usr
-	make install
+	tar -xf ${LINUX_SOURCE}
+	tar -xzf ${MUSL_SOURCE}
+	tar -xf ${BINUTILS_SOURCE}
+	tar -xf ${GCC_SOURCE}
+	cd gcc-${GCC_VERSION}
+	mv ../*.tar.* .; \
+	./contrib/download_prerequisites
 EOF
 
-ARG XZ_VERSION
-ADD fetch/xz-${XZ_VERSION}.tar.gz /
-WORKDIR /xz-${XZ_VERSION}
-RUN --network=none <<-EOF
-	autoreconf -fi
-	./configure --prefix=/usr
-	make install
+# Set environment variables based on target (gcc target format, like x86_64 or aarch64)
+COPY --chmod=755 <<-'EOF' /env.sh
+	export TARGET=${TARGET_ARCH}-linux-musl
+	export SYSROOT=/usr/${TARGET}
+	export PATH=${SYSROOT}/bin:${BASE_PATH}
 EOF
 
-ARG LIBUCONTEXT_VERSION
-ADD fetch/libucontext-${LIBUCONTEXT_VERSION}.tar.gz /
-WORKDIR /libucontext-libucontext-${LIBUCONTEXT_VERSION}
-RUN --network=none <<-EOF
-	make ARCH=x86 install
-EOF
+ARG TARGET_LIST="x86_64 aarch64"
 
-ARG LIBUNWIND_VERSION
-ADD fetch/libunwind-${LIBUNWIND_VERSION}.tar.gz /
-WORKDIR /libunwind-${LIBUNWIND_VERSION}
-RUN <<-EOF
-	export CFLAGS="-L/lib -L/usr/lib -latomic -llzma -lucontext"
-	autoreconf -i
-	./configure \
-		--prefix=/usr \
-		--host=i386-linux-musl \
-		--enable-cxx-exceptions
-	make install
-	install -c -m644 src/libunwind.* /usr/lib/
-EOF
-
-ARG LLVM_VERSION
-ADD fetch/llvm-${LLVM_VERSION}.tar.xz /
-WORKDIR /llvm-project-${LLVM_VERSION}.src
-ADD patches/* .
-RUN --network=none <<-EOF
-	#patch -p1 < 0001-llvm-always-set-a-larger-stack-size-explicitly.patch
-	#patch -p1 < 0002-llvm-musl-workarounds.patch
-	#patch -p1 < 0003-llvm-fix-some-MF_EXEC-related-test-failures-on-aarch.patch
-	#patch -p1 < 0004-llvm-disable-dependency-on-libexecinfo-everywhere.patch
-	#patch -p1 < 0005-compiler-rt-ppc-sanitizer-fixes.patch
-	#patch -p1 < 0006-compiler-rt-default-to-libc-for-sanitizers.patch
-	#patch -p1 < 0007-compiler-rt-build-crt-in-runtimes-build.patch
-	#patch -p1 < 0008-compiler-rt-lsan-basic-musl-fixes-on-various-archs.patch
-	#patch -p1 < 0009-compiler-rt-HACK-hwasan-build-on-x86_64.patch
-	#patch -p1 < 0010-compiler-rt-libcxx-abi-libunwind-HACK-force-fno-lto.patch
-	#patch -p1 < 0011-compiler-rt-HACK-always-compile-in-gcc_personality_v.patch
-	#patch -p1 < 0012-libc-libc-abi-libunwind-disable-multiarch-locations.patch
-	#patch -p1 < 0013-llvm-fix-isOSGlibc-thinking-musl-is-glibc.patch
-	#patch -p1 < 0014-clang-disable-multiarch-layout-on-musl.patch
-	#patch -p1 < 0015-clang-drop-incorrect-warning-about-vector-equality-r.patch
-	#patch -p1 < 0016-clang-add-fortify-include-paths-for-musl-triplets-en.patch
-	#patch -p1 < 0017-clang-use-as-needed-by-default.patch
-	#patch -p1 < 0018-clang-switch-on-default-now-relro.patch
-	#patch -p1 < 0019-clang-default-to-fno-semantic-interposition.patch
-	#patch -p1 < 0020-clang-implicitly-link-to-libatomic-on-linux-targets.patch
-	#patch -p1 < 0021-clang-use-strong-stack-protector-by-default.patch
-	#patch -p1 < 0022-clang-fix-unwind-chain-inclusion.patch
-	#patch -p1 < 0023-clang-error-when-using-ifunc-attribute-on-unsupporte.patch
-	#patch -p1 < 0024-clang-link-libcxxabi-on-linux-when-using-libc.patch
-	#patch -p1 < 0025-Get-rid-of-spurious-trailing-space-in-__clang_versio.patch
-	#patch -p1 < 0026-clang-implicitly-include-stdc-predef.h.patch
-	#patch -p1 < 0027-32-bit-musl-sanitizer-fixes.patch
-	#patch -p1 < 0028-fix-scan-build.patch
-	#patch -p1 < 0029-libcxx-default-to-type-2.patch
-	#patch -p1 < 8f66fb784291c897a965a9ee4c280e314dc8cee4.patch
-	cmake \
-		-B build \
-		-S llvm \
-		-Wno-dev \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_VERBOSE_MAKEFILE=ON \
-    -DENABLE_LINKER_BUILD_ID=ON \
-		-DLLVM_TARGET_ARCH="X86" \
-		-DLLVM_TARGETS_TO_BUILD="X86" \
-		-DLLVM_HOST_TRIPLE="i386-linux-musl" \
-		-DLLVM_RUNTIME_TARGETS="i386-linux-musl" \
-		-DLLVM_BUILTIN_TARGETS="i386-linux-musl" \
-    -DLLVM_ENABLE_PROJECTS="clang;lld" \
-    -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi;libunwind" \
-    -DLLVM_ENABLE_LIBCXX=ON \
-    -DLLVM_ENABLE_RTTI=ON \
-    -DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON \
-    -DLLVM_INSTALL_UTILS=ON \
-    -DLLVM_ENABLE_LLD=OFF \
-    -DLLVM_ENABLE_LIBXML2=OFF \
-    -DLLVM_ENABLE_LIBEDIT=OFF \
-    -DLLVM_ENABLE_LIBPFM=OFF \
-    -DLLVM_BUILD_LLVM_DYLIB=ON \
-    -DLLVM_LINK_LLVM_DYLIB=ON \
-    -DCLANG_DEFAULT_CXX_STDLIB=libc++ \
-    -DCLANG_DEFAULT_UNWINDLIB=libunwind \
-    -DCLANG_DEFAULT_RTLIB=compiler-rt \
-    -DLIBUNWIND_USE_COMPILER_RT=ON \
-		-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="i386-linux-musl" \
-    -DCOMPILER_RT_BUILD_SANITIZERS=OFF \
-    -DCOMPILER_RT_BUILD_XRAY=OFF \
-    -DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
-    -DCOMPILER_RT_BUILD_PROFILE=OFF \
-    -DCOMPILER_RT_BUILD_MEMPROF=OFF \
-    -DCOMPILER_RT_BUILD_CTX_PROFILE=OFF \
-    -DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
-    -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
-    -DCOMPILER_RT_USE_LLVM_UNWINDER=ON \
-    -DLIBCXX_CXX_ABI=libcxxabi \
-    -DLIBCXX_USE_COMPILER_RT=ON \
-    -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=OFF \
-    -DLIBCXX_HAS_MUSL_LIBC=ON \
-    -DLIBCXX_HARDENING_MODE=fast \
-    -DLIBCXXABI_USE_COMPILER_RT=ON \
-    -DLIBCXXABI_USE_LLVM_UNWINDER=ON \
-    -DLIBCXXABI_ENABLE_STATIC_UNWINDER=OFF
+# Setup sysroot
+COPY --chmod=755 <<-'EOF' /sysroot.sh
+	set -eux
+	. /env.sh
+	mkdir -p ${SYSROOT}
+	cd ${SYSROOT}
+	mkdir -pv bin lib lib32 include usr "${TARGET}/bin"
+	ln -sfv ../bin ../lib ../lib32 ../include usr
+	cd ${SYSROOT}/${TARGET}
+	ln -sfv ../lib lib
+	ln -sfv ../lib32 lib32
+	ln -sfv ../include include
 EOF
 RUN --network=none <<-EOF
-	cmake --build build -v --parallel $(nproc) || :
-	cmake --build build -v || :
+	set -eux
+	for arch in ${TARGET_LIST}; do
+		TARGET_ARCH=$arch /sysroot.sh
+	done
 EOF
-#RUN --network=none <<-EOF
-#	DESTDIR="/rootfs" cmake --install build
-#EOF
 
-FROM build as package
+# Install musl headers
+COPY --chmod=755 <<-'EOF' /musl1.sh
+	set -eux
+	. /env.sh
+	cd /musl-${MUSL_VERSION}
+	make clean distclean
+	make \
+		-j$(nproc) \
+		ARCH="${TARGET_ARCH}" \
+		prefix="" \
+		DESTDIR="${SYSROOT}" \
+		install-headers
+EOF
+RUN --network=none <<-EOF
+	set -eux
+	for arch in ${TARGET_LIST}; do
+		TARGET_ARCH=$arch /musl1.sh
+	done
+EOF
 
-#FROM stagex/bootstrap-stage1 AS package
-#COPY --from=build /rootfs/ /
-#RUN <<-'EOF'
-#	cd /usr/bin
-#	rm -rf ld cc c++ ar ranlib objdump
-#	ln -s lld ld
-#	ln -s clang cc
-#	ln -s clang++ c++
-#	ln -s llvm-ar ar
-#	ln -s llvm-ranlib ranlib
-#EOF
-#ENV PATH=/usr/sbin:/usr/bin:/sbin:/bin
-#ENV CC=/usr/bin/clang
-#ENV CXX=/usr/bin/clang++
-#ENV AR=/usr/bin/llvm-ar
-#ENV RANLIB=/usr/bin/llvm-ranlib
-#ENV READELF=/usr/bin/llvm-readelf
-#ENV OBJDUMP=/usr/bin/llvm-objdump
-#COPY <<-'EOF' /etc/profile
-#	[[ "$TARGETARCH" == "amd64" ]] && ARCH="x86_64"
-#	[[ "$TARGETARCH" == "arm64" ]] && ARCH="aarch64"
-#	export ARCH
-#	export TARGET=${ARCH}-unknown-linux-musl
-#	export MAKEFLAGS="-j$(nproc)"
-#EOF
-#SHELL ["/bin/sh","-l","-c"]
+# Build and install cross binutils
+COPY --chmod=755 <<-'EOF' /binutils.sh
+	set -eux
+	. /env.sh
+	mkdir -p /build-binutils-${TARGET_ARCH}
+	cd /build-binutils-${TARGET_ARCH}
+	/binutils-${BINUTILS_VERSION}/configure \
+		--target="${TARGET}" \
+		--prefix="" \
+		--exec-prefix="" \
+		--sbindir=/bin \
+		--libexecdir=/lib \
+		--datarootdir=/_tmp \
+		--with-sysroot=/ \
+		--with-build-sysroot="${SYSROOT}" \
+		--disable-nls \
+		--disable-multilib \
+		--disable-plugins \
+		--disable-gprofng \
+		--enable-64-bit-bfd \
+		--enable-ld=default \
+		--enable-install-libiberty \
+		--enable-deterministic-archives
+	make \
+		-j$(nproc) \
+		all-binutils \
+		all-gas \
+		all-ld
+	make \
+		-j$(nproc) \
+		DESTDIR="${SYSROOT}" \
+		install-strip-binutils \
+		install-strip-gas \
+		install-strip-ld
+EOF
+RUN --network=none <<-EOF
+	set -eux
+	for arch in ${TARGET_LIST}; do
+		TARGET_ARCH=$arch /binutils.sh
+	done
+EOF
+
+# Build and install cross gcc and bootstrap libgcc
+COPY --chmod=755 <<-'EOF' /gcc1.sh
+	set -eux
+	. /env.sh
+	mkdir -p /build-gcc-${TARGET_ARCH}
+	cd /build-gcc-${TARGET_ARCH}
+	/gcc-${GCC_VERSION}/configure \
+	--prefix="" \
+	--exec-prefix="" \
+	--sbindir=/bin \
+	--libexecdir=/lib \
+	--datarootdir=/_tmp \
+	--target=${TARGET} \
+	--disable-multilib \
+	--disable-bootstrap \
+	--disable-assembly \
+	--disable-libmudflap \
+	--disable-libsanitizer \
+	--disable-gnu-indirect-function \
+	--disable-libmpx \
+	--disable-werror \
+	--enable-languages=c,c++ \
+	--enable-tls \
+	--enable-initfini-array \
+	--enable-libstdcxx-time=rt \
+	--enable-deterministic-archives \
+	--with-build-sysroot=${SYSROOT} \
+	--with-sysroot=/
+	make \
+		-j$(nproc) \
+		all-gcc
+	make \
+		-j$(nproc) \
+		enable_shared=no \
+		all-target-libgcc
+	make \
+		-j$(nproc) \
+		DESTDIR="${SYSROOT}" \
+		install-strip-gcc \
+		install-strip-target-libgcc
+EOF
+RUN --network=none <<-EOF
+	set -eux
+	for arch in ${TARGET_LIST}; do
+		TARGET_ARCH=$arch /gcc1.sh
+	done
+EOF
+
+# Build and install cross musl
+COPY --chmod=755 <<-'EOF' /musl2.sh
+	set -eux
+	. /env.sh
+	mkdir -p /build-musl-${TARGET_ARCH}
+	cd /build-musl-${TARGET_ARCH}
+	ARCH="${TARGET_ARCH}" \
+	CC="${TARGET}-gcc" \
+	CROSS_COMPILE="${TARGET}-" \
+	LIBCC="${SYSROOT}/lib/gcc/${TARGET}/${GCC_VERSION}/libgcc.a" \
+	/musl-${MUSL_VERSION}/configure \
+		--host="${TARGET}" \
+		--prefix="" \
+		--disable-wrapper
+	make \
+		-j$(nproc) \
+		AR="${TARGET}-ar" \
+		RANLIB="${TARGET}-ranlib"
+	make \
+		-j$(nproc) \
+		AR="${TARGET}-ar" \
+		RANLIB="${TARGET}-ranlib" \
+		DESTDIR="${SYSROOT}" \
+		install-libs
+	rm -f "${SYSROOT}"/lib/ld-musl-${TARGET_ARCH}.so.1
+	cp -af \
+		"${SYSROOT}/usr/lib/libc.so" \
+		"${SYSROOT}/lib/ld-musl-${TARGET_ARCH}.so.1"
+EOF
+RUN --network=none <<-EOF
+	set -eux
+	for arch in ${TARGET_LIST}; do
+		TARGET_ARCH=$arch /musl2.sh
+	done
+EOF
+
+# Build and install final libgcc/libstdc++
+COPY --chmod=755 <<-'EOF' /gcc2.sh
+	set -eux
+	. /env.sh
+	mkdir -p /build-gcc-${TARGET_ARCH}
+	cd /build-gcc-${TARGET_ARCH}
+	make \
+		-j $(nproc) \
+		-C "${TARGET}/libgcc" \
+		distclean
+	make \
+		-j$(nproc) \
+		enable_shared=yes \
+		all-target-libgcc \
+		all-target-libstdc++-v3
+	make \
+		-j$(nproc) \
+		DESTDIR="${SYSROOT}" \
+		install-strip-target-libgcc \
+		install-strip-target-libstdc++-v3
+EOF
+RUN --network=none <<-EOF
+	set -eux
+	for arch in ${TARGET_LIST}; do
+		TARGET_ARCH=$arch /gcc2.sh
+	done
+EOF
+
+# Build and install linux headers
+COPY --chmod=755 <<-'EOF' /linux.sh
+	set -eux
+	. /env.sh
+	cp -r /linux-${LINUX_VERSION} /linux-build-${TARGET_ARCH}
+	cd /linux-build-${TARGET_ARCH}
+	set -eux
+	make -j$(nproc) ARCH="$(echo ${TARGET_ARCH} | sed 's/aarch64/arm64/')" headers
+	find usr/include ! -name '*.h' -type f -delete
+	cp -Rv usr/include/* "${SYSROOT}/include/"
+	rm -rf "${SYSROOT}/_tmp"
+EOF
+RUN --network=none <<-EOF
+	set -eux
+	for arch in ${TARGET_LIST}; do
+		TARGET_ARCH=$arch /linux.sh
+	done
+EOF
+
+# Finalize installation, copy prefixed binaries to /usr/bin
+COPY --chmod=755 <<-'EOF' /install.sh
+	set -eux
+	. /env.sh
+	rm -rf "${SYSROOT}/_tmp"
+	mkdir -p /rootfs/${SYSROOT}
+	cd /rootfs/${SYSROOT}
+	mv ${SYSROOT}/* .
+	mkdir -p /rootfs/usr/bin
+	for bin_path in $(find bin -name ${TARGET}-*); do
+		bin_name=$(basename "$bin_path")
+		ln -s ${SYSROOT}/bin/${bin_name} /rootfs/usr/bin/${bin_name}
+	done
+EOF
+RUN --network=none <<-EOF
+	set -eux
+	for arch in ${TARGET_LIST}; do
+		TARGET_ARCH=$arch /install.sh
+	done
+EOF
+
+FROM stagex/bootstrap-stage1 AS package
+COPY --from=build /rootfs/ /
