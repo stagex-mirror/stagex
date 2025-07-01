@@ -26,12 +26,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # - type: AMD
-          #   host: 37.27.131.29
-          # - type: Intel
-          #   host: 37.27.123.226
-          - type: OVH
-            host: 51.222.245.32
+          - type: AMD
+            host: 37.27.131.29
+          - type: Intel
+            host: 37.27.123.226
     steps:
       - uses: actions/checkout@v4
       - run: mkdir -p ~/.ssh
