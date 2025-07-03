@@ -1,11 +1,11 @@
 [package]
 name = "php-zts"
-version = "8.4.8"
+version = "8.4.10"
 license = "PHP-3.0.1"
 description = "A popular general-purpose scripting language that is especially suited to web development."
 
 [sources.php]
-hash = "26d5ae014925b7dee3a61ec02422795f008fbb3a36f9355edaee2d9d78b89b07"
+hash = "bd25c40ece60d1b3c879c11f517d335b8d6a872174c32ebb088b9494d8bb2cf2"
 format = "tar.gz"
 file = "php-{version}.{format}"
 mirrors = [ "https://www.php.net/distributions/{file}" ]
