@@ -1,0 +1,12 @@
+[package]
+name = "py-defusedxml"
+version = "0.7.1"
+description = "XML bomb protection for Python stdlib modules"
+license = "PSF-2.0"
+website = "https://github.com/tiran/defusedxml"
+
+[sources.py-defusedxml]
+hash = "93cdbc6c5c9d3dc08991a9804253933491a5a7f3c2d8583e54337e5469c73849"
+format = "tar.gz"
+file = "py-defusedxml-{version}.{format}"
+mirrors = [ "https://github.com/tiran/defusedxml/archive/refs/tags/v{version}.{format}",]
