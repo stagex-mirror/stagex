@@ -227,6 +227,8 @@ EOF
 
 ENV LD_LIBRARY_PATH="/rootfs/usr/lib"
 ENV LDFLAGS="-fuse-ld=/rootfs/usr/bin/ld.lld -L/rootfs/usr/lib"
+ENV LIBCC="/rootfs/usr/lib/clang/20/lib/x86_64-unknown-linux-musl/libclang_rt.builtins.a"
+ENV CFLAGS="--sysroot=$SYSROOT -fuse-ld=lld"
 ENV LIBCC_LDLAGS="--rtlib=compiler-rt"
 ENV CC=/rootfs/usr/bin/clang
 ENV CXX=/rootfs/usr/bin/clang++
@@ -243,7 +245,7 @@ RUN --network=none <<-EOF
 		--host=${TARGET}
 	make install
 	make DESTDIR=/rootfs install
-	install -D ld-musl-${ARCH}.so.1 /rootfs/usr/lib/
+  cp /rootfs/lib/ld-musl-x86_64.so.1 /rootfs/usr/lib/
 	ln -sf /usr/lib/ld-musl-${ARCH}.so.1 /rootfs/usr/bin/ldd
 	ln -sf ld-musl-${ARCH}.so.1 /rootfs/usr/lib/libc.musl-${ARCH}.so.1
 	ln -sf ld-musl-${ARCH}.so.1 /rootfs/usr/lib/libc.so
