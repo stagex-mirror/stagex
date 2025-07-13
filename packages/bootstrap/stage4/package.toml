@@ -8,6 +8,12 @@ hash = "66fb53a145648be56b46fa9e8ccade3a4d0dfc92e401e52ce76bdad1fea43d27"
 file = "cmake-{version}.tar.gz"
 mirrors = [ "https://cmake.org/files/v{version_major_minor}/{file}",]
 
+[sources.musl]
+version = "1.1.24"
+hash = "1370c9a812b2cf2a7d92802510cca0058cc37e66a7bedd70051f0a34015022a3"
+file = "musl-{version}.tar.gz"
+mirrors = ["https://musl.libc.org/releases/{file}"]
+
 [sources.llvm]
 version = "20.1.6"
 hash = "5c70549d524284c184fe9fbff862c3d2d7a61b787570611b5a30e5cc345f145e"

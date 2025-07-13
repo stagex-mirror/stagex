@@ -34,18 +34,21 @@ WORKDIR /llvm-project-${LLVM_VERSION}.src
 ADD patches/* .
 ENV CFLAGS="-fPIC"
 ENV CXXFLAGS="$CFLAGS"
-RUN --network=none <<-EOF
+COPY --chmod=755 <<-'EOF' stage1.sh
+	#!/bin/sh
+	set -eux
+	source /etc/profile
 	patch -p1 < 0001-llvm-always-set-a-larger-stack-size-explicitly.patch
 	patch -p1 < 0002-llvm-musl-workarounds.patch
 	patch -p1 < 0003-llvm-fix-some-MF_EXEC-related-test-failures-on-aarch.patch
 	patch -p1 < 0004-llvm-disable-dependency-on-libexecinfo-everywhere.patch
-	#patch -p1 < 0005-compiler-rt-ppc-sanitizer-fixes.patch
-	#patch -p1 < 0006-compiler-rt-default-to-libc-for-sanitizers.patch
-	#patch -p1 < 0007-compiler-rt-build-crt-in-runtimes-build.patch
-	#patch -p1 < 0008-compiler-rt-lsan-basic-musl-fixes-on-various-archs.patch
-	#patch -p1 < 0009-compiler-rt-HACK-hwasan-build-on-x86_64.patch
-	#patch -p1 < 0010-compiler-rt-libcxx-abi-libunwind-HACK-force-fno-lto.patch
-	#patch -p1 < 0011-compiler-rt-HACK-always-compile-in-gcc_personality_v.patch
+	patch -p1 < 0005-compiler-rt-ppc-sanitizer-fixes.patch
+	patch -p1 < 0006-compiler-rt-default-to-libc-for-sanitizers.patch
+	patch -p1 < 0007-compiler-rt-build-crt-in-runtimes-build.patch
+	patch -p1 < 0008-compiler-rt-lsan-basic-musl-fixes-on-various-archs.patch
+	patch -p1 < 0009-compiler-rt-HACK-hwasan-build-on-x86_64.patch
+	patch -p1 < 0010-compiler-rt-libcxx-abi-libunwind-HACK-force-fno-lto.patch
+	patch -p1 < 0011-compiler-rt-HACK-always-compile-in-gcc_personality_v.patch
 	patch -p1 < 0012-libc-libc-abi-libunwind-disable-multiarch-locations.patch
 	patch -p1 < 0013-llvm-fix-isOSGlibc-thinking-musl-is-glibc.patch
 	patch -p1 < 0014-clang-disable-multiarch-layout-on-musl.patch
@@ -65,161 +68,194 @@ RUN --network=none <<-EOF
 	patch -p1 < 0028-fix-scan-build.patch
 	patch -p1 < 0029-libcxx-default-to-type-2.patch
 	patch -p1 < 0030-various-musl-hacks.patch
+	patch -p1 < 0031-compiler-rt-cxx-header-build-order.patch
 	patch -p1 < 8f66fb784291c897a965a9ee4c280e314dc8cee4.patch
+	# Massive hack to force inject settings that are for some reason ignored as configure flags
+	find compiler-rt -iname CMakeLists.txt -exec sed -i '1s/^/set(COMPILER_RT_BUILD_SANITIZERS OFF)\n/' {} \;
+	find compiler-rt -iname CMakeLists.txt -exec sed -i '1s/^/set(COMPILER_RT_BUILD_GWP_ASAN OFF)\n/' {} \;
+	find compiler-rt -iname CMakeLists.txt -exec sed -i '1s/^/set(COMPILER_RT_HAS_GWP_ASAN FALSE)\n/' {} \;
+	find compiler-rt -iname *.cmake -exec sed -i '1s/^/set(COMPILER_RT_BUILD_SANITIZERS OFF)\n/' {} \;
+	find compiler-rt -iname *.cmake -exec sed -i '1s/^/set(COMPILER_RT_BUILD_GWP_ASAN OFF)\n/' {} \;
+	find compiler-rt -iname *.cmake -exec sed -i '1s/^/set(COMPILER_RT_HAS_GWP_ASAN FALSE)\n/' {} \;
+	mkdir build
 	cmake \
 		-B build \
 		-S llvm \
 		-Wno-dev \
 		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr/ \
+		-DCMAKE_INSTALL_RPATH=/usr/lib \
 		-DLLVM_TARGET_ARCH="$LLVM_TARGETS" \
 		-DLLVM_TARGETS_TO_BUILD="$LLVM_TARGETS" \
 		-DLLVM_HOST_TRIPLE="$TARGET" \
 		-DLLVM_RUNTIME_TARGETS="$TARGET" \
 		-DLLVM_BUILTIN_TARGETS="$TARGET" \
 		-DLLVM_ENABLE_PROJECTS="clang;lld" \
-		-DLLVM_ENABLE_RUNTIMES="libunwind;libcxx;libcxxabi" \
-		-DLLVM_INSTALL_UTILS=ON \
+		-DLLVM_ENABLE_RUNTIMES="compiler-rt;libunwind;libcxx;libcxxabi" \
+		-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON \
 		-DLLVM_ENABLE_LIBXML2=OFF \
 		-DLLVM_ENABLE_LIBEDIT=OFF \
 		-DLLVM_ENABLE_LIBPFM=OFF \
+		-DLLVM_ENABLE_LIBCXX=ON \
+		-DLLVM_BUILD_LLVM_DYLIB=ON \
+		-DLLVM_LINK_LLVM_DYLIB=ON \
+		-DLLVM_ENABLE_RTTI=ON \
+		-DLLVM_INSTALL_UTILS=ON \
+		-DLLVM_INSTALL_BINUTILS_SYMLINKS=ON \
+    -DCLANG_CONFIG_FILE_SYSTEM_DIR=/etc/clang \
 		-DCLANG_ENABLE_BOOTSTRAP=ON \
+		-DCLANG_DEFAULT_RTLIB=compiler-rt \
 		-DCLANG_DEFAULT_UNWINDLIB=libunwind \
+		-DCLANG_DEFAULT_CXX_STDLIB=libc++ \
 		-DLIBCXX_HAS_MUSL_LIBC=ON \
 		-DLIBCXX_CXX_ABI=libcxxabi \
+		-DLIBCXX_USE_COMPILER_RT=ON \
 		-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=OFF \
 		-DLIBCXX_HAS_MUSL_LIBC=ON \
 		-DLIBCXX_HARDENING_MODE=fast \
 		-DLIBCXX_ENABLE_LOCALIZATION=OFF \
 		-DLIBCXX_ENABLE_FILESYSTEM=OFF \
+		-DLIBCXXABI_ENABLE_STATIC_UNWINDER=OFF \
 		-DLIBCXXABI_USE_LLVM_UNWINDER=ON \
-		-DLIBCXXABI_ENABLE_STATIC_UNWINDER=OFF
-	cmake --build build --parallel $(nproc) || :
-	touch foo
+    -DLIBCXXABI_USE_COMPILER_RT=ON \
+		-DLIBUNWIND_USE_COMPILER_RT=ON \
+		-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="$TARGET" \
+		-DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
+		-DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
+		-DCOMPILER_RT_BUILD_GWP_ASAN=OFF \
+		-DCOMPILER_RT_HAS_GWP_ASAN=FALSE \
+		-DCOMPILER_RT_BUILD_SANITIZERS=OFF \
+		-DCOMPILER_RT_BUILD_XRAY=OFF \
+		-DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
+		-DCOMPILER_RT_BUILD_PROFILE=OFF \
+		-DCOMPILER_RT_BUILD_MEMPROF=OFF \
+		-DCOMPILER_RT_BUILD_CTX_PROFILE=OFF \
+		-DCOMPILER_RT_TEST_COMPILER=OFF \
+		-DCOMPILER_RT_TEST_CXX_COMPILER=OFF
+	cmake --build build -v --parallel $(nproc)
+  cmake --install build
+	rm /usr/bin/ld /usr/bin/c++
+  ln -s /usr/bin/ld.lld /usr/bin/ld
+  ln -s /usr/bin/clang /usr/bin/cc
+  ln -s /usr/bin/clang++ /usr/bin/c++
 EOF
-#		-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="$TARGET" \
-#		-DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
-#		-DCOMPILER_RT_BUILD_SANITIZERS=OFF \
-#		-DCOMPILER_RT_BUILD_XRAY=OFF \
-#		-DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
-#		-DCOMPILER_RT_BUILD_PROFILE=OFF \
-#		-DCOMPILER_RT_BUILD_MEMPROF=OFF \
-#		-DCOMPILER_RT_BUILD_CTX_PROFILE=OFF \
+RUN --network=none ./stage1.sh
 
+COPY --chmod=755 <<-'EOF' stage2.sh
+	#!/bin/sh
+	set -eux
+	source /etc/profile
+  export LDFLAGS="-fuse-ld=/usr/bin/ld.lld"
+	rm -rf build/*
+	cmake \
+		-B build \
+		-S llvm \
+		-Wno-dev \
+		-DCMAKE_AR=/usr/bin/llvm-ar \
+		-DCMAKE_NM=/usr/bin/llvm-nm \
+		-DCMAKE_RANLIB=/usr/bin/llvm-ranlib \
+		-DCMAKE_C_COMPILER=/usr/bin/clang \
+		-DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
+    -DLLVM_NATIVE_TOOL_DIR=/usr/bin/ \
+    -DLLVM_CONFIG_PATH=/usr/bin/llvm-config \
+    -DLLVM_TABLEGEN=/usr/bin/llvm-tblgen \
+    -DLLVM_HEADERS_TABLEGEN=/usr/bin/llvm-tblgen \
+    -DCLANG_TABLEGEN=/usr/bin/clang-tblgen \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_RPATH=/usr/lib \
+		-DLLVM_TARGET_ARCH="$LLVM_TARGETS" \
+		-DLLVM_TARGETS_TO_BUILD="$LLVM_TARGETS" \
+		-DLLVM_HOST_TRIPLE="$TARGET" \
+		-DLLVM_RUNTIME_TARGETS="$TARGET" \
+		-DLLVM_BUILTIN_TARGETS="$TARGET" \
+		-DLLVM_ENABLE_PROJECTS="clang;lld" \
+		-DLLVM_ENABLE_RUNTIMES="compiler-rt;libunwind;libcxx;libcxxabi" \
+		-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON \
+		-DLLVM_ENABLE_LIBXML2=OFF \
+		-DLLVM_ENABLE_LIBEDIT=OFF \
+		-DLLVM_ENABLE_LIBPFM=OFF \
+		-DLLVM_ENABLE_LIBCXX=ON \
+    -DLLVM_ENABLE_LLD=ON \
+		-DLLVM_BUILD_LLVM_DYLIB=ON \
+		-DLLVM_LINK_LLVM_DYLIB=ON \
+		-DLLVM_ENABLE_RTTI=ON \
+		-DLLVM_INSTALL_UTILS=ON \
+		-DLLVM_INSTALL_BINUTILS_SYMLINKS=ON \
+    -DCLANG_CONFIG_FILE_SYSTEM_DIR=/etc/clang \
+		-DCLANG_DEFAULT_RTLIB=compiler-rt \
+		-DCLANG_DEFAULT_UNWINDLIB=libunwind \
+		-DCLANG_DEFAULT_CXX_STDLIB=libc++ \
+		-DLIBCXX_HAS_MUSL_LIBC=ON \
+		-DLIBCXX_CXX_ABI=libcxxabi \
+		-DLIBCXX_USE_COMPILER_RT=ON \
+		-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=OFF \
+		-DLIBCXX_HAS_MUSL_LIBC=ON \
+		-DLIBCXX_HARDENING_MODE=fast \
+		-DLIBCXX_ENABLE_LOCALIZATION=OFF \
+		-DLIBCXX_ENABLE_FILESYSTEM=OFF \
+		-DLIBCXXABI_ENABLE_STATIC_UNWINDER=OFF \
+		-DLIBCXXABI_USE_LLVM_UNWINDER=ON \
+    -DLIBCXXABI_USE_COMPILER_RT=ON \
+		-DLIBUNWIND_USE_COMPILER_RT=ON \
+		-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="$TARGET" \
+		-DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
+		-DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
+		-DCOMPILER_RT_BUILD_GWP_ASAN=OFF \
+		-DCOMPILER_RT_HAS_GWP_ASAN=FALSE \
+		-DCOMPILER_RT_BUILD_SANITIZERS=OFF \
+		-DCOMPILER_RT_BUILD_XRAY=OFF \
+		-DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
+		-DCOMPILER_RT_BUILD_PROFILE=OFF \
+		-DCOMPILER_RT_BUILD_MEMPROF=OFF \
+		-DCOMPILER_RT_BUILD_CTX_PROFILE=OFF \
+		-DCOMPILER_RT_TEST_COMPILER=OFF \
+		-DCOMPILER_RT_TEST_CXX_COMPILER=OFF
+	cmake --build build -v --parallel $(nproc)
+EOF
+RUN --network=none ./stage2.sh
 
-FROM build AS package
+RUN --network=none <<-EOF
+	DESTDIR=/rootfs/ cmake --install build
+	install -D /bin/busybox /rootfs/usr/bin/busybox
+	/rootfs/usr/bin/busybox --install /rootfs/usr/bin
+  ln -s ld.lld /rootfs/usr/bin/ld
+	ln -s llvm-as /rootfs/usr/bin/as
+  ln -s clang /rootfs/usr/bin/cc
+  ln -s clang++ /rootfs/usr/bin/c++
+EOF
 
-#ENV CC=clang
-#ENV CXX=clang++
-#ENV CPP="clang-cpp"
-#ENV AS="clang -c"
-#ENV AR=llvm-ar
-#ENV RANLIB=llvm-ranlib
-#
-#
-#RUN rm -rf /llvm-project-${LLVM_VERSION}.src
-#ADD fetch/llvm-${LLVM_VERSION}.tar.xz /
-#WORKDIR /llvm-project-${LLVM_VERSION}.src
-#ADD patches/* .
-#RUN --network=none <<-EOF
-## Chimera patchset
-##	patch -p1 < 0001-llvm-always-set-a-larger-stack-size-explicitly.patch
-##	patch -p1 < 0002-llvm-musl-workarounds.patch
-##	patch -p1 < 0003-llvm-fix-some-MF_EXEC-related-test-failures-on-aarch.patch
-#patch -p1 < 0004-llvm-disable-dependency-on-libexecinfo-everywhere.patch
-##	patch -p1 < 0005-compiler-rt-ppc-sanitizer-fixes.patch
-##	patch -p1 < 0006-compiler-rt-default-to-libc-for-sanitizers.patch
-##	patch -p1 < 0007-compiler-rt-build-crt-in-runtimes-build.patch
-##	patch -p1 < 0008-compiler-rt-lsan-basic-musl-fixes-on-various-archs.patch
-##	patch -p1 < 0009-compiler-rt-HACK-hwasan-build-on-x86_64.patch
-##	patch -p1 < 0010-compiler-rt-libcxx-abi-libunwind-HACK-force-fno-lto.patch
-##	patch -p1 < 0011-compiler-rt-HACK-always-compile-in-gcc_personality_v.patch
-##	patch -p1 < 0012-libc-libc-abi-libunwind-disable-multiarch-locations.patch
-##	patch -p1 < 0013-llvm-fix-isOSGlibc-thinking-musl-is-glibc.patch
-##	patch -p1 < 0014-clang-disable-multiarch-layout-on-musl.patch
-##	patch -p1 < 0015-clang-drop-incorrect-warning-about-vector-equality-r.patch
-##	patch -p1 < 0016-clang-add-fortify-include-paths-for-musl-triplets-en.patch
-##	patch -p1 < 0017-clang-use-as-needed-by-default.patch
-##	patch -p1 < 0018-clang-switch-on-default-now-relro.patch
-##	patch -p1 < 0019-clang-default-to-fno-semantic-interposition.patch
-##	patch -p1 < 0020-clang-implicitly-link-to-libatomic-on-linux-targets.patch
-##	patch -p1 < 0021-clang-use-strong-stack-protector-by-default.patch
-##	patch -p1 < 0022-clang-fix-unwind-chain-inclusion.patch
-##	patch -p1 < 0023-clang-error-when-using-ifunc-attribute-on-unsupporte.patch
-##	patch -p1 < 0024-clang-link-libcxxabi-on-linux-when-using-libc.patch
-##	patch -p1 < 0025-Get-rid-of-spurious-trailing-space-in-__clang_versio.patch
-##	patch -p1 < 0026-clang-implicitly-include-stdc-predef.h.patch
-##	patch -p1 < 0027-32-bit-musl-sanitizer-fixes.patch
-##	patch -p1 < 0028-fix-scan-build.patch
-##	patch -p1 < 0029-libcxx-default-to-type-2.patch
-##	patch -p1 < 8f66fb784291c897a965a9ee4c280e314dc8cee4.patch
-#	cmake \
-#		-B build \
-#		-S llvm \
-#		-Wno-dev \
-#		-DCMAKE_BUILD_TYPE=Release \
-#		-DCLANG_DEFAULT_UNWINDLIB=libunwind \
-#    -DCLANG_DEFAULT_RTLIB=compiler-rt \
-#    -DCLANG_DEFAULT_CXX_STDLIB=libc++ \
-#		-DCMAKE_VERBOSE_MAKEFILE=ON \
-#		-DLLVM_TARGET_ARCH="$LLVM_TARGETS" \
-#		-DLLVM_TARGETS_TO_BUILD="$LLVM_TARGETS" \
-#		-DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi;libunwind" \
-#		-DLLVM_ENABLE_PROJECTS="clang;lld" \
-#		-DLLVM_INSTALL_UTILS=ON \
-#		-DLLVM_ENABLE_LIBXML2=OFF \
-#		-DLLVM_ENABLE_LIBEDIT=OFF \
-#		-DLLVM_ENABLE_LIBPFM=OFF \
-#    -DLLVM_ENABLE_LLD=ON \
-#    -DLLVM_ENABLE_LIBCXX=ON \
-#    -DLIBUNWIND_USE_COMPILER_RT=ON \
-#		-DCOMPILER_RT_BUILD_SANITIZERS=OFF \
-#		-DCOMPILER_RT_BUILD_XRAY=OFF \
-#		-DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
-#		-DCOMPILER_RT_BUILD_PROFILE=OFF \
-#		-DCOMPILER_RT_BUILD_MEMPROF=OFF \
-#		-DCOMPILER_RT_BUILD_CTX_PROFILE=OFF \
-#		-DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
-#		-DCOMPILER_RT_USE_LLVM_UNWINDER=ON \
-#		-DLIBCXX_CXX_ABI=libcxxabi \
-#		-DLIBCXX_USE_COMPILER_RT=ON \
-#		-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=OFF \
-#		-DLIBCXX_HAS_MUSL_LIBC=ON \
-#		-DLIBCXX_HARDENING_MODE=fast \
-#		-DLIBCXXABI_USE_COMPILER_RT=ON \
-#		-DLIBCXXABI_USE_LLVM_UNWINDER=ON \
-#		-DLIBCXXABI_ENABLE_STATIC_UNWINDER=OFF \
-#		-DLIBCXX_HAS_MUSL_LIBC=ON
-#EOF
-#RUN --network=none <<-EOF
-#	cmake --build build -v --parallel $(nproc)
-#	DESTDIR="/rootfs" cmake --install build
-#EOF
-#
-#from build as package
-#
-#FROM stagex/bootstrap-stage1 AS package
-#COPY --from=build /rootfs/ /
-#RUN <<-'EOF'
-#	cd /usr/bin
-#	rm -rf ld cc c++ ar ranlib objdump
-#	ln -s lld ld
-#	ln -s clang cc
-#	ln -s clang++ c++
-#	ln -s llvm-ar ar
-#	ln -s llvm-ranlib ranlib
-#EOF
-#ENV PATH=/usr/sbin:/usr/bin:/sbin:/bin
-#ENV CC=/usr/bin/clang
-#ENV CXX=/usr/bin/clang++
-#ENV AR=/usr/bin/llvm-ar
-#ENV RANLIB=/usr/bin/llvm-ranlib
-#ENV READELF=/usr/bin/llvm-readelf
-#ENV OBJDUMP=/usr/bin/llvm-objdump
-#COPY <<-'EOF' /etc/profile
-#	[[ "$TARGETARCH" == "amd64" ]] && ARCH="x86_64"
-#	[[ "$TARGETARCH" == "arm64" ]] && ARCH="aarch64"
-#	export ARCH
-#	export TARGET=${ARCH}-unknown-linux-musl
-#	export MAKEFLAGS="-j$(nproc)"
-#EOF
-#SHELL ["/bin/sh","-l","-c"]
+ENV LD_LIBRARY_PATH="/rootfs/usr/lib"
+ENV LDFLAGS="-fuse-ld=/rootfs/usr/bin/ld.lld -L/rootfs/usr/lib"
+ENV LIBCC_LDLAGS="--rtlib=compiler-rt"
+ENV CC=/rootfs/usr/bin/clang
+ENV CXX=/rootfs/usr/bin/clang++
+ENV CPP="/rootfs/usr/bin/clang-cpp"
+ENV AS="/rootfs/usr/bin/clang -c"
+ENV AR=/rootfs/usr/bin/llvm-ar
+ENV RANLIB=/rootfs/usr/bin/llvm-ranlib
+ARG MUSL_VERSION
+ADD fetch/musl-${MUSL_VERSION}.tar.gz /
+WORKDIR /musl-${MUSL_VERSION}
+RUN --network=none <<-EOF
+	./configure \
+		--prefix=/usr \
+		--host=${TARGET}
+	make install
+	make DESTDIR=/rootfs install
+	install -D ld-musl-${ARCH}.so.1 /rootfs/usr/lib/
+	ln -sf /usr/lib/ld-musl-${ARCH}.so.1 /rootfs/usr/bin/ldd
+	ln -sf ld-musl-${ARCH}.so.1 /rootfs/usr/lib/libc.musl-${ARCH}.so.1
+	ln -sf ld-musl-${ARCH}.so.1 /rootfs/usr/lib/libc.so
+EOF
+
+FROM scratch as package
+COPY --from=build /rootfs/ /
+ENV LDFLAGS="-fuse-ld=lld"
+ENV CC=clang
+ENV CXX=clang++
+ENV CPP="clang-cpp"
+ENV AS="clang -c"
+ENV AR=llvm-ar
+ENV RANLIB=llvm-ranlib
+SHELL ["/bin/sh","-l","-c"]
