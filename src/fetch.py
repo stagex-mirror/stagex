@@ -1,9 +1,12 @@
 #!/usr/bin/python3
 import glob
+from http.client import HTTPMessage
 import os
 import sys
 import time
 import signal
+import socket
+import urllib.error
 from functools import partial
 from common import CommonUtils
 from pathlib import Path
@@ -16,7 +19,7 @@ from typing import Tuple
 
 # fmt: off
 class ResourceFetcher(object):
-  START_TIME: 0
+  START_TIME: float = 0
   def __init__(self, package_file_path: str):
     self.package_file: str = package_file_path
 
@@ -75,7 +78,8 @@ class ResourceFetcher(object):
         print(f"Mirror: {url}")
         try:
           ResourceFetcher.download(url, filepath)
-        except:
+        except (socket.gaierror, urllib.error.URLError) as err:
+          print(f'Error: {err}')
           error = (file, source_info.hash, url, "download")
           print("Failed downloading from mirror")
           continue
@@ -107,7 +111,7 @@ class ResourceFetcher(object):
     sys.stdout.flush()
 
   @staticmethod
-  def download(url: str, filename: str = None):
+  def download(url: str, filename: str | Path | None = None):
       if not filename:
           remotefile = urlopen(url)
           filename_header = remotefile.info()["Content-Disposition"]
