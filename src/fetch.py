@@ -1,22 +1,31 @@
+#!/usr/bin/python3
+from genericpath import exists
 #!/usr/bin/env python3
 import glob
+from http.client import HTTPMessage
 import os
 import sys
+import tempfile
 import time
 import signal
+import socket
+import shutil
+import urllib.error
+import urllib
+import urllib.request
 from functools import partial
 from common import CommonUtils
 from pathlib import Path
 from hashlib import file_digest
 from urllib.parse import urlsplit
-from urllib.request import build_opener, install_opener, urlopen, urlretrieve
+from urllib.request import build_opener, urlopen
 from email.message import Message
 from typing import List
 from typing import Tuple
 
 # fmt: off
 class ResourceFetcher(object):
-  START_TIME: 0
+  START_TIME: float = 0
   def __init__(self, package_file_path: str):
     self.package_file: str = package_file_path
 
@@ -75,7 +84,8 @@ class ResourceFetcher(object):
         print(f"Mirror: {url}")
         try:
           ResourceFetcher.download(url, filepath)
-        except:
+        except (socket.gaierror, urllib.error.URLError) as err:
+          print(f'Error: {err}')
           error = (file, source_info.hash, url, "download")
           print("Failed downloading from mirror")
           continue
@@ -107,7 +117,7 @@ class ResourceFetcher(object):
     sys.stdout.flush()
 
   @staticmethod
-  def download(url: str, filename: str = None):
+  def download(url: str, filename: str | Path | None = None):
       if not filename:
           remotefile = urlopen(url)
           filename_header = remotefile.info()["Content-Disposition"]
@@ -120,8 +130,13 @@ class ResourceFetcher(object):
               filename = split.path.split(os.path.sep)[-1]
       opener = build_opener()
       opener.addheaders = [("Accept", "*/*"), ("User-agent", "Wget/1.21.3 (linux-gnu)")]
-      install_opener(opener)
-      urlretrieve(url, filename, ResourceFetcher.download_status_hook)
+      req = urllib.request.Request(url, headers={'User-Agent': "Wget/1.21.3 (linux-gnu)"})
+      print(f"Downloading {url} to {filename}")
+      with opener.open(req) as response:
+        Path(filename).unlink(missing_ok=True)
+        Path(filename).parent.mkdir(parents=True, exist_ok=True)
+        with open(filename, "x+b") as f:
+          shutil.copyfileobj(response, f)
 
   @staticmethod
   def verify(file_path: Path, expected_digest: str) -> bool:
