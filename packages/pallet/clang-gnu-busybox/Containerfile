@@ -11,5 +11,3 @@ COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-flex . /
 COPY --from=stagex/core-bison . /
 COPY --from=stagex/core-m4 . /
-
-
