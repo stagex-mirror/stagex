@@ -19,6 +19,7 @@ RUN --network=none <<-EOF
 	make
 	make install DESTDIR=/rootfs
 	mv cert.pem /rootfs/etc/ssl/certs/ca-certificates.crt
+	ln -s certs/ca-certificate.crt /rootfs/etc/ssl/cert.pem
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
