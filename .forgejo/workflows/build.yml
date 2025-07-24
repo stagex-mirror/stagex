@@ -32,6 +32,8 @@ jobs:
             #  host: 37.27.123.226
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - run: mkdir -p ~/.ssh
       - run: chmod 0700 ~/.ssh
       - run: ssh-keyscan ${{ matrix.host }} | tee ~/.ssh/known_hosts
