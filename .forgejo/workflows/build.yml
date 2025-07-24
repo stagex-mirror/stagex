@@ -38,5 +38,5 @@ jobs:
       - run: echo "${{ secrets.SSH_KEY_REPROS }}" > ~/.ssh/repros.key
       - run: chmod 0600 ~/.ssh/repros.key
       - run: git remote add repros git@${{ matrix.host }}:repros
-      - run: git checkout -b ${{ github.event.pull_request.head.ref }}
+      # - run: git checkout -b ${{ github.event.pull_request.head.ref }}
       - run: git push repros HEAD -f
