@@ -62,7 +62,7 @@ git config commit.gpgsign true
 
 ## Release Branches
 
-Release branches take the format `YYYY.MM.release`. A release **MUST** include a
+Release branches take the format `release/YYYY.MM.<release-revision>`. A release **MUST** include a
 PR to staging to introduce a bump to `digests.txt`, creating the release
 branch. Once the branch is created, other maintainers **MAY** begin reproducing.
 The release engineer should run `make sign` to ensure a signature exists for
