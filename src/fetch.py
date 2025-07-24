@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-from genericpath import exists
 import glob
 from http.client import HTTPMessage
 import os
@@ -17,7 +16,7 @@ from common import CommonUtils
 from pathlib import Path
 from hashlib import file_digest
 from urllib.parse import urlsplit
-from urllib.request import build_opener, install_opener, urlopen, urlretrieve
+from urllib.request import build_opener, urlopen
 from email.message import Message
 from typing import List
 from typing import Tuple
