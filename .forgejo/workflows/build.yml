@@ -19,7 +19,7 @@ concurrency:
 jobs:
   build:
     name: Building stagex on ${{ matrix.type }}
-    runs-on: codeberg-small
+    runs-on: shell
     env:
       GIT_SSH_COMMAND: "ssh -i ~/.ssh/repros.key"
     strategy:
