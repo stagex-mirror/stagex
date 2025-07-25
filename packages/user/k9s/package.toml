@@ -1,11 +1,12 @@
 [package]
 name = "k9s"
-version = "0.50.4"
+version = "0.50.7"
 description = "Kubernetes CLI To Manage Your Clusters In Style!"
 license = "Apache-2.0"
+website = "https://github.com/derailed/k9s"
 
 [sources.k9s]
-hash = "4f7f6702145b0eea2f42c684ff823aa261bc80b1a3b2a33b56fb6f87d7755c73"
+hash = "8e40e0bbd275eed5260b4c82275d1cdf32135b8cada247a8c13e510792e7f203"
 format = "tar.gz"
 file = "k9s-{version}.{format}"
 mirrors = [ "https://github.com/derailed/k9s/archive/refs/tags/v{version}.{format}",]

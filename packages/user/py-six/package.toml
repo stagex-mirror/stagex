@@ -1,10 +1,12 @@
 [package]
 name = "py-six"
-version = "1.16.0"
-description = "TODO"
+version = "1.17.0"
+description = "Python 2 and 3 compatibility utilities"
+website = "https://pypi.python.org/pypi/six/"
+license = "MIT"
 
 [sources.py-six]
-hash = "1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"
+hash = "ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81"
 format = "tar.gz"
 file = "py-six-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/s/six/six-{version}.{format}",]

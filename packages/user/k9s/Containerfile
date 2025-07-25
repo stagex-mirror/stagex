@@ -20,6 +20,7 @@ RUN --network=none <<-EOF
 	go build -trimpath -o k9s -v main.go
 	mkdir -p /rootfs/usr/bin/
 	cp k9s /rootfs/usr/bin/
+	install -D -m0644 -t /rootfs/usr/share/licenses/k9s/ LICENSE
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs// /

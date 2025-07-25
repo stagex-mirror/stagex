@@ -23,7 +23,7 @@ clean_logs := $(shell rm *.log 2>&1 >/dev/null || :)
 
 DEFAULT_GOAL := default
 .PHONY: default
-default: compat targets all
+default: targets all
 
 .PHONY: all check compat digests preseed fetch verify sign targets help
 

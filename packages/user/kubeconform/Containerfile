@@ -20,6 +20,7 @@ RUN <<-EOF
 	go build -o bin/ -trimpath -v ./...
 	mkdir -p /rootfs/usr/bin/
 	cp bin/kubeconform /rootfs/usr/bin/
+	install -D -m0644 -t /rootfs/usr/share/licenses/kubeconform/ LICENSE
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

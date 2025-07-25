@@ -1,0 +1,24 @@
+FROM scratch AS build
+ARG VERSION
+COPY --from=stagex/pallet-python . /
+COPY --from=stagex/core-py-build . /
+COPY --from=stagex/core-py-dateutil . /
+COPY --from=stagex/core-py-installer . /
+COPY --from=stagex/core-py-pep517 . /
+COPY --from=stagex/core-py-setuptools . /
+COPY --from=stagex/core-py-toml . /
+COPY --from=stagex/core-py-wheel . /
+COPY --from=stagex/user-py-pytz . /
+COPY --from=stagex/user-py-six . /
+ADD fetch/py-vobject-${VERSION}.tar.gz .
+WORKDIR /vobject-${VERSION}/
+RUN --network=none <<-EOF
+  set -eu
+  python setup.py install -O1 --root=/rootfs
+  install -vDm 644 ACKNOWLEDGEMENTS.txt -t /rootfs/usr/share/py-vobject/ACKNOWLEDGEMENTS.txt
+  install -vDm 644 README.md -t /rootfs/usr/share/py-vobject/README.md
+  find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+EOF
+
+FROM stagex/core-filesystem AS package 
+COPY --from=build /rootfs /

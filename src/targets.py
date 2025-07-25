@@ -81,7 +81,8 @@ registry-{stage}-{name}:
 .PHONY: publish-{stage}-{name}
 publish-{stage}-{name}: out/{stage}-{name}/index.json
 \t [ "$(RELEASE)" != "0" ] || {{ echo "Error: RELEASE is not set"; exit 1; }}
-\t digest="$$(jq -r '.manifests[0].digest | split(":")[1]' out/{stage}-{name}/index.json)"; \\
+\t index_digest="$$(jq -r '.manifests[0].digest | split(":")[1]' out/{stage}-{name}/index.json)"; \\
+\t digest="$$(jq -r '.manifests[0].digest | split(":")[1]' out/{stage}-{name}/blobs/sha256/$${{index_digest}})"; \\
 \t signum="$$(ls -1 signatures/stagex/{stage}-{name}@sha256=$${{digest}} | wc -l )"; \\
 \t [ $${{signum}} -ge 2 ] || {{ echo "Error: Minimum signatures not met for {stage}-{name}"; exit 1; }}; \\
 \t env -C out/{stage}-{name} tar -cf - . | docker load
@@ -102,6 +103,7 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
   def __init__(self):
     self.packages: MutableMapping[str, MutableMapping[str, PackageInfo]] = dict[str, MutableMapping[str, PackageInfo]]()
     self.init_packages("packages")
+    self.resolve_versions()
 
     for stage, stage_packages in self.packages.items():
       print(f"\n\n.PHONY: {stage}\n{stage}:", end="")
@@ -187,6 +189,18 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
               self.packages[stage][subpackage].subpackages = []
           else:
             self.packages[stage][name] = package_info
+    self.resolve_versions()
+
+
+  # Small util function to resolve "version_from" in package info
+  def resolve_versions(self):
+    for stage in self.packages:
+      for package_name in self.packages[stage]:
+        if self.packages[stage][package_name].version_from:
+          # If we have a "version_from" in package info, grab the version from the target and set it
+          target_stage, target_name = self.packages[stage][package_name].version_from.split("-")
+          self.packages[stage][package_name].version = self.packages[target_stage][target_name].version
+
 
   @staticmethod
   def get_context_args(package: PackageInfo, stage: str, name: str, use_registry: bool) -> str:

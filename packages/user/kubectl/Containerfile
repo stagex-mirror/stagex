@@ -23,4 +23,4 @@ RUN --network=none <<-EOF
 	cp kubectl /rootfs/usr/bin/
 EOF
 FROM stagex/core-filesystem AS package
-COPY --from=build /rootfs// /
+COPY --from=build /rootfs/ /

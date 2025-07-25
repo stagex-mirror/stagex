@@ -49,7 +49,8 @@ RUN --network=none <<-EOF
 		-DLLVM_INCLUDE_EXAMPLES=OFF \
 		-DLLVM_INSTALL_UTILS=ON \
 		-DLLVM_LINK_LLVM_DYLIB=ON \
-		-DLLVM_USE_PERF=ON
+		-DLLVM_USE_PERF=ON \
+		-DLLVM_RAM_PER_LINK_JOB=10000
 	cmake --build build
 	python3 llvm/utils/lit/setup.py build
 	DESTDIR="/rootfs" cmake --install build
