@@ -95,6 +95,7 @@ RUN --network=none <<-EOF
 	make -j "$(nproc)"
 	make INSTALL_ROOT=/rootfs install
 	rm -rf /rootfs/var/run
+	install -vDm644 -t /rootfs/usr/share/licenses/php-zts LICENSE
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
