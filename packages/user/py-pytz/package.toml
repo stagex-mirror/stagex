@@ -1,0 +1,12 @@
+[package]
+name = "py-pytz"
+version = "2025.2"
+description = "Cross platform time zone library for Python"
+license = "MIT"
+website = "https://pypi.python.org/pypi/pytz"
+
+[sources.py-pytz]
+hash = "360b9e3dbb49a209c21ad61809c7fb453643e048b38924c765813546746e81c3"
+format = "tar.gz"
+file = "py-pytz-{version}.{format}"
+mirrors = [ "https://pypi.io/packages/source/p/pytz/pytz-{version}.{format}",]
