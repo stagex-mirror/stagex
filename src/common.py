@@ -10,6 +10,7 @@ from typing import MutableMapping
 @dataclass()
 class WithVersion(object):
   version: str = field(default_factory=str)
+  version_from: str = field(default_factory=str)
 
   @property
   def version_under(self) -> str:
@@ -80,7 +81,8 @@ class CommonUtils(object):
 
   @staticmethod
   def parse_package_toml_no_deps(toml_dict: MutableMapping[str, Any]) -> PackageInfo:
-    version: str = toml_dict["package"].get("version", None)
+    version: str = toml_dict["package"].get("version", None) 
+    version_from: str = toml_dict["package"].get("version_from", None)
     name: str = toml_dict["package"]["name"]
     origin: str = None
     platforms: list = toml_dict["package"].get("platforms",[])
@@ -96,4 +98,4 @@ class CommonUtils(object):
           file=source_description.get("file", ""),
           mirrors=source_description["mirrors"],
           version=source_description.get("version", ""))
-    return PackageInfo(name=name, origin=origin, subpackages=subpackages, version=version, platforms=platforms, sources=source_info, deps=list())
+    return PackageInfo(name=name, origin=origin, subpackages=subpackages, version=version, version_from=version_from, platforms=platforms, sources=source_info, deps=list())
