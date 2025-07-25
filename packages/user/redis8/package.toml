@@ -3,6 +3,7 @@ name = "redis8"
 version = "8.0.2"
 description = "Cache, data structure server, document and vector query engine"
 license = "AGPL"
+website = "https://redis.io"
 
 [sources.redis]
 hash = "e9296b67b54c91befbcca046d67071c780a1f7c9f9e1ae5ed94773c3bb9b542f"
