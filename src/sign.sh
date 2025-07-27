@@ -122,8 +122,17 @@ if git show-ref --verify --quiet "refs/remotes/origin/$BRANCH_NAME"; then
     git checkout "$BRANCH_NAME"
     check_command "${RED}Failed to check out existing branch: $BRANCH_NAME"
   fi
+elif git show-ref --verify --quiet "refs/heads/$BRANCH_NAME"; then
+  # The local does have a branch named after this release
+  if test "$(git rev-parse --abbrev-ref HEAD)" = "$BRANCH_NAME"; then
+    : # We're already on the branch
+  else
+    # We're not on the brach, check it out
+    git checkout "$BRANCH_NAME"
+    check_command "${RED}Failed to check out existing branch: $BRANCH_NAME"
+  fi
 else
-  # The remote does not have a branch named after this release
+  # The remote and local does not have a branch named after this release
   git checkout -b "$BRANCH_NAME"
   check_command "${RED}Failed to create a new branch: $BRANCH_NAME"
 fi
