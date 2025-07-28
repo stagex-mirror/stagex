@@ -1,15 +1,15 @@
 [package]
 name = "ca-certificates"
-description = "TODO"
-version = "NSS_3_105_RTM"
+description = "Common CA certificates for SSL/TLS"
+version = "f2e816d18e74480775f74a2620f48c4d4dc51b7e"
 
 [sources.certdata]
 file = "certdata.txt"
-hash = "36105b01631f9fc03b1eca779b44a30a1a5890b9bf8dc07ccb001a07301e01cf"
+hash = "8944ec6b572b577daee4fc681a425881f841ec2660e4cb5f0eee727f84620697"
 mirrors = ["https://hg.mozilla.org/projects/nss/raw-file/{version}/lib/ckfw/builtins/{file}"]
 
 [sources.build]
-version = "20240315"
-hash = "0a6f1ac76c722353492a44c365afb74638971beb4de4349cee0c881db1b8f6df"
+version = "914471a540cba8115ff719da768bd2d3cbe73d2b"
+hash = "a5542854cd95c7d55f4bf5b71676d3432d3624f857eaf339bbdd98bb541aaadd"
 file = "ca-certificates-{version}.tar.gz"
 mirrors = ["https://gitlab.alpinelinux.org/alpine/ca-certificates/-/archive/{version}/{file}"]

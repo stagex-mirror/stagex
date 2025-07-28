@@ -1,0 +1,20 @@
+FROM scratch AS build
+ARG VERSION
+COPY --from=stagex/pallet-python . /
+COPY --from=stagex/core-py-build . /
+COPY --from=stagex/core-py-installer . /
+COPY --from=stagex/core-py-pep517 . /
+COPY --from=stagex/core-py-setuptools . /
+COPY --from=stagex/core-py-toml . /
+COPY --from=stagex/core-py-wheel . /
+ADD fetch/py-pyasn1-${VERSION}.tar.gz .
+WORKDIR /pyasn1-${VERSION}/
+RUN --network=none <<-EOF
+  set -eu
+  python setup.py install -O1 --root=/rootfs
+  install -vDm 644 LICENSE.rst -t /rootfs/usr/share/license/py-pyasn1/LICENSE.rst
+  find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+EOF
+
+FROM stagex/core-filesystem AS package 
+COPY --from=build /rootfs /

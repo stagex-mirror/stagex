@@ -1,0 +1,21 @@
+FROM scratch AS build
+ARG VERSION
+COPY --from=stagex/pallet-python . /
+COPY --from=stagex/core-py-build . /
+COPY --from=stagex/core-py-installer . /
+COPY --from=stagex/core-py-pep517 . /
+COPY --from=stagex/core-py-setuptools . /
+COPY --from=stagex/core-py-toml . /
+COPY --from=stagex/core-py-wheel . /
+ADD fetch/py-waitress-${VERSION}.tar.gz .
+WORKDIR /waitress-${VERSION}/
+RUN --network=none <<-EOF
+  set -eu
+  python -m build --wheel --no-isolation
+  python -m installer --destdir=/rootfs dist/*.whl
+  install -Dm644 LICENSE.txt /rootfs/usr/share/licenses/py-waitress/LICENSE.txt
+  find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs /
