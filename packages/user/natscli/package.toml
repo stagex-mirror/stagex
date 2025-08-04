@@ -1,0 +1,12 @@
+[package]
+name = "natscli"
+version = "0.2.4"
+description = "A command line utility to interact with and manage NATS."
+license = "Apache-2.0"
+website = "https://nats.io/"
+
+[sources.natscli]
+hash = "ad0904a7fac5c930fe766c008fdd6bea0c7a0e5a79dcd3e76dff48978a3dc42b"
+format = "tar.gz"
+file = "natscli-{version}.{format}"
+mirrors = [ "https://github.com/nats-io/natscli/archive/refs/tags/v{version}.{format}",]
