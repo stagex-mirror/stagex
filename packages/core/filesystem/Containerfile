@@ -103,9 +103,8 @@ COPY --chmod=644 <<-EOF etc/os-release
 	SUPPORT_URL="https://codeberg.org/stagex/stagex/src/branch/main/README.md"
 	BUG_REPORT_URL="https://codeberg.org/stagex/stagex/issues"
 EOF
-FROM scratch AS package
+FROM scratch AS package-filesystem
 COPY --from=build /rootfs/ /
-USER 1000:1000
 ENTRYPOINT ["/bin/sh"]
 ENV PS1="[Stageˣ] $ "
 ENV TZ=UTC
@@ -114,3 +113,6 @@ ENV LC_ALL=C
 ENV USER=user
 ENV HOME=/home/user
 ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+FROM package-filesystem AS package-user-runtime
+USER 1000:1000
