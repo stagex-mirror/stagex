@@ -26,6 +26,7 @@ RUN --network=none <<-EOF
 		--without-ensurepip
 	make -j "$(nproc)"
 	make DESTDIR=/rootfs install
+	install -Dm0644 -t /rootfs/usr/share/licenses/python/ LICENSE
 	ln -s /usr/bin/python3 /rootfs/usr/bin/python
 EOF
 FROM stagex/core-filesystem AS package
