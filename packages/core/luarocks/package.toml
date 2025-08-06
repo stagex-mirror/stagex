@@ -1,0 +1,10 @@
+[package]
+name = "luarocks"
+version = "3.12.2"
+description = "LuaRocks is the package manager for Lua modules"
+
+[sources.luarocks]
+hash = "9c25fa7ab5017d60b25137ab1a4cb76e3185df1fe02df1f577f57d1a6b548a2a"
+format = "tar.gz"
+file = "luarocks-{version}.{format}"
+mirrors = ["https://github.com/luarocks/luarocks/archive/refs/tags/v{version}.{format}",]
