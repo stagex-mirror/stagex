@@ -1,0 +1,4 @@
+[package]
+name = "lua"
+description = "The lua interpreter ready to use"
+version_from = "core-lua"
