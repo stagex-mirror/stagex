@@ -1,0 +1,4 @@
+[package]
+name = "luarocks"
+description = "Pallet to use luarocks to build lua packages"
+version_from = "core-luarocks"
