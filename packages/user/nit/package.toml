@@ -1,10 +1,10 @@
 [package]
 name = "nit"
-version = "1a1a0bf3e87d6d5ab4c055865fd7a32c11cc3c2e"
+version = "00b5957d6e4849d397d1c398e8ebd7f2c29572db"
 description = "25% smaller than init"
 
 [sources.nit]
-hash = "b6880f972014ef0a34ca1a698a38bd0a9ffd86c52c50c84645d4d3c1824bbe01"
+hash = "79555b0fd11f53d786be95b24ecd617d3b0fba95f95937cdd5bf400a2463536a"
 format = "tar.gz"
 file = "nit-{version}.{format}"
 mirrors = ["https://git.distrust.co/public/nit/archive/{version}.{format}"]
