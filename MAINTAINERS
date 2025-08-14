@@ -63,6 +63,15 @@ email = "*@logicwax.com"
 matrix = "@logicwax:matrix.org"
 website = "https://logicwax.com"
 
+[people.panekj]
+name = "Jakub Panek"
+location = "PL-24"
+email = "me@panekj.dev"
+matrix = ["@panekj:matrix.org", "@pj:mozilla.org"]
+website = "https://panekj.eu"
+fediverse = "@pj@donotsta.re"
+keyoxide = "https://keyoxide.org/aspe:keyoxide.org:WNHRCLJSCUR4UWCJDOSZAPFPDM"
+
 [keys]
 
 [keys.lancevick.personal]
@@ -135,6 +144,13 @@ servers = "openpgp.org"
 devices = "Yubikey 5 NFC, Yubikey 5C"
 offline-ca = true
 backup = true
+interaction = true
+
+[keys.panekj.KY1]
+id = "C8635605A11CF6A3CB53C707D5E8A1F82F3BDA9D"
+algorithm = "ED25519"
+offline-ca = true
+backup = false
 interaction = true
 
 [machines]
@@ -258,3 +274,13 @@ ghz = 2
 cores = 32
 os = "Proxmox/Debian"
 runtime = "Docker"
+
+[machines.panekj.main]
+type = "metal"
+arch = "x86_64"
+brand = "AuthenticAMD"
+model = "1"
+ghz = 2.2
+cores = 12
+os = "Linux"
+runtime = "Linux"
