@@ -1,0 +1,12 @@
+[package]
+name = "maturin"
+version = "1.9.3"
+description = "Build and publish crates with pyo3, rust-cpython and cffi bindings"
+website = "https://github.com/PyO3/maturin"
+licenses = "Apache-2.0 OR MIT"
+
+[sources.maturin]
+hash = "1a4a87224a34a97a4322bd123487e9c6f2d2091bac4fe469618b92a06aad3492"
+format = "tar.gz"
+file = "maturin-{version}.{format}"
+mirrors = [ "https://github.com/PyO3/maturin/archive/refs/tags/v{version}.{format}",]

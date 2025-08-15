@@ -3,9 +3,10 @@ ARG VERSION
 COPY --from=stagex/pallet-python . /
 COPY --from=stagex/core-py-cffi . /
 COPY --from=stagex/user-py-cparser . /
+COPY --from=stagex/user-py-maturin . /
 COPY --from=stagex/user-py-semantic-version . /
-COPY --from=stagex/user-py-typing-extensions . /
 COPY --from=stagex/user-py-setuptools-rust . /
+COPY --from=stagex/user-py-typing-extensions . /
 ADD fetch/py-cryptography-${VERSION}.tar.gz .
 WORKDIR /cryptography-${VERSION}
 RUN gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
