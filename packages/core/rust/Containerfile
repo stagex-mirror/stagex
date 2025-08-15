@@ -169,13 +169,16 @@ COPY --from=build-llvm19 /rust-1.86.0 /rust-1.86.0
 ADD fetch/rustc-1.87.0-src.tar.gz .
 RUN ./build 1.87.0 1.86.0
 
+ADD fetch/rustc-1.88.0-src.tar.gz .
+RUN ./build 1.88.0 1.87.0
+
 FROM build-script AS build
 COPY --from=stagex/core-llvm . /
-COPY --from=build-llvm20 /rust-1.87.0 /rust-1.87.0
+COPY --from=build-llvm20 /rust-1.88.0 /rust-1.88.0
 
 ADD no-default-static.patch .
 ADD fetch/rustc-${VERSION}-src.tar.gz .
-RUN ./build ${VERSION} 1.87.0 cargo,clippy,rustdoc,rustfmt,rust-demangler no-default-static
+RUN ./build ${VERSION} 1.88.0 cargo,clippy,rustdoc,rustfmt,rust-demangler no-default-static
 
 RUN <<-EOF
 	mv /rust-${VERSION} /rootfs
