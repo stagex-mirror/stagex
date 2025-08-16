@@ -15,6 +15,7 @@ RUN --network=none <<-EOF
 		--enable-twinserial
 	make -j "$(nproc)"
 	make DESTDIR=/rootfs install
+	install -Dm0644 COPYING /rootfs/usr/share/licenses/ccid/LICENSE 
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
