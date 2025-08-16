@@ -41,13 +41,6 @@ location = "New York, USA"
 email = "michael@turnkey.io"
 website = "https://www.linkedin.com/in/mavrukin/"
 
-[people.shaneengelman]
-name = "Shane Engelman"
-location = "https://blog.runninginthenight.com/pwd/"
-email = "contact@shane.gg"
-matrix = "@singlerider:matrix.org"
-keyoxide = "https://keyoxide.org/3D7C8D39E8C4DF771583D3F0A8A091FD346001CA"
-
 [people.conyel]
 name = "Konstantinos Geles"
 location = "Lille, France"
@@ -116,15 +109,6 @@ algorithm = "RSA4096"
 servers = "openpgp.org"
 devices = "Yubikey 5c Nano"
 offline-ca = true
-backup = true
-interaction = true
-
-[keys.shaneengelman.personal]
-id = "3D7C8D39E8C4DF771583D3F0A8A091FD346001CA"
-algorithm = "RSA4096"
-servers = "openpgp.org"
-devices = "Yubikey 5 NFC, Yubikey 5C Nano, flexSecure Java Card Implant"
-offline-ca = false
 backup = true
 interaction = true
 
@@ -249,18 +233,6 @@ model = "Intel Xeon Platinum 8260"
 ghz = 2.8
 cores = 48
 os = "debian linux"
-runtime = "Docker"
-
-[machines.shaneengelman.local]
-owner = "Shane Engelman"
-location = "https://blog.runninginthenight.com/pwd/"
-type = "metal"
-arch = "x86/64"
-brand = "AMD"
-model = "AMD Ryzen 5 7640U"
-ghz = "4.971"
-cores = 12
-os = "Arch Linux"
 runtime = "Docker"
 
 [machines.conyel.remote1]
