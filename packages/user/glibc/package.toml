@@ -1,8 +1,11 @@
 [package]
 name = "glibc"
 version = "2.42"
-description = "TODO"
+description = "GNU C library"
+website = "https://sourceware.org/glibc"
+license = "GPL-2.0-or-later"
 
 [sources.glibc]
+hash = "90267bbbcfb8f631021a6c3ecc898514958948f4f43d6178d40be2da437b192d"
 file = "glibc-{version}.tar.gz"
-mirrors = [ "https://ftpmirror.gnu.org/gnu/glibc/{file}",]
+mirrors = [ "https://github.com/bminor/glibc/archive/refs/tags/{file}", ]
