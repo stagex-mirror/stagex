@@ -19,6 +19,8 @@ RUN --network=none <<-EOF
 		. output
 	meson compile -C output
 	DESTDIR=/rootfs meson install --no-rebuild -C output
+	install -Dm0644 COPYING /rootfs/usr/share/licenses/json-glib/LICENSE
+
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
