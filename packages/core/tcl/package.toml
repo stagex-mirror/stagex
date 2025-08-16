@@ -1,8 +1,10 @@
 [package]
 name = "tcl"
 version = "9.0.2"
-description = "TODO"
+description = "The Tcl scripting language"
+website = "https://www.tcl-lang.org/"
 
 [sources.tcl]
-file = "tcl-{version}.tar.gz"
-mirrors = [ "https://fossies.org/linux/misc/tcl{version}-src.tar.gz",]
+hash = "e074c6a8d9ba2cddf914ba97b6677a552d7a52a3ca102924389a05ccb249b520"
+file = "tcl{version}-src.tar.gz"
+mirrors = [ "https://sourceforge.net/projects/tcl/files/Tcl/{version}/{file}"]
