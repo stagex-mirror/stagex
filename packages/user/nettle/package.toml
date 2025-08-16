@@ -1,9 +1,12 @@
 [package]
 name = "nettle"
 version = "3.10.2"
-description = "TODO"
+description = "Low-level cryptographic library"
+website = "https://www.lysator.liu.se/~nisse/nettle/"
+license = "GPL-2.0-or-later OR LGPL-3.0-or-later"
 
 [sources.nettle]
+hash = "fe9ff51cb1f2abb5e65a6b8c10a92da0ab5ab6eaf26e7fc2b675c45f1fb519b5"
 format = "tar.gz"
 file = "nettle-{version}.{format}"
-mirrors = [ "https://git.lysator.liu.se/nettle/nettle/-/archive/nettle_{version}/nettle-nettle_{version}.{format}",]
+mirrors = [ "https://ftp.gnu.org/gnu/nettle/{file}", ]
