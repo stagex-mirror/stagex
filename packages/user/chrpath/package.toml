@@ -1,8 +1,11 @@
 [package]
 name = "chrpath"
 version = "0.18"
-description = "TODO"
+description = "Modify rpath of compiled programs"
+website = "https://codeberg.org/pere/chrpath"
+license = "GPL-2.0-or-later"
 
 [sources.chrpath]
-file = "chrpath-{version}.tar.gz"
-mirrors = [ "https://alioth-archive.debian.org/releases/chrpath/chrpath/{version}/{file}",]
+hash = "f09c49f0618660ca11fc6d9580ddde904c7224d4c6d0f6f2d1f9bcdc9102c9aa"
+file = "release-{version}.tar.gz"
+mirrors = [ "https://codeberg.org/pere/chrpath/archive/{file}", ]
