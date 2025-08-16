@@ -3,6 +3,7 @@ name = "tcl"
 version = "9.0.2"
 description = "The Tcl scripting language"
 website = "https://www.tcl-lang.org/"
+license = "TCL"
 
 [sources.tcl]
 hash = "e074c6a8d9ba2cddf914ba97b6677a552d7a52a3ca102924389a05ccb249b520"

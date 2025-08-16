@@ -18,6 +18,7 @@ RUN --network=none <<-EOF
 		--enable-64bit
 	make -j "$(nproc)"
 	make DESTDIR=/rootfs install install-private-headers
+	install -Dm0644 license.terms /rootfs/usr/share/licenses/ccid/LICENSE
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
