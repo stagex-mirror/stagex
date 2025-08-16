@@ -1,6 +1,6 @@
 FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-ADD fetch/perl-dbi-${VERSION}.tar.gz .
+ADD fetch/DBI-${VERSION}.tgz .
 WORKDIR /DBI-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
@@ -9,6 +9,7 @@ RUN --network=none <<-EOF
 	PERL_MM_USE_DEFAULT="1 perl -I. Makefile.PL INSTALLDIRS=vendor"
 	make -j "$(nproc)"
 	make DESTDIR=/rootfs install
+	install -Dm0644 -t /rootfs/usr/share/licenses/perl-dbi/ LICENSE
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

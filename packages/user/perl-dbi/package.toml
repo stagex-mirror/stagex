@@ -1,9 +1,11 @@
 [package]
 name = "perl-dbi"
 version = "1.647"
-description = "TODO"
+description = "Database independent interface for Perl"
+website = "https://metacpan.org/release/DBI/"
+license = "GPL-1.0-or-later OR Artistic-1.0-Perl"
 
 [sources.perl-dbi]
-format = "tar.gz"
-file = "perl-dbi-{version}.{format}"
-mirrors = [ "https://cpan.metacpan.org/authors/id/T/TI/TIMB/DBI-{version}.{format}",]
+format = "tgz"
+file = "DBI-{version}.{format}"
+mirrors = [ "https://cpan.metacpan.org/authors/id/H/HM/HMBRAND/{file}",]
