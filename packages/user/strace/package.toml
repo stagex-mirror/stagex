@@ -1,10 +1,10 @@
 [package]
 name = "strace"
-version = "6.7"
+version = "6.16"
 description = "TODO"
 
 [sources.strace]
-hash = "2090201e1a3ff32846f4fe421c1163b15f440bb38e31355d09f82d3949922af7"
+hash = "3d7aee7e4f044b2f67f3d51a8a76eda18076e9fb2774de54ac351d777d4ebffa"
 format = "tar.xz"
 file = "strace-{version}.{format}"
 mirrors = [ "https://github.com/strace/strace/releases/download/v{version}/{file}",]

@@ -1,10 +1,10 @@
 [package]
 name = "curl"
-version = "8.9.1"
+version = "8.15.0"
 description = "TODO"
 
 [sources.curl]
-hash = "f292f6cc051d5bbabf725ef85d432dfeacc8711dd717ea97612ae590643801e5"
+hash = "6cd0a8a5b126ddfda61c94dc2c3fc53481ba7a35461cf7c5ab66aa9d6775b609"
 format = "tar.xz"
 file = "curl-{version}.{format}"
 mirrors = [ "https://curl.se/download/{file}",]

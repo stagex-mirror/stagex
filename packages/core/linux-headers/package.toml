@@ -1,10 +1,10 @@
 [package]
 name = "linux-headers"
-version = "6.6"
+version = "6.16"
 description = "TODO"
 
 [sources.linux-headers]
-hash = "d926a06c63dd8ac7df3f86ee1ffc2ce2a3b81a2d168484e76b5b389aba8e56d0"
+hash = "1a4be2fe6b5246aa4ac8987a8a4af34c42a8dd7d08b46ab48516bcc1befbcd83"
 format = "tar.xz"
 file = "linux-{version}.{format}"
 mirrors = [ "https://mirrors.edge.kernel.org/pub/linux/kernel/v{version_major}.x/linux-{version}.{format}",]

@@ -1,10 +1,10 @@
 [package]
 name = "libxml2"
-version = "2.12.1"
+version = "2.14.5"
 description = "TODO"
 
 [sources.libxml2]
-hash = "1090e62c5a1900429f63e4681263b96e7829876ccbc66cf2d9266cd589f67286"
+hash = "54968c8ab8723c2d75a38fc45810e8cf60d44991e0887661bf9905a4042ad108"
 format = "tar.gz"
 file = "libxml2-{version}.{format}"
 mirrors = [ "https://gitlab.gnome.org/GNOME/libxml2/-/archive/v{version}/libxml2-v{version}.{format}",]

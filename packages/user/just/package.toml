@@ -1,10 +1,10 @@
 [package]
 name = "just"
 description = "Command runner"
-version = "1.39.0"
+version = "1.42.4"
 
 [sources.just]
-hash = "8a900072d7f909bc91030df5896168752bb9108967dbb7149d2cfb11fdeb087a"
+hash = "bd604ff72ecd8d8def79d39997499433e22fbffa03260e3a2c5fe5f84cc37f52"
 format = "tar.gz"
 file = "just-{version}.{format}"
-mirrors = [ "https://github.com/casey/just/archive/refs/tags/{version}.{format}"]
+mirrors = [ "https://github.com/casey/just/archive/refs/tags/{version}.{format}",]

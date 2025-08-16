@@ -1,10 +1,10 @@
 [package]
 name = "cmake"
-version = "3.31.5"
+version = "4.1.0"
 description = "TODO"
 
 [sources.cmake]
-hash = "66fb53a145648be56b46fa9e8ccade3a4d0dfc92e401e52ce76bdad1fea43d27"
+hash = "81ee8170028865581a8e10eaf055afb620fa4baa0beb6387241241a975033508"
 format = "tar.gz"
 file = "cmake-{version}.{format}"
 mirrors = [ "https://cmake.org/files/v{version_major_minor}/{file}",]

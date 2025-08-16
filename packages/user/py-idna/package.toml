@@ -1,10 +1,10 @@
 [package]
 name = "py-idna"
-version = "3.7"
+version = "3.10"
 description = "TODO"
 
 [sources.py-idna]
-hash = "07017f753632624abaa31aa2c1b243aea6409367256de4183671d95e019f7d70"
+hash = "04f6b013c384deca20a165a4cdf36823465a81c2bb914c40b543802d39e1cb1a"
 format = "tar.gz"
 file = "py-idna-{version}.{format}"
 mirrors = [ "https://github.com/kjd/idna/archive/v{version}.{format}",]

@@ -1,10 +1,10 @@
 [package]
 name = "libfaketime"
-version = "0.9.10"
+version = "0.9.12"
 description = "TODO"
 
 [sources.libfaketime]
-hash = "729ad33b9c750a50d9c68e97b90499680a74afd1568d859c574c0fe56fe7947f"
+hash = "4fc32218697c052adcdc5ee395581f2554ca56d086ac817ced2be0d6f1f8a9fa"
 format = "tar.gz"
 file = "libfaketime-{version}.{format}"
 mirrors = [ "https://github.com/wolfcw/libfaketime/archive/v{version}.{format}",]

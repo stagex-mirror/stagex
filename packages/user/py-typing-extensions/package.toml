@@ -1,10 +1,10 @@
 [package]
 name = "py-typing-extensions"
-version = "4.10.0"
+version = "4.14.1"
 description = "TODO"
 
 [sources.py-typing-extensions]
-hash = "b0abd7c89e8fb96f98db18d86106ff1d90ab692004eb746cf6eda2682f91b3cb"
+hash = "38b39f4aeeab64884ce9f74c94263ef78f3c22467c8724005483154c26648d36"
 format = "tar.gz"
 file = "py-typing-extensions-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/t/typing_extensions/typing_extensions-{version}.{format}",]

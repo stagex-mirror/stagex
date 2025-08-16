@@ -1,10 +1,10 @@
 [package]
 name = "pgbouncer"
-version = "1.23.1"
+version = "1.24.1"
 description = "TODO"
 
 [sources.pgbouncer]
-hash = "1963b497231d9a560a62d266e4a2eae6881ab401853d93e5d292c3740eec5084"
+hash = "da72a3aba13072876d055a3e58dd4aba4a5de4ed6148e73033185245598fd3e0"
 format = "tar.gz"
 file = "pgbouncer-{version}.{format}"
 mirrors = [ "https://www.pgbouncer.org/downloads/files/{version}/{file}",]

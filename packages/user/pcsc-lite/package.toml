@@ -1,10 +1,10 @@
 [package]
 name = "pcsc-lite"
-version = "2.3.1"
+version = "2.3.3"
 description = "TODO"
 
 [sources.pcsc-lite]
-hash = "a641d44d57affe1edd8365dd75307afc307e7eefb4e7ad839f6f146baa41ed56"
+hash = "cdff7d7153a0b37aa74e26dfec89ec7dc5c5286aa21b91b903e38739d227e8e7"
 format = "tar.xz"
 file = "pcsc-lite-{version}.{format}"
 mirrors = [ "https://pcsclite.apdu.fr/files/{file}",]

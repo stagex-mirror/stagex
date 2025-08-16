@@ -1,12 +1,12 @@
 [package]
 name = "kustomize-sops"
-version = "4.3.3"
+version = "4.4.0"
 description = "KSOPS - A Flexible Kustomize Plugin for SOPS Encrypted Resources"
 license = "Apache-2.0"
 website = "https://github.com/viaduct-ai/kustomize-sops"
 
 [sources.kustomize-sops]
-hash = "9943f47cb1c469316d28f11f845c44e63802e9cd37d28b6a20b1890f4c2133d7"
+hash = "08891e25bfac225ac90fd6ccc20ec5d8d0dff96222d86eaafeb976d85bb338f0"
 format = "tar.gz"
 file = "kustomize-sops-{version}.{format}"
 mirrors = [ "https://github.com/viaduct-ai/kustomize-sops/archive/refs/tags/v{version}.{format}",]

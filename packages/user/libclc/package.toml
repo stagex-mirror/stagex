@@ -1,16 +1,16 @@
 [package]
 name = "libclc"
-version = "19.1.7"
+version = "20.1.8"
 description = "Open source implementation of the library requirements of the OpenCL C programming language"
 
 [sources.libclc]
-hash = "77e2d71f5cea1d0b1014ba88186299d1a0848eb3dc20948baae649db9e7641cb"
+hash = "ecd83a52859742f71f4c332538f8bee54a6743374a233b5a85017de22d75c227"
 format = "tar.xz"
 file = "libclc-{version}.src.{format}"
-mirrors = [ "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/{file}", ]
+mirrors = [ "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/{file}",]
 
 [sources.cmake]
 hash = "11c5a28f90053b0c43d0dec3d0ad579347fc277199c005206b963c19aae514e3"
 format = "tar.xz"
 file = "cmake-{version}.src.{format}"
-mirrors = [ "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/{file}", ]
+mirrors = [ "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/{file}",]

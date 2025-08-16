@@ -1,10 +1,10 @@
 [package]
 name = "opensc"
-version = "0.25.1"
+version = "0.26.1"
 description = "TODO"
 
 [sources.opensc]
-hash = "989e6305900d4f2f56ef84aa0da07c044459b4f8a508957a4cdefce6a1367c7b"
+hash = "0be4ca37cb25f5fdf1afc99df31b844c18322b888e0d9f9db20267148e458144"
 format = "tar.gz"
 file = "opensc-{version}.{format}"
 mirrors = [ "https://github.com/opensc/opensc/archive/{version}.{format}",]

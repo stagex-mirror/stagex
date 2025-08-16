@@ -1,10 +1,10 @@
 [package]
 name = "re2c"
-version = "3.1"
+version = "4.3"
 description = "TODO"
 
 [sources.re2c]
-hash = "087c44de0400fb15caafde09fd72edc7381e688a35ef505ee65e0e3d2fac688b"
+hash = "39cd7048a817cf3d7d0c2e58a52fb3597d6e1bc86b1df32b8a3cd755c458adfd"
 format = "tar.gz"
 file = "re2c-{version}.{format}"
 mirrors = [ "https://github.com/skvadrik/re2c/archive/refs/tags/{version}.{format}",]

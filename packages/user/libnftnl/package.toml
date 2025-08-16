@@ -1,10 +1,10 @@
 [package]
 name = "libnftnl"
-version = "1.2.8"
+version = "1.3.0"
 description = "TODO"
 
 [sources.libnftnl]
-hash = "37fea5d6b5c9b08de7920d298de3cdc942e7ae64b1a3e8b880b2d390ae67ad95"
+hash = "0f4be47a8bb8b77a350ee58cbd4b5fae6260ad486a527706ab15cfe1dd55a3c4"
 format = "tar.xz"
 file = "libnftnl-{version}.{format}"
 mirrors = [ "https://netfilter.org/projects/libnftnl/files/{file}",]

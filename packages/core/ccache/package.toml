@@ -1,9 +1,9 @@
 [package]
 name = "ccache"
-version = "4.10.2"
+version = "4.11.3"
 description = "TODO"
 
 [sources.ccache]
-hash = "c0b85ddfc1a3e77b105ec9ada2d24aad617fa0b447c6a94d55890972810f0f5a"
+hash = "d5a340e199977b7b1e89c0add794132c977fdc2ecc7ca5451e03d43627a1b1be"
 file = "ccache-{version}.tar.xz"
-mirrors = [ "https://github.com/ccache/ccache/releases/download/v{version}/{file}"]
+mirrors = [ "https://github.com/ccache/ccache/releases/download/v{version}/{file}",]

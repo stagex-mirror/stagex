@@ -1,10 +1,10 @@
 [package]
 name = "py-urllib3"
-version = "1.26.18"
+version = "2.5.0"
 description = "TODO"
 
 [sources.py-urllib3]
-hash = "f8ecc1bba5667413457c529ab955bf8c67b45db799d159066261719e328580a0"
+hash = "3fc47733c7e419d4bc3f6b3dc2b4f890bb743906a30d56ba4a5bfa4bbff92760"
 format = "tar.gz"
 file = "py-urllib3-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/u/urllib3/urllib3-{version}.{format}",]

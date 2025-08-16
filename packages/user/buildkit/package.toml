@@ -1,10 +1,10 @@
 [package]
 name = "buildkit"
-version = "0.15.0"
+version = "0.23.2"
 description = "TODO"
 
 [sources.buildkit]
-hash = "ebf4b82f7379818d8fcfe5c54034e7f93c062c95f663bfd3c2a622583f62a8a4"
+hash = "5f8e18b63bbf8e41dc787e8ce68103c94acb1585782cb42697aa1dfa252817d7"
 format = "tar.gz"
 file = "buildkit-{version}.{format}"
 mirrors = [ "https://github.com/moby/buildkit/archive/v{version}.{format}",]

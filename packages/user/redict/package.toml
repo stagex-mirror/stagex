@@ -1,10 +1,10 @@
 [package]
 name = "redict"
-version = "7.3.1"
+version = "7.3.5"
 description = "A distributed key/value database"
 
 [sources.redict]
-hash = "6dbe80d28503a9252048ab81856efcfec109cdf3f924e840411c30237cf8f634"
+hash = "1528db77c3539190ebe1fe3963347e02ac8095aff75a19b3373cddcf3f920405"
 format = "tar.gz"
 file = "{version}.{format}"
 mirrors = [ "https://codeberg.org/redict/redict/archive/{file}",]

@@ -1,0 +1,3600 @@
+diff --git a/packages/core/automake/package.toml b/packages/core/automake/package.toml
+index 57b0d4ad..1a227fa5 100644
+--- a/packages/core/automake/package.toml
++++ b/packages/core/automake/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "automake"
+-version = "1.16.5"
++version = "1.18.1"
+ description = "TODO"
+ 
+ [sources.automake]
+-hash = "f01d58cd6d9d77fbdca9eb4bbd5ead1988228fdb73d6f7a201f5f8d6b118b469"
++hash = "168aa363278351b89af56684448f525a5bce5079d0b6842bd910fdd3f1646887"
+ format = "tar.xz"
+ file = "automake-{version}.{format}"
+ mirrors = [ "https://ftp.gnu.org/gnu/automake/{file}",]
+diff --git a/packages/core/bash/package.toml b/packages/core/bash/package.toml
+index 00006e73..96f87eeb 100644
+--- a/packages/core/bash/package.toml
++++ b/packages/core/bash/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "bash"
+-version = "5.2.37"
++version = "5.3"
+ description = "TODO"
+ 
+ [sources.bash]
+-hash = "9599b22ecd1d5787ad7d3b7bf0c59f312b3396d1e281175dd1f8a4014da621ff"
++hash = "0d5cd86965f869a26cf64f4b71be7b96f90a3ba8b3d74e27e8e9d9d5550f31ba"
+ format = "tar.gz"
+ file = "bash-{version}.{format}"
+ mirrors = [ "https://ftp.gnu.org/gnu/bash/{file}",]
+diff --git a/packages/core/bc/package.toml b/packages/core/bc/package.toml
+index e52c004a..dc29b38c 100644
+--- a/packages/core/bc/package.toml
++++ b/packages/core/bc/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "bc"
+-version = "1.07.1"
++version = "1.08.2"
+ description = "TODO"
+ 
+ [sources.bc]
+-hash = "62adfca89b0a1c0164c2cdca59ca210c1d44c3ffc46daf9931cf4942664cb02a"
++hash = "ae470fec429775653e042015edc928d07c8c3b2fc59765172a330d3d87785f86"
+ format = "tar.gz"
+ file = "bc-{version}.{format}"
+ mirrors = [ "https://ftp.gnu.org/gnu/bc/{file}",]
+diff --git a/packages/core/binutils/package.toml b/packages/core/binutils/package.toml
+index 892c0b25..7ef1f896 100644
+--- a/packages/core/binutils/package.toml
++++ b/packages/core/binutils/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "binutils"
+-version = "2.43.1"
++version = "2.45"
+ description = "TODO"
+ 
+ [sources.binutils]
+-hash = "13f74202a3c4c51118b797a39ea4200d3f6cfbe224da6d1d95bb938480132dfd"
++hash = "c50c0e7f9cb188980e2cc97e4537626b1672441815587f1eab69d2a1bfbef5d2"
+ format = "tar.xz"
+ file = "binutils-{version}.{format}"
+ mirrors = [ "https://ftp.gnu.org/gnu/binutils/{file}",]
+diff --git a/packages/core/bison/package.toml b/packages/core/bison/package.toml
+index 40bb065c..0d71291b 100644
+--- a/packages/core/bison/package.toml
++++ b/packages/core/bison/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "bison"
+-version = "3.4.2"
++version = "3.8.2"
+ description = "TODO"
+ 
+ [sources.bison]
+-hash = "27d05534699735dc69e86add5b808d6cb35900ad3fd63fa82e3eb644336abfa0"
++hash = "9bba0214ccf7f1079c5d59210045227bcf619519840ebfa80cd3849cff5a5bf2"
+ format = "tar.xz"
+ file = "bison-{version}.{format}"
+ mirrors = [ "http://mirrors.kernel.org/gnu/bison/{file}",]
+diff --git a/packages/core/boost/package.toml b/packages/core/boost/package.toml
+index 32a11aec..18020f3e 100644
+--- a/packages/core/boost/package.toml
++++ b/packages/core/boost/package.toml
+@@ -1,12 +1,12 @@
+ [package]
+ name = "boost"
+-version = "1.88.0"
++version = "1.89.0"
+ description = "Free peer-reviewed portable C++ source libraries"
+ license = "BSL-1.0"
+ website = "https://www.boost.org"
+ 
+ [sources.boost]
+-hash = "46d9d2c06637b219270877c9e16155cbd015b6dc84349af064c088e9b5b12f7b"
++hash = "85a33fa22621b4f314f8e85e1a5e2a9363d22e4f4992925d4bb3bc631b5a0c7a"
+ format = "tar.bz2"
+ file = "boost_{version_under}.{format}"
+-mirrors = [ "https://archives.boost.io/release/{version}/source/{file}", ]
++mirrors = [ "https://archives.boost.io/release/{version}/source/{file}",]
+diff --git a/packages/core/busybox/package.toml b/packages/core/busybox/package.toml
+index b70ce59a..cad450f2 100644
+--- a/packages/core/busybox/package.toml
++++ b/packages/core/busybox/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "busybox"
+-version = "1.36.1"
++version = "1.37.0"
+ description = "TODO"
+ 
+ [sources.busybox]
+-hash = "b8cc24c9574d809e7279c3be349795c5d5ceb6fdf19ca709f80cde50e47de314"
++hash = "3311dff32e746499f4df0d5df04d7eb396382d7e108bb9250e7b519b837043a4"
+ format = "tar.bz2"
+ file = "busybox-{version}.{format}"
+ mirrors = [ "https://busybox.net/downloads/{file}",]
+diff --git a/packages/core/c-ares/package.toml b/packages/core/c-ares/package.toml
+index b5d00bcb..f592f11d 100644
+--- a/packages/core/c-ares/package.toml
++++ b/packages/core/c-ares/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "c-ares"
+-version = "1.34.2"
++version = "1.34.5"
+ description = "TODO"
+ 
+ [sources.c-ares]
+-hash = "35410aa625cc9ee95b66475f54aea7c81c673fb63d75fad5eee267711503b72a"
++hash = "7d935790e9af081c25c495fd13c2cfcda4792983418e96358ef6e7320ee06346"
+ format = "tar.gz"
+ file = "c-ares-{version}.{format}"
+ mirrors = [ "https://github.com/c-ares/c-ares/releases/download/v{version}/{file}",]
+diff --git a/packages/core/ccache/package.toml b/packages/core/ccache/package.toml
+index 80975410..65652a59 100644
+--- a/packages/core/ccache/package.toml
++++ b/packages/core/ccache/package.toml
+@@ -1,9 +1,9 @@
+ [package]
+ name = "ccache"
+-version = "4.10.2"
++version = "4.11.3"
+ description = "TODO"
+ 
+ [sources.ccache]
+-hash = "c0b85ddfc1a3e77b105ec9ada2d24aad617fa0b447c6a94d55890972810f0f5a"
++hash = "d5a340e199977b7b1e89c0add794132c977fdc2ecc7ca5451e03d43627a1b1be"
+ file = "ccache-{version}.tar.xz"
+-mirrors = [ "https://github.com/ccache/ccache/releases/download/v{version}/{file}"]
++mirrors = [ "https://github.com/ccache/ccache/releases/download/v{version}/{file}",]
+diff --git a/packages/core/cmake/package.toml b/packages/core/cmake/package.toml
+index 7fe45ea6..f6d05eb9 100644
+--- a/packages/core/cmake/package.toml
++++ b/packages/core/cmake/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "cmake"
+-version = "3.31.5"
++version = "4.1.0"
+ description = "TODO"
+ 
+ [sources.cmake]
+-hash = "66fb53a145648be56b46fa9e8ccade3a4d0dfc92e401e52ce76bdad1fea43d27"
++hash = "81ee8170028865581a8e10eaf055afb620fa4baa0beb6387241241a975033508"
+ format = "tar.gz"
+ file = "cmake-{version}.{format}"
+ mirrors = [ "https://cmake.org/files/v{version_major_minor}/{file}",]
+diff --git a/packages/core/coreutils/package.toml b/packages/core/coreutils/package.toml
+index d68f04d9..094846ff 100644
+--- a/packages/core/coreutils/package.toml
++++ b/packages/core/coreutils/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "coreutils"
+-version = "9.4"
++version = "9.7"
+ description = "TODO"
+ 
+ [sources.coreutils]
+-hash = "ea613a4cf44612326e917201bbbcdfbd301de21ffc3b59b6e5c07e040b275e52"
++hash = "e8bb26ad0293f9b5a1fc43fb42ba970e312c66ce92c1b0b16713d7500db251bf"
+ format = "tar.xz"
+ file = "coreutils-{version}.{format}"
+ mirrors = [ "https://ftp.gnu.org/gnu/coreutils/{file}",]
+diff --git a/packages/core/curl/package.toml b/packages/core/curl/package.toml
+index 132e9c9f..ad0dc529 100644
+--- a/packages/core/curl/package.toml
++++ b/packages/core/curl/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "curl"
+-version = "8.9.1"
++version = "8.15.0"
+ description = "TODO"
+ 
+ [sources.curl]
+-hash = "f292f6cc051d5bbabf725ef85d432dfeacc8711dd717ea97612ae590643801e5"
++hash = "6cd0a8a5b126ddfda61c94dc2c3fc53481ba7a35461cf7c5ab66aa9d6775b609"
+ format = "tar.xz"
+ file = "curl-{version}.{format}"
+ mirrors = [ "https://curl.se/download/{file}",]
+diff --git a/packages/core/cython/package.toml b/packages/core/cython/package.toml
+index 1b147fb5..7941518d 100644
+--- a/packages/core/cython/package.toml
++++ b/packages/core/cython/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "cython"
+-version = "3.0.11-1"
++version = "3.1.3"
+ description = "TODO"
+ 
+ [sources.cython]
+-hash = "a6bcfc81ae0487c3d0de4226e0c5aff7c7d0a5e344cc7b75c17bbb6e713f154b"
++hash = "5da026c5eb568e76139ca3d4625726ec34ad5dbadaecbcbba0155b2c151f8b78"
+ format = "tar.gz"
+ file = "cython-{version}.{format}"
+ mirrors = [ "https://github.com/cython/cython/archive/{version}.{format}",]
+diff --git a/packages/core/diffutils/package.toml b/packages/core/diffutils/package.toml
+index 47c36b21..6bc82b3c 100644
+--- a/packages/core/diffutils/package.toml
++++ b/packages/core/diffutils/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "diffutils"
+-version = "3.10"
++version = "3.12"
+ description = "TODO"
+ 
+ [sources.diffutils]
+-hash = "90e5e93cc724e4ebe12ede80df1634063c7a855692685919bfe60b556c9bd09e"
++hash = "7c8b7f9fc8609141fdea9cece85249d308624391ff61dedaf528fcb337727dfd"
+ format = "tar.xz"
+ file = "diffutils-{version}.{format}"
+ mirrors = [ "https://ftp.gnu.org/gnu/diffutils/{file}",]
+diff --git a/packages/core/doctest/package.toml b/packages/core/doctest/package.toml
+index 72a5b698..d6b7ea79 100644
+--- a/packages/core/doctest/package.toml
++++ b/packages/core/doctest/package.toml
+@@ -1,9 +1,9 @@
+ [package]
+ name = "doctest"
+-version = "2.4.11"
++version = "2.4.12"
+ description = "TODO"
+ 
+ [sources.doctest]
+-hash = "632ed2c05a7f53fa961381497bf8069093f0d6628c5f26286161fbd32a560186"
++hash = "73381c7aa4dee704bd935609668cf41880ea7f19fa0504a200e13b74999c2d70"
+ file = "doctest-{version}.tar.gz"
+-mirrors = [ "https://github.com/doctest/doctest/archive/refs/tags/v{version}.tar.gz"]
++mirrors = [ "https://github.com/doctest/doctest/archive/refs/tags/v{version}.tar.gz",]
+diff --git a/packages/core/ed/package.toml b/packages/core/ed/package.toml
+index 0e9932da..a0d68d75 100644
+--- a/packages/core/ed/package.toml
++++ b/packages/core/ed/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "ed"
+-version = "1.20"
++version = "1.22.1"
+ description = "TODO"
+ 
+ [sources.ed]
+-hash = "c6030defe6ae172f1687906d7354054c75a6a9130af319d4e73c50a91959c5a6"
++hash = "1af541116796d6b9e4b66ef9c45ddce0e15a19ed62bfca362ccd7d472cc1c8fb"
+ format = "tar.lz"
+ file = "ed-{version}.{format}"
+ mirrors = [ "https://ftp.gnu.org/gnu/ed/{file}",]
+diff --git a/packages/core/expat/package.toml b/packages/core/expat/package.toml
+index 316fae5c..54f54ae6 100644
+--- a/packages/core/expat/package.toml
++++ b/packages/core/expat/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "expat"
+-version = "2.6.2"
++version = "2.7.1"
+ description = "TODO"
+ 
+ [sources.expat]
+-hash = "d4cf38d26e21a56654ffe4acd9cd5481164619626802328506a2869afab29ab3"
++hash = "0cce2e6e69b327fc607b8ff264f4b66bdf71ead55a87ffd5f3143f535f15cfa2"
+ format = "tar.gz"
+ file = "expat-{version}.{format}"
+ mirrors = [ "https://github.com/libexpat/libexpat/releases/download/R_{version_under}/{file}",]
+diff --git a/packages/core/findutils/package.toml b/packages/core/findutils/package.toml
+index d944222f..e9f1b232 100644
+--- a/packages/core/findutils/package.toml
++++ b/packages/core/findutils/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "findutils"
+-version = "4.9.0"
++version = "4.10.0"
+ description = "TODO"
+ 
+ [sources.findutils]
+-hash = "a2bfb8c09d436770edc59f50fa483e785b161a3b7b9d547573cb08065fd462fe"
++hash = "1387e0b67ff247d2abde998f90dfbf70c1491391a59ddfecb8ae698789f0a4f5"
+ format = "tar.xz"
+ file = "findutils-{version}.{format}"
+ mirrors = [ "https://ftp.gnu.org/gnu/findutils/{file}",]
+diff --git a/packages/core/gawk/package.toml b/packages/core/gawk/package.toml
+index 35774e3a..923e4851 100644
+--- a/packages/core/gawk/package.toml
++++ b/packages/core/gawk/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "gawk"
+-version = "5.3.0"
++version = "5.3.2"
+ description = "TODO"
+ 
+ [sources.gawk]
+-hash = "ca9c16d3d11d0ff8c69d79dc0b47267e1329a69b39b799895604ed447d3ca90b"
++hash = "f8c3486509de705192138b00ef2c00bbbdd0e84c30d5c07d23fc73a9dc4cc9cc"
+ format = "tar.xz"
+ file = "gawk-{version}.{format}"
+ mirrors = [ "https://ftp.gnu.org/gnu/gawk/{file}",]
+diff --git a/packages/core/gdbm/package.toml b/packages/core/gdbm/package.toml
+index 8644780f..ff7bac56 100644
+--- a/packages/core/gdbm/package.toml
++++ b/packages/core/gdbm/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "gdbm"
+-version = "1.23"
++version = "1.26"
+ description = "TODO"
+ 
+ [sources.gdbm]
+-hash = "74b1081d21fff13ae4bd7c16e5d6e504a4c26f7cde1dca0d963a484174bbcacd"
++hash = "6a24504a14de4a744103dcb936be976df6fbe88ccff26065e54c1c47946f4a5e"
+ format = "tar.gz"
+ file = "gdbm-{version}.{format}"
+ mirrors = [ "https://ftp.gnu.org/gnu/gdbm/{file}",]
+diff --git a/packages/core/gettext/package.toml b/packages/core/gettext/package.toml
+index 539dc502..9a5fcce8 100644
+--- a/packages/core/gettext/package.toml
++++ b/packages/core/gettext/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "gettext"
+-version = "0.21"
++version = "0.26"
+ description = "TODO"
+ 
+ [sources.gettext]
+-hash = "d20fcbb537e02dcf1383197ba05bd0734ef7bf5db06bdb241eb69b7d16b73192"
++hash = "d1fb86e260cfe7da6031f94d2e44c0da55903dbae0a2fa0fae78c91ae1b56f00"
+ format = "tar.xz"
+ file = "gettext-{version}.{format}"
+ mirrors = [ "https://mirrors.kernel.org/gnu/gettext/{file}",]
+diff --git a/packages/core/grep/package.toml b/packages/core/grep/package.toml
+index 67ea37d5..9799fdb0 100644
+--- a/packages/core/grep/package.toml
++++ b/packages/core/grep/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "grep"
+-version = "3.11"
++version = "3.12"
+ description = "TODO"
+ 
+ [sources.grep]
+-hash = "1db2aedde89d0dea42b16d9528f894c8d15dae4e190b59aecc78f5a951276eab"
++hash = "2649b27c0e90e632eadcd757be06c6e9a4f48d941de51e7c0f83ff76408a07b9"
+ format = "tar.xz"
+ file = "grep-{version}.{format}"
+ mirrors = [ "https://mirrors.kernel.org/gnu/grep/{file}",]
+diff --git a/packages/core/gzip/package.toml b/packages/core/gzip/package.toml
+index 2bc71555..cad2875f 100644
+--- a/packages/core/gzip/package.toml
++++ b/packages/core/gzip/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "gzip"
+-version = "1.13"
++version = "1.14"
+ description = "TODO"
+ 
+ [sources.gzip]
+-hash = "7454eb6935db17c6655576c2e1b0fabefd38b4d0936e0f87f48cd062ce91a057"
++hash = "01a7b881bd220bfdf615f97b8718f80bdfd3f6add385b993dcf6efd14e8c0ac6"
+ format = "tar.xz"
+ file = "gzip-{version}.{format}"
+ mirrors = [ "https://ftp.gnu.org/gnu/gzip/{file}",]
+diff --git a/packages/core/hiredis/package.toml b/packages/core/hiredis/package.toml
+index 3c00c793..88ce2157 100644
+--- a/packages/core/hiredis/package.toml
++++ b/packages/core/hiredis/package.toml
+@@ -1,9 +1,9 @@
+ [package]
+ name = "hiredis"
+-version = "1.2.0"
++version = "1.3.0"
+ description = "TODO"
+ 
+ [sources.hiredis]
+-hash = "82ad632d31ee05da13b537c124f819eb88e18851d9cb0c30ae0552084811588c"
++hash = "25cee4500f359cf5cad3b51ed62059aadfc0939b05150c1f19c7e2829123631c"
+ file = "hiredis-{version}.tar.gz"
+-mirrors = [ "https://github.com/redis/hiredis/archive/v{version}.tar.gz"]
++mirrors = [ "https://github.com/redis/hiredis/archive/v{version}.tar.gz",]
+diff --git a/packages/core/libedit/package.toml b/packages/core/libedit/package.toml
+index dcbee195..40b2fb38 100644
+--- a/packages/core/libedit/package.toml
++++ b/packages/core/libedit/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "libedit"
+-version = "20240808-3.1"
++version = "20250104-3.1"
+ description = "TODO"
+ 
+ [sources.libedit]
+-hash = "5f0573349d77c4a48967191cdd6634dd7aa5f6398c6a57fe037cc02696d6099f"
++hash = "23792701694550a53720630cd1cd6167101b5773adddcb4104f7345b73a568ac"
+ format = "tar.gz"
+ file = "libedit-{version}.{format}"
+ mirrors = [ "https://www.thrysoee.dk/editline/{file}",]
+diff --git a/packages/core/libfaketime/package.toml b/packages/core/libfaketime/package.toml
+index f8da4a13..0c550151 100644
+--- a/packages/core/libfaketime/package.toml
++++ b/packages/core/libfaketime/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "libfaketime"
+-version = "0.9.10"
++version = "0.9.12"
+ description = "TODO"
+ 
+ [sources.libfaketime]
+-hash = "729ad33b9c750a50d9c68e97b90499680a74afd1568d859c574c0fe56fe7947f"
++hash = "4fc32218697c052adcdc5ee395581f2554ca56d086ac817ced2be0d6f1f8a9fa"
+ format = "tar.gz"
+ file = "libfaketime-{version}.{format}"
+ mirrors = [ "https://github.com/wolfcw/libfaketime/archive/v{version}.{format}",]
+diff --git a/packages/core/libffi/package.toml b/packages/core/libffi/package.toml
+index 40db4a0a..5acfc0b7 100644
+--- a/packages/core/libffi/package.toml
++++ b/packages/core/libffi/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "libffi"
+-version = "3.4.6"
++version = "3.5.2"
+ description = "TODO"
+ 
+ [sources.libffi]
+-hash = "b0dea9df23c863a7a50e825440f3ebffabd65df1497108e5d437747843895a4e"
++hash = "f3a3082a23b37c293a4fcd1053147b371f2ff91fa7ea1b2a52e335676bac82dc"
+ format = "tar.gz"
+ file = "libffi-{version}.{format}"
+ mirrors = [ "https://github.com/libffi/libffi/releases/download/v{version}/{file}",]
+diff --git a/packages/core/libnghttp2/package.toml b/packages/core/libnghttp2/package.toml
+index 1468f710..d3afd588 100644
+--- a/packages/core/libnghttp2/package.toml
++++ b/packages/core/libnghttp2/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "libnghttp2"
+-version = "1.62.1"
++version = "1.66.0"
+ description = "TODO"
+ 
+ [sources.libnghttp2]
+-hash = "d0b0b9d00500ee4aa3bfcac00145d3b1ef372fd301c35bff96cf019c739db1b4"
++hash = "e178687730c207f3a659730096df192b52d3752786c068b8e5ee7aeb8edae05a"
+ format = "tar.gz"
+ file = "libnghttp2-{version}.{format}"
+ mirrors = [ "https://github.com/nghttp2/nghttp2/releases/download/v{version}/nghttp2-{version}.{format}",]
+diff --git a/packages/core/libtool/package.toml b/packages/core/libtool/package.toml
+index 4e372b5d..3667dc90 100644
+--- a/packages/core/libtool/package.toml
++++ b/packages/core/libtool/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "libtool"
+-version = "2.4.6"
++version = "2.5.4"
+ description = "TODO"
+ 
+ [sources.libtool]
+-hash = "7c87a8c2c8c0fc9cd5019e402bed4292462d00a718a7cd5f11218153bf28b26f"
++hash = "f81f5860666b0bc7d84baddefa60d1cb9fa6fceb2398cc3baca6afaa60266675"
+ format = "tar.xz"
+ file = "libtool-{version}.{format}"
+ mirrors = [ "https://ftp.gnu.org/gnu/libtool/{file}",]
+diff --git a/packages/core/libunwind/package.toml b/packages/core/libunwind/package.toml
+index 90f69d74..1de3893d 100644
+--- a/packages/core/libunwind/package.toml
++++ b/packages/core/libunwind/package.toml
+@@ -1,11 +1,11 @@
+ [package]
+ name = "libunwind"
+-version = "1.7.2"
++version = "1.8.2"
+ description = "TODO"
+-subpackages = ["libunwind", "cross-x86_64-gnu-libunwind"]
++subpackages = [ "libunwind", "cross-x86_64-gnu-libunwind",]
+ 
+ [sources.libunwind]
+-hash = "a18a6a24307443a8ace7a8acc2ce79fbbe6826cd0edf98d6326d0225d6a5d6e6"
++hash = "7f262f1a1224f437ede0f96a6932b582c8f5421ff207c04e3d9504dfa04c8b82"
+ format = "tar.gz"
+ file = "libunwind-{version}.{format}"
+ mirrors = [ "https://github.com/libunwind/libunwind/releases/download/v{version}/{file}",]
+diff --git a/packages/core/libxml2/package.toml b/packages/core/libxml2/package.toml
+index cc37c4d4..0e266253 100644
+--- a/packages/core/libxml2/package.toml
++++ b/packages/core/libxml2/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "libxml2"
+-version = "2.12.1"
++version = "2.14.5"
+ description = "TODO"
+ 
+ [sources.libxml2]
+-hash = "1090e62c5a1900429f63e4681263b96e7829876ccbc66cf2d9266cd589f67286"
++hash = "54968c8ab8723c2d75a38fc45810e8cf60d44991e0887661bf9905a4042ad108"
+ format = "tar.gz"
+ file = "libxml2-{version}.{format}"
+ mirrors = [ "https://gitlab.gnome.org/GNOME/libxml2/-/archive/v{version}/libxml2-v{version}.{format}",]
+diff --git a/packages/core/libxslt/package.toml b/packages/core/libxslt/package.toml
+index 56d3a13f..b3bbf7fc 100644
+--- a/packages/core/libxslt/package.toml
++++ b/packages/core/libxslt/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "libxslt"
+-version = "1.1.39"
++version = "1.1.43"
+ description = "TODO"
+ 
+ [sources.libxslt]
+-hash = "2a20ad621148339b0759c4d4e96719362dee64c9a096dbba625ba053846349f0"
++hash = "5a3d6b383ca5afc235b171118e90f5ff6aa27e9fea3303065231a6d403f0183a"
+ format = "tar.xz"
+ file = "libxslt-{version}.{format}"
+ mirrors = [ "https://download.gnome.org/sources/libxslt/{version_major_minor}/{file}",]
+diff --git a/packages/core/libzstd/package.toml b/packages/core/libzstd/package.toml
+index 703dcca8..19937e88 100644
+--- a/packages/core/libzstd/package.toml
++++ b/packages/core/libzstd/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "libzstd"
+-version = "1.5.5"
++version = "1.5.7"
+ description = "TODO"
+ 
+ [sources.libzstd]
+-hash = "98e9c3d949d1b924e28e01eccb7deed865eefebf25c2f21c702e5cd5b63b85e1"
++hash = "37d7284556b20954e56e1ca85b80226768902e2edabd3b649e9e72c0c9012ee3"
+ format = "tar.gz"
+ file = "libzstd-{version}.{format}"
+ mirrors = [ "https://github.com/facebook/zstd/archive/v{version}.{format}",]
+diff --git a/packages/core/linux-headers/package.toml b/packages/core/linux-headers/package.toml
+index c369a103..649c015c 100644
+--- a/packages/core/linux-headers/package.toml
++++ b/packages/core/linux-headers/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "linux-headers"
+-version = "6.6"
++version = "6.16"
+ description = "TODO"
+ 
+ [sources.linux-headers]
+-hash = "d926a06c63dd8ac7df3f86ee1ffc2ce2a3b81a2d168484e76b5b389aba8e56d0"
++hash = "1a4be2fe6b5246aa4ac8987a8a4af34c42a8dd7d08b46ab48516bcc1befbcd83"
+ format = "tar.xz"
+ file = "linux-{version}.{format}"
+ mirrors = [ "https://mirrors.edge.kernel.org/pub/linux/kernel/v{version_major}.x/linux-{version}.{format}",]
+diff --git a/packages/core/lmdb/package.toml b/packages/core/lmdb/package.toml
+index 5167ca8f..6f4156fb 100644
+--- a/packages/core/lmdb/package.toml
++++ b/packages/core/lmdb/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "lmdb"
+-version = "0.9.31"
++version = "0.9.33"
+ description = "TODO"
+ 
+ [sources.lmdb]
+-hash = "f7aecdd1bcc69fb32bb33d8544cfe50f8e9e916f366d598a268e1f43ee9c7603"
++hash = "476801f5239c88c7de61c3390502a5d13965ecedef80105b5fb0fcb8373d1e53"
+ format = "tar.gz"
+ file = "lmdb-{version}.{format}"
+ mirrors = [ "https://git.openldap.org/openldap/openldap/-/archive/LMDB_{version}/openldap-LMDB_{version}.{format}",]
+diff --git a/packages/core/lua/package.toml b/packages/core/lua/package.toml
+index 4c4941a0..f545e24f 100644
+--- a/packages/core/lua/package.toml
++++ b/packages/core/lua/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "lua"
+-version = "5.4.6"
++version = "5.4.8"
+ description = "TODO"
+ 
+ [sources.lua]
+-hash = "7d5ea1b9cb6aa0b59ca3dde1c6adcb57ef83a1ba8e5432c0ecd06bf439b3ad88"
++hash = "4f18ddae154e793e46eeab727c59ef1c0c0c2b744e7b94219710d76f530629ae"
+ format = "tar.gz"
+ file = "lua-{version}.{format}"
+ mirrors = [ "https://www.lua.org/ftp/{file}",]
+diff --git a/packages/core/lzip/package.toml b/packages/core/lzip/package.toml
+index be5be2a9..724c5605 100644
+--- a/packages/core/lzip/package.toml
++++ b/packages/core/lzip/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "lzip"
+-version = "1.24.1"
++version = "1.25"
+ description = "TODO"
+ 
+ [sources.lzip]
+-hash = "30c9cb6a0605f479c496c376eb629a48b0a1696d167e3c1e090c5defa481b162"
++hash = "09418a6d8fb83f5113f5bd856e09703df5d37bae0308c668d0f346e3d3f0a56f"
+ format = "tar.gz"
+ file = "lzip-{version}.{format}"
+ mirrors = [ "http://download.savannah.gnu.org/releases/lzip/{file}",]
+diff --git a/packages/core/m4/package.toml b/packages/core/m4/package.toml
+index 31b9ba58..1eaddca5 100644
+--- a/packages/core/m4/package.toml
++++ b/packages/core/m4/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "m4"
+-version = "1.4.18"
++version = "1.4.20"
+ description = "TODO"
+ 
+ [sources.m4]
+-hash = "ab2633921a5cd38e48797bf5521ad259bdc4b979078034a3b790d7fec5493fab"
++hash = "6ac4fc31ce440debe63987c2ebbf9d7b6634e67a7c3279257dc7361de8bdb3ef"
+ format = "tar.gz"
+ file = "m4-{version}.{format}"
+ mirrors = [ "https://ftp.gnu.org/gnu/m4/{file}",]
+diff --git a/packages/core/make/package.toml b/packages/core/make/package.toml
+index c2e47ae0..8a62395d 100644
+--- a/packages/core/make/package.toml
++++ b/packages/core/make/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "make"
+-version = "4.4"
++version = "4.4.1"
+ description = "TODO"
+ 
+ [sources.make]
+-hash = "581f4d4e872da74b3941c874215898a7d35802f03732bdccee1d4a7979105d18"
++hash = "dd16fb1d67bfab79a72f5e8390735c49e3e8e70b4945a15ab1f81ddb78658fb3"
+ format = "tar.gz"
+ file = "make-{version}.{format}"
+ mirrors = [ "https://ftp.gnu.org/gnu/make/{file}",]
+diff --git a/packages/core/meson/package.toml b/packages/core/meson/package.toml
+index 3c0ffb7d..a4cfbed0 100644
+--- a/packages/core/meson/package.toml
++++ b/packages/core/meson/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "meson"
+-version = "1.7.0"
++version = "1.8.3"
+ description = "Fast and user friendly build system"
+ 
+ [sources.meson]
+-hash = "08efbe84803eed07f863b05092d653a9d348f7038761d900412fddf56deb0284"
++hash = "f118aa910fc0a137cc2dd0122232dbf82153d9a12fb5b0f5bb64896f6a157abf"
+ format = "tar.gz"
+ file = "meson-{version}.{format}"
+ mirrors = [ "https://github.com/mesonbuild/meson/releases/download/{version}/{file}",]
+diff --git a/packages/core/nlohmann-json/package.toml b/packages/core/nlohmann-json/package.toml
+index dbdb1249..0e68853d 100644
+--- a/packages/core/nlohmann-json/package.toml
++++ b/packages/core/nlohmann-json/package.toml
+@@ -1,12 +1,12 @@
+ [package]
+ name = "nlohmann-json"
+-version = "3.11.3"
++version = "3.12.0"
+ description = "Open-source formatting library for C++"
+ license = "MIT"
+ website = "https://json.nlohmann.me"
+ 
+ [sources.nlohmann-json]
+-hash = "0d8ef5af7f9794e3263480193c491549b2ba6cc74bb018906202ada498a79406"
++hash = "4b92eb0c06d10683f7447ce9406cb97cd4b453be18d7279320f7b2f025c10187"
+ format = "tar.gz"
+ file = "v{version}.{format}"
+-mirrors = [ "https://github.com/nlohmann/json/archive/refs/tags/{file}", ]
++mirrors = [ "https://github.com/nlohmann/json/archive/refs/tags/{file}",]
+diff --git a/packages/core/nodejs/package.toml b/packages/core/nodejs/package.toml
+index ca646667..c4f9ebe8 100644
+--- a/packages/core/nodejs/package.toml
++++ b/packages/core/nodejs/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "nodejs"
+-version = "24.2.0"
++version = "24.6.0"
+ description = "Evented I/O for V8 javascript ('Current' release)"
+ 
+ [sources.nodejs]
+-hash = "da739aedc45729436587cda9f063b28c1d881a32ba149b0a2f4e8aff55a18929"
++hash = "eba12bb7a8bcd8d5e0bebb9d7733f34d3e4854db4e890702c32f1060151097ed"
+ format = "tar.gz"
+ file = "nodejs-{version}.{format}"
+ mirrors = [ "https://nodejs.org/dist/v{version}/node-v{version}.{format}",]
+diff --git a/packages/core/npm/package.toml b/packages/core/npm/package.toml
+index ef2c8db1..735ffcf0 100644
+--- a/packages/core/npm/package.toml
++++ b/packages/core/npm/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "npm"
+-version = "10.8.3"
++version = "11.5.2"
+ description = "TODO"
+ 
+ [sources.npm]
+-hash = "b7dc7eb48d7479b93668e913c7ad686ab2aa71c705d4a56b5323d1bffdba2972"
++hash = "beb0d754f9759c17cdc10f63121d0e50636d146262cd0e3bcb231edf9f0b3a7d"
+ format = "tgz"
+ file = "npm-{version}.{format}"
+ mirrors = [ "https://registry.npmjs.org/npm/-/{file}",]
+diff --git a/packages/core/ocaml/package.toml b/packages/core/ocaml/package.toml
+index efb8bf5b..43339e11 100644
+--- a/packages/core/ocaml/package.toml
++++ b/packages/core/ocaml/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "ocaml"
+-version = "5.2.0"
++version = "5.3.0"
+ description = "TODO"
+ 
+ [sources.ocaml]
+-hash = "48554abfd530fcdaa08f23f801b699e4f74c320ddf7d0bd56b0e8c24e55fc911"
++hash = "eb9eab2f21758d3cfb1e78c7f83f0b4dd6302824316aba4abee047a5a4f85029"
+ format = "tar.gz"
+ file = "ocaml-{version}.{format}"
+ mirrors = [ "https://github.com/ocaml/ocaml/archive/refs/tags/{version}.{format}",]
+diff --git a/packages/core/openssl/package.toml b/packages/core/openssl/package.toml
+index a19701ca..e6d7961c 100644
+--- a/packages/core/openssl/package.toml
++++ b/packages/core/openssl/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "openssl"
+-version = "3.0.12"
++version = "3.5.2"
+ description = "TODO"
+ 
+ [sources.openssl]
+-hash = "f93c9e8edde5e9166119de31755fc87b4aa34863662f67ddfcba14d0b6b69b61"
++hash = "c53a47e5e441c930c3928cf7bf6fb00e5d129b630e0aa873b08258656e7345ec"
+ format = "tar.gz"
+ file = "openssl-{version}.{format}"
+ mirrors = [ "https://www.openssl.org/source/{file}",]
+diff --git a/packages/core/pcre2/package.toml b/packages/core/pcre2/package.toml
+index eaadbe47..ee4c5f67 100644
+--- a/packages/core/pcre2/package.toml
++++ b/packages/core/pcre2/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "pcre2"
+-version = "10.44"
++version = "10.45"
+ description = "TODO"
+ 
+ [sources.pcre2]
+-hash = "07a002e8216382a96f722bc4a831f3d77457fe3e9e62a6dff250a2dd0e9c5e6d"
++hash = "35ce7d21f511c4a81d7079164077d25fbc41af00f19e1b547801df905c5f0fab"
+ format = "tar.gz"
+ file = "pcre2-{version}.{format}"
+ mirrors = [ "https://github.com/PCRE2Project/pcre2/archive/refs/tags/{file}",]
+diff --git a/packages/core/perl/package.toml b/packages/core/perl/package.toml
+index 6c56f122..e319d076 100644
+--- a/packages/core/perl/package.toml
++++ b/packages/core/perl/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "perl"
+-version = "5.38.0"
++version = "5.42.0"
+ description = "TODO"
+ 
+ [sources.perl]
+-hash = "eca551caec3bc549a4e590c0015003790bdd1a604ffe19cc78ee631d51f7072e"
++hash = "73cf6cc1ea2b2b1c110a18c14bbbc73a362073003893ffcedc26d22ebdbdd0c3"
+ format = "tar.xz"
+ file = "perl-{version}.{format}"
+ mirrors = [ "https://www.cpan.org/src/{version_major}.0/{file}",]
+diff --git a/packages/core/php/package.toml b/packages/core/php/package.toml
+index 2c3f64c5..09f85b88 100644
+--- a/packages/core/php/package.toml
++++ b/packages/core/php/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "php"
+-version = "8.4.4"
++version = "8.4.11"
+ description = "TODO"
+ 
+ [sources.php]
+-hash = "b94a8a210441463cd337bff80dd5d52a7f97b6f6a7d909d061518ebf392aac6c"
++hash = "fb3cd8669c2722d6e92de4d226eac9449abc0f895a00091e451657857e648e27"
+ format = "tar.gz"
+ file = "php-{version}.{format}"
+ mirrors = [ "https://github.com/php/php-src/archive/refs/tags/{file}",]
+diff --git a/packages/core/pkgconf/package.toml b/packages/core/pkgconf/package.toml
+index b349c155..31dba887 100644
+--- a/packages/core/pkgconf/package.toml
++++ b/packages/core/pkgconf/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "pkgconf"
+-version = "1.6.3"
++version = "2.5.1"
+ description = "TODO"
+ 
+ [sources.pkgconf]
+-hash = "61f0b31b0d5ea0e862b454a80c170f57bad47879c0c42bd8de89200ff62ea210"
++hash = "cd05c9589b9f86ecf044c10a2269822bc9eb001eced2582cfffd658b0a50c243"
+ format = "tar.xz"
+ file = "pkgconf-{version}.{format}"
+ mirrors = [ "https://distfiles.ariadne.space/pkgconf/{file}",]
+diff --git a/packages/core/po4a/package.toml b/packages/core/po4a/package.toml
+index 18326dd7..06d1d318 100644
+--- a/packages/core/po4a/package.toml
++++ b/packages/core/po4a/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "po4a"
+-version = "0.73"
++version = "0.74"
+ description = "TODO"
+ 
+ [sources.po4a]
+-hash = "ad5edc38bf004807843622fddbf67bd5ac604fc16e14c2bfefa7b07718ad21f3"
++hash = "6e390eb7707501a86f2e648d78fddb0d211d1e8699aa1ee201176e9f966a798b"
+ format = "tar.gz"
+ file = "po4a-{version}.{format}"
+ mirrors = [ "https://github.com/mquinson/po4a/archive/refs/tags/v{version}.{format}",]
+diff --git a/packages/core/py-build/package.toml b/packages/core/py-build/package.toml
+index c3c8032b..92c8d45b 100644
+--- a/packages/core/py-build/package.toml
++++ b/packages/core/py-build/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-build"
+-version = "0.7.0"
++version = "1.3.0"
+ description = "TODO"
+ 
+ [sources.py-build]
+-hash = "1aaadcd69338252ade4f7ec1265e1a19184bf916d84c9b7df095f423948cb89f"
++hash = "698edd0ea270bde950f53aed21f3a0135672206f3911e0176261a31e0e07b397"
+ format = "tar.gz"
+ file = "py-build-{version}.{format}"
+ mirrors = [ "https://files.pythonhosted.org/packages/source/b/build/build-{version}.{format}",]
+diff --git a/packages/core/py-cffi/package.toml b/packages/core/py-cffi/package.toml
+index acd777c1..7310b979 100644
+--- a/packages/core/py-cffi/package.toml
++++ b/packages/core/py-cffi/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-cffi"
+-version = "1.16.0"
++version = "1.17.1"
+ description = "TODO"
+ 
+ [sources.py-cffi]
+-hash = "bcb3ef43e58665bbda2fb198698fcae6776483e0c4a631aa5647806c25e02cc0"
++hash = "1c39c6016c32bc48dd54561950ebd6836e1670f2ae46128f67cf49e789c52824"
+ format = "tar.gz"
+ file = "py-cffi-{version}.{format}"
+ mirrors = [ "https://files.pythonhosted.org/packages/source/c/cffi/cffi-{version}.{format}",]
+diff --git a/packages/core/py-flit/package.toml b/packages/core/py-flit/package.toml
+index 2be80b7c..308415b3 100644
+--- a/packages/core/py-flit/package.toml
++++ b/packages/core/py-flit/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-flit"
+-version = "3.9.0"
++version = "3.12.0"
+ description = "TODO"
+ 
+ [sources.py-flit]
+-hash = "d75edf5eb324da20d53570a6a6f87f51e606eee8384925cd66a90611140844c7"
++hash = "1c80f34dd96992e7758b40423d2809f48f640ca285d0b7821825e50745ec3740"
+ format = "tar.gz"
+ file = "py-flit-{version}.{format}"
+ mirrors = [ "https://files.pythonhosted.org/packages/source/f/flit/flit-{version}.{format}",]
+diff --git a/packages/core/py-gpep517/package.toml b/packages/core/py-gpep517/package.toml
+index 6b92dffc..cad61815 100644
+--- a/packages/core/py-gpep517/package.toml
++++ b/packages/core/py-gpep517/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-gpep517"
+-version = "16"
++version = "19"
+ description = "TODO"
+ 
+ [sources.py-gpep517]
+-hash = "965ff7cb2217fa03091face01fcb9a2b0205f58be80c8be9ccf832eab7a55414"
++hash = "17879b79edbb5a21d3dca6cfae997bda8e4c99254caf16616a6ae70d15a43c09"
+ format = "tar.gz"
+ file = "py-gpep517-{version}.{format}"
+ mirrors = [ "https://github.com/projg2/gpep517/archive/v{version}/v{version}.{format}",]
+diff --git a/packages/core/py-packaging/package.toml b/packages/core/py-packaging/package.toml
+index b84716c2..8e1d4380 100644
+--- a/packages/core/py-packaging/package.toml
++++ b/packages/core/py-packaging/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-packaging"
+-version = "24.0"
++version = "25.0"
+ description = "TODO"
+ 
+ [sources.py-packaging]
+-hash = "eb82c5e3e56209074766e6885bb04b8c38a0c015d0a30036ebe7ece34c9989e9"
++hash = "d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f"
+ format = "tar.gz"
+ file = "py-packaging-{version}.{format}"
+ mirrors = [ "https://files.pythonhosted.org/packages/source/p/packaging/packaging-{version}.{format}",]
+diff --git a/packages/core/py-pep517/package.toml b/packages/core/py-pep517/package.toml
+index 28c84296..194f8cd1 100644
+--- a/packages/core/py-pep517/package.toml
++++ b/packages/core/py-pep517/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-pep517"
+-version = "0.9.1"
++version = "0.13.1"
+ description = "TODO"
+ 
+ [sources.py-pep517]
+-hash = "aeb78601f2d1aa461960b43add204cc7955667687fbcf9cdb5170f00556f117f"
++hash = "1b2fa2ffd3938bb4beffe5d6146cbcb2bda996a5a4da9f31abffd8b24e07b317"
+ format = "tar.gz"
+ file = "py-pep517-{version}.{format}"
+ mirrors = [ "https://files.pythonhosted.org/packages/source/p/pep517/pep517-{version}.{format}",]
+diff --git a/packages/core/py-setuptools/package.toml b/packages/core/py-setuptools/package.toml
+index 465dfba8..86829917 100644
+--- a/packages/core/py-setuptools/package.toml
++++ b/packages/core/py-setuptools/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-setuptools"
+-version = "68.2.2"
++version = "80.9.0"
+ description = "TODO"
+ 
+ [sources.py-setuptools]
+-hash = "4ac1475276d2f1c48684874089fefcd83bd7162ddaafb81fac866ba0db282a87"
++hash = "f36b47402ecde768dbfafc46e8e4207b4360c654f1f3bb84475f0a28628fb19c"
+ format = "tar.gz"
+ file = "py-setuptools-{version}.{format}"
+ mirrors = [ "https://pypi.io/packages/source/s/setuptools/setuptools-{version}.{format}",]
+diff --git a/packages/core/py-urllib3/package.toml b/packages/core/py-urllib3/package.toml
+index 1d314c17..f58e098c 100644
+--- a/packages/core/py-urllib3/package.toml
++++ b/packages/core/py-urllib3/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-urllib3"
+-version = "1.26.18"
++version = "2.5.0"
+ description = "TODO"
+ 
+ [sources.py-urllib3]
+-hash = "f8ecc1bba5667413457c529ab955bf8c67b45db799d159066261719e328580a0"
++hash = "3fc47733c7e419d4bc3f6b3dc2b4f890bb743906a30d56ba4a5bfa4bbff92760"
+ format = "tar.gz"
+ file = "py-urllib3-{version}.{format}"
+ mirrors = [ "https://files.pythonhosted.org/packages/source/u/urllib3/urllib3-{version}.{format}",]
+diff --git a/packages/core/py-wheel/package.toml b/packages/core/py-wheel/package.toml
+index 2be988b8..e59678b9 100644
+--- a/packages/core/py-wheel/package.toml
++++ b/packages/core/py-wheel/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-wheel"
+-version = "0.43.0"
++version = "0.46.1"
+ description = "TODO"
+ 
+ [sources.py-wheel]
+-hash = "465ef92c69fa5c5da2d1cf8ac40559a8c940886afcef87dcf14b9470862f1d85"
++hash = "fd477efb5da0f7df1d3c76c73c14394002c844451bd63229d8570f376f5e6a38"
+ format = "tar.gz"
+ file = "py-wheel-{version}.{format}"
+ mirrors = [ "https://files.pythonhosted.org/packages/source/w/wheel/wheel-{version}.{format}",]
+diff --git a/packages/core/python/package.toml b/packages/core/python/package.toml
+index f392fe9e..7abb2cc3 100644
+--- a/packages/core/python/package.toml
++++ b/packages/core/python/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "python"
+-version = "3.11.8"
++version = "3.13.7"
+ description = "TODO"
+ 
+ [sources.python]
+-hash = "9e06008c8901924395bc1da303eac567a729ae012baa182ab39269f650383bb3"
++hash = "5462f9099dfd30e238def83c71d91897d8caa5ff6ebc7a50f14d4802cdaaa79a"
+ format = "tar.xz"
+ file = "python-{version}.{format}"
+ mirrors = [ "https://www.python.org/ftp/python/{version}/Python-{version}.{format}",]
+diff --git a/packages/core/re2c/package.toml b/packages/core/re2c/package.toml
+index 3af80856..901f2ab6 100644
+--- a/packages/core/re2c/package.toml
++++ b/packages/core/re2c/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "re2c"
+-version = "3.1"
++version = "4.3"
+ description = "TODO"
+ 
+ [sources.re2c]
+-hash = "087c44de0400fb15caafde09fd72edc7381e688a35ef505ee65e0e3d2fac688b"
++hash = "39cd7048a817cf3d7d0c2e58a52fb3597d6e1bc86b1df32b8a3cd755c458adfd"
+ format = "tar.gz"
+ file = "re2c-{version}.{format}"
+ mirrors = [ "https://github.com/skvadrik/re2c/archive/refs/tags/{version}.{format}",]
+diff --git a/packages/core/ruby/package.toml b/packages/core/ruby/package.toml
+index 6795030a..652010b4 100644
+--- a/packages/core/ruby/package.toml
++++ b/packages/core/ruby/package.toml
+@@ -1,9 +1,8 @@
+ [package]
+ name = "ruby"
+-version = "3.3.6"
++version = "3.4.5"
+ description = "An object-oriented language for quick and easy programming"
+ 
+ [sources.ruby]
+-hash = "8dc48fffaf270f86f1019053f28e51e4da4cce32a36760a0603a9aee67d7fd8d"
+ file = "ruby-{version}.tar.gz"
+-mirrors = ["https://cache.ruby-lang.org/pub/ruby/3.3/{file}"]
++mirrors = [ "https://cache.ruby-lang.org/pub/ruby/3.3/{file}",]
+diff --git a/packages/core/rust-bindgen/package.toml b/packages/core/rust-bindgen/package.toml
+index 5125211a..12481d01 100644
+--- a/packages/core/rust-bindgen/package.toml
++++ b/packages/core/rust-bindgen/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "rust-bindgen"
+-version = "0.71.1"
++version = "0.72.0"
+ description = "automatically generates Rust FFI bindings to C (and some C++) libraries"
+ 
+ [sources.rust-bindgen]
+-hash = "620d80c32b6aaf42d12d85de86fc56950c86b2a13a5b943c10c29d30c4f3efb0"
++hash = "1da7050a17fdab0e20d5d8c20d48cddce2973e8b7cb0afc15185bfad22f8ce5b"
+ format = "tar.gz"
+ file = "v{version}.{format}"
+-mirrors = [ "https://github.com/rust-lang/rust-bindgen/archive/{file}", ]
++mirrors = [ "https://github.com/rust-lang/rust-bindgen/archive/{file}",]
+diff --git a/packages/core/sqlite3/package.toml b/packages/core/sqlite3/package.toml
+index 0f33118b..a70af389 100644
+--- a/packages/core/sqlite3/package.toml
++++ b/packages/core/sqlite3/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "sqlite3"
+-version = "3.50.1"
++version = "3.50.4"
+ description = "SQLite is a C-language library that implements a small, fast, self-contained, high-reliability, full-featured, SQL database engine."
+ 
+ [sources.sqlite3]
+-hash = "2534f37f8554f18b825c089835b100eaffe038b129b5e9127f8b91d623246852"
++hash = "74ed9d2e5930d79564d92b838a61f943a9df01403b51f479fb64ce9aa5dca70d"
+ format = "tar.gz"
+ file = "sqlite3-{version}.{format}"
+ mirrors = [ "https://github.com/sqlite/sqlite/archive/refs/tags/version-{version}.{format}",]
+diff --git a/packages/core/tcl/package.toml b/packages/core/tcl/package.toml
+index 3cca5c79..08dc5e49 100644
+--- a/packages/core/tcl/package.toml
++++ b/packages/core/tcl/package.toml
+@@ -1,9 +1,8 @@
+ [package]
+ name = "tcl"
+-version = "8.6.16"
++version = "9.0.2"
+ description = "TODO"
+ 
+ [sources.tcl]
+-hash = "91cb8fa61771c63c262efb553059b7c7ad6757afa5857af6265e4b0bdc2a14a5"
+ file = "tcl-{version}.tar.gz"
+ mirrors = [ "https://fossies.org/linux/misc/tcl{version}-src.tar.gz",]
+diff --git a/packages/core/texinfo/package.toml b/packages/core/texinfo/package.toml
+index 8e6a3be6..26b2dc57 100644
+--- a/packages/core/texinfo/package.toml
++++ b/packages/core/texinfo/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "texinfo"
+-version = "7.1"
++version = "7.2"
+ description = "TODO"
+ 
+ [sources.texinfo]
+-hash = "deeec9f19f159e046fdf8ad22231981806dac332cc372f1c763504ad82b30953"
++hash = "0329d7788fbef113fa82cb80889ca197a344ce0df7646fe000974c5d714363a6"
+ format = "tar.xz"
+ file = "texinfo-{version}.{format}"
+ mirrors = [ "https://ftp.gnu.org/gnu/texinfo/{file}",]
+diff --git a/packages/core/xz/package.toml b/packages/core/xz/package.toml
+index 69412084..b8168769 100644
+--- a/packages/core/xz/package.toml
++++ b/packages/core/xz/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "xz"
+-version = "5.6.2"
++version = "5.8.1"
+ description = "TODO"
+ 
+ [sources.xz]
+-hash = "92a439948bba24c2bc25bb67a087a19194905209c56b5e600bc94fd2a472e687"
++hash = "bdbc23fbf9098843357e71e49685724fda2c320c29cb1b25fd90505f14bb0b3d"
+ format = "tar.gz"
+ file = "xz-{version}.{format}"
+ mirrors = [ "https://github.com/tukaani-project/xz/archive/refs/tags/v{version}.{format}",]
+diff --git a/packages/core/zig/package.toml b/packages/core/zig/package.toml
+index 3b487f1b..dbf0f2c1 100644
+--- a/packages/core/zig/package.toml
++++ b/packages/core/zig/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "zig"
+-version = "0.14.0"
++version = "0.14.1"
+ description = "General-purpose programming language designed for robustness, optimality, and maintainability"
+ 
+ [sources.zig]
+-hash = "c76638c03eb204c4432ae092f6fa07c208567e110fbd4d862d131a7332584046"
++hash = "237f8abcc8c3fd68c70c66cdbf63dce4fb5ad4a2e6225ac925e3d5b4c388f203"
+ format = "tar.xz"
+ file = "zig-{version}.{format}"
+ mirrors = [ "https://ziglang.org/download/{version}/{file}",]
+diff --git a/packages/user/abseil-cpp/package.toml b/packages/user/abseil-cpp/package.toml
+index c0705ac5..87ffb3cb 100644
+--- a/packages/user/abseil-cpp/package.toml
++++ b/packages/user/abseil-cpp/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "abseil-cpp"
+-version = "20240116.2"
++version = "20250512.1"
+ description = "TODO"
+ 
+ [sources.abseil-cpp]
+-hash = "733726b8c3a6d39a4120d7e45ea8b41a434cdacde401cba500f14236c49b39dc"
++hash = "9b7a064305e9fd94d124ffa6cc358592eb42b5da588fb4e07d09254aa40086db"
+ format = "tar.gz"
+ file = "abseil-cpp-{version}.{format}"
+ mirrors = [ "https://github.com/abseil/abseil-cpp/archive/refs/tags/{version}.{format}",]
+diff --git a/packages/user/alsa-lib/package.toml b/packages/user/alsa-lib/package.toml
+index baf3cffc..cb8eb66a 100644
+--- a/packages/user/alsa-lib/package.toml
++++ b/packages/user/alsa-lib/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "alsa-lib"
+-version = "1.2.12"
++version = "1.2.14"
+ description = "TODO"
+ 
+ [sources.alsa-lib]
+-hash = "4868cd908627279da5a634f468701625be8cc251d84262c7e5b6a218391ad0d2"
++hash = "be9c88a0b3604367dd74167a2b754a35e142f670292ae47a2fdef27a2ee97a32"
+ format = "tar.bz2"
+ file = "alsa-lib-{version}.{format}"
+ mirrors = [ "https://alsa-project.org/files/pub/lib/{file}",]
+diff --git a/packages/user/anubis/package.toml b/packages/user/anubis/package.toml
+index 5192de51..a5229c7d 100644
+--- a/packages/user/anubis/package.toml
++++ b/packages/user/anubis/package.toml
+@@ -1,12 +1,12 @@
+ [package]
+ name = "anubis"
+-version = "1.19.1"
++version = "1.21.3"
+ description = "Weighs the souls of incoming HTTP requests using Proof-of-Work"
+ license = "MIT"
+ website = "https://anubis.techaro.lol"
+ 
+ [sources.anubis]
+-hash = "5fa0640abad46d1cbe5a84063ec60caa3272478044bad3e1e8b0260ee8756ce7"
++hash = "f97c3ce3925327eb6523ac7876016ab8bfd7bea1e9f665bb675df6a7249c7301"
+ format = "tar.gz"
+ file = "anubis-{version}.{format}"
+-mirrors = ["https://github.com/techarohq/anubis/archive/refs/tags/v{version}.{format}"]
++mirrors = [ "https://github.com/techarohq/anubis/archive/refs/tags/v{version}.{format}",]
+diff --git a/packages/user/apr/package.toml b/packages/user/apr/package.toml
+index 3e8aa81d..5e619945 100644
+--- a/packages/user/apr/package.toml
++++ b/packages/user/apr/package.toml
+@@ -1,13 +1,10 @@
+ [package]
+ name = "apr"
+-version = "1.7.5"
++version = "1.7.6"
+ description = "TODO"
+ 
+ [sources.apr]
+-hash = "cd0f5d52b9ab1704c72160c5ee3ed5d3d4ca2df4a7f8ab564e3cb352b67232f2"
++hash = "49030d92d2575da735791b496dc322f3ce5cff9494779ba8cc28c7f46c5deb32"
+ format = "tar.bz2"
+ file = "apr-{version}.{format}"
+-mirrors = [
+-	"https://www.apache.org/dist/apr/{file}",
+-	"https://archive.apache.org/dist/apr/{file}",
+-]
++mirrors = [ "https://www.apache.org/dist/apr/{file}", "https://archive.apache.org/dist/apr/{file}",]
+diff --git a/packages/user/autoconf-archive/package.toml b/packages/user/autoconf-archive/package.toml
+index 4d03dd6d..37b5df69 100644
+--- a/packages/user/autoconf-archive/package.toml
++++ b/packages/user/autoconf-archive/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "autoconf-archive"
+-version = "2023.02.20"
++version = "2024.10.16"
+ description = "TODO"
+ 
+ [sources.autoconf-archive]
+-hash = "71d4048479ae28f1f5794619c3d72df9c01df49b1c628ef85fde37596dc31a33"
++hash = "7bcd5d001916f3a50ed7436f4f700e3d2b1bade3ed803219c592d62502a57363"
+ format = "tar.xz"
+ file = "autoconf-archive-{version}.{format}"
+ mirrors = [ "https://ftp.gnu.org/gnu/autoconf-archive/{file}",]
+diff --git a/packages/user/aws-cli/package.toml b/packages/user/aws-cli/package.toml
+index a0d9f57b..7d022a99 100644
+--- a/packages/user/aws-cli/package.toml
++++ b/packages/user/aws-cli/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "aws-cli"
+-version = "2.15.31"
++version = "2.28.11"
+ description = "TODO"
+ 
+ [sources.aws-cli]
+-hash = "6507f894a30036ad002b54e12f49959c592c8507765405c52cf7b4ba4dc2509d"
++hash = "db13eda526d315880724238cec999cab0750750af0315eb3741aaccd386de41a"
+ format = "tar.gz"
+ file = "aws-cli-{version}.{format}"
+ mirrors = [ "https://github.com/aws/aws-cli/archive/refs/tags/{version}/{version}.{format}",]
+diff --git a/packages/user/buf/package.toml b/packages/user/buf/package.toml
+index 065493f4..7af93682 100644
+--- a/packages/user/buf/package.toml
++++ b/packages/user/buf/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "buf"
+-version = "1.30.1"
++version = "1.56.0"
+ description = "TODO"
+ 
+ [sources.buf]
+-hash = "56da0c31b11bd15b99049af8b364c7bf4e11106152ab27d5ccb98d28123ab785"
++hash = "ab029136c76e87f69f0adfef9b376a64bc0b3f3d0c90743753b2938e086ad264"
+ format = "tar.gz"
+ file = "buf-{version}.{format}"
+ mirrors = [ "https://github.com/bufbuild/buf/archive/refs/tags/v{version}.{format}",]
+diff --git a/packages/user/buildkit/package.toml b/packages/user/buildkit/package.toml
+index 4231e4d0..a83eaeca 100644
+--- a/packages/user/buildkit/package.toml
++++ b/packages/user/buildkit/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "buildkit"
+-version = "0.15.0"
++version = "0.23.2"
+ description = "TODO"
+ 
+ [sources.buildkit]
+-hash = "ebf4b82f7379818d8fcfe5c54034e7f93c062c95f663bfd3c2a622583f62a8a4"
++hash = "5f8e18b63bbf8e41dc787e8ce68103c94acb1585782cb42697aa1dfa252817d7"
+ format = "tar.gz"
+ file = "buildkit-{version}.{format}"
+ mirrors = [ "https://github.com/moby/buildkit/archive/v{version}.{format}",]
+diff --git a/packages/user/caddy/package.toml b/packages/user/caddy/package.toml
+index d9a1a7ee..99b16961 100644
+--- a/packages/user/caddy/package.toml
++++ b/packages/user/caddy/package.toml
+@@ -1,11 +1,11 @@
+ [package]
+ name = "caddy"
+-version = "2.9.1"
++version = "2.10.0"
+ description = "Fast and extensible multi-platform HTTP/1-2-3 web server with automatic HTTPS"
+ license = "Apache-2.0"
+ 
+ [sources.caddy]
+-hash = "beb52478dfb34ad29407003520d94ee0baccbf210d1af72cebf430d6d7dd7b63"
++hash = "e07e2747c394a6549751950ec8f7457ed346496f131ee38538ae39cf89ebcc68"
+ format = "tar.gz"
+ file = "caddy-v{version}.{format}"
+-mirrors = ["https://github.com/caddyserver/caddy/archive/refs/tags/v{version}.{format}",]
++mirrors = [ "https://github.com/caddyserver/caddy/archive/refs/tags/v{version}.{format}",]
+diff --git a/packages/user/capnproto/package.toml b/packages/user/capnproto/package.toml
+index 46a19531..28f60e63 100644
+--- a/packages/user/capnproto/package.toml
++++ b/packages/user/capnproto/package.toml
+@@ -1,9 +1,9 @@
+ [package]
+ name = "capnproto"
+-version = "1.0.2"
++version = "1.2.0"
+ description = "TODO"
+ 
+ [sources.capnproto]
+-hash = "9057dbc0223366b74bbeca33a05de164a229b0377927f1b7ef3828cdd8cb1d7e"
++hash = "ed00e44ecbbda5186bc78a41ba64a8dc4a861b5f8d4e822959b0144ae6fd42ef"
+ file = "capnproto-c++-{version}.tar.gz"
+ mirrors = [ "https://capnproto.org/{file}",]
+diff --git a/packages/user/ccid/package.toml b/packages/user/ccid/package.toml
+index e60df279..0fe4f2a0 100644
+--- a/packages/user/ccid/package.toml
++++ b/packages/user/ccid/package.toml
+@@ -1,10 +1,9 @@
+ [package]
+ name = "ccid"
+-version = "1.5.5"
++version = "1.6.2"
+ description = "TODO"
+ 
+ [sources.ccid]
+-hash = "194708f75fe369d45dd7c15e8b3e8a7db8b49cfc5557574ca2a2e76ef12ca0ca"
+ format = "tar.bz2"
+ file = "ccid-{version}.{format}"
+ mirrors = [ "https://ccid.apdu.fr/files/{file}",]
+diff --git a/packages/user/chrpath/package.toml b/packages/user/chrpath/package.toml
+index 2b39f434..f5bdb718 100644
+--- a/packages/user/chrpath/package.toml
++++ b/packages/user/chrpath/package.toml
+@@ -1,9 +1,8 @@
+ [package]
+ name = "chrpath"
+-version = "0.16"
++version = "0.18"
+ description = "TODO"
+ 
+ [sources.chrpath]
+-hash = "bb0d4c54bac2990e1bdf8132f2c9477ae752859d523e141e72b3b11a12c26e7b"
+ file = "chrpath-{version}.tar.gz"
+-mirrors = [ "https://alioth-archive.debian.org/releases/chrpath/chrpath/{version}/{file}", ]
++mirrors = [ "https://alioth-archive.debian.org/releases/chrpath/chrpath/{version}/{file}",]
+diff --git a/packages/user/containerd/package.toml b/packages/user/containerd/package.toml
+index cb4fdd16..540ef986 100644
+--- a/packages/user/containerd/package.toml
++++ b/packages/user/containerd/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "containerd"
+-version = "1.7.22"
++version = "2.1.4"
+ description = "TODO"
+ 
+ [sources.containerd]
+-hash = "8c5edde741b7596af63c021429a1212bd616350ed65a7b741eeffc47e27ee9a9"
++hash = "8c409f8a0ba6015cb365a95e039a0fc9f3663c891a26eb52c0fb8cd291ba75d4"
+ format = "tar.gz"
+ file = "containerd-{version}.{format}"
+ mirrors = [ "https://github.com/containerd/containerd/archive/v{version}.{format}",]
+diff --git a/packages/user/dhcpcd/package.toml b/packages/user/dhcpcd/package.toml
+index cead9ed2..87a14dad 100644
+--- a/packages/user/dhcpcd/package.toml
++++ b/packages/user/dhcpcd/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "dhcpcd"
+-version = "10.1.0"
++version = "10.2.4"
+ description = "TODO"
+ 
+ [sources.dhcpcd]
+-hash = "abc307c63853da3199baa5c1e15fd5ede9d68d068b2a59ca14c5a6768e9cc3b7"
++hash = "6721e606609226dbf4d864a78802a9e96beec0ee034a1bd84138b3e037bba7d9"
+ format = "tar.xz"
+ file = "dhcpcd-{version}.{format}"
+ mirrors = [ "https://github.com/NetworkConfiguration/dhcpcd/releases/download/v{version}/{file}",]
+diff --git a/packages/user/diffoscope/package.toml b/packages/user/diffoscope/package.toml
+index 44cd045a..7b2e52a4 100644
+--- a/packages/user/diffoscope/package.toml
++++ b/packages/user/diffoscope/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "diffoscope"
+-version = "274"
++version = "303"
+ description = "TODO"
+ 
+ [sources.diffoscope]
+-hash = "c5398be0f26cb13344f4e27cf5a53df2b7a246a7b08944d114eee140989e5bb5"
++hash = "f9fa1b784e7c9a4cae304ae46a77b7fb5bee21664ba4ee6fbce01b82b1a34918"
+ format = "tar.gz"
+ file = "diffoscope-{version}.{format}"
+ mirrors = [ "https://salsa.debian.org/reproducible-builds/diffoscope/-/archive/{version}/{file}",]
+diff --git a/packages/user/docker-cli-buildx/package.toml b/packages/user/docker-cli-buildx/package.toml
+index 05b6ac06..960e4f68 100644
+--- a/packages/user/docker-cli-buildx/package.toml
++++ b/packages/user/docker-cli-buildx/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "docker-cli-buildx"
+-version = "0.16.2"
++version = "0.26.1"
+ description = "TODO"
+ 
+ [sources.docker-cli-buildx]
+-hash = "f314635765f3dc5efe089244280cd24a577e83d339fec1970fed16977bf28382"
++hash = "9a29405e4a156a7b428a0b4cbe6ae4e7d4a0e933871e3c6dd6241fe9c4a1a5b9"
+ format = "tar.gz"
+ file = "docker-cli-buildx-{version}.{format}"
+ mirrors = [ "https://github.com/docker/buildx/archive/v{version}.{format}",]
+diff --git a/packages/user/doxygen/package.toml b/packages/user/doxygen/package.toml
+index e3c58a1c..597077ae 100644
+--- a/packages/user/doxygen/package.toml
++++ b/packages/user/doxygen/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "doxygen"
+-version = "1.13.2"
++version = "1_14_0"
+ description = "TODO"
+ 
+ [sources.doxygen]
+-hash = "3a25e3386c26ea5494c784e946327225debfbc5dbfa8b13549010a315aace66d"
++hash = "d4536d11ab13037327d8d026b75f5a86b7ccb2093e2f546235faf61fd86e6b5d"
+ format = "tar.gz"
+ file = "doxygen-{version}.{format}"
+ mirrors = [ "https://doxygen.nl/files/doxygen-{version}.src.{format}",]
+diff --git a/packages/user/dpkg/package.toml b/packages/user/dpkg/package.toml
+index f2d7f4a8..56bc9027 100644
+--- a/packages/user/dpkg/package.toml
++++ b/packages/user/dpkg/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "dpkg"
+-version = "1.22.15"
++version = "1.22.21"
+ description = "The Debian Package Manager"
+ 
+ [sources.dpkg]
+-hash = "d9a80648d9b5e08eec6c98f37ecc2648c24fc95840698e6599380f94e6c19a6a"
++hash = "0b451c7b21c641b4c048f887f1d841c6c60a2b2a1501f744d6e2ab6b6c5295a2"
+ format = "tar.bz2"
+ file = "dpkg-{version}.{format}"
+-mirrors = [ "https://salsa.debian.org/dpkg-team/dpkg/-/archive/{version}/{file}", ]
++mirrors = [ "https://salsa.debian.org/dpkg-team/dpkg/-/archive/{version}/{file}",]
+diff --git a/packages/user/dtc/package.toml b/packages/user/dtc/package.toml
+index 746686a6..a95d282d 100644
+--- a/packages/user/dtc/package.toml
++++ b/packages/user/dtc/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "dtc"
+-version = "1.7.1"
++version = "1.7.2"
+ description = "TODO"
+ 
+ [sources.dtc]
+-hash = "398098bac205022b39d3dce5982b98c57f1023f3721a53ebcbb782be4cf7885e"
++hash = "92d8ca769805ae1f176204230438fe52808f4e1c7944053c9eec0e649b237539"
+ format = "tar.xz"
+ file = "dtc-{version}.{format}"
+ mirrors = [ "https://kernel.org/pub/software/utils/dtc/{file}",]
+diff --git a/packages/user/e2fsprogs/package.toml b/packages/user/e2fsprogs/package.toml
+index b5f6035a..02556c1d 100644
+--- a/packages/user/e2fsprogs/package.toml
++++ b/packages/user/e2fsprogs/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "e2fsprogs"
+-version = "1.47.1"
++version = "1.47.3"
+ description = "TODO"
+ 
+ [sources.e2fsprogs]
+-hash = "db95ff1cb6ef741c9aa8875d9f3f52a34168360febba765b6377b80bada09a8c"
++hash = "9286ee5471a8a5339a61eb952739e4614a5b1dbed79ca73a78f014885ce2ad53"
+ format = "tar.gz"
+ file = "e2fsprogs-{version}.{format}"
+ mirrors = [ "https://github.com/tytso/e2fsprogs/archive/v{version}.{format}",]
+diff --git a/packages/user/elfutils/package.toml b/packages/user/elfutils/package.toml
+index 70d563e0..131c9cf4 100644
+--- a/packages/user/elfutils/package.toml
++++ b/packages/user/elfutils/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "elfutils"
+-version = "0.190"
++version = "0.193"
+ description = "TODO"
+ 
+ [sources.elfutils]
+-hash = "8e00a3a9b5f04bc1dc273ae86281d2d26ed412020b391ffcc23198f10231d692"
++hash = "7857f44b624f4d8d421df851aaae7b1402cfe6bcdd2d8049f15fc07d3dde7635"
+ format = "tar.bz2"
+ file = "elfutils-{version}.{format}"
+ mirrors = [ "https://sourceware.org/elfutils/ftp/{version}/{file}",]
+diff --git a/packages/user/freetds/package.toml b/packages/user/freetds/package.toml
+index 36aeb746..0dd20f54 100644
+--- a/packages/user/freetds/package.toml
++++ b/packages/user/freetds/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "freetds"
+-version = "1.4.23"
++version = "1.5.4"
+ description = "TODO"
+ 
+ [sources.freetds]
+-hash = "93a3f186b82c6042a66a1970bd478d7914edb1c5669b642d80b4eaacf2a2d17e"
++hash = "1d024ef418d74a3a8f2cca82f10f1561f1dde28dc3d6f65c815f07764d4f7ea8"
+ format = "tar.bz2"
+ file = "freetds-{version}.{format}"
+ mirrors = [ "https://www.freetds.org/files/stable/{file}",]
+diff --git a/packages/user/fuse-overlayfs/package.toml b/packages/user/fuse-overlayfs/package.toml
+index 14792b59..4d7ce4b1 100644
+--- a/packages/user/fuse-overlayfs/package.toml
++++ b/packages/user/fuse-overlayfs/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "fuse-overlayfs"
+-version = "1.14"
++version = "1.15"
+ description = "TODO"
+ 
+ [sources.fuse-overlayfs]
+-hash = "0779d1ee8fbb6adb48df40e54efa9c608e1d7bbd844800a4c32c110d5fcbe9f2"
++hash = "e4fbbdacbeffb560715e6c74c128aee07a7053a1fec78dc904bcc0a88e2efd67"
+ format = "tar.gz"
+ file = "fuse-overlayfs-{version}.{format}"
+ mirrors = [ "https://github.com/containers/fuse-overlayfs/archive/v{version}/{file}",]
+diff --git a/packages/user/fuse3/package.toml b/packages/user/fuse3/package.toml
+index 373f1dd6..be39d3d8 100644
+--- a/packages/user/fuse3/package.toml
++++ b/packages/user/fuse3/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "fuse3"
+-version = "3.16.2"
++version = "3.17.3"
+ description = "TODO"
+ 
+ [sources.fuse3]
+-hash = "f797055d9296b275e981f5f62d4e32e089614fc253d1ef2985851025b8a0ce87"
++hash = "de8190448909aa97a222d435bc130aae98331bed4215e9f4519b4b5b285a1d63"
+ format = "tar.gz"
+ file = "fuse3-{version}.{format}"
+ mirrors = [ "https://github.com/libfuse/libfuse/releases/download/fuse-{version}/fuse-{version}.{format}",]
+diff --git a/packages/user/glib/package.toml b/packages/user/glib/package.toml
+index 07eb74c4..4e4e3abc 100644
+--- a/packages/user/glib/package.toml
++++ b/packages/user/glib/package.toml
+@@ -1,9 +1,9 @@
+ [package]
+ name = "glib"
+ description = "TODO"
+-version = "2.82.1"
++version = "2.84.4"
+ 
+ [sources.glib]
+-hash = "478634440bf52ee4ec4428d558787398c0be6b043c521beb308334b3db4489a6"
++hash = "8a9ea10943c36fc117e253f80c91e477b673525ae45762942858aef57631bb90"
+ file = "glib-{version}.tar.xz"
+-mirrors = ["https://download.gnome.org/sources/glib/{version_major_minor}/{file}"]
++mirrors = [ "https://download.gnome.org/sources/glib/{version_major_minor}/{file}",]
+diff --git a/packages/user/glibc/package.toml b/packages/user/glibc/package.toml
+index b7c0ff2e..27569aa2 100644
+--- a/packages/user/glibc/package.toml
++++ b/packages/user/glibc/package.toml
+@@ -1,9 +1,8 @@
+ [package]
+ name = "glibc"
+-version = "2.40"
++version = "2.42"
+ description = "TODO"
+ 
+ [sources.glibc]
+-hash = "2abc038f5022949cb67e996c3cae0e7764f99b009f0b9b7fd954dfc6577b599e"
+ file = "glibc-{version}.tar.gz"
+-mirrors = ["https://ftpmirror.gnu.org/gnu/glibc/{file}"]
++mirrors = [ "https://ftpmirror.gnu.org/gnu/glibc/{file}",]
+diff --git a/packages/user/go-md2man/package.toml b/packages/user/go-md2man/package.toml
+index 89c7b839..8abf1616 100644
+--- a/packages/user/go-md2man/package.toml
++++ b/packages/user/go-md2man/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "go-md2man"
+-version = "2.0.5"
++version = "2.0.7"
+ description = "TODO"
+ 
+ [sources.go-md2man]
+-hash = "6bb799e8fff06d82ca4617190157338d336e2361aa6c5b1786f763a684ffc3f2"
++hash = "ca3a5b57e2c01759f5a00ad2a578d034c5370fae9aa7a6c3af5648b2fc802a92"
+ format = "tar.gz"
+ file = "go-md2man-{version}.{format}"
+ mirrors = [ "https://github.com/cpuguy83/go-md2man/archive/v{version}.{format}",]
+diff --git a/packages/user/gperf/package.toml b/packages/user/gperf/package.toml
+index eba43925..e1394dc9 100644
+--- a/packages/user/gperf/package.toml
++++ b/packages/user/gperf/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "gperf"
+-version = "3.1"
++version = "3.3"
+ description = "TODO"
+ 
+ [sources.gperf]
+-hash = "588546b945bba4b70b6a3a616e80b4ab466e3f33024a352fc2198112cdbb3ae2"
++hash = "fd87e0aba7e43ae054837afd6cd4db03a3f2693deb3619085e6ed9d8d9604ad8"
+ format = "tar.gz"
+ file = "gperf-{version}.{format}"
+ mirrors = [ "http://ftp.gnu.org/pub/gnu/gperf/{file}",]
+diff --git a/packages/user/grpcurl/package.toml b/packages/user/grpcurl/package.toml
+index 68bafb8a..efb1ca04 100644
+--- a/packages/user/grpcurl/package.toml
++++ b/packages/user/grpcurl/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "grpcurl"
+-version = "1.8.9"
++version = "1.9.3"
+ description = "TODO"
+ 
+ [sources.grpcurl]
+-hash = "962fe7d3da7653519d2975e130244af9286db32041b0745613aebf89949a9009"
++hash = "bb555087f279af156159c86d4d3d5dd3f2991129e4cd6b09114e6851a679340d"
+ format = "tar.gz"
+ file = "grpcurl-{version}.{format}"
+ mirrors = [ "https://github.com/fullstorydev/grpcurl/archive/refs/tags/v{version}.{format}",]
+diff --git a/packages/user/helm/package.toml b/packages/user/helm/package.toml
+index c43e52b0..7e2e967d 100644
+--- a/packages/user/helm/package.toml
++++ b/packages/user/helm/package.toml
+@@ -1,12 +1,12 @@
+ [package]
+ name = "helm"
+-version = "3.18.4"
++version = "3.18.5"
+ description = "The Kubernetes Package Manager"
+ license = "Apache-2.0"
+ website = "https://github.com/helm/helm"
+ 
+ [sources.helm]
+-hash = "231b1f4ff2ddfc1bd812f29b6b7c3890c31e28cbc521e960ce858622425a357f"
++hash = "1bb7555565fa5c84ed9115bc44395780cf0fa3574e60f8e8e2cc16825c3c7399"
+ format = "tar.gz"
+ file = "helm-{version}.{format}"
+ mirrors = [ "https://github.com/helm/helm/archive/refs/tags/v{version}.{format}",]
+diff --git a/packages/user/hwdata/package.toml b/packages/user/hwdata/package.toml
+index 826a694d..a840cb92 100644
+--- a/packages/user/hwdata/package.toml
++++ b/packages/user/hwdata/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "hwdata"
+-version = "0.394"
++version = "0.398"
+ description = "Hardware identification and configuration data"
+ 
+ [sources.hwdata]
+-hash = "b7c3fd7214a3b7c49d2661db127a712dc11cffd1799f793947aa1cb20aaf3298"
++hash = "cd52f7eb5c0f438a3605d1799d9f345a2894ad0f269ab6e8441f55e27e80dd78"
+ format = "tar.gz"
+ file = "v{version}.{format}"
+ mirrors = [ "https://github.com/vcrhonek/hwdata/archive/refs/tags/{file}",]
+diff --git a/packages/user/iproute2/package.toml b/packages/user/iproute2/package.toml
+index 9457a3f7..dd2a0127 100644
+--- a/packages/user/iproute2/package.toml
++++ b/packages/user/iproute2/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "iproute2"
+-version = "6.10.0"
++version = "6.16.0"
+ description = "TODO"
+ 
+ [sources.iproute2]
+-hash = "91a62f82737b44905a00fa803369c447d549e914e9a2a4018fdd75b1d54e8dce"
++hash = "5900ccc15f9ac3bf7b7eae81deb5937123df35e99347a7f11a22818482f0a8d0"
+ format = "tar.xz"
+ file = "iproute2-{version}.{format}"
+ mirrors = [ "http://mirrors.edge.kernel.org/pub/linux/utils/net/iproute2/{file}",]
+diff --git a/packages/user/iptables/package.toml b/packages/user/iptables/package.toml
+index 3137a654..376e624a 100644
+--- a/packages/user/iptables/package.toml
++++ b/packages/user/iptables/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "iptables"
+-version = "1.8.10"
++version = "1.8.11"
+ description = "TODO"
+ 
+ [sources.iptables]
+-hash = "5cc255c189356e317d070755ce9371eb63a1b783c34498fb8c30264f3cc59c9c"
++hash = "d87303d55ef8c92bcad4dd3f978b26d272013642b029425775f5bad1009fe7b2"
+ format = "tar.xz"
+ file = "iptables-{version}.{format}"
+ mirrors = [ "https://netfilter.org/projects/iptables/files/{file}",]
+diff --git a/packages/user/iputils/package.toml b/packages/user/iputils/package.toml
+index 8c85aac9..95c9dc69 100644
+--- a/packages/user/iputils/package.toml
++++ b/packages/user/iputils/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "iputils"
+-version = "20240117"
++version = "20250605"
+ description = "TODO"
+ 
+ [sources.iputils]
+-hash = "a5d66e2997945b2541b8f780a7f5a5ec895d53a517ae1dc4f3ab762573edea9a"
++hash = "19e680c9eef8c079da4da37040b5f5453763205b4edfb1e2c114de77908927e4"
+ format = "tar.gz"
+ file = "iputils-{version}.{format}"
+ mirrors = [ "https://github.com/iputils/iputils/archive/refs/tags/{version}.{format}",]
+diff --git a/packages/user/jq/package.toml b/packages/user/jq/package.toml
+index 32e70b20..05a2c03d 100644
+--- a/packages/user/jq/package.toml
++++ b/packages/user/jq/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "jq"
+-version = "1.7.1"
++version = "1.8.1"
+ description = "TODO"
+ 
+ [sources.jq]
+-hash = "478c9ca129fd2e3443fe27314b455e211e0d8c60bc8ff7df703873deeee580c2"
++hash = "2be64e7129cecb11d5906290eba10af694fb9e3e7f9fc208a311dc33ca837eb0"
+ format = "tar.gz"
+ file = "jq-{version}.{format}"
+ mirrors = [ "https://github.com/jqlang/jq/releases/download/jq-{version}/{file}",]
+diff --git a/packages/user/json-c/package.toml b/packages/user/json-c/package.toml
+index d951c182..b7f96e18 100644
+--- a/packages/user/json-c/package.toml
++++ b/packages/user/json-c/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "json-c"
+-version = "0.17"
++version = "0.18"
+ description = "TODO"
+ 
+ [sources.json-c]
+-hash = "7550914d58fb63b2c3546f3ccfbe11f1c094147bd31a69dcd23714d7956159e6"
++hash = "876ab046479166b869afc6896d288183bbc0e5843f141200c677b3e8dfb11724"
+ format = "tar.gz"
+ file = "json-c-{version}.{format}"
+ mirrors = [ "https://s3.amazonaws.com/json-c_releases/releases/{file}",]
+diff --git a/packages/user/json-glib/package.toml b/packages/user/json-glib/package.toml
+index 66166218..a57f62e8 100644
+--- a/packages/user/json-glib/package.toml
++++ b/packages/user/json-glib/package.toml
+@@ -1,9 +1,8 @@
+ [package]
+ name = "json-glib"
+ description = "TODO"
+-version = "1.8.0"
++version = "1.10.6"
+ 
+ [sources.json-glib]
+-hash = "97ef5eb92ca811039ad50a65f06633f1aae64792789307be7170795d8b319454"
+ file = "json-glib-{version}.tar.xz"
+-mirrors = ["https://download.gnome.org/sources/json-glib/1.8/{file}"]
++mirrors = [ "https://download.gnome.org/sources/json-glib/1.8/{file}",]
+diff --git a/packages/user/just/package.toml b/packages/user/just/package.toml
+index 4bcc4a11..e10b2e3f 100644
+--- a/packages/user/just/package.toml
++++ b/packages/user/just/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "just"
+ description = "Command runner"
+-version = "1.39.0"
++version = "1.42.4"
+ 
+ [sources.just]
+-hash = "8a900072d7f909bc91030df5896168752bb9108967dbb7149d2cfb11fdeb087a"
++hash = "bd604ff72ecd8d8def79d39997499433e22fbffa03260e3a2c5fe5f84cc37f52"
+ format = "tar.gz"
+ file = "just-{version}.{format}"
+-mirrors = [ "https://github.com/casey/just/archive/refs/tags/{version}.{format}"]
++mirrors = [ "https://github.com/casey/just/archive/refs/tags/{version}.{format}",]
+diff --git a/packages/user/k9s/package.toml b/packages/user/k9s/package.toml
+index c4dbd0e3..89ef1889 100644
+--- a/packages/user/k9s/package.toml
++++ b/packages/user/k9s/package.toml
+@@ -1,12 +1,12 @@
+ [package]
+ name = "k9s"
+-version = "0.50.7"
++version = "0.50.9"
+ description = "Kubernetes CLI To Manage Your Clusters In Style!"
+ license = "Apache-2.0"
+ website = "https://github.com/derailed/k9s"
+ 
+ [sources.k9s]
+-hash = "8e40e0bbd275eed5260b4c82275d1cdf32135b8cada247a8c13e510792e7f203"
++hash = "7496cfc6da6da5d91ef2ad5ea61eae15186effabb77adf904c896213ca6ff810"
+ format = "tar.gz"
+ file = "k9s-{version}.{format}"
+ mirrors = [ "https://github.com/derailed/k9s/archive/refs/tags/v{version}.{format}",]
+diff --git a/packages/user/krb5/package.toml b/packages/user/krb5/package.toml
+index 8099cc54..6faf51b0 100644
+--- a/packages/user/krb5/package.toml
++++ b/packages/user/krb5/package.toml
+@@ -1,10 +1,9 @@
+ [package]
+ name = "krb5"
+-version = "1.21.2"
++version = "1.22-final"
+ description = "TODO"
+ 
+ [sources.krb5]
+-hash = "9560941a9d843c0243a71b17a7ac6fe31c7cebb5bce3983db79e52ae7e850491"
+ format = "tar.gz"
+ file = "krb5-{version}.{format}"
+ mirrors = [ "https://kerberos.org/dist/krb5/{version_major_minor}/{file}",]
+diff --git a/packages/user/kustomize-sops/package.toml b/packages/user/kustomize-sops/package.toml
+index 5f100a50..d1dc0d30 100644
+--- a/packages/user/kustomize-sops/package.toml
++++ b/packages/user/kustomize-sops/package.toml
+@@ -1,12 +1,12 @@
+ [package]
+ name = "kustomize-sops"
+-version = "4.3.3"
++version = "4.4.0"
+ description = "KSOPS - A Flexible Kustomize Plugin for SOPS Encrypted Resources"
+ license = "Apache-2.0"
+ website = "https://github.com/viaduct-ai/kustomize-sops"
+ 
+ [sources.kustomize-sops]
+-hash = "9943f47cb1c469316d28f11f845c44e63802e9cd37d28b6a20b1890f4c2133d7"
++hash = "08891e25bfac225ac90fd6ccc20ec5d8d0dff96222d86eaafeb976d85bb338f0"
+ format = "tar.gz"
+ file = "kustomize-sops-{version}.{format}"
+ mirrors = [ "https://github.com/viaduct-ai/kustomize-sops/archive/refs/tags/v{version}.{format}",]
+diff --git a/packages/user/kustomize/package.toml b/packages/user/kustomize/package.toml
+index 13a4dbfc..d8e01709 100644
+--- a/packages/user/kustomize/package.toml
++++ b/packages/user/kustomize/package.toml
+@@ -1,12 +1,12 @@
+ [package]
+ name = "kustomize"
+-version = "5.7.0"
++version = "5.7.1"
+ description = "Template-free customization of Kubernetes YAML manifests"
+ website = "https://kustomize.io/"
+ license = "Apache-2.0"
+ 
+ [sources.kustomize]
+-hash = "ef3b7fdf5c8ccfb7d06ad677e116cb9f6fbd11ee170412bf206e30d8f190aac4"
++hash = "9e3907f0ea58426a5a4f64a457e83bbe0a1370ca76048556146f38b52d5fa5f1"
+ format = "tar.gz"
+ file = "kustomize-{version}.{format}"
+ mirrors = [ "https://github.com/kubernetes-sigs/kustomize/archive/refs/tags/kustomize/v{version}.{format}",]
+diff --git a/packages/user/libarchive/package.toml b/packages/user/libarchive/package.toml
+index af1466a9..d85892b4 100644
+--- a/packages/user/libarchive/package.toml
++++ b/packages/user/libarchive/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "libarchive"
+-version = "3.7.4"
++version = "3.8.1"
+ description = "TODO"
+ 
+ [sources.libarchive]
+-hash = "f887755c434a736a609cbd28d87ddbfbe9d6a3bb5b703c22c02f6af80a802735"
++hash = "19f917d42d530f98815ac824d90c7eaf648e9d9a50e4f309c812457ffa5496b5"
+ format = "tar.xz"
+ file = "libarchive-{version}.{format}"
+ mirrors = [ "https://libarchive.org/downloads/{file}",]
+diff --git a/packages/user/libassuan/package.toml b/packages/user/libassuan/package.toml
+index 70415c94..f5d47ec2 100644
+--- a/packages/user/libassuan/package.toml
++++ b/packages/user/libassuan/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "libassuan"
+-version = "3.0.1"
++version = "3.0.2"
+ description = "TODO"
+ 
+ [sources.libassuan]
+-hash = "c8f0f42e6103dea4b1a6a483cb556654e97302c7465308f58363778f95f194b1"
++hash = "d2931cdad266e633510f9970e1a2f346055e351bb19f9b78912475b8074c36f6"
+ format = "tar.bz2"
+ file = "libassuan-{version}.{format}"
+ mirrors = [ "https://gnupg.org/ftp/gcrypt/libassuan/{file}",]
+diff --git a/packages/user/libcap/package.toml b/packages/user/libcap/package.toml
+index 924e5047..49e56752 100644
+--- a/packages/user/libcap/package.toml
++++ b/packages/user/libcap/package.toml
+@@ -1,10 +1,9 @@
+ [package]
+ name = "libcap"
+-version = "2.70"
++version = "2.76"
+ description = "TODO"
+ 
+ [sources.libcap]
+-hash = "18f00ea97c7541af86379dec9d4d8ea838aac4a1f70177d81d91657e4e43b808"
+ format = "tar.gz"
+ file = "libcap-{version}.{format}"
+ mirrors = [ "https://git.kernel.org/pub/scm/libs/libcap/libcap.git/snapshot/{file}",]
+diff --git a/packages/user/libclc/package.toml b/packages/user/libclc/package.toml
+index 62038cd3..9ffd0caa 100644
+--- a/packages/user/libclc/package.toml
++++ b/packages/user/libclc/package.toml
+@@ -1,16 +1,16 @@
+ [package]
+ name = "libclc"
+-version = "19.1.7"
++version = "20.1.8"
+ description = "Open source implementation of the library requirements of the OpenCL C programming language"
+ 
+ [sources.libclc]
+-hash = "77e2d71f5cea1d0b1014ba88186299d1a0848eb3dc20948baae649db9e7641cb"
++hash = "ecd83a52859742f71f4c332538f8bee54a6743374a233b5a85017de22d75c227"
+ format = "tar.xz"
+ file = "libclc-{version}.src.{format}"
+-mirrors = [ "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/{file}", ]
++mirrors = [ "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/{file}",]
+ 
+ [sources.cmake]
+ hash = "11c5a28f90053b0c43d0dec3d0ad579347fc277199c005206b963c19aae514e3"
+ format = "tar.xz"
+ file = "cmake-{version}.src.{format}"
+-mirrors = [ "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/{file}", ]
++mirrors = [ "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/{file}",]
+diff --git a/packages/user/libdeflate/package.toml b/packages/user/libdeflate/package.toml
+index f7e2ea0b..a1beaec9 100644
+--- a/packages/user/libdeflate/package.toml
++++ b/packages/user/libdeflate/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "libdeflate"
+-version = "1.20"
++version = "1.24"
+ description = "TODO"
+ 
+ [sources.libdeflate]
+-hash = "ed1454166ced78913ff3809870a4005b7170a6fd30767dc478a09b96847b9c2a"
++hash = "ad8d3723d0065c4723ab738be9723f2ff1cb0f1571e8bfcf0301ff9661f475e8"
+ format = "tar.gz"
+ file = "libdeflate-{version}.{format}"
+ mirrors = [ "https://github.com/ebiggers/libdeflate/archive/refs/tags/v{version}.{format}",]
+diff --git a/packages/user/libgcrypt/package.toml b/packages/user/libgcrypt/package.toml
+index 0ddac528..3c4c4d25 100644
+--- a/packages/user/libgcrypt/package.toml
++++ b/packages/user/libgcrypt/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "libgcrypt"
+-version = "1.11.0"
++version = "1.11.2"
+ description = "TODO"
+ 
+ [sources.libgcrypt]
+-hash = "09120c9867ce7f2081d6aaa1775386b98c2f2f246135761aae47d81f58685b9c"
++hash = "6ba59dd192270e8c1d22ddb41a07d95dcdbc1f0fb02d03c4b54b235814330aac"
+ format = "tar.bz2"
+ file = "libgcrypt-{version}.{format}"
+ mirrors = [ "https://gnupg.org/ftp/gcrypt/libgcrypt/{file}",]
+diff --git a/packages/user/libgpg-error/package.toml b/packages/user/libgpg-error/package.toml
+index 62d439a9..18717d18 100644
+--- a/packages/user/libgpg-error/package.toml
++++ b/packages/user/libgpg-error/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "libgpg-error"
+-version = "1.50"
++version = "1.55"
+ description = "TODO"
+ 
+ [sources.libgpg-error]
+-hash = "69405349e0a633e444a28c5b35ce8f14484684518a508dc48a089992fe93e20a"
++hash = "95b178148863f07d45df0cea67e880a79b9ef71f5d230baddc0071128516ef78"
+ format = "tar.bz2"
+ file = "libgpg-error-{version}.{format}"
+ mirrors = [ "https://gnupg.org/ftp/gcrypt/libgpg-error/{file}",]
+diff --git a/packages/user/libiconv/package.toml b/packages/user/libiconv/package.toml
+index a184efad..c2c0bb23 100644
+--- a/packages/user/libiconv/package.toml
++++ b/packages/user/libiconv/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "libiconv"
+-version = "1.17"
++version = "1.18"
+ description = "TODO"
+ 
+ [sources.libiconv]
+-hash = "8f74213b56238c85a50a5329f77e06198771e70dd9a739779f4c02f65d971313"
++hash = "3b08f5f4f9b4eb82f151a7040bfd6fe6c6fb922efe4b1659c66ea933276965e8"
+ format = "tar.gz"
+ file = "libiconv-{version}.{format}"
+ mirrors = [ "https://ftp.gnu.org/gnu/libiconv/{file}",]
+diff --git a/packages/user/libimobiledevice-glue/package.toml b/packages/user/libimobiledevice-glue/package.toml
+index ec465f13..ca07b1fe 100644
+--- a/packages/user/libimobiledevice-glue/package.toml
++++ b/packages/user/libimobiledevice-glue/package.toml
+@@ -1,9 +1,9 @@
+ [package]
+ name = "libimobiledevice-glue"
+-version = "1.3.1"
++version = "1.3.2"
+ description = "TODO"
+ 
+ [sources.libimobiledevice-glue]
+-hash = "6e2849f221e6ab970566a115d42f3c20f8848e4d40c2ed61ac20dc85f40fa54f"
++hash = "6489a3411b874ecd81c87815d863603f518b264a976319725e0ed59935546774"
+ file = "libimobiledevice-glue-{version}.tar.bz2"
+ mirrors = [ "https://github.com/libimobiledevice/libimobiledevice-glue/releases/download/{version}/{file}",]
+diff --git a/packages/user/libksba/package.toml b/packages/user/libksba/package.toml
+index a400dbeb..030b0e75 100644
+--- a/packages/user/libksba/package.toml
++++ b/packages/user/libksba/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "libksba"
+-version = "1.6.5"
++version = "1.6.7"
+ description = "TODO"
+ 
+ [sources.libksba]
+-hash = "a564628c574c99287998753f98d750babd91a4e9db451f46ad140466ef2a6d16"
++hash = "cf72510b8ebb4eb6693eef765749d83677a03c79291a311040a5bfd79baab763"
+ format = "tar.bz2"
+ file = "libksba-{version}.{format}"
+ mirrors = [ "https://gnupg.org/ftp/gcrypt/libksba/{file}",]
+diff --git a/packages/user/libnftnl/package.toml b/packages/user/libnftnl/package.toml
+index db0428aa..368e9cd0 100644
+--- a/packages/user/libnftnl/package.toml
++++ b/packages/user/libnftnl/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "libnftnl"
+-version = "1.2.8"
++version = "1.3.0"
+ description = "TODO"
+ 
+ [sources.libnftnl]
+-hash = "37fea5d6b5c9b08de7920d298de3cdc942e7ae64b1a3e8b880b2d390ae67ad95"
++hash = "0f4be47a8bb8b77a350ee58cbd4b5fae6260ad486a527706ab15cfe1dd55a3c4"
+ format = "tar.xz"
+ file = "libnftnl-{version}.{format}"
+ mirrors = [ "https://netfilter.org/projects/libnftnl/files/{file}",]
+diff --git a/packages/user/libplist/package.toml b/packages/user/libplist/package.toml
+index f1dd481d..741f398a 100644
+--- a/packages/user/libplist/package.toml
++++ b/packages/user/libplist/package.toml
+@@ -1,9 +1,9 @@
+ [package]
+ name = "libplist"
+-version = "2.6.0"
++version = "2.7.0"
+ description = "TODO"
+ 
+ [sources.libplist]
+-hash = "67be9ee3169366589c92dc7c22809b90f51911dd9de22520c39c9a64fb047c9c"
++hash = "7ac42301e896b1ebe3c654634780c82baa7cb70df8554e683ff89f7c2643eb8b"
+ file = "libplist-{version}.tar.bz2"
+ mirrors = [ "https://github.com/libimobiledevice/libplist/releases/download/{version}/{file}",]
+diff --git a/packages/user/libseccomp/package.toml b/packages/user/libseccomp/package.toml
+index 96fe3def..c7278bbb 100644
+--- a/packages/user/libseccomp/package.toml
++++ b/packages/user/libseccomp/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "libseccomp"
+-version = "2.5.5"
++version = "2.6.0"
+ description = "TODO"
+ 
+ [sources.libseccomp]
+-hash = "248a2c8a4d9b9858aa6baf52712c34afefcf9c9e94b76dce02c1c9aa25fb3375"
++hash = "83b6085232d1588c379dc9b9cae47bb37407cf262e6e74993c61ba72d2a784dc"
+ format = "tar.gz"
+ file = "libseccomp-{version}.{format}"
+ mirrors = [ "https://github.com/seccomp/libseccomp/releases/download/v{version}/{file}",]
+diff --git a/packages/user/libslirp/package.toml b/packages/user/libslirp/package.toml
+index 606687bd..69ff9f1f 100644
+--- a/packages/user/libslirp/package.toml
++++ b/packages/user/libslirp/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "libslirp"
+-version = "4.8.0"
++version = "4.9.1"
+ description = "TODO"
+ 
+ [sources.libslirp]
+-hash = "378216c88c021c9ed7de9006db291127d30a0da94a23dffefdb26b26a5849bf7"
++hash = "9aef0c439abb5126f935ffec56be7da45a3dec7b8ba4a163d7ede74749f97d56"
+ format = "tar.gz"
+ file = "libslirp-{version}.{format}"
+ mirrors = [ "https://gitlab.freedesktop.org/slirp/libslirp/-/archive/v{version}/{file}",]
+diff --git a/packages/user/libsm/package.toml b/packages/user/libsm/package.toml
+index f118bd22..a5cb9c02 100644
+--- a/packages/user/libsm/package.toml
++++ b/packages/user/libsm/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "libsm"
+-version = "1.2.5"
++version = "1.2.6"
+ description = "X11 Session Management library"
+ 
+ [sources.libsm]
+-hash = "2af9e12da5ef670dc3a7bce1895c9c0f1bfb0cb9e64e8db40fcc33f883bd20bc"
++hash = "be7c0abdb15cbfd29ac62573c1c82e877f9d4047ad15321e7ea97d1e43d835be"
+ format = "tar.xz"
+ file = "libSM-{version}.{format}"
+-mirrors = [ "https://www.x.org/releases/individual/lib/{file}", ]
++mirrors = [ "https://www.x.org/releases/individual/lib/{file}",]
+diff --git a/packages/user/libtasn1/package.toml b/packages/user/libtasn1/package.toml
+index eae59a9a..e5762aa5 100644
+--- a/packages/user/libtasn1/package.toml
++++ b/packages/user/libtasn1/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "libtasn1"
+-version = "4.19.0"
++version = "4.20.0"
+ description = "TODO"
+ 
+ [sources.libtasn1]
+-hash = "1613f0ac1cf484d6ec0ce3b8c06d56263cc7242f1c23b30d82d23de345a63f7a"
++hash = "92e0e3bd4c02d4aeee76036b2ddd83f0c732ba4cda5cb71d583272b23587a76c"
+ format = "tar.gz"
+ file = "libtasn1-{version}.{format}"
+ mirrors = [ "https://ftp.gnu.org/gnu/libtasn1/{file}",]
+diff --git a/packages/user/libtpms/package.toml b/packages/user/libtpms/package.toml
+index a34385e5..a90bb4c8 100644
+--- a/packages/user/libtpms/package.toml
++++ b/packages/user/libtpms/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "libtpms"
+-version = "0.9.6"
++version = "0.10.1"
+ description = "TODO"
+ 
+ [sources.libtpms]
+-hash = "2807466f1563ebe45fdd12dd26e501e8a0c4fbb99c7c428fbb508789efd221c0"
++hash = "ebc24f3191d90f6cf0b4d4200cd876db4bd224b3c565708bbea0a82ee275e0fb"
+ format = "tar.gz"
+ file = "libtpms-{version}.{format}"
+ mirrors = [ "https://github.com/stefanberger/libtpms/archive/v{version}.{format}",]
+diff --git a/packages/user/libusb/package.toml b/packages/user/libusb/package.toml
+index 732091b9..8f842abf 100644
+--- a/packages/user/libusb/package.toml
++++ b/packages/user/libusb/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "libusb"
+-version = "1.0.27"
++version = "1.0.29"
+ description = "TODO"
+ 
+ [sources.libusb]
+-hash = "ffaa41d741a8a3bee244ac8e54a72ea05bf2879663c098c82fc5757853441575"
++hash = "5977fc950f8d1395ccea9bd48c06b3f808fd3c2c961b44b0c2e6e29fc3a70a85"
+ format = "tar.bz2"
+ file = "libusb-{version}.{format}"
+ mirrors = [ "https://github.com/libusb/libusb/releases/download/v{version}/{file}",]
+diff --git a/packages/user/libusbmuxd/package.toml b/packages/user/libusbmuxd/package.toml
+index 0d682f1c..affcdb18 100644
+--- a/packages/user/libusbmuxd/package.toml
++++ b/packages/user/libusbmuxd/package.toml
+@@ -1,9 +1,9 @@
+ [package]
+ name = "libusbmuxd"
+-version = "2.1.0"
++version = "2.1.1"
+ description = "TODO"
+ 
+ [sources.libusbmuxd]
+-hash = "c35bf68f8e248434957bd5b234c389b02206a06ecd9303a7fb931ed7a5636b16"
++hash = "5546f1aba1c3d1812c2b47d976312d00547d1044b84b6a461323c621f396efce"
+ file = "libusbmuxd-{version}.tar.bz2"
+ mirrors = [ "https://github.com/libimobiledevice/libusbmuxd/releases/download/{version}/{file}",]
+diff --git a/packages/user/linux-pam/package.toml b/packages/user/linux-pam/package.toml
+index c5b2f770..a163a7b9 100644
+--- a/packages/user/linux-pam/package.toml
++++ b/packages/user/linux-pam/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "linux-pam"
+-version = "1.6.1"
++version = "1.7.1"
+ description = "TODO"
+ 
+ [sources.linux-pam]
+-hash = "f8923c740159052d719dbfc2a2f81942d68dd34fcaf61c706a02c9b80feeef8e"
++hash = "21dbcec6e01dd578f14789eac9024a18941e6f2702a05cf91b28c232eeb26ab0"
+ format = "tar.xz"
+ file = "linux-pam-{version}.{format}"
+ mirrors = [ "https://github.com/linux-pam/linux-pam/releases/download/v{version}/Linux-PAM-{version}.{format}",]
+diff --git a/packages/user/linux/package.toml b/packages/user/linux/package.toml
+index 922b3371..534472aa 100644
+--- a/packages/user/linux/package.toml
++++ b/packages/user/linux/package.toml
+@@ -1,11 +1,11 @@
+ [package]
+ name = "linux"
+-version = "6.12.33"
++version = "6.16"
+ description = "TODO"
+-subpackages = ["linux-generic","linux-airgap","linux-server","linux-guest","linux-guest-net","linux-nitro","gen_initramfs"]
++subpackages = [ "linux-generic", "linux-airgap", "linux-server", "linux-guest", "linux-guest-net", "linux-nitro", "gen_initramfs",]
+ 
+ [sources.linux]
+-hash = "c0a575630f2603a20bb0641f8df8f955e46c9d7ac1fae8b54b21316e6b52a254"
++hash = "1a4be2fe6b5246aa4ac8987a8a4af34c42a8dd7d08b46ab48516bcc1befbcd83"
+ format = "tar.xz"
+ file = "linux-{version}.{format}"
+ mirrors = [ "http://mirrors.edge.kernel.org/pub/linux/kernel/v{version_major}.x/linux-{version}.{format}",]
+diff --git a/packages/user/mdbook/package.toml b/packages/user/mdbook/package.toml
+index 19f5a3bf..7c31fe1c 100644
+--- a/packages/user/mdbook/package.toml
++++ b/packages/user/mdbook/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "mdbook"
+-version = "0.4.40"
++version = "0.4.52"
+ description = "TODO"
+ 
+ [sources.mdbook]
+-hash = "550da7ff02ef62c60db6e813b6dbae65b9ed3d491186ea74929536feaceea94b"
++hash = "d46f3b79e210eed383b6966847ea86ec441b6b505e9d9d868294bb9742130c9c"
+ format = "tar.gz"
+ file = "mdbook-{version}.{format}"
+ mirrors = [ "https://codeload.github.com/rust-lang/mdBook/{format}/refs/tags/v{version}",]
+diff --git a/packages/user/mpfr/package.toml b/packages/user/mpfr/package.toml
+index 88b1fd61..270ecfa8 100644
+--- a/packages/user/mpfr/package.toml
++++ b/packages/user/mpfr/package.toml
+@@ -1,9 +1,9 @@
+ [package]
+ name = "mpfr"
+-version = "4.2.1"
++version = "4.2.2"
+ description = "TODO"
+ 
+ [sources.mpfr]
+-hash = "116715552bd966c85b417c424db1bbdf639f53836eb361549d1f8d6ded5cb4c6"
++hash = "826cbb24610bd193f36fde172233fb8c009f3f5c2ad99f644d0dea2e16a20e42"
+ file = "mpfr-{version}.tar.gz"
+ mirrors = [ "https://www.mpfr.org/mpfr-{version}/{file}",]
+diff --git a/packages/user/mtools/package.toml b/packages/user/mtools/package.toml
+index c842bc6f..6bff05c9 100644
+--- a/packages/user/mtools/package.toml
++++ b/packages/user/mtools/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "mtools"
+-version = "4.0.45"
++version = "4.0.49"
+ description = "TODO"
+ 
+ [sources.mtools]
+-hash = "0b008a96bd0efe0e542fa4383d469af66bc4a93394990b103730a8160a67d618"
++hash = "6fe5193583d6e7c59da75e63d7234f76c0b07caf33b103894f46f66a871ffc9f"
+ format = "tar.bz2"
+ file = "mtools-{version}.{format}"
+ mirrors = [ "https://ftp.gnu.org/gnu/mtools/{file}",]
+diff --git a/packages/user/nettle/package.toml b/packages/user/nettle/package.toml
+index a3431da7..9a046fba 100644
+--- a/packages/user/nettle/package.toml
++++ b/packages/user/nettle/package.toml
+@@ -1,10 +1,9 @@
+ [package]
+ name = "nettle"
+-version = "3.9.1_release_20230601"
++version = "3.10.2"
+ description = "TODO"
+ 
+ [sources.nettle]
+-hash = "7278dd8fb89cae88552e1dc4a6294f1c62a8a9548a18f635515242f389797fed"
+ format = "tar.gz"
+ file = "nettle-{version}.{format}"
+ mirrors = [ "https://git.lysator.liu.se/nettle/nettle/-/archive/nettle_{version}/nettle-nettle_{version}.{format}",]
+diff --git a/packages/user/ninja/package.toml b/packages/user/ninja/package.toml
+index cf2aa32b..9fe2315f 100644
+--- a/packages/user/ninja/package.toml
++++ b/packages/user/ninja/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "ninja"
+-version = "1.9.0"
++version = "1.13.0"
+ description = "TODO"
+ 
+ [sources.ninja]
+-hash = "5d7ec75828f8d3fd1a0c2f31b5b0cea780cdfe1031359228c428c1a48bfcd5b9"
++hash = "f08641d00099a9e40d44ec0146f841c472ae58b7e6dd517bee3945cfd923cedf"
+ format = "tar.gz"
+ file = "ninja-{version}.{format}"
+ mirrors = [ "https://github.com/martine/ninja/archive/v{version}.{format}",]
+diff --git a/packages/user/npth/package.toml b/packages/user/npth/package.toml
+index 4124e552..7eed2471 100644
+--- a/packages/user/npth/package.toml
++++ b/packages/user/npth/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "npth"
+-version = "1.6"
++version = "1.8"
+ description = "TODO"
+ 
+ [sources.npth]
+-hash = "1393abd9adcf0762d34798dc34fdcf4d0d22a8410721e76f1e3afcd1daa4e2d1"
++hash = "8bd24b4f23a3065d6e5b26e98aba9ce783ea4fd781069c1b35d149694e90ca3e"
+ format = "tar.bz2"
+ file = "npth-{version}.{format}"
+ mirrors = [ "https://gnupg.org/ftp/gcrypt/npth/{file}",]
+diff --git a/packages/user/numactl/package.toml b/packages/user/numactl/package.toml
+index 47eb2a7c..a2b86aa4 100644
+--- a/packages/user/numactl/package.toml
++++ b/packages/user/numactl/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "numactl"
+-version = "2.0.18"
++version = "2.0.19"
+ description = "TODO"
+ 
+ [sources.numactl]
+-hash = "b4fc0956317680579992d7815bc43d0538960dc73aa1dd8ca7e3806e30bc1274"
++hash = "f2672a0381cb59196e9c246bf8bcc43d5568bc457700a697f1a1df762b9af884"
+ format = "tar.gz"
+ file = "numactl-{version}.{format}"
+ mirrors = [ "https://github.com/numactl/numactl/releases/download/v{version}/{file}",]
+diff --git a/packages/user/openldap/package.toml b/packages/user/openldap/package.toml
+index a26c05cd..7564eb9e 100644
+--- a/packages/user/openldap/package.toml
++++ b/packages/user/openldap/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "openldap"
+-version = "2.6.8"
++version = "2_6_10"
+ description = "TODO"
+ 
+ [sources.openldap]
+-hash = "48969323e94e3be3b03c6a132942dcba7ef8d545f2ad35401709019f696c3c4e"
++hash = "c065f04aad42737aebd60b2fe4939704ac844266bc0aeaa1609f0cad987be516"
+ format = "tgz"
+ file = "openldap-{version}.{format}"
+ mirrors = [ "https://www.openldap.org/software/download/OpenLDAP/openldap-release/{file}",]
+diff --git a/packages/user/opensc/package.toml b/packages/user/opensc/package.toml
+index c7b4432b..c2a4c700 100644
+--- a/packages/user/opensc/package.toml
++++ b/packages/user/opensc/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "opensc"
+-version = "0.25.1"
++version = "0.26.1"
+ description = "TODO"
+ 
+ [sources.opensc]
+-hash = "989e6305900d4f2f56ef84aa0da07c044459b4f8a508957a4cdefce6a1367c7b"
++hash = "0be4ca37cb25f5fdf1afc99df31b844c18322b888e0d9f9db20267148e458144"
+ format = "tar.gz"
+ file = "opensc-{version}.{format}"
+ mirrors = [ "https://github.com/opensc/opensc/archive/{version}.{format}",]
+diff --git a/packages/user/openssh/package.toml b/packages/user/openssh/package.toml
+index 309b0434..15aa7c01 100644
+--- a/packages/user/openssh/package.toml
++++ b/packages/user/openssh/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "openssh"
+-version = "9.8p1"
++version = "10.0p2"
+ description = "TODO"
+ 
+ [sources.openssh]
+-hash = "dd8bd002a379b5d499dfb050dd1fa9af8029e80461f4bb6c523c49973f5a39f3"
++hash = "021a2e709a0edf4250b1256bd5a9e500411a90dddabea830ed59cef90eb9d85c"
+ format = "tar.gz"
+ file = "openssh-{version}.{format}"
+ mirrors = [ "https://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/{file}",]
+diff --git a/packages/user/opentofu/package.toml b/packages/user/opentofu/package.toml
+index f7473191..91db5d97 100644
+--- a/packages/user/opentofu/package.toml
++++ b/packages/user/opentofu/package.toml
+@@ -1,14 +1,12 @@
+ [package]
+-name        = "opentofu"
+-version     = "1.10.3"
++name = "opentofu"
++version = "1.10.5"
+ description = "Declarative management of cloud infrastructure"
+-license     = "MPL-2.0"
+-website     = "https://github.com/opentofu/opentofu"
++license = "MPL-2.0"
++website = "https://github.com/opentofu/opentofu"
+ 
+ [sources.opentofu]
+-hash = "2279dbe3823282b7646d321106b43842203606b4eeddc1a1d3b9de51cdf74953"
++hash = "efa95ba022d05a4cdc983d06007f389bd3ff50557b58309b9a22af52292a589a"
+ format = "tar.gz"
+ file = "opentofu-{version}.{format}"
+-mirrors = [
+-  "https://github.com/opentofu/opentofu/archive/refs/tags/v{version}.{format}",
+-]
++mirrors = [ "https://github.com/opentofu/opentofu/archive/refs/tags/v{version}.{format}",]
+diff --git a/packages/user/osv-scanner/package.toml b/packages/user/osv-scanner/package.toml
+index 6265fb84..3bbf0818 100644
+--- a/packages/user/osv-scanner/package.toml
++++ b/packages/user/osv-scanner/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "osv-scanner"
+-version = "1.9.0"
++version = "2.2.1"
+ description = "TODO"
+ 
+ [sources.osv-scanner]
+-hash = "85ce158b6dce22cddc19b652bdc5150145b57119e3acfa8e3ae5ba1cfa449a3f"
++hash = "cb89726b83727eabd3a640e3225e0361330f3a8e01a3a165d47345c883d110a8"
+ format = "tar.gz"
+ file = "osv-scanner-{version}.{format}"
+ mirrors = [ "https://github.com/google/osv-scanner/archive/v{version}/{file}",]
+diff --git a/packages/user/pcsc-lite/package.toml b/packages/user/pcsc-lite/package.toml
+index 3739e5ea..b226cc0b 100644
+--- a/packages/user/pcsc-lite/package.toml
++++ b/packages/user/pcsc-lite/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "pcsc-lite"
+-version = "2.3.1"
++version = "2.3.3"
+ description = "TODO"
+ 
+ [sources.pcsc-lite]
+-hash = "a641d44d57affe1edd8365dd75307afc307e7eefb4e7ad839f6f146baa41ed56"
++hash = "cdff7d7153a0b37aa74e26dfec89ec7dc5c5286aa21b91b903e38739d227e8e7"
+ format = "tar.xz"
+ file = "pcsc-lite-{version}.{format}"
+ mirrors = [ "https://pcsclite.apdu.fr/files/{file}",]
+diff --git a/packages/user/pcsc-tools/package.toml b/packages/user/pcsc-tools/package.toml
+index 8174e5bb..d9754119 100644
+--- a/packages/user/pcsc-tools/package.toml
++++ b/packages/user/pcsc-tools/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "pcsc-tools"
+-version = "1.7.2"
++version = "1.7.3"
+ description = "TODO"
+ 
+ [sources.pcsc-tools]
+-hash = "fd6fcc25e8140f613b3bf44b02eda4a8a429ee4939fb777f474e2c829f7b472c"
++hash = "c3b6d2b7a40bc066ebb8cd2512fb42e2b787a5c491a5715b8741743f4edb8cc2"
+ format = "tar.bz2"
+ file = "pcsc-tools-{version}.{format}"
+ mirrors = [ "https://pcsc-tools.apdu.fr/{file}",]
+diff --git a/packages/user/perl-dbi/package.toml b/packages/user/perl-dbi/package.toml
+index ab5a021d..84085d4e 100644
+--- a/packages/user/perl-dbi/package.toml
++++ b/packages/user/perl-dbi/package.toml
+@@ -1,10 +1,9 @@
+ [package]
+ name = "perl-dbi"
+-version = "1.643"
++version = "1.647"
+ description = "TODO"
+ 
+ [sources.perl-dbi]
+-hash = "8a2b993db560a2c373c174ee976a51027dd780ec766ae17620c20393d2e836fa"
+ format = "tar.gz"
+ file = "perl-dbi-{version}.{format}"
+ mirrors = [ "https://cpan.metacpan.org/authors/id/T/TI/TIMB/DBI-{version}.{format}",]
+diff --git a/packages/user/pgbouncer/package.toml b/packages/user/pgbouncer/package.toml
+index ef602690..9ba23044 100644
+--- a/packages/user/pgbouncer/package.toml
++++ b/packages/user/pgbouncer/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "pgbouncer"
+-version = "1.23.1"
++version = "1.24.1"
+ description = "TODO"
+ 
+ [sources.pgbouncer]
+-hash = "1963b497231d9a560a62d266e4a2eae6881ab401853d93e5d292c3740eec5084"
++hash = "da72a3aba13072876d055a3e58dd4aba4a5de4ed6148e73033185245598fd3e0"
+ format = "tar.gz"
+ file = "pgbouncer-{version}.{format}"
+ mirrors = [ "https://www.pgbouncer.org/downloads/files/{version}/{file}",]
+diff --git a/packages/user/postgresql/package.toml b/packages/user/postgresql/package.toml
+index 9d6cbed4..17a582ec 100644
+--- a/packages/user/postgresql/package.toml
++++ b/packages/user/postgresql/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "postgresql"
+-version = "17.4"
++version = "17.6"
+ description = "A powerful, open source object-relational database system with over 35 years of active development that has earned it a strong reputation for reliability, feature robustness, and performance."
+ 
+ [sources.postgresql]
+-hash = "e69d0714c3a8480c208aadba6c031fb8ce9cf580930c8012bf748c8b5ed11850"
++hash = "2910b85283674da2dae6ac13fe5ebbaaf3c482446396cba32e6728d3cc736d86"
+ format = "tar.gz"
+ file = "postgresql-{version}.{format}"
+ mirrors = [ "https://ftp.postgresql.org/pub/source/v{version}/{file}",]
+diff --git a/packages/user/postgresql13/package.toml b/packages/user/postgresql13/package.toml
+index ad2289d1..f0873a19 100644
+--- a/packages/user/postgresql13/package.toml
++++ b/packages/user/postgresql13/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "postgresql13"
+-version = "13.16"
++version = "13.22"
+ description = "TODO"
+ 
+ [sources.postgresql13]
+-hash = "33647543546202825bdf89bfb71523b5aea12b3b0153a689f694a08ed02aa204"
++hash = "a096c3b298adacd687991f4d4cf6e0d6dceb97ec031b6c23b3eec9080caa854c"
+ format = "tar.gz"
+ file = "postgresql13-{version}.{format}"
+ mirrors = [ "https://ftp.postgresql.org/pub/source/v{version}/postgresql-{version}.{format}",]
+diff --git a/packages/user/protobuf/package.toml b/packages/user/protobuf/package.toml
+index 4f11daae..1448e324 100644
+--- a/packages/user/protobuf/package.toml
++++ b/packages/user/protobuf/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "protobuf"
+-version = "26.1"
++version = "32.0"
+ description = "TODO"
+ 
+ [sources.protobuf]
+-hash = "4fc5ff1b2c339fb86cd3a25f0b5311478ab081e65ad258c6789359cd84d421f8"
++hash = "3ad017543e502ffaa9cd1f4bd4fe96cf117ce7175970f191705fa0518aff80cd"
+ format = "tar.gz"
+ file = "protobuf-{version}.{format}"
+ mirrors = [ "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v{version}.{format}",]
+diff --git a/packages/user/protoc-gen-go-grpc/package.toml b/packages/user/protoc-gen-go-grpc/package.toml
+index f1bddbc4..288f13eb 100644
+--- a/packages/user/protoc-gen-go-grpc/package.toml
++++ b/packages/user/protoc-gen-go-grpc/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "protoc-gen-go-grpc"
+-version = "1.67.0"
++version = "1.74.2"
+ description = "TODO"
+ 
+ [sources.protoc-gen-go-grpc]
+-hash = "1d50c8df1935aae7d2c734a0ec1e9cead7552443af8a03852abd2244e0a7fb55"
++hash = "da6fa507c6225914d520e1b7fe1cca28ee8a499d088d36c2c63e9f8313bb9f82"
+ format = "tar.gz"
+ file = "protoc-gen-go-grpc-{version}.{format}"
+ mirrors = [ "https://github.com/grpc/grpc-go/archive/refs/tags/v{version}.{format}",]
+diff --git a/packages/user/protoc-gen-openapiv2/package.toml b/packages/user/protoc-gen-openapiv2/package.toml
+index bad02791..2725f6a8 100644
+--- a/packages/user/protoc-gen-openapiv2/package.toml
++++ b/packages/user/protoc-gen-openapiv2/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "protoc-gen-openapiv2"
+-version = "2.22.0"
++version = "2.27.1"
+ description = "TODO"
+ 
+ [sources.protoc-gen-openapiv2]
+-hash = "509c86f389f4da5ac5ce06c6e2e85834070e4f774b4bb4c5c0536c464911ae25"
++hash = "918792ce31a184a2cab577d871bd15edb81546afbb33cb50ed139a8cdd52629b"
+ format = "tar.gz"
+ file = "protoc-gen-openapiv2-{version}.{format}"
+ mirrors = [ "https://github.com/grpc-ecosystem/grpc-gateway/archive/refs/tags/v{version}.{format}",]
+diff --git a/packages/user/py-alabaster/package.toml b/packages/user/py-alabaster/package.toml
+index b21dc990..99cc0562 100644
+--- a/packages/user/py-alabaster/package.toml
++++ b/packages/user/py-alabaster/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-alabaster"
+-version = "0.7.16"
++version = "1.0.0"
+ description = "TODO"
+ 
+ [sources.py-alabaster]
+-hash = "75a8b99c28a5dad50dd7f8ccdd447a121ddb3892da9e53d1ca5cca3106d58d65"
++hash = "c00dca57bca26fa62a6d7d0a9fcce65f3e026e9bfe33e9c538fd3fbb2144fd9e"
+ format = "tar.gz"
+ file = "py-alabaster-{version}.{format}"
+ mirrors = [ "https://files.pythonhosted.org/packages/source/a/alabaster/alabaster-{version}.{format}",]
+diff --git a/packages/user/py-awscrt/package.toml b/packages/user/py-awscrt/package.toml
+index 2a1110dc..04f013c1 100644
+--- a/packages/user/py-awscrt/package.toml
++++ b/packages/user/py-awscrt/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-awscrt"
+-version = "0.22.0"
++version = "0.27.6"
+ description = "TODO"
+ 
+ [sources.py-awscrt]
+-hash = "4ca2b0b49328f03f5a3dde2d565132df8ad74cba27352612ecd9fe2505e1d770"
++hash = "45f3dd0b3fb13dfbea856dd96c9acfe77beba57b9b019444ee962ed2b76276dd"
+ format = "tar.gz"
+ file = "py-awscrt-{version}.{format}"
+ mirrors = [ "https://files.pythonhosted.org/packages/source/a/awscrt/awscrt-{version}.{format}",]
+diff --git a/packages/user/py-babel/package.toml b/packages/user/py-babel/package.toml
+index dbe849e4..70061a35 100644
+--- a/packages/user/py-babel/package.toml
++++ b/packages/user/py-babel/package.toml
+@@ -1,10 +1,9 @@
+ [package]
+ name = "py-babel"
+-version = "2.14.0"
++version = "2.17.0"
+ description = "TODO"
+ 
+ [sources.py-babel]
+-hash = "6919867db036398ba21eb5c7a0f6b28ab8cbc3ae7a73a44ebe34ae74a4e7d363"
+ format = "tar.gz"
+ file = "py-babel-{version}.{format}"
+ mirrors = [ "https://files.pythonhosted.org/packages/source/B/Babel/Babel-{version}.{format}",]
+diff --git a/packages/user/py-botocore/package.toml b/packages/user/py-botocore/package.toml
+index 5abe7f78..6124d899 100644
+--- a/packages/user/py-botocore/package.toml
++++ b/packages/user/py-botocore/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-botocore"
+-version = "1.34.68"
++version = "1.40.11"
+ description = "TODO"
+ 
+ [sources.py-botocore]
+-hash = "e7ae9d69cc3e7b31d926e6a1a9ae673ba02da263e35cf12ff2bae35a21755cc6"
++hash = "95af22e1b2230bdd5faa9d1c87e8b147028b14b531770a1148bf495967ccba5e"
+ format = "tar.gz"
+ file = "py-botocore-{version}.{format}"
+ mirrors = [ "https://files.pythonhosted.org/packages/source/b/botocore/botocore-{version}.{format}",]
+diff --git a/packages/user/py-certifi/package.toml b/packages/user/py-certifi/package.toml
+index 5348d94b..2549b62f 100644
+--- a/packages/user/py-certifi/package.toml
++++ b/packages/user/py-certifi/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-certifi"
+-version = "2024.2.2"
++version = "2025.8.3"
+ description = "TODO"
+ 
+ [sources.py-certifi]
+-hash = "0569859f95fc761b18b45ef421b1290a0f65f147e92a1e5eb3e635f9a5e4e66f"
++hash = "e564105f78ded564e3ae7c923924435e1daa7463faeab5bb932bc53ffae63407"
+ format = "tar.gz"
+ file = "py-certifi-{version}.{format}"
+ mirrors = [ "https://files.pythonhosted.org/packages/source/c/certifi/certifi-{version}.{format}",]
+diff --git a/packages/user/py-cryptography/package.toml b/packages/user/py-cryptography/package.toml
+index 9be58304..384f6ee6 100644
+--- a/packages/user/py-cryptography/package.toml
++++ b/packages/user/py-cryptography/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-cryptography"
+-version = "41.0.7"
++version = "45.0.6"
+ description = "TODO"
+ 
+ [sources.py-cryptography]
+-hash = "13f93ce9bea8016c253b34afc6bd6a75993e5c40672ed5405a9c832f0d4a00bc"
++hash = "5c966c732cf6e4a276ce83b6e4c729edda2df6929083a952cc7da973c539c719"
+ format = "tar.gz"
+ file = "py-cryptography-{version}.{format}"
+ mirrors = [ "https://files.pythonhosted.org/packages/source/c/cryptography/cryptography-{version}.{format}",]
+diff --git a/packages/user/py-docutils/package.toml b/packages/user/py-docutils/package.toml
+index 36f081d7..b8576ee2 100644
+--- a/packages/user/py-docutils/package.toml
++++ b/packages/user/py-docutils/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-docutils"
+-version = "0.20.1"
++version = "0.22"
+ description = "TODO"
+ 
+ [sources.py-docutils]
+-hash = "f08a4e276c3a1583a86dce3e34aba3fe04d02bba2dd51ed16106244e8a923e3b"
++hash = "ba9d57750e92331ebe7c08a1bbf7a7f8143b86c476acd51528b042216a6aad0f"
+ format = "tar.gz"
+ file = "py-docutils-{version}.{format}"
+ mirrors = [ "https://files.pythonhosted.org/packages/source/d/docutils/docutils-{version}.{format}",]
+diff --git a/packages/user/py-hatchling/package.toml b/packages/user/py-hatchling/package.toml
+index 06734f9c..fd005ff5 100644
+--- a/packages/user/py-hatchling/package.toml
++++ b/packages/user/py-hatchling/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-hatchling"
+-version = "1.25.0"
++version = "1.27.0"
+ description = "TODO"
+ 
+ [sources.py-hatchling]
+-hash = "7064631a512610b52250a4d3ff1bd81551d6d1431c4eb7b72e734df6c74f4262"
++hash = "971c296d9819abb3811112fc52c7a9751c8d381898f36533bb16f9791e941fd6"
+ format = "tar.gz"
+ file = "py-hatchling-{version}.{format}"
+ mirrors = [ "https://files.pythonhosted.org/packages/source/h/hatchling/hatchling-{version}.{format}",]
+diff --git a/packages/user/py-idna/package.toml b/packages/user/py-idna/package.toml
+index b4f67338..5a1dd56d 100644
+--- a/packages/user/py-idna/package.toml
++++ b/packages/user/py-idna/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-idna"
+-version = "3.7"
++version = "3.10"
+ description = "TODO"
+ 
+ [sources.py-idna]
+-hash = "07017f753632624abaa31aa2c1b243aea6409367256de4183671d95e019f7d70"
++hash = "04f6b013c384deca20a165a4cdf36823465a81c2bb914c40b543802d39e1cb1a"
+ format = "tar.gz"
+ file = "py-idna-{version}.{format}"
+ mirrors = [ "https://github.com/kjd/idna/archive/v{version}.{format}",]
+diff --git a/packages/user/py-jinja2/package.toml b/packages/user/py-jinja2/package.toml
+index 693b01db..08bf1b10 100644
+--- a/packages/user/py-jinja2/package.toml
++++ b/packages/user/py-jinja2/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-jinja2"
+-version = "3.1.4"
++version = "3.1.6"
+ description = "TODO"
+ 
+ [sources.py-jinja2]
+-hash = "4a3aee7acbbe7303aede8e9648d13b8bf88a429282aa6122a993f0ac800cb369"
++hash = "0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d"
+ format = "tar.gz"
+ file = "py-jinja2-{version}.{format}"
+ mirrors = [ "https://files.pythonhosted.org/packages/source/j/jinja2/jinja2-{version}.{format}",]
+diff --git a/packages/user/py-libarchive/package.toml b/packages/user/py-libarchive/package.toml
+index 3a6b70fe..595d822e 100644
+--- a/packages/user/py-libarchive/package.toml
++++ b/packages/user/py-libarchive/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-libarchive"
+-version = "5.1"
++version = "5.3"
+ description = "TODO"
+ 
+ [sources.py-libarchive]
+-hash = "5051c6d157d03cc0891e5f1051edf5122d6e9b82c58cd30e898dea818e7ff014"
++hash = "867f94601c177236afb9d1c385f524b28ebc47e9b090cb08dfdc75dd18d5520c"
+ format = "tar.gz"
+ file = "py-libarchive-{version}.{format}"
+ mirrors = [ "https://github.com/Changaco/python-libarchive-c/archive/{version}.{format}",]
+diff --git a/packages/user/py-mako/package.toml b/packages/user/py-mako/package.toml
+index eca63bf5..930ed356 100644
+--- a/packages/user/py-mako/package.toml
++++ b/packages/user/py-mako/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-mako"
+-version = "1.3.9"
++version = "1.3.10"
+ description = "Python3 fast templating language"
+ 
+ [sources.py-mako]
+-hash = "b5d65ff3462870feec922dbccf38f6efb44e5714d7b593a656be86663d8600ac"
++hash = "99579a6f39583fa7e5630a28c3c1f440e4e97a414b80372649c0ce338da2ea28"
+ format = "tar.gz"
+ file = "mako-{version}.{format}"
+-mirrors = [ "https://files.pythonhosted.org/packages/source/M/Mako/{file}", ]
++mirrors = [ "https://files.pythonhosted.org/packages/source/M/Mako/{file}",]
+diff --git a/packages/user/py-markupsafe/package.toml b/packages/user/py-markupsafe/package.toml
+index 4ec50145..1a8202b4 100644
+--- a/packages/user/py-markupsafe/package.toml
++++ b/packages/user/py-markupsafe/package.toml
+@@ -1,10 +1,9 @@
+ [package]
+ name = "py-markupsafe"
+-version = "2.1.5"
++version = "3.0.2"
+ description = "TODO"
+ 
+ [sources.py-markupsafe]
+-hash = "d283d37a890ba4c1ae73ffadf8046435c76e7bc2247bbb63c00bd1a709c6544b"
+ format = "tar.gz"
+ file = "py-markupsafe-{version}.{format}"
+ mirrors = [ "https://files.pythonhosted.org/packages/source/M/MarkupSafe/MarkupSafe-{version}.{format}",]
+diff --git a/packages/user/py-pluggy/package.toml b/packages/user/py-pluggy/package.toml
+index 1fbdddcb..31b15c5c 100644
+--- a/packages/user/py-pluggy/package.toml
++++ b/packages/user/py-pluggy/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-pluggy"
+-version = "1.5.0"
++version = "1.6.0"
+ description = "TODO"
+ 
+ [sources.py-pluggy]
+-hash = "2cffa88e94fdc978c4c574f15f9e59b7f4201d439195c3715ca9e2486f1d0cf1"
++hash = "7dcc130b76258d33b90f61b658791dede3486c3e6bfb003ee5c9bfb396dd22f3"
+ format = "tar.gz"
+ file = "py-pluggy-{version}.{format}"
+ mirrors = [ "https://files.pythonhosted.org/packages/source/p/pluggy/pluggy-{version}.{format}",]
+diff --git a/packages/user/py-prompt_toolkit/package.toml b/packages/user/py-prompt_toolkit/package.toml
+index 13733d43..f6a93dec 100644
+--- a/packages/user/py-prompt_toolkit/package.toml
++++ b/packages/user/py-prompt_toolkit/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-prompt_toolkit"
+-version = "3.0.48"
++version = "3.0.51"
+ description = "TODO"
+ 
+ [sources.py-prompt_toolkit]
+-hash = "d6623ab0477a80df74e646bdbc93621143f5caf104206aa29294d53de1a03d90"
++hash = "931a162e3b27fc90c86f1b48bb1fb2c528c2761475e57c9c06de13311c7b54ed"
+ format = "tar.gz"
+ file = "py-prompt_toolkit-{version}.{format}"
+ mirrors = [ "https://files.pythonhosted.org/packages/source/p/prompt_toolkit/prompt_toolkit-{version}.{format}",]
+diff --git a/packages/user/py-pygments/package.toml b/packages/user/py-pygments/package.toml
+index 62b72fea..c49412eb 100644
+--- a/packages/user/py-pygments/package.toml
++++ b/packages/user/py-pygments/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-pygments"
+-version = "2.18.0"
++version = "2.19.2"
+ description = "TODO"
+ 
+ [sources.py-pygments]
+-hash = "786ff802f32e91311bff3889f6e9a86e81505fe99f2735bb6d60ae0c5004f199"
++hash = "636cb2477cec7f8952536970bc533bc43743542f70392ae026374600add5b887"
+ format = "tar.gz"
+ file = "py-pygments-{version}.{format}"
+ mirrors = [ "https://files.pythonhosted.org/packages/source/P/Pygments/pygments-{version}.{format}",]
+diff --git a/packages/user/py-requests/package.toml b/packages/user/py-requests/package.toml
+index e5479aa1..9db58430 100644
+--- a/packages/user/py-requests/package.toml
++++ b/packages/user/py-requests/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-requests"
+-version = "2.32.3"
++version = "2.32.4"
+ description = "TODO"
+ 
+ [sources.py-requests]
+-hash = "55365417734eb18255590a9ff9eb97e9e1da868d4ccd6402399eaf68af20a760"
++hash = "27d0316682c8a29834d3264820024b62a36942083d52caf2f14c0591336d3422"
+ format = "tar.gz"
+ file = "py-requests-{version}.{format}"
+ mirrors = [ "https://files.pythonhosted.org/packages/source/r/requests/requests-{version}.{format}",]
+diff --git a/packages/user/py-ruamel.yaml/package.toml b/packages/user/py-ruamel.yaml/package.toml
+index 56620017..740c7292 100644
+--- a/packages/user/py-ruamel.yaml/package.toml
++++ b/packages/user/py-ruamel.yaml/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-ruamel.yaml"
+-version = "0.17.28"
++version = "0.18.14"
+ description = "TODO"
+ 
+ [sources.py-ruamel-yaml]
+-hash = "3bf6df1c481d2463a633be6ee86e8aece941bb3298a9a0cd6d0865f47b1ddce6"
++hash = "7227b76aaec364df15936730efbf7d72b30c0b79b1d578bbb8e3dcb2d81f52b7"
+ format = "tar.gz"
+ file = "py-ruamel-yaml-{version}.{format}"
+ mirrors = [ "https://files.pythonhosted.org/packages/source/r/ruamel.yaml/ruamel.yaml-{version}.tar.gz",]
+diff --git a/packages/user/py-setuptools-scm/package.toml b/packages/user/py-setuptools-scm/package.toml
+index 5d21960f..8f56b1f2 100644
+--- a/packages/user/py-setuptools-scm/package.toml
++++ b/packages/user/py-setuptools-scm/package.toml
+@@ -1,10 +1,9 @@
+ [package]
+ name = "py-setuptools-scm"
+-version = "8.0.4"
++version = "9.2.0"
+ description = "TODO"
+ 
+ [sources.py-setuptools-scm]
+-hash = "b5f43ff6800669595193fd09891564ee9d1d7dcb196cab4b2506d53a2e1c95c7"
+ format = "tar.gz"
+ file = "py-setuptools-scm-{version}.{format}"
+ mirrors = [ "https://files.pythonhosted.org/packages/source/s/setuptools-scm/setuptools-scm-{version}.{format}",]
+diff --git a/packages/user/py-snowballstemmer/package.toml b/packages/user/py-snowballstemmer/package.toml
+index 756298e9..2abe7f8e 100644
+--- a/packages/user/py-snowballstemmer/package.toml
++++ b/packages/user/py-snowballstemmer/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-snowballstemmer"
+-version = "2.2.0"
++version = "3.0.1"
+ description = "TODO"
+ 
+ [sources.py-snowballstemmer]
+-hash = "09b16deb8547d3412ad7b590689584cd0fe25ec8db3be37788be3810cbf19cb1"
++hash = "6d5eeeec8e9f84d4d56b847692bacf79bc2c8e90c7f80ca4444ff8b6f2e52895"
+ format = "tar.gz"
+ file = "py-snowballstemmer-{version}.{format}"
+ mirrors = [ "https://files.pythonhosted.org/packages/source/s/snowballstemmer/snowballstemmer-{version}.{format}",]
+diff --git a/packages/user/py-sphinx/package.toml b/packages/user/py-sphinx/package.toml
+index 90d5843e..95b69b1a 100644
+--- a/packages/user/py-sphinx/package.toml
++++ b/packages/user/py-sphinx/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-sphinx"
+-version = "7.2.6"
++version = "8.2.3"
+ description = "TODO"
+ 
+ [sources.py-sphinx]
+-hash = "b41c04543148937b887097f396d7b2b54ae49d0597b68625f06ffdf702d4d917"
++hash = "94cd09fa065b819dcc40de329441d53710cf51f6857b39ce20840bb2b5d3ec78"
+ format = "tar.gz"
+ file = "py-sphinx-{version}.{format}"
+ mirrors = [ "https://github.com/sphinx-doc/sphinx/archive/v{version}.{format}",]
+diff --git a/packages/user/py-sphinx_rtd_theme/package.toml b/packages/user/py-sphinx_rtd_theme/package.toml
+index 1432a9d8..427e1782 100644
+--- a/packages/user/py-sphinx_rtd_theme/package.toml
++++ b/packages/user/py-sphinx_rtd_theme/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-sphinx_rtd_theme"
+-version = "2.0.0"
++version = "3.0.2"
+ description = "TODO"
+ 
+ [sources.py-sphinx_rtd_theme]
+-hash = "40446e6789dd34deb4e9814e379bae0aa74057b6fb43de4b343a48c84fc0f8db"
++hash = "6d8e0435e525afe04cb3a10e9429cff37febef612a376576b69b63178f289aba"
+ format = "tar.gz"
+ file = "py-sphinx_rtd_theme-{version}.{format}"
+ mirrors = [ "https://github.com/readthedocs/sphinx_rtd_theme/archive/{version}.{format}",]
+diff --git a/packages/user/py-sphinxcontrib-devhelp/package.toml b/packages/user/py-sphinxcontrib-devhelp/package.toml
+index 9c9e7efb..63ca6d82 100644
+--- a/packages/user/py-sphinxcontrib-devhelp/package.toml
++++ b/packages/user/py-sphinxcontrib-devhelp/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-sphinxcontrib-devhelp"
+-version = "1.0.5"
++version = "2.0.0"
+ description = "TODO"
+ 
+ [sources.py-sphinxcontrib-devhelp]
+-hash = "e2b24fcee87da8fb6a3826ba072c8369cdbffee116bd38bcfaa0302b279dc844"
++hash = "e650ce2bde1204477df2f428757e14aa85735bd6a40517645eba55730262b8e8"
+ format = "tar.gz"
+ file = "py-sphinxcontrib-devhelp-{version}.{format}"
+ mirrors = [ "https://github.com/sphinx-doc/sphinxcontrib-devhelp/archive/refs/tags/{version}.{format}",]
+diff --git a/packages/user/py-sphinxcontrib-htmlhelp/package.toml b/packages/user/py-sphinxcontrib-htmlhelp/package.toml
+index cc329e32..e6c88150 100644
+--- a/packages/user/py-sphinxcontrib-htmlhelp/package.toml
++++ b/packages/user/py-sphinxcontrib-htmlhelp/package.toml
+@@ -1,10 +1,9 @@
+ [package]
+ name = "py-sphinxcontrib-htmlhelp"
+-version = "2.0.1"
++version = "2.1.0"
+ description = "TODO"
+ 
+ [sources.py-sphinxcontrib-htmlhelp]
+-hash = "0cbdd302815330058422b98a113195c9249825d681e18f11e8b1f78a2f11efff"
+ format = "tar.gz"
+ file = "py-sphinxcontrib-htmlhelp-{version}.{format}"
+ mirrors = [ "https://files.pythonhosted.org/packages/source/s/sphinxcontrib-htmlhelp/sphinxcontrib-htmlhelp-{version}.{format}",]
+diff --git a/packages/user/py-sphinxcontrib-qthelp/package.toml b/packages/user/py-sphinxcontrib-qthelp/package.toml
+index 3e69eea6..54919f64 100644
+--- a/packages/user/py-sphinxcontrib-qthelp/package.toml
++++ b/packages/user/py-sphinxcontrib-qthelp/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-sphinxcontrib-qthelp"
+-version = "1.0.6"
++version = "2.0.0"
+ description = "TODO"
+ 
+ [sources.py-sphinxcontrib-qthelp]
+-hash = "a7bd74c400fc84fadbd0bd74c6c48b1a12465dc950af335b59ee5e62e082fce3"
++hash = "8bbb0bc76ad38fc552a73292740b55bdf9ea2ab3d5111ebd58e47cd6225855b2"
+ format = "tar.gz"
+ file = "py-sphinxcontrib-qthelp-{version}.{format}"
+ mirrors = [ "https://github.com/sphinx-doc/sphinxcontrib-qthelp/archive/refs/tags/{version}.{format}",]
+diff --git a/packages/user/py-sphinxcontrib-serializinghtml/package.toml b/packages/user/py-sphinxcontrib-serializinghtml/package.toml
+index b0d3acfd..8fbcc446 100644
+--- a/packages/user/py-sphinxcontrib-serializinghtml/package.toml
++++ b/packages/user/py-sphinxcontrib-serializinghtml/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-sphinxcontrib-serializinghtml"
+-version = "1.1.9"
++version = "2.0.0"
+ description = "TODO"
+ 
+ [sources.py-sphinxcontrib-serializinghtml]
+-hash = "8ff6f82f0b7876eaaf258cb90d2ddfdc26ae069552bf6db6ae5eb534ae689c19"
++hash = "f418c9f2e93c2e732c5232b570c95e73b6b5c8dd54190f3645e96fb565ea272f"
+ format = "tar.gz"
+ file = "py-sphinxcontrib-serializinghtml-{version}.{format}"
+ mirrors = [ "https://github.com/sphinx-doc/sphinxcontrib-serializinghtml/archive/refs/tags/{version}.{format}",]
+diff --git a/packages/user/py-trove-classifiers/package.toml b/packages/user/py-trove-classifiers/package.toml
+index 6c2a4c6c..1798c432 100644
+--- a/packages/user/py-trove-classifiers/package.toml
++++ b/packages/user/py-trove-classifiers/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-trove-classifiers"
+-version = "2024.5.17"
++version = "2025.8.6.13"
+ description = "TODO"
+ 
+ [sources.py-trove-classifiers]
+-hash = "5d0a143e5977e5c32a34265f803fcdbf064c57940ce95492fe6c559622f7497c"
++hash = "50ea3282147588e22b400c1a8549011c36a9f1a78c0dbe167553456967070c8f"
+ format = "tar.gz"
+ file = "py-trove-classifiers-{version}.{format}"
+ mirrors = [ "https://github.com/pypa/trove-classifiers/archive/{version}/py3-trove-classifiers-{version}.{format}",]
+diff --git a/packages/user/py-typing-extensions/package.toml b/packages/user/py-typing-extensions/package.toml
+index 100ac502..fd61e680 100644
+--- a/packages/user/py-typing-extensions/package.toml
++++ b/packages/user/py-typing-extensions/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "py-typing-extensions"
+-version = "4.10.0"
++version = "4.14.1"
+ description = "TODO"
+ 
+ [sources.py-typing-extensions]
+-hash = "b0abd7c89e8fb96f98db18d86106ff1d90ab692004eb746cf6eda2682f91b3cb"
++hash = "38b39f4aeeab64884ce9f74c94263ef78f3c22467c8724005483154c26648d36"
+ format = "tar.gz"
+ file = "py-typing-extensions-{version}.{format}"
+ mirrors = [ "https://files.pythonhosted.org/packages/source/t/typing_extensions/typing_extensions-{version}.{format}",]
+diff --git a/packages/user/qemu/package.toml b/packages/user/qemu/package.toml
+index 9ea8f888..7a35361c 100644
+--- a/packages/user/qemu/package.toml
++++ b/packages/user/qemu/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "qemu"
+-version = "9.2.0"
++version = "10.0.3"
+ description = "TODO"
+ 
+ [sources.qemu]
+-hash = "f859f0bc65e1f533d040bbe8c92bcfecee5af2c921a6687c652fb44d089bd894"
++hash = "5c891267b1534a774465db8b1a0dfcb0c5e6d7ecb6f71345625adf4e0889945b"
+ format = "tar.xz"
+ file = "qemu-{version}.{format}"
+ mirrors = [ "https://download.qemu.org/{file}",]
+diff --git a/packages/user/redict/package.toml b/packages/user/redict/package.toml
+index 2a9f8e0f..47be9139 100644
+--- a/packages/user/redict/package.toml
++++ b/packages/user/redict/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "redict"
+-version = "7.3.1"
++version = "7.3.5"
+ description = "A distributed key/value database"
+ 
+ [sources.redict]
+-hash = "6dbe80d28503a9252048ab81856efcfec109cdf3f924e840411c30237cf8f634"
++hash = "1528db77c3539190ebe1fe3963347e02ac8095aff75a19b3373cddcf3f920405"
+ format = "tar.gz"
+ file = "{version}.{format}"
+ mirrors = [ "https://codeberg.org/redict/redict/archive/{file}",]
+diff --git a/packages/user/redis/package.toml b/packages/user/redis/package.toml
+index 1dca6498..d64ed80b 100644
+--- a/packages/user/redis/package.toml
++++ b/packages/user/redis/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "redis"
+-version = "7.2.4"
++version = "8.2.0"
+ description = "TODO"
+ 
+ [sources.redis]
+-hash = "8d104c26a154b29fd67d6568b4f375212212ad41e0c2caa3d66480e78dbd3b59"
++hash = "ff95b83b7cf2f7a33af3be1e52fdf2e791c259f8272465c3b09f9e6bc901b604"
+ format = "tar.gz"
+ file = "redis-{version}.{format}"
+ mirrors = [ "https://download.redis.io/releases/{file}",]
+diff --git a/packages/user/rhash/package.toml b/packages/user/rhash/package.toml
+index 65c67b06..1592f788 100644
+--- a/packages/user/rhash/package.toml
++++ b/packages/user/rhash/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "rhash"
+-version = "1.4.4"
++version = "1.4.6"
+ description = "TODO"
+ 
+ [sources.rhash]
+-hash = "8e7d1a8ccac0143c8fe9b68ebac67d485df119ea17a613f4038cda52f84ef52a"
++hash = "9f6019cfeeae8ace7067ad22da4e4f857bb2cfa6c2deaa2258f55b2227ec937a"
+ format = "tar.gz"
+ file = "rhash-{version}.{format}"
+ mirrors = [ "https://github.com/rhash/RHash/archive/refs/tags/v{version}.{format}",]
+diff --git a/packages/user/runc/package.toml b/packages/user/runc/package.toml
+index 2d7219ad..569fcf95 100644
+--- a/packages/user/runc/package.toml
++++ b/packages/user/runc/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "runc"
+-version = "1.1.13"
++version = "1.3.0"
+ description = "TODO"
+ 
+ [sources.runc]
+-hash = "789d5749a08ef1fbe5d1999b67883206a68a4e58e6ca0151c411d678f3480b25"
++hash = "3262492ce42bea0919ee1a2d000b6f303fd14877295bc38d094876b55fdd448b"
+ format = "tar.gz"
+ file = "runc-{version}.{format}"
+ mirrors = [ "https://github.com/opencontainers/runc/archive/v{version}/runc-v{version}.{format}",]
+diff --git a/packages/user/seabios/package.toml b/packages/user/seabios/package.toml
+index c4397e47..f98d7fe0 100644
+--- a/packages/user/seabios/package.toml
++++ b/packages/user/seabios/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "seabios"
+-version = "1.16.3"
++version = "1.17.0"
+ description = "TODO"
+ 
+ [sources.seabios]
+-hash = "1c1742a315b0c2fefa9390c8a50e2ac1a6f4806e0715aece6595eaf4477fcd8a"
++hash = "cb708a548e4244c5021590a5e78ab6e331ded1750120b687039042994033a07c"
+ format = "tar.gz"
+ file = "seabios-{version}.{format}"
+ mirrors = [ "https://github.com/coreboot/seabios/archive/rel-{version}.{format}",]
+diff --git a/packages/user/sequoia-sq/package.toml b/packages/user/sequoia-sq/package.toml
+index daa7cd02..9b4d8e52 100644
+--- a/packages/user/sequoia-sq/package.toml
++++ b/packages/user/sequoia-sq/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "sequoia-sq"
+-version = "1.2.0"
++version = "1.3.1"
+ description = "TODO"
+ 
+ [sources.sequoia-sq]
+-hash = "73dde38dd5f46ad34f55784709e35f7b482edfff29a1d2030a879719c9a60331"
++hash = "ca4a6ef07ab9ca492c8166d6d6ed0354eb81f418bf819cf095c1ee856c461365"
+ format = "tar.gz"
+ file = "sq-{version}.{format}"
+-mirrors = [ "https://gitlab.com/sequoia-pgp/sequoia-sq/-/archive/v{version}/sequoia-sq-v{version}.tar.bz2"]
++mirrors = [ "https://gitlab.com/sequoia-pgp/sequoia-sq/-/archive/v{version}/sequoia-sq-v{version}.tar.bz2",]
+diff --git a/packages/user/skalibs/package.toml b/packages/user/skalibs/package.toml
+index eaa1a07f..c5b79f15 100644
+--- a/packages/user/skalibs/package.toml
++++ b/packages/user/skalibs/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "skalibs"
+-version = "2.14.1.1"
++version = "2.14.4.0"
+ description = "TODO"
+ 
+ [sources.skalibs]
+-hash = "b6b79b816f4ba0b6801676b0ed4179b59c8c7809eeffe26db672e404636befc3"
++hash = "0e626261848cc920738f92fd50a24c14b21e30306dfed97b8435369f4bae00a5"
+ format = "tar.gz"
+ file = "skalibs-{version}.{format}"
+ mirrors = [ "https://skarnet.org/software/skalibs/{file}",]
+diff --git a/packages/user/socat/package.toml b/packages/user/socat/package.toml
+index e7412f96..ccaafe24 100644
+--- a/packages/user/socat/package.toml
++++ b/packages/user/socat/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "socat"
+-version = "1.8.0.1"
++version = "1.8.0.3"
+ description = "TODO"
+ 
+ [sources.socat]
+-hash = "dc350411e03da657269e529c4d49fe23ba7b4610b0b225c020df4cf9b46e6982"
++hash = "a9f9eb6cfb9aa6b1b4b8fe260edbac3f2c743f294db1e362b932eb3feca37ba4"
+ format = "tar.gz"
+ file = "socat-{version}.{format}"
+ mirrors = [ "http://www.dest-unreach.org/socat/download/{file}",]
+diff --git a/packages/user/sops/package.toml b/packages/user/sops/package.toml
+index 710d7c76..b7804a2f 100644
+--- a/packages/user/sops/package.toml
++++ b/packages/user/sops/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "sops"
+-version = "3.8.1"
++version = "3.10.2"
+ description = "TODO"
+ 
+ [sources.sops]
+-hash = "5ca70fb4f96797d09012c705a5bb935835896de7bcd063b98d498912b0e645a0"
++hash = "2f7cfa67f23ccc553538450a1c3e3f7666ec934d94034457b3890dbcd49b0469"
+ format = "tar.gz"
+ file = "sops-{version}.{format}"
+ mirrors = [ "https://github.com/getsops/sops/archive/refs/tags/v{version}.{format}",]
+diff --git a/packages/user/spirv-headers/package.toml b/packages/user/spirv-headers/package.toml
+index 5f6568f4..d629cf26 100644
+--- a/packages/user/spirv-headers/package.toml
++++ b/packages/user/spirv-headers/package.toml
+@@ -1,10 +1,9 @@
+ [package]
+ name = "spirv-headers"
+-version = "1.4.309.0"
++version = "1.5.4.raytracing.fixed"
+ description = "Machine-readable files for the SPIR-V Registry"
+ 
+ [sources.spirv-headers]
+-hash = "a96f8b4f2dfb18f7432e5c523e220ab0075372a9509e0c25fbff21c76af0de7c"
+ format = "tar.gz"
+ file = "vulkan-sdk-{version}.{format}"
+-mirrors = [ "https://github.com/KhronosGroup/SPIRV-Headers/archive/refs/tags/{file}", ]
++mirrors = [ "https://github.com/KhronosGroup/SPIRV-Headers/archive/refs/tags/{file}",]
+diff --git a/packages/user/spirv-llvm-translator/package.toml b/packages/user/spirv-llvm-translator/package.toml
+index 4a22aceb..0a0d6357 100644
+--- a/packages/user/spirv-llvm-translator/package.toml
++++ b/packages/user/spirv-llvm-translator/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "spirv-llvm-translator"
+-version = "19.1.3"
++version = "21.1.0"
+ description = "Library for bi-directional translation between SPIR-V and LLVM IR"
+ 
+ [sources.spirv-llvm-translator]
+-hash = "cf702ec5a1c8e1ac3bfc999c1207e753fe8f972cb7d9608110b2f54ac4f0572c"
++hash = "4f7019a06c731daebbc18080db338964002493ead4cfb440fef95d120c50a170"
+ format = "tar.gz"
+ file = "llvm-translator-{version}.{format}"
+-mirrors = [ "https://github.com/KhronosGroup/SPIRV-LLVM-Translator/archive/v{version}/{file}", ]
++mirrors = [ "https://github.com/KhronosGroup/SPIRV-LLVM-Translator/archive/v{version}/{file}",]
+diff --git a/packages/user/spirv-tools/package.toml b/packages/user/spirv-tools/package.toml
+index 8a3ed89a..f6784ddd 100644
+--- a/packages/user/spirv-tools/package.toml
++++ b/packages/user/spirv-tools/package.toml
+@@ -1,10 +1,9 @@
+ [package]
+ name = "spirv-tools"
+-version = "1.4.309.0"
++version = "2025.1"
+ description = "API and commands for processing SPIR-V modules"
+ 
+ [sources.spirv-tools]
+-hash = "6b8577054c575573ead3ad71cb6a2c0b3397b64c746cc3c99e48cc5e324c1b55"
+ format = "tar.gz"
+ file = "vulkan-sdk-{version}.{format}"
+-mirrors = [ "https://github.com/KhronosGroup/SPIRV-Tools/archive/refs/tags/{file}", ]
++mirrors = [ "https://github.com/KhronosGroup/SPIRV-Tools/archive/refs/tags/{file}",]
+diff --git a/packages/user/strace/package.toml b/packages/user/strace/package.toml
+index 3da8f983..a067cb73 100644
+--- a/packages/user/strace/package.toml
++++ b/packages/user/strace/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "strace"
+-version = "6.7"
++version = "6.16"
+ description = "TODO"
+ 
+ [sources.strace]
+-hash = "2090201e1a3ff32846f4fe421c1163b15f440bb38e31355d09f82d3949922af7"
++hash = "3d7aee7e4f044b2f67f3d51a8a76eda18076e9fb2774de54ac351d777d4ebffa"
+ format = "tar.xz"
+ file = "strace-{version}.{format}"
+ mirrors = [ "https://github.com/strace/strace/releases/download/v{version}/{file}",]
+diff --git a/packages/user/swig/package.toml b/packages/user/swig/package.toml
+index 7687bbca..dda7d170 100644
+--- a/packages/user/swig/package.toml
++++ b/packages/user/swig/package.toml
+@@ -1,9 +1,9 @@
+ [package]
+ name = "swig"
+-version = "4.3.0"
++version = "4.3.1"
+ description = "TODO"
+ 
+ [sources.swig]
+-hash = "f7203ef796f61af986c70c05816236cbd0d31b7aa9631e5ab53020ab7804aa9e"
++hash = "44fc829f70f1e17d635a2b4d69acab38896699ecc24aa023e516e0eabbec61b8"
+ file = "swig-{version}.tar.gz"
+ mirrors = [ "https://downloads.sourceforge.net/swig/{file}",]
+diff --git a/packages/user/swtpm/package.toml b/packages/user/swtpm/package.toml
+index ec0b5a73..eabad97e 100644
+--- a/packages/user/swtpm/package.toml
++++ b/packages/user/swtpm/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "swtpm"
+-version = "0.9.0"
++version = "0.10.1"
+ description = "TODO"
+ 
+ [sources.swtpm]
+-hash = "9679ca171e8aaa3c4e4053e8bc1d10c8dabf0220bd4b16aba78743511c25f731"
++hash = "f8da11cadfed27e26d26c5f58a7b8f2d14d684e691927348906b5891f525c684"
+ format = "tar.gz"
+ file = "swtpm-{version}.{format}"
+ mirrors = [ "https://github.com/stefanberger/swtpm/archive/v{version}.{format}",]
+diff --git a/packages/user/talosctl/package.toml b/packages/user/talosctl/package.toml
+index 1ebcf200..d62d1570 100644
+--- a/packages/user/talosctl/package.toml
++++ b/packages/user/talosctl/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "talosctl"
+-version = "1.7.2"
++version = "1.10.6"
+ description = "TODO"
+ 
+ [sources.talosctl]
+-hash = "7f16510394ebe12cd405bc9d2cf4c6ef2c8baf6213006d52c05dcbce0bf06100"
++hash = "1d8aecd624282ae0bf3be789bb8f95819d60cf5c4987523443d3ecd5bf1072a2"
+ format = "tar.gz"
+ file = "talosctl-{version}.{format}"
+ mirrors = [ "https://github.com/siderolabs/talos/archive/refs/tags/v{version}.{format}",]
+diff --git a/packages/user/tflint/package.toml b/packages/user/tflint/package.toml
+index 437c0457..327ca0b8 100644
+--- a/packages/user/tflint/package.toml
++++ b/packages/user/tflint/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "tflint"
+-version = "0.53.0"
++version = "0.58.1"
+ description = "TODO"
+ 
+ [sources.tflint]
+-hash = "22dd4644dd249b38b8cbb29bd4ca66aefa65a2d9dc38109a3ca5b428a4ba755b"
++hash = "2099bef1b47dc995ae531ebcc92a9e272206976740095b1cc897b3185ecd82bf"
+ format = "tar.gz"
+ file = "tflint-{version}.{format}"
+ mirrors = [ "https://github.com/terraform-linters/tflint/archive/refs/tags/v{version}.{format}",]
+diff --git a/packages/user/tpm2-tools/package.toml b/packages/user/tpm2-tools/package.toml
+index 6cbd5813..c812ac5d 100644
+--- a/packages/user/tpm2-tools/package.toml
++++ b/packages/user/tpm2-tools/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "tpm2-tools"
+-version = "5.6"
++version = "5.7"
+ description = "TODO"
+ 
+ [sources.tpm2-tools]
+-hash = "7169fac7b5afb3ce20091b8d66ee13a69cf0b107ea1e17f5d1aa087d99bcf8e2"
++hash = "714912361fddbd7e01473be9065b2949b5ad2f5dff80063648f00f4eaf38971b"
+ format = "tar.gz"
+ file = "tpm2-tools-{version}.{format}"
+ mirrors = [ "https://github.com/tpm2-software/tpm2-tools/archive/refs/tags/{version}.{format}",]
+diff --git a/packages/user/tpm2-tss/package.toml b/packages/user/tpm2-tss/package.toml
+index b0035a65..80866b5f 100644
+--- a/packages/user/tpm2-tss/package.toml
++++ b/packages/user/tpm2-tss/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "tpm2-tss"
+-version = "4.1.0"
++version = "4.1.3"
+ description = "TODO"
+ 
+ [sources.tpm2-tss]
+-hash = "4f6c53010b9f422107235d748178daf77817bd2bbe856befa3d54cab9f2f07e4"
++hash = "8a389bda64690910e7af7deaf64703a3faed416dc538c9c3e4f893f24893524d"
+ format = "tar.gz"
+ file = "tpm2-tss-{version}.{format}"
+ mirrors = [ "https://github.com/tpm2-software/tpm2-tss/archive/refs/tags/{version}.{format}",]
+diff --git a/packages/user/util-linux/package.toml b/packages/user/util-linux/package.toml
+index bd9c522b..2d46e989 100644
+--- a/packages/user/util-linux/package.toml
++++ b/packages/user/util-linux/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "util-linux"
+-version = "2.39.3"
++version = "2.41.1"
+ description = "TODO"
+ 
+ [sources.util-linux]
+-hash = "d3315ff701890f4fa1dd38ea387767fcb9e1aaeb763eb904677c03d2a7a5bdc1"
++hash = "4af1a9e39f9de99d55dc01df18686338caa9e816dc0686bfe99074057097b391"
+ format = "tar.gz"
+ file = "util-linux-{version}.{format}"
+ mirrors = [ "https://codeload.github.com/util-linux/util-linux/legacy.{format}/v{version}",]
+diff --git a/packages/user/util-macros/package.toml b/packages/user/util-macros/package.toml
+index 436771c1..86ef4b05 100644
+--- a/packages/user/util-macros/package.toml
++++ b/packages/user/util-macros/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "util-macros"
+-version = "1.20.1"
++version = "1.20.2"
+ description = "TODO"
+ 
+ [sources.util-macros]
+-hash = "0b308f62dce78ac0f4d9de6888234bf170f276b64ac7c96e99779bb4319bcef5"
++hash = "9ac269eba24f672d7d7b3574e4be5f333d13f04a7712303b1821b2a51ac82e8e"
+ format = "tar.xz"
+ file = "util-macros-{version}.{format}"
+ mirrors = [ "https://www.x.org/releases/individual/util/{file}",]
+diff --git a/packages/user/utmps/package.toml b/packages/user/utmps/package.toml
+index b4f9e464..e08c227b 100644
+--- a/packages/user/utmps/package.toml
++++ b/packages/user/utmps/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "utmps"
+-version = "0.1.2.2"
++version = "0.1.3.1"
+ description = "TODO"
+ 
+ [sources.utmps]
+-hash = "f7ffa3714c65973bb95fbcf1501c06fc0478d93a51cea1b373ec6811c2425f52"
++hash = "1c4c137ab366f6dc6b81d3a572c997514b64d784bd52e7f9514e6f6f3f1c85b9"
+ format = "tar.gz"
+ file = "utmps-{version}.{format}"
+ mirrors = [ "https://skarnet.org/software/utmps/{file}",]
+diff --git a/packages/user/valgrind/package.toml b/packages/user/valgrind/package.toml
+index 3c2cc1e7..f5e55a81 100644
+--- a/packages/user/valgrind/package.toml
++++ b/packages/user/valgrind/package.toml
+@@ -1,9 +1,9 @@
+ [package]
+ name = "valgrind"
+-version = "3.24.0"
++version = "3.25.1"
+ description = "TODO"
+ 
+ [sources.valgrind]
+-hash = "71aee202bdef1ae73898ccf7e9c315134fa7db6c246063afc503aef702ec03bd"
++hash = "61deb8d0727b45c268efdc1b3b6c9e679cd97cbf5ee4b28d1dead7c8b7a271af"
+ file = "valgrind-{version}.tar.bz2"
+ mirrors = [ "https://sourceware.org/pub/valgrind/{file}",]
+diff --git a/packages/user/vulkan-headers/package.toml b/packages/user/vulkan-headers/package.toml
+index 087d469b..415526b3 100644
+--- a/packages/user/vulkan-headers/package.toml
++++ b/packages/user/vulkan-headers/package.toml
+@@ -1,10 +1,9 @@
+ [package]
+ name = "vulkan-headers"
+-version = "1.4.304.1"
++version = "1.4.325"
+ description = "Vulkan header files"
+ 
+ [sources.vulkan-headers]
+-hash = "7db4ea1c9c0860a1c1c9ccf34477f496d2929f8e705423f951131921bedfb51c"
+ format = "tar.gz"
+ file = "vulkan-headers-{version}.{format}"
+-mirrors = [ "https://github.com/khronosgroup/vulkan-headers/archive/refs/tags/vulkan-sdk-{version}/{file}", ]
++mirrors = [ "https://github.com/khronosgroup/vulkan-headers/archive/refs/tags/vulkan-sdk-{version}/{file}",]
+diff --git a/packages/user/vulkan-loader/package.toml b/packages/user/vulkan-loader/package.toml
+index 026ab046..506107e4 100644
+--- a/packages/user/vulkan-loader/package.toml
++++ b/packages/user/vulkan-loader/package.toml
+@@ -1,10 +1,9 @@
+ [package]
+ name = "vulkan-loader"
+-version = "1.4.304.1"
++version = "1.4.325"
+ description = "Vulkan Installable Client Driver (ICD) Loader"
+ 
+ [sources.vulkan-loader]
+-hash = "efb2c84da071765a8b0b15e9c60801d4611ef7501aa8b3d1268c3b779bfcfaf6"
+ format = "tar.gz"
+ file = "vulkan-loader-sdk-{version}.{format}"
+-mirrors = [ "https://github.com/khronosgroup/vulkan-loader/archive/refs/tags/vulkan-sdk-{version}/{file}", ]
++mirrors = [ "https://github.com/khronosgroup/vulkan-loader/archive/refs/tags/vulkan-sdk-{version}/{file}",]
+diff --git a/packages/user/wayland-protocols/package.toml b/packages/user/wayland-protocols/package.toml
+index b761ad0f..009d146f 100644
+--- a/packages/user/wayland-protocols/package.toml
++++ b/packages/user/wayland-protocols/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "wayland-protocols"
+-version = "1.42"
++version = "1.45"
+ description = "Protocols and protocol extensions complementing the Wayland core protocol"
+ 
+ [sources.wayland-protocols]
+-hash = "23ba80d410d1200a86fe29592c19766eae8f1c350b67289999e9e7ea12d9f7aa"
++hash = "4d2b2a9e3e099d017dc8107bf1c334d27bb87d9e4aff19a0c8d856d17cd41ef0"
+ format = "tar.xz"
+ file = "wayland-protocols-{version}.{format}"
+-mirrors = [ "https://gitlab.freedesktop.org/wayland/wayland-protocols/-/releases/{version}/downloads/{file}", ]
++mirrors = [ "https://gitlab.freedesktop.org/wayland/wayland-protocols/-/releases/{version}/downloads/{file}",]
+diff --git a/packages/user/wayland/package.toml b/packages/user/wayland/package.toml
+index c3e387b3..3919c752 100644
+--- a/packages/user/wayland/package.toml
++++ b/packages/user/wayland/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "wayland"
+-version = "1.23.1"
++version = "1.24.0"
+ description = "A computer display server protocol"
+ 
+ [sources.wayland]
+-hash = "864fb2a8399e2d0ec39d56e9d9b753c093775beadc6022ce81f441929a81e5ed"
++hash = "82892487a01ad67b334eca83b54317a7c86a03a89cfadacfef5211f11a5d0536"
+ format = "tar.xz"
+ file = "wayland-{version}.{format}"
+-mirrors = [ "https://gitlab.freedesktop.org/wayland/wayland/-/releases/{version}/downloads/{file}", ]
++mirrors = [ "https://gitlab.freedesktop.org/wayland/wayland/-/releases/{version}/downloads/{file}",]
+diff --git a/packages/user/xorriso/package.toml b/packages/user/xorriso/package.toml
+index 6b8ea65d..4bf8f5fc 100644
+--- a/packages/user/xorriso/package.toml
++++ b/packages/user/xorriso/package.toml
+@@ -1,10 +1,9 @@
+ [package]
+ name = "xorriso"
+-version = "1.5.6"
++version = "1.5.6.pl02"
+ description = "TODO"
+ 
+ [sources.xorriso]
+-hash = "786f9f5df9865cc5b0c1fecee3d2c0f5e04cab8c9a859bd1c9c7ccd4964fdae1"
+ format = "pl02.tar.gz"
+ file = "xorriso-{version}.{format}"
+ mirrors = [ "https://ftp.gnu.org/gnu/xorriso/{file}",]
+diff --git a/packages/user/yq/package.toml b/packages/user/yq/package.toml
+index 321a58ed..afe0a25b 100644
+--- a/packages/user/yq/package.toml
++++ b/packages/user/yq/package.toml
+@@ -1,10 +1,10 @@
+ [package]
+ name = "yq"
+-version = "4.42.1"
++version = "4.47.1"
+ description = "TODO"
+ 
+ [sources.yq]
+-hash = "be31e5e828a0251721ea71964596832d4a40cbc21c8a8392a804bc8d1c55dd62"
++hash = "48ef09b9ffdb80f26ee516fa2fc83f713c1b49f503cedef79a96435509d456af"
+ format = "tar.gz"
+ file = "yq-{version}.{format}"
+ mirrors = [ "https://github.com/mikefarah/yq/archive/refs/tags/v{version}.{format}",]
+

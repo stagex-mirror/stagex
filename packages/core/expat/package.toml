@@ -1,10 +1,10 @@
 [package]
 name = "expat"
-version = "2.6.2"
+version = "2.7.1"
 description = "TODO"
 
 [sources.expat]
-hash = "d4cf38d26e21a56654ffe4acd9cd5481164619626802328506a2869afab29ab3"
+hash = "0cce2e6e69b327fc607b8ff264f4b66bdf71ead55a87ffd5f3143f535f15cfa2"
 format = "tar.gz"
 file = "expat-{version}.{format}"
 mirrors = [ "https://github.com/libexpat/libexpat/releases/download/R_{version_under}/{file}",]

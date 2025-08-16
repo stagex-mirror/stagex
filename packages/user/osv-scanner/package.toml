@@ -1,10 +1,10 @@
 [package]
 name = "osv-scanner"
-version = "1.9.0"
+version = "2.2.1"
 description = "TODO"
 
 [sources.osv-scanner]
-hash = "85ce158b6dce22cddc19b652bdc5150145b57119e3acfa8e3ae5ba1cfa449a3f"
+hash = "cb89726b83727eabd3a640e3225e0361330f3a8e01a3a165d47345c883d110a8"
 format = "tar.gz"
 file = "osv-scanner-{version}.{format}"
 mirrors = [ "https://github.com/google/osv-scanner/archive/v{version}/{file}",]

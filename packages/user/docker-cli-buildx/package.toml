@@ -1,10 +1,10 @@
 [package]
 name = "docker-cli-buildx"
-version = "0.16.2"
+version = "0.26.1"
 description = "TODO"
 
 [sources.docker-cli-buildx]
-hash = "f314635765f3dc5efe089244280cd24a577e83d339fec1970fed16977bf28382"
+hash = "9a29405e4a156a7b428a0b4cbe6ae4e7d4a0e933871e3c6dd6241fe9c4a1a5b9"
 format = "tar.gz"
 file = "docker-cli-buildx-{version}.{format}"
 mirrors = [ "https://github.com/docker/buildx/archive/v{version}.{format}",]

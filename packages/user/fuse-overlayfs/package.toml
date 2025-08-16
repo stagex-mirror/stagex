@@ -1,10 +1,10 @@
 [package]
 name = "fuse-overlayfs"
-version = "1.14"
+version = "1.15"
 description = "TODO"
 
 [sources.fuse-overlayfs]
-hash = "0779d1ee8fbb6adb48df40e54efa9c608e1d7bbd844800a4c32c110d5fcbe9f2"
+hash = "e4fbbdacbeffb560715e6c74c128aee07a7053a1fec78dc904bcc0a88e2efd67"
 format = "tar.gz"
 file = "fuse-overlayfs-{version}.{format}"
 mirrors = [ "https://github.com/containers/fuse-overlayfs/archive/v{version}/{file}",]

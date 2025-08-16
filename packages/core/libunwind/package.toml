@@ -1,11 +1,11 @@
 [package]
 name = "libunwind"
-version = "1.7.2"
+version = "1.8.2"
 description = "TODO"
-subpackages = ["libunwind", "cross-x86_64-gnu-libunwind"]
+subpackages = [ "libunwind", "cross-x86_64-gnu-libunwind",]
 
 [sources.libunwind]
-hash = "a18a6a24307443a8ace7a8acc2ce79fbbe6826cd0edf98d6326d0225d6a5d6e6"
+hash = "7f262f1a1224f437ede0f96a6932b582c8f5421ff207c04e3d9504dfa04c8b82"
 format = "tar.gz"
 file = "libunwind-{version}.{format}"
 mirrors = [ "https://github.com/libunwind/libunwind/releases/download/v{version}/{file}",]

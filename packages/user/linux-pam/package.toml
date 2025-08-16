@@ -1,10 +1,10 @@
 [package]
 name = "linux-pam"
-version = "1.6.1"
+version = "1.7.1"
 description = "TODO"
 
 [sources.linux-pam]
-hash = "f8923c740159052d719dbfc2a2f81942d68dd34fcaf61c706a02c9b80feeef8e"
+hash = "21dbcec6e01dd578f14789eac9024a18941e6f2702a05cf91b28c232eeb26ab0"
 format = "tar.xz"
 file = "linux-pam-{version}.{format}"
 mirrors = [ "https://github.com/linux-pam/linux-pam/releases/download/v{version}/Linux-PAM-{version}.{format}",]

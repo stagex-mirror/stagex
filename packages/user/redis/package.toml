@@ -1,10 +1,10 @@
 [package]
 name = "redis"
-version = "7.2.4"
+version = "8.2.0"
 description = "TODO"
 
 [sources.redis]
-hash = "8d104c26a154b29fd67d6568b4f375212212ad41e0c2caa3d66480e78dbd3b59"
+hash = "ff95b83b7cf2f7a33af3be1e52fdf2e791c259f8272465c3b09f9e6bc901b604"
 format = "tar.gz"
 file = "redis-{version}.{format}"
 mirrors = [ "https://download.redis.io/releases/{file}",]

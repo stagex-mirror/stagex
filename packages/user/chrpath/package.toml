@@ -1,9 +1,8 @@
 [package]
 name = "chrpath"
-version = "0.16"
+version = "0.18"
 description = "TODO"
 
 [sources.chrpath]
-hash = "bb0d4c54bac2990e1bdf8132f2c9477ae752859d523e141e72b3b11a12c26e7b"
 file = "chrpath-{version}.tar.gz"
-mirrors = [ "https://alioth-archive.debian.org/releases/chrpath/chrpath/{version}/{file}", ]
+mirrors = [ "https://alioth-archive.debian.org/releases/chrpath/chrpath/{version}/{file}",]

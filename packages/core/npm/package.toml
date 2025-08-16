@@ -1,10 +1,10 @@
 [package]
 name = "npm"
-version = "10.8.3"
+version = "11.5.2"
 description = "TODO"
 
 [sources.npm]
-hash = "b7dc7eb48d7479b93668e913c7ad686ab2aa71c705d4a56b5323d1bffdba2972"
+hash = "beb0d754f9759c17cdc10f63121d0e50636d146262cd0e3bcb231edf9f0b3a7d"
 format = "tgz"
 file = "npm-{version}.{format}"
 mirrors = [ "https://registry.npmjs.org/npm/-/{file}",]

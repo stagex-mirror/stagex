@@ -1,10 +1,10 @@
 [package]
 name = "grep"
-version = "3.11"
+version = "3.12"
 description = "TODO"
 
 [sources.grep]
-hash = "1db2aedde89d0dea42b16d9528f894c8d15dae4e190b59aecc78f5a951276eab"
+hash = "2649b27c0e90e632eadcd757be06c6e9a4f48d941de51e7c0f83ff76408a07b9"
 format = "tar.xz"
 file = "grep-{version}.{format}"
 mirrors = [ "https://mirrors.kernel.org/gnu/grep/{file}",]

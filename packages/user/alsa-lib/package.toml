@@ -1,10 +1,10 @@
 [package]
 name = "alsa-lib"
-version = "1.2.12"
+version = "1.2.14"
 description = "TODO"
 
 [sources.alsa-lib]
-hash = "4868cd908627279da5a634f468701625be8cc251d84262c7e5b6a218391ad0d2"
+hash = "be9c88a0b3604367dd74167a2b754a35e142f670292ae47a2fdef27a2ee97a32"
 format = "tar.bz2"
 file = "alsa-lib-{version}.{format}"
 mirrors = [ "https://alsa-project.org/files/pub/lib/{file}",]

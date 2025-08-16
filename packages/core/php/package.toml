@@ -1,10 +1,10 @@
 [package]
 name = "php"
-version = "8.4.4"
+version = "8.4.11"
 description = "TODO"
 
 [sources.php]
-hash = "b94a8a210441463cd337bff80dd5d52a7f97b6f6a7d909d061518ebf392aac6c"
+hash = "fb3cd8669c2722d6e92de4d226eac9449abc0f895a00091e451657857e648e27"
 format = "tar.gz"
 file = "php-{version}.{format}"
 mirrors = [ "https://github.com/php/php-src/archive/refs/tags/{file}",]

@@ -1,10 +1,10 @@
 [package]
 name = "go-md2man"
-version = "2.0.5"
+version = "2.0.7"
 description = "TODO"
 
 [sources.go-md2man]
-hash = "6bb799e8fff06d82ca4617190157338d336e2361aa6c5b1786f763a684ffc3f2"
+hash = "ca3a5b57e2c01759f5a00ad2a578d034c5370fae9aa7a6c3af5648b2fc802a92"
 format = "tar.gz"
 file = "go-md2man-{version}.{format}"
 mirrors = [ "https://github.com/cpuguy83/go-md2man/archive/v{version}.{format}",]

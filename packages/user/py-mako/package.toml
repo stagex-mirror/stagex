@@ -1,10 +1,10 @@
 [package]
 name = "py-mako"
-version = "1.3.9"
+version = "1.3.10"
 description = "Python3 fast templating language"
 
 [sources.py-mako]
-hash = "b5d65ff3462870feec922dbccf38f6efb44e5714d7b593a656be86663d8600ac"
+hash = "99579a6f39583fa7e5630a28c3c1f440e4e97a414b80372649c0ce338da2ea28"
 format = "tar.gz"
 file = "mako-{version}.{format}"
-mirrors = [ "https://files.pythonhosted.org/packages/source/M/Mako/{file}", ]
+mirrors = [ "https://files.pythonhosted.org/packages/source/M/Mako/{file}",]

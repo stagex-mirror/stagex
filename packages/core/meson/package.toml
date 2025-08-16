@@ -1,10 +1,10 @@
 [package]
 name = "meson"
-version = "1.7.0"
+version = "1.8.3"
 description = "Fast and user friendly build system"
 
 [sources.meson]
-hash = "08efbe84803eed07f863b05092d653a9d348f7038761d900412fddf56deb0284"
+hash = "f118aa910fc0a137cc2dd0122232dbf82153d9a12fb5b0f5bb64896f6a157abf"
 format = "tar.gz"
 file = "meson-{version}.{format}"
 mirrors = [ "https://github.com/mesonbuild/meson/releases/download/{version}/{file}",]

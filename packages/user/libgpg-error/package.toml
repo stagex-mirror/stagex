@@ -1,10 +1,10 @@
 [package]
 name = "libgpg-error"
-version = "1.50"
+version = "1.55"
 description = "TODO"
 
 [sources.libgpg-error]
-hash = "69405349e0a633e444a28c5b35ce8f14484684518a508dc48a089992fe93e20a"
+hash = "95b178148863f07d45df0cea67e880a79b9ef71f5d230baddc0071128516ef78"
 format = "tar.bz2"
 file = "libgpg-error-{version}.{format}"
 mirrors = [ "https://gnupg.org/ftp/gcrypt/libgpg-error/{file}",]

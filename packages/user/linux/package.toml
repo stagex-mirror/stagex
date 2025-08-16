@@ -1,11 +1,11 @@
 [package]
 name = "linux"
-version = "6.12.33"
+version = "6.16"
 description = "TODO"
-subpackages = ["linux-generic","linux-airgap","linux-server","linux-guest","linux-guest-net","linux-nitro","gen_initramfs"]
+subpackages = [ "linux-generic", "linux-airgap", "linux-server", "linux-guest", "linux-guest-net", "linux-nitro", "gen_initramfs",]
 
 [sources.linux]
-hash = "c0a575630f2603a20bb0641f8df8f955e46c9d7ac1fae8b54b21316e6b52a254"
+hash = "1a4be2fe6b5246aa4ac8987a8a4af34c42a8dd7d08b46ab48516bcc1befbcd83"
 format = "tar.xz"
 file = "linux-{version}.{format}"
 mirrors = [ "http://mirrors.edge.kernel.org/pub/linux/kernel/v{version_major}.x/linux-{version}.{format}",]

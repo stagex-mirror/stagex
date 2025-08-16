@@ -1,12 +1,12 @@
 [package]
 name = "boost"
-version = "1.88.0"
+version = "1.89.0"
 description = "Free peer-reviewed portable C++ source libraries"
 license = "BSL-1.0"
 website = "https://www.boost.org"
 
 [sources.boost]
-hash = "46d9d2c06637b219270877c9e16155cbd015b6dc84349af064c088e9b5b12f7b"
+hash = "85a33fa22621b4f314f8e85e1a5e2a9363d22e4f4992925d4bb3bc631b5a0c7a"
 format = "tar.bz2"
 file = "boost_{version_under}.{format}"
-mirrors = [ "https://archives.boost.io/release/{version}/source/{file}", ]
+mirrors = [ "https://archives.boost.io/release/{version}/source/{file}",]

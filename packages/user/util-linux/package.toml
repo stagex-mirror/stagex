@@ -1,10 +1,10 @@
 [package]
 name = "util-linux"
-version = "2.39.3"
+version = "2.41.1"
 description = "TODO"
 
 [sources.util-linux]
-hash = "d3315ff701890f4fa1dd38ea387767fcb9e1aaeb763eb904677c03d2a7a5bdc1"
+hash = "4af1a9e39f9de99d55dc01df18686338caa9e816dc0686bfe99074057097b391"
 format = "tar.gz"
 file = "util-linux-{version}.{format}"
 mirrors = [ "https://codeload.github.com/util-linux/util-linux/legacy.{format}/v{version}",]

@@ -8,4 +8,4 @@ license = "Apache-2.0"
 hash = "e07e2747c394a6549751950ec8f7457ed346496f131ee38538ae39cf89ebcc68"
 format = "tar.gz"
 file = "caddy-v{version}.{format}"
-mirrors = ["https://github.com/caddyserver/caddy/archive/refs/tags/v{version}.{format}",]
+mirrors = [ "https://github.com/caddyserver/caddy/archive/refs/tags/v{version}.{format}",]

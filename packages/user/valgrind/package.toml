@@ -1,9 +1,9 @@
 [package]
 name = "valgrind"
-version = "3.24.0"
+version = "3.25.1"
 description = "TODO"
 
 [sources.valgrind]
-hash = "71aee202bdef1ae73898ccf7e9c315134fa7db6c246063afc503aef702ec03bd"
+hash = "61deb8d0727b45c268efdc1b3b6c9e679cd97cbf5ee4b28d1dead7c8b7a271af"
 file = "valgrind-{version}.tar.bz2"
 mirrors = [ "https://sourceware.org/pub/valgrind/{file}",]

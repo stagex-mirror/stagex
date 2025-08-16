@@ -1,10 +1,10 @@
 [package]
 name = "npth"
-version = "1.6"
+version = "1.8"
 description = "TODO"
 
 [sources.npth]
-hash = "1393abd9adcf0762d34798dc34fdcf4d0d22a8410721e76f1e3afcd1daa4e2d1"
+hash = "8bd24b4f23a3065d6e5b26e98aba9ce783ea4fd781069c1b35d149694e90ca3e"
 format = "tar.bz2"
 file = "npth-{version}.{format}"
 mirrors = [ "https://gnupg.org/ftp/gcrypt/npth/{file}",]

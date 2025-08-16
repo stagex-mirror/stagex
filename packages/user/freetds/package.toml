@@ -1,10 +1,10 @@
 [package]
 name = "freetds"
-version = "1.4.23"
+version = "1.5.4"
 description = "TODO"
 
 [sources.freetds]
-hash = "93a3f186b82c6042a66a1970bd478d7914edb1c5669b642d80b4eaacf2a2d17e"
+hash = "1d024ef418d74a3a8f2cca82f10f1561f1dde28dc3d6f65c815f07764d4f7ea8"
 format = "tar.bz2"
 file = "freetds-{version}.{format}"
 mirrors = [ "https://www.freetds.org/files/stable/{file}",]
