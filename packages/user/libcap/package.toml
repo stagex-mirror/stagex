@@ -1,9 +1,12 @@
 [package]
 name = "libcap"
 version = "2.76"
-description = "TODO"
+description = "POSIX 1003.1e capabilities"
+website = "https://sites.google.com/site/fullycapable/"
+license = "BSD-3-Clause OR GPL-2.0-only"
 
 [sources.libcap]
-format = "tar.gz"
+hash = "629da4ab29900d0f7fcc36227073743119925fd711c99a1689bbf5c9b40c8e6f"
+format = "tar.xz"
 file = "libcap-{version}.{format}"
-mirrors = [ "https://git.kernel.org/pub/scm/libs/libcap/libcap.git/snapshot/{file}",]
+mirrors = [ "https://kernel.org/pub/linux/libs/security/linux-privs/libcap2/{file}", ]
