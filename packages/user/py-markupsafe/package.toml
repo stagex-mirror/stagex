@@ -1,9 +1,12 @@
 [package]
 name = "py-markupsafe"
 version = "3.0.2"
-description = "TODO"
+description = "Implements a XML/HTML/XHTML Markup safe string"
+website = "https://github.com/pallets/markupsafe"
+license = "BSD-3-Clause"
 
 [sources.py-markupsafe]
+hash = "ee55d3edf80167e48ea11a923c7386f4669df67d7994554387f84e7d8b0a2bf0"
 format = "tar.gz"
 file = "py-markupsafe-{version}.{format}"
-mirrors = [ "https://files.pythonhosted.org/packages/source/M/MarkupSafe/MarkupSafe-{version}.{format}",]
+mirrors = [ "https://files.pythonhosted.org/packages/source/M/MarkupSafe/markupsafe-{version}.{format}",]
