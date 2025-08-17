@@ -1,9 +1,12 @@
 [package]
 name = "py-sphinxcontrib-htmlhelp"
 version = "2.1.0"
-description = "TODO"
+description = "Sphinx htmlhelp extension"
+website = "https://pypi.org/project/sphinxcontrib-htmlhelp"
+license = "BSD-2-Clause"
 
 [sources.py-sphinxcontrib-htmlhelp]
+hash = "c9e2916ace8aad64cc13a0d233ee22317f2b9025b9cf3295249fa985cc7082e9"
 format = "tar.gz"
-file = "py-sphinxcontrib-htmlhelp-{version}.{format}"
-mirrors = [ "https://files.pythonhosted.org/packages/source/s/sphinxcontrib-htmlhelp/sphinxcontrib-htmlhelp-{version}.{format}",]
+file = "sphinxcontrib_htmlhelp-{version}.{format}"
+mirrors = [ "https://files.pythonhosted.org/packages/source/s/sphinxcontrib-htmlhelp/{file}", ]
