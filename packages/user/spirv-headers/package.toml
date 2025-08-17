@@ -1,9 +1,12 @@
 [package]
 name = "spirv-headers"
-version = "1.5.4.raytracing.fixed"
+version = "1.4.321.0"
 description = "Machine-readable files for the SPIR-V Registry"
+website = "https://github.com/KhronosGroup/SPIRV-Headers"
+license = "GPL-3.0-or-later"
 
 [sources.spirv-headers]
+hash = "5bbea925663d4cd2bab23efad53874f2718248a73dcaf9dd21dff8cb48e602fc"
 format = "tar.gz"
 file = "vulkan-sdk-{version}.{format}"
 mirrors = [ "https://github.com/KhronosGroup/SPIRV-Headers/archive/refs/tags/{file}",]
