@@ -1,9 +1,12 @@
 [package]
 name = "vulkan-headers"
-version = "1.4.325"
+version = "1.4.321.0"
 description = "Vulkan header files"
+website = "https://www.vulkan.org/"
+license = "Apache-2.0"
 
 [sources.vulkan-headers]
+hash = "17f8ff30fd79fb7531efcb7c78c02c17a595208d482a150f06836b0ca97ef8f2"
 format = "tar.gz"
 file = "vulkan-headers-{version}.{format}"
 mirrors = [ "https://github.com/khronosgroup/vulkan-headers/archive/refs/tags/vulkan-sdk-{version}/{file}",]

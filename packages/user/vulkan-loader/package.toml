@@ -1,9 +1,12 @@
 [package]
 name = "vulkan-loader"
-version = "1.4.325"
+version = "1.4.321.0"
 description = "Vulkan Installable Client Driver (ICD) Loader"
+website = "https://www.khronos.org/vulkan"
+license = "Apache-2.0"
 
 [sources.vulkan-loader]
+hash = "17f8ff30fd79fb7531efcb7c78c02c17a595208d482a150f06836b0ca97ef8f2"
 format = "tar.gz"
 file = "vulkan-loader-sdk-{version}.{format}"
 mirrors = [ "https://github.com/khronosgroup/vulkan-loader/archive/refs/tags/vulkan-sdk-{version}/{file}",]

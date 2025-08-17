@@ -26,6 +26,8 @@ RUN --network=none <<-EOF
 		-DVULKAN_HEADERS_INSTALL_DIR=/usr
 	cmake --build build
 	DESTDIR="/rootfs" cmake --install build
+	install -Dm0644 LICENSE.md /rootfs/usr/share/licenses/vulkan-loader/LICENSE
+
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

@@ -13,6 +13,7 @@ RUN --network=none <<-EOF
 		-DCMAKE_INSTALL_LIBDIR=lib
 	cmake --build build
 	DESTDIR="/rootfs" cmake --install build
+	install -Dm0644 LICENSE.md /rootfs/usr/share/licenses/vulkan-headers/LICENSE
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
