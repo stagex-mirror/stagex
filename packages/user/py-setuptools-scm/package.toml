@@ -4,6 +4,7 @@ version = "9.2.0"
 description = "TODO"
 
 [sources.py-setuptools-scm]
+hash = "bf764977e4360501bb64e1618513650a7ce635d7203b27ee3b84ce170f8ddfa9"  
 format = "tar.gz"
 file = "py-setuptools-scm-{version}.{format}"
-mirrors = [ "https://files.pythonhosted.org/packages/source/s/setuptools-scm/setuptools-scm-{version}.{format}",]
+mirrors = [ "https://github.com/pypa/setuptools-scm/archive/refs/tags/v{version}.{format}",]
