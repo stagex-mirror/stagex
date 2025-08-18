@@ -2,7 +2,10 @@
 name = "ruby"
 version = "3.4.5"
 description = "An object-oriented language for quick and easy programming"
+webiste = "https://www.ruby-lang.org/"
+license = "Ruby AND BSD-2-Clause AND MIT"
 
 [sources.ruby]
+hash = "a0597bfdf312e010efd1effaa8d7f1d7833146fdc17950caa8158ffa3dcbfa85"
 file = "ruby-{version}.tar.gz"
-mirrors = [ "https://cache.ruby-lang.org/pub/ruby/3.3/{file}",]
+mirrors = [ "https://cache.ruby-lang.org/pub/ruby/{version_major_minor}/{file}",]
