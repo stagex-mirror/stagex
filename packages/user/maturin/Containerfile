@@ -13,7 +13,8 @@ WORKDIR /maturin-${VERSION}
 RUN cargo fetch --locked --target "$(rustc -vV | sed -n 's/host: //p')"
 ENV OPENSSL_NO_VENDOR=1
 RUN --network=none <<-EOF
-    set -eu
+	set -eu
+	patch -p1 < cargo-frozen.patch
 	MATURIN_SETUP_ARGS="--frozen" python -m build --wheel --no-isolation
 	python -m installer --destdir=/rootfs dist/*.whl
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
