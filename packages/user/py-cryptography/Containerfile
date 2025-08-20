@@ -3,7 +3,7 @@ ARG VERSION
 COPY --from=stagex/pallet-python . /
 COPY --from=stagex/core-py-cffi . /
 COPY --from=stagex/user-py-cparser . /
-COPY --from=stagex/user-py-maturin . /
+COPY --from=stagex/user-maturin . /
 COPY --from=stagex/user-py-semantic-version . /
 COPY --from=stagex/user-py-setuptools-rust . /
 COPY --from=stagex/user-py-typing-extensions . /

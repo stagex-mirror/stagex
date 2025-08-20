@@ -14,11 +14,10 @@ RUN cargo fetch --locked --target "$(rustc -vV | sed -n 's/host: //p')"
 ENV OPENSSL_NO_VENDOR=1
 RUN --network=none <<-EOF
     set -eu
-		MATURIN_SETUP_ARGS="--frozen" python -m build --wheel --no-isolation
-		python -m installer --destdir=/rootfs dist/*.whl
-    find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
-		rm -vr /rootfs/usr/lib
-		install -vDm 644 license-mit /rootfs/usr/share/licenses/maturin/LICENSE
+	MATURIN_SETUP_ARGS="--frozen" python -m build --wheel --no-isolation
+	python -m installer --destdir=/rootfs dist/*.whl
+	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+	install -vDm 644 license-mit /rootfs/usr/share/licenses/maturin/LICENSE
 EOF
 
 FROM stagex/core-filesystem AS package
