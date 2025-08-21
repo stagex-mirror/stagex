@@ -1,10 +1,10 @@
 [package]
 name = "py-awscrt"
-version = "0.22.0"
+version = "0.27.6"
 description = "TODO"
 
 [sources.py-awscrt]
-hash = "4ca2b0b49328f03f5a3dde2d565132df8ad74cba27352612ecd9fe2505e1d770"
+hash = "45f3dd0b3fb13dfbea856dd96c9acfe77beba57b9b019444ee962ed2b76276dd"
 format = "tar.gz"
 file = "py-awscrt-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/a/awscrt/awscrt-{version}.{format}",]
