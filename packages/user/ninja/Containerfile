@@ -7,7 +7,6 @@ WORKDIR /ninja-${VERSION}
 ADD *.patch .
 RUN --network=none <<-EOF
 	set -eux
-	patch -p1 < fix-musl.patch
 	python ./configure.py --bootstrap
 	mkdir -p /rootfs/usr/bin/
 	cp ninja /rootfs/usr/bin/
