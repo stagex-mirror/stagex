@@ -1,10 +1,12 @@
 [package]
 name = "ninja"
-version = "1.9.0"
-description = "TODO"
+version = "1.13.1"
+description = "A small build system with a focus on speed"
+license = "Apache-2.0"
+website = "https://ninja-build.org"
 
 [sources.ninja]
-hash = "5d7ec75828f8d3fd1a0c2f31b5b0cea780cdfe1031359228c428c1a48bfcd5b9"
+hash = "f0055ad0369bf2e372955ba55128d000cfcc21777057806015b45e4accbebf23"
 format = "tar.gz"
 file = "ninja-{version}.{format}"
-mirrors = [ "https://github.com/martine/ninja/archive/v{version}.{format}",]
+mirrors = [ "https://github.com/ninja-build/ninja/archive/v{version}.{format}",]
