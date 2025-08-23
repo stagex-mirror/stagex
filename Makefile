@@ -24,6 +24,9 @@ verify: ## Verify local build against committed digests
 digests: all ## Generate new digests from full tree
 	@./src/digests.py
 
+new-digests: digests ## Provides only the newly changed digests
+	@git diff --minimal digests/* | grep -E '^(\+)[a-z0-9]' | sed 's/^\+//'
+
 sign: digests ## Sign all digests that match locally built targets
 	@$(call sign)
 
