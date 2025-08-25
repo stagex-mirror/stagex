@@ -953,7 +953,7 @@ mirrors = [ "https://invisible-island.net/archives/byacc/{file}",]
 [sources.zlib_1213]
 hash = "b3a24de97a8fdbc835b9833169501030b8977031bcb54b3b3ac13740f846ab30"
 file = "zlib-1.2.13.tar.gz"
-mirrors = [ "https://zlib.net/fossils/{file}",]
+mirrors = [ "https://zlib.net/fossils/{file}", "https://github.com/madler/zlib/releases/download/v1.2.13/{file}",]
 
 [sources.gawk_530]
 hash = "ca9c16d3d11d0ff8c69d79dc0b47267e1329a69b39b799895604ed447d3ca90b"
@@ -1036,9 +1036,9 @@ file = "v2.0.22.tar.gz"
 mirrors = [ "https://github.com/horms/kexec-tools/archive/refs/tags/{file}",]
 
 [sources.gc_804]
-hash = "436a0ddc67b1ac0b0405b61a9675bca9e075c8156f4debd1d06f3a56c7cd289d"
+hash = "661d6ed06090982520f92cb88e64bb99ba88f18b33734cc2794b5c7de086d8c1"
 file = "gc-8.0.4.tar.gz"
-mirrors = [ "https://www.hboehm.info/gc/gc_source/{file}",]
+mirrors = [ "https://github.com/bdwgc/bdwgc/archive/refs/tags/v8.0.4.tar.gz",]
 
 [sources.autoconf_264]
 hash = "32d977213320b8ae76c71175305301197f2b0e04e72d70694bc3d3e2ae6c7248"
