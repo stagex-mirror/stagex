@@ -1,1 +1,10 @@
 include = ["MAINTAINERS", ".taplo.toml"]
+
+[formatting]
+
+[[rule]]
+
+  [rule.formatting]
+    align_entries  = true
+    indent_tables  = true
+    indent_entries = true
