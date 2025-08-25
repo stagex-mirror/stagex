@@ -9,6 +9,7 @@ ADD fetch/bash-${VERSION}.tar.gz .
 WORKDIR /bash-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
+	CPPFLAGS="-DHEREDOC_PIPESIZE=65536" \
 	./configure \
 		--prefix=/usr \
 		--bindir=/usr/bin \
