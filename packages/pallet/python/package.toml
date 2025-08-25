@@ -1,3 +1,4 @@
 [package]
 name = "python"
-description = "TODO"
+description = "Runtime for building python packages"
+version_from = "core-python"

@@ -111,7 +111,8 @@ COPY --chmod=0755 <<-'EOF' build
 		$CONFIGURE_FLAGS
 	python3 x.py dist
 	python3 x.py install
-	rm -rf /rust-${BUILD_VERSION}
+	cd /
+	rm -rf /rustc-${BUILD_VERSION} /rustc-${VERSION}-src
 EOF
 
 FROM build-script AS build-llvm17

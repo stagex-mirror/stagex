@@ -1,10 +1,12 @@
 [package]
 name = "py-setuptools"
-version = "68.2.2"
-description = "TODO"
+version = "80.9.0"
+description = "Easily download, build, install, upgrade, and uninstall Python packages"
+website = "https://pypi.org/project/setuptools/"
+licenses = "MIT"
 
 [sources.py-setuptools]
-hash = "4ac1475276d2f1c48684874089fefcd83bd7162ddaafb81fac866ba0db282a87"
+hash = "f36b47402ecde768dbfafc46e8e4207b4360c654f1f3bb84475f0a28628fb19c"
 format = "tar.gz"
 file = "py-setuptools-{version}.{format}"
 mirrors = [ "https://pypi.io/packages/source/s/setuptools/setuptools-{version}.{format}",]

@@ -14,6 +14,7 @@ RUN --network=none <<-EOF
 	mkdir -p "/rootfs/${sitedir}"
 	cp -a packaging "/rootfs/$sitedir"
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+	install -Dm644 -t /usr/share/licenses/py-packaging/ ../LICENSE.APACHE ../LICENSE.BSD
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

@@ -1,10 +1,11 @@
 [package]
 name = "py-packaging"
-version = "24.0"
-description = "TODO"
+version = "24.2"
+description = "Reusable core utilities for various Python Packaging interoperability specifications"
+license = "Apache-2.0 OR BSD-2-Clause"
 
 [sources.py-packaging]
-hash = "eb82c5e3e56209074766e6885bb04b8c38a0c015d0a30036ebe7ece34c9989e9"
+hash = "c228a6dc5e932d346bc5739379109d49e8853dd8223571c7c5b55260edc0b97f"
 format = "tar.gz"
 file = "py-packaging-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/p/packaging/packaging-{version}.{format}",]

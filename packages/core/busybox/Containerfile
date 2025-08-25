@@ -42,7 +42,8 @@ RUN --network=none <<-EOF
 	done
 	make -j$(nproc)
 	mkdir -p /rootfs/usr/bin
-	cp busybox /rootfs/usr/bin
+	install -Dm0644 -t /rootfs/usr/share/licenses/busybox/ LICENSE
+	install -Dm0755 -t /rootfs/usr/bin/ busybox
 	cp busybox /usr/bin
 	cd /rootfs
 	/usr/bin/busybox --install -s usr/bin

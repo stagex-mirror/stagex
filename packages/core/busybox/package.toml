@@ -1,10 +1,12 @@
 [package]
 name = "busybox"
-version = "1.36.1"
-description = "TODO"
+version = "1.37.0"
+description = "Utilities for rescue and embedded systems"
+licenses = "GPL-2.0-only"
+website = "https://www.busybox.ne"
 
 [sources.busybox]
-hash = "b8cc24c9574d809e7279c3be349795c5d5ceb6fdf19ca709f80cde50e47de314"
+hash = "3311dff32e746499f4df0d5df04d7eb396382d7e108bb9250e7b519b837043a4"
 format = "tar.bz2"
 file = "busybox-{version}.{format}"
 mirrors = [ "https://busybox.net/downloads/{file}",]
