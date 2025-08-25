@@ -1,0 +1,7 @@
+FROM scratch
+COPY --from=stagex/core-lua . /
+COPY --from=stagex/core-readline . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-ncurses . /
+
+ENTRYPOINT ["/usr/bin/lua"]
