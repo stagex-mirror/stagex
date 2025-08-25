@@ -1036,9 +1036,9 @@ file = "v2.0.22.tar.gz"
 mirrors = [ "https://github.com/horms/kexec-tools/archive/refs/tags/{file}",]
 
 [sources.gc_804]
-hash = "661d6ed06090982520f92cb88e64bb99ba88f18b33734cc2794b5c7de086d8c1"
+hash = "436a0ddc67b1ac0b0405b61a9675bca9e075c8156f4debd1d06f3a56c7cd289d"
 file = "gc-8.0.4.tar.gz"
-mirrors = [ "https://github.com/bdwgc/bdwgc/archive/refs/tags/v8.0.4.tar.gz",]
+mirrors = [ "https://www.hboehm.info/gc/gc_source/{file}", "https://github.com/bdwgc/bdwgc/releases/download/v8.0.4/gc-8.0.4.tar.gz"]
 
 [sources.autoconf_264]
 hash = "32d977213320b8ae76c71175305301197f2b0e04e72d70694bc3d3e2ae6c7248"
@@ -1193,7 +1193,7 @@ mirrors = [ "https://mirrors.kernel.org/gnu/binutils/{file}",]
 [sources.gcc_1310]
 hash = "61d684f0aa5e76ac6585ad8898a2427aade8979ed5e7f85492286c4dfc13ee86"
 file = "gcc-13.1.0.tar.xz"
-mirrors = [ "https://ftp.gnu.org/gnu/gcc/gcc-13.1.0/{file}",]
+mirrors = [ "https://ftp.gnu.org/gnu/gcc/gcc-13.1.0/{file}", "https://mirrors.kernel.org/gnu/gcc/gcc-13.1.0/{file}"]
 
 [sources.grep_37]
 hash = "5c10da312460aec721984d5d83246d24520ec438dd48d7ab5a05dbc0d6d6823c"
