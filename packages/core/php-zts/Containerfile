@@ -55,7 +55,7 @@ ENV PHP_BUILD_SYSTEM="${PHP_UNAME}"
 ENV CC=clang
 ENV CXX=clang++
 ENV EXTENSION_DIR=/usr/lib/php-modules
-ENV CFLAGS="-fstack-protector-strong -fpic -fpie -O2 -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
+ENV CFLAGS="-march=x86-64 -mtune=generic -fstack-protector-strong -fpic -fpie -O2 -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
 ENV CXXFLAGS="$CFLAGS"
 ENV LDFLAGS="-Wl,-O1, -pie"
 
