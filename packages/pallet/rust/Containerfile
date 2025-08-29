@@ -5,7 +5,6 @@ COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-libunwind . /
 COPY --from=stagex/core-openssl . /
-COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-ca-certificates . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-pkgconf . /

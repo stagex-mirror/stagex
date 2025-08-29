@@ -1,0 +1,9 @@
+FROM stagex/pallet-clang-gnu-busybox
+
+COPY --from=stagex/pallet-lua . /
+COPY --from=stagex/core-luarocks . /
+COPY --from=stagex/core-ca-certificates . /
+COPY --from=stagex/core-curl . /
+COPY --from=stagex/core-openssl . /
+
+ENTRYPOINT ["/usr/bin/luarocks"]

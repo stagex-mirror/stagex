@@ -1,10 +1,12 @@
 [package]
 name = "py-cffi"
-version = "1.16.0"
-description = "TODO"
+version = "1.17.1"
+description = "Foreign Function Interface for Python calling C code"
+licenses = "MIT"
+website = "https://cffi.readthedocs.org/"
 
 [sources.py-cffi]
-hash = "bcb3ef43e58665bbda2fb198698fcae6776483e0c4a631aa5647806c25e02cc0"
+hash = "1c39c6016c32bc48dd54561950ebd6836e1670f2ae46128f67cf49e789c52824"
 format = "tar.gz"
 file = "py-cffi-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/c/cffi/cffi-{version}.{format}",]

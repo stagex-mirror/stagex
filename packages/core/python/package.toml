@@ -1,10 +1,12 @@
 [package]
 name = "python"
-version = "3.11.8"
-description = "TODO"
+version = "3.13.5"
+description = "The Python programming language"
+license = "PSF-2.0"
+website = "https://python.org/"
 
 [sources.python]
-hash = "9e06008c8901924395bc1da303eac567a729ae012baa182ab39269f650383bb3"
+hash = "93e583f243454e6e9e4588ca2c2662206ad961659863277afcdb96801647d640"
 format = "tar.xz"
 file = "python-{version}.{format}"
 mirrors = [ "https://www.python.org/ftp/python/{version}/Python-{version}.{format}",]

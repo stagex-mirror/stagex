@@ -41,13 +41,6 @@ location = "New York, USA"
 email = "michael@turnkey.io"
 website = "https://www.linkedin.com/in/mavrukin/"
 
-[people.shaneengelman]
-name = "Shane Engelman"
-location = "https://blog.runninginthenight.com/pwd/"
-email = "contact@shane.gg"
-matrix = "@singlerider:matrix.org"
-keyoxide = "https://keyoxide.org/3D7C8D39E8C4DF771583D3F0A8A091FD346001CA"
-
 [people.conyel]
 name = "Konstantinos Geles"
 location = "Lille, France"
@@ -62,6 +55,15 @@ location = "San Francisco, USA"
 email = "*@logicwax.com"
 matrix = "@logicwax:matrix.org"
 website = "https://logicwax.com"
+
+[people.panekj]
+name = "Jakub Panek"
+location = "PL-24"
+email = "me@panekj.dev"
+matrix = ["@panekj:matrix.org", "@pj:mozilla.org"]
+website = "https://panekj.eu"
+fediverse = "@pj@donotsta.re"
+keyoxide = "https://keyoxide.org/aspe:keyoxide.org:WNHRCLJSCUR4UWCJDOSZAPFPDM"
 
 [keys]
 
@@ -110,15 +112,6 @@ offline-ca = true
 backup = true
 interaction = true
 
-[keys.shaneengelman.personal]
-id = "3D7C8D39E8C4DF771583D3F0A8A091FD346001CA"
-algorithm = "RSA4096"
-servers = "openpgp.org"
-devices = "Yubikey 5 NFC, Yubikey 5C Nano, flexSecure Java Card Implant"
-offline-ca = false
-backup = true
-interaction = true
-
 [keys.conyel.personal]
 id = "8208F8E4F9D61005F5706A4E28E42797A19977AC"
 algorithm = "ED25519"
@@ -135,6 +128,13 @@ servers = "openpgp.org"
 devices = "Yubikey 5 NFC, Yubikey 5C"
 offline-ca = true
 backup = true
+interaction = true
+
+[keys.panekj.KY1]
+id = "C8635605A11CF6A3CB53C707D5E8A1F82F3BDA9D"
+algorithm = "ED25519"
+offline-ca = true
+backup = false
 interaction = true
 
 [machines]
@@ -235,18 +235,6 @@ cores = 48
 os = "debian linux"
 runtime = "Docker"
 
-[machines.shaneengelman.local]
-owner = "Shane Engelman"
-location = "https://blog.runninginthenight.com/pwd/"
-type = "metal"
-arch = "x86/64"
-brand = "AMD"
-model = "AMD Ryzen 5 7640U"
-ghz = "4.971"
-cores = 12
-os = "Arch Linux"
-runtime = "Docker"
-
 [machines.conyel.remote1]
 owner = "Konstantinos Geles"
 location = "EMEA"
@@ -258,3 +246,13 @@ ghz = 2
 cores = 32
 os = "Proxmox/Debian"
 runtime = "Docker"
+
+[machines.panekj.main]
+type = "metal"
+arch = "x86_64"
+brand = "AuthenticAMD"
+model = "1"
+ghz = 2.2
+cores = 12
+os = "Linux"
+runtime = "Linux"
