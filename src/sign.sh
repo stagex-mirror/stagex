@@ -39,7 +39,7 @@ SIGNER=$(git config user.name) || { echo "Failed to find user for signing"; exit
 SIGNING_KEY="$(git config user.signingkey)"
 if [[ -z "${SIGNING_KEY// }" ]]; then 
 	echo -e "${RED}Please configure your signingkey in git"
-	echo -e "${NC} you can run: 'git config --global user.signingkey 3AA5C34371567BD2'"
+	echo -e "${NC} you can run: 'git config --global user.signingkey <your fingerprint>'"
         exit 
 fi
 FPR="$(get_primary_fp "${SIGNING_KEY}")"
