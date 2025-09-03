@@ -1,0 +1,12 @@
+[package]
+name = "py-pycparser"
+version = "2.22"
+description = "C parser and AST generator written in Python"
+website = "https://github.com/eliben/pycparser"
+licenses = "BSD"
+
+[sources.py-pycparser]
+hash = "b074c239ee828fcb9c97774b942f3ce51f0d2edc00809f49c3c3ef0f3baaf9c1"
+format = "tar.gz"
+file = "py-pycparser-{version}.{format}"
+mirrors = [ "https://github.com/eliben/pycparser/archive/refs/tags/release_v{version}.{format}",]
