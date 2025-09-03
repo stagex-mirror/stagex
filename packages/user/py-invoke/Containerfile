@@ -1,0 +1,20 @@
+FROM stagex/pallet-python AS build
+COPY --from=stagex/core-py-build . /
+COPY --from=stagex/core-py-pep517 . /
+COPY --from=stagex/core-py-toml . /
+COPY --from=stagex/user-py-fluidity . /
+COPY --from=stagex/user-py-lexicon . /
+COPY --from=stagex/user-py-yaml . /
+ARG VERSION
+ADD fetch/invoke-${VERSION}.tar.gz .
+WORKDIR /invoke-${VERSION}
+RUN --network=none <<-EOF
+	set -eu
+	python -m build --wheel --no-isolation
+	python -m installer --destdir=/rootfs dist/*.whl
+	install -Dm0644 -t /rootfs/usr/share/licenses/py-invoke/ LICENSE
+	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
