@@ -1,0 +1,20 @@
+FROM stagex/pallet-python AS build
+COPY --from=stagex/core-py-build . /
+COPY --from=stagex/core-py-pep517 . /
+COPY --from=stagex/core-py-toml . /
+COPY --from=stagex/user-py-sphinx . /
+COPY --from=stagex/user-py-sphinx-issues . /
+ARG VERSION
+ADD fetch/py-netaddr-${VERSION}.tar.gz .
+ENV SETUPTOOLS_SCM_PRETEND_VERSION=${VERSION}
+WORKDIR /netaddr-${VERSION}
+RUN --network=none <<-EOF
+	set -eu
+	python -m build --wheel --skip-dependency-check --no-isolation
+	python -m installer --destdir=/rootfs dist/*.whl
+	install -Dm0644 -t /rootfs/usr/share/licenses/py-argcomplete/ LICENSE.rst
+	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
