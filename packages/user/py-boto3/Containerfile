@@ -1,0 +1,19 @@
+FROM stagex/pallet-python AS build
+ARG VERSION
+COPY --from=stagex/core-py-build . /
+COPY --from=stagex/core-py-pep517 . /
+COPY --from=stagex/core-py-toml . /
+COPY --from=stagex/user-py-botocore . /
+COPY --from=stagex/user-py-jmespath . /
+COPY --from=stagex/user-py-s3transfer . /
+ADD fetch/py-boto3-${VERSION}.tar.gz .
+WORKDIR /boto3-${VERSION}
+RUN <<-EOF
+	set -eu
+	python -m build --wheel --no-isolation
+	python -m installer --destdir=/rootfs dist/*.whl
+	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+	install -Dm0644 -t /rootfs/usr/share/licenses/py-boto3/ LICENSE
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
