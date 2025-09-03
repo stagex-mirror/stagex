@@ -1,0 +1,12 @@
+[package]
+name = "ansible"
+version = "11.9.0"
+description = "Official assortment of Ansible collections"
+website = "https://pypi.org/project/ansible/"
+licenses = "GPL-3.0-or-later"
+
+[sources.ansible]
+hash = "528ca5a408f11cf1fea00daea7570e68d40e167be38b90c119a7cb45729e4921"
+format = "tar.gz"
+file = "ansible-{version}.{format}"
+mirrors = [ "https://pypi.python.org/packages/source/a/ansible/ansible-{version}.{format}",]
