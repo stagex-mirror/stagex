@@ -1,0 +1,18 @@
+FROM stagex/pallet-gcc-gnu-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/user-openssh . /
+ADD fetch/sshpass-${VERSION}.tar.gz .
+WORKDIR /sshpass-${VERSION}
+RUN --network=none <<-EOF
+  set -eux
+  autoreconf -vif
+  ./configure \
+    --prefix=/usr
+  make -j "$(nproc)"
+	make DESTDIR=/rootfs install
+	install -Dm644 -t /rootfs/usr/share/licenses/sshpass/ COPYING
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
