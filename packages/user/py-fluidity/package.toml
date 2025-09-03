@@ -1,0 +1,13 @@
+[package]
+name = "py-fluidity"
+version = "0.2.1"
+description = "Fluidity: state machine implementation for Python objects"
+website = "https://github.com/nsi-iff/fluidity"
+licenses = "MIT"
+
+[sources.py-fluidity]
+hash = "2471d195b5ddd3457f51ddaf7eeca920cfd39ae01a368faa4434a11eac86b2e4"
+format = "tar.gz"
+file = "py-fluidity-{version}.{format}"
+mirrors = [
+"https://github.com/nsi-iff/fluidity/archive/468627ea13ed4c3043dc67ccc1ff16089fdb7b25/fluidity-468627ea13ed4c3043dc67ccc1ff16089fdb7b25.tar.gz",]
