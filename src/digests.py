@@ -21,10 +21,15 @@ for filename in glob("out/**/index.json", recursive=True):
         data = json.load(file)
     digest = data["manifests"][0]["digest"].split(":")[1]
 
-    # Get manifest digest from index 
+    # Get manifest digest from index
     with open(f"out/{fullname}/blobs/sha256/{digest}") as file:
       data = json.load(file)
-    digest = data["manifests"][0]["digest"].split(":")[1]
+
+    try:
+      digest = data["manifests"][0]["digest"].split(":")[1]
+    except:
+      continue
+
     digests[stage].append((name, digest))
 
 rmtree("digests")
