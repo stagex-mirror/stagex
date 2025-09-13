@@ -1,7 +1,4 @@
 FROM stagex/pallet-python AS build
-COPY --from=stagex/core-py-build . /
-COPY --from=stagex/core-py-pep517 . /
-COPY --from=stagex/core-py-toml . /
 COPY --from=stagex/user-py-sphinx . /
 COPY --from=stagex/user-py-sphinx-issues . /
 ARG VERSION

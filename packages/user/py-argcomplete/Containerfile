@@ -1,12 +1,8 @@
 FROM stagex/pallet-python AS build
-COPY --from=stagex/core-py-build . /
-COPY --from=stagex/core-py-pep517 . /
-COPY --from=stagex/core-py-toml . /
 COPY --from=stagex/user-py-hatchling . /
 COPY --from=stagex/user-py-hatch-vcs . /
 COPY --from=stagex/user-py-pathspec . /
 COPY --from=stagex/user-py-pluggy . /
-COPY --from=stagex/user-py-setuptools-scm . /
 COPY --from=stagex/user-py-trove-classifiers . /
 ARG VERSION
 ADD fetch/py-argcomplete-${VERSION}.tar.gz .

@@ -1,9 +1,6 @@
 FROM stagex/pallet-cython AS build
 ARG VERSION
 COPY --from=stagex/core-openssl . /
-COPY --from=stagex/core-py-build . /
-COPY --from=stagex/core-py-pep517 . /
-COPY --from=stagex/core-py-toml . /
 COPY --from=stagex/user-e2fsprogs . /
 COPY --from=stagex/user-glibc . /
 COPY --from=stagex/user-groff . /

@@ -1,8 +1,6 @@
 FROM stagex/pallet-python AS build
 ARG VERSION
 COPY --from=stagex/pallet-gcc-gnu-busybox . /
-COPY --from=stagex/core-py-build . /
-COPY --from=stagex/core-py-toml . /
 COPY --from=stagex/core-py-cffi . /
 COPY --from=stagex/core-py-pep517 . /
 COPY --from=stagex/user-glibc . /

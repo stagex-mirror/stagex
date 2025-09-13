@@ -1,10 +1,6 @@
 FROM stagex/pallet-python AS build
 ARG VERSION
-COPY --from=stagex/core-py-build . /
-COPY --from=stagex/core-py-pep517 . /
 COPY --from=stagex/user-py-pathspec . /
-COPY --from=stagex/user-py-setuptools-scm . /
-COPY --from=stagex/core-py-toml . /
 ADD fetch/py-pluggy-${VERSION}.tar.gz .
 WORKDIR /pluggy-${VERSION}
 ENV SETUPTOOLS_SCM_PRETEND_VERSION=${VERSION}

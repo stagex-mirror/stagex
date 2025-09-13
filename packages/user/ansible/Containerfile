@@ -1,8 +1,5 @@
 FROM stagex/pallet-python AS build
 ARG VERSION
-COPY --from=stagex/core-py-build . /
-COPY --from=stagex/core-py-pep517 . /
-COPY --from=stagex/core-py-toml . /
 ADD fetch/ansible-${VERSION}.tar.gz .
 WORKDIR /ansible-${VERSION}
 RUN --network=none <<-EOF

@@ -2,10 +2,6 @@ FROM stagex/pallet-python AS build
 ARG VERSION
 COPY --from=stagex/user-py-cryptography . /
 COPY --from=stagex/user-py-jinja2 . /
-COPY --from=stagex/core-py-build . /
-COPY --from=stagex/core-py-pep517 . /
-COPY --from=stagex/core-py-toml . /
-COPY --from=stagex/core-py-packaging . /
 COPY --from=stagex/user-py-paramiko . /
 COPY --from=stagex/user-py-resolvelib . /
 COPY --from=stagex/user-py-yaml . /

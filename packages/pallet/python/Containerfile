@@ -11,6 +11,7 @@ COPY --from=stagex/core-bzip2 . /
 COPY --from=stagex/core-ncurses . /
 COPY --from=stagex/core-sqlite3 . /
 COPY --from=stagex/core-libffi . /
+COPY --from=stagex/core-py-build . /
 COPY --from=stagex/core-py-installer . /
 COPY --from=stagex/core-py-packaging . /
 COPY --from=stagex/core-py-flit . /
@@ -18,5 +19,8 @@ COPY --from=stagex/core-py-wheel . /
 COPY --from=stagex/core-py-gpep517 . /
 COPY --from=stagex/core-py-distro . /
 COPY --from=stagex/core-py-setuptools . /
+COPY --from=stagex/core-py-setuptools-scm . /
+COPY --from=stagex/core-py-pep517 . /
+COPY --from=stagex/core-py-toml . /
 
 ENTRYPOINT ["/usr/bin/python"]
