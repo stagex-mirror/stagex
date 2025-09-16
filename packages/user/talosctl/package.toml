@@ -1,10 +1,10 @@
 [package]
 name = "talosctl"
-version = "1.7.2"
-description = "TODO"
+version = "1.11.1"
+description = "CLI for Talos - A modern OS for Kubernetes"
 
 [sources.talosctl]
-hash = "7f16510394ebe12cd405bc9d2cf4c6ef2c8baf6213006d52c05dcbce0bf06100"
+hash = "41cf9481ea2c1dcd0dc65c0893c90d4939d4bf187d36c91997dc95073c5e75f8"
 format = "tar.gz"
 file = "talosctl-{version}.{format}"
 mirrors = [ "https://github.com/siderolabs/talos/archive/refs/tags/v{version}.{format}",]
