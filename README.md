@@ -42,8 +42,8 @@ looking for.
 
 ## Usage
 
-You can do anything with these images you would with most any other musl based
-containerized linux distro, only with high supply chain integrity and
+You can do anything with these images you would with almost any other musl based
+containerized Linux distro, only with high supply chain integrity and
 determinism.
 
 For a full list of images see the "packages" directory.
@@ -113,10 +113,10 @@ No `RUN` commands needed.
 
 ### Package Management Policies
 
-Unlike most linux distros, stagex was built for determinism, minimalism, and
+Unlike most Linux distros, stagex was built for determinism, minimalism, and
 containers first, and thus has no concept of a traditional package manager.
 In fact, stagex ships no first-party code at all. We just package things in the
-most "stock" way possible with exceptions only to maintain determinism.
+most "stock" way possible, with exceptions only to maintain determinism.
 
 Every image is "from scratch" and contains an empty filesystem with the
 installed package.
@@ -131,9 +131,9 @@ some problem build, you can do that without resorting to low security \
 
 ## Goals
 
-We built to support very high risk threat models where trusting any single
+We built it to support very high risk threat models where trusting any single
 system or maintainer in our software supply chain cannot be tolerated. That
-said, we should also function as a drop-in replacement for musl-based linux
+said, we should also function as a drop-in replacement for musl-based Linux
 distributions for virtually any threat model.
 
 Our aim is to provide a reasonably secure set of toolchains for every major
@@ -265,10 +265,10 @@ A comparison of `stagex` to other distros in some of the areas we care about:
 * Container daemons can verify signatures on pull with a [containers-policy.json](https://github.com/containers/image/blob/main/docs/containers-policy.json.5.md)
 * As a policy, we expect all published signers to:
   * Maintain their PGP private keys offline and/or on personal HSMs
-    * E.g. Nitrokey, Yubikey, Leger, Trezor, etc.
-  * Maintain a [keyoxide](https://keyoxide.org) profile self-certifying keys
+    * E.g. Nitrokey, Yubikey, Ledger, Trezor, etc.
+  * Maintain a [Keyoxide](https://keyoxide.org) profile self-certifying keys
   * Maintain a [Hagrid](https://keys.openpgp.org) profile with verified UIDs
-  * Make best efforts to meet in person and sign each others keys
+  * Make best efforts to meet in person and sign each other's keys
   * Create signatures from highly trusted operating systems
     * E.g Dedicated QubesOS VM, or a an airgapped signing system
 
@@ -292,7 +292,7 @@ be [bootstrapped](https://en.wikipedia.org/wiki/Bootstrapping_(compilers)) all t
 
 * Final distributable packages are always OCI container images
   * OCI allows reproduction by totally different toolchains
-      E.g: Docker, Podman, Kaniko, or Buildah.
+      * E.g: Docker, Podman, Kaniko, or Buildah.
   * OCI allows unlimited signatures on builds as part of the spec
     * E.g: each party that chooses to reproduce adds their own signature
 * We always "Full Source Bootstrap" everything from 0
@@ -304,7 +304,7 @@ be [bootstrapped](https://en.wikipedia.org/wiki/Bootstrapping_(compilers)) all t
   * [Stage3](packages/bootstrap/stage3/Containerfile): Native toolchain in native 64 bit architecture
   * [Stage(x)](.): Later stages build the distributed packages in this repo
 
-For further reading see the [Bootstrappable Builds](https://bootstrappable.org/) Project.
+For further reading, see the [Bootstrappable Builds](https://bootstrappable.org/) Project.
 
 ## Building
 
