@@ -1,0 +1,23 @@
+FROM stagex/pallet-cython AS build
+ARG VERSION
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/user-e2fsprogs . /
+COPY --from=stagex/user-glibc . /
+COPY --from=stagex/user-groff . /
+COPY --from=stagex/user-krb5 . /
+COPY --from=stagex/user-libevent . /
+COPY --from=stagex/user-libverto . /
+COPY --from=stagex/user-openldap . /
+COPY --from=stagex/user-py-decorator . /
+COPY --from=stagex/user-util-linux . /
+ADD fetch/py-gssapi-${VERSION}.tar.gz .
+WORKDIR /python-gssapi-${VERSION}
+RUN --network=none <<-EOF
+	set -eu
+	python setup.py install --root=/rootfs --optimize=1
+	install -Dm0644 LICENSE.txt /rootfs/usr/share/licenses/py-gssapi/LICENSE
+	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

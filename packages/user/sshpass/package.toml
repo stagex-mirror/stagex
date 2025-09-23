@@ -1,0 +1,12 @@
+[package]
+name = "sshpass"
+version = "1.10"
+description = "Fool ssh into accepting an interactive password non-interactively"
+licenses = "GPL"
+website = "https://sourceforge.net/projects/sshpass/"
+
+[sources.openssh]
+hash = "ad1106c203cbb56185ca3bad8c6ccafca3b4064696194da879f81c8d7bdfeeda"
+format = "tar.gz"
+file = "sshpass-{version}.{format}"
+mirrors = [ "https://downloads.sourceforge.net/sshpass/{file}",]

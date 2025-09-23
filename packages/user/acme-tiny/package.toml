@@ -1,0 +1,12 @@
+[package]
+name = "acme-tiny"
+version = "5.0.2"
+description = "A tiny script to issue and renew TLS certs from Let's Encrypt"
+license = "MIT"
+website = "https://github.com/diafygi/acme-tiny"
+
+[sources.acme-tiny]
+hash = "f0436c37a2cc33b8a228a7be356b38cf7fa992aca1a52af9bb164e180bdef649"
+format = "tar.gz"
+file = "acme-tiny-{version}.{format}"
+mirrors = [ "https://github.com/diafygi/acme-tiny/archive/{version}.{format}",]

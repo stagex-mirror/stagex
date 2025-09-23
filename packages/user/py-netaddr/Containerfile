@@ -1,15 +1,17 @@
 FROM stagex/pallet-python AS build
+COPY --from=stagex/user-py-sphinx . /
+COPY --from=stagex/user-py-sphinx-issues . /
 ARG VERSION
-COPY --from=stagex/user-py-pathspec . /
-ADD fetch/py-pluggy-${VERSION}.tar.gz .
-WORKDIR /pluggy-${VERSION}
+ADD fetch/py-netaddr-${VERSION}.tar.gz .
 ENV SETUPTOOLS_SCM_PRETEND_VERSION=${VERSION}
+WORKDIR /netaddr-${VERSION}
 RUN --network=none <<-EOF
 	set -eu
 	python -m build --wheel --skip-dependency-check --no-isolation
-	python -m installer -d /rootfs dist/*.whl
+	python -m installer --destdir=/rootfs dist/*.whl
+	install -Dm0644 -t /rootfs/usr/share/licenses/py-argcomplete/ LICENSE.rst
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
-	install -Dm644 LICENSE -t /rootfs/usr/share/licenses/py-pluggy/
 EOF
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

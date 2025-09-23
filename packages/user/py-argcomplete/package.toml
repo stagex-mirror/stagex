@@ -1,0 +1,12 @@
+[package]
+name = "py-argcomplete"
+version = "3.6.2"
+description = "Easy, extensible command line tab completion of arguments for your Python script"
+website = "https://github.com/kislyuk/argcomplete"
+licenses = "Apache-2.0"
+
+[sources.py-argcomplete]
+hash = "27b617e3e481bb50c961103091210e1cbb6b54461afdd529decbb262f4ce88f5"
+format = "tar.gz"
+file = "py-argcomplete-{version}.{format}"
+mirrors = [ "https://github.com/kislyuk/argcomplete/archive/refs/tags/v{version}.{format}",]
