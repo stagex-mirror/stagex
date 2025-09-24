@@ -268,7 +268,7 @@ A comparison of `stagex` to other distros in some of the areas we care about:
     * E.g. Nitrokey, Yubikey, Ledger, Trezor, etc.
   * Maintain a [Keyoxide](https://keyoxide.org) profile self-certifying keys
   * Maintain a [Hagrid](https://keys.openpgp.org) profile with verified UIDs
-  * Make best efforts to meet in person and sign each other's keys
+  * Make best efforts to meet in person and sign each others' keys
   * Create signatures from highly trusted operating systems
     * E.g Dedicated QubesOS VM, or a an airgapped signing system
 
@@ -436,7 +436,7 @@ https://arxiv.org/abs/1506.02822)
 
 ### Presentations
 
-* [Breaking Bitcoin: The Bitcoin Build System](http://diyhpl.us/wiki/transcripts/breaking-bitcoin/2019/bitcoin-build-system/)
+* [Breaking Bitcoin: The Bitcoin Build System](https://diyhpl.us/wiki/transcripts/breaking-bitcoin/2019/bitcoin-build-system/)
   * Carl Dong | 2020
 * [Expanding (Dis)trust](https://antonlivaja.com/videos/2024-incyber-stagex-talk.mp4)
   * Anton Livaja | 2024
