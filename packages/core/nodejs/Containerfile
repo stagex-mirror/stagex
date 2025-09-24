@@ -12,6 +12,7 @@ COPY --from=stagex/core-samurai . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-icu . /
 COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-libffi . /
 COPY --from=stagex/core-libnghttp2 . /
 COPY --from=stagex/core-brotli . /
 COPY --from=stagex/core-c-ares . /
