@@ -1,0 +1,80 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-ncurses . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-ruby . /
+COPY --from=stagex/core-tcl . /
+COPY --from=stagex/pallet-lua . /
+COPY --from=stagex/pallet-python . /
+COPY --from=stagex/user-libxt . /
+ADD fetch/vim-${VERSION}.tar.gz .
+ADD vimrc .
+WORKDIR /vim-${VERSION}
+ENV CFLAGS="-march=x86-64 -mtune=generic -fno-lto"
+ENV CXXFLAGS="-fno-lto"
+RUN --network=none <<-EOF
+  set -eu
+	echo '#define SYS_VIMRC_FILE "/etc/vim/vimrc"' >> src/feature.h
+	./configure \
+		--prefix=/usr \
+		--enable-luainterp=dynamic \
+		--enable-perlinterp=dynamic \
+		--enable-python3interp=dynamic \
+		--enable-rubyinterp=dynamic \
+		--enable-tclinterp=dynamic \
+		--enable-gui=no \
+		--without-x \
+		--without-wayland \
+		--disable-nls \
+		--enable-acl \
+		--enable-multibyte \
+		--with-compiledby="StageX" \
+		"$@"
+	make
+
+	# vim
+	make -j1 DESTDIR="/rootfs" install
+	install -Dm644 runtime/doc/uganda.txt \
+		"/rootfs/usr/share/licenses/vim/LICENSE"
+	install -Dm644 -t /rootfs/etc/vim/ /vimrc
+
+	# vim-common
+	mkdir -p /rootfs-vim-common/usr/share/vim
+	cp -r /rootfs/usr/share/vim/* /rootfs-vim-common/usr/share/vim/
+	install -Dm644 runtime/doc/uganda.txt \
+		"/rootfs-vim-common/usr/share/licenses/vim/LICENSE"
+
+	# vimdiff
+	install -Dm0755 -t /rootfs-vimdiff/usr/bin/ /rootfs/usr/bin/vimdiff
+	install -Dm644 runtime/doc/uganda.txt \
+		"/rootfs-vimdiff/usr/share/licenses/vimdiff/LICENSE"
+
+	# vim-tutor
+	install -Dm0755 -t /rootfs-vim-tutor/usr/bin/ /rootfs/usr/bin/vimtutor
+	mkdir -p /rootfs-vim-tutor/usr/share/
+	cp -r /rootfs/usr/share/vim /rootfs-vim-tutor/usr/share/
+	install -Dm644 runtime/doc/uganda.txt \
+		"/rootfs-vim-tutor/usr/share/licenses/vim-tutor/LICENSE"
+
+	#	xxd
+	install -Dm0755 -t /rootfs-xxd/usr/bin/ /rootfs/usr/bin/xxd
+	install -Dm644 runtime/doc/uganda.txt \
+		"/rootfs-xxd/usr/share/licenses/xxd/LICENSE"
+
+EOF
+
+FROM stagex/core-filesystem AS package-vim
+COPY --from=build /rootfs/ /
+
+FROM stagex/core-filesystem AS package-vim-common
+COPY --from=build /rootfs-vim-common/ /
+
+FROM stagex/core-filesystem AS package-vimdiff
+COPY --from=build /rootfs-vimdiff/ /
+
+FROM stagex/core-filesystem AS package-vim-tutor
+COPY --from=build /rootfs-vim-tutor/ /
+
+FROM stagex/core-filesystem AS package-xxd
+COPY --from=build /rootfs-xxd/ /
