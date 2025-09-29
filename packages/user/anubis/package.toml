@@ -1,12 +1,12 @@
 [package]
 name = "anubis"
-version = "1.19.1"
+version = "1.22.0"
 description = "Weighs the souls of incoming HTTP requests using Proof-of-Work"
 license = "MIT"
 website = "https://anubis.techaro.lol"
 
 [sources.anubis]
-hash = "5fa0640abad46d1cbe5a84063ec60caa3272478044bad3e1e8b0260ee8756ce7"
+hash = "81b45cf8d210927c6bdf81b4d925734b623e0c0c3f04f48c2034a85eea3bcd32"
 format = "tar.gz"
 file = "anubis-{version}.{format}"
 mirrors = ["https://github.com/techarohq/anubis/archive/refs/tags/v{version}.{format}"]
