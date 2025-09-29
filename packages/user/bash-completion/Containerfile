@@ -1,0 +1,21 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-cmake . /
+ADD fetch/bash-completion-${VERSION}.tar.gz .
+WORKDIR /bash-completion-${VERSION}
+ENV CFLAGS="-march=x86-64 -mtune=generic -fno-lto"
+ENV CXXFLAGS="-fno-lto"
+RUN --network=none <<-EOF
+  set -eu
+	autoreconf -fi
+	./configure \
+		--prefix=/usr \
+		--sysconfdir=/etc
+	make
+	make DESTDIR="/rootfs" install
+	install -Dt /rootfs/etc/bash/ /rootfs/etc/profile.d/bash_completion.sh
+	rm -rf /rootfs/etc/profile.d/
+	install -Dm644 -t /rootfs/usr/share/licenses/bash-completion/ COPYING
+	mkdir -p /rootfs/usr/lib
+	mv /rootfs/usr/share/pkgconfig /rootfs/usr/lib/pkgconfig
+EOF
