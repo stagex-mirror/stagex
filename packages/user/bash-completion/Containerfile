@@ -13,9 +13,13 @@ RUN --network=none <<-EOF
 		--sysconfdir=/etc
 	make
 	make DESTDIR="/rootfs" install
-	install -Dt /rootfs/etc/bash/ /rootfs/etc/profile.d/bash_completion.sh
+	mkdir -p /rootfs/etc/bash
+	mv /rootfs/etc/profile.d/bash_completion.sh /rootfs/etc/bash/
 	rm -rf /rootfs/etc/profile.d/
 	install -Dm644 -t /rootfs/usr/share/licenses/bash-completion/ COPYING
 	mkdir -p /rootfs/usr/lib
 	mv /rootfs/usr/share/pkgconfig /rootfs/usr/lib/pkgconfig
 EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs /
