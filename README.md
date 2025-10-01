@@ -2,7 +2,7 @@
 
 [git://codeberg.org:stagex/stagex](https://codeberg.org/stagex/stagex) | [matrix://#stagex:matrix.org](https://matrix.to/#/#stagex:matrix.org) | [ircs://irc.oftc.net:6697#stagex](https://webchat.oftc.net/?channels=stagex&uio=MT11bmRlZmluZWQmMTE9MTk14d)
 
-[![Donate to StageX's OpenCollective](https://opencollective.com/stagex/donate/button.png?color=white)](https://opencollective.com/stagex/donate)  
+[![Donate to StageX's OpenCollective](https://opencollective.com/stagex/donate/button.png?color=white)](https://opencollective.com/stagex/donate)
 
 ---
 
@@ -13,6 +13,32 @@ Stage 0 all the way up.
 If you want to build or deploy software on a foundation of minimalism and
 determinism with reasonable security, stagex might be the solution you are
 looking for.
+
+## Table of Contents
+
+* [Usage](#usage)
+  * [Examples](#examples)
+  * [Package Management Policies](#package-management-policies)
+* [Goals](#goals)
+  * [Integrity](#integrity)
+  * [Minimalism](#minimalism)
+* [Background](#background)
+* [Comparison](#comparison)
+  * [Notes](#notes)
+  * [Signatures](#signatures)
+  * [Reproducibility](#reproducibility)
+* [Building](#building)
+  * [Requirements](#requirements)
+  * [Examples](#examples-1)
+* [Examples](#examples-2)
+* [Resources](#resources)
+* [References](#references)
+* [Sponsors](#sponsors)
+* [Code of Conduct](CODE_OF_CONDUCT.md)
+* [Contributing](CONTRIBUTING.md)
+* [Maintainer Guidelines](MAINTENANCE.md)
+* [LICENSE](LICENSE)
+
 
 ## Usage
 
