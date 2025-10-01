@@ -19,6 +19,17 @@ RUN <<-EOF
 	go build -v -trimpath ./cmd/talosctl
 	mkdir -p /rootfs/usr/bin/
 	cp talosctl /rootfs/usr/bin/
+	install -Dm644 -t /rootfs/usr/share/licenses/talosctl/ LICENSE
+
+	# Completions subpackage
+	install -vDm644 bash.completion "/rootfs-completions/usr/share/bash-completion/completions/talosctl"
+  install -vDm644 fish.completion "/rootfs-completions/usr/share/fish/completions/talosctl.fish"
+  install -vDm644 zsh.completion "/rootfs-completions/usr/share/zsh/site-functions/_talosctl"
+	install -Dm644 -t /rootfs/usr/share/licenses/talosctl/ LICENSE
 EOF
-FROM stagex/core-filesystem AS package
-COPY --from=build /rootfs// /
+
+FROM stagex/core-filesystem AS package-talosctl
+COPY --from=build /rootfs/ /
+
+FROM stagex/core-filesystem AS package-talosctl-completions
+COPY --from=build /rootfs-completions/ /
