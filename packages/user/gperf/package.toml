@@ -7,4 +7,4 @@ description = "TODO"
 hash = "588546b945bba4b70b6a3a616e80b4ab466e3f33024a352fc2198112cdbb3ae2"
 format = "tar.gz"
 file = "gperf-{version}.{format}"
-mirrors = [ "http://ftp.gnu.org/pub/gnu/gperf/{file}",]
+mirrors = [ "http://ftpmirror.gnu.org/pub/gnu/gperf/{file}", "https://mirrors.kernel.org/gnu/gperf/{file}"]

@@ -14,25 +14,25 @@ hash = "eae9326beb4158c386e39a356818031bd28f3124cf915f8c5b1dc4c7a36b4d7c"
 format = "tar.bz2"
 version = "6.2.1"
 file = "gmp-{version}.{format}"
-mirrors = [ "https://gcc.gnu.org/pub/gcc/infrastructure/{file}",]
+mirrors = ["https://gcc.gnu.org/pub/gcc/infrastructure/{file}", "https://ftpmirror.gnu.org/gnu/gmp/{file}", "https://mirrors.kernel.org/gnu/gmp/{file}"]
 
 [sources.mpfr]
 hash = "feced2d430dd5a97805fa289fed3fc8ff2b094c02d05287fd6133e7f1f0ec926"
 format = "tar.bz2"
 version = "4.1.0"
 file = "mpfr-{version}.{format}"
-mirrors = [ "https://gcc.gnu.org/pub/gcc/infrastructure/{file}",]
+mirrors = ["https://gcc.gnu.org/pub/gcc/infrastructure/{file}", "https://ftpmirror.gnu.org/gnu/mpfr/{file}", "https://mirrors.kernel.org/gnu/mpfr/{file}"]
 
 [sources.mpc]
 hash = "17503d2c395dfcf106b622dc142683c1199431d095367c6aacba6eec30340459"
 format = "tar.gz"
 version = "1.2.1"
 file = "mpc-{version}.{format}"
-mirrors = [ "https://gcc.gnu.org/pub/gcc/infrastructure/{file}",]
+mirrors = ["https://gcc.gnu.org/pub/gcc/infrastructure/{file}", "https://ftpmirror.gnu.org/gnu/mpc/{file}", "https://mirrors.kernel.org/gnu/mpc/{file}"]
 
 [sources.isl]
 hash = "fcf78dd9656c10eb8cf9fbd5f59a0b6b01386205fe1934b3b287a0a1898145c0"
 format = "tar.bz2"
 version = "0.24"
 file = "isl-{version}.{format}"
-mirrors = [ "https://gcc.gnu.org/pub/gcc/infrastructure/{file}",]
+mirrors = ["https://libisl.sourceforge.io/{file}", "https://gcc.gnu.org/pub/gcc/infrastructure/{file}"]

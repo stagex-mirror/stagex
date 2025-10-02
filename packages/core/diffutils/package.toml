@@ -7,4 +7,4 @@ description = "TODO"
 hash = "90e5e93cc724e4ebe12ede80df1634063c7a855692685919bfe60b556c9bd09e"
 format = "tar.xz"
 file = "diffutils-{version}.{format}"
-mirrors = [ "https://ftp.gnu.org/gnu/diffutils/{file}",]
+mirrors = [ "https://ftpmirror.gnu.org/gnu/diffutils/{file}", "https://mirrors.kernel.org/gnu/diffutils/{file}"]
