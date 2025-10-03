@@ -9,6 +9,7 @@ COPY --from=stagex/user-py-pycparser . /
 ADD fetch/pynacl-${VERSION}.tar.gz .
 WORKDIR /pynacl-${VERSION}
 ENV SODIUM_INSTALL=system
+ENV CFLAGS="-s"
 RUN --network=none <<-EOF
 	set -eu
 	python -m build --wheel --no-isolation
