@@ -13,6 +13,7 @@ ADD vimrc .
 WORKDIR /vim-${VERSION}
 ENV CFLAGS="-march=x86-64 -mtune=generic -fno-lto"
 ENV CXXFLAGS="-fno-lto"
+ENV SOURCE_DATE_EPOCH="1"
 RUN --network=none <<-EOF
   set -eu
 	echo '#define SYS_VIMRC_FILE "/etc/vim/vimrc"' >> src/feature.h
