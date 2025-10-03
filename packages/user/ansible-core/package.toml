@@ -1,0 +1,12 @@
+[package]
+name = "ansible-core"
+version = "2.19.1"
+description = "core components of ansible: A configuration-management, deployment, task-execution, and multinode orchestration framework"
+website = "https:/ansible.com"
+licenses = "GPL-3.0-or-later"
+
+[sources.ansible-core]
+hash = "799717d1b57aadeb8955ab21dfb266e14fff8abb13f707e5a736d3edc3f19e78"
+format = "tar.gz"
+file = "ansible-core-{version}.{format}"
+mirrors = [ "https://github.com/ansible/ansible/archive/refs/tags/v{version}.{format}",]

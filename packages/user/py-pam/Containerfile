@@ -1,12 +1,5 @@
-FROM scratch AS build
+FROM stagex/pallet-python AS build
 ARG VERSION
-COPY --from=stagex/pallet-python . /
-COPY --from=stagex/core-py-build . /
-COPY --from=stagex/core-py-installer . /
-COPY --from=stagex/core-py-pep517 . /
-COPY --from=stagex/core-py-setuptools . /
-COPY --from=stagex/core-py-wheel . /
-COPY --from=stagex/core-py-toml . /
 COPY --from=stagex/user-py-six . /
 ADD fetch/py-pam-${VERSION}.tar.gz .
 WORKDIR /python-pam-${VERSION}/

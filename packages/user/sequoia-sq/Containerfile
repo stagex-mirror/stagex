@@ -6,8 +6,7 @@ COPY --from=stagex/user-nettle . /
 COPY --from=stagex/user-capnproto . /
 ADD fetch/sq-${VERSION}.tar.gz .
 WORKDIR /sequoia-sq-v${VERSION}
-ENV NETTLE_STATIC=yes
-ENV RUSTFLAGS='-C codegen-units=1 -C target-feature=+crt-static'
+ENV RUSTFLAGS='-C codegen-units=1'
 RUN cargo fetch
 RUN --network=none <<-EOF
 	set -eux

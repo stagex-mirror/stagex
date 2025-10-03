@@ -1,0 +1,12 @@
+[package]
+name = "py-decorator"
+version = "5.2.1"
+description = "Python Decorator module"
+website = "https://pypi.python.org/pypi/decorator"
+licenses = "BSD-2-Clause"
+
+[sources.py-decorator]
+hash = "a51ac0dfff84270a5405621e5b9d8734411b5403b5e6d0d0b7a8cbae731f633a"
+format = "tar.gz"
+file = "py-decorator-{version}.{format}"
+mirrors = [ "https://github.com/micheles/decorator/archive/refs/tags/{version}.{format}",]

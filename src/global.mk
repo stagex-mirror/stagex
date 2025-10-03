@@ -39,3 +39,7 @@ out:
 content-%: %
 	ls -R out/$<
 	tar -tvf $$(find out/$< -type f -printf '%s %p\n' | sort -nr | head -n1 | awk '{ print $$2 }') | less
+
+.PHONY: digests-%
+digests-%: %
+	@./src/package-digests.py $<

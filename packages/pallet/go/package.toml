@@ -1,3 +1,4 @@
 [package]
 name = "go"
-description = "TODO"
+description = "Go compiler with shell"
+version_from = "core-go"

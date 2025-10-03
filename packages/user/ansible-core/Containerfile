@@ -1,0 +1,24 @@
+FROM stagex/pallet-python AS build
+ARG VERSION
+COPY --from=stagex/user-py-cryptography . /
+COPY --from=stagex/user-py-jinja2 . /
+COPY --from=stagex/user-py-paramiko . /
+COPY --from=stagex/user-py-resolvelib . /
+COPY --from=stagex/user-py-yaml . /
+COPY --from=stagex/user-py-argcomplete . /
+COPY --from=stagex/user-py-dnspython . /
+COPY --from=stagex/user-py-jmespath . /
+COPY --from=stagex/user-py-netaddr . /
+COPY --from=stagex/user-py-passlib . /
+COPY --from=stagex/user-sshpass . /
+ADD fetch/ansible-core-${VERSION}.tar.gz .
+WORKDIR /ansible-${VERSION}
+RUN --network=none <<-EOF
+	set -eu
+	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+	python -m installer -d /rootfs .dist/*.whl
+	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

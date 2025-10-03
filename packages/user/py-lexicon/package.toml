@@ -1,0 +1,12 @@
+[package]
+name = "py-lexicon"
+version = "3.0.0"
+description = "Powerful dict subclass(es) with aliasing & attribute access"
+website = "https://github.com/bitprophet/lexicon"
+licenses = "BSD-2-Clause"
+
+[sources.py-lexicon]
+hash = "d815dd65da6f7d2cee75aa06ae011c16d5aee43ee2e21ca5baa87391b1cb3f22"
+format = "tar.gz"
+file = "python-lexicon-{version}.{format}"
+mirrors = [ "https://github.com/bitprophet/lexicon/archive/{version}/lexicon-{version}.{format}",]

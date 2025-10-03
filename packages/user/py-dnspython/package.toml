@@ -1,0 +1,12 @@
+[package]
+name = "py-dnspython"
+version = "2.7.0"
+description = "A DNS toolkit for Python"
+website = "http://www.dnspython.org"
+licenses = "ISC"
+
+[sources.py-dnspython]
+hash = "a18503bcd166c9ecb6b9ed91f38ed03d0d7ca282c4ac57282c9fd6b85726fc4b"
+format = "tar.gz"
+file = "py-dnspython-{version}.{format}"
+mirrors = [ "https://github.com/rthalley/dnspython/archive/v{version}/dnspython-{version}.{format}",]

@@ -1,0 +1,12 @@
+[package]
+name = "py-paramiko"
+version = "3.5.1"
+description = "Python module that implements the SSH2 protocol"
+website = "https://github.com/paramiko/paramiko/"
+licenses = "LGPL"
+
+[sources.py-paramiko]
+hash = "364658d3cabb7bf5a9e4dbbf7fdb8f9ef646c6af06a15c5a2cf8305666d5635a"
+format = "tar.gz"
+file = "paramiko-{version}.{format}"
+mirrors = [ "https://github.com/paramiko/paramiko/archive/{version}/{file}",]

@@ -1,7 +1,9 @@
 [package]
 name = "py-hatchling"
 version = "1.25.0"
-description = "TODO"
+description = "Extensible, standards compliant build backend used by Hatch"
+website = "https://github.com/pypa/hatch/tree/master/backend"
+license = "MIT"
 
 [sources.py-hatchling]
 hash = "7064631a512610b52250a4d3ff1bd81551d6d1431c4eb7b72e734df6c74f4262"
