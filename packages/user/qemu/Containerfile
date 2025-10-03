@@ -36,6 +36,7 @@ COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/user-py-docutils . /
 COPY --from=stagex/user-py-pygments . /
 COPY --from=stagex/user-py-babel . /
+COPY --from=stagex/user-py-distlib . /
 COPY --from=stagex/user-py-sphinx . /
 COPY --from=stagex/user-py-sphinx_rtd_theme . /
 COPY --from=stagex/user-py-sphinxcontrib-applehelp . /

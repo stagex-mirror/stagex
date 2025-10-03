@@ -1,0 +1,12 @@
+[package]
+name = "py-distlib"
+version = "0.4.0"
+description = "Low-level functions that relate to packaging and distribution of Python software"
+website = "https://distlib.readthedocs.io"
+license = "PSF-2.0"
+
+[sources.py-distlib]
+hash = "feec40075be03a04501a973d81f633735b4b69f98b05450592310c0f401a4e0d"
+format = "tar.gz"
+file = "py-distlib-{version}.{format}"
+mirrors = [ "https://files.pythonhosted.org/packages/source/d/distlib/distlib-{version}.{format}",]
