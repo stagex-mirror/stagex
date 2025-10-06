@@ -7,4 +7,4 @@ description = "TODO"
 hash = "13f74202a3c4c51118b797a39ea4200d3f6cfbe224da6d1d95bb938480132dfd"
 format = "tar.xz"
 file = "binutils-{version}.{format}"
-mirrors = [ "https://ftp.gnu.org/gnu/binutils/{file}",]
+mirrors = [ "https://ftpmirror.gnu.org/gnu/binutils/{file}", "https://mirrors.kernel.org/gnu/binutils/{file}"]

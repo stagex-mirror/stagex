@@ -7,4 +7,4 @@ description = "Utility to apply diffs to files"
 hash = "f87cee69eec2b4fcbf60a396b030ad6aa3415f192aa5f7ee84cad5e11f7f5ae3"
 format = "tar.xz"
 file = "patch-{version}.{format}"
-mirrors = [ "https://ftp.gnu.org/gnu/patch/{file}", ]
+mirrors = [ "https://ftpmirror.gnu.org/gnu/patch/{file}", "https://mirrors.kernel.org/gnu/patch/{file}"]

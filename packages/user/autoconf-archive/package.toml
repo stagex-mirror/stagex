@@ -7,4 +7,4 @@ description = "TODO"
 hash = "71d4048479ae28f1f5794619c3d72df9c01df49b1c628ef85fde37596dc31a33"
 format = "tar.xz"
 file = "autoconf-archive-{version}.{format}"
-mirrors = [ "https://ftp.gnu.org/gnu/autoconf-archive/{file}",]
+mirrors = [ "https://ftpmirror.gnu.org/gnu/autoconf-archive/{file}", "https://mirrors.kernel.org/gnu/autoconf-archive/{file}"]
