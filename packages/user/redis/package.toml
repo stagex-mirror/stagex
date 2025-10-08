@@ -1,10 +1,12 @@
 [package]
 name = "redis"
-version = "7.2.4"
-description = "TODO"
+licence = "BSD-3-Clause"
+website = "https://redis.io"
+version = "7.2.11"
+description = "Redis is an in-memory data structure store"
 
 [sources.redis]
-hash = "8d104c26a154b29fd67d6568b4f375212212ad41e0c2caa3d66480e78dbd3b59"
+hash = "2f9886eca68d30114ad6a01da65631f8007d802fd3e6c9fac711251e6390323d"
 format = "tar.gz"
 file = "redis-{version}.{format}"
 mirrors = [ "https://download.redis.io/releases/{file}",]
