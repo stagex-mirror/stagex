@@ -80,17 +80,13 @@ RUN --network=none <<-EOF
 		--with-password-argon2 \
 		--with-sodium=shared \
 		--with-pdo-sqlite=/usr \
-		--with-sqlite3=/usr \
-		\
-		--with-curl \
 		--with-iconv=/usr \
+		--with-curl=shared \
 		--with-openssl \
 		--with-zlib \
 		\
 		--enable-phpdbg \
-		\
 		--enable-embed \
-		\
 		--enable-zts \
 		--disable-zend-signals
 	make -j "$(nproc)"
