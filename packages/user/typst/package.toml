@@ -1,10 +1,10 @@
 [package]
 name = "typst"
-version = "0.13.1"
+version = "0.14.0"
 description = "A new markup-based typesetting system that is powerful and easy to learn."
 
 [sources.typst]
-hash = "2ffd8443668bc0adb59e9893f7904fd9f64dce8799a1930569f56a91305e8b71"
+hash = "39df9db43c792b0ab71cde97bdc03d4763fff7d3525b67d549ffc8bfc99b6395"
 format = "tar.gz"
 file = "typst-{version}.{format}"
 mirrors = [ "https://github.com/typst/typst/archive/refs/tags/v{version}.{format}" ]
