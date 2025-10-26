@@ -1,7 +1,9 @@
 [package]
 name = "bison"
 version = "3.8.2"
-description = "TODO"
+description = "The GNU general-purpose parser generator"
+website = "https://www.gnu.org/software/bison/bison.html"
+license = "GPL-3.0.-or-later"
 
 [sources.bison]
 hash = "9bba0214ccf7f1079c5d59210045227bcf619519840ebfa80cd3849cff5a5bf2"
