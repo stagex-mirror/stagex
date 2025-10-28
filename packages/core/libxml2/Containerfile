@@ -13,8 +13,8 @@ COPY --from=stagex/core-pkgconf . /
 COPY --from=stagex/core-libtool . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-m4 . /
-ADD fetch/libxml2-${VERSION}.tar.gz .
-WORKDIR /libxml2-v${VERSION}
+ADD fetch/libxml2-${VERSION}.tar.xz .
+WORKDIR /libxml2-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
 	sh autogen.sh
