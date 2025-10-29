@@ -27,7 +27,7 @@ RUN --network=none <<-EOF
 		--with-readline
 	make -j "$(nproc)" src config contrib all 
 	make DESTDIR=/rootfs install
-	make -C contrib DESTDIR=/roofs install
+	make -C contrib DESTDIR=/rootfs install
 	install -Dm 644 COPYRIGHT /rootfs/usr/share/licenses/postgresql
 EOF
 FROM stagex/core-filesystem AS package
