@@ -11,6 +11,9 @@ COPY --from=stagex/core-make . /
 COPY --from=stagex/core-m4 . /
 ADD fetch/bison-${VERSION}.tar.xz .
 WORKDIR /bison-${VERSION}
+ENV CFLAGS="-march=x86-64 -mtune=generic -fno-lto"
+ENV CXXFLAGS="-fno-lto"
+ENV SOURCE_DATE_EPOCH="1"
 ENV M4=/usr/bin/m4
 RUN --network=none <<-EOF
 	set -eux
