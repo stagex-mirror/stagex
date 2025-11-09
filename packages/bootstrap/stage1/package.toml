@@ -461,6 +461,7 @@ hash = "1ce4e5b47a6354531389f0adefb54dee2823227bf6e1e59a31c0e9317a330822"
 file = "bash-2.05b.tar.bz2"
 mirrors = [
   "https://src.fedoraproject.org/repo/pkgs/bash/{file}/f3e5428ed52a4f536f571a945d5de95d/{file}",
+  "https://ftp.gwdg.de/pub/linux/rocklinux/ROCK-2.1/b/{file}",
 ]
 
 [sources.automake_1163]
