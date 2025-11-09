@@ -323,7 +323,7 @@ mirrors = [ "http://git.savannah.gnu.org/cgit/gnulib.git/snapshot/{file}", "http
 [sources.bash_205b]
 hash = "1ce4e5b47a6354531389f0adefb54dee2823227bf6e1e59a31c0e9317a330822"
 file = "bash-2.05b.tar.bz2"
-mirrors = [ "https://src.fedoraproject.org/repo/pkgs/bash/{file}/f3e5428ed52a4f536f571a945d5de95d/{file}",]
+mirrors = [ "https://src.fedoraproject.org/repo/pkgs/bash/{file}/f3e5428ed52a4f536f571a945d5de95d/{file}", "https://ftp.gwdg.de/pub/linux/rocklinux/ROCK-2.1/b/{file}"]
 
 [sources.automake_1163]
 hash = "ff2bf7656c4d1c6fdda3b8bebb21f09153a736bcba169aaf65eab25fa113bf3a"
