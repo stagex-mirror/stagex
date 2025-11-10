@@ -2,6 +2,7 @@
 import os
 from common import CommonUtils
 from common import PackageInfo
+from common import digests
 from typing import Any
 from typing import List
 from typing import MutableMapping
@@ -41,6 +42,7 @@ out/{stage}-{name}/index.json: \\
 \t  $(EXTRA_ARGS) \\
 \t  $(NOCACHE_FLAG) \\
 \t  $(CHECK_FLAG) \\
+\t  --push=false \\
 \t  --platform={platform_arg} \\
 \t  --progress=$(PROGRESS) \\
 \t  -f packages/{stage}/{origin}/Containerfile \\
@@ -53,7 +55,7 @@ out/{stage}-{name}/index.json: \\
 import-{stage}-{name}:
 \t$(call import,{stage},{name},{version})
 
-# use: make registry-{stage}-{name} BUILDER="docker buildx" REGISTRY_USERNAME=127.0.0.1:5005/stagex
+# use: make registry-{stage}-{name} BUILDER="docker buildx" REGISTRY=127.0.0.1:5005/stagex
 # doesn't work well with docker build
 .PHONY: registry-{stage}-{name}
 registry-{stage}-{name}:
@@ -65,8 +67,8 @@ registry-{stage}-{name}:
 \t$(BUILDER) \\
 \t  build \\
 \t  --ulimit nofile=2048:16384 \\
-\t  --tag $(REGISTRY_USERNAME)/{stage}-{name}:{version} \\
-\t  --tag $(REGISTRY_USERNAME)/{stage}-{name}:latest \\
+\t  --tag $(REGISTRY)/{stage}-{name}:{version} \\
+\t  --tag $(REGISTRY)/{stage}-{name}:latest \\
 \t  --provenance=false \\
 \t  --build-arg SOURCE_DATE_EPOCH=1 \\
 \t  --build-arg BUILDKIT_MULTI_PLATFORM=1 \\
@@ -82,6 +84,33 @@ registry-{stage}-{name}:
 \t  --progress=$(PROGRESS) \\
 \t  -f packages/{stage}/{origin}/Containerfile \\
 \t  packages/{stage}/{origin}
+
+.PHONY: validate-{stage}-{name}
+validate-{stage}-{name}:
+\tmkdir -p fetch/{stage}/{origin} && \\
+\tpython3 src/fetch.py {origin} && \\
+\t mkdir -p packages/{stage}/{origin}/fetch && \\
+\t(cp -lR fetch/{stage}/{origin}/* packages/{stage}/{origin}/fetch || true) && \\
+\t$(BUILDER) \\
+\t  build \\
+\t  --ulimit nofile=2048:16384 \\
+\t  --tag $(REGISTRY)/{stage}-{name}:{version} \\
+\t  --tag $(REGISTRY)/{stage}-{name}:latest \\
+\t  --provenance=false \\
+\t  --build-arg SOURCE_DATE_EPOCH=1 \\
+\t  --build-arg BUILDKIT_MULTI_PLATFORM=1 \\
+\t  --output \\
+\t    name={name},type=oci,rewrite-timestamp=true,force-compression=true,annotation.containerd.io/distribution.source.docker.io=stagex/{name},annotation.org.opencontainers.image.version={version},annotation.org.opencontainers.image.created=1970-01-01T00:00:01Z,tar=true,dest=- \\
+\t  {context_args_with_digest} \\
+\t  {build_args} \\
+\t  $(EXTRA_ARGS) \\
+\t  $(NOCACHE_FLAG) \\
+\t  $(CHECK_FLAG) \\
+\t  --platform={platform_arg} \\
+\t  --progress=$(PROGRESS) \\
+\t  -f packages/{stage}/{origin}/Containerfile \\
+\t  packages/{stage}/{origin} \\
+\t| tar -C out/{stage}-{name} -mx
 
 .PHONY: publish-{stage}-{name}
 publish-{stage}-{name}: out/{stage}-{name}/index.json
@@ -147,8 +176,9 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
               ),
               "files": "\\\n\t".join(check_output(["git","ls-files","packages/{}/{}".format(stage,package.origin or package.name)],text=True).splitlines()),
               "build_args": TargetGenerator.get_build_args(package),
-              "context_args": TargetGenerator.get_context_args(package, stage, package.origin or package.name, False),
-              "context_args_registry": TargetGenerator.get_context_args(package, stage, package.origin or package.name, True),
+              "context_args": TargetGenerator.get_context_args(package, stage, package.origin or package.name, False, False),
+              "context_args_registry": TargetGenerator.get_context_args(package, stage, package.origin or package.name, True, False),
+              "context_args_with_digest": TargetGenerator.get_context_args(package, stage, package.origin or package.name, True, True),
               "platform_arg": platform
             }
           )
@@ -208,12 +238,16 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
 
 
   @staticmethod
-  def get_context_args(package: PackageInfo, stage: str, name: str, use_registry: bool) -> str:
+  def get_context_args(package: PackageInfo, stage: str, name: str, use_registry: bool, include_digests: bool) -> str:
+    digest_map = digests()
     args: List[str] = list()
     args.append(f"--build-context fetch=fetch/{stage}/{name}")
     for dep in package.deps:
-      if use_registry:
-        args.append(f"--build-context stagex/{dep}=docker-image://$(REGISTRY_USERNAME)/{dep}")
+      if use_registry and not include_digests:
+        args.append(f"--build-context stagex/{dep}=docker-image://$(REGISTRY)/{dep}")
+      elif use_registry and include_digests:
+        digest = digest_map.get(dep, None)
+        args.append(f"--build-context stagex/{dep}=docker-image://$(REGISTRY)/{dep}@sha256:{digest}")
       else:
         args.append(f"--build-context stagex/{dep}=oci-layout://./out/{dep}")
     return " \\\n\t  ".join(args)

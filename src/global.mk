@@ -28,12 +28,12 @@ default: targets all
 .PHONY: all check compat digests preseed fetch verify sign targets help
 
 targets: out/targets.mk
-out/targets.mk: out $(shell find packages/)
+out/targets.mk: out src/targets.py $(shell find packages/)
 	python3 src/targets.py > $@
 -include out/targets.mk
 
 out:
-	mkdir out
+	mkdir -p out
 
 .PHONY: content-%
 content-%: %

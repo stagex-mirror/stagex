@@ -1,4 +1,5 @@
 import tomllib
+import os
 from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
@@ -6,6 +7,23 @@ from typing import List
 from typing import Mapping
 from typing import MutableMapping
 
+def digests():
+  digests = {}
+  digest_folder = os.path.join(os.getcwd(), "digests")
+  for filename in os.listdir(digest_folder):
+    filepath = os.path.join(digest_folder, filename)
+
+    if os.path.isfile(filepath):
+      try:
+        with open(filepath, 'r', encoding='utf-8') as file:
+          for line_number, line in enumerate(file, 1):
+            line = line.strip()
+            digest, prefixed_name = line.split(" ")
+            digests[prefixed_name] = digest
+
+      except Exception as e:
+        print(f"Error reading file {filename}: {e}")
+  return digests
 
 @dataclass()
 class WithVersion(object):
@@ -48,6 +66,7 @@ class PackageInfo(WithVersion):
   subpackages: List[str] = field(default_factory=list)
   sources: MutableMapping[str, SourcesInfo] = field(default_factory=dict)
   deps: List[str] = field(default_factory=list)
+  digest: str = None
 
 class CommonUtils(object):
   @staticmethod
@@ -81,7 +100,7 @@ class CommonUtils(object):
 
   @staticmethod
   def parse_package_toml_no_deps(toml_dict: MutableMapping[str, Any]) -> PackageInfo:
-    version: str = toml_dict["package"].get("version", None) 
+    version: str = toml_dict["package"].get("version", None)
     version_from: str = toml_dict["package"].get("version_from", None)
     name: str = toml_dict["package"]["name"]
     origin: str = None
