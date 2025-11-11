@@ -25,8 +25,10 @@ class MatrixGenerator(object):
     for stage, stage_packages in self.packages.items():
       for name, package in stage_packages.items():
         self.matrix[f"{stage}-{name}"] = {
+          "name": package.name,
+          "stage": stage,
           "digest": package.digest,
-          "needs": package.deps,
+          "deps": package.deps,
           "version": package.version,
         }
 
@@ -34,7 +36,9 @@ class MatrixGenerator(object):
     return self.matrix
 
   def json(self):
-    print(json.dumps(self.matrix))
+    print(json.dumps([
+      value for key, value in self.matrix.items()
+    ]))
 
 
   def init_packages(self, root_path: str = "packages"):
