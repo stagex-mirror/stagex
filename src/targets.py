@@ -22,8 +22,9 @@ out/{stage}-{name}/index.json: \\
 \tmkdir -p out/{stage}-{name} && \\
 \tmkdir -p fetch/{stage}/{origin} && \\
 \tpython3 src/fetch.py {origin} && \\
+\t rm -rf packages/{stage}/{origin}/fetch && \\
 \t mkdir -p packages/{stage}/{origin}/fetch && \\
-\t(cp -lR fetch/{stage}/{origin}/* packages/{stage}/{origin}/fetch || true) && \\
+\t cp -lR fetch/{stage}/{origin}/* packages/{stage}/{origin}/fetch && \\
 \t$(BUILDER) \\
 \t  build \\
 \t  --ulimit nofile=2048:16384 \\
@@ -56,8 +57,9 @@ import-{stage}-{name}:
 registry-{stage}-{name}:
 \tmkdir -p fetch/{stage}/{origin} && \\
 \tpython3 src/fetch.py {origin} && \\
+\t rm -rf packages/{stage}/{origin}/fetch && \\
 \t mkdir -p packages/{stage}/{origin}/fetch && \\
-\t(cp -lR fetch/{stage}/{origin}/* packages/{stage}/{origin}/fetch || true) && \\
+\t cp -lR fetch/{stage}/{origin}/* packages/{stage}/{origin}/fetch && \\
 \t$(BUILDER) \\
 \t  build \\
 \t  --ulimit nofile=2048:16384 \\
