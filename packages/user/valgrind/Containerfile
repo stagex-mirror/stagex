@@ -1,17 +1,31 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
+COPY --from=stagex/core-llvm-libgcc . /
+COPY --from=stagex/core-binutils . /
 ARG VERSION
 ADD fetch/valgrind-${VERSION}.tar.bz2 .
 WORKDIR /valgrind-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
+	export CFLAGS="-U_FORTIFY_SOURCE -fPIC"
+	export LDFLAGS="$LDFLAGS -fPIC"
+	#HACK: remove all hardcoded inclusions of libgcc
+	find . \
+		\( \
+			-name '*.am' \
+			-o -name '*.c' \
+			-o -name '*.ac' \
+			-o -name '*.in' \
+		\) \
+		-type f \
+		-exec sed -i 's/-lgcc//g' {} +
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info \
+    --libexecdir=/usr/lib \
 		--localstatedir=/var \
 		--without-mpicc
-	make -j "$(nproc)"
+	make
 	make DESTDIR=/rootfs install
 EOF
 FROM stagex/core-filesystem AS package

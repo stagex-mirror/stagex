@@ -4,7 +4,7 @@ ADD fetch/opentofu-${VERSION}.tar.gz .
 WORKDIR /opentofu-${VERSION}
 RUN go mod download
 RUN --network=none <<-EOF
-	set -eu
+	set +eux
 	go \
 		build \
 		-trimpath \

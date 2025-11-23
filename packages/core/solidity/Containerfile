@@ -13,14 +13,17 @@ COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-samurai . /
 COPY --from=stagex/core-range-v3 . /
 COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-libzstd . /
 ADD fetch/v${VERSION}.tar.gz .
 WORKDIR /solidity-${VERSION}
 RUN <<-EOF
 	set -eux
 	mkdir /include
+	sed -i -e 's/-Werror/-Wno-error/' cmake/EthCompilerSettings.cmake
+	export CFLAGS="-Wno-error -Wno-deprecated"
 	echo $SOLIDITY_GIT_SHA > commit_hash.txt
 	touch prerelease.txt
 	cmake \

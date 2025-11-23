@@ -16,7 +16,6 @@ RUN <<-EOF
 	go mod vendor -modfile=vendor.mod
 EOF
 RUN --network=none <<-EOF
-	set -eux
 	go build \
 		-mod=vendor \
 		-modfile=vendor.mod \
@@ -59,7 +58,6 @@ RUN <<-EOF
 	go mod vendor -modfile=vendor.mod
 EOF
 RUN --network=none <<-EOF
-	set -eux
 	go build \
 		-mod=vendor \
 		-modfile=vendor.mod \
@@ -80,7 +78,6 @@ COPY --from=build-docker /build/ /build/
 COPY --from=build-dockerd /build/ /build/
 WORKDIR /
 RUN <<-EOF
-	set -eux
 	install -Dm755 /build/docker /rootfs/usr/bin/docker
 	install -Dm755 -t /rootfs/usr/bin /build/dockerd /build/docker-proxy
 	# symlink externally provided tini-static binary

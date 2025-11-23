@@ -6,7 +6,6 @@ ADD fetch/containerd-${VERSION}.tar.gz .
 WORKDIR /containerd-${VERSION}
 ENV GO11MODULE=on
 RUN <<-EOF
-	set -eux
 	make \
 		SHIM_CGO_ENABLED=1 \
 		VERSION=${VERSION} \

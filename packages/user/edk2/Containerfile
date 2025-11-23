@@ -1,6 +1,7 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 COPY --from=stagex/pallet-python . /
 COPY --from=stagex/core-bash . /
+COPY --from=stagex/core-ncurses . /
 COPY --from=stagex/user-nasm . /
 COPY --from=stagex/user-acpica . /
 COPY --from=stagex/user-util-linux . /
@@ -25,32 +26,24 @@ ENV PATH=${EDK_TOOLS_PATH}/BinWrappers/PosixLike/:$PATH
 ENV PYTHONPATH=${EDK_TOOLS_PATH}/Source/Python
 ENV PYTHON_COMMAND=python3
 ENV PLATFORMS="ShellPkg/ShellPkg.dsc OvmfPkg/OvmfPkgX64.dsc OvmfPkg/OvmfXen.dsc"
-ENV TOOLCHAIN="GCC5"
+ENV TOOLCHAIN="CLANGPDB"
 ENV RELEASE="RELEASE"
 ENV TARGET_ARCH=X64
+ENV CFLAGS="-Wno-unknown-warning-option -Wno-unneeded-internal-declaration"
+ADD patches/*.patch .
 RUN --network=none <<-EOF
-	set -eux
+	patch -p1 < 0008-BaseTools-do-not-build-BrotliCompress-RH-only.patch
 	rm -rf CryptoPkg/Library/OpensslLib/openssl
 	ln -s /openssl-${OPENSSL_VERSION} CryptoPkg/Library/OpensslLib/openssl
 	rm -rf CryptoPkg/Library/MbedTlsLib/mbedtls
 	ln -s /mbedtls-${MBEDTLS_VERSION} CryptoPkg/Library/MbedTlsLib/mbedtls
 	rm -rf SecurityPkg/DeviceSecurity/SpdmLib/libspdm
 	ln -s /libspdm-${LIBSPDM_VERSION} SecurityPkg/DeviceSecurity/SpdmLib/libspdm
-	rm -rf ArmPkg/Library/ArmSoftFloatLib/berkeley-softfloat-3
-	ln -s /SoftFloat-${SOFTFLOAT_VERSION} \
-		ArmPkg/Library/ArmSoftFloatLib/berkeley-softfloat-3
 	rm -rf MdePkg/Library/MipiSysTLib/mipisyst
 	ln -s /public-mipi-sys-t-${MIPISYST_VERSION} MdePkg/Library/MipiSysTLib/mipisyst
 	sed \
-		-e '/BrotliCompress/d' \
-		-i BaseTools/Source/C/GNUmakefile
-	sed \
 		-e '/BrotliCustomDecompressLib/d' \
 		-i MdeModulePkg/MdeModulePkg.dec
-	sed \
-		-e 's/\r$//' \
-		-i BaseTools/Source/C/VfrCompile/VfrUtilityLib.cpp \
-		BaseTools/Source/C/VolInfo/VolInfo.c
 	make -C BaseTools
 	cp BaseTools/Conf/tools_def.template Conf/tools_def.txt
 	cp BaseTools/Conf/build_rule.template Conf/build_rule.txt

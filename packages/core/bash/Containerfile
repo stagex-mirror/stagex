@@ -2,14 +2,15 @@ FROM scratch AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-ncurses . /
 COPY --from=stagex/core-make . /
 ADD fetch/bash-${VERSION}.tar.gz .
 WORKDIR /bash-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
-	CPPFLAGS="-DHEREDOC_PIPESIZE=65536" \
 	./configure \
 		--prefix=/usr \
 		--bindir=/usr/bin \
@@ -17,8 +18,10 @@ RUN --network=none <<-EOF
 		--infodir=/usr/share/info \
 		--disable-nls \
 		--enable-readline \
-		--without-curses \
-		--without-bash-malloc
+		--without-bash-malloc \
+		gl_cv_func_working_acl_get_file=yes \
+    ac_cv_lib_error_at_line=no \
+    ac_cv_header_sys_cdefs_h=no
 	make -j "$(nproc)"
 	make DESTDIR=/rootfs install
 EOF

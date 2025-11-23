@@ -7,4 +7,4 @@ description = "TODO"
 hash = "6e226b732e1cd739464ad6862bd1a1aba42d7982922da7a53519631d24975181"
 format = "tar.xz"
 file = "sed-{version}.{format}"
-mirrors = [ "https://ftpmirror.gnu.org/gnu/sed/{file}", "https://mirrors.kernel.org/gnu/sed/{file}"]
+mirrors = [ "https://ftpmirror.gnu.org/gnu/sed/{file}", "https://mirrors.kernel.org/gnu/sed/{file}"] 

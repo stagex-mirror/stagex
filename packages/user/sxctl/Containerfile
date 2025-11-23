@@ -1,7 +1,5 @@
-FROM scratch AS build
+FROM stagex/pallet-go AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-go . /
 ADD fetch/sxctl-${VERSION}.tar.gz .
 WORKDIR /sxctl/cmd/sxctl
 RUN go get ./...

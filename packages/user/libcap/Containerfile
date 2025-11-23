@@ -1,11 +1,12 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
+COPY --from=stagex/core-ncurses . /
 COPY --from=stagex/core-bash . /
 ARG VERSION
 ADD fetch/libcap-${VERSION}.tar.gz .
 WORKDIR /libcap-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
-	make -j "$(nproc)" lib=lib prefix=/usr GOLANG=no DESTDIR=/rootfs
+	ln -s /usr/bin/clang /usr/bin/gcc
+	make lib=lib prefix=/usr GOLANG=no DESTDIR=/rootfs
 	make lib=lib prefix=/usr GOLANG=no DESTDIR=/rootfs install
 EOF
 FROM stagex/core-filesystem AS package

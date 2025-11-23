@@ -1,6 +1,6 @@
-FROM scratch AS build
+FROM stagex/bootstrap-stage3 AS build
+ARG TARGETARCH
 ARG VERSION
-COPY --from=stagex/bootstrap-stage3 . /
 ADD fetch/musl-${VERSION}.tar.gz .
 WORKDIR /musl-${VERSION}
 ADD *.patch .

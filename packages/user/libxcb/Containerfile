@@ -1,4 +1,4 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
 COPY --from=stagex/user-libxdmcp . /
 COPY --from=stagex/core-libxslt . /
@@ -11,13 +11,12 @@ COPY --from=stagex/user-util-macros . /
 ADD fetch/libxcb-${VERSION}.tar.xz .
 WORKDIR /libxcb-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	./configure \
 		--prefix=/usr \
 		--enable-xkb \
 		--enable-xinput \
 		--disable-xprint
-	make -j "$(nproc)"
+	make
 	make install DESTDIR=/rootfs
 EOF
 FROM stagex/core-filesystem AS package

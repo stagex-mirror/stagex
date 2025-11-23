@@ -1,19 +1,16 @@
 FROM scratch AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-libffi . /
-COPY --from=stagex/core-clang . /
 COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/core-rust . /
-COPY --from=stagex/core-libunwind . /
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-ca-certificates . /
-COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-pkgconf . /
 
 ADD fetch/v${VERSION}.tar.gz .

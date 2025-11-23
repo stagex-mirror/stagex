@@ -7,4 +7,4 @@ description = "TODO"
 hash = "deeec9f19f159e046fdf8ad22231981806dac332cc372f1c763504ad82b30953"
 format = "tar.xz"
 file = "texinfo-{version}.{format}"
-mirrors = [ "https://ftpmirror.gnu.org/gnu/texinfo/{file}", "https://mirrors.kernel.org/gnu/texinfo/{file}"]
+mirrors = [ "https://ftpmirror.gnu.org/gnu/texinfo/{file}", "https://mirrors.kernel.org/gnu/texinfo/{file}"] 

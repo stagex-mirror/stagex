@@ -1,13 +1,23 @@
 FROM scratch AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
 ADD fetch/libfaketime-${VERSION}.tar.gz .
 WORKDIR /libfaketime-${VERSION}
-ENV CFLAGS="-D_LARGEFILE64_SOURCE"
+ENV CFLAGS="-DFAKE_RANDOM -DFAKE_PID -DFAKE_SETTIME -DFAKE_UTIME -DINTERCEPT_SYSCALL"
+ENV CC=clang
+#HACK: force potentially compromised functionality build until this is fixed
+# https://github.com/wolfcw/libfaketime/issues/508
+COPY <<-EOF src/libfaketime.map
+GLIBC_2.2 { local: timer_settime_*; timer_gettime_*;};
+GLIBC_2.3.3 {} GLIBC_2.2;
+GLIBC_2.2.5 {local: pthread_cond_timedwait_*; pthread_cond_init_*; pthread_cond_destroy*;};
+GLIBC_2.3.2 {} GLIBC_2.2.5;
+EOF
 RUN --network=none <<-EOF
 	set -eux
 	make -j "$(nproc)" PREFIX=/usr

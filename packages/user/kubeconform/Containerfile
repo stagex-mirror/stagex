@@ -1,8 +1,5 @@
-FROM scratch AS build
+FROM stagex/pallet-go AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-go . /
-COPY --from=stagex/core-ca-certificates . /
 ADD fetch/kubeconform-${VERSION}.tar.gz .
 WORKDIR /kubeconform-${VERSION}
 ENV GOPATH=/cache/go

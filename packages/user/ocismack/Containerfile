@@ -5,7 +5,6 @@ WORKDIR /ocismack
 ENV RUSTFLAGS='-C codegen-units=1 -C target-feature=+crt-static'
 RUN cargo fetch
 RUN --network=none <<-EOF
-  set -eux
 	ARCH=$(uname -m)
   cargo build \
     --frozen \

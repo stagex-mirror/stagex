@@ -2,40 +2,52 @@ FROM scratch AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-libtool . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-autoconf . /
+COPY --from=stagex/core-automake . /
 COPY --from=stagex/core-ncurses . /
 COPY --from=stagex/core-readline . /
+COPY --from=stagex/core-m4 . /
 COPY --from=stagex/core-make . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/core-zlib . /
 ADD fetch/lua-${VERSION}.tar.gz .
 WORKDIR /lua-${VERSION}
-COPY *.patch .
-RUN --network=none <<-EOF
-	set -eux
-
-	patch -p1 -i liblua.so.patch
-	patch -p1 -i paths.patch
+COPY <<-EOF configure.ac
+	top_buildir=.
+	AC_INIT(src/luaconf.h)
+	AC_PROG_LIBTOOL
+	AC_OUTPUT()
 EOF
-
+ADD *.patch .
 RUN --network=none <<-EOF
-	set -eux
-
-	VERSION_MAJOR=5.4
-
+	set -eu
+	patch -p1 < paths.patch
+	patch -p1 < liblua.so.patch
+	#patch -p1 < skip-ranlib.patch
+	libtoolize --force --install
+	aclocal
+	autoconf
+	./configure \
+		--prefix=/usr
 	make \
 		-j "$(nproc)" \
-		MYCFLAGS="-fPIC" \
-		MYLIBS=-lncursesw \
-		linux-readline
-
+		V="${VERSION}" \
+		LDFLAGS="-lncurses" \
+		CFLAGS="-fPIC -DLUA_USE_LINUX -DLUA_COMPAT_5_2 -DLUA_USE_LINENOISE" \
+		RPATH="/usr/lib" \
+		CC=clang \
+		LIB_LIBS="-lpthread -lm -ldl -llinenoise" \
+		linux
 	make \
-		TO_LIB="liblua.so liblua.so.${VERSION_MAJOR} liblua.so.${VERSION}" \
-		INSTALL_DATA="cp -d" \
+		V="${VERSION}" \
 		INSTALL_TOP="/rootfs/usr" \
+		INSTALL_INC="/rootfs/usr/include/lua" \
+		INSTALL_LIB="/rootfs/usr/lib/lua" \
 		install
-	ln -sf /usr/bin/lua /rootfs/usr/bin/lua${VERSION_MAJOR}
-	ln -sf /usr/bin/luac /rootfs/usr/bin/luac${VERSION_MAJOR}
 EOF
-
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

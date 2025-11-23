@@ -1,7 +1,5 @@
-FROM scratch AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-busybox . /
 ADD fetch/yarn-${VERSION}.tar.gz .
 WORKDIR /yarn-v${VERSION}
 ENV DESTDIR=/rootfs

@@ -1,11 +1,5 @@
-FROM scratch AS build
+FROM stagex/pallet-python AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-python . /
-COPY --from=stagex/core-py-flit . /
-COPY --from=stagex/core-py-gpep517 . /
-COPY --from=stagex/core-zlib . /
 ADD fetch/py-prompt_toolkit-${VERSION}.tar.gz .
 WORKDIR /prompt_toolkit-${VERSION}/src
 RUN --network=none <<-EOF

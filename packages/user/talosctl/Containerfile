@@ -1,8 +1,5 @@
-FROM scratch AS build
+FROM stagex/pallet-go AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-go . /
-COPY --from=stagex/core-ca-certificates . /
 ADD fetch/talosctl-${VERSION}.tar.gz .
 WORKDIR /talos-${VERSION}
 ENV GOPATH=/cache/go
@@ -20,12 +17,13 @@ RUN <<-EOF
 	mkdir -p /rootfs/usr/bin/
 	cp talosctl /rootfs/usr/bin/
 	install -Dm644 -t /rootfs/usr/share/licenses/talosctl/ LICENSE
-
 	# Completions subpackage
+  for shell in bash fish zsh; do
+    ./talosctl completion "$shell" > "$shell.completion"
+  done
 	install -vDm644 bash.completion "/rootfs-completions/usr/share/bash-completion/completions/talosctl"
-  install -vDm644 fish.completion "/rootfs-completions/usr/share/fish/completions/talosctl.fish"
-  install -vDm644 zsh.completion "/rootfs-completions/usr/share/zsh/site-functions/_talosctl"
-	install -Dm644 -t /rootfs/usr/share/licenses/talosctl/ LICENSE
+	install -vDm644 fish.completion "/rootfs-completions/usr/share/fish/completions/talosctl.fish"
+	install -vDm644 zsh.completion "/rootfs-completions/usr/share/zsh/site-functions/_talosctl"
 EOF
 
 FROM stagex/core-filesystem AS package-talosctl

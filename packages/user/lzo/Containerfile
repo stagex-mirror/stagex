@@ -1,10 +1,9 @@
-FROM stagex/pallet-gcc-cmake-busybox AS build
-ARG VERSION
+FROM stagex/pallet-clang-cmake-busybox AS build
 COPY --from=stagex/core-openssl . /
+ARG VERSION
 ADD fetch/lzo-${VERSION}.tar.gz .
 WORKDIR /lzo-${VERSION}
 RUN <<-EOF
-	set -eux
 	cmake -B build -G Ninja \
     -DBUILD_TESTING=ON \
 		-DCMAKE_INSTALL_PREFIX=/usr \

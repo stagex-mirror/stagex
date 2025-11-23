@@ -1,10 +1,6 @@
 FROM stagex/pallet-python AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-zlib . /
-COPY --from=stagex/core-libffi . /
-COPY --from=stagex/core-py-flit . /
+COPY --from=stagex/core-py-setuptools-scm . /
 ADD fetch/py-setuptools-rust-${VERSION}.tar.gz .
 WORKDIR /setuptools-rust-${VERSION}
 ENV SETUPTOOLS_SCM_PRETEND_VERSION=${VERSION}
@@ -12,8 +8,8 @@ RUN --network=none <<-EOF
 	set -eu
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 	python -m installer -d /rootfs .dist/*.whl
-	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 	install -Dm644 LICENSE /rootfs/usr/share/licenses/py-setuptools-rust/LICENSE
+	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

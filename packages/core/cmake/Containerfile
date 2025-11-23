@@ -1,12 +1,12 @@
 FROM scratch AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-samurai . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-linux-headers . /
-COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-openssl . /
 ADD fetch/cmake-${VERSION}.tar.gz .
@@ -21,7 +21,7 @@ RUN --network=none <<-EOF
 		--no-system-cppdap \
 		--no-system-curl \
 		--no-system-jsoncpp \
-		--generator=Ninja || cat /cmake-3.27.8/Bootstrap.cmk/cmake_bootstrap.log
+		--generator=Ninja
 	ninja
 	DESTDIR=/rootfs bin/cmake -P cmake_install.cmake
 EOF

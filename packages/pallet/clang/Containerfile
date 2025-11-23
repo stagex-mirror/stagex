@@ -1,17 +1,12 @@
-FROM scratch
-
-#HACK: Included only for libgcc
-COPY --from=stagex/core-gcc . /
-
+FROM stagex/core-profile
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-musl-fts . /
 COPY --from=stagex/core-musl-obstack . /
 COPY --from=stagex/core-argp-standalone . /
-COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-libzstd . /
-COPY --from=stagex/core-libffi . /
+COPY --from=stagex/core-xz . /
 COPY --from=stagex/core-zlib . /
-COPY --from=stagex/core-clang . /
+COPY --from=stagex/core-libffi . /
 COPY --from=stagex/core-linux-headers . /
-
+COPY --from=stagex/core-llvm . /
 ENTRYPOINT ["/usr/bin/clang"]

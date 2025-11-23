@@ -7,4 +7,4 @@ description = "TODO"
 hash = "a2bfb8c09d436770edc59f50fa483e785b161a3b7b9d547573cb08065fd462fe"
 format = "tar.xz"
 file = "findutils-{version}.{format}"
-mirrors = [ "https://ftpmirror.gnu.org/gnu/findutils/{file}", "https://mirrors.kernel.org/gnu/findutils/{file}"]
+mirrors = [ "https://ftpmirror.gnu.org/gnu/findutils/{file}", "https://mirrors.kernel.org/gnu/findutils/{file}"] 

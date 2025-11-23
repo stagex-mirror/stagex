@@ -1,11 +1,13 @@
 [package]
 name = "mesa"
-version = "24.3.4"
-description = "TODO"
-subpackages = ["mesa", "osmesa"]
+version = "25.2.4"
+description = "Mesa DRI OpenGL Library"
+license = "MIT AND SGI-B-2.0 AND BSL-1.0"
+website = "https://www.mesa3d.org/"
+subpackages = ["mesa", "osmesa"] 
 
 [sources.mesa]
-hash = "e641ae27191d387599219694560d221b7feaa91c900bcec46bf444218ed66025"
+hash = "a370b4c549cbfbe646b319e34d73edb50ed883978f5e95133f282f0eae39ab52"
 format = "tar.xz"
 file = "mesa-{version}.{format}"
 mirrors = [ "https://archive.mesa3d.org/{file}",]

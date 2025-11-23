@@ -1,5 +1,4 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
-ARG VERSION
+FROM stagex/pallet-clang-gnu-busybox AS build
 COPY --from=stagex/user-xtrans . /
 COPY --from=stagex/user-libx11 . /
 COPY --from=stagex/user-libxext . /
@@ -12,16 +11,16 @@ COPY --from=stagex/user-libice . /
 COPY --from=stagex/user-libsm . /
 COPY --from=stagex/user-xorgproto . /
 COPY --from=stagex/user-util-linux . /
+ARG VERSION
 ADD fetch/libXmu-${VERSION}.tar.xz .
 WORKDIR /libXmu-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
-	set -eux
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \
 		--without-fop
-	make -j "$(nproc)"
+	make
 	make install DESTDIR=/rootfs
 EOF
 FROM stagex/core-filesystem AS package

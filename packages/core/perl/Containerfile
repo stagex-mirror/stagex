@@ -1,8 +1,9 @@
 FROM scratch AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
 ADD fetch/perl-${VERSION}.tar.xz .
@@ -10,6 +11,7 @@ WORKDIR /perl-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	set -eux
+	ln -s /usr/bin/clang /usr/bin/gcc
 	printf '
 	osvers="gnulinux"
 	myuname="dummy_uname"

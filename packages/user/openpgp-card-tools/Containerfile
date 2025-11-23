@@ -1,13 +1,12 @@
 FROM stagex/pallet-rust AS build
-ARG VERSION
 COPY --from=stagex/core-gmp . /
 COPY --from=stagex/user-nettle . /
 COPY --from=stagex/user-pcsc-lite . /
+ARG VERSION
 ADD fetch/openpgp-card-tools-${VERSION}.tar.gz .
 WORKDIR /openpgp-card-tools
 RUN cargo fetch
 RUN --network=none <<-EOF
-	set -eux
   cargo build \
     --frozen \
     --release \

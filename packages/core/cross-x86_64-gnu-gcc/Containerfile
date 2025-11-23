@@ -6,6 +6,7 @@ ARG MPC_VERSION
 ARG ISL_VERSION
 ARG BINUTILS_VERSION
 ARG GLIBC_VERSION
+ENV CC=gcc
 ENV ARCH=x86_64
 ENV BUILD=${ARCH}-linux-musl
 ENV HOST=${ARCH}-linux-musl
@@ -15,20 +16,27 @@ ENV LANG=C.UTF-8
 ENV SOURCE_DATE_EPOCH=1
 ENV KCONFIG_NOTIMESTAMP=1
 ENV OUTPUT=/opt/cross
-ENV PATH=/opt/cross/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 WORKDIR /
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-isl . /
+COPY --from=stagex/core-mpc . /
+COPY --from=stagex/core-gmp . /
+COPY --from=stagex/core-mpfr . /
 COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-gawk . /
-COPY --from=stagex/core-linux-headers /usr/include/. ${OUTPUT}/${TARGET}/include/
 COPY --from=stagex/core-bison . /
 COPY --from=stagex/core-m4 . /
 COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-python . /
 COPY --from=stagex/core-grep . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-linux-headers /usr/include/. ${OUTPUT}/${TARGET}/include/
+COPY --from=stagex/core-libatomic_ops /usr/lib/libatomic_ops.so /usr/lib/libatomic.so
 ADD fetch/binutils-${BINUTILS_VERSION}.tar.xz .
 ADD fetch/gcc-${GCC_VERSION}.tar.xz .
 ADD fetch/glibc-${GLIBC_VERSION}.tar.gz .
@@ -55,7 +63,8 @@ RUN --network=none <<-EOF
 	../binutils-${BINUTILS_VERSION}/configure \
 		--target=${TARGET} \
 		--prefix=${OUTPUT} \
-		--disable-multilib
+		--disable-multilib \
+		--disable-gprofng
 	make all -j "$(nproc)"
 	make install
 EOF
@@ -95,7 +104,7 @@ RUN --network=none <<-EOF
 	make -j "$(nproc)" csu/subdir_lib
 	mkdir -p ${OUTPUT}/${TARGET}/lib ${OUTPUT}/${TARGET}/include/gnu
 	install csu/crt1.o csu/crti.o csu/crtn.o -t ${OUTPUT}/${TARGET}/lib
-	${TARGET}-gcc \
+	/opt/cross/bin/${TARGET}-gcc \
 		-nostdlib \
 		-nostartfiles \
 		-shared \
@@ -104,6 +113,10 @@ RUN --network=none <<-EOF
 	touch ${OUTPUT}/${TARGET}/include/gnu/stubs.h
 EOF
 # Phase 5: Build and install libgcc
+ENV LD=/opt/cross/bin/ld
+ENV PATH=/opt/cross/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV LD_LIBRARY_PATH=/opt/cross/lib:/usr/lib
+WORKDIR /
 WORKDIR /build-gcc
 RUN --network=none <<-EOF
 	set -eux

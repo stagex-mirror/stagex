@@ -1,0 +1,9 @@
+FROM scratch AS build
+ARG APORTS_VERSION
+COPY --from=stagex/core-busybox . /
+ADD fetch/aports-${APORTS_VERSION}.tar.gz .
+WORKDIR /aports-${APORTS_VERSION}/main/bsd-compat-headers
+RUN install -Dm644 -t /rootfs/usr/include/sys cdefs.h queue.h tree.h
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

@@ -1,18 +1,18 @@
 [package]
 name = "edk2"
-version = "202408"
+version = "202508"
 description = "TODO"
 
 [sources.edk2]
-hash = "63c99b6f9f7aa94e8d76c432bea05d0d4dd6600af78d6fd59a1aec5ce9cea8ce"
+hash = "ea373d69f8e2b8c1e63e958e538e4a7b493a71a3680ad709df1733f2780608ec"
 format = "tar.gz"
 file = "edk2-{version}.{format}"
 mirrors = [ "https://github.com/tianocore/edk2/archive/refs/tags/edk2-stable{version}.{format}",]
 
 [sources.openssl]
-hash = "eb1ab04781474360f77c318ab89d8c5a03abc38e63d65a603cabbf1b00a1dc90"
+hash = "529043b15cffa5f36077a4d0af83f3de399807181d607441d734196d889b641f"
 format = "tar.gz"
-version = "3.0.9"
+version = "3.5.1"
 file = "openssl-{version}.{format}"
 mirrors = [ "https://www.openssl.org/source/{file}",]
 

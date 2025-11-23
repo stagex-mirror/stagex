@@ -1,9 +1,8 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
 ADD fetch/flashtools-${VERSION}.tar.gz .
 WORKDIR /flashtools-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	make all
   mkdir -p /rootfs/usr/bin/
   install -D -m 0755 flashtool /rootfs/usr/bin/

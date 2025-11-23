@@ -1,3 +1,4 @@
 [package]
 name = "nodejs"
 description = "Basic Node.js ('Current Release') runtime with shell"
+version_from = "core-nodejs"

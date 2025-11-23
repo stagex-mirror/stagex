@@ -1,11 +1,10 @@
-FROM stagex/pallet-gcc-cmake-busybox AS build
-ARG VERSION
+FROM stagex/pallet-clang-cmake-busybox AS build
 COPY --from=stagex/core-icu . /
+ARG VERSION
 ADD fetch/nuspell-${VERSION}.tar.gz .
 WORKDIR /nuspell-${VERSION}
 RUN --network=none <<-EOF
-	set -ex
-	CXXFLAGS="$CXXFLAGS -flto=auto" \
+	CXXFLAGS="-flto=auto" \
 	cmake -B build -G Ninja \
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DCMAKE_INSTALL_LIBDIR=lib \

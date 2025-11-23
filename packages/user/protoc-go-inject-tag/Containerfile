@@ -1,8 +1,5 @@
-FROM scratch AS build
+FROM stagex/pallet-go AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-go . /
-COPY --from=stagex/core-ca-certificates . /
 ADD fetch/protoc-go-inject-tag-${VERSION}.tar.gz .
 WORKDIR /protoc-go-inject-tag-${VERSION}
 ENV GOPATH=/cache/go
@@ -17,7 +14,6 @@ ENV GOFLAGS=-trimpath
 RUN mkdir -p ${GOPATH}
 RUN go get ./...
 RUN --network=none <<-EOF
-	set -eux
 	go build -o bin/protoc-go-inject-tag .
 	mkdir -p /rootfs/usr/bin/
 	cp bin/protoc-go-inject-tag /rootfs/usr/bin/

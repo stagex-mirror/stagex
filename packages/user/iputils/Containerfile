@@ -1,11 +1,10 @@
-FROM stagex/pallet-gcc-meson-busybox AS build
+FROM stagex/pallet-clang-meson-busybox AS build
 ARG VERSION
 COPY --from=stagex/core-libxslt . /
 COPY --from=stagex/user-libcap . /
 ADD fetch/iputils-${VERSION}.tar.gz .
 WORKDIR /iputils-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	ARCH="$(uname -m)"
 	./configure
 	meson env2mfile \

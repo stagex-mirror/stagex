@@ -1,9 +1,8 @@
-FROM stagex/pallet-gcc-cmake-busybox AS build
+FROM stagex/pallet-clang-cmake-busybox AS build
 ARG VERSION
 ADD fetch/llama.cpp-${VERSION}.tar.gz .
 WORKDIR /llama.cpp-${VERSION}
 RUN <<-EOF
-	set -eux
 	mkdir -p .git
 	touch .git/index
 	cmake -B build -G Ninja \

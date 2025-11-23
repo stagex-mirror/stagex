@@ -1,7 +1,6 @@
 FROM scratch AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-bash . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-cmake . /
@@ -11,22 +10,19 @@ COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-pkgconf . /
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-perl . /
-COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-rust . /
 COPY --from=stagex/core-curl . /
 COPY --from=stagex/core-ca-certificates . /
 COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-libzstd . /
-COPY --from=stagex/core-libunwind . /
 COPY --from=stagex/core-cross-x86_64-gnu-gcc . /
 COPY --from=stagex/core-libfaketime . /
-COPY --from=stagex/core-cross-x86_64-gnu-libunwind . /
-COPY --from=stagex/core-clang . /
-COPY --from=stagex/core-lld . /
+COPY --from=stagex/core-libunwind . /
 COPY --from=stagex/core-libffi . /
 ADD fetch/rustc-${VERSION}-src.tar.gz .
-WORKDIR /rustc-${VERSION}-src
+WORKDIR rustc-${VERSION}-src
 ADD *.patch .
 ENV LD_PRELOAD=/usr/local/lib/faketime/libfaketime.so.1
 ENV FAKETIME="1970-01-01 00:00:01 GMT"

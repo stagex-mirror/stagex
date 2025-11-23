@@ -1,5 +1,5 @@
 FROM stagex/pallet-python
-COPY --from=stagex/pallet-gcc-gnu-busybox . /
+COPY --from=stagex/pallet-clang-gnu-busybox . /
 COPY --from=stagex/core-py-dateutil . /
 COPY --from=stagex/core-py-urllib3 . /
 COPY --from=stagex/core-py-cffi . /

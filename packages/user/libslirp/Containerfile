@@ -1,4 +1,4 @@
-FROM stagex/pallet-gcc-meson-busybox AS build
+FROM stagex/pallet-clang-meson-busybox AS build
 ARG VERSION
 COPY --from=stagex/user-glib . /
 COPY --from=stagex/core-pcre2 . /
@@ -6,7 +6,6 @@ ADD fetch/libslirp-${VERSION}.tar.gz .
 #HACK: Will need to create an optional var for the commot
 WORKDIR /libslirp-v${VERSION}-ce314e39458223c2c42245fe536fbe1bcd94e9b1
 RUN --network=none <<-EOF
-	set -eux
   meson setup \
 		--default-library=shared \
 		--prefix=/usr \

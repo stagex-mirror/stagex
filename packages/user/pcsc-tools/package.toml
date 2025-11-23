@@ -1,7 +1,9 @@
 [package]
 name = "pcsc-tools"
 version = "1.7.3"
-description = "TODO"
+description = "tools to test a PC/SC driver, card or reader or send commands"
+website = "https://pcsc-tools.apdu.fr"
+license = "GPL-2.0-or-later"
 
 [sources.pcsc-tools]
 hash = "c3b6d2b7a40bc066ebb8cd2512fb42e2b787a5c491a5715b8741743f4edb8cc2"

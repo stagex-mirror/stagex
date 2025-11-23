@@ -1,11 +1,9 @@
-FROM stagex/pallet-gcc-cmake-busybox AS build
+FROM stagex/pallet-clang-cmake-busybox AS build
 ARG VERSION
-
 ADD fetch/vulkan-headers-${VERSION}.tar.gz .
 WORKDIR /Vulkan-Headers-vulkan-sdk-${VERSION}
 ENV CXXFLAGS="-flto=auto"
 RUN --network=none <<-EOF
-	set -eux; \
   cmake -B build -G Ninja \
 		-DCMAKE_BUILD_TYPE=None \
 		-DCMAKE_INSTALL_PREFIX=/usr \

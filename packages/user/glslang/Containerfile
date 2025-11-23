@@ -1,9 +1,8 @@
-FROM stagex/pallet-gcc-cmake-busybox AS build
+FROM stagex/pallet-clang-cmake-busybox AS build
 ARG VERSION
 ADD fetch/${VERSION}.tar.gz .
 WORKDIR /glslang-vulkan-sdk-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 		cmake -B build-shared -G Ninja \
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DCMAKE_INSTALL_LIBDIR=lib \

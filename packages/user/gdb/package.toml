@@ -1,0 +1,11 @@
+[package]
+name = "gdb"
+version = "16.3"
+description = "The GNU Debugger"
+website = "https://www.gnu.org/software/gdb"
+
+[sources.gdb]
+hash = "86015081217dc82c5485db9ce864dcc0b703759d2bdbe4441b095c5f900a6a37"
+
+file = "gdb-{version}.tar.gz"
+mirrors = [ "https://ftp.gnu.org/gnu/gdb/{file}",]

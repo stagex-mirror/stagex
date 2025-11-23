@@ -1,10 +1,9 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
-ARG VERSION
+FROM stagex/pallet-clang-gnu-busybox AS build
 COPY --from=stagex/user-postgresql . /
+ARG VERSION
 ADD fetch/unixodbc-${VERSION}.tar.gz .
 WORKDIR /unixODBC-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \
@@ -13,7 +12,7 @@ RUN --network=none <<-EOF
 		--disable-nls \
 		--enable-gui=no \
 		--enable-static
-	make -j "$(nproc)"
+	make
 	make DESTDIR=/rootfs install
 EOF
 FROM stagex/core-filesystem AS package

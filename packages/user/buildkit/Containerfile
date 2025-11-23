@@ -1,4 +1,4 @@
-FROM stagex/pallet-go AS build
+FROM stagex/pallet-cgo AS build
 ARG VERSION
 ADD fetch/buildkit-${VERSION}.tar.gz .
 ENV GOPROXY=https://proxy.golang.org,direct

@@ -1,6 +1,7 @@
 FROM stagex/pallet-clang
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-gettext . /
 COPY --from=stagex/core-autoconf . /
 COPY --from=stagex/core-automake . /
 COPY --from=stagex/core-libtool . /

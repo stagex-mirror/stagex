@@ -1,4 +1,4 @@
-FROM stagex/pallet-gcc-meson-busybox AS build
+FROM stagex/pallet-clang-meson-busybox AS build
 ARG VERSION
 COPY --from=stagex/core-libxml2 . /
 COPY --from=stagex/core-libxslt . /
@@ -11,7 +11,6 @@ COPY --from=stagex/user-glib . /
 ADD fetch/json-glib-${VERSION}.tar.xz .
 WORKDIR /json-glib-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
   meson setup \
 		--default-library=shared \
 		--prefix=/usr \

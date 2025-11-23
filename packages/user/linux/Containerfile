@@ -1,31 +1,42 @@
-FROM stagex/pallet-gcc-gnu-gnu AS base
-ARG VERSION
+FROM stagex/pallet-clang-gnu-busybox AS base
+COPY --from=stagex/core-xz . /
 COPY --from=stagex/core-openssl . /
-COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-coreutils . /
+COPY --from=stagex/core-diffutils . /
+COPY --from=stagex/core-findutils . /
+COPY --from=stagex/core-binutils . /
 COPY --from=stagex/user-elfutils . /
+COPY --from=stagex/user-kmod . /
+ARG VERSION
 ADD fetch/linux-${VERSION}.tar.xz .
 ENV SOURCE_DATE_EPOCH=1
 ENV KBUILD_BUILD_HOST=stagex
 ENV KBUILD_BUILD_USER=user
 ENV KBUILD_BUILD_TIMESTAMP="Thu Jan  1 12:00:00 AM GMT 1970"
+ENV LLVM=1
+ENV LOCALVERSION=
+ENV OBJDIR=build
+ENV STRIP=1
+ENV SPLIT_DBG=1
+ENV INSTALL_PATH=/rootfs/usr/
+ENV INSTALL_MOD_PATH=/rootfs/usr/
+
 COPY --chmod=775 <<-EOF /usr/bin/build-static
 	#!/bin/sh
-	set -eux
-	make olddefconfig
-	make -j "$(nproc)" bzImage
+	make bzImage
   mkdir /rootfs
 	cp .config /rootfs/linux.config
 	cp "arch/$(uname -m)/boot/bzImage" /rootfs
 EOF
 COPY --chmod=775 <<-EOF /usr/bin/build-dynamic
 	#!/bin/sh
-	set -eux
 	ARCH="$(uname -m)"
-	make olddefconfig
-	make -j "$(nproc)" bzImage
-	make -j "$(nproc)" modules INSTALL_MOD_PATH=/rootfs
+	make defconfig
+	make bzImage
+	ln -s usr/lib /rootfs/lib
 	mkdir -p /rootfs/usr/lib/modules
-	make INSTALL_MOD_PATH=/rootfs/usr modules_install
+	make modules
+	make modules_install
 	cp .config /rootfs/linux.config
 	cp "arch/$(uname -m)/boot/bzImage" /rootfs
 EOF
@@ -56,8 +67,7 @@ RUN build-static
 
 FROM base AS build-gen_initramfs
 RUN --network=none <<-EOF
-	set -eux
-	gcc usr/gen_init_cpio.c -o usr/gen_init_cpio
+	clang usr/gen_init_cpio.c -o usr/gen_init_cpio
 	mkdir -p /rootfs/usr/bin
 	cat usr/gen_initramfs.sh \
 		| sed 's:usr/gen_init_cpio:gen_init_cpio:g' \

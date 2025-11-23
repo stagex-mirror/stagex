@@ -1,11 +1,13 @@
 [package]
 name = "linux"
-version = "6.12.33"
-description = "TODO"
+version = "6.17.3"
+description = "The Linux Kernel"
+website = "https://kernel.org"
+license = "GPL-2.0-only"
 subpackages = ["linux-generic","linux-airgap","linux-server","linux-guest","linux-guest-net","linux-nitro","gen_initramfs"]
 
 [sources.linux]
-hash = "c0a575630f2603a20bb0641f8df8f955e46c9d7ac1fae8b54b21316e6b52a254"
+hash = "3ecc8619d8a5b5f675224d2f52c71d1fc09bc3f9c019d8bd82d0581e03689499"
 format = "tar.xz"
 file = "linux-{version}.{format}"
 mirrors = [ "http://mirrors.edge.kernel.org/pub/linux/kernel/v{version_major}.x/linux-{version}.{format}",]

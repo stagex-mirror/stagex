@@ -1,11 +1,10 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
 COPY --from=stagex/pallet-cython . /
 COPY --from=stagex/user-gperf . /
 ADD fetch/libseccomp-${VERSION}.tar.gz .
 WORKDIR /libseccomp-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	./configure \
 		--prefix=/usr \
 		--infodir=/usr/share/info \
@@ -13,7 +12,7 @@ RUN --network=none <<-EOF
 		--localstatedir=/var \
 		--enable-python \
 		--enable-static
-	make -j "$(nproc)"
+	make
 	make DESTDIR=/rootfs install
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$|install_files.txt)" | xargs rm -rf
 EOF

@@ -1,4 +1,4 @@
-FROM stagex/pallet-gcc-meson-busybox AS build
+FROM stagex/pallet-clang-meson-busybox AS build
 ARG VERSION
 COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-pcre2 . /
@@ -13,7 +13,6 @@ ADD fetch/glib-${VERSION}.tar.xz .
 WORKDIR /glib-${VERSION}
 COPY *.patch .
 RUN --network=none <<-EOF
-	set -eux
 	export CFLAGS="-ffat-lto-objects -O2"
 	export CXXFLAGS="-O2"
 	export CPPFLAGS="-O2"

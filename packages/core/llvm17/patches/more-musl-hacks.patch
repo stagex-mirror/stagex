@@ -1,0 +1,35 @@
+diff --git a/libcxx/include/__config b/libcxx/include/__config
+index 221bb8ff868b..83b5f653b3c4 100644
+--- a/libcxx/include/__config
++++ b/libcxx/include/__config
+@@ -1198,6 +1198,8 @@ __sanitizer_verify_double_ended_contiguous_container(const void*, const void*, c
+ #    define _LIBCPP_PROVIDES_DEFAULT_RUNE_TABLE
+ #  endif
+ 
++#  define _LIBCPP_PROVIDES_DEFAULT_RUNE_TABLE
++
+ #  if __has_feature(cxx_atomic) || __has_extension(c_atomic) || __has_keyword(_Atomic)
+ #    define _LIBCPP_HAS_C_ATOMIC_IMP
+ #  elif defined(_LIBCPP_COMPILER_GCC)
+diff --git a/libunwind/include/unwind.h b/libunwind/include/unwind.h
+index b1775d3a3dec..04e4477fa9c5 100644
+--- a/libunwind/include/unwind.h
++++ b/libunwind/include/unwind.h
+@@ -13,7 +13,7 @@
+ #ifndef __UNWIND_H__
+ #define __UNWIND_H__
+ 
+-#include <__libunwind_config.h>
++#include "__libunwind_config.h"
+ 
+ #include <stdint.h>
+ #include <stddef.h>
+@@ -58,7 +58,7 @@ typedef struct _Unwind_Context _Unwind_Context;   // opaque
+ #if defined(_LIBUNWIND_ARM_EHABI)
+ #include <unwind_arm_ehabi.h>
+ #else
+-#include <unwind_itanium.h>
++#include "unwind_itanium.h"
+ #endif
+ 
+ typedef _Unwind_Reason_Code (*_Unwind_Stop_Fn)

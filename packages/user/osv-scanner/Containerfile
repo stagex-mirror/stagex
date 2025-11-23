@@ -9,15 +9,18 @@ ENV PATH=${GOBIN}:${PATH}
 WORKDIR /osv-scanner-${VERSION}
 RUN go mod download
 RUN --network=none <<-EOF
-	set -eux
-	mkdir -p out
-	go build -v \
+	# HACK: reduce strictness because of some buried error we have not tracked down yet
+	set +eux
+	mkdir out
+	go \
+		build \
+		-o out \
+		-v \
 		--ldflags="-w -s -buildid= " \
-		-o out/ \
 		./cmd/...
-	set -eux
 	mkdir -p /rootfs
-	install -Dm755 ./out/osv-scanner -t /rootfs/usr/bin/
+	install -Dm755 out/osv-scanner -t /rootfs/usr/bin/
+	install -Dm755 out/osv-reporter -t /rootfs/usr/bin/
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

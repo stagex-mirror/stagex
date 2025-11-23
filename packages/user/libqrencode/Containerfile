@@ -1,9 +1,8 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
 ADD fetch/v${VERSION}.tar.gz .
 WORKDIR /libqrencode-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	autoreconf -fvi
 	./configure \
 		--prefix=/usr \
@@ -12,7 +11,7 @@ RUN --network=none <<-EOF
 		--infodir=/usr/share/info \
 		--localstatedir=/var \
 		--with-tests
-	make -j "$(nproc)"
+	make
 	make DESTDIR="/rootfs" install
 EOF
 FROM stagex/core-filesystem AS package

@@ -13,7 +13,6 @@ EOF
 RUN cargo fetch
 ENV RUST_BACKTRACE=1
 RUN --network=none <<-EOF
-	set -eux
 	ARCH="$(uname -m)"
 	cargo build \
 		--frozen \

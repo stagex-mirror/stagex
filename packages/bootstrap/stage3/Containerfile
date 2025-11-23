@@ -1,58 +1,118 @@
-FROM --platform=linux/386 stagex/bootstrap-stage2 AS build
-ARG GCC_SOURCE
-ARG GCC_VERSION
-ARG LINUX_SOURCE
-ARG LINUX_VERSION
-ARG MUSL_SOURCE
-ARG MUSL_VERSION
-ARG BUSYBOX_SOURCE
-ARG BUSYBOX_VERSION
-ARG BINUTILS_SOURCE
-ARG BINUTILS_VERSION
-ARG MAKE_SOURCE
-ARG MAKE_VERSION
-ARG GO_SOURCE
-ENV BUILD=i386-unknown-linux-musl
-ENV PATH=/usr/sbin:/usr/bin:/sbin:/bin
-ENV TZ=UTC
-ENV LANG=C.UTF-8
-ENV SOURCE_DATE_EPOCH=1
-ENV KCONFIG_NOTIMESTAMP=1
-COPY --from=fetch . .
-
-RUN --network=none <<-EOF
-	set -eux
-	tar -xf ${LINUX_SOURCE}
-	tar -kxf ${BINUTILS_SOURCE}
-	tar -kxf ${GCC_SOURCE}
-	tar -kxjf ${BUSYBOX_SOURCE}
-	tar -kxzf ${MUSL_SOURCE}
-	tar -kxzf ${MAKE_SOURCE}
-	tar -kxzf ${GO_SOURCE}
-EOF
-
+FROM --platform=linux/386 stagex/bootstrap-stage2 AS base
 ARG TARGETARCH
+WORKDIR /rootfs/
+SHELL ["/bin/sh","-l","-c"]
+ENV SOURCE_DATE_EPOCH=1
+COPY <<-'EOF' /etc/profile
+  set -eux
+	[[ "$TARGETARCH" == "amd64" ]] \
+		&& ARCH="x86_64"
+	[[ "$TARGETARCH" == "arm64" ]] \
+		&& ARCH="aarch64"
+	export ARCH
+	export MAKEFLAGS="-j$(nproc)"
+	export BUILD=i386-unknown-linux-musl
+	export TARGET=${ARCH}-linux-musl
+EOF
+WORKDIR /rootfs
 RUN --network=none <<-EOF
-	echo "export TARGET_ARCH=`echo ${TARGETARCH} | sed 's/amd64/x86_64/' | sed 's/arm64/aarch64/'`" >> /.env
-	. /.env
-	echo "export TARGET=$TARGET_ARCH-linux-musl" >> /.env
+	install -d -m0750 root
+	install -d -m0755 etc
+	install -d -m0755 usr
+	install -d -m0755 usr/bin
+	install -d -m0755 usr/lib
+	install -d -m0755 usr/include
+	install -d -m1777 tmp
+	install -d -m1777 var/tmp
+	install -d -m1777 var/spool/mail
+	install -o 1000 -g 1000 -d -m0755 home/user
+	ln -sT usr/lib lib64
+	ln -sT lib usr/lib64
+	ln -sT usr/lib lib
+	ln -sT usr/bin bin
+	ln -sT usr/sbin sbin
+	ln -sT ../run var/run
+	ln -sT ../run/lock var/lock
+	install -m0755 /etc/profile /rootfs/etc/profile
+	find /rootfs/ -type f -exec install -Dm 755 "{}" "/{}" \;
 EOF
 
-WORKDIR /build-musl
+FROM base AS make
+ARG TARGETARCH
+ARG MAKE_VERSION
+ADD fetch/make-${MAKE_VERSION}.tar.gz /
+WORKDIR /make-${MAKE_VERSION}
 RUN --network=none <<-EOF
-	set -eux
-	. /.env
-	../musl-${MUSL_VERSION}/configure \
-		--prefix=/usr \
+	./configure \
 		--build=${BUILD} \
-		--host=${TARGET}
-	make -j$(nproc)
+		--host=${TARGET} \
+		--prefix=/usr \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--disable-nls
+	make
+	make DESTDIR=/rootfs install
+	rm -rf /make-*
 EOF
-WORKDIR /build-binutils
+
+FROM base AS busybox
+ARG TARGETARCH
+ARG BUSYBOX_VERSION
+ADD fetch/busybox-${BUSYBOX_VERSION}.tar.bz2 /
+WORKDIR /busybox-${BUSYBOX_VERSION}
 RUN --network=none <<-EOF
-	set -eux
-	. /.env
-	../binutils-${BINUTILS_VERSION}/configure \
+	make CROSS_COMPILE=${TARGET}- defconfig
+	echo "CONFIG_STATIC=y" >> .config
+	make CROSS_COMPILE=${TARGET}-
+	mkdir -p /rootfs/usr/bin
+	cp busybox /rootfs/usr/bin
+	cp busybox /usr/bin
+	cd /rootfs
+	/usr/bin/busybox --install -s usr/bin
+	rm -rf /busybox-*
+EOF
+
+FROM base AS linux-headers
+ARG TARGETARCH
+ARG LINUX_VERSION
+ADD fetch/linux-${LINUX_VERSION}.tar.xz /
+WORKDIR /linux-${LINUX_VERSION}
+RUN --network=none <<-EOF
+	make ARCH="$ARCH" headers
+	find usr/include -name '.*' -delete
+	rm usr/include/Makefile
+	rm usr/include/headers_check.pl
+	cp -Rv usr/include/* /rootfs/usr/include/
+	rm -rf /linux-*
+EOF
+
+FROM base AS go
+ARG TARGETARCH
+ARG GO_VERSION
+ADD fetch/go${GO_VERSION}.src.tar.gz /
+WORKDIR /go
+RUN --network=none <<-EOF
+	export GOROOT_BOOTSTRAP=/usr/lib/go
+	export GOHOSTARCH=386
+  export GOARCH=${TARGETARCH}
+	env -C src bash -- make.bash
+	rm -rf src/testdata
+	mv bin/linux_${TARGETARCH}/* bin
+	rm -rf bin/linux_${TARGETARCH}
+	mkdir -p /rootfs/usr/lib/go /rootfs/usr/bin
+	cp -a bin lib pkg src /rootfs/usr/lib/go
+	ln -s /usr/lib/go/bin/go /rootfs/usr/bin/go
+	ln -s /usr/lib/go/bin/gofmt /rootfs/usr/bin/gofmt
+	rm -rf /go
+EOF
+
+FROM base AS binutils
+ARG TARGETARCH
+ARG BINUTILS_VERSION
+ADD fetch/binutils-${BINUTILS_VERSION}.tar.xz /
+WORKDIR /binutils-${BINUTILS_VERSION}
+RUN --network=none <<-EOF
+	./configure \
 		--build=${BUILD} \
 		--host=${TARGET} \
 		--prefix=/usr \
@@ -68,28 +128,30 @@ RUN --network=none <<-EOF
 		--enable-ld=default \
 		--enable-install-libiberty \
 		--enable-deterministic-archives
-	make -j$(nproc)
+	make
+	make DESTDIR=/rootfs install
+	rm -rf /binutils-*
 EOF
-WORKDIR /build-make
+
+FROM base AS gcc
+ARG TARGETARCH
+ARG GCC_VERSION
+ARG GMP_VERSION
+ARG MPFR_VERSION
+ARG MPC_VERSION
+ARG ISL_VERSION
+ADD fetch/gcc-${GCC_VERSION}.tar.xz /
+ADD fetch/gmp-${GMP_VERSION}.tar.bz2 /
+ADD fetch/mpfr-${MPFR_VERSION}.tar.bz2 /
+ADD fetch/mpc-${MPC_VERSION}.tar.gz /
+ADD fetch/isl-${ISL_VERSION}.tar.bz2 /
+WORKDIR /gcc-${GCC_VERSION}
 RUN --network=none <<-EOF
-	set -eux
-	. /.env
-	../make-${MAKE_VERSION}/configure \
-		--build=${BUILD} \
-		--host=${TARGET} \
-		--prefix=/usr \
-		--mandir=/usr/share/man \
-		--infodir=/usr/share/info \
-		--disable-nls
-	make -j$(nproc)
-EOF
-WORKDIR /build-gcc
-RUN --network=none <<-EOF
-	set -eux
-	. /.env
-	cp ../*.tar.* /gcc-${GCC_VERSION}
-	env -C /gcc-${GCC_VERSION} ./contrib/download_prerequisites
-	/gcc-${GCC_VERSION}/configure \
+	mv ../gmp-${GMP_VERSION} gmp
+	mv ../mpfr-${MPFR_VERSION} mpfr
+	mv ../mpc-${MPC_VERSION} mpc
+	mv ../isl-${ISL_VERSION} isl
+	./configure \
 		--build=${BUILD} \
 		--host=${TARGET} \
 		--target=${TARGET} \
@@ -110,96 +172,252 @@ RUN --network=none <<-EOF
 		--enable-languages=c,c++ \
 		--enable-link-serialization=2 \
 		--enable-linker-build-id
-	make -j$(nproc)
-EOF
-WORKDIR /build-busybox
-RUN --network=none <<-EOF
-    set -eux
-	. /.env
-    setConfs='
-        CONFIG_LAST_SUPPORTED_WCHAR=0
-        CONFIG_STATIC=y
-    '
-    unsetConfs='
-        CONFIG_FEATURE_SYNC_FANCY
-        CONFIG_FEATURE_HAVE_RPC
-        CONFIG_FEATURE_INETD_RPC
-        CONFIG_FEATURE_UTMP
-        CONFIG_FEATURE_WTMP
-    '
-    make \
-        -f ../busybox-${BUSYBOX_VERSION}/Makefile \
-        KBUILD_SRC=../busybox-${BUSYBOX_VERSION} \
-        CROSS_COMPILE=${TARGET}- \
-        defconfig
-    for conf in $unsetConfs; do
-        sed -i \
-            -e "s!^$conf=.*\$!# $conf is not set!" \
-            .config
-    done
-    for confV in $setConfs; do
-        conf="${confV%=*}"
-        sed -i \
-            -e "s!^$conf=.*\$!$confV!" \
-            -e "s!^# $conf is not set\$!$confV!" \
-            .config
-        if ! grep -q "^$confV\$" .config; then
-            echo "$confV" >> .config
-        fi
-    done
-    make oldconfig CROSS_COMPILE=${TARGET}-
-    for conf in $unsetConfs; do
-        ! grep -q "^$conf=" .config
-    done
-    for confV in $setConfs; do
-        grep -q "^$confV\$" .config
-    done
-    make -j$(nproc) CROSS_COMPILE=${TARGET}-
-EOF
-WORKDIR /linux-${LINUX_VERSION}
-RUN --network=none <<-EOF
-	set -eux
-	make ARCH="$(echo ${TARGETARCH} | sed 's/amd64/x86_64/')" headers
-	find usr/include -name '.*' -delete
-	rm usr/include/Makefile
-	rm usr/include/headers_check.pl
-	cp -rv usr/include /build-linux
-EOF
-WORKDIR ${HOME}/go
-RUN --network=none <<-EOF
-	set -eux
-	cd src
-	GOROOT_BOOTSTRAP=/usr/lib/go \
-	GOHOSTARCH=386 GOARCH=${TARGETARCH} \
-	bash -- make.bash
-EOF
-RUN --network=none <<-EOF
-	set -eux
-	rm -rf src/testdata
-	mkdir -p /rootfs/usr/lib/go
-	cp bin/linux_${TARGETARCH}/* bin
-	rm -rf bin/linux_${TARGETARCH}
-	cp -a bin lib pkg src /rootfs/usr/lib/go
-	mkdir -p /rootfs/usr/bin
-	ln -s /usr/lib/go/bin/go /rootfs/usr/bin/go
-	ln -s /usr/lib/go/bin/gofmt /rootfs/usr/bin/gofmt
-EOF
-RUN --network=none <<-EOF
-	set -eux
-	. /.env
-	env -C /build-busybox make \
-		CROSS_COMPILE=${TARGET}- \
-		CONFIG_PREFIX=/rootfs \
-		install
-	env -C /build-musl make DESTDIR=/rootfs install
-	env -C /build-binutils make DESTDIR=/rootfs install
-	env -C /build-make make DESTDIR=/rootfs install
-	env -C /build-gcc make DESTDIR=/rootfs install
-	cp -Rv /build-linux/* /rootfs/usr/include/
-	cd /rootfs/
-	ln -sT /lib lib64
-	mkdir -p etc tmp var/tmp
+	make
+	make DESTDIR=/rootfs install
+	rm -rf /gcc-*
 EOF
 
+FROM base AS xz
+ARG TARGETARCH
+ARG XZ_VERSION
+ADD fetch/xz-${XZ_VERSION}.tar.gz /
+WORKDIR /xz-${XZ_VERSION}
+RUN --network=none <<-EOF
+	autoreconf -fi
+	./configure \
+		--prefix=/usr \
+		--host=${TARGET}
+	make DESTDIR=/rootfs install
+	rm -rf /xz-*
+EOF
+
+FROM base AS libucontext
+ARG TARGETARCH
+ARG LIBUCONTEXT_VERSION
+ADD fetch/libucontext-${LIBUCONTEXT_VERSION}.tar.gz /
+WORKDIR /libucontext-libucontext-${LIBUCONTEXT_VERSION}
+RUN --network=none <<-EOF
+	export CC=${ARCH}-linux-musl-gcc
+	make ARCH=${ARCH} DESTDIR=/rootfs install
+	rm -rf /libucontext-*
+EOF
+
+FROM base AS musl
+ARG TARGETARCH
+ARG MUSL_VERSION
+ADD fetch/musl-${MUSL_VERSION}.tar.gz /
+WORKDIR /musl-${MUSL_VERSION}
+RUN --network=none <<-EOF
+	./configure \
+		--prefix=/usr \
+		--host=${TARGET}
+	make DESTDIR=/rootfs install
+	ln -sf /usr/lib/ld-musl-${ARCH}.so.1 /rootfs/usr/bin/ldd
+	mv -f /rootfs/usr/lib/libc.so /rootfs/usr/lib/ld-musl-${ARCH}.so.1
+	ln -sf ld-musl-${ARCH}.so.1 /rootfs/usr/lib/libc.musl-${ARCH}.so.1
+	ln -sf /usr/lib/ld-musl-${ARCH}.so.1 /rootfs/usr/lib/libc.so
+	rm -rf /musl-*
+EOF
+
+FROM base AS python
+ARG TARGETARCH
+ARG PYTHON_VERSION
+ADD fetch/python-${PYTHON_VERSION}.tar.xz /
+WORKDIR /Python-${PYTHON_VERSION}
+COPY <<-EOF config.site
+ac_cv_file__dev_ptmx=no
+ac_cv_file__dev_ptc=no
+EOF
+ENV CONFIG_SITE=config.site
+RUN --network=none <<-EOF
+	./configure \
+		--prefix=/usr \
+		--build=${BUILD} \
+		--host=${TARGET} \
+		--target=${TARGET} \
+		--with-build-python \
+		--with-computed-gotos \
+		--without-ensurepip \
+		--disable-ipv6 \
+	make
+	make DESTDIR=/rootfs install
+	ln -s /usr/bin/python3 /rootfs/usr/bin/python
+	rm -rf /python-*
+EOF
+
+FROM scratch AS cmake
+COPY --from=base /rootfs/ /
+COPY --from=musl /rootfs/ /
+COPY --from=busybox /rootfs/ /
+COPY --from=python /rootfs/ /
+COPY --from=make /rootfs/ /
+COPY --from=gcc /rootfs/ /
+COPY --from=binutils /rootfs/ /
+COPY --from=linux-headers /rootfs/ /
+ARG TARGETARCH
+ARG CMAKE_VERSION
+ADD fetch/cmake-${CMAKE_VERSION}.tar.gz /
+WORKDIR /cmake-${CMAKE_VERSION}/build
+SHELL ["/bin/sh","-l","-c"]
+RUN --network=none <<-EOF
+	export CFLAGS="-fPIC"
+	export CXXFLAGS="$CFLAGS"
+	export CC=/usr/bin/gcc
+	../configure \
+		--prefix=/usr \
+		-- \
+		-DCMAKE_USE_OPENSSL=OFF
+	make 
+	make DESTDIR=/rootfs install
+	rm -rf /cmake-*
+EOF
+
+FROM scratch AS libzstd
+COPY --from=base /rootfs/ /
+COPY --from=musl /rootfs/ /
+COPY --from=busybox /rootfs/ /
+COPY --from=python /rootfs/ /
+COPY --from=make /rootfs/ /
+COPY --from=gcc /rootfs/ /
+COPY --from=binutils /rootfs/ /
+COPY --from=cmake /rootfs/ /
+ARG TARGETARCH
+ARG LIBZSTD_VERSION
+ADD fetch/libzstd-${LIBZSTD_VERSION}.tar.gz /
+WORKDIR /zstd-${LIBZSTD_VERSION}
+SHELL ["/bin/sh","-l","-c"]
+RUN --network=none <<-EOF
+	cmake \
+		-B build-cmake \
+		-S build/cmake \
+		-DCMAKE_INSTALL_PREFIX=/usr/ \
+		-Dbacktrace=disabled \
+		-Db_lto=false \
+		-Db_staticpic=true \
+		-Db_pie=true \
+		-Dpython.bytecompile=0 \
+		-Dwerror=false \
+		-Db_ndebug=true \
+		-Dbin_tests=false \
+		-Dbin_contrib=false \
+		-Dbin_programs=true \
+		-Dbacktrace=disabled \
+		-Dmulti_thread=enabled \
+		-Dlz4=disabled \
+		-Dlzma=disabled \
+		-Dzlib=disabled
+	cmake --build build-cmake -v --parallel $(nproc)
+	mkdir -p /rootfs/usr/lib
+	ln -s lib /rootfs/usr/lib64
+	DESTDIR=/rootfs cmake --install build-cmake
+	rm -rf /rootfs/usr/lib64
+	rm -rf /libzstd-*
+EOF
+
+FROM scratch AS zlib
+COPY --from=base /rootfs/ /
+COPY --from=musl /rootfs/ /
+COPY --from=busybox /rootfs/ /
+COPY --from=make /rootfs/ /
+COPY --from=gcc /rootfs/ /
+COPY --from=binutils /rootfs/ /
+COPY --from=cmake /rootfs/ /
+COPY --from=libzstd /rootfs/ /
+ARG TARGETARCH
+ARG ZLIB_VERSION
+ADD fetch/zlib-${ZLIB_VERSION}.tar.gz /
+WORKDIR /zlib-${ZLIB_VERSION}
+SHELL ["/bin/sh","-l","-c"]
+RUN --network=none <<-EOF
+	export CFLAGS="-fPIC"
+	./configure \
+		--prefix=/usr \
+		--libdir=/usr/lib \
+		--shared
+	make -j "$(nproc)"
+	DESTDIR=/rootfs make install
+	rm -rf /zlib-*
+EOF
+
+FROM scratch AS libffi
+COPY --from=base /rootfs/ /
+COPY --from=musl /rootfs/ /
+COPY --from=busybox /rootfs/ /
+COPY --from=make /rootfs/ /
+COPY --from=gcc /rootfs/ /
+COPY --from=binutils /rootfs/ /
+COPY --from=cmake /rootfs/ /
+COPY --from=libzstd /rootfs/ /
+ARG TARGETARCH
+ARG LIBFFI_VERSION
+ADD fetch/libffi-${LIBFFI_VERSION}.tar.gz /
+WORKDIR /libffi-${LIBFFI_VERSION}
+SHELL ["/bin/sh","-l","-c"]
+RUN --network=none <<-EOF
+	set -ex
+	./configure \
+		--prefix=/usr \
+		--enable-pax_emutrap \
+		--enable-portable-binary \
+		--disable-exec-static-tramp \
+		--without-gcc-arch
+	make -j "$(nproc)"
+	DESTDIR=/rootfs make install
+	rm -rf /rootfs/usr/lib64
+	rm -rf /libffi-*
+EOF
+
+FROM base AS libunwind
+ARG TARGETARCH
+ARG LIBUNWIND_VERSION
+COPY --from=musl /rootfs/ /
+COPY --from=busybox /rootfs/ /
+COPY --from=make /rootfs/ /
+COPY --from=gcc /rootfs/ /
+COPY --from=binutils /rootfs/ /
+COPY --from=cmake /rootfs/ /
+COPY --from=libzstd /rootfs/ /
+COPY --from=xz /rootfs/ /
+COPY --from=zlib /rootfs/ /
+COPY --from=libucontext /rootfs/ /
+ADD fetch/libunwind-${LIBUNWIND_VERSION}.tar.gz /
+WORKDIR /libunwind-${LIBUNWIND_VERSION}
+RUN <<-EOF
+	set -eux
+	export CFLAGS="-llzma -lucontext"
+	export CXXFLAGS="$CFLAGS"
+	export CPPFLAGS="$CFLAGS"
+	autoreconf -i
+	./configure \
+		--prefix=/usr \
+		--host=${TARGET} \
+		--enable-cxx-exceptions
+	make
+	make DESTDIR=/rootfs install
+	rm -rf /libunwind-*
+EOF
+
+FROM scratch AS install
+ARG TARGETARCH
+SHELL ["/bin/sh","-l","-c"]
+COPY --from=base /rootfs/ /
+COPY --from=busybox /rootfs/ /
+COPY --from=make /rootfs/ /
+COPY --from=musl /rootfs/ /
+COPY --from=gcc /rootfs/ /
+COPY --from=binutils /rootfs/ /
+COPY --from=python /rootfs/ /
+COPY --from=go /rootfs/ /
+COPY --from=cmake /rootfs/ /
+COPY --from=linux-headers /rootfs/ /
+COPY --from=libffi /rootfs/ /
+COPY --from=libzstd /rootfs/ /
+COPY --from=libunwind /rootfs/ /
+COPY --from=libucontext /rootfs/ /
+COPY --from=zlib /rootfs/ /
+COPY --from=xz /rootfs/ /
+#Non deterministic edge case and we don't need it
+RUN rm -rf /usr/share/info/dir
+
 FROM scratch AS package
-COPY --from=build /rootfs/ /
+COPY --from=install . /

@@ -1,4 +1,4 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
 COPY --from=stagex/core-readline . /
 COPY --from=stagex/core-openssl . /
@@ -6,7 +6,7 @@ COPY --from=stagex/user-unixodbc . /
 ADD fetch/freetds-${VERSION}.tar.bz2 .
 WORKDIR /freetds-${VERSION}
 RUN --network=none <<-EOF
-	set -ex
+	set +e
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \
@@ -16,7 +16,8 @@ RUN --network=none <<-EOF
 		--with-openssl=/usr \
 		--enable-odbc \
 		--with-unixodbc=/usr
-	make -j "$(nproc)"
+	make
+	mkdir -p /rootfs/usr/include
 	make DESTDIR="/rootfs" install
 EOF
 FROM stagex/core-filesystem AS package

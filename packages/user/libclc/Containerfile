@@ -1,7 +1,4 @@
 FROM stagex/pallet-clang-cmake-busybox AS build
-COPY --from=stagex/core-clang19 . /
-COPY --from=stagex/core-lld19 . /
-COPY --from=stagex/core-llvm19 . /
 COPY --from=stagex/core-python . /
 COPY --from=stagex/core-samurai . /
 COPY --from=stagex/user-spirv-llvm-translator . /
@@ -12,7 +9,6 @@ ADD fetch/libclc-${VERSION}.src.tar.xz .
 ADD fetch/cmake-${VERSION}.src.tar.xz .
 WORKDIR /libclc-${VERSION}.src
 RUN --network=none <<-EOF
-	set -eux
 		cmake -B build -G Ninja \
 			-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_INSTALL_PREFIX=/usr \

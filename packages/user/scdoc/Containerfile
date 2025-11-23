@@ -1,15 +1,9 @@
-FROM scratch AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-make . /
 ADD fetch/scdoc-${VERSION}.tar.gz .
 WORKDIR /scdoc-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
-	set -eux
 	make PREFIX="/usr" -j "$(nproc)"
 	make DESTDIR=/rootfs install
 EOF

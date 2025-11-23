@@ -1,29 +1,21 @@
 FROM stagex/pallet-clang-cmake-busybox AS build
-COPY --from=stagex/core-clang19 . /
-COPY --from=stagex/core-llvm19 . /
 COPY --from=stagex/user-spirv-headers . /
 COPY --from=stagex/user-spirv-tools . /
 COPY --from=stagex/core-libxml2 . /
 COPY --from=stagex/core-libffi . /
-COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-samurai . /
 ARG VERSION
-ARG VERSION_MAJOR
 ADD fetch/llvm-translator-${VERSION}.tar.gz .
 WORKDIR /SPIRV-LLVM-Translator-${VERSION}
-ENV CC=clang
-ENV	CXX=clang++
 RUN --network=none <<-EOF
-	set -eux
 	cmake -B build -G Ninja \
-		-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_INSTALL_PREFIX=/usr \
-		-DBUILD_SHARED_LIBS=True \
-		-DLLVM_SPIRV_INCLUDE_TESTS=1 \
-		-DLLVM_EXTERNAL_LIT=/usr/lib/llvm${VERSION_MAJOR}/bin/lit \
-		-DLLVM_EXTERNAL_SPIRV_HEADERS_SOURCE_DIR=/usr/include/spirv
+		-DLLVM_EXTERNAL_SPIRV_HEADERS_SOURCE_DIR=/usr/include/spirv \
+		-DLLVM_LINK_LLVM_DYLIB=ON \
+		-DBUILD_SHARED_LIBS=ON \
+		-DCMAKE_SKIP_RPATH=ON \
+		-DLLVM_SPIRV_INCLUDE_TESTS=OFF
 	cmake --build build
-
 	DESTDIR=/rootfs cmake --install build
 EOF
 
