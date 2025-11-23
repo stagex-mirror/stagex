@@ -4,7 +4,7 @@ set -u
 # Generate container image signatures in PGP sigstore format
 usage() {
     printf "%s <registry|repo_url> <package name> <branch_name> [commit_message]
-    To test it run: \n %s sigs.stagex.tools.git bootstrap-stage0" "$0" "$0"
+    To test it run: \n %s stagex bootstrap-stage0" "$0" "$0"
     exit 2
 }
 
@@ -47,10 +47,11 @@ REGISTRY=${1:-stagex}
 PACKAGE_NAME=${2?}
 BRANCH_NAME="${3:-release/$RELEASE}"
 
-COMMIT_MESSAGE="${4:-Add signatures for release $RELEASE by: $SIGNER}"  
-INDEX_ID=$(cat out/"${PACKAGE_NAME}"/index.json | jq -r '.manifests[].digest | sub ("sha256:";"")')
-MANIFEST_ID=$(cat out/"${PACKAGE_NAME}"/blobs/sha256/"${INDEX_ID}" | jq -r '.manifests[].digest | sub ("sha256:";"")')
+COMMIT_MESSAGE="${4:-Add signatures for release $RELEASE by: $SIGNER}"
+INDEX_ID=$(jq -r '.manifests[].digest | sub ("sha256:";"")' out/"${PACKAGE_NAME}"/index.json)
+MANIFEST_ID=$(jq -r '.manifests[].digest | sub ("sha256:";"")' out/"${PACKAGE_NAME}"/blobs/sha256/"${INDEX_ID}")
 DIR="signatures/${REGISTRY}/${PACKAGE_NAME}@sha256=${MANIFEST_ID}"
+TAG=$(jq -r '.manifests[].annotations."org.opencontainers.image.ref.name"' out/"${PACKAGE_NAME}"/index.json)
 
 if [ ! -d "signatures/$REGISTRY" ]; then
   git clone "$SIGNATURES" "signatures" # Clone repo to make signatures
@@ -141,8 +142,8 @@ if dir-has-no-sig "$DIR" "$FPR"; then
   echo "Signing: $DIR" >/dev/stderr
   FILENAME="$(get-filename "$DIR")"
   printf \
-      '{"critical":{"identity":{"docker-reference":"%s/%s"},"image":{"docker-manifest-digest":"%s"},"type":"atomic container signature"},"optional":{}}' \
-      "$REGISTRY" "$PACKAGE_NAME" "sha256:$MANIFEST_ID" | $GPG_SIGN --sign > "$TEMPFILE"
+      '{"critical":{"identity":{"docker-reference":"%s/%s:%s"},"image":{"docker-manifest-digest":"%s"},"type":"atomic container signature"},"optional":{}}' \
+      "$REGISTRY" "$PACKAGE_NAME" "$TAG" "sha256:$MANIFEST_ID" | $GPG_SIGN --sign > "$TEMPFILE"
   check_command "${RED}Failed to sign digest: $PACKAGE_NAME@sha256:$MANIFEST_ID"
   mv "$TEMPFILE" "$FILENAME"
 else
