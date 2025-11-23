@@ -1,11 +1,10 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
-ARG VERSION
+FROM stagex/pallet-clang-gnu-busybox AS build
 COPY --from=stagex/user-libusb . /
 COPY --from=stagex/user-autoconf-archive . /
+ARG VERSION
 ADD fetch/pcsc-lite-${VERSION}.tar.xz .
 WORKDIR /pcsc-lite-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	./bootstrap
 	./configure \
 		--prefix=/usr \
@@ -24,7 +23,7 @@ RUN --network=none <<-EOF
 		--disable-polkit \
 		--disable-strict \
 		--enable-static
-	make -j "$(nproc)"
+	make
 	make DESTDIR=/rootfs install
 EOF
 FROM stagex/core-filesystem AS package

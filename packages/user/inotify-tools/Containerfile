@@ -1,11 +1,10 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
 COPY --from=stagex/core-sqlite3 . /
 COPY --from=stagex/user-doxygen . /
 ADD fetch/${VERSION}.tar.gz .
 WORKDIR /inotify-tools-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	./autogen.sh
 	./configure --prefix=/usr --enable-fanotify
 	make

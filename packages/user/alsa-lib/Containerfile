@@ -1,9 +1,8 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
 ADD fetch/alsa-lib-${VERSION}.tar.bz2 .
 WORKDIR /alsa-lib-${VERSION}
 RUN --network=none <<-EOF
-	set -eux; \
 	./configure \
 		--prefix=/usr \
 		--libdir=/usr/lib \
@@ -15,7 +14,7 @@ RUN --network=none <<-EOF
 		--enable-aload \
 		--disable-dependency-tracking \
 		--without-versioned
-	make -j "$(nproc)"
+	make
 	make DESTDIR=/rootfs install
 EOF
 FROM stagex/core-filesystem AS package

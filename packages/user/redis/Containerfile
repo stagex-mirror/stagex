@@ -1,18 +1,10 @@
-FROM scratch AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-perl . /
-COPY --from=stagex/core-pkgconf . /
-COPY --from=stagex/core-make . /
 COPY --from=stagex/core-openssl . /
 ADD fetch/redis-${VERSION}.tar.gz .
 WORKDIR /redis-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
-	set -eux
 	make BUILD_TLS=yes all
 	make install PREFIX="/rootfs" INSTALL_BIN="/rootfs/usr/bin"
 EOF

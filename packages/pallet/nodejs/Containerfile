@@ -1,9 +1,14 @@
-FROM stagex/core-filesystem AS package
+FROM scratch AS package
+COPY --from=stagex/core-profile . /
 COPY --from=stagex/core-brotli . /
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-c-ares . /
 COPY --from=stagex/core-ca-certificates . /
-COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-clang . /
+COPY --from=stagex/core-clang-rt-devel . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
 COPY --from=stagex/core-icu . /
 COPY --from=stagex/core-libnghttp2 . /
 COPY --from=stagex/core-musl . /
@@ -11,6 +16,4 @@ COPY --from=stagex/core-nodejs . /
 COPY --from=stagex/core-npm . /
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-zlib . /
-
-WORKDIR /home/user/
 ENTRYPOINT ["/usr/bin/node"]

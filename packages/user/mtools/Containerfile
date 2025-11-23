@@ -1,4 +1,4 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
 ADD fetch/mtools-${VERSION}.tar.bz2 .
 WORKDIR /mtools-${VERSION}
@@ -11,7 +11,7 @@ RUN --network=none <<-EOF
 		--infodir=/usr/share/info \
     --sysconfdir=/etc/mtools \
     --without-x
-	make -j "$(nproc)"
+	make
 	make DESTDIR="/rootfs" install
 EOF
 FROM stagex/core-filesystem AS package

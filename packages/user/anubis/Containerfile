@@ -1,5 +1,6 @@
 FROM stagex/pallet-go AS build
 COPY --from=stagex/pallet-nodejs . /
+COPY --from=stagex/core-ncurses . /
 COPY --from=stagex/core-bash . /
 COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-make . /

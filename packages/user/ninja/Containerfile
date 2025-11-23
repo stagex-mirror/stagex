@@ -1,12 +1,10 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
-ARG VERSION
+FROM stagex/pallet-clang-gnu-busybox AS build
 COPY --from=stagex/core-python . /
 COPY --from=stagex/core-openssl . /
+ARG VERSION
 ADD fetch/ninja-${VERSION}.tar.gz .
 WORKDIR /ninja-${VERSION}
-ADD *.patch .
 RUN --network=none <<-EOF
-	set -eux
 	python ./configure.py --bootstrap
 	mkdir -p /rootfs/usr/bin/
 	cp ninja /rootfs/usr/bin/

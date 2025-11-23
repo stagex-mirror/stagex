@@ -1,10 +1,9 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
 COPY --from=stagex/user-libmnl . /
 ADD fetch/dhcpcd-${VERSION}.tar.xz .
 WORKDIR /dhcpcd-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \
@@ -18,7 +17,7 @@ RUN --network=none <<-EOF
 		--enable-seccomp \
 		--without-dev \
 		--without-udev
-	make -j "$(nproc)"
+	make
 	make DESTDIR=/rootfs install
 EOF
 FROM stagex/core-filesystem AS package

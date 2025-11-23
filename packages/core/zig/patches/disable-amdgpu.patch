@@ -1,0 +1,39 @@
+diff --git a/cmake/Findllvm.cmake b/cmake/Findllvm.cmake
+index 5ff5de869c..09739f7307 100644
+--- a/cmake/Findllvm.cmake
++++ b/cmake/Findllvm.cmake
+@@ -83,7 +83,7 @@ if(ZIG_USE_LLVM_CONFIG)
+       OUTPUT_STRIP_TRAILING_WHITESPACE)
+     string(REPLACE " " ";" LLVM_TARGETS_BUILT "${LLVM_TARGETS_BUILT_SPACES}")
+ 
+-    set(ZIG_LLVM_REQUIRED_TARGETS "AArch64;AMDGPU;ARM;AVR;BPF;Hexagon;Lanai;Mips;MSP430;NVPTX;PowerPC;RISCV;Sparc;SystemZ;VE;WebAssembly;X86;XCore")
++    set(ZIG_LLVM_REQUIRED_TARGETS "AArch64;ARM;AVR;BPF;Hexagon;Lanai;Mips;MSP430;NVPTX;PowerPC;RISCV;Sparc;SystemZ;VE;WebAssembly;X86;XCore")
+ 
+     set(ZIG_LLVM_REQUIRED_TARGETS_ENABLED TRUE)
+     foreach(TARGET_NAME IN LISTS ZIG_LLVM_REQUIRED_TARGETS)
+diff --git a/src/codegen/llvm.zig b/src/codegen/llvm.zig
+index 5c683a965a..de5b49adf7 100644
+--- a/src/codegen/llvm.zig
++++ b/src/codegen/llvm.zig
+@@ -13008,13 +13008,6 @@ pub fn initializeLLVMTarget(arch: std.Target.Cpu.Arch) void {
+             llvm.LLVMInitializeAArch64AsmPrinter();
+             llvm.LLVMInitializeAArch64AsmParser();
+         },
+-        .amdgcn => {
+-            llvm.LLVMInitializeAMDGPUTarget();
+-            llvm.LLVMInitializeAMDGPUTargetInfo();
+-            llvm.LLVMInitializeAMDGPUTargetMC();
+-            llvm.LLVMInitializeAMDGPUAsmPrinter();
+-            llvm.LLVMInitializeAMDGPUAsmParser();
+-        },
+         .thumb, .thumbeb, .arm, .armeb => {
+             llvm.LLVMInitializeARMTarget();
+             llvm.LLVMInitializeARMTargetInfo();
+@@ -13183,6 +13176,7 @@ pub fn initializeLLVMTarget(arch: std.Target.Cpu.Arch) void {
+         .kalimba,
+         .or1k,
+         .propeller,
++        .amdgcn,
+         => unreachable,
+     }
+ }

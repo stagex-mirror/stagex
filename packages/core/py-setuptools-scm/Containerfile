@@ -12,6 +12,7 @@ COPY --from=stagex/core-py-toml . /
 COPY --from=stagex/core-py-wheel . /
 COPY --from=stagex/core-python . /
 COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-libffi . /
 ADD fetch/py-setuptools-scm-${VERSION}.tar.gz .
 WORKDIR /setuptools-scm-${VERSION}/
 ENV SETUPTOOLS_SCM_PRETEND_VERSION=${VERSION}

@@ -1,23 +1,27 @@
 FROM scratch AS build
 ARG VERSION
 COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-samurai . /
 COPY --from=stagex/core-cmake . /
 COPY --from=stagex/core-openssl . /
 ADD fetch/doctest-${VERSION}.tar.gz .
 WORKDIR /doctest-${VERSION}
+ADD patches/no-werror.patch .
 RUN --network=none <<-EOF
 	set -eux
+	patch -p1 < no-werror.patch
 	cmake \
 		-G Ninja \
 		-B build \
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DCMAKE_INSTALL_LIBDIR=lib \
 		-DBUILD_SHARED_LIBS=True \
+		-DDOCTEST_USE_STANDARD_HEADERS=ON \
 		-DCMAKE_BUILD_TYPE=None
 	cmake --build build
 	DESTDIR=/rootfs cmake --install build

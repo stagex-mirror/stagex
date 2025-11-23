@@ -7,7 +7,7 @@ description = "TODO"
 hash = "3feb7171f16a84ee82ca18a36d7b9be109a52c04f492a053331d7d1095007c35"
 format = "tar.gz"
 file = "readline-{version}.{format}"
-mirrors = [ "http://ftpmirror.gnu.org/gnu/readline/{file}", "https://mirrors.kernel.org/gnu/readline/{file}"]
+mirrors = [ "http://ftpmirror.gnu.org/gnu/readline/{file}", "https://mirrors.kernel.org/gnu/readline/{file}"] 
 
 [sources.readline82-001]
 hash = "bbf97f1ec40a929edab5aa81998c1e2ef435436c597754916e6a5868f273aff7"

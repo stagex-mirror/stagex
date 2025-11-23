@@ -1,10 +1,9 @@
-FROM stagex/pallet-gcc-meson-busybox AS build
+FROM stagex/pallet-clang-meson-busybox AS build
 ARG VERSION
 COPY --from=stagex/user-xorgproto . /
 ADD fetch/libXau-${VERSION}.tar.xz .
 WORKDIR /libXau-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	meson setup build --prefix=/usr
 	meson setup \
 		. output

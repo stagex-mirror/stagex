@@ -1,10 +1,12 @@
-FROM scratch AS build-base
+FROM scratch AS build
 ARG VERSION
-ARG MRUSTC_VERSION
 ARG TARGETARCH
+ARG MRUSTC_VERSION
+ENV BOOTSTRAP_RUST_VERSION="1.74"
+ENV BOOTSTRAP_GCC_VERSION="15.2.0"
 COPY --from=stagex/core-filesystem . /
 COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-ncurses . /
 COPY --from=stagex/core-bash . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-cmake . /
@@ -15,58 +17,77 @@ COPY --from=stagex/core-pkgconf . /
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-perl . /
-COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-curl . /
 COPY --from=stagex/core-ca-certificates . /
-COPY --from=stagex/core-libunwind . /
-COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-libffi . /
-COPY --from=stagex/core-lld . /
-COPY --from=stagex/core-llvm /usr/lib/libLLVM.so.20.1 /usr/lib/
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-clang-rt-devel . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-mpfr . /
+COPY --from=stagex/core-mpc . /
+COPY --from=stagex/core-isl . /
+COPY --from=stagex/core-gmp . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-hiredis . /
+COPY --from=stagex/core-xxhash . /
+COPY --from=stagex/core-llvm17 . /
 COPY <<-'EOF' /etc/profile
+	set -eux
 	[[ "$TARGETARCH" == "amd64" ]] && ARCH="x86_64"
 	[[ "$TARGETARCH" == "arm64" ]] && ARCH="aarch64"
 	export ARCH
 	export TARGET=${ARCH}-unknown-linux-musl
 	export MAKEFLAGS="-j$(nproc)"
+	export LLVM_ROOT="/usr/lib/llvm${LLVM_VERSION}"
+	[[ "$LLVM_VERSION" == "system" ]] && LLVM_ROOT="/usr"
+	export LLVM_BINDIR=${LLVM_ROOT}/bin
+	export LLVM_CONFIG=${LLVM_BINDIR}/llvm-config
 EOF
 SHELL ["/bin/sh","-l","-c"]
 
-FROM build-base AS build-mrustc
-COPY --from=stagex/core-llvm17 . /
-COPY --from=stagex/core-hiredis . /
-COPY --from=stagex/core-xxhash . /
-COPY --from=stagex/core-ccache . /
 ADD fetch/mrustc-${MRUSTC_VERSION}.tar.gz .
-WORKDIR /mrustc-${MRUSTC_VERSION}
-ENV MRUSTC_TARGET_VER=1.74
-ENV MRUSTC_CCACHE=1
-ENV OUTDIR_SUF=
-ENV RUSTC_VERSION=1.74.0
-ENV RUSTC_INSTALL_BINDIR=bin
-ENV LIBGIT2_SYS_USE_PKG_CONFIG=1
-ENV MRUSTC_CCACHE=1
-COPY fetch/rustc-${RUSTC_VERSION}-src.tar.gz .
-RUN <<-EOF
-	set -eux
-	export RUSTC_TARGET=${TARGET}
-	export MAKEFLAGS="-j$(nproc)"
+WORKDIR mrustc-${MRUSTC_VERSION}
+COPY fetch/rustc-${BOOTSTRAP_RUST_VERSION}.0-src.tar.gz .
+ADD patches/add-missing-std-lib-includes.patch .
+ADD patches/fix-lib-linking.patch .
+ENV LLVM_VERSION="17"
+RUN --network=none <<-EOF
+	export RUSTC_VERSION="${BOOTSTRAP_RUST_VERSION}.0"
+	export MRUSTC_TARGET_VER="${BOOTSTRAP_RUST_VERSION}"
+	export RUSTC_INSTALL_BINDIR="bin"
+	export LIBGIT2_SYS_USE_PKG_CONFIG="1"
+	export OUTDIR_SUF=
+	export CXXFLAGS_EXTRA="-L/usr/lib/gcc/${ARCH}-linux-musl/${BOOTSTRAP_GCC_VERSION}/"
+	export RUSTC_TARGET="${TARGET}"
+	export CC=/usr/bin/gcc
+	export CXX=/usr/bin/g++
+	mkdir -p /etc/clang
+	echo "--gcc-install-dir=/usr/lib/gcc/${ARCH}-linux-musl/${BOOTSTRAP_GCC_VERSION}/" > /etc/clang/${ARCH}-unknown-linux-musl.cfg
+	ln -sf ${LLVM_BINDIR}/ld.lld /usr/bin/ld
+	patch -p1 < fix-lib-linking.patch
+	patch -p1 < add-missing-std-lib-includes.patch
 	make
 	make RUSTCSRC
-	make -f minicargo.mk LIBS
-	make -f minicargo.mk LLVM_CONFIG=/usr/bin/llvm-config output/rustc
-	make -f minicargo.mk LLVM_CONFIG=/usr/bin/llvm-config output/cargo
-EOF
-ADD fix-lib-linking.patch .
-RUN <<-EOF
-	set -eux
-	patch -p1 < fix-lib-linking.patch
-	make -C run_rustc LLVM_CONFIG=/usr/bin/llvm-config
-	mkdir /rust-1.74.0
-	cp -R run_rustc/output/prefix /rust-1.74.0/usr
+	make LIBS
+	export CXX="${LLVM_BINDIR}/clang++"
+	make -f minicargo.mk LLVM_CONFIG=${LLVM_CONFIG} output/cargo
+	make -f minicargo.mk LLVM_CONFIG=${LLVM_CONFIG} output/rustc
+	ln -sf /usr/bin/gcc /usr/bin/cc
+	make -C run_rustc LLVM_CONFIG=${LLVM_CONFIG}
+	mkdir /rust-${RUSTC_VERSION}
+	cp -R run_rustc/output/prefix /rust-${RUSTC_VERSION}/usr
 EOF
 
-FROM build-base AS build-script
+#HACK: We import llvm late because it clobbers binutils tools needed ealier in the build
+# remove when binutils tools replaced by llvm are gnu- prefixed by default in package
+# This frees up /usr/bin/ld to point at ld.lld by default, etc
+COPY --from=stagex/core-llvm . /
+
+WORKDIR /
+
 ENV CONFIGURE_FLAGS=
 COPY --chmod=0755 <<-'EOF' build
 	set -eux
@@ -76,9 +97,23 @@ COPY --chmod=0755 <<-'EOF' build
 	PATCHES=${4:-}
 	PREFIX=/rust-${VERSION}/usr
 	BUILD_PREFIX=/rust-${BUILD_VERSION}/usr
-	#HACK because rust build seemindly ignores LD_LIBRARY_PATH
-	cp -R ${BUILD_PREFIX}/lib/rustlib /usr/lib/rustlib
-	cp ${BUILD_PREFIX}/lib/rustlib/${TARGET}/lib/*.so /usr/lib/
+	export CC=${LLVM_BINDIR}/clang
+	export CXX=${LLVM_BINDIR}/clang++
+	export AS=${LLVM_BINDIR}/llvm-as
+	export AR=${LLVM_BINDIR}/llvm-ar
+	export NM=${LLVM_BINDIR}/llvm-nm
+	export DWP=${LLVM_BINDIR}/llvm-dwp
+	export RANLIB=${LLVM_BINDIR}/llvm-ranlib
+	export READELF=${LLVM_BINDIR}/llvm-readelf
+	export STRIP=${LLVM_BINDIR}/llvm-strip
+	export OBJCOPY=${LLVM_BINDIR}/llvm-objcopy
+	export OBJDUMP=${LLVM_BINDIR}/llvm-objdump
+	export SIZE=${LLVM_BINDIR}/llvm-size
+	export LIBCC="/usr/lib/clang/${LLVM_VERSION}/lib/${TARGET}/libclang_rt.builtins.a"
+	export LDFLAGS="-fuse-ld=${LLVM_BINDIR}/ld.lld"
+	ln -sf ${LLVM_BINDIR}/clang++ /usr/bin/c++
+	ln -sf ${LLVM_BINDIR}/clang /usr/bin/cc
+	ln -sf ${LLVM_BINDIR}/ld.lld /usr/bin/ld
 	cd rustc-${VERSION}-src
 	[[ -z "$PATCHES" ]] || for name in ${PATCHES//,/ }; do
 		patch -p1 < ../${name}.patch
@@ -89,16 +124,15 @@ COPY --chmod=0755 <<-'EOF' build
 		--target="${TARGET}" \
 		--local-rust-root="${BUILD_PREFIX}" \
 		--tools="${TOOLS}" \
-		--llvm-root="/usr/lib" \
+		--llvm-root="${LLVM_ROOT}" \
 		--llvm-libunwind="system" \
 		--enable-local-rust \
+		--enable-clang \
+		--enable-lld \
 		--enable-option-checking \
 		--enable-locked-deps \
-		--enable-llvm-link-shared \
 		--enable-vendor \
 		--dist-compression-formats=gz \
-		--disable-clang \
-		--disable-lld \
 		--disable-docs \
 		--python="python3" \
 		--prefix="${PREFIX}/usr" \
@@ -107,17 +141,14 @@ COPY --chmod=0755 <<-'EOF' build
 		--set="install.prefix=${PREFIX}" \
 		--set="target.${TARGET}.crt-static=false" \
 		--set="target.${TARGET}.musl-root=/usr" \
-		--set="target.${TARGET}.llvm-config=/usr/bin/llvm-config" \
+		--set="target.${TARGET}.llvm-config=${LLVM_BINDIR}/llvm-config" \
 		$CONFIGURE_FLAGS
 	python3 x.py dist
 	python3 x.py install
 	cd /
-	rm -rf /rustc-${BUILD_VERSION} /rustc-${VERSION}-src
+	rm -rf rustc-${VERSION}-src /rust-${BUILD_VERSION}
 EOF
 
-FROM build-script AS build-llvm17
-COPY --from=stagex/core-llvm17 . /
-COPY --from=build-mrustc /rust-1.74.0 /rust-1.74.0
 # HACK: Required by Rust 1.75.0
 # https://github.com/rust-lang/rust/issues/117885
 RUN mkdir -p $HOME/.cargo/registry/src/index.crates.io-6f17d22bba15001f/
@@ -145,38 +176,32 @@ RUN ./build 1.81.0 1.80.0
 ADD fetch/rustc-1.82.0-src.tar.gz .
 RUN ./build 1.82.0 1.81.0
 
-FROM build-script AS build-llvm19
+ENV LLVM_VERSION="19"
 COPY --from=stagex/core-llvm19 . /
-COPY --from=stagex/core-llvm17 /usr/lib/libLLVM-17.so /usr/lib/
-COPY --from=build-llvm17 /rust-1.82.0 /rust-1.82.0
-
 ADD fetch/rustc-1.83.0-src.tar.gz .
 RUN ./build 1.83.0 1.82.0
 
-ADD fetch/rustc-1.84.1-src.tar.gz .
-RUN ./build 1.84.1 1.83.0
+ADD fetch/rustc-1.84.0-src.tar.gz .
+RUN ./build 1.84.0 1.83.0
 
-ADD fetch/rustc-1.85.1-src.tar.gz .
-RUN ./build 1.85.1 1.84.1
+ADD fetch/rustc-1.85.0-src.tar.gz .
+# HACK: rust 1.85.0 literally cannot build if .git does not exist. No idea why
+RUN mkdir -p rustc-1.85.0-src/.git
+RUN ./build 1.85.0 1.84.0
 
 ADD fetch/rustc-1.86.0-src.tar.gz .
-RUN ./build 1.86.0 1.85.1
+RUN ./build 1.86.0 1.85.0
 
-FROM build-script AS build-llvm20
-COPY --from=stagex/core-llvm19 . /
-COPY --from=stagex/core-llvm . /
-COPY --from=build-llvm19 /rust-1.86.0 /rust-1.86.0
+ENV LLVM_VERSION="system"
 
 ADD fetch/rustc-1.87.0-src.tar.gz .
 RUN ./build 1.87.0 1.86.0
 
-FROM build-script AS build
-COPY --from=stagex/core-llvm . /
-COPY --from=build-llvm20 /rust-1.87.0 /rust-1.87.0
-
-ADD no-default-static.patch .
-ADD fetch/rustc-${VERSION}-src.tar.gz .
-RUN ./build ${VERSION} 1.87.0 cargo,clippy,rustdoc,rustfmt,rust-demangler no-default-static
+ADD fetch/rustc-1.88.0-src.tar.gz .
+ADD patches/no-default-static.patch .
+ADD patches/fix-broken-lld.patch .
+ADD fetch/rustc-1.88.0-src.tar.gz .
+RUN ./build 1.88.0 1.87.0 cargo,clippy,rustdoc,rustfmt,rust-demangler no-default-static,fix-broken-lld
 
 RUN <<-EOF
 	mv /rust-${VERSION} /rootfs

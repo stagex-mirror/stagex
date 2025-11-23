@@ -1,9 +1,8 @@
-FROM stagex/pallet-go AS build
+FROM stagex/pallet-cgo AS build
 ARG VERSION
 ADD fetch/docker-cli-buildx-${VERSION}.tar.gz .
 WORKDIR /buildx-${VERSION}
 RUN <<-EOF
-	set -eux
 	go build \
 		-v \
 		-modcacherw \

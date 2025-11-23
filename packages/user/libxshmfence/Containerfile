@@ -1,22 +1,20 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 COPY --from=stagex/user-util-macros . /
 COPY --from=stagex/user-xorgproto . /
 COPY --from=stagex/user-libx11 . /
 COPY --from=stagex/user-libxcb . /
 COPY --from=stagex/user-libxdmcp . /
 COPY --from=stagex/user-libxau . /
-
 ARG VERSION
 ADD fetch/libxshmfence-${VERSION}.tar.xz .
 WORKDIR /libxshmfence-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
-	set -eux
 	./configure \
 		--prefix=/usr \
 		--disable-static \
 		--enable-futex
-	make -j "$(nproc)"
+	make
 	make install DESTDIR=/rootfs
 EOF
 

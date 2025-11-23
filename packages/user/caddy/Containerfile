@@ -1,4 +1,4 @@
-FROM stagex/pallet-go AS build
+FROM stagex/pallet-cgo AS build
 ARG VERSION
 ADD fetch/caddy-v${VERSION}.tar.gz .
 WORKDIR /caddy-${VERSION}

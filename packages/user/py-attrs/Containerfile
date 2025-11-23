@@ -1,0 +1,20 @@
+FROM stagex/pallet-python AS build
+ARG VERSION
+COPY --from=stagex/core-py-setuptools-scm . /
+COPY --from=stagex/user-py-pathspec . /
+COPY --from=stagex/user-py-pluggy . /
+COPY --from=stagex/user-py-hatchling . /
+COPY --from=stagex/user-py-hatch-vcs . /
+COPY --from=stagex/user-py-trove-classifiers . /
+ADD fetch/py-attrs-${VERSION}.tar.gz .
+WORKDIR /attrs-${VERSION}
+ADD patches/*.patch .
+RUN --network=none <<-EOF
+	patch -p1 < no-fancy.patch
+	SETUPTOOLS_SCM_PRETEND_VERSION=${VERSION} \
+	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+	python -m installer -d /rootfs .dist/*.whl
+	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

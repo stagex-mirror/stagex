@@ -1,10 +1,10 @@
 [package]
 name = "file"
-version = "5.45"
+version = "5.46"
 description = "TODO"
 
 [sources.file]
-hash = "28c01a5ef1a127ef71758222ca019ba6c6bfa4a8fe20c2b525ce75943ee9da3c"
+hash = "73c5f11a8edf0fded2fe3471b23a7fccb3f3369a13ea612529b869c8dc96aa2b"
 format = "tar.gz"
 file = "file-{version}.{format}"
-mirrors = [ "https://github.com/file/file/archive/FILE5_45.{format}",]
+mirrors = [ "https://github.com/file/file/archive/FILE5_46.{format}",]

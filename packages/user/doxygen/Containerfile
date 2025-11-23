@@ -11,7 +11,6 @@ ADD fetch/doxygen-${VERSION}.tar.gz .
 ENV SOURCE_DATE_EPOCH=1
 WORKDIR /doxygen-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	cmake \
 		-B build \
 		-G Ninja \

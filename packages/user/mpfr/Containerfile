@@ -1,14 +1,13 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
-ARG VERSION
+FROM stagex/pallet-clang-gnu-busybox AS build
 COPY --from=stagex/core-gmp . /
+ARG VERSION
 ADD fetch/mpfr-${VERSION}.tar.gz .
 WORKDIR /mpfr-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	./configure \
 		--prefix=/usr \
 		--enable-shared
-	make -j "$(nproc)"
+	make
 	make DESTDIR=/rootfs install
 EOF
 FROM stagex/core-filesystem AS package

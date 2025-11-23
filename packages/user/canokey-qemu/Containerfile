@@ -1,47 +1,56 @@
-FROM stagex/pallet-gcc-cmake-busybox AS build
+FROM stagex/pallet-clang-cmake-busybox AS build
 ARG VERSION
 ARG CANOKEY_CORE_SOURCE
 ARG CANOKEY_CRYPTO_SOURCE
 ARG MBEDTLS_SOURCE
 ARG LITTLEFS_SOURCE
 ARG TINYCBOR_SOURCE
-
 COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-zlib . /
-
+COPY --from=stagex/user-py-jsonschema . /
+COPY --from=stagex/user-py-attrs . /
+COPY --from=stagex/user-py-pyrsistent . /
+COPY --from=stagex/user-py-jinja2 . /
+COPY --from=stagex/user-py-markupsafe . /
 ADD fetch/${VERSION}.tar.gz .
-RUN mv canokey-qemu* canokey-qemu
-ADD fetch/${CANOKEY_CORE_SOURCE} .
-RUN rm -rf canokey-qemu/canokey-core
-RUN mv canokey-core* canokey-qemu/canokey-core
-ADD fetch/${CANOKEY_CRYPTO_SOURCE} .
-RUN rm -rf canokey-qemu/canokey-core/canokey-crypto
-RUN mv canokey-crypto* canokey-qemu/canokey-core/canokey-crypto
-ADD fetch/${MBEDTLS_SOURCE} .
-RUN rm -rf canokey-qemu/canokey-core/canokey-crypto/mbedtls
-RUN mv mbedtls* canokey-qemu/canokey-core/canokey-crypto/mbedtls
-ADD fetch/${LITTLEFS_SOURCE} .
-RUN rm -rf canokey-qemu/canokey-core/littlefs
-RUN mv littlefs* canokey-qemu/canokey-core/littlefs
-ADD fetch/${TINYCBOR_SOURCE} .
-RUN rm -rf canokey-qemu/canokey-core/tinycbor
-RUN mv tinycbor* canokey-qemu/canokey-core/tinycbor
 COPY <<-EOF /usr/bin/git
     #!/bin/sh
     echo ${VERSION}
 EOF
-RUN chmod +x /usr/bin/git
-
+ADD fetch/${CANOKEY_CORE_SOURCE} .
+ADD fetch/${CANOKEY_CRYPTO_SOURCE} .
+ADD fetch/${MBEDTLS_SOURCE} .
+ADD fetch/${LITTLEFS_SOURCE} .
+ADD fetch/${TINYCBOR_SOURCE} .
 RUN --network=none <<-EOF
-        set -eux
-        cd canokey-qemu
-        mkdir build/
-        cd build
-        cmake -DCMAKE_INSTALL_PREFIX=/usr \
-            -DCMAKE_INSTALL_LIBDIR=lib ..
-        make -j "$(nproc)"
-        make DESTDIR=/rootfs install
+	export CFLAGS="-fPIC -Wno-implicit-function-declaration"
+	chmod +x /usr/bin/git
+	mv canokey-qemu* canokey-qemu
+	rm -rf canokey-qemu/canokey-core
+	mv canokey-core* canokey-qemu/canokey-core
+	rm -rf canokey-qemu/canokey-core/canokey-crypto
+	mv canokey-crypto* canokey-qemu/canokey-core/canokey-crypto
+	rm -rf canokey-qemu/canokey-core/canokey-crypto/mbedtls
+	mv mbedtls* canokey-qemu/canokey-core/canokey-crypto/mbedtls
+	sed 's/-Wdocumentation//g' -i canokey-qemu/canokey-core/canokey-crypto/mbedtls/library/CMakeLists.txt
+	sed 's/-Wunused-but-set-parameter//g' -i canokey-qemu/canokey-core/canokey-crypto/mbedtls/library/CMakeLists.txt
+	echo 'set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-but-set-variable -Wno-unused-but-set-parameter")' >> canokey-qemu/canokey-core/canokey-crypto/mbedtls/library/CMakeLists.txt
+	rm -rf canokey-qemu/canokey-core/littlefs
+	mv littlefs* canokey-qemu/canokey-core/littlefs
+	rm -rf canokey-qemu/canokey-core/tinycbor
+	mv tinycbor* canokey-qemu/canokey-core/tinycbor
+	cd canokey-qemu
+	mkdir build/
+	cd build
+	cmake \
+		-DCMAKE_C_STANDARD=23 \
+		-DCMAKE_CXX_STANDARD=17 \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib ..
+	make
+	make DESTDIR=/rootfs install
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

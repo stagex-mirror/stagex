@@ -45,8 +45,8 @@ file = "linux-{version}.tar.xz"
 mirrors = ["https://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/{file}"]
 
 [sources.binutils]
-version = "2.35"
-hash = "1b11659fb49e20e18db460d44485f09442c8c56d5df165de9461eb09c8302f85"
+version = "2.45"
+hash = "c50c0e7f9cb188980e2cc97e4537626b1672441815587f1eab69d2a1bfbef5d2"
 file = "binutils-{version}.tar.xz"
 mirrors = ["https://mirrors.kernel.org/gnu/binutils/{file}"]
 
@@ -66,3 +66,54 @@ mirrors = ["https://ftpmirror.gnu.org/gnu/make/{file}", "https://mirrors.kernel.
 hash = "a6f3f4bbd3e6bdd626f79b668f212fbb5649daf75084fb79b678a0ae4d97423b"
 version = "1.23.5"
 mirrors = [ "https://storage.googleapis.com/golang/go{version}.src.tar.gz",]
+
+[sources.cmake]
+version = "3.31.5"
+hash = "66fb53a145648be56b46fa9e8ccade3a4d0dfc92e401e52ce76bdad1fea43d27"
+file = "cmake-{version}.tar.gz"
+mirrors = [ "https://cmake.org/files/v{version_major_minor}/{file}",]
+
+[sources.xz]
+version = "5.6.2"
+hash = "92a439948bba24c2bc25bb67a087a19194905209c56b5e600bc94fd2a472e687"
+file = "xz-{version}.tar.gz"
+mirrors = [ "https://github.com/tukaani-project/xz/archive/refs/tags/v{version}.tar.gz",]
+
+[sources.libucontext]
+version = "1.3.2"
+hash = "4faf1838a15d61efe27ddac24fded2c290929eb3a1fefc72f952ae96d5bda006"
+file = "libucontext-{version}.tar.gz"
+mirrors = [ "https://github.com/kaniini/libucontext/archive/refs/tags/libucontext-{version}.tar.gz" ]
+
+[sources.libunwind]
+version = "1.8.1"
+hash = "38833b7b1582db7d76485a62a213706c9252b3dab7380069fea5824e823d8e41"
+file = "libunwind-{version}.tar.gz"
+mirrors = [ "https://github.com/libunwind/libunwind/archive/refs/tags/v{version}.tar.gz" ]
+
+[sources.python]
+version = "3.11.8"
+hash = "9e06008c8901924395bc1da303eac567a729ae012baa182ab39269f650383bb3"
+file = "python-{version}.tar.xz"
+mirrors = [ "https://www.python.org/ftp/python/{version}/Python-{version}.tar.xz",]
+
+[sources.libffi]
+version = "3.4.6"
+hash = "b0dea9df23c863a7a50e825440f3ebffabd65df1497108e5d437747843895a4e"
+format = "tar.gz"
+file = "libffi-{version}.{format}"
+mirrors = [ "https://github.com/libffi/libffi/releases/download/v{version}/{file}",]
+
+[sources.libzstd]
+version = "1.5.5"
+hash = "98e9c3d949d1b924e28e01eccb7deed865eefebf25c2f21c702e5cd5b63b85e1"
+format = "tar.gz"
+file = "libzstd-{version}.{format}"
+mirrors = [ "https://github.com/facebook/zstd/archive/v{version}.{format}",]
+
+[sources.zlib]
+version = "1.3.1"
+hash = "9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23"
+format = "tar.gz"
+file = "zlib-{version}.{format}"
+mirrors = [ "https://www.zlib.net/{file}",]

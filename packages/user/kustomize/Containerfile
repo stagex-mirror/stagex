@@ -1,8 +1,5 @@
-FROM scratch AS build
+FROM stagex/pallet-go AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-go . /
-COPY --from=stagex/core-ca-certificates . /
 ADD fetch/kustomize-${VERSION}.tar.gz .
 WORKDIR /kustomize-kustomize-v${VERSION}/kustomize
 ENV GOPATH=/cache/go

@@ -1,15 +1,14 @@
 FROM stagex/pallet-rust AS build
-ARG VERSION
 COPY --from=stagex/core-gmp . /
 COPY --from=stagex/core-sqlite3 . /
 COPY --from=stagex/user-nettle . /
 COPY --from=stagex/user-capnproto . /
+ARG VERSION
 ADD fetch/sq-${VERSION}.tar.gz .
 WORKDIR /sequoia-sq-v${VERSION}
 ENV RUSTFLAGS='-C codegen-units=1'
 RUN cargo fetch
 RUN --network=none <<-EOF
-	set -eux
   cargo build \
     --frozen \
     --release \

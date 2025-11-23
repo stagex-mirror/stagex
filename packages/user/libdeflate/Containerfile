@@ -1,10 +1,9 @@
-FROM stagex/pallet-gcc-cmake-busybox AS build
+FROM stagex/pallet-clang-cmake-busybox AS build
 ARG VERSION
 COPY --from=stagex/user-libgcrypt . /
 ADD fetch/libdeflate-${VERSION}.tar.gz .
 WORKDIR /libdeflate-${VERSION}
 RUN --network=none <<-EOF
-	set -eux; \
 	ln -sf /bin/gas /bin/as
   cmake -B build -G Ninja \
 		-DCMAKE_INSTALL_PREFIX=/usr/lib \

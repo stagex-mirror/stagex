@@ -1,4 +1,4 @@
-FROM stagex/pallet-gcc-meson-busybox AS build
+FROM stagex/pallet-clang-meson-busybox AS build
 ARG VERSION
 COPY --from=stagex/core-pcre2 . /
 COPY --from=stagex/core-libxslt . /
@@ -12,7 +12,6 @@ ADD fetch/fuse3-${VERSION}.tar.gz .
 WORKDIR /fuse-${VERSION}
 COPY *.patch .
 RUN --network=none <<-EOF
-	set -eux
 	meson setup \
 		--default-library=shared \
 		--prefix=/usr \

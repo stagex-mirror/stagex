@@ -1,4 +1,4 @@
-FROM stagex/pallet-gcc-cmake-busybox AS build
+FROM stagex/pallet-clang-cmake-busybox AS build
 ARG VERSION
 COPY --from=stagex/core-python . /
 COPY --from=stagex/user-xorgproto . /
@@ -10,12 +10,10 @@ COPY --from=stagex/user-libxrandr . /
 COPY --from=stagex/user-libxrender . /
 COPY --from=stagex/user-wayland . /
 COPY --from=stagex/user-vulkan-headers . /
-
 ADD fetch/vulkan-loader-sdk-${VERSION}.tar.gz .
 WORKDIR /Vulkan-Loader-vulkan-sdk-${VERSION}
 ENV CXXFLAGS="-flto=auto"
 RUN --network=none <<-EOF
-	set -eux; \
   cmake -B build -G Ninja \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_INSTALL_PREFIX=/usr \

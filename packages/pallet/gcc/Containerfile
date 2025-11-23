@@ -4,11 +4,20 @@ COPY --from=stagex/core-musl-fts . /
 COPY --from=stagex/core-musl-obstack . /
 COPY --from=stagex/core-argp-standalone . /
 COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-mpfr . /
+COPY --from=stagex/core-mpc . /
+COPY --from=stagex/core-isl . /
+COPY --from=stagex/core-gmp . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-flex . /
 COPY --from=stagex/core-bison . /
 COPY --from=stagex/core-m4 . /
 COPY --from=stagex/core-pkgconf . /
-
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-clang-rt-devel . /
 ENTRYPOINT ["/usr/bin/gcc"]

@@ -1,0 +1,48 @@
+diff --git a/Makefile b/Makefile
+index b18be08b..9f3ff0be 100644
+--- a/Makefile
++++ b/Makefile
+@@ -43,7 +43,7 @@ TAIL_COUNT ?= 10
+ 
+ LINKFLAGS := -g
+ LIBS := -lz
+-CXXFLAGS := -g -Wall
++CXXFLAGS := -g -Wall -Wno-unqualified-std-cast-call
+ CXXFLAGS += -std=c++14
+ #CXXFLAGS += -Wextra
+ CXXFLAGS += -O2
+@@ -186,7 +186,7 @@ $(OBJDIR)%.o: src/%.cpp
+ $(OBJDIR)version.o: $(OBJDIR)%.o: src/%.cpp $(filter-out $(OBJDIR)version.o,$(OBJ)) Makefile
+ 	@+mkdir -p $(dir $@)
+ 	@echo [CXX] -o $@
+-	$V$(CXX) -o $@ -c $< $(CXXFLAGS) $(CPPFLAGS) -MMD -MP -MF $@.dep -D VERSION_GIT_FULLHASH=\"$(shell git show --pretty=%H -s --no-show-signature)\" -D VERSION_GIT_BRANCH="\"$(shell git symbolic-ref -q --short HEAD || git describe --tags --exact-match)\"" -D VERSION_GIT_SHORTHASH=\"$(shell git show -s --pretty=%h --no-show-signature)\" -D VERSION_BUILDTIME="\"$(shell date -uR)\"" -D VERSION_GIT_ISDIRTY=$(shell git diff-index --quiet HEAD; echo $$?)
++	$V$(CXX) -o $@ -c $< $(CXXFLAGS) $(CPPFLAGS) -MMD -MP -MF $@.dep -D VERSION_GIT_FULLHASH=\"$(shell git show --pretty=%H -s --no-show-signature)\" -D VERSION_GIT_BRANCH="\"$(shell git symbolic-ref -q --short HEAD || git describe --tags --exact-match)\"" -D VERSION_GIT_SHORTHASH=\"$(shell git show -s --pretty=%h --no-show-signature)\" -D VERSION_BUILDTIME="\"$(shell env LC_TIME=C date -u +"%a, %e %b %Y %T +0000")\"" -D VERSION_GIT_ISDIRTY=$(shell git diff-index --quiet HEAD; echo $$?)
+ 
+ src/main.cpp: $(PCHS:%=src/%.gch)
+ 
+diff --git a/src/trans/codegen_c.cpp b/src/trans/codegen_c.cpp
+index 3b24170a..a95a91a1 100644
+--- a/src/trans/codegen_c.cpp
++++ b/src/trans/codegen_c.cpp
+@@ -1289,7 +1289,7 @@ namespace {
+                 // HACK: Work around [https://gcc.gnu.org/bugzilla/show_bug.cgi?id=117423] by disabling an optimisation stage
+                 if( opt.opt_level > 0 )
+                 {
+-                    args.push_back("-fno-tree-sra");
++                    args.push_back("");
+                 }
+                 if( opt.emit_debug_info )
+                 {
+diff --git a/tools/minicargo/manifest.h b/tools/minicargo/manifest.h
+index ac0f6b72..ba3fe89d 100644
+--- a/tools/minicargo/manifest.h
++++ b/tools/minicargo/manifest.h
+@@ -13,6 +13,8 @@
+ #include <memory>
+ #include <functional>
+ #include <path.h>
++#undef major
++#undef minor
+ 
+ class WorkspaceManifest;
+ class PackageManifest;

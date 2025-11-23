@@ -1,8 +1,9 @@
-FROM scratch
+FROM stagex/core-profile
+COPY --from=stagex/core-clang-rt-devel . /
 COPY --from=stagex/core-busybox . /
-# Should be libgcc subpackage
-COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-xz . /
+COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-python . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-openssl . /
@@ -22,5 +23,4 @@ COPY --from=stagex/core-py-setuptools . /
 COPY --from=stagex/core-py-setuptools-scm . /
 COPY --from=stagex/core-py-pep517 . /
 COPY --from=stagex/core-py-toml . /
-
 ENTRYPOINT ["/usr/bin/python"]

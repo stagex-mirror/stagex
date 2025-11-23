@@ -1,6 +1,11 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM scratch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-bzip2 . /
 COPY --from=stagex/core-icu . /
+COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/core-xz . /
 COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-python . /
@@ -9,15 +14,17 @@ ARG VERSION_UNDER
 ADD fetch/boost_${VERSION_UNDER}.tar.bz2 .
 WORKDIR /boost_${VERSION_UNDER}
 
-ARG CXX="g++"
-ARG CFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security"
+ARG CC="clang"
+ARG CXX="clang++"
+ARG CFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security --ld-path=/usr/bin/ld.lld"
 ARG CXXFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security"
-ARG CXXFLAGS="$CXXFLAGS -D_GLIBCXX_ASSERTIONS=1 -D_LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS=1 -D_LIBCPP_ENABLE_HARDENED_MODE=1"
+ARG CXXFLAGS="$CXXFLAGS -D_LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS=1 -D_LIBCPP_ENABLE_HARDENED_MODE=1"
 ARG LDFLAGS="-Wl,--as-needed,-O1,--sort-common"
 ARG abiflags="$(python3-config --abiflags)"
+ENV LIBCC="/usr/lib/libclang_rt.builtins.a"
 
 RUN cat > user-config.jam <<-EOF
-        using gcc : : ${CXX} : <cflags>"${CFLAGS}" <cxxflags>"${CXXFLAGS}" <linkflags>"${LDFLAGS}" ;
+        using clang : : ${CXX} : <cflags>"${CFLAGS}" <cxxflags>"${CXXFLAGS}" <linkflags>"${LDFLAGS}" ;
         using python : ${PY3_VERSION} : /usr/bin/python3 : /usr/include/python${PY3_VERSION}${abiflags} : : : : ${abiflags} ;
 EOF
 
@@ -25,6 +32,8 @@ RUN --network=none <<-EOF
 	set -eux
 	PY3_FULL="$(python3 --version 2>&1 | cut -d' ' -f2)"
 	PY3_VERSION="${PY3_FULL%.*}"
+	ln -s /lib/clang/20/lib/x86_64-unknown-linux-musl /lib/clang/20/lib/x86_64-pc-linux
+	ln -sf /usr/bin/ld.lld /usr/bin/ld
 
 	(
 	 cd "./tools/build"
@@ -33,30 +42,26 @@ RUN --network=none <<-EOF
 
 	(
 	 cd "./tools/bcp"
-	 ../build/b2 -j$(nproc)
+	 ../build/b2 -j$(nproc) toolset=clang
 	)
 
-	./bootstrap.sh --with-toolset=gcc --with-icu --with-python=python3
+	./bootstrap.sh --with-toolset=clang --with-icu --with-python=python3
 	./b2 \
+      -j$(nproc) \
       --user-config=./user-config.jam \
       --prefix=/rootfs/usr \
 			--libdir=/rootfs/usr/lib \
 			--includedir=/rootfs/usr/include \
-      variant=release \
+      release \
       python=${PY3_VERSION} \
-      toolset=gcc \
-      debug-symbols=off \
+      toolset=clang \
+      cflags=-fno-strict-aliasing \
       threading=multi \
+      debug-symbols=off \
       runtime-link=shared \
       link=shared,static \
-      cflags=-fno-strict-aliasing \
       --layout=system \
-      --without-graph_parallel \
-      --without-mpi \
-      -q \
-      -j$(nproc) \
 			install
-
 			install -Dm644 -t /rootfs/usr/share/licenses/boost/ LICENSE_1_0.txt
 EOF
 

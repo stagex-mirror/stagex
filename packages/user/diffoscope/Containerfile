@@ -6,7 +6,6 @@ COPY --from=stagex/user-py-libarchive . /
 ADD fetch/diffoscope-${VERSION}.tar.gz .
 WORKDIR /diffoscope-${VERSION}
 RUN --network=none <<-EOF
-  set -eux
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
   python -m installer -d /rootfs .dist/*.whl
   find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf

@@ -1,26 +1,15 @@
-FROM scratch AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-python . /
 COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-pcre2 . /
-COPY --from=stagex/core-pkgconf . /
-COPY --from=stagex/core-bison . /
-COPY --from=stagex/core-libtool . /
-COPY --from=stagex/core-zlib . /
-COPY --from=stagex/core-m4 . /
+COPY --from=stagex/core-python . /
 ADD fetch/swig-${VERSION}.tar.gz .
 WORKDIR /swig-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	./configure \
 		--prefix=/usr \
 		--with-python=/usr/bin/python3
-	make -j "$(nproc)"
+	make
 	make DESTDIR=/rootfs install
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF

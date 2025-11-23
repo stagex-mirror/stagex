@@ -1,9 +1,8 @@
-FROM stagex/pallet-gcc-cmake-busybox AS build
+FROM stagex/pallet-clang-cmake-busybox AS build
 ARG VERSION
 ADD fetch/json-c-${VERSION}.tar.gz .
 WORKDIR /json-c-${VERSION}
 RUN <<-EOF
-	set -eux
 	cmake \
 		-B build \
 		-G Ninja \

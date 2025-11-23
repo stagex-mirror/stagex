@@ -3,10 +3,11 @@ name = "cross-x86_64-gnu-gcc"
 description = "TODO"
 
 [sources.gcc]
-version = "13.1.0"
-hash = "61d684f0aa5e76ac6585ad8898a2427aade8979ed5e7f85492286c4dfc13ee86"
-file = "gcc-{version}.tar.xz"
-mirrors = ["https://ftpmirror.gnu.org/gnu/gcc/gcc-{version}/{file}", "https://mirrors.kernel.org/gnu/gcc/gcc-{version}/{file}"]
+version = "15.1.0"
+hash = "e2b09ec21660f01fecffb715e0120265216943f038d0e48a9868713e54f06cea"
+format = "tar.xz"
+file = "gcc-{version}.{format}"
+mirrors = [ "https://mirrors.kernel.org/gnu/gcc/gcc-{version}/{file}",]
 
 [sources.gmp]
 version = "6.2.1"
@@ -18,28 +19,28 @@ mirrors = ["https://gcc.gnu.org/pub/gcc/infrastructure/{file}", "https://ftpmirr
 version = "4.1.0"
 hash = "feced2d430dd5a97805fa289fed3fc8ff2b094c02d05287fd6133e7f1f0ec926"
 file = "mpfr-{version}.tar.bz2"
-mirrors = ["https://gcc.gnu.org/pub/gcc/infrastructure/{file}", "https://ftpmirror.gnu.org/gnu/mpfr/{file}", "https://mirrors.kernel.org/gnu/mpfr/{file}"]
+mirrors = ["https://gcc.gnu.org/pub/gcc/infrastructure/{file}", "https://ftpmirror.gnu.org/gnu/gmp/{file}", "https://mirrors.kernel.org/gnu/gmp/{file}"]
 
 [sources.mpc]
 version = "1.2.1"
 hash = "17503d2c395dfcf106b622dc142683c1199431d095367c6aacba6eec30340459"
 file = "mpc-{version}.tar.gz"
-mirrors = ["https://gcc.gnu.org/pub/gcc/infrastructure/{file}", "https://ftpmirror.gnu.org/gnu/mpc/{file}", "https://mirrors.kernel.org/gnu/mpc/{file}"]
+mirrors = ["https://gcc.gnu.org/pub/gcc/infrastructure/{file}", "https://ftpmirror.gnu.org/gnu/gmp/{file}", "https://mirrors.kernel.org/gnu/gmp/{file}"]
 
 [sources.isl]
 version = "0.24"
 hash = "fcf78dd9656c10eb8cf9fbd5f59a0b6b01386205fe1934b3b287a0a1898145c0"
 file = "isl-{version}.tar.bz2"
-mirrors = ["https://libisl.sourceforge.io/{file}", "https://gcc.gnu.org/pub/gcc/infrastructure/{file}"]
+mirrors = ["https://gcc.gnu.org/pub/gcc/infrastructure/{file}", "https://ftpmirror.gnu.org/gnu/gmp/{file}", "https://mirrors.kernel.org/gnu/gmp/{file}", "https://libisl.sourceforge.io/{file}" ] 
 
 [sources.glibc]
-version = "2.40"
-hash = "2abc038f5022949cb67e996c3cae0e7764f99b009f0b9b7fd954dfc6577b599e"
+version = "2.41"
+hash = "c7be6e25eeaf4b956f5d4d56a04d23e4db453fc07760f872903bb61a49519b80"
 file = "glibc-{version}.tar.gz"
-mirrors = ["http://ftpmirror.gnu.org/gnu/glibc/{file}", "https://mirrors.kernel.org/gnu/glibc/{file}"]
+mirrors = ["http://ftpmirror.gnu.org/gnu/glibc/{file}", "https://mirrors.kernel.org/gnu/glibc/{file}"] 
 
 [sources.binutils]
-version = "2.35"
-hash = "1b11659fb49e20e18db460d44485f09442c8c56d5df165de9461eb09c8302f85"
+version = "2.44"
+hash = "ce2017e059d63e67ddb9240e9d4ec49c2893605035cd60e92ad53177f4377237"
 file = "binutils-{version}.tar.xz"
 mirrors = ["https://mirrors.kernel.org/gnu/binutils/{file}"]

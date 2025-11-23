@@ -1,21 +1,12 @@
-FROM scratch AS build
+FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-bison . /
 COPY --from=stagex/core-gawk . /
 COPY --from=stagex/core-grep . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-m4 . /
-COPY --from=stagex/core-make . /
 COPY --from=stagex/core-python . /
-COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/core-linux-headers /usr/include /linux-headers
 ADD fetch/glibc-${VERSION}.tar.gz .
 WORKDIR glibc-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	CFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security"
 	CXXFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security -D_GLIBCXX_ASSERTIONS=1 -D_LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS=1 -D_LIBCPP_ENABLE_HARDENED_MODE=1"
 	ARCH="$(uname -m)"
@@ -42,7 +33,7 @@ RUN --network=none <<-EOF
 		--disable-nls \
 		--disable-werror \
 		--enable-debug
-	make -j "$(nproc)"
+	make
 	make DESTDIR=/rootfs install
 	mkdir -p /rootfs/usr/lib/
 	mv /rootfs/lib64/* /rootfs/usr/lib/

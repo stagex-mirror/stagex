@@ -1,19 +1,19 @@
-FROM scratch AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-cmake . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-make . /
 ADD fetch/zip-${VERSION}.tar.gz .
 WORKDIR /zip${VERSION}
 ENV SOURCE_DATE_EPOCH=1
+ADD patches/*.patch .
 RUN --network=none <<-EOF
-    set -eux
-    make -f unix/Makefile prefix=/usr generic
-    mkdir -p /rootfs/usr/bin/
-    DESTDIR=/rootfs make -f unix/Makefile prefix=/rootfs/usr MANDIR=rootfs/usr/share/man/man1 install
+	patch -p1 < 10-zip-3.0-build.patch
+	patch -p1 < 20-zip-3.0-exec-stack.patch
+	patch -p1 < 30-zip-3.0-pic.patch
+	patch -p1 < 40-fix-zipnote.patch
+	patch -p1 < format-security.patch
+	patch -p1 < configure-gcc14.patch
+  make -f unix/Makefile prefix=/usr generic
+  mkdir -p /rootfs/usr/bin/
+  DESTDIR=/rootfs make -f unix/Makefile prefix=/rootfs/usr MANDIR=rootfs/usr/share/man/man1 install
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

@@ -1,10 +1,11 @@
 FROM scratch AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-make . /
-COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-zlib . /
 ADD fetch/xxhash-${VERSION}.tar.gz .
 WORKDIR /xxHash-${VERSION}
 ARG TARGETARCH

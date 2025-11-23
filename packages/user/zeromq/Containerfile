@@ -1,23 +1,11 @@
-FROM scratch AS build
+FROM stagex/pallet-clang-cmake-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-cmake . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-perl . /
-COPY --from=stagex/core-pkgconf . /
-COPY --from=stagex/core-samurai . /
-COPY --from=stagex/core-openssl . /
 COPY --from=stagex/user-libsodium . /
 COPY --from=stagex/user-util-linux . /
 COPY --from=stagex/user-xmlto . /
-COPY --from=fetch . .
-RUN tar -xf zeromq-${VERSION}.tar.gz
+ADD fetch/zeromq-${VERSION}.tar.gz .
 WORKDIR /zeromq-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	cmake -B build -G Ninja \
 		-DCMAKE_BUILD_TYPE=None \
 		-DCMAKE_INSTALL_PREFIX=/usr \
