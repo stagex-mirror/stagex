@@ -1,10 +1,23 @@
 [package]
 name = "musl"
 version = "1.2.5"
-description = "TODO"
+description = "Musl Libc"
+subpackages = ["musl", "musl-mimalloc"]
 
 [sources.musl]
 hash = "a9a118bbe84d8764da0ea0d28b3ab3fae8477fc7e4085d90102b8596fc7c75e4"
+file = "musl-{version}.tar.gz"
+mirrors = [ "https://musl.libc.org/releases/{file}",]
+
+[sources.mimalloc]
+hash = "0eed39319f139afde8515010ff59baf24de9e47ea316a315398e8027d198202d"
+version = "2.1.7"
 format = "tar.gz"
-file = "musl-{version}.{format}"
-mirrors = [ "http://musl.libc.org/releases/{file}",]
+file = "mimalloc-{version}.{format}"
+mirrors = [ "https://github.com/microsoft/mimalloc/archive/refs/tags/v{version}.{format}",]
+
+[sources.cports]
+hash = "04c3a3a412f174d4aa6ff117a0abf416a2593499453e2a0fbf05b7c469792dcf"
+file = "cports-{version}.tar.gz"
+version = "137a13539140a2ed51bd2497188f9bf3f00bb051"
+mirrors = [ "https://github.com/chimera-linux/cports/archive/{version}.tar.gz"]

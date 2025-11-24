@@ -1,24 +1,36 @@
-FROM stagex/bootstrap-stage3 AS build
+FROM stagex/bootstrap-stage3 AS base
+COPY --from=stagex/core-llvm . / 
 ARG TARGETARCH
 ARG VERSION
 ADD fetch/musl-${VERSION}.tar.gz .
 WORKDIR /musl-${VERSION}
-ADD *.patch .
-RUN --network=none <<-EOF
+COPY <<-'EOF' /etc/profile
 	set -eux
-	ARCH=$(uname -m)
-	CFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security"
-	CXXFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security -D_GLIBCXX_ASSERTIONS=1 -D_LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS=1 -D_LIBCPP_ENABLE_HARDENED_MODE=1"
-	LDFLAGS="-Wl,--as-needed,-O1,--sort-common -Wl,-soname,libc.musl-${ARCH}.so.1"
-	patch -p1 < CVE-2025-26519.patch
+	[[ "$TARGETARCH" == "amd64" ]] && ARCH="x86_64"
+	[[ "$TARGETARCH" == "arm64" ]] && ARCH="aarch64"
+	export ARCH
+	export TARGET=${ARCH}-unknown-linux-musl
+	export MAKEFLAGS="-j$(nproc)"
+	export CC=/usr/bin/clang
+	export LIBCC_LDFLAGS="--rtlib=compiler-rt"
+	export CFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security"
+	export CXXFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security -D_GLIBCXX_ASSERTIONS=1 -D_LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS=1 -D_LIBCPP_ENABLE_HARDENED_MODE=1"
+	export LDFLAGS="-Wl,--as-needed,-O1,--sort-common -Wl,-soname,libc.musl-${ARCH}.so.1"
+EOF
+SHELL ["/bin/sh","-l","-c"]
+COPY --chmod=755 <<-'EOF' build.sh
+	#!/bin/sh
+	malloc="${1}"
+	makeargs="${2}"
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info \
 		--localstatedir=/var \
+		--with-malloc=${malloc} \
 		--enable-debug
-	make -j "$(nproc)"
+	make "${makeargs}"
 	make DESTDIR=/rootfs install
 	mkdir -p /rootfs/usr/bin /rootfs/usr/lib
 	rm -rf /rootfs/lib
@@ -27,5 +39,56 @@ RUN --network=none <<-EOF
 	ln -sf ld-musl-${ARCH}.so.1 /rootfs/usr/lib/libc.musl-${ARCH}.so.1
 	ln -sf /usr/lib/ld-musl-${ARCH}.so.1 /rootfs/usr/lib/libc.so
 EOF
-FROM stagex/core-filesystem AS package
-COPY --from=build /rootfs/ /
+
+FROM base AS build-musl
+ADD patches/CVE-2025-26519.patch .
+RUN --network=none <<-EOF
+	patch -p1 < CVE-2025-26519.patch
+	./build.sh mallocng
+EOF
+
+FROM base AS build-musl-mimalloc
+ARG CPORTS_VERSION
+ARG MIMALLOC_VERSION
+ADD fetch/cports-${CPORTS_VERSION}.tar.gz /
+ADD fetch/mimalloc-${MIMALLOC_VERSION}.tar.gz /
+ENV CPORTS_DIR=/cports-${CPORTS_VERSION}/main/musl
+RUN --network=none <<-EOF
+	mv /mimalloc-${MIMALLOC_VERSION} mimalloc
+	patch -p1 < ${CPORTS_DIR}/patches/0001-implement-necessary-bits-for-musl-integration.patch
+	patch -p1 < ${CPORTS_DIR}/patches/0001-plumb-in-support-for-externally-provided-allocator-l.patch
+	patch -p1 < ${CPORTS_DIR}/patches/default-locpath.patch
+	patch -p1 < ${CPORTS_DIR}/patches/fix-bind-textdomain-codeset.patch
+	patch -p1 < ${CPORTS_DIR}/patches/iconv-001.patch
+	patch -p1 < ${CPORTS_DIR}/patches/iconv-002.patch
+	patch -p1 < ${CPORTS_DIR}/patches/libcc-compiler-rt.patch
+	patch -p1 < ${CPORTS_DIR}/patches/loongarch-tlsdesc.patch
+	patch -p1 < ${CPORTS_DIR}/patches/lto.patch
+	patch -p1 < ${CPORTS_DIR}/patches/memcpy.patch
+	patch -p1 < ${CPORTS_DIR}/patches/mimalloc-errno.patch
+	patch -p1 < ${CPORTS_DIR}/patches/mimalloc-tweak-options.patch
+	patch -p1 < ${CPORTS_DIR}/patches/plt.patch
+EOF
+RUN --network=none <<-EOF
+	cp ${CPORTS_DIR}/files/mimalloc-verify-syms.sh .
+	cp ${CPORTS_DIR}/files/mimalloc.c mimalloc/src
+	rm src/string/x86_64/memcpy.s
+	./build.sh mimalloc "EXTRA_OBJ=${PWD}/src/malloc/external/mimalloc.o"
+EOF
+RUN <<-EOF
+	cp ${CPORTS_DIR}/files/getent.c .
+	cp ${CPORTS_DIR}/files/getconf.c .
+	cp ${CPORTS_DIR}/files/iconv.c .
+	cp ${CPORTS_DIR}/files/__stack_chk_fail_local.c .
+	cc getent.c -o /rootfs/usr/bin/getent
+	cc getconf.c -o /rootfs/usr/bin/getconf
+	cc iconv.c -o /rootfs/usr/bin/iconv
+	cc __stack_chk_fail_local.c -o __stack_chk_fail_local.o
+	ar r /rootfs/usr/lib/libssp_nonshared.a __stack_chk_fail_local.o
+EOF
+
+FROM stagex/core-filesystem AS package-musl
+COPY --from=build-musl /rootfs/ /
+
+FROM stagex/core-filesystem AS package-musl-mimalloc
+COPY --from=build-musl-mimalloc /rootfs/ /
