@@ -62,6 +62,9 @@ git config commit.gpgsign true
 
 ## Release Branches
 
+The full tree must be reproduced on at least 2 different CPU vendors (e.g., 
+AMD and Intel) to detect vendor-specific microarchitectural backdoors.
+
 Release branches take the format `release/YYYY.MM.<release-revision>`. A release **MUST** include a
 PR to staging to introduce a bump to `digests.txt`, creating the release
 branch. Once the branch is created, other maintainers **MAY** begin reproducing.
