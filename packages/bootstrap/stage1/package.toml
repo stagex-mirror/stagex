@@ -1641,14 +1641,14 @@ mirrors = ["https://dl.google.com/go/go{version}-bootstrap-20171003.tar.gz"]
 [sources.go1_19_11]
 hash = "e25c9ab72d811142b7f41ff6da5165fec2d1be5feec3ef2c66bc0bdecb431489"
 version = "1.19.11"
-mirrors = ["https://storage.googleapis.com/golang/go{version}.src.tar.gz"]
+mirrors = ["https://go.dev/dl/go{version}.src.tar.gz"]
 
 [sources.go1_20_6]
 hash = "62ee5bc6fb55b8bae8f705e0cb8df86d6453626b4ecf93279e2867092e0b7f70"
 version = "1.20.6"
-mirrors = ["https://storage.googleapis.com/golang/go{version}.src.tar.gz"]
+mirrors = ["https://go.dev/dl/go{version}.src.tar.gz"]
 
 [sources.go]
 hash = "a6f3f4bbd3e6bdd626f79b668f212fbb5649daf75084fb79b678a0ae4d97423b"
 version = "1.23.5"
-mirrors = ["https://storage.googleapis.com/golang/go{version}.src.tar.gz"]
+mirrors = ["https://go.dev/dl/go{version}.src.tar.gz"]

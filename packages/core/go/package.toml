@@ -7,12 +7,12 @@ licenses = "BSD-3-Clause"
 
 [sources.go]
 hash = "d010c109cee94d80efe681eab46bdea491ac906bf46583c32e9f0dbb0bd1a594"
-mirrors = [ "https://storage.googleapis.com/golang/go{version}.src.tar.gz", "https://go.dev/dl/go{version}.src.tar.gz",]
+mirrors = ["https://go.dev/dl/go{version}.src.tar.gz"]
 
 [sources.go-linux-amd64]
 hash = "7716a0d940a0f6ae8e1f3b3f4f36299dc53e31b16840dbd171254312c41ca12e"
-mirrors = [ "https://storage.googleapis.com/golang/go{version}.linux-amd64.tar.gz",]
+mirrors = ["https://go.dev/dl/go{version}.linux-amd64.tar.gz"]
 
 [sources.go-linux-arm64]
 hash = "65a3e34fb2126f55b34e1edfc709121660e1be2dee6bdf405fc399a63a95a87d"
-mirrors = [ "https://storage.googleapis.com/golang/go{version}.linux-arm64.tar.gz",]
+mirrors = ["https://go.dev/dl/go{version}.linux-arm64.tar.gz"]
