@@ -7,5 +7,5 @@ website = "https://www.tcl-lang.org"
 
 [sources.tcl]
 hash = "a3903371efcce8a405c5c245d029e9f6850258a60fa3761c4d58995610949b31"
-file = "tcl-{version}.tar.gz"
-mirrors = [ "https://fossies.org/linux/misc/tcl{version}-src.tar.gz",]
+file = "tcl{version}-src.tar.gz"
+mirrors = ["https://prdownloads.sourceforge.net/tcl/{file}"]

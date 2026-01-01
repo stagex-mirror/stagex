@@ -5,5 +5,5 @@ description = "TODO"
 
 [sources.tcl]
 hash = "e074c6a8d9ba2cddf914ba97b6677a552d7a52a3ca102924389a05ccb249b520"
-file = "tcl-{version}.tar.gz"
-mirrors = [ "https://fossies.org/linux/misc/tcl{version}-src.tar.gz",]
+file = "tcl{version}-src.tar.gz"
+mirrors = ["https://prdownloads.sourceforge.net/tcl/{file}"]
