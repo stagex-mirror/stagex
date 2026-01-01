@@ -119,7 +119,7 @@ class ResourceFetcher(object):
               split = urlsplit(url)
               filename = split.path.split(os.path.sep)[-1]
       opener = build_opener()
-      opener.addheaders = [("User-agent", "Wget/1.21.3 (linux-gnu)")]
+      opener.addheaders = [("Accept", "*/*"), ("User-agent", "Wget/1.21.3 (linux-gnu)")]
       install_opener(opener)
       urlretrieve(url, filename, ResourceFetcher.download_status_hook)
 
