@@ -1,0 +1,12 @@
+[package]
+name = "arti"
+version = "1.8.0"
+description = "Embeddable, production-quality implementation of the Tor anonymity protocols in Rust"
+licenses = "(MIT OR Apache-2.0) AND LGPL-3.0-only"
+website = "https://gitlab.torproject.org/tpo/core/arti"
+
+[sources.arti]
+hash = "92ea0731bea19d91f2de9ea0f408bd578d11ea2dd270949ba0abc2d0aeaabb60"
+format = "tar.gz"
+file = "arti-arti-v{version}.{format}"
+mirrors = ["https://gitlab.torproject.org/tpo/core/arti/-/archive/arti-v{version}/{file}"]
