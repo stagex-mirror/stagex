@@ -1,0 +1,12 @@
+[package]
+name = "snphost"
+version = "0.7.0"
+description = "CLI utility designed for administrators managing AMD SEV-SNP enabled host systems"
+licenses = "Apache-2.0"
+website = "https://github.com/virtee/snphost"
+
+[sources.snphost]
+hash = "9ddbb6f2a7a0aadc9bb951292ecfeda88c07b4d6339e1ff31b3ec609ef080159"
+format = "tar.gz"
+file = "v{version}.{format}"
+mirrors = ["https://github.com/virtee/snphost/archive/refs/tags/{file}"]
