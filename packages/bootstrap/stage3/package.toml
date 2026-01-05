@@ -86,8 +86,8 @@ file = "libucontext-{version}.tar.gz"
 mirrors = [ "https://github.com/kaniini/libucontext/archive/refs/tags/libucontext-{version}.tar.gz" ]
 
 [sources.libunwind]
-version = "1.8.1"
-hash = "38833b7b1582db7d76485a62a213706c9252b3dab7380069fea5824e823d8e41"
+version = "1.8.2"
+hash = "3b888e01f3d25f7914bbfd31139066bb4547e079322975134b03c92e4c6a2066"
 file = "libunwind-{version}.tar.gz"
 mirrors = [ "https://github.com/libunwind/libunwind/archive/refs/tags/v{version}.tar.gz" ]
 
