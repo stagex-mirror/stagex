@@ -11,16 +11,17 @@ COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-python . /
 
 ARG VERSION_UNDER
+ARG TARGETARCH
 ADD fetch/boost_${VERSION_UNDER}.tar.bz2 .
 WORKDIR /boost_${VERSION_UNDER}
 
-ARG CC="clang"
-ARG CXX="clang++"
-ARG CFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security --ld-path=/usr/bin/ld.lld"
-ARG CXXFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security"
-ARG CXXFLAGS="$CXXFLAGS -D_LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS=1 -D_LIBCPP_ENABLE_HARDENED_MODE=1"
-ARG LDFLAGS="-Wl,--as-needed,-O1,--sort-common"
-ARG abiflags="$(python3-config --abiflags)"
+ENV CC="clang"
+ENV CXX="clang++"
+ENV CFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security --ld-path=/usr/bin/ld.lld"
+ENV CXXFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security"
+ENV CXXFLAGS="$CXXFLAGS -D_LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS=1 -D_LIBCPP_ENABLE_HARDENED_MODE=1"
+ENV LDFLAGS="-Wl,--as-needed,-O1,--sort-common"
+ENV abiflags="$(python3-config --abiflags)"
 ENV LIBCC="/usr/lib/libclang_rt.builtins.a"
 
 RUN cat > user-config.jam <<-EOF
@@ -32,7 +33,13 @@ RUN --network=none <<-EOF
 	set -eux
 	PY3_FULL="$(python3 --version 2>&1 | cut -d' ' -f2)"
 	PY3_VERSION="${PY3_FULL%.*}"
-	ln -s /lib/clang/20/lib/x86_64-unknown-linux-musl /lib/clang/20/lib/x86_64-pc-linux
+	[[ "$TARGETARCH" == "amd64" ]] \
+		&& ARCH="x86_64" \
+		&& BOOST_ARCH="$ARCH"
+	[[ "$TARGETARCH" == "arm64" ]] \
+		&& ARCH="aarch64" \
+		&& BOOST_ARCH="$TARGETARCH"
+	ln -s "/lib/clang/20/lib/$ARCH-unknown-linux-musl" "/lib/clang/20/lib/$BOOST_ARCH-pc-linux"
 	ln -sf /usr/bin/ld.lld /usr/bin/ld
 
 	(
@@ -47,22 +54,22 @@ RUN --network=none <<-EOF
 
 	./bootstrap.sh --with-toolset=clang --with-icu --with-python=python3
 	./b2 \
-      -j$(nproc) \
-      --user-config=./user-config.jam \
-      --prefix=/rootfs/usr \
-			--libdir=/rootfs/usr/lib \
-			--includedir=/rootfs/usr/include \
-      release \
-      python=${PY3_VERSION} \
-      toolset=clang \
-      cflags=-fno-strict-aliasing \
-      threading=multi \
-      debug-symbols=off \
-      runtime-link=shared \
-      link=shared,static \
-      --layout=system \
-			install
-			install -Dm644 -t /rootfs/usr/share/licenses/boost/ LICENSE_1_0.txt
+		-j$(nproc) \
+		--user-config=./user-config.jam \
+		--prefix=/rootfs/usr \
+		--libdir=/rootfs/usr/lib \
+		--includedir=/rootfs/usr/include \
+		release \
+		python=${PY3_VERSION} \
+		toolset=clang \
+		cflags=-fno-strict-aliasing \
+		threading=multi \
+		debug-symbols=off \
+		runtime-link=shared \
+		link=shared,static \
+		--layout=system \
+		install
+	install -Dm644 -t /rootfs/usr/share/licenses/boost/ LICENSE_1_0.txt
 EOF
 
 FROM stagex/core-filesystem AS package

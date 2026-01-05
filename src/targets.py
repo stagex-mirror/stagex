@@ -34,7 +34,7 @@ out/{stage}-{name}/index.json: \\
 \t  --build-arg SOURCE_DATE_EPOCH=1 \\
 \t  --build-arg BUILDKIT_MULTI_PLATFORM=1 \\
 \t  --output \\
-\t    name={name},type=oci,rewrite-timestamp=true,force-compression=true,annotation.containerd.io/distribution.source.docker.io=stagex/{name},annotation.org.opencontainers.image.version={version},annotation.org.opencontainers.image.created=1970-01-01T00:00:01Z,tar=true,dest=- \\
+\t    name={stage}-{name},type=oci,rewrite-timestamp=true,force-compression=true,annotation.containerd.io/distribution.source.docker.io=stagex/{stage}-{name},annotation.org.opencontainers.image.version={version},annotation.org.opencontainers.image.created=1970-01-01T00:00:01Z,tar=true,dest=- \\
 \t  {context_args} \\
 \t  {build_args} \\
 \t  $(EXTRA_ARGS) \\
