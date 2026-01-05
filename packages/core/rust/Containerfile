@@ -91,11 +91,11 @@ WORKDIR /
 ENV CONFIGURE_FLAGS=
 COPY --chmod=0755 <<-'EOF' build
 	set -eux
-	VERSION=${1}
+	TARGET_VERSION=${1}
 	BUILD_VERSION=${2}
 	TOOLS=${3:-cargo}
 	PATCHES=${4:-}
-	PREFIX=/rust-${VERSION}/usr
+	PREFIX=/rust-${TARGET_VERSION}/usr
 	BUILD_PREFIX=/rust-${BUILD_VERSION}/usr
 	export CC=${LLVM_BINDIR}/clang
 	export CXX=${LLVM_BINDIR}/clang++
@@ -114,7 +114,7 @@ COPY --chmod=0755 <<-'EOF' build
 	ln -sf ${LLVM_BINDIR}/clang++ /usr/bin/c++
 	ln -sf ${LLVM_BINDIR}/clang /usr/bin/cc
 	ln -sf ${LLVM_BINDIR}/ld.lld /usr/bin/ld
-	cd rustc-${VERSION}-src
+	cd rustc-${TARGET_VERSION}-src
 	[[ -z "$PATCHES" ]] || for name in ${PATCHES//,/ }; do
 		patch -p1 < ../${name}.patch
 	done
@@ -128,7 +128,6 @@ COPY --chmod=0755 <<-'EOF' build
 		--llvm-libunwind="system" \
 		--enable-local-rust \
 		--enable-clang \
-		--enable-lld \
 		--enable-option-checking \
 		--enable-locked-deps \
 		--enable-vendor \
@@ -146,7 +145,7 @@ COPY --chmod=0755 <<-'EOF' build
 	python3 x.py dist
 	python3 x.py install
 	cd /
-	rm -rf rustc-${VERSION}-src /rust-${BUILD_VERSION}
+	[ "${TARGET_VERSION}" == "${VERSION}" ] || rm -rf rustc-${TARGET_VERSION}-src /rust-${BUILD_VERSION}
 EOF
 
 # HACK: Required by Rust 1.75.0
@@ -197,12 +196,19 @@ ENV LLVM_VERSION="system"
 ADD fetch/rustc-1.87.0-src.tar.gz .
 RUN ./build 1.87.0 1.86.0
 
-ADD fetch/rustc-1.88.0-src.tar.gz .
-ADD patches/no-default-static.patch .
 ADD patches/fix-broken-lld.patch .
 ADD fetch/rustc-1.88.0-src.tar.gz .
-RUN ./build 1.88.0 1.87.0 cargo,clippy,rustdoc,rustfmt,rust-demangler no-default-static,fix-broken-lld
+RUN ./build 1.88.0 1.87.0 "" fix-broken-lld
 
+ADD fetch/rustc-1.89.0-src.tar.gz .
+RUN ./build 1.89.0 1.88.0 "" fix-broken-lld
+
+ADD fetch/rustc-1.90.0-src.tar.gz .
+RUN ./build 1.90.0 1.89.0 "" fix-broken-lld
+
+ADD fetch/rustc-1.91.1-src.tar.gz .
+ADD patches/no-default-static.patch .
+RUN ./build ${VERSION} 1.90.0 cargo,clippy,rustdoc,rustfmt,rust-demangler,src no-default-static
 RUN <<-EOF
 	mv /rust-${VERSION} /rootfs
 	cd /rootfs/usr/lib/rustlib
@@ -213,5 +219,5 @@ RUN <<-EOF
 	rm -f ${TARGET}/lib/self-contained/libunwind.a
 EOF
 
-FROM stagex/core-filesystem AS package
+FROM stagex/core-filesystem AS package-rust
 COPY --from=build /rootfs/ /
