@@ -45,7 +45,7 @@ First you need to fork this project on Codeberg.
 Then clone your fork locally:
 
 ```shell
-git clone git@codeberg.com:<you>/stagex 
+git clone git@codeberg.org:<you>/stagex 
 cd  stagex
 ```
 
