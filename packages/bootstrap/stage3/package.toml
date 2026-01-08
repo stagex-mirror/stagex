@@ -65,7 +65,7 @@ mirrors = ["https://ftpmirror.gnu.org/gnu/make/{file}", "https://mirrors.kernel.
 [sources.go]
 hash = "a6f3f4bbd3e6bdd626f79b668f212fbb5649daf75084fb79b678a0ae4d97423b"
 version = "1.23.5"
-mirrors = [ "https://storage.googleapis.com/golang/go{version}.src.tar.gz",]
+mirrors = ["https://go.dev/dl/go{version}.src.tar.gz"]
 
 [sources.cmake]
 version = "3.31.5"
