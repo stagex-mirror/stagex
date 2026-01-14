@@ -1,13 +1,6 @@
-FROM scratch AS build
-ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-perl . /
-COPY --from=stagex/core-pkgconf . /
-COPY --from=stagex/core-make . /
+FROM stagex/pallet-clang-gnu-busybox AS build
 COPY --from=stagex/core-openssl . /
+ARG VERSION
 ADD fetch/redis-${VERSION}.tar.gz .
 WORKDIR /redis-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
