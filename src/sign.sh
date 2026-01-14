@@ -20,7 +20,7 @@ if [ "$#" -lt 2 ]; then
     usage
 fi
 
-get-primary-fp() {
+get_primary_fp() {
   FP="$1"
   if $GPG --list-keys --with-colons "$FP" > /dev/null 2> /dev/null; then
     $GPG --list-keys --with-colons "$FP" | grep fpr | cut -d: -f10 | head -n1
@@ -37,7 +37,12 @@ SCRIPT_DIR=$(dirname "$0")
 RELEASE=$("$SCRIPT_DIR"/gen-version.sh)
 SIGNER=$(git config user.name) || { echo "Failed to find user for signing"; exit 1; }
 SIGNING_KEY="$(git config user.signingkey)"
-FPR="$(get-primary-fp "${SIGNING_KEY}")"
+if [[ -z "${SIGNING_KEY// }" ]]; then 
+	echo -e "${RED}Please configure your signingkey in git"
+	echo -e "${NC} you can run: 'git config --global user.signingkey <your fingerprint>'"
+        exit 
+fi
+FPR="$(get_primary_fp "${SIGNING_KEY}")"
 test ! -z "$FPR"
 TEMPFILE="$(mktemp)"
 #From SIGNATURES := https://codeberg.org/stagex/sigs.stagex.tools.git from MAKEFILE
@@ -67,7 +72,7 @@ fi
 mkdir -p "${DIR}"
 check_command "Failed to create signatures folder"
 
-get-filename() {
+get_filename() {
   DIR="$1"
   SIGNUM=1
   if [ -f "${DIR}/signature-1" ] 
@@ -85,19 +90,19 @@ get-filename() {
   echo "${DIR}/signature-${SIGNUM}"
 }
 
-get-signing-fp() {
+get_signing_fp() {
   FILE="$1"
   ($GPGV "$FILE" >/dev/null || :) 2>&1 | awk '$4 == "key" { print $5 }'
 }
 
-dir-has-no-sig() {
+dir_has_no_sig() {
   DIR="$1"
   FP="$2"
   for file in "${DIR}"/*; do
     # We want to check if a fingerprint matches, we don't need to check if
     # the signature is valid.
-    signing_FP="$(get-signing-fp "$file")"
-    CERT_FP="$(get-primary-fp "$signing_FP")"
+    signing_FP="$(get_signing_fp "$file")"
+    CERT_FP="$(get_primary_fp "$signing_FP")"
     if test "$FP" = "$CERT_FP"; then
       return 1
     fi
@@ -138,9 +143,9 @@ else
   check_command "${RED}Failed to create a new branch: $BRANCH_NAME"
 fi
 
-if dir-has-no-sig "$DIR" "$FPR"; then
+if dir_has_no_sig "$DIR" "$FPR"; then
   echo "Signing: $DIR" >/dev/stderr
-  FILENAME="$(get-filename "$DIR")"
+  FILENAME="$(get_filename "$DIR")"
   printf \
       '{"critical":{"identity":{"docker-reference":"%s/%s:%s"},"image":{"docker-manifest-digest":"%s"},"type":"atomic container signature"},"optional":{}}' \
       "$REGISTRY" "$PACKAGE_NAME" "$TAG" "sha256:$MANIFEST_ID" | $GPG_SIGN --sign > "$TEMPFILE"
