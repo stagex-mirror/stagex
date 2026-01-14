@@ -21,6 +21,5 @@ RUN --network=none <<-EOF
 	make -j "$(nproc)"
 	make DESTDIR=/rootfs INSTALL="install -D" install
 EOF
-FROM build as package
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
