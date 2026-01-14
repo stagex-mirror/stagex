@@ -78,7 +78,10 @@ ARG LINUX_VERSION
 ADD fetch/linux-${LINUX_VERSION}.tar.xz /
 WORKDIR /linux-${LINUX_VERSION}
 RUN --network=none <<-EOF
-	make ARCH="$ARCH" headers
+	LINUX_ARCH="$ARCH"
+	[[ "$TARGETARCH" == "arm64" ]] \
+		&& LINUX_ARCH="$TARGETARCH"
+	make ARCH="$LINUX_ARCH" headers
 	find usr/include -name '.*' -delete
 	rm usr/include/Makefile
 	rm usr/include/headers_check.pl
@@ -391,7 +394,8 @@ RUN <<-EOF
 	./configure \
 		--prefix=/usr \
 		--host=${TARGET} \
-		--enable-cxx-exceptions
+		--enable-cxx-exceptions \
+		--disable-tests
 	make
 	make DESTDIR=/rootfs install
 	rm -rf /libunwind-*
