@@ -1,5 +1,6 @@
 FROM scratch AS build
 ARG VERSION
+ARG TARGETARCH
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-llvm . /
@@ -12,15 +13,21 @@ COPY --from=stagex/core-make . /
 COPY --from=stagex/core-m4 . /
 ADD fetch/bison-${VERSION}.tar.xz .
 WORKDIR /bison-${VERSION}
-ENV CFLAGS="-march=x86-64 -mtune=generic -fno-lto"
+ENV CC=clang
+ENV CXX=clang++
+ENV CFLAGS="-mtune=generic -fno-lto"
 ENV CXXFLAGS="-fno-lto"
 ENV SOURCE_DATE_EPOCH="1"
 ENV M4=/usr/bin/m4
 RUN --network=none <<-EOF
 	set -eux
+        [[ "$TARGETARCH" == "amd64" ]] \
+                && CFLAGS="$CFLAGS -march=x86-64"
+        [[ "$TARGETARCH" == "arm64" ]] \
+                && CFLAGS="$CFLAGS -march=armv8-a"
 	./configure \
 		--prefix=/usr \
-		--disable-nls
+		--disable-nls || { cat config.log; exit 1; }
 	make -j1 MAKEINFO=false
 	make DESTDIR=/rootfs install
 EOF

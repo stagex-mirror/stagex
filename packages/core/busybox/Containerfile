@@ -4,6 +4,7 @@ ARG TARGETARCH
 ADD fetch/busybox-${VERSION}.tar.bz2 .
 WORKDIR /busybox-${VERSION}
 ENV KCONFIG_NOTIMESTAMP=1
+ENV ARCH=$TARGETARCH
 RUN --network=none <<-EOF
 	set -eux
 	setConfs='
@@ -17,6 +18,14 @@ RUN --network=none <<-EOF
 	    CONFIG_FEATURE_UTMP
 	    CONFIG_FEATURE_WTMP
 	'
+	# Add hwaccel configs for ARM architectures
+	if [ "$TARGETARCH" = "arm64" ] || [ "$TARGETARCH" = "aarch64" ]; then
+	    unsetConfs="$unsetConfs
+	    CONFIG_SHA1_HWACCEL
+	    CONFIG_SHA256_HWACCEL
+	    CONFIG_MD5_HWACCEL
+	"
+	fi
 	make defconfig
 	for conf in $unsetConfs; do
 		sed -i \

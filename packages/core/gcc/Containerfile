@@ -23,11 +23,15 @@ COPY --from=stagex/core-libatomic_ops /usr/lib/libatomic_ops.so /usr/lib/libatom
 ADD fetch/gcc-${VERSION}.tar.xz .
 ADD fetch/aports-${APORTS_VERSION}.tar.gz .
 WORKDIR /gcc-${VERSION}
-ENV TARGET=x86_64-unknown-linux-musl
-ENV LDFLAGS="-L/usr/lib/clang/20/lib/x86_64-unknown-linux-musl"
-ENV LDFLAGS_FOR_TARGET="-L/usr/lib/clang/20/lib/x86_64-unknown-linux-musl"
 RUN --network=none <<-EOF
 	set -eux
+	[[ "$TARGETARCH" == "amd64" ]] \
+		&& ARCH="x86_64"
+	[[ "$TARGETARCH" == "arm64" ]] \
+		&& ARCH="aarch64"
+	TARGET=$ARCH-unknown-linux-musl
+	LDFLAGS="-L/usr/lib/clang/20/lib/$ARCH-unknown-linux-musl"
+	LDFLAGS_FOR_TARGET="-L/usr/lib/clang/20/lib/$ARCH-unknown-linux-musl"
 	cp /aports-${APORTS_VERSION}/main/gcc//*.patch .
 	patch -p1 < 0001-posix_memalign.patch
 	patch -p1 < 0002-gcc-poison-system-directories.patch
@@ -105,7 +109,9 @@ RUN --network=none <<-EOF
 	make -j "$(nproc)"
 EOF
 RUN make -j "$(nproc)" all-target-libgcc
-RUN make DESTDIR=/rootfs install-strip install-target-libgcc 
+RUN make DESTDIR=/rootfs install-strip install-target-libgcc
+RUN mv /rootfs/usr/lib64/* /rootfs/usr/lib/
+RUN rm -rf /rootfs/usr/lib64
 
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
