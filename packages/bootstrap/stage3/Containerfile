@@ -267,7 +267,7 @@ RUN --network=none <<-EOF
 		--prefix=/usr \
 		-- \
 		-DCMAKE_USE_OPENSSL=OFF
-	make 
+	make
 	make DESTDIR=/rootfs install
 	rm -rf /cmake-*
 EOF

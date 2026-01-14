@@ -208,7 +208,7 @@ RUN --network=none <<-EOF
 	strip /rootfs/usr/lib/libLLVM.so.20.1
 EOF
 
-FROM build as build-llvm-libgcc
+FROM build AS build-llvm-libgcc
 RUN --network=none <<-EOF
 	rm -rf /rootfs
 	mkdir -p /rootfs/usr/lib
