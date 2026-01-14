@@ -1,0 +1,12 @@
+[package]
+name = "uv"
+version = "0.9.25"
+description = "Python package manager written in Rust"
+licenses = "Apache-2.0 OR MIT"
+website = "https://github.com/astral-sh/uv"
+
+[sources.uv]
+hash = "e46145b24cc10c54598b697d2c5cf3747ae39f0eb6af57dc902cac06ad18eb07"
+format = "tar.gz"
+file = "{version}.{format}"
+mirrors = ["https://github.com/astral-sh/uv/archive/refs/tags/{file}"]
