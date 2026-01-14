@@ -1,10 +1,16 @@
 [package]
 name = "sequoia-sq"
-version = "1.2.0"
-description = "TODO"
+version = "1.3.1"
+description = "A command line application exposing a useful set of OpenPGP functionality for common tasks."
+license = "LGPL-2.0-or-later"
+website = "https://sequoia-pgp.org/"
+subpackages = [
+  "sequoia-sq",
+  "sequoia-sq-completions"
+]
 
 [sources.sequoia-sq]
-hash = "73dde38dd5f46ad34f55784709e35f7b482edfff29a1d2030a879719c9a60331"
+hash = "ca4a6ef07ab9ca492c8166d6d6ed0354eb81f418bf819cf095c1ee856c461365"
 format = "tar.gz"
 file = "sq-{version}.{format}"
 mirrors = [ "https://gitlab.com/sequoia-pgp/sequoia-sq/-/archive/v{version}/sequoia-sq-v{version}.tar.bz2"]

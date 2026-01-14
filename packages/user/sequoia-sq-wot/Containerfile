@@ -3,8 +3,9 @@ ARG VERSION
 COPY --from=stagex/core-gmp . /
 COPY --from=stagex/core-sqlite3 . /
 COPY --from=stagex/user-nettle . /
-ADD fetch/sequoia-wot-${VERSION}.tar.gz .
-WORKDIR /sequoia-wot-sequoia-wot-v${VERSION}
+COPY --from=fetch . .
+RUN tar xf sequoia-wot-${VERSION}.tar.gz
+WORKDIR /sequoia-wot-v${VERSION}
 RUN cargo fetch
 ENV RUST_BACKTRACE=1
 ENV NETTLE_STATIC=yes
