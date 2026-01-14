@@ -5,7 +5,7 @@ COPY --from=stagex/core-grep . /
 COPY --from=stagex/core-python . /
 COPY --from=stagex/core-linux-headers /usr/include /linux-headers
 ADD fetch/glibc-${VERSION}.tar.gz .
-WORKDIR glibc-${VERSION}
+WORKDIR /glibc-${VERSION}
 RUN --network=none <<-EOF
 	CFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security"
 	CXXFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security -D_GLIBCXX_ASSERTIONS=1 -D_LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS=1 -D_LIBCPP_ENABLE_HARDENED_MODE=1"
