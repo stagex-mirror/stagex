@@ -1,0 +1,90 @@
+.PHONY: {name} {stage}-{name}
+{name}: out/{stage}-{name}/index.json
+{stage}-{name}: out/{stage}-{name}/index.json
+out/{stage}-{name}/index.json: \
+	{files} {deps}
+	rm -rf out/{stage}-{name} && \
+	mkdir -p out/{stage}-{name} && \
+	mkdir -p fetch/{stage}/{origin} && \
+	python3 src/fetch.py {origin} && \
+	rm -rf packages/{stage}/{origin}/fetch && \
+	mkdir -p packages/{stage}/{origin}/fetch && \
+	( [ -z "$$(ls -A fetch/{stage}/{origin})" ] || \
+	  cp -lR fetch/{stage}/{origin}/* packages/{stage}/{origin}/fetch ) && \
+			$(BUILDER) \
+	  build \
+	  --ulimit nofile=2048:16384 \
+	  --tag stagex/{stage}-{name}:{version} \
+	  --provenance=false \
+	  --build-arg SOURCE_DATE_EPOCH=1 \
+	  --build-arg BUILDKIT_MULTI_PLATFORM=1 \
+	  --build-arg "BUILDKIT_DOCKERFILE_CHECK=skip=FromPlatformFlagConstDisallowed;error=true" \
+	  --output \
+		name={stage}-{name},type=oci,rewrite-timestamp=true,force-compression=true,annotation.containerd.io/distribution.source.docker.io=stagex/{stage}-{name},annotation.org.opencontainers.image.version={version},annotation.org.opencontainers.image.created=1970-01-01T00:00:01Z,tar=true,dest=- \
+	  {context_args} \
+	  {build_args} \
+	$(EXTRA_ARGS) \
+	$(NOCACHE_FLAG) \
+	$(CHECK_FLAG) \
+	--platform={platform_arg} \
+	--progress=$(PROGRESS) \
+	-f packages/{stage}/{origin}/Containerfile \
+	packages/{stage}/{origin} \
+	| tar -C out/{stage}-{name} -mx
+
+	$(if $(filter $(IMPORT),1),$(call import,{stage},{name},{version}),)
+
+.PHONY: import-{stage}-{name}
+import-{stage}-{name}:
+	$(call import,{stage},{name},{version})
+
+# use: make registry-{stage}-{name} BUILDER="docker buildx" REGISTRY_USERNAME=127.0.0.1:5005/stagex
+# doesn't work well with docker build
+.PHONY: registry-{stage}-{name}
+registry-{stage}-{name}: \
+	{files} {deps}
+	mkdir -p fetch/{stage}/{origin} && \
+	python3 src/fetch.py {origin} && \
+	rm -rf packages/{stage}/{origin}/fetch && \
+	mkdir -p packages/{stage}/{origin}/fetch && \
+	cp -lR fetch/{stage}/{origin}/* packages/{stage}/{origin}/fetch && \
+	$(BUILDER) \
+	build \
+	--ulimit nofile=2048:16384 \
+	  --tag $(REGISTRY_USERNAME)/{stage}-{name}:{version} \
+	  --tag $(REGISTRY_USERNAME)/{stage}-{name}:latest \
+	  --provenance=false \
+	  --build-arg SOURCE_DATE_EPOCH=1 \
+	  --build-arg BUILDKIT_MULTI_PLATFORM=1 \
+	  --build-arg "BUILDKIT_DOCKERFILE_CHECK=skip=FromPlatformFlagConstDisallowed;error=true" \
+	  --output \
+	    name={name},type=image,rewrite-timestamp=true,annotation.org.opencontainers.image.version={version},push=true \
+	  {context_args_registry} \
+	  {build_args} \
+	$(EXTRA_ARGS) \
+	$(NOCACHE_FLAG) \
+	$(CHECK_FLAG) \
+	--platform={platform_arg} \
+	--progress=$(PROGRESS) \
+	-f packages/{stage}/{origin}/Containerfile \
+	packages/{stage}/{origin}
+
+.PHONY: publish-{stage}-{name}
+publish-{stage}-{name}: out/{stage}-{name}/index.json
+	[ "$(RELEASE)" != "0" ] || {{ echo "Error: RELEASE is not set"; exit 1; }}
+	index_digest="$$(jq -r '.manifests[0].digest | split(":")[1]' out/{stage}-{name}/index.json)"; \
+	digest="$$(jq -r '.manifests[0].digest | split(":")[1]' out/{stage}-{name}/blobs/sha256/$${{index_digest}})"; \
+	signum="$$(ls -1 signatures/stagex/{stage}-{name}@sha256=$${{digest}} | wc -l )"; \
+	[ $${{signum}} -ge 2 ] || {{ echo "Error: Minimum signatures not met for {stage}-{name}"; exit 1; }}; \
+	env -C out/{stage}-{name} tar -cf - . | docker load
+	docker tag stagex/{stage}-{name}:{version} stagex/{stage}-{name}:latest
+	docker tag stagex/{stage}-{name}:latest stagex/{stage}-{name}:sx$(RELEASE)
+	docker tag stagex/{stage}-{name}:{version} quay.io/stagex/{stage}-{name}:latest
+	docker tag stagex/{stage}-{name}:{version} quay.io/stagex/{stage}-{name}:{version}
+	docker tag stagex/{stage}-{name}:latest quay.io/stagex/{stage}-{name}:sx$(RELEASE)
+	$(call push-image,stagex/{stage}-{name}:{version})
+	$(call push-image,stagex/{stage}-{name}:sx$(RELEASE))
+	$(call push-image,stagex/{stage}-{name}:latest)
+	$(call push-image,quay.io/stagex/{stage}-{name}:{version})
+	$(call push-image,quay.io/stagex/{stage}-{name}:sx$(RELEASE))
+	$(call push-image,quay.io/stagex/{stage}-{name}:latest)

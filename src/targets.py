@@ -1,109 +1,17 @@
 #!/usr/bin/env python3
 import os
-from common import CommonUtils
-from common import PackageInfo
-from typing import Any
-from typing import List
-from typing import MutableMapping
 from dataclasses import replace
-from urllib.parse import urlsplit
 from glob import glob
 from os.path import isfile
 from subprocess import check_output
+from typing import Any, List, MutableMapping
+from urllib.parse import urlsplit
+
+from common import CommonUtils, PackageInfo
+
 
 class TargetGenerator(object):
-  TARGET_TEMPLATE = """
-.PHONY: {name} {stage}-{name}
-{name}: out/{stage}-{name}/index.json
-{stage}-{name}: out/{stage}-{name}/index.json
-out/{stage}-{name}/index.json: \\
-\t{files} {deps}
-\trm -rf out/{stage}-{name} && \\
-\tmkdir -p out/{stage}-{name} && \\
-\tmkdir -p fetch/{stage}/{origin} && \\
-\tpython3 src/fetch.py {origin} && \\
-\t rm -rf packages/{stage}/{origin}/fetch && \\
-\t mkdir -p packages/{stage}/{origin}/fetch && \\
-\t ( [ -z "$$(ls -A fetch/{stage}/{origin})" ] || \\
-\t   cp -lR fetch/{stage}/{origin}/* packages/{stage}/{origin}/fetch ) && \\
-\t$(BUILDER) \\
-\t  build \\
-\t  --ulimit nofile=2048:16384 \\
-\t  --tag stagex/{stage}-{name}:{version} \\
-\t  --provenance=false \\
-\t  --build-arg SOURCE_DATE_EPOCH=1 \\
-\t  --build-arg BUILDKIT_MULTI_PLATFORM=1 \\
-\t  --build-arg "BUILDKIT_DOCKERFILE_CHECK=skip=FromPlatformFlagConstDisallowed;error=true" \\
-\t  --output \\
-\t    name={stage}-{name},type=oci,rewrite-timestamp=true,force-compression=true,annotation.containerd.io/distribution.source.docker.io=stagex/{stage}-{name},annotation.org.opencontainers.image.version={version},annotation.org.opencontainers.image.created=1970-01-01T00:00:01Z,tar=true,dest=- \\
-\t  {context_args} \\
-\t  {build_args} \\
-\t  $(EXTRA_ARGS) \\
-\t  $(NOCACHE_FLAG) \\
-\t  $(CHECK_FLAG) \\
-\t  --platform={platform_arg} \\
-\t  --progress=$(PROGRESS) \\
-\t  -f packages/{stage}/{origin}/Containerfile \\
-\t  packages/{stage}/{origin} \\
-\t| tar -C out/{stage}-{name} -mx
-\t
-\t$(if $(filter $(IMPORT),1),$(call import,{stage},{name},{version}),)
-
-.PHONY: import-{stage}-{name}
-import-{stage}-{name}:
-\t$(call import,{stage},{name},{version})
-
-# use: make registry-{stage}-{name} BUILDER="docker buildx" REGISTRY_USERNAME=127.0.0.1:5005/stagex
-# doesn't work well with docker build
-.PHONY: registry-{stage}-{name}
-registry-{stage}-{name}:
-\tmkdir -p fetch/{stage}/{origin} && \\
-\tpython3 src/fetch.py {origin} && \\
-\t rm -rf packages/{stage}/{origin}/fetch && \\
-\t mkdir -p packages/{stage}/{origin}/fetch && \\
-\t cp -lR fetch/{stage}/{origin}/* packages/{stage}/{origin}/fetch && \\
-\t$(BUILDER) \\
-\t  build \\
-\t  --ulimit nofile=2048:16384 \\
-\t  --tag $(REGISTRY_USERNAME)/{stage}-{name}:{version} \\
-\t  --tag $(REGISTRY_USERNAME)/{stage}-{name}:latest \\
-\t  --provenance=false \\
-\t  --build-arg SOURCE_DATE_EPOCH=1 \\
-\t  --build-arg BUILDKIT_MULTI_PLATFORM=1 \\
-\t  --build-arg "BUILDKIT_DOCKERFILE_CHECK=skip=FromPlatformFlagConstDisallowed;error=true" \\
-\t  --output \\
-\t    name={name},type=image,rewrite-timestamp=true,annotation.org.opencontainers.image.version={version},push=true \\
-\t  {context_args_registry} \\
-\t  {build_args} \\
-\t  $(EXTRA_ARGS) \\
-\t  $(NOCACHE_FLAG) \\
-\t  $(CHECK_FLAG) \\
-\t  --platform={platform_arg} \\
-\t  --progress=$(PROGRESS) \\
-\t  -f packages/{stage}/{origin}/Containerfile \\
-\t  packages/{stage}/{origin}
-
-.PHONY: publish-{stage}-{name}
-publish-{stage}-{name}: out/{stage}-{name}/index.json
-\t [ "$(RELEASE)" != "0" ] || {{ echo "Error: RELEASE is not set"; exit 1; }}
-\t index_digest="$$(jq -r '.manifests[0].digest | split(":")[1]' out/{stage}-{name}/index.json)"; \\
-\t digest="$$(jq -r '.manifests[0].digest | split(":")[1]' out/{stage}-{name}/blobs/sha256/$${{index_digest}})"; \\
-\t signum="$$(ls -1 signatures/stagex/{stage}-{name}@sha256=$${{digest}} | wc -l )"; \\
-\t [ $${{signum}} -ge 2 ] || {{ echo "Error: Minimum signatures not met for {stage}-{name}"; exit 1; }}; \\
-\t env -C out/{stage}-{name} tar -cf - . | docker load
-\t docker tag stagex/{stage}-{name}:{version} stagex/{stage}-{name}:latest
-\t docker tag stagex/{stage}-{name}:latest stagex/{stage}-{name}:sx$(RELEASE)
-\t docker tag stagex/{stage}-{name}:{version} quay.io/stagex/{stage}-{name}:latest
-\t docker tag stagex/{stage}-{name}:{version} quay.io/stagex/{stage}-{name}:{version}
-\t docker tag stagex/{stage}-{name}:latest quay.io/stagex/{stage}-{name}:sx$(RELEASE)
-\t$(call push-image,stagex/{stage}-{name}:{version})
-\t$(call push-image,stagex/{stage}-{name}:sx$(RELEASE))
-\t$(call push-image,stagex/{stage}-{name}:latest)
-\t$(call push-image,quay.io/stagex/{stage}-{name}:{version})
-\t$(call push-image,quay.io/stagex/{stage}-{name}:sx$(RELEASE))
-\t$(call push-image,quay.io/stagex/{stage}-{name}:latest)
-
-"""
+  TARGET_TEMPLATE = open('src/template').read()
 
   def __init__(self):
     self.packages: MutableMapping[str, MutableMapping[str, PackageInfo]] = dict[str, MutableMapping[str, PackageInfo]]()
@@ -112,30 +20,35 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
 
     for stage, stage_packages in self.packages.items():
       print(f"\n\n.PHONY: {stage}\n{stage}:", end="")
-      for name, _ in stage_packages.items():
-        print(f" \\\n\t {name}", end="")
+      for name in set(stage_packages.keys()):
+        print(f" \\\n\t{name}", end="")
 
     print("\n\n.PHONY: all\nall:", end="")
 
     for stage, stage_packages in self.packages.items():
-      for name, _ in stage_packages.items():
-        print(f" \\\n\t {name}", end="")
+      for name in set(stage_packages.keys()):
+        print(f" \\\n\t{name}", end="")
 
     print("\n\n.PHONY: publish\npublish:", end="")
 
     for stage, stage_packages in self.packages.items():
-      for name, _ in stage_packages.items():
+      for name in set(stage_packages.keys()):
         print(f" \\\n\t publish-{stage}-{name}", end="")
 
+    print('\n')
+
+    os.mkdir('out/_mk')
     for stage, stage_packages in self.packages.items():
       for name, package in stage_packages.items():
+        f = open(f'out/_mk/{stage}-{package.name}.mk', 'w')
+
         platform = "$(PLATFORM)"
         # Force platform(s) for bootstrap packages which are only available for certain architectures
         # and later cross-compile subsequent stages for the user's desired platform
         if len(package.platforms) > 0:
           platform = ",".join(package.platforms)
 
-        print(
+        f.write(
           TargetGenerator.TARGET_TEMPLATE.format(
             **{
               "stage": stage,
@@ -153,6 +66,10 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
             }
           )
         )
+
+        print(f'-include out/_mk/{stage}-{package.name}.mk\n')
+
+        f.close()
 
 
   def init_packages(self, root_path: str = "packages"):

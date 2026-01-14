@@ -11,8 +11,8 @@ define verify
 	cat packages/$(CATEGORY)/digests.txt \
 	| sed 's/\([a-z0-9]\+\) \(.*\)/signatures\/stagex\/\2@sha256=\1/g' \
 	| while IFS= read -r sigdir; do \
-	    echo $$sigdir; \
-    	find $$sigdir -type f \
+		echo $$sigdir; \
+		find $$sigdir -type f \
 		| while IFS= read -r sig; do \
 			cat $$sig | gpg -v 2>&1 > /dev/null | grep "Good signature" || :; \
 		done; \
