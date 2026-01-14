@@ -18,9 +18,9 @@ RUN --network=none <<-EOF
 		install -Dm0644 LICENSE.txt -t /rootfs/usr/share/licenses/sequoia-sq/
 
 		#	completions
-		install -vDm 644 target/x86_64-unknown-linux-musl/release/build/sequoia-sq-b73ed0fbc956b95c/out/shell-completions/sq.bash /rootfs-completions/usr/share/bash-completion/completions/sq
-		install -vDm 644 target/x86_64-unknown-linux-musl/release/build/sequoia-sq-b73ed0fbc956b95c/out/shell-completions/_sq -t /rootfs-completions/usr/share/zsh/site-functions/
-		install -vDm 644 target/x86_64-unknown-linux-musl/release/build/sequoia-sq-b73ed0fbc956b95c/out/shell-completions/sq.fish -t /rootfs-completions/usr/share/fish/vendor_completions.d/
+		install -vDm 644 target/x86_64-unknown-linux-musl/release/build/sequoia-sq-*/out/shell-completions/sq.bash /rootfs-completions/usr/share/bash-completion/completions/sq
+		install -vDm 644 target/x86_64-unknown-linux-musl/release/build/sequoia-sq-*/out/shell-completions/_sq -t /rootfs-completions/usr/share/zsh/site-functions/
+		install -vDm 644 target/x86_64-unknown-linux-musl/release/build/sequoia-sq-*/out/shell-completions/sq.fish -t /rootfs-completions/usr/share/fish/vendor_completions.d/
 		install -Dm0644 LICENSE.txt -t /rootfs-completions/usr/share/licenses/sequoia-sq/
 EOF
 
