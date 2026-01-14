@@ -49,7 +49,7 @@ EOF
 SHELL ["/bin/sh","-l","-c"]
 
 ADD fetch/mrustc-${MRUSTC_VERSION}.tar.gz .
-WORKDIR mrustc-${MRUSTC_VERSION}
+WORKDIR /mrustc-${MRUSTC_VERSION}
 COPY fetch/rustc-${BOOTSTRAP_RUST_VERSION}.0-src.tar.gz .
 ADD patches/add-missing-std-lib-includes.patch .
 ADD patches/fix-lib-linking.patch .
