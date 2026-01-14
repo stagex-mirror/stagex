@@ -1,5 +1,4 @@
 FROM stagex/pallet-rust AS build
-COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-make . /
 ARG VERSION
 ADD fetch/${VERSION}.tar.gz .
