@@ -1,0 +1,12 @@
+[package]
+name = "snpguest"
+version = "0.10.0"
+description = "CLI utility for managing an AMD SEV-SNP enabled guest"
+licenses = "Apache-2.0"
+website = "https://github.com/virtee/snpguest"
+
+[sources.snpguest]
+hash = "5f4452fc92c365d9e41098ec9e7ebeb46bdf0a7150dc81a6bb2e022ff295789e"
+format = "tar.gz"
+file = "v{version}.{format}"
+mirrors = ["https://github.com/virtee/snpguest/archive/refs/tags/{file}"]
