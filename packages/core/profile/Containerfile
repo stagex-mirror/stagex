@@ -1,4 +1,4 @@
-FROM scratch as package
+FROM scratch AS package
 COPY <<-'EOF' /etc/profile
 	set -eux
 	TARGETARCH=${TARGETARCH:-}
