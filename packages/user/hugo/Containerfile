@@ -1,0 +1,35 @@
+FROM stagex/pallet-cgo AS build
+ARG VERSION
+ADD fetch/hugo-${VERSION}.tar.gz .
+WORKDIR /hugo-${VERSION}
+RUN go mod download
+RUN --network=none <<-EOF
+	set -eux
+
+	export rootfs="rootfs"
+	go build -v -o hugo
+	install -Dm0755 -t "/${rootfs}/usr/bin/" hugo
+	install -Dm0644 -t "/${rootfs}/usr/share/licenses/hugo/" LICENSE
+	unset rootfs
+
+	export rootfs="rootfs-extended"
+	go build -v -o hugo_exended --tags extended
+	install -Dm0755 hugo_exended "/${rootfs}/usr/bin/hugo"
+	install -Dm0644 -t "/${rootfs}/usr/share/licenses/hugo/" LICENSE
+	unset rootfs
+
+	export rootfs="rootfs-extended-with-deploy"
+	go build -v -o hugo_exended_with_deploy --tags extended,deploy
+	install -Dm0755 hugo_exended_with_deploy "/${rootfs}/usr/bin/hugo"
+	install -Dm0644 -t "/${rootfs}/usr/share/licenses/hugo/" LICENSE
+	unset rootfs
+EOF
+
+FROM stagex/core-filesystem AS package-hugo
+COPY --from=build /rootfs/ /
+
+FROM stagex/core-filesystem AS package-hugo-extended
+COPY --from=build /rootfs-extended/ /
+
+FROM stagex/core-filesystem AS package-hugo-extended-with-deploy
+COPY --from=build /rootfs-extended-with-deploy/ /
