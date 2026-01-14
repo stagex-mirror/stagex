@@ -22,6 +22,5 @@ RUN --network=none <<-EOF
 	make DESTDIR=/rootfs install
 EOF
 
-FROM build as package
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
