@@ -110,8 +110,6 @@ RUN --network=none <<-EOF
 EOF
 RUN make -j "$(nproc)" all-target-libgcc
 RUN make DESTDIR=/rootfs install-strip install-target-libgcc
-RUN mv /rootfs/usr/lib64/* /rootfs/usr/lib/
-RUN rm -rf /rootfs/usr/lib64
 
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
