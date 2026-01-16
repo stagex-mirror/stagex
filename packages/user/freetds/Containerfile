@@ -18,7 +18,7 @@ RUN --network=none <<-EOF
 		--with-unixodbc=/usr
 	make
 	mkdir -p /rootfs/usr/include
-	make DESTDIR="/rootfs" install
+	make -j1 DESTDIR="/rootfs" install
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
