@@ -48,8 +48,8 @@ COPY <<-'EOF' /etc/profile
 EOF
 SHELL ["/bin/sh","-l","-c"]
 
-ADD fetch/mrustc-${MRUSTC_VERSION}.tar.gz .
-WORKDIR /mrustc-${MRUSTC_VERSION}
+ADD fetch/mrustc-${MRUSTC_VERSION}.tar.gz /
+WORKDIR /mrustc-drgrove-aarch64
 COPY fetch/rustc-${BOOTSTRAP_RUST_VERSION}.0-src.tar.gz .
 ADD patches/add-missing-std-lib-includes.patch .
 ADD patches/fix-lib-linking.patch .
@@ -62,15 +62,20 @@ RUN --network=none <<-EOF
 	export OUTDIR_SUF=
 	export CXXFLAGS_EXTRA="-L/usr/lib/gcc/${ARCH}-linux-musl/${BOOTSTRAP_GCC_VERSION}/"
 	export RUSTC_TARGET="${TARGET}"
+	export MRUSTC_TARGET="${ARCH}-linux-musl"
 	export CC=/usr/bin/gcc
 	export CXX=/usr/bin/g++
+	export RUST_FLAGS="-L/usr/lib -L/usr/lib/llvm17/lib -L/usr/lib/llvm17/lib/clang/17/lib -Z force-unstable-if-unmarked -C target-feature=-crt-static -C link_args=-Wl,-rpath,\$ORIGIN/../lib"
+	export LD_LIBRARY_PATH="/usr/lib:/usr/lib/llvm17/lib:/usr/bin/llvm17/lib/clang/17/lib"
 	mkdir -p /etc/clang
 	echo "--gcc-install-dir=/usr/lib/gcc/${ARCH}-linux-musl/${BOOTSTRAP_GCC_VERSION}/" > /etc/clang/${ARCH}-unknown-linux-musl.cfg
 	ln -sf ${LLVM_BINDIR}/ld.lld /usr/bin/ld
-	patch -p1 < fix-lib-linking.patch
-	patch -p1 < add-missing-std-lib-includes.patch
-	make
+	# patch -p1 < fix-lib-linking.patch
+	# patch -p1 < add-missing-std-lib-includes.patch
+	pwd
+	ls -alh
 	make RUSTCSRC
+	make
 	make LIBS
 	export CXX="${LLVM_BINDIR}/clang++"
 	make -f minicargo.mk LLVM_CONFIG=${LLVM_CONFIG} output/cargo

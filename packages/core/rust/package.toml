@@ -4,10 +4,10 @@ version = "1.91.1"
 description = "Rust Programming Language toolchain"
 
 [sources.mrustc]
-hash = "baf1e86311e004a638b35730b4d7e72644938a6bbbbf65a862245b92ba5325ad"
+hash = "479e37f6fc12f18eef40263101387fe6127d5bde2f5dde0c3fd76231a87657b8"
 version = "0.11.2"
 file = "mrustc-{version}.tar.gz"
-mirrors = [ "https://github.com/thepowersgang/mrustc/archive/refs/tags/v{version}.tar.gz",]
+mirrors = [ "https://github.com/drGrove/mrustc/archive/refs/heads/drgrove/aarch64.tar.gz",]
 
 [sources.rust1_74_0]
 hash = "882b584bc321c5dcfe77cdaa69f277906b936255ef7808fcd5c7492925cf1049"
