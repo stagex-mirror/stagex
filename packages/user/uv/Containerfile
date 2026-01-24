@@ -7,6 +7,7 @@ WORKDIR /uv-${VERSION}
 RUN cargo fetch
 ENV SOURCE_DATE_EPOCH=1
 ENV RUST_BACKTRACE=1
+ENV RUSTFLAGS="-C codegen-units=1"
 RUN --network=none <<-EOF
        ARCH="$(uname -m)"
        cargo build \
