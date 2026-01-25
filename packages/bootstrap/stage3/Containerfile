@@ -201,6 +201,7 @@ ADD fetch/libucontext-${LIBUCONTEXT_VERSION}.tar.gz /
 WORKDIR /libucontext-libucontext-${LIBUCONTEXT_VERSION}
 RUN --network=none <<-EOF
 	export CC=${ARCH}-linux-musl-gcc
+	sed 's/\((wildcard .*)\)/(sort $\1)/g' -i Makefile
 	make -j1 ARCH=${ARCH} DESTDIR=/rootfs install
 	rm -rf /libucontext-*
 EOF
