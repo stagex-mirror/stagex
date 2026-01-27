@@ -12,27 +12,22 @@ COPY --from=stagex/core-openssl . /
 ADD fetch/libatomic_ops-${VERSION}.tar.gz .
 WORKDIR /libatomic_ops-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	cmake -G Ninja -B build \
 		-DCMAKE_BUILD_TYPE=None \
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DCMAKE_INSTALL_LIBDIR=lib \
-		-DBUILD_SHARED_LIBS=ON \
-		-DDOCTEST_USE_STANDARD_HEADERS=ON \
-		-DCMAKE_BUILD_TYPE=None \
+		-DAO_BUILD_SHARED_LIBS=ON \
 		-Dbuild_tests=OFF
 	cmake --build build
-	DESTDIR=/rootfs cmake --install build
 	cmake -G Ninja -B build-static \
 		-DCMAKE_BUILD_TYPE=None \
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DCMAKE_INSTALL_LIBDIR=lib \
-		-DBUILD_SHARED_LIBS=OFF \
-		-DDOCTEST_USE_STANDARD_HEADERS=ON \
-		-DCMAKE_BUILD_TYPE=None \
+		-DAO_BUILD_SHARED_LIBS=OFF \
 		-Dbuild_tests=OFF
 	cmake --build build-static
 	DESTDIR=/rootfs cmake --install build-static
+	DESTDIR=/rootfs cmake --install build
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

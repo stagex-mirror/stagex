@@ -5,12 +5,13 @@ COPY --from=stagex/core-coreutils . /
 ARG VERSION
 ADD fetch/kmod-${VERSION}.tar.xz .
 WORKDIR /kmod-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	meson setup \
 		--prefix=/usr \
 		--bindir=/usr/bin \
 		--sbindir=/usr/sbin \
-    . output
+		. output
 	meson compile -C output
 	DESTDIR=/rootfs meson install --no-rebuild -C output
 EOF

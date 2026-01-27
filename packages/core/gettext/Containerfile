@@ -17,7 +17,8 @@ RUN <<-EOF
 		--disable-libasprintf \
 		--disable-java \
 		--enable-static \
-		--with-included-libxml=no
+		--with-included-libxml=no \
+		gl_cv_func_getcwd_path_max="no, but it is partly working"
 	make -j "$(nproc)"
 	make DESTDIR=/rootfs install
 EOF

@@ -1,12 +1,12 @@
 [package]
 name = "redis"
-licence = "BSD-3-Clause"
+version = "8.0.3"
+description = "Cache, data structure server, document and vector query engine"
+license = "AGPL"
 website = "https://redis.io"
-version = "7.2.11"
-description = "Redis is an in-memory data structure store"
 
 [sources.redis]
-hash = "2f9886eca68d30114ad6a01da65631f8007d802fd3e6c9fac711251e6390323d"
+hash = "33f37290b00b14e9a884dd4dcba335febd63ea16c51609d34fa41e031ad587df"
 format = "tar.gz"
 file = "redis-{version}.{format}"
-mirrors = [ "https://download.redis.io/releases/{file}",]
+mirrors = [ "https://download.redis.io/releases/{file}"]

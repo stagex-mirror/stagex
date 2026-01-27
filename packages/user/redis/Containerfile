@@ -1,12 +1,13 @@
 FROM stagex/pallet-clang-gnu-busybox AS build
-ARG VERSION
 COPY --from=stagex/core-openssl . /
+ARG VERSION
 ADD fetch/redis-${VERSION}.tar.gz .
 WORKDIR /redis-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
-	make BUILD_TLS=yes all
+	make -j1 USE_JEMALLOC=no MALLOC=libc BUILD_TLS=yes all
 	make install PREFIX="/rootfs" INSTALL_BIN="/rootfs/usr/bin"
+	install -vDm644 -t /rootfs/usr/share/licenses/redis LICENSE.txt
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

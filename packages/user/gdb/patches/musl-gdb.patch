@@ -1,0 +1,17 @@
+--- a/gdb/ser-unix.c	
++++ a/gdb/ser-unix.c	
+@@ -529,12 +529,12 @@ set_custom_baudrate_linux (int fd, int rate)
+   /* Clear the current output baud rate and fill a new value.  */
+   tio.c_cflag &= ~CBAUD;
+   tio.c_cflag |= BOTHER;
+-  tio.c_ospeed = rate;
++  cfsetospeed(&tio, rate);
+ 
+   /* Clear the current input baud rate and fill a new value.  */
+   tio.c_cflag &= ~(CBAUD << IBSHIFT);
+   tio.c_cflag |= BOTHER << IBSHIFT;
+-  tio.c_ispeed = rate;
++  cfsetispeed(&tio, rate);
+ 
+   if (ioctl (fd, req_set, &tio) < 0)
+     perror_with_name (_("Can not set custom baud rate"));
