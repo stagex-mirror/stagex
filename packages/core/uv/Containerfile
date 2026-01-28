@@ -1,11 +1,25 @@
-FROM stagex/pallet-rust AS build
+FROM stagex/core-profile AS build
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-xz . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-libffi . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-rust . /
+COPY --from=stagex/core-git . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-ca-certificates . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-pkgconf . /
 COPY --from=stagex/core-make . /
 ARG VERSION
 ADD fetch/${VERSION}.tar.gz .
 WORKDIR /uv-${VERSION}
-RUN cargo fetch
+RUN cargo fetch --locked
 ENV SOURCE_DATE_EPOCH=1
-ENV RUST_BACKTRACE=1
 ENV RUSTFLAGS="-C codegen-units=1"
 RUN --network=none <<-EOF
 	ARCH="$(uname -m)"
