@@ -15,7 +15,7 @@ jobs:
   check:
     name: Check if non-staging -> main
     runs-on: codeberg-tiny-lazy
-    if: github.base_ref == 'main' && !startsWith(github.ref, 'refs/heads/release/') && github.head_ref != 'staging'
+    if: github.base_ref == 'main' && !startsWith(github.ref, 'release/') && github.head_ref != 'staging'
     steps:
       - name: Check if non-staging -> main
         run: echo 'Cannot merge non-staging branch to main'; exit 1
