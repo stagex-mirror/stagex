@@ -1,15 +1,5 @@
-FROM scratch AS build
+FROM stagex/pallet-python AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-libffi . /
-COPY --from=stagex/core-python . /
-COPY --from=stagex/core-py-flit . /
-COPY --from=stagex/core-py-gpep517 . /
-COPY --from=stagex/core-py-installer . /
-COPY --from=stagex/core-py-setuptools . /
-COPY --from=stagex/core-py-wheel . /
-COPY --from=stagex/core-zlib . /
 ADD fetch/py-sphinxcontrib-serializinghtml-${VERSION}.tar.gz .
 WORKDIR /sphinxcontrib-serializinghtml-${VERSION}
 RUN --network=none <<-EOF

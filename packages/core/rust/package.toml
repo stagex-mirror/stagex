@@ -1,6 +1,6 @@
 [package]
 name = "rust"
-version = "1.88.0"
+version = "1.91.1"
 description = "Rust Programming Language toolchain"
 
 [sources.mrustc]
@@ -49,13 +49,13 @@ mirrors = [ "https://static.rust-lang.org/dist/rustc-1.82.0-src.tar.gz",]
 hash = "722d773bd4eab2d828d7dd35b59f0b017ddf9a97ee2b46c1b7f7fac5c8841c6e"
 mirrors = [ "https://static.rust-lang.org/dist/rustc-1.83.0-src.tar.gz",]
 
-[sources.rust1_84_1]
-hash = "5e2fb5d49628a549f7671b2ccf9855ab379fd442831a7c2af16e0cdcc31bb375"
-mirrors = [ "https://static.rust-lang.org/dist/rustc-1.84.1-src.tar.gz",]
+[sources.rust1_84_0]
+hash = "15cee7395b07ffde022060455b3140366ec3a12cbbea8f1ef2ff371a9cca51bf"
+mirrors = [ "https://static.rust-lang.org/dist/rustc-1.84.0-src.tar.gz",]
 
-[sources.rust1_85_1]
-hash = "0f2995ca083598757a8d9a293939e569b035799e070f419a686b0996fb94238a"
-mirrors = [ "https://static.rust-lang.org/dist/rustc-1.85.1-src.tar.gz",]
+[sources.rust1_85_0]
+hash = "2f4f3142ffb7c8402139cfa0796e24baaac8b9fd3f96b2deec3b94b4045c6a8a"
+mirrors = [ "https://static.rust-lang.org/dist/rustc-1.85.0-src.tar.gz",]
 
 [sources.rust1_86_0]
 hash = "022a27286df67900a044d227d9db69d4732ec3d833e4ffc259c4425ed71eed80"
@@ -68,3 +68,15 @@ mirrors = [ "https://static.rust-lang.org/dist/rustc-1.87.0-src.tar.gz",]
 [sources.rust1_88_0]
 hash = "3a97544434848ae3d193d1d6bc83d6f24cb85c261ad95f955fde47ec64cfcfbe"
 mirrors = [ "https://static.rust-lang.org/dist/rustc-1.88.0-src.tar.gz",]
+
+[sources.rust1_89_0]
+hash = "2576f9f440dd99b0151bd28f59aa0ac6102d5c4f3ed4ef8a810c8dd05057250d"
+mirrors = [ "https://static.rust-lang.org/dist/rustc-1.89.0-src.tar.gz",]
+
+[sources.rust1_90_0]
+hash = "799a9f9cba4ed5351e071048bcf6b5560755d9009648def33a407dd4961f9b7e"
+mirrors = [ "https://static.rust-lang.org/dist/rustc-1.90.0-src.tar.gz",]
+
+[sources.rust1_91_1]
+hash = "38dce205d39f61571261f0444237a1ce9efecb970e760d8ec4d957af5b445723"
+mirrors = [ "https://static.rust-lang.org/dist/rustc-1.91.1-src.tar.gz",]

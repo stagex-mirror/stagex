@@ -1,14 +1,16 @@
 FROM scratch AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-make . /
-COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-libzstd . /
 ADD fetch/bzip2-${VERSION}.tar.gz .
 WORKDIR /bzip2-${VERSION}
 RUN --network=none <<-EOF
 	set -ex
+	ln -s /usr/bin/clang /usr/bin/gcc
 	make -j "$(nproc)" -f Makefile-libbz2_so all
 	make -j "$(nproc)" all
 	make PREFIX="/rootfs/usr" install

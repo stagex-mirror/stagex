@@ -1,15 +1,14 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
-ARG VERSION
+FROM stagex/pallet-clang-gnu-busybox AS build
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-ncurses . /
 COPY --from=stagex/core-readline . /
 COPY --from=stagex/user-util-linux . /
 COPY --from=stagex/user-pcsc-lite . /
+ARG VERSION
 ADD fetch/opensc-${VERSION}.tar.gz .
 WORKDIR /OpenSC-${VERSION}
 ENV CFLAGS="-U_FORTIFY_SOURCE -Wno-error"
 RUN --network=none <<-EOF
-		set -eux
 		./bootstrap
 		./configure \
 			--prefix=/usr \
@@ -23,7 +22,7 @@ RUN --network=none <<-EOF
 			--enable-pcsc \
 			--enable-sm \
 			--enable-piv-sm
-		make -j "$(nproc)"
+		make
 		make -C src/tools
 		make DESTDIR=/rootfs install
 		install -D -m644 etc/opensc.conf /rootfs/etc/opensc.conf

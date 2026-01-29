@@ -1,12 +1,11 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
-ARG VERSION
+FROM stagex/pallet-clang-gnu-busybox AS build
 COPY --from=stagex/core-gettext . /
 COPY --from=stagex/user-utmps . /
+ARG VERSION
 ADD fetch/linux-pam-${VERSION}.tar.xz .
 WORKDIR /Linux-PAM-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
-	export CFLAGS="-flto=auto $(pkg-config --cflags utmps)"
+	export CFLAGS="$(pkg-config --cflags utmps)"
 	export LDFLAGS=$(pkg-config --libs utmps)
 	./configure \
 		--prefix=/usr \
@@ -20,7 +19,7 @@ RUN --network=none <<-EOF
 		--disable-examples \
 		--sbindir=/usr/sbin \
 		--enable-securedir=/usr/lib/security
-	make -j "$(nproc)"
+	make
 	make DESTDIR=/rootfs install
 EOF
 FROM stagex/core-filesystem AS package

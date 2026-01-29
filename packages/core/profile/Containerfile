@@ -1,0 +1,28 @@
+FROM scratch AS package
+COPY <<-'EOF' /etc/profile
+	set -eux
+	TARGETARCH=${TARGETARCH:-}
+	ARCH=${ARCH:-}
+	[[ "$TARGETARCH" == "amd64" ]] && export ARCH="x86_64"
+	[[ "$TARGETARCH" == "arm64" ]] && export ARCH="aarch64"
+	[[ -n "$ARCH" ]] && TARGET=${ARCH}-unknown-linux-musl
+	export MAKEFLAGS="-j$(nproc)"
+	export CC=clang
+	export CXX=clang++
+	export LD=ld.lld
+	export CPP=clang-cpp
+	export AS=llvm-as
+	export AR=llvm-ar
+	export NM=llvm-nm
+	export DWP=llvm-dwp
+	export RANLIB=llvm-ranlib
+	export READELF=llvm-readelf
+	export STRIP=llvm-strip
+	export DEPMOD=llvm-depmod
+	export OBJCOPY=llvm-objcopy
+	export OBJDUMP=llvm-objdump
+	export SIZE=llvm-size
+	export LIBCC="/usr/lib/libclang_rt.builtins.a"
+	export LDFLAGS="--ld-path=/usr/bin/ld.lld"
+EOF
+SHELL ["/bin/sh","-l","-c"]

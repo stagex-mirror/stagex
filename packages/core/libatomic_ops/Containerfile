@@ -1,0 +1,33 @@
+FROM scratch AS build
+ARG VERSION
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-samurai . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/core-openssl . /
+ADD fetch/libatomic_ops-${VERSION}.tar.gz .
+WORKDIR /libatomic_ops-${VERSION}
+RUN --network=none <<-EOF
+	cmake -G Ninja -B build \
+		-DCMAKE_BUILD_TYPE=None \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DAO_BUILD_SHARED_LIBS=ON \
+		-Dbuild_tests=OFF
+	cmake --build build
+	cmake -G Ninja -B build-static \
+		-DCMAKE_BUILD_TYPE=None \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DAO_BUILD_SHARED_LIBS=OFF \
+		-Dbuild_tests=OFF
+	cmake --build build-static
+	DESTDIR=/rootfs cmake --install build-static
+	DESTDIR=/rootfs cmake --install build
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

@@ -1,4 +1,5 @@
-FROM scratch
+FROM stagex/core-profile
+COPY --from=stagex/core-clang-rt-devel . /
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-go . /
 COPY --from=stagex/core-ca-certificates . /

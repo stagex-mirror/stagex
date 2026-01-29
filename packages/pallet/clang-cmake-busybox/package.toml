@@ -1,3 +1,4 @@
 [package]
 name = "clang-cmake-busybox"
 description = "TODO"
+version_from = "core-clang"

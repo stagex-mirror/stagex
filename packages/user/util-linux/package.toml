@@ -1,10 +1,9 @@
 [package]
 name = "util-linux"
-version = "2.39.3"
+version = "2.41.2"
 description = "TODO"
 
 [sources.util-linux]
-hash = "d3315ff701890f4fa1dd38ea387767fcb9e1aaeb763eb904677c03d2a7a5bdc1"
-format = "tar.gz"
-file = "util-linux-{version}.{format}"
-mirrors = [ "https://codeload.github.com/util-linux/util-linux/legacy.{format}/v{version}",]
+hash = "534aa113a323d6866c5f46baf909618dcc60c391ad24a91814e5d21511cefd30"
+file = "util-linux-{version}.tar.gz"
+mirrors = [ "https://github.com/util-linux/util-linux/archive/refs/tags/v{version}.tar.gz",]

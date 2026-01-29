@@ -4,12 +4,11 @@ COPY --from=stagex/user-py-six . /
 ADD fetch/py-pam-${VERSION}.tar.gz .
 WORKDIR /python-pam-${VERSION}/
 RUN --network=none <<-EOF
-  set -eu
   python -m build --wheel --no-isolation
   python -m installer --destdir=/rootfs dist/*.whl
   install -Dm644 LICENSE /rootfs/usr/share/licenses/py-pam/LICENSE
   find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
 
-FROM stagex/core-filesystem AS py-pam
+FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs /

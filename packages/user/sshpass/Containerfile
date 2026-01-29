@@ -1,4 +1,4 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
 COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-openssl . /
@@ -6,7 +6,6 @@ COPY --from=stagex/user-openssh . /
 ADD fetch/sshpass-${VERSION}.tar.gz .
 WORKDIR /sshpass-${VERSION}
 RUN --network=none <<-EOF
-  set -eux
   autoreconf -vif
   ./configure \
     --prefix=/usr

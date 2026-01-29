@@ -1,21 +1,31 @@
 FROM stagex/pallet-rust AS build
-ARG VERSION
 COPY --from=stagex/core-gmp . /
 COPY --from=stagex/core-sqlite3 . /
 COPY --from=stagex/user-nettle . /
 COPY --from=stagex/user-capnproto . /
+ARG VERSION
 ADD fetch/sq-${VERSION}.tar.gz .
 WORKDIR /sequoia-sq-v${VERSION}
 ENV RUSTFLAGS='-C codegen-units=1'
 RUN cargo fetch
 RUN --network=none <<-EOF
-	set -eux
   cargo build \
     --frozen \
     --release \
     --target $(uname -m)-unknown-linux-musl
     mkdir -p /rootfs/usr/bin
     cp target/$(uname -m)-unknown-linux-musl/release/sq /rootfs/usr/bin/
+		install -Dm0644 LICENSE.txt -t /rootfs/usr/share/licenses/sequoia-sq/
+
+		#	completions
+		install -vDm 644 target/x86_64-unknown-linux-musl/release/build/sequoia-sq-*/out/shell-completions/sq.bash /rootfs-completions/usr/share/bash-completion/completions/sq
+		install -vDm 644 target/x86_64-unknown-linux-musl/release/build/sequoia-sq-*/out/shell-completions/_sq -t /rootfs-completions/usr/share/zsh/site-functions/
+		install -vDm 644 target/x86_64-unknown-linux-musl/release/build/sequoia-sq-*/out/shell-completions/sq.fish -t /rootfs-completions/usr/share/fish/vendor_completions.d/
+		install -Dm0644 LICENSE.txt -t /rootfs-completions/usr/share/licenses/sequoia-sq/
 EOF
-FROM stagex/core-filesystem AS package
+
+FROM stagex/core-filesystem AS package-sequoia-sq-completions
+COPY --from=build /rootfs-completions/ /
+
+FROM stagex/core-filesystem AS package-sequoia-sq
 COPY --from=build /rootfs/ /

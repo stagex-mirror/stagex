@@ -1,3 +1,4 @@
 [package]
 name = "gcc-gnu-busybox"
 description = "TODO"
+version_from = "core-gcc"

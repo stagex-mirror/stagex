@@ -1,12 +1,13 @@
 FROM scratch AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-tar . /
 COPY --from=stagex/core-lzip . /
-COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-libzstd . /
 ADD fetch/ed-${VERSION}.tar.lz .
 RUN tar --lzip -xf ed-${VERSION}.tar.lz
 WORKDIR /ed-${VERSION}

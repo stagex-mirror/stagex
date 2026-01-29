@@ -1,10 +1,12 @@
 [package]
 name = "sequoia-sq-wot"
-version = "0.13.2"
+version = "0.15.0"
 description = "A program for authenticating bindings between User IDs and certificates using OpenPGP's web of trust."
+license = "LGPL-2.0-only"
+website = "https://sequoia-pgp.gitlab.io/sequoia-wot/"
 
 [sources.sequoia-sq-wot]
-hash = "e4cffdb75e3da40df5df302ce37e1d71f7188e322ed19dd3ae7dc77d2d3cce62"
+hash = "66f58925029f5507a589296b9a78ccf54457b27f09b4fdbe1b24a713d1a6be5a"
 format = "tar.gz"
 file = "sequoia-wot-{version}.{format}"
-mirrors = [ "https://gitlab.com/sequoia-pgp/sequoia-wot/-/archive/sequoia-wot/v{version}/sequoia-wot-sequoia-wot-v{version}.{format}",]
+mirrors = [ "https://gitlab.com/sequoia-pgp/sequoia-wot/-/archive/v0.15.0/sequoia-wot-v{version}.{format}",]

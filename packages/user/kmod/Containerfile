@@ -1,0 +1,20 @@
+FROM stagex/pallet-clang-meson-busybox AS build
+COPY --from=stagex/user-scdoc . /
+COPY --from=stagex/core-bash . /
+COPY --from=stagex/core-coreutils . /
+ARG VERSION
+ADD fetch/kmod-${VERSION}.tar.xz .
+WORKDIR /kmod-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
+RUN --network=none <<-EOF
+	meson setup \
+		--prefix=/usr \
+		--bindir=/usr/bin \
+		--sbindir=/usr/sbin \
+		. output
+	meson compile -C output
+	DESTDIR=/rootfs meson install --no-rebuild -C output
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

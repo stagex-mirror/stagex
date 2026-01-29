@@ -1,4 +1,3 @@
 [package]
 name = "filesystem"
-description = "The base filesystem for stagex-based runtimes"
-subpackages = ["filesystem", "user-runtime"]
+description = "The base filesystem for stagex-based runtimes" 

@@ -1,13 +1,11 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
 COPY --from=stagex/pallet-python . /
 COPY --from=stagex/core-gettext . /
-COPY --from=stagex/core-xz . /
 COPY --from=stagex/core-gawk . /
 ADD fetch/grub-${VERSION}.tar.gz .
 WORKDIR /grub-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	sh autogen.sh
 	touch grub-core/extra_deps.lst
 	mkdir build-pc

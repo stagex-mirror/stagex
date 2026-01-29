@@ -1,12 +1,11 @@
 FROM scratch AS build
 ARG VERSION
-ENV SRC_HASH=1db2aedde89d0dea42b16d9528f894c8d15dae4e190b59aecc78f5a951276eab
-ENV SRC_SITE=https://mirrors.kernel.org/gnu/grep/${SRC_FILE}
 COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-make . /
-COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-libzstd . /
 ADD fetch/grep-${VERSION}.tar.xz .
 WORKDIR /grep-${VERSION}
 RUN --network=none <<-EOF

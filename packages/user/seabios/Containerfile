@@ -1,16 +1,23 @@
-FROM scratch AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-python . /
+
+#HACK: We get away with building this with GCC because this is firmware
+# It is neither a binary or library, and standalone. Compiler does not
+# actually matter that much in this case anyway
+# Of note, Linux kernel had, and fixed, the same problem: https://github.com/llvm/llvm-project/issues/32934
+COPY --from=stagex/core-mpfr . /
+COPY --from=stagex/core-isl . /
+COPY --from=stagex/core-mpc . /
+COPY --from=stagex/core-gmp . /
+COPY --from=stagex/core-gcc . /
+
 ADD fetch/seabios-${VERSION}.tar.gz .
 WORKDIR /seabios-rel-${VERSION}
 ADD config.* .
 RUN --network=none <<-EOF
-	set -ex
+	export CC=gcc
+	export AS=/usr/bin/as
 	mkdir output
 	echo "Stagex ${VERSION}" > .version
 	printf " \
@@ -33,7 +40,7 @@ RUN --network=none <<-EOF
 		config_name="$1";
 		output_name="$2";
 		binary_name="$3";
-		build_target="$4";
+		build_target="${4:-}";
 		make clean distclean;
 		cp "config.${config_name}" .config;
 		make oldnoconfig V=1;

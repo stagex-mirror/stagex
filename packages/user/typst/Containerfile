@@ -1,0 +1,22 @@
+FROM stagex/pallet-rust AS build
+ARG VERSION
+ADD fetch/typst-${VERSION}.tar.gz .
+WORKDIR /typst-${VERSION}
+RUN cargo fetch
+ENV RUSTFLAGS="-C target-feature=+crt-static"
+RUN --network=none <<-EOF
+	set -eux
+	ARCH="$(uname -m)"
+	cargo build \
+		--frozen \
+		--release \
+		--target "${ARCH}-unknown-linux-musl" \
+		--no-default-features \
+		--bin typst
+	mkdir -p /rootfs/usr/bin
+	cp target/${ARCH}-unknown-linux-musl/release/typst /rootfs/usr/bin/typst
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
+

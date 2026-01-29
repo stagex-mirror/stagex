@@ -1,0 +1,41 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+ARG VERSION
+COPY --from=stagex/pallet-python . /
+COPY --from=stagex/core-gettext . /
+COPY --from=stagex/core-readline . /
+COPY --from=stagex/core-ncurses . /
+COPY --from=stagex/core-gmp . /
+COPY --from=stagex/user-mpfr . /
+ADD fetch/gdb-${VERSION}.tar.gz .
+WORKDIR /gdb-${VERSION}
+ENV CFLAGS="-march=x86-64 -mtune=generic -O2 -ffile-prefix-map=OLD=NEW -frandom-seed=stagex -fno-lto"
+ENV CXXFLAGS="$CFLAGS"
+ENV CPPFLAGS="$CXXFLAGS"
+ADD patches/* .
+RUN --network=none <<-EOF
+	patch -p1 < musl-gdb.patch
+	./configure \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--localstatedir=/var \
+		--disable-werror \
+		--disable-nls \
+		--with-system-zlib \
+		--with-system-zstd \
+		--with-system-readline
+	#HACK: We were unable to find any way to pass arguments from top level configure to gnulib
+	# Autoconf will build gnulib differently depending on kernel/cpu getcwd implementation
+	# We force a safe default getcwd replacement that should work on all kernel/cpu combinations
+	sed \
+		's/^S\[\"host_configargs\"\]=" /S\[\"host_configargs\"\]=" gl_cv_func_getcwd_path_max='\''no, but it is partly working'\'' /g' \
+		-i config.status
+	make
+	make DESTDIR=/rootfs install
+	strip /rootfs/usr/bin/gdb
+	strip /rootfs/usr/bin/gdbserver
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

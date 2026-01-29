@@ -1,15 +1,12 @@
-FROM stagex/pallet-python AS build
+FROM stagex/pallet-cython AS build
 ARG VERSION
-COPY --from=stagex/user-py-pathspec . /
 ADD fetch/py-pluggy-${VERSION}.tar.gz .
 WORKDIR /pluggy-${VERSION}
 ENV SETUPTOOLS_SCM_PRETEND_VERSION=${VERSION}
 RUN --network=none <<-EOF
-	set -eu
-	python -m build --wheel --skip-dependency-check --no-isolation
-	python -m installer -d /rootfs dist/*.whl
+	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+	python -m installer -d /rootfs .dist/*.whl
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
-	install -Dm644 LICENSE -t /rootfs/usr/share/licenses/py-pluggy/
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

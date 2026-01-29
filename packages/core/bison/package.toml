@@ -1,10 +1,12 @@
 [package]
 name = "bison"
-version = "3.4.2"
-description = "TODO"
+version = "3.8.2"
+description = "The GNU general-purpose parser generator"
+website = "https://www.gnu.org/software/bison/bison.html"
+license = "GPL-3.0-or-later"
 
 [sources.bison]
-hash = "27d05534699735dc69e86add5b808d6cb35900ad3fd63fa82e3eb644336abfa0"
+hash = "9bba0214ccf7f1079c5d59210045227bcf619519840ebfa80cd3849cff5a5bf2"
 format = "tar.xz"
 file = "bison-{version}.{format}"
 mirrors = [ "http://mirrors.kernel.org/gnu/bison/{file}",]

@@ -1,10 +1,9 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
 ADD fetch/libmd-${VERSION}.tar.xz .
 WORKDIR /libmd-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
-	set -eux
 	autoreconf -vif
 	./configure \
 		--prefix=/usr \
@@ -12,7 +11,7 @@ RUN --network=none <<-EOF
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info \
 		--localstatedir=/var
-	make -j "$(nproc)"
+	make
 	make install DESTDIR=/rootfs
 EOF
 FROM stagex/core-filesystem AS package

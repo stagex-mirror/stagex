@@ -1,15 +1,15 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
 ARG VERSION_UNDER
 ADD fetch/file-${VERSION}.tar.gz .
 WORKDIR /file-FILE${VERSION_UNDER}/
 RUN --network=none <<-EOF
-	set -eux
 	autoreconf -fvi
 	./configure \
 	--prefix=/usr \
-	--datadir=/usr/share
-	make -j "$(nproc)"
+	--datadir=/usr/share \
+	--enable-static
+	make
 	make DESTDIR="/rootfs" install
 EOF
 FROM stagex/core-filesystem AS package

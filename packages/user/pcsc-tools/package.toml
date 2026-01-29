@@ -1,10 +1,12 @@
 [package]
 name = "pcsc-tools"
-version = "1.7.2"
-description = "TODO"
+version = "1.7.3"
+description = "tools to test a PC/SC driver, card or reader or send commands"
+website = "https://pcsc-tools.apdu.fr"
+license = "GPL-2.0-or-later"
 
 [sources.pcsc-tools]
-hash = "fd6fcc25e8140f613b3bf44b02eda4a8a429ee4939fb777f474e2c829f7b472c"
+hash = "c3b6d2b7a40bc066ebb8cd2512fb42e2b787a5c491a5715b8741743f4edb8cc2"
 format = "tar.bz2"
 file = "pcsc-tools-{version}.{format}"
 mirrors = [ "https://pcsc-tools.apdu.fr/{file}",]

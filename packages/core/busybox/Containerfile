@@ -1,9 +1,10 @@
-FROM scratch AS build
+FROM stagex/bootstrap-stage3 AS build
 ARG VERSION
-COPY --from=stagex/bootstrap-stage3 . /
+ARG TARGETARCH
 ADD fetch/busybox-${VERSION}.tar.bz2 .
 WORKDIR /busybox-${VERSION}
 ENV KCONFIG_NOTIMESTAMP=1
+ENV ARCH=$TARGETARCH
 RUN --network=none <<-EOF
 	set -eux
 	setConfs='
@@ -17,6 +18,14 @@ RUN --network=none <<-EOF
 	    CONFIG_FEATURE_UTMP
 	    CONFIG_FEATURE_WTMP
 	'
+	# Add hwaccel configs for ARM architectures
+	if [ "$TARGETARCH" = "arm64" ] || [ "$TARGETARCH" = "aarch64" ]; then
+	    unsetConfs="$unsetConfs
+	    CONFIG_SHA1_HWACCEL
+	    CONFIG_SHA256_HWACCEL
+	    CONFIG_MD5_HWACCEL
+	"
+	fi
 	make defconfig
 	for conf in $unsetConfs; do
 		sed -i \
@@ -42,8 +51,7 @@ RUN --network=none <<-EOF
 	done
 	make -j$(nproc)
 	mkdir -p /rootfs/usr/bin
-	install -Dm0644 -t /rootfs/usr/share/licenses/busybox/ LICENSE
-	install -Dm0755 -t /rootfs/usr/bin/ busybox
+	cp busybox /rootfs/usr/bin
 	cp busybox /usr/bin
 	cd /rootfs
 	/usr/bin/busybox --install -s usr/bin

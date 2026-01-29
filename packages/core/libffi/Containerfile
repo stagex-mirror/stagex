@@ -1,10 +1,11 @@
 FROM scratch AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-make . /
-COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-libzstd . /
 ADD fetch/libffi-${VERSION}.tar.gz .
 WORKDIR /libffi-${VERSION}
 RUN --network=none <<-EOF
@@ -17,8 +18,6 @@ RUN --network=none <<-EOF
 		--without-gcc-arch
 	make -j "$(nproc)"
 	make DESTDIR="/rootfs" install
-	mv /rootfs/usr/lib64/* /rootfs/usr/lib/
-	rm -rf /rootfs/usr/lib64
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

@@ -1,12 +1,14 @@
-FROM scratch AS build
+FROM stagex/bootstrap-stage3 AS build
+ARG TARGETARCH
 ARG VERSION
 COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
 ADD fetch/zlib-${VERSION}.tar.gz .
 WORKDIR /zlib-${VERSION}
+ENV CFLAGS="-fPIC"
 RUN --network=none <<-EOF
 	set -eux; \
 	./configure \

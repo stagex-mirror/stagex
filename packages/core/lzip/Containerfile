@@ -1,10 +1,11 @@
 FROM scratch AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-make . /
-COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-llvm . /
 ADD fetch/lzip-${VERSION}.tar.gz .
 WORKDIR /lzip-${VERSION}
 RUN --network=none <<-EOF

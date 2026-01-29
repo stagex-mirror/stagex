@@ -222,17 +222,18 @@ seminal paper by Ken Thomson, [Reflections on Trusting Trust](https://www.cs.cmu
 
 A comparison of `stagex` to other distros in some of the areas we care about:
 
-| Distro    | Trust Model   | OCI       | Packaging   | Bootstrapped | Reproducible |
-|-----------|---------------|-----------|-------------|--------------|--------------|
-| Stagex    | Decentralized | Native    | Declarative | Yes          | Yes          |
-| Guix      | Distributed   | Exported  | Declarative | Yes          | Mostly       |
-| Debian    | Distributed   | Published | Imperative  | No           | Mostly       |
-| Arch      | Distributed   | Published | Imperative  | No           | Mostly       |
-| Nix       | Centralized   | Exported  | Declarative | Partial      | Mostly       |
-| Yocto     | Centralized   | Exported  | None        | No           | No           |
-| Buildroot | Centralized   | Exported  | None        | No           | No           |
-| Alpine    | Centralized   | Published | Imperative  | No           | No           |
-| Fedora    | Centralized   | Published | Imperative  | No           | No           |
+| Distro    | Trust Model       | OCI        | Language           | FSB     | Repro.  | Base     | Libc     | Malloc       |
+|-----------|-------------------|------------|--------------------|---------|---------|----------|----------|--------------|
+| Stagex    | **Decentralized** | **Native** | **Containerfile**  | **Yes** | **Yes** | **LLVM** | **musl** | mallocng     |
+| Guix      | Distributed       | Exported   | Custom             | **Yes** | Mostly  | GNU      | glibc    | glibc        |
+| Debian    | Distributed       | Published  | Custom             | No      | Mostly  | GNU      | glibc    | glibc        |
+| Arch      | Distributed       | Published  | Shell              | No      | Mostly  | GNU      | glibc    | glibc        |
+| Nix       | Centralized       | Exported   | Custom             | Partial | Mostly  | GNU      | glibc    | glibc        |
+| Yocto     | Centralized       | Exported   | Custom             | No      | No      | GNU      | glibc    | glibc        |
+| Buildroot | Centralized       | Exported   | Makefile           | No      | No      | GNU      | glibc    | glibc        |
+| Chimera   | Centralized       | Published  | Python             | No      | No      | **LLVM** | **musl** | **mimalloc** |
+| Fedora    | Centralized       | Published  | Custom             | No      | No      | GNU      | glibc    | glibc        |
+| Alpine    | Centralized       | Published  | Shell              | No      | No      | GNU      | **musl** | mallocng     |
 
 ### Notes
 
@@ -248,10 +249,10 @@ A comparison of `stagex` to other distros in some of the areas we care about:
   * "Declarative": Can declare exact dependency chain at time of usage
   * "Imperative": Packaging system chooses dependencies for you at build time
   * "None": No packages at all, only source code
-* “Bootstrapped”
+* “FSB”
   * Can the entire distro be full-source-bootstrapped from Stage0
-* “Reproducible”
-  * Is the entire distro reproducible bit-for-bit identically
+* “Reproduced”
+  * Is the entire distro reproduced bit-for-bit identically for every release
 
 ### Signatures
 

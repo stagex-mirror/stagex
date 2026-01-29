@@ -1,14 +1,16 @@
-FROM stagex/pallet-gcc-meson-busybox AS build
+FROM stagex/pallet-clang-meson-busybox AS build
 ARG VERSION
 COPY --from=stagex/pallet-rust . /
 COPY --from=stagex/pallet-clang-cmake-busybox . /
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-samurai . /
 COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-m4 . /
 COPY --from=stagex/core-bison . /
 COPY --from=stagex/core-rust-bindgen . /
 COPY --from=stagex/user-eudev . /
 COPY --from=stagex/core-expat . /
+COPY --from=stagex/core-curl . /
 COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-findutils . /
 COPY --from=stagex/core-flex . /
@@ -37,8 +39,6 @@ COPY --from=stagex/user-vulkan-headers . /
 COPY --from=stagex/user-vulkan-loader . /
 COPY --from=stagex/user-wayland . /
 COPY --from=stagex/user-wayland-protocols . /
-COPY --from=stagex/core-zlib . /
-COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/user-libclc . /
 COPY --from=stagex/user-libxdamage . /
 COPY --from=stagex/user-libdrm . /
@@ -56,7 +56,6 @@ COPY --from=stagex/user-spirv-headers . /
 ADD fetch/mesa-${VERSION}.tar.xz .
 WORKDIR /mesa-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	meson env2mfile \
 		--native \
 		--system=linux \
@@ -64,13 +63,17 @@ RUN --network=none <<-EOF
 		--cpu=$(uname -m) \
 		--endian=little \
 		-o meson.cross
+EOF
+RUN --network=none <<-EOF
 	meson setup \
+		--prefix=/usr \
+		--bindir=/usr/bin \
+		--sbindir=/usr/sbin \
 		-Db_ndebug=true \
 		-Db_lto=false \
 		-Dallow-kcmp=enabled \
 		-Dexpat=enabled \
 		-Dintel-rt=enabled \
-		-Dpower8=enabled \
 		-Dshader-cache=enabled \
 		-Dxlib-lease=enabled \
 		-Dxmlconfig=enabled \
@@ -84,33 +87,27 @@ RUN --network=none <<-EOF
 		-Dplatforms=x11,wayland \
 		-Dllvm=enabled \
 		-Dshared-llvm=enabled \
-		-Dshared-glapi=enabled \
 		-Dgbm=enabled \
 		-Dglx=dri \
 		-Dopengl=true \
-		-Dosmesa=true \
 		-Dgles1=enabled \
 		-Dgles2=enabled \
 		-Degl=enabled \
 		-Dgallium-extra-hud=true \
-		-Dgallium-nine=true \
 		-Dgallium-rusticl=true \
 		-Dgallium-va=enabled \
-		-Dgallium-vdpau=enabled \
-		-Dgallium-xa=enabled \
+		-Dgallium-vdpau=disabled \
+    -Dglvnd=disabled \
 		-Drust_std=2021 \
 		-Dvideo-codecs=all \
-		. output || { cat /mesa-24.3.4/output/meson-logs/meson-log.txt && exit;}
-
+		. output
 	meson configure --no-pager output
 	meson compile -C output
 	DESTDIR=/rootfs meson install --no-rebuild -C output
 EOF
 
-FROM scratch AS package-osmesa
-COPY --from=stagex/core-busybox . /
+FROM stagex/core-filesystem AS package-osmesa
 COPY --from=build /rootfs/usr/local/lib/libOSMesa.so* /usr/lib/
-RUN mkdir -p /usr/lib/pkgconfig/
 COPY --from=build /rootfs/usr/local/lib/pkgconfig/* /usr/lib/pkgconfig/
 
 FROM stagex/core-filesystem AS package-mesa

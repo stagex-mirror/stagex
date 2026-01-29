@@ -1,12 +1,5 @@
-FROM scratch AS build
+FROM stagex/pallet-cgo AS build
 ARG VERSION
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-ca-certificates . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-go . /
 ADD fetch/ssh-tpm-agent-${VERSION}.tar.gz .
 WORKDIR /ssh-tpm-agent-${VERSION}
 ENV GOPROXY=https://proxy.golang.org,direct

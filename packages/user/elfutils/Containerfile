@@ -1,29 +1,37 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
+COPY --from=stagex/core-bash . /
+COPY --from=stagex/core-curl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/user-json-c . /
+COPY --from=stagex/user-libarchive . /
+COPY --from=stagex/core-bzip2 . /
+
 ARG VERSION
-COPY --from=stagex/core-gettext . /
-COPY --from=stagex/core-libzstd . /
 ADD fetch/elfutils-${VERSION}.tar.bz2 .
 WORKDIR /elfutils-${VERSION}
-ADD *.patch .
+ENV CFLAGS="-D_GNU_SOURCE -Wno-unaligned-access"
+ENV LDFLAGS="-Wl,-z,stack-size=2097152"
+ADD patches/musl-macros.patch .
+WORKDIR /elfutils-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	patch -p1 < musl-macros.patch
 	autoreconf -vif
-	CFLAGS="-D_GNU_SOURCE -Wno-error -Wno-null-dereference" \
-	./configure \
+	mkdir build
+	cd build
+	../configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info \
 		--localstatedir=/var \
-		--program-prefix=eu- \
-		--enable-deterministic-archives \
+		--disable-werror \
 		--disable-nls \
-		--disable-progs \
-		--disable-libdebuginfod \
-		--disable-debuginfod \
-		--with-zstd
-	make -j "$(nproc)"
+		--enable-debuginfod \
+		--enable-deterministic-archives \
+		--enable-libdebuginfod \
+		--with-zstd \
+		--program-prefix=eu-
+	make
 	make DESTDIR=/rootfs install
 EOF
 FROM stagex/core-filesystem AS package

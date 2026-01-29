@@ -1,9 +1,7 @@
-FROM stagex/pallet-python AS build
+FROM stagex/pallet-cython AS build
 ARG VERSION
-COPY --from=stagex/pallet-gcc-gnu-busybox . /
 COPY --from=stagex/core-py-cffi . /
 COPY --from=stagex/core-py-pep517 . /
-COPY --from=stagex/user-glibc . /
 COPY --from=stagex/user-libsodium . /
 COPY --from=stagex/user-py-pycparser . /
 ADD fetch/pynacl-${VERSION}.tar.gz .

@@ -22,8 +22,10 @@ out/{stage}-{name}/index.json: \\
 \tmkdir -p out/{stage}-{name} && \\
 \tmkdir -p fetch/{stage}/{origin} && \\
 \tpython3 src/fetch.py {origin} && \\
+\t rm -rf packages/{stage}/{origin}/fetch && \\
 \t mkdir -p packages/{stage}/{origin}/fetch && \\
-\t(cp -lR fetch/{stage}/{origin}/* packages/{stage}/{origin}/fetch || true) && \\
+\t ( [ -z "$$(ls -A fetch/{stage}/{origin})" ] || \\
+\t   cp -lR fetch/{stage}/{origin}/* packages/{stage}/{origin}/fetch ) && \\
 \t$(BUILDER) \\
 \t  build \\
 \t  --ulimit nofile=2048:16384 \\
@@ -31,8 +33,9 @@ out/{stage}-{name}/index.json: \\
 \t  --provenance=false \\
 \t  --build-arg SOURCE_DATE_EPOCH=1 \\
 \t  --build-arg BUILDKIT_MULTI_PLATFORM=1 \\
+\t  --build-arg "BUILDKIT_DOCKERFILE_CHECK=skip=FromPlatformFlagConstDisallowed;error=true" \\
 \t  --output \\
-\t    name={name},type=oci,rewrite-timestamp=true,force-compression=true,annotation.containerd.io/distribution.source.docker.io=stagex/{name},annotation.org.opencontainers.image.version={version},annotation.org.opencontainers.image.created=1970-01-01T00:00:01Z,tar=true,dest=- \\
+\t    name={stage}-{name},type=oci,rewrite-timestamp=true,force-compression=true,annotation.containerd.io/distribution.source.docker.io=stagex/{stage}-{name},annotation.org.opencontainers.image.version={version},annotation.org.opencontainers.image.created=1970-01-01T00:00:01Z,tar=true,dest=- \\
 \t  {context_args} \\
 \t  {build_args} \\
 \t  $(EXTRA_ARGS) \\
@@ -56,8 +59,9 @@ import-{stage}-{name}:
 registry-{stage}-{name}:
 \tmkdir -p fetch/{stage}/{origin} && \\
 \tpython3 src/fetch.py {origin} && \\
+\t rm -rf packages/{stage}/{origin}/fetch && \\
 \t mkdir -p packages/{stage}/{origin}/fetch && \\
-\t(cp -lR fetch/{stage}/{origin}/* packages/{stage}/{origin}/fetch || true) && \\
+\t cp -lR fetch/{stage}/{origin}/* packages/{stage}/{origin}/fetch && \\
 \t$(BUILDER) \\
 \t  build \\
 \t  --ulimit nofile=2048:16384 \\
@@ -66,6 +70,7 @@ registry-{stage}-{name}:
 \t  --provenance=false \\
 \t  --build-arg SOURCE_DATE_EPOCH=1 \\
 \t  --build-arg BUILDKIT_MULTI_PLATFORM=1 \\
+\t  --build-arg "BUILDKIT_DOCKERFILE_CHECK=skip=FromPlatformFlagConstDisallowed;error=true" \\
 \t  --output \\
 \t    name={name},type=image,rewrite-timestamp=true,annotation.org.opencontainers.image.version={version},push=true \\
 \t  {context_args_registry} \\

@@ -1,10 +1,11 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
 COPY --from=stagex/user-elfutils . /
 ADD fetch/iproute2-${VERSION}.tar.xz .
 WORKDIR /iproute2-${VERSION}
 RUN --network=none <<-EOF
-	make -j "$(nproc)" V=1
+	ln -s /usr/bin/clang /usr/bin/gcc
+	make V=1
 	make DESTDIR=/rootfs install
 	mv /rootfs/sbin /rootfs/usr/sbin
 	install -D -m644 include/libnetlink.h /rootfs/usr/include/libnetlink.h

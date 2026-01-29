@@ -1,13 +1,12 @@
-FROM stagex/pallet-gcc-cmake-busybox AS build
-ARG VERSION
+FROM stagex/pallet-clang-cmake-busybox AS build
 COPY --from=stagex/core-openssl . /
+ARG VERSION
 ADD fetch/tini-${VERSION}.tar.gz .
 WORKDIR /tini-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
-ENV CFLAGS="-DPR_SET_CHILD_SUBREAPER=36 -DPR_GET_CHILD_SUBREAPER=37"
+ENV CFLAGS="-DPR_SET_CHILD_SUBREAPER=36 -DPR_GET_CHILD_SUBREAPER=37 -Wno-strict-prototypes -Wno-macro-redefined -Wno-unused-command-line-argument"
 ADD fix-basename.patch .
 RUN --network=none <<-EOF
-	set -eux
 	patch -Np1 -i fix-basename.patch
 	cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=None
 	cmake --build build --target all tini-static

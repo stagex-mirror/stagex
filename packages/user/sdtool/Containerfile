@@ -1,15 +1,9 @@
-FROM scratch AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-linux-headers . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-musl . /
 ADD fetch/sdtool-${VERSION}.tar.gz .
 WORKDIR /sdtool-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
+	ln -s /usr/bin/clang /usr/bin/gcc
 	make all
 	install -D -m644 sdtool /rootfs/usr/bin/sdtool
 EOF

@@ -15,7 +15,6 @@ COPY --from=stagex/user-py-ruamel.yaml . /
 ADD fetch/aws-cli-${VERSION}.tar.gz .
 WORKDIR /aws-cli-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	gpep517 build-wheel \
 		--wheel-dir .dist \
 		--output-fd 3 3>&1 >&2

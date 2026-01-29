@@ -1,10 +1,9 @@
 [package]
 name = "coreutils"
-version = "9.4"
+version = "9.7"
 description = "TODO"
 
 [sources.coreutils]
-hash = "ea613a4cf44612326e917201bbbcdfbd301de21ffc3b59b6e5c07e040b275e52"
-format = "tar.xz"
-file = "coreutils-{version}.{format}"
+hash = "e8bb26ad0293f9b5a1fc43fb42ba970e312c66ce92c1b0b16713d7500db251bf"
+file = "coreutils-{version}.tar.xz"
 mirrors = [ "https://ftp.gnu.org/gnu/coreutils/{file}",]

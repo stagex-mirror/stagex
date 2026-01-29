@@ -5,13 +5,12 @@ COPY --from=stagex/core-sqlite3 . /
 COPY --from=stagex/user-nettle . /
 COPY --from=fetch . .
 RUN tar xf sequoia-wot-${VERSION}.tar.gz
-WORKDIR /sequoia-wot-sequoia-wot-v${VERSION}
+WORKDIR /sequoia-wot-v${VERSION}
 RUN cargo fetch
 ENV RUST_BACKTRACE=1
 ENV NETTLE_STATIC=yes
 ENV RUSTFLAGS='-C codegen-units=1 -C target-feature=+crt-static'
 RUN --network=none <<-EOF
-	set -eux
 	export RUST_BACKTRACE=full
 	ARCH="$(uname -m)"
 	cargo build \

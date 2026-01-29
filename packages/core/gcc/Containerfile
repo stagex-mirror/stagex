@@ -1,24 +1,67 @@
 FROM scratch AS build
 ARG VERSION
-ARG GMP_VERSION
-ARG MPFR_VERSION
-ARG MPC_VERSION
-ARG ISL_VERSION
+ARG APORTS_VERSION
 ARG TARGETARCH
-COPY --from=stagex/bootstrap-stage3 . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-libucontext . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-flex . /
+COPY --from=stagex/core-bison . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-texinfo . /
+COPY --from=stagex/core-gawk . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-gmp . /
+COPY --from=stagex/core-isl . /
+COPY --from=stagex/core-mpc . /
+COPY --from=stagex/core-mpfr . /
+COPY --from=stagex/core-libatomic_ops /usr/lib/libatomic_ops.so /usr/lib/libatomic.so
 ADD fetch/gcc-${VERSION}.tar.xz .
-ADD fetch/gmp-${GMP_VERSION}.tar.bz2 .
-ADD fetch/mpfr-${MPFR_VERSION}.tar.bz2 .
-ADD fetch/mpc-${MPC_VERSION}.tar.gz .
-ADD fetch/isl-${ISL_VERSION}.tar.bz2 .
+ADD fetch/aports-${APORTS_VERSION}.tar.gz .
 WORKDIR /gcc-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
-	mv ../gmp-${GMP_VERSION} gmp
-	mv ../mpfr-${MPFR_VERSION} mpfr
-	mv ../mpc-${MPC_VERSION} mpc
-	mv ../isl-${ISL_VERSION} isl
+	[[ "$TARGETARCH" == "amd64" ]] \
+		&& ARCH="x86_64"
+	[[ "$TARGETARCH" == "arm64" ]] \
+		&& ARCH="aarch64"
+	TARGET=$ARCH-unknown-linux-musl
+	LDFLAGS="-L/usr/lib/clang/20/lib/$ARCH-unknown-linux-musl"
+	LDFLAGS_FOR_TARGET="-L/usr/lib/clang/20/lib/$ARCH-unknown-linux-musl"
+	cp /aports-${APORTS_VERSION}/main/gcc//*.patch .
+	patch -p1 < 0001-posix_memalign.patch
+	patch -p1 < 0002-gcc-poison-system-directories.patch
+	patch -p1 < 0003-specs-turn-on-Wl-z-now-by-default.patch
+	patch -p1 < 0004-Turn-on-D_FORTIFY_SOURCE-2-by-default-for-C-C-ObjC-O.patch
+	patch -p1 < 0005-On-linux-targets-pass-as-needed-by-default-to-the-li.patch
+	patch -p1 < 0006-Enable-Wformat-and-Wformat-security-by-default.patch
+	patch -p1 < 0007-Enable-Wtrampolines-by-default.patch
+	patch -p1 < 0008-gcc-disable-SSP-on-ffreestanding-nostdlib-and-nodefa.patch
+	patch -p1 < 0009-gcc-params-set-default-ssp-buffer-size-to-4.patch
+	patch -p1 < 0010-Ensure-that-msgfmt-doesn-t-encounter-problems-during.patch
+	patch -p1 < 0011-Don-t-declare-asprintf-if-defined-as-a-macro.patch
+	patch -p1 < 0013-libgcc_s.patch
+	patch -p1 < 0014-nopie.patch
+	patch -p1 < 0016-build-fix-CXXFLAGS_FOR_BUILD-passing.patch
+	patch -p1 < 0017-add-fortify-headers-paths.patch
+	patch -p1 < 0019-DP-Use-push-state-pop-state-for-gold-as-well-when-li.patch
+	patch -p1 < 0023-x86_64-disable-multilib-support.patch
+	patch -p1 < 0025-always-build-libgcc_eh.a.patch
+	patch -p1 < 0029-configure-Add-enable-autolink-libatomic-use-in-LINK_.patch
+	patch -p1 < 0030-configure-fix-detection-of-atomic-builtins-in-libato.patch
+	patch -p1 < 0031-libstdc-do-not-throw-exceptions-for-non-C-locales-on.patch
+	patch -p1 < 0032-gdc-unconditionally-link-libgphobos-against-libucont.patch
+	patch -p1 < 0033-druntime-link-against-libucontext-on-all-platforms.patch
+	patch -p1 < 0035-libphobos-do-not-use-LFS64-symbols.patch
+	patch -p1 < 0037-loongarch-disable-multilib-support.patch
+	patch -p1 < 0038-static-PIE-ensure-static-reaches-the-linker.patch
+	patch -p1 < 0039-except-Don-t-use-the-cached-value-of-the-gcc_except_.patch
 	export TARGET=`echo ${TARGETARCH} | sed 's/amd64/x86_64/' | sed 's/arm64/aarch64/'`-linux-musl
+	export LDFLAGS="-L/usr/lib/clang/20/lib/${TARGET}"
 	./configure \
 		--target=${TARGET} \
 		--build=${TARGET} \
@@ -29,22 +72,45 @@ RUN --network=none <<-EOF
 		--libdir=/usr/lib \
 		--disable-cet \
 		--disable-fixed-point \
-		--disable-libstdcxx-pch \
-		--disable-multilib \
-		--disable-libsanitizer \
 		--disable-nls \
+		--disable-libsanitizer \
+		--disable-libssp \
+		--disable-libstdcxx-pch \
+    --disable-libquadmath \
+    --disable-libquadmath-support \
+    --disable-multilib \
+    --disable-symvers \
+		--disable-target-libiberty \
+    --disable-vtable-verify \
 		--disable-werror \
-		--enable-__cxa_atexit \
-		--enable-default-pie \
-		--enable-default-ssp \
+    --enable-checking=release \
+    --enable-autolink-libatomic \
+    --enable-__cxa_atexit \
+    --enable-default-pie \
+    --enable-default-ssp \
 		--enable-languages=c,c++ \
+		--enable-linker-build-id \
 		--enable-link-serialization=2 \
-		--enable-linker-build-id
+    --enable-threads \
+		--enable-shared \
+    --enable-tls \
+    --with-gmp \
+    --with-gnu-as \
+    --with-gnu-ld \
+    --with-isl \
+    --with-mpc \
+    --with-mpfr \
+    --with-system-zlib \
+    --with-system-zstd \
+    --with-linker-hash-style=gnu \
+		--with-gxx-include-dir=/usr/include/c++/15.2.0 \
+		--with-gxx-libcxx-include-dir=/usr/include/c++/v1 \
+    libat_cv_have_ifunc=no
 	make -j "$(nproc)"
-	make DESTDIR=/rootfs install-strip
-	ln -s gcc /rootfs/usr/bin/cc
-	mv /rootfs/usr/lib64/* /rootfs/usr/lib/
-	rm -rf /rootfs/usr/lib64
 EOF
+RUN make -j "$(nproc)" all-target-libgcc
+RUN make DESTDIR=/rootfs install-strip install-target-libgcc
+RUN [ ! -d /rootfs/usr/lib64 ] || ( mv /rootfs/usr/lib64/* /rootfs/usr/lib/ && rm -rf /rootfs/usr/lib64 )
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

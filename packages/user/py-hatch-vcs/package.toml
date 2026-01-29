@@ -6,7 +6,7 @@ website = "https://github.com/ofek/hatch-vcs"
 licenses = "MIT"
 
 [sources.py-hatch-vcs]
-hash = "a74465d21bb60eef75f01b3c189b73181f152a5eef2b26bd95de039e224953a7"
+hash = "0395fa126940340215090c344a2bf4e2a77bcbe7daab16f41b37b98c95809ff9"
 format = "tar.gz"
 file = "py-hatch-vcs-{version}.{format}"
-mirrors = [ "https://github.com/ofek/hatch-vcs/archive/refs/tags/v{version}.tar.gz",]
+mirrors = [ "https://files.pythonhosted.org/packages/source/h/hatch-vcs/hatch_vcs-{version}.{format}",]

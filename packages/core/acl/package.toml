@@ -7,4 +7,4 @@ description = "TODO"
 hash = "5f2bdbad629707aa7d85c623f994aa8a1d2dec55a73de5205bac0bf6058a2f7c"
 format = "tar.gz"
 file = "acl-{version}.{format}"
-mirrors = [ "https://download.savannah.nongnu.org/releases/acl/{file}",]
+mirrors = [ "https://download.savannah.nongnu.org/releases/acl/{file}","https://sources.voidlinux.org/acl-{version}/{file}"]

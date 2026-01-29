@@ -1,8 +1,7 @@
-FROM stagex/pallet-gcc-gnu-busybox AS base
+FROM stagex/pallet-clang-gnu-busybox AS base
+COPY --from=stagex/core-gettext . /
 ARG VERSION
 ADD fetch/zbar-${VERSION}.tar.gz .
-COPY --from=stagex/core-linux-headers . /
-COPY --from=stagex/core-gettext . /
 WORKDIR /zbar-${VERSION}
 RUN autoreconf -vfi
 
@@ -25,9 +24,10 @@ RUN --network=none <<-EOF
 		--without-python \
 		--without-qt \
 		--without-java
-	make -j "$(nproc)"
+	make
 	make DESTDIR=/rootfs install
 EOF
+
 FROM stagex/core-filesystem AS package-zbarcam
 COPY --from=build-zbarcam /rootfs/ /
 
@@ -51,9 +51,10 @@ RUN --network=none <<-EOF
 		--without-qt \
 		--without-java \
 		--without-v4l
-	make -j "$(nproc)"
+	make
 	make DESTDIR=/rootfs install
 EOF
+
 FROM stagex/core-filesystem AS package-libzbar
 COPY --from=build-libzbar /rootfs/ /
 
@@ -78,7 +79,7 @@ RUN --network=none <<-EOF
 		--without-java \
 		--without-v4l \
 		--enable-codecs=qrcode
-	make -j "$(nproc)"
+	make
 	make DESTDIR=/rootfs install
 EOF
 FROM stagex/core-filesystem AS package-libzbar-optimized-qrcode

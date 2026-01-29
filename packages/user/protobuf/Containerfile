@@ -1,11 +1,10 @@
-FROM stagex/pallet-gcc-cmake-busybox AS build
-ARG VERSION
+FROM stagex/pallet-clang-cmake-busybox AS build
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/user-abseil-cpp . /
+ARG VERSION
 ADD fetch/protobuf-${VERSION}.tar.gz .
 WORKDIR /protobuf-${VERSION}
 RUN <<-EOF
-	set -eux
 	cmake \
 		-B build \
 		-G Ninja \

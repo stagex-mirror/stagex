@@ -6,19 +6,19 @@ COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-readline . /
 COPY --from=stagex/core-ncurses . /
-
-
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-libzstd . /
 ADD fetch/luarocks-${VERSION}.tar.gz .
 WORKDIR /luarocks-${VERSION}
 RUN --network=none <<-EOF
   set -eux
-  ./configure --prefix=/usr
+  ./configure \
+		--prefix=/usr \
+		--with-lua-include=/usr/include/lua
   make ./build/luarocks ./build/luarocks-admin ./build/config-5.4.lua
   # busybox's wget is not compatible
   echo 'variables.WGET = "/invalid/path"' >> ./build/config-5.4.lua
-
   make DESTDIR="/rootfs" install
 EOF
-
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

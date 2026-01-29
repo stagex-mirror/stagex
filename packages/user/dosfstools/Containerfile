@@ -1,9 +1,8 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
 ADD fetch/dosfstools-${VERSION}.tar.gz .
 WORKDIR /dosfstools-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	./autogen.sh
 	./configure \
 		--prefix=/usr \

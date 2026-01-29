@@ -13,8 +13,8 @@ RUN --network=none <<-EOF
 	sitedir="$(python3 -c 'import site;print(site.getsitepackages()[0])')"
 	mkdir -p "/rootfs/${sitedir}"
 	cp -a packaging "/rootfs/$sitedir"
+	install -Dm644 -t /usr/share/licenses/py-packaging/ ../LICENSE.APACHE ../LICENSE.BSD 
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
-	install -Dm644 -t /usr/share/licenses/py-packaging/ ../LICENSE.APACHE ../LICENSE.BSD
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

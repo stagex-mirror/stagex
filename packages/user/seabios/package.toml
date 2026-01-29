@@ -1,10 +1,10 @@
 [package]
 name = "seabios"
-version = "1.16.3"
+version = "1.17.0"
 description = "TODO"
 
 [sources.seabios]
-hash = "1c1742a315b0c2fefa9390c8a50e2ac1a6f4806e0715aece6595eaf4477fcd8a"
+hash = "cb708a548e4244c5021590a5e78ab6e331ded1750120b687039042994033a07c"
 format = "tar.gz"
 file = "seabios-{version}.{format}"
 mirrors = [ "https://github.com/coreboot/seabios/archive/rel-{version}.{format}",]

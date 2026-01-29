@@ -1,11 +1,5 @@
 FROM stagex/pallet-cython AS build
 ARG VERSION
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-py-setuptools . /
-COPY --from=stagex/core-py-gpep517 . /
-COPY --from=stagex/core-py-wheel . /
-COPY --from=stagex/core-yaml . /
-COPY --from=stagex/core-python . /
 ADD fetch/${VERSION}.tar.gz .
 WORKDIR /pyyaml-${VERSION}
 RUN --network=none <<-EOF

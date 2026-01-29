@@ -1,12 +1,10 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
-ARG VERSION
-COPY --from=stagex/core-libzstd . /
+FROM stagex/pallet-clang-gnu-busybox AS build
 COPY --from=stagex/core-openssl . /
+ARG VERSION
 ADD fetch/openssh-${VERSION}.tar.gz .
 WORKDIR /openssh-${VERSION}
 ADD *.patch .
 RUN --network=none <<-EOF
-  set -eux
   autoreconf -vif
   ./configure \
     --prefix=/usr \
@@ -25,7 +23,7 @@ RUN --network=none <<-EOF
     --disable-lastlog \
     --disable-strip \
     --with-ssl-engine
-  make -j "$(nproc)"
+  make
 	make DESTDIR=/rootfs install
 EOF
 FROM stagex/core-filesystem AS package

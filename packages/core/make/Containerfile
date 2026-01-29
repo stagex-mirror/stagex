@@ -1,10 +1,9 @@
-FROM scratch AS build
+FROM stagex/bootstrap-stage3 AS build
+ARG TARGETARCH
 ARG VERSION
-COPY --from=stagex/bootstrap-stage3 . /
 ADD fetch/make-${VERSION}.tar.gz .
 WORKDIR /make-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	./configure \
 		--prefix=/usr \
 		--mandir=/usr/share/man \

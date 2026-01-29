@@ -1,23 +1,19 @@
 FROM stagex/pallet-clang-gnu-busybox AS build
-ARG VERSION
 COPY --from=stagex/pallet-python . /
 COPY --from=stagex/core-readline . /
 COPY --from=stagex/core-icu . /
-COPY --from=stagex/core-tcl . /
+COPY --from=stagex/core-tcl8 . /
 COPY --from=stagex/core-readline . /
 COPY --from=stagex/core-libxml2 . /
-COPY --from=stagex/user-util-linux . /
-COPY --from=stagex/user-e2fsprogs . /
+ARG VERSION
 ADD fetch/postgresql-${VERSION}.tar.gz .
 WORKDIR /postgresql-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	./configure \
 		--prefix=/usr \
 		--mandir=/usr/share/man \
 		--with-libxml \
 		--with-openssl \
-		--with-uuid=e2fs \
 		--disable-rpath \
 		--with-llvm \
 		--with-perl \
@@ -25,9 +21,9 @@ RUN --network=none <<-EOF
 		--with-icu \
 		--with-tcl \
 		--with-readline
-	make -j "$(nproc)" src config contrib all 
+	make src config contrib all 
 	make DESTDIR=/rootfs install
-	make -C contrib DESTDIR=/roofs install
+	make -C contrib DESTDIR=/rootfs install
 	install -Dm 644 COPYRIGHT /rootfs/usr/share/licenses/postgresql
 EOF
 FROM stagex/core-filesystem AS package

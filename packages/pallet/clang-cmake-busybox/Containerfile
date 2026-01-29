@@ -6,5 +6,3 @@ COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-python . /
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-pkgconf . /
-ENV CC=clang
-ENV CXX=clang++

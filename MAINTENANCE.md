@@ -62,6 +62,9 @@ git config commit.gpgsign true
 
 ## Release Branches
 
+The full tree must be reproduced on at least 2 different CPU vendors (e.g., 
+AMD and Intel) to detect vendor-specific microarchitectural backdoors.
+
 Release branches take the format `release/YYYY.MM.<release-revision>`. A release **MUST** include a
 PR to staging to introduce a bump to `digests.txt`, creating the release
 branch. Once the branch is created, other maintainers **MAY** begin reproducing.
@@ -120,20 +123,25 @@ When someone forks a repository, the following steps are required to adopt the P
 
 1. Add the new remote if you don't have it locally:
 ```sh
-git add remote <new-remote-name> http://<...>
+git remote add <new-remote-name> git@<...>
 ```
 
 2. Fetch the branches
 ```sh
-git fetch <new-remote-name> -a
+git fetch <new-remote-name>
 ```
 
 3. Create a new branch based on the one from the forked repo
 ```sh
-git checkout -b <new-remote-name>/<remote-branch-name> <new-remote-name>/<remote-branch-name>
+git checkout <new-remote-name>/branch-name 
 ```
 
 4. Add "adopt" commit
 ```sh
 git commit --allow-empty -m "Adopt"
+```
+
+5. Push the new commit
+```sh
+git push <new-remote-name> HEAD:<branch_name>
 ```

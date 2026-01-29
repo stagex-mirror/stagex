@@ -1,9 +1,11 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
+COPY --from=stagex/core-fmt . /
 ARG VERSION
 ADD fetch/libcap-ng-${VERSION}.tar.gz .
 WORKDIR /libcap-ng-${VERSION}
 RUN --network=none <<-EOF
-	set -eux;
+	set -eux
+	./autogen.sh
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \
@@ -11,8 +13,9 @@ RUN --network=none <<-EOF
 		--infodir=/usr/share/info \
 		--without-python \
 		--without-python3 \
-    --enable-static
-	make -j "$(nproc)"
+    --enable-static \
+		--enable-shared
+	make
 	make DESTDIR=/rootfs install
 EOF
 FROM stagex/core-filesystem AS package

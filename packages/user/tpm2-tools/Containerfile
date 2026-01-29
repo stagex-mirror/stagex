@@ -1,19 +1,18 @@
-FROM stagex/pallet-gcc-gnu-busybox as build
-ARG VERSION
+FROM stagex/pallet-clang-gnu-busybox AS build
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-curl . /
 COPY --from=stagex/user-tpm2-tss . /
 COPY --from=stagex/user-autoconf-archive . /
 COPY --from=stagex/user-util-linux . /
+ARG VERSION
 ADD fetch/tpm2-tools-${VERSION}.tar.gz .
 WORKDIR /tpm2-tools-${VERSION}
 RUN --network=none <<-EOF
-    set -eux
     printf "${VERSION}" > VERSION
     cat bootstrap | grep -ve ^git > bootstrap-nogit
     sh bootstrap-nogit
     ./configure --prefix=/usr
-    make -j "$(nproc)"
+    make
     make DESTDIR=/rootfs install
     rm -rf /rootfs/var/run
 EOF
