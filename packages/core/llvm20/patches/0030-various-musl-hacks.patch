@@ -31,11 +31,11 @@ index 93187dc1d0d9..bf1dc527c86f 100644
 @@ -15,6 +15,7 @@
  #if _LIBCPP_HAS_LOCALIZATION
  
- #  include <__locale_dir/locale_base_api.h>
-+#  include <__locale_dir/locale_base_api/musl.h>
- #  include <__memory/addressof.h>
- #  include <__memory/shared_count.h>
- #  include <__mutex/once_flag.h>
+ #include <__locale_dir/locale_base_api.h>
++#include <__locale_dir/locale_base_api/musl.h>
+ #include <__memory/shared_count.h>
+ #include <__mutex/once_flag.h>
+ #include <__type_traits/make_unsigned.h>
 diff --git a/libcxx/include/__locale_dir/locale_base_api.h b/libcxx/include/__locale_dir/locale_base_api.h
 index 9d92a5ea1f0a..3847b1cb5abf 100644
 --- a/libcxx/include/__locale_dir/locale_base_api.h

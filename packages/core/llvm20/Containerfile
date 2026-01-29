@@ -19,7 +19,7 @@ COPY <<-'EOF' /etc/profile
 EOF
 SHELL ["/bin/sh","-l","-c"]
 
-ADD fetch/llvm-${VERSION}.tar.xz .
+ADD fetch/llvm20-${VERSION}.tar.xz .
 ADD fetch/cports-${CPORTS_VERSION}.tar.gz .
 WORKDIR /llvm-project-${VERSION}.src
 ADD patches/*.patch .
@@ -55,6 +55,7 @@ RUN --network=none <<-EOF
 	patch -p1 < 0029-libcxx-default-to-type-2.patch
 	patch -p1 < 0030-various-musl-hacks.patch
 	patch -p1 < 0031-compiler-rt-cxx-header-build-order.patch
+	patch -p1 < 8f66fb784291c897a965a9ee4c280e314dc8cee4.patch
 	# Massive hack to force inject settings that are for some reason ignored as configure flags
 	find compiler-rt -iname CMakeLists.txt -exec sed -i '1s/^/set(COMPILER_RT_BUILD_SANITIZERS OFF)\n/' {} \;
 	find compiler-rt -iname CMakeLists.txt -exec sed -i '1s/^/set(COMPILER_RT_BUILD_GWP_ASAN OFF)\n/' {} \;
@@ -62,13 +63,6 @@ RUN --network=none <<-EOF
 	find compiler-rt -iname *.cmake -exec sed -i '1s/^/set(COMPILER_RT_BUILD_SANITIZERS OFF)\n/' {} \;
 	find compiler-rt -iname *.cmake -exec sed -i '1s/^/set(COMPILER_RT_BUILD_GWP_ASAN OFF)\n/' {} \;
 	find compiler-rt -iname *.cmake -exec sed -i '1s/^/set(COMPILER_RT_HAS_GWP_ASAN FALSE)\n/' {} \;
-	# `-DLIBCXX_HAS_MUSL_LIBC=ON` wasn't respected by `__locale_dir/support/linux.h`
-	# `export CXXFLAGS="-D_LIBCPP_HAS_MUSL_LIBC"` caused `gcc` to segfault
-	# This replaces the problematic configuration with the absolute `1`
-	for file in $(find ./libcxx/include/ -name "*.h"); do
-	  sed --in-place s/"defined(_LIBCPP_HAS_MUSL_LIBC)"/_LIBCPP_HAS_MUSL_LIBC/g $file
-	  sed --in-place s/_LIBCPP_HAS_MUSL_LIBC/1/g $file
-	done
 	cmake \
 		-B build \
 		-S llvm \
@@ -102,6 +96,7 @@ RUN --network=none <<-EOF
 		-DLIBCXX_CXX_ABI=libcxxabi \
 		-DLIBCXX_USE_COMPILER_RT=ON \
 		-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=OFF \
+		-DLIBCXX_HAS_MUSL_LIBC=ON \
 		-DLIBCXX_HARDENING_MODE=fast \
 		-DLIBCXX_ENABLE_LOCALIZATION=OFF \
 		-DLIBCXX_ENABLE_FILESYSTEM=OFF \
@@ -130,7 +125,7 @@ RUN --network=none <<-EOF
 	#HACK: The only reason we are not using "all" here is because AMDGPU does not build deterministically
 	# Zig hard requires "all" so this also forces a messy patch there as well to remove AMDGPU support as well
 	export LLVM_TARGETS_TO_BUILD="AArch64;ARM;AVR;BPF;Hexagon;Lanai;LoongArch;Mips;MSP430;NVPTX;PowerPC;RISCV;Sparc;SPIRV;SystemZ;VE;WebAssembly;X86;XCore"
-	export LIBCC="/usr/lib/clang/21/lib/${TARGET}/libclang_rt.builtins.a"
+	export LIBCC="/usr/lib/clang/20/lib/${TARGET}/libclang_rt.builtins.a"
 	rm -rf build
 	cmake \
 		-B build \
@@ -181,6 +176,7 @@ RUN --network=none <<-EOF
 		-DLIBCXX_CXX_ABI=libcxxabi \
 		-DLIBCXX_USE_COMPILER_RT=ON \
 		-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=OFF \
+		-DLIBCXX_HAS_MUSL_LIBC=ON \
 		-DLIBCXX_HARDENING_MODE=fast \
 		-DLIBCXX_ENABLE_LOCALIZATION=OFF \
 		-DLIBCXX_ENABLE_FILESYSTEM=OFF \
@@ -208,8 +204,8 @@ RUN --network=none <<-EOF
 	ln -sf /usr/bin/clang++ /rootfs/usr/bin/c++
 	ln -sf /usr/bin/clang /rootfs/usr/bin/cc
 	ln -sf /usr/bin/ld.lld /rootfs/usr/bin/ld
-	ln -sf /usr/lib/clang/21/lib/${TARGET}/libclang_rt.builtins.a /rootfs/usr/lib/libclang_rt.builtins.a
-	strip /rootfs/usr/lib/libLLVM.so.21.1
+	ln -sf /usr/lib/clang/20/lib/${TARGET}/libclang_rt.builtins.a /rootfs/usr/lib/libclang_rt.builtins.a
+	strip /rootfs/usr/lib/libLLVM.so.20.1
 EOF
 
 FROM build AS build-llvm-libgcc
@@ -244,7 +240,7 @@ RUN --network=none <<-EOF
 		-Wl,-soname,libgcc_s.so.1 \
 		-Wl,--no-undefined \
 		-Wl,--whole-archive \
-		build/lib/clang/21/lib/${TARGET}/libclang_rt.builtins.a \
+		build/lib/clang/20/lib/${TARGET}/libclang_rt.builtins.a \
 		-Wl,--no-as-needed \
 		-lc \
 		-lunwind \
@@ -252,194 +248,5 @@ RUN --network=none <<-EOF
 	cp build/libgcc_s.so.1 /rootfs/usr/lib/
 EOF
 
-FROM stagex/core-filesystem AS package-llvm
+FROM stagex/core-filesystem AS package-llvm19
 COPY --from=build /rootfs/ /
-
-FROM stagex/core-filesystem AS package-llvm-libgcc
-COPY --from=build-llvm-libgcc /rootfs/ /
-
-#FROM stagex/core-filesystem AS package-clang-tools-extra
-#COPY --from=build /rootfs/usr/include/clang-tidy /usr/include/
-#COPY --from=build /rootfs/usr/share/clang/*tidy* /usr/share/clang/
-#COPY --from=build /rootfs/usr/bin/clang-apply-replacements /usr/bin/
-#COPY --from=build /rootfs/usr/bin/clang-query /usr/bin/
-#COPY --from=build /rootfs/usr/bin/clang-tidy /usr/bin/
-#COPY --from=build /rootfs/usr/bin/clang-tidy-confusable-chars-gen /usr/bin
-#COPY --from=build /rootfs/usr/bin/diagtool /usr/bin
-#COPY --from=build /rootfs/usr/bin/find-all-symbols /usr/bin
-#COPY --from=build /rootfs/usr/bin/hmaptool /usr/bin
-#COPY --from=build /rootfs/usr/bin/modularize /usr/bin
-#COPY --from=build /rootfs/usr/bin/pp-trace /usr/bin
-#COPY --from=build /rootfs/usr/bin/run-clang-tidy /usr/bin
-#COPY --from=build /rootfs/usr/bin/sancov /usr/bin
-
-#FROM stagex/core-filesystem AS package-clang-tools-extra-static
-#COPY --from=build /rootfs/usr/lib/libclangApplyReplacements* /usr/lib/
-#COPY --from=build /rootfs/usr/lib/libclangQuery* /usr/lib/
-#COPY --from=build /rootfs/usr/lib/libclangTidy* /usr/lib/
-
-FROM stagex/core-filesystem AS package-llvm-binutils
-COPY --from=build /rootfs/usr/bin/addr2line /usr/bin/
-COPY --from=build /rootfs/usr/bin/ar /usr/bin/
-COPY --from=build /rootfs/usr/bin/c++filt /usr/bin/
-COPY --from=build /rootfs/usr/bin/dlltool /usr/bin/
-COPY --from=build /rootfs/usr/bin/dwp /usr/bin/
-COPY --from=build /rootfs/usr/bin/llvm-addr2line /usr/bin/
-COPY --from=build /rootfs/usr/bin/llvm-ar /usr/bin/
-COPY --from=build /rootfs/usr/bin/llvm-bitcode-strip /usr/bin/
-COPY --from=build /rootfs/usr/bin/llvm-cxxfilt /usr/bin/
-COPY --from=build /rootfs/usr/bin/llvm-dlltool /usr/bin/
-COPY --from=build /rootfs/usr/bin/llvm-dwp /usr/bin/
-COPY --from=build /rootfs/usr/bin/llvm-install-name-tool /usr/bin/
-COPY --from=build /rootfs/usr/bin/llvm-lib /usr/bin/
-COPY --from=build /rootfs/usr/bin/llvm-nm /usr/bin/
-COPY --from=build /rootfs/usr/bin/llvm-objcopy /usr/bin/
-COPY --from=build /rootfs/usr/bin/llvm-objdump /usr/bin/
-COPY --from=build /rootfs/usr/bin/llvm-ranlib /usr/bin/
-COPY --from=build /rootfs/usr/bin/llvm-rc /usr/bin/
-COPY --from=build /rootfs/usr/bin/llvm-readelf /usr/bin/
-COPY --from=build /rootfs/usr/bin/llvm-readobj /usr/bin/
-COPY --from=build /rootfs/usr/bin/llvm-size /usr/bin/
-COPY --from=build /rootfs/usr/bin/llvm-strings /usr/bin/
-COPY --from=build /rootfs/usr/bin/llvm-strip /usr/bin/
-COPY --from=build /rootfs/usr/bin/llvm-symbolizer /usr/bin/
-COPY --from=build /rootfs/usr/bin/nm /usr/bin/
-COPY --from=build /rootfs/usr/bin/objcopy /usr/bin/
-COPY --from=build /rootfs/usr/bin/objdump /usr/bin/
-COPY --from=build /rootfs/usr/bin/ranlib /usr/bin/
-COPY --from=build /rootfs/usr/bin/readelf /usr/bin/
-COPY --from=build /rootfs/usr/bin/size /usr/bin/
-COPY --from=build /rootfs/usr/bin/strings /usr/bin/
-COPY --from=build /rootfs/usr/bin/strip /usr/bin/
-COPY --from=build /rootfs/usr/bin/windres /usr/bin/
-
-FROM stagex/core-filesystem AS package-clang
-COPY --from=build /rootfs/usr/bin/*clang* /usr/bin/
-COPY --from=build /rootfs/usr/bin/*-cc /usr/bin/
-COPY --from=build /rootfs/usr/bin/*-c++ /usr/bin/
-COPY --from=build /rootfs/usr/bin/c-index-test /usr/bin/
-COPY --from=build /rootfs/usr/bin/cc /usr/bin/
-#COPY --from=build /rootfs/usr/bin/c89 /usr/bin/
-#COPY --from=build /rootfs/usr/bin/c99 /usr/bin/
-COPY --from=build /rootfs/usr/bin/c++ /usr/bin/
-COPY --from=build /rootfs/usr/lib/cmake/clang /usr/lib/cmake/
-COPY --from=build /rootfs/usr/share/clang /usr/share/
-#COPY --from=build /rootfs/usr/share/clang-docs /usr/share/
-
-FROM stagex/core-filesystem AS package-clang-rt-devel
-COPY --from=build /rootfs/usr/lib/clang/. /usr/lib/clang/
-
-FROM stagex/core-filesystem AS package-clang-devel-static
-COPY --from=build /rootfs/usr/lib/libclang*.a /usr/lib/
-
-FROM stagex/core-filesystem AS package-clang-devel
-COPY --from=build /rootfs/usr/include/clang /usr/include/
-COPY --from=build /rootfs/usr/include/clang-c /usr/include/
-COPY --from=build /rootfs/usr/lib/libclang*.so /usr/lib/
-
-FROM stagex/core-filesystem AS package-clang-analyzer
-COPY --from=build /rootfs/usr/bin/analyze-build /usr/bin/
-COPY --from=build /rootfs/usr/bin/intercept-build /usr/bin/
-COPY --from=build /rootfs/usr/bin/scan-* /usr/bin/
-COPY --from=build /rootfs/usr/lib/libear /usr/lib/
-COPY --from=build /rootfs/usr/lib/libscanbuild /usr/lib/
-COPY --from=build /rootfs/usr/libexec/analyze-* /usr/libexec/
-COPY --from=build /rootfs/usr/libexec/*analyzer /usr/libexec/
-COPY --from=build /rootfs/usr/libexec/intercept-* /usr/libexec/
-COPY --from=build /rootfs/usr/share/scan-* /usr/share/
-COPY --from=build /rootfs/usr/share/man/man1/scan-build.1 /usr/share/man/man1/
-
-FROM stagex/core-filesystem AS package-clang-libs
-COPY --from=build /rootfs/usr/lib/libclang.so.* /usr/lib/
-
-FROM stagex/core-filesystem AS package-clang-cpp-libs
-COPY --from=build /rootfs/usr/lib/libclang-cpp.so.* /usr/lib/
-
-FROM stagex/core-filesystem AS package-mlir
-COPY --from=build /rootfs/usr/bin/mlir* /usr/bin/
-
-FROM stagex/core-filesystem AS package-mlir-libs
-COPY --from=build /rootfs/usr/lib/libMLIR*.so /usr/lib/
-COPY --from=build /rootfs/usr/lib/libmlir*.so /usr/lib/
-
-FROM stagex/core-filesystem AS package-mlir-devel
-COPY --from=build /rootfs/usr/include/mlir* /usr/include/
-COPY --from=build /rootfs/usr/lib/libMLIR*.so /usr/lib/
-COPY --from=build /rootfs/usr/lib/libmlir*.so /usr/lib/
-#COPY --from=build /rootfs/usr/lib/cmake/mlir /usr/lib/cmake/
-
-FROM stagex/core-filesystem AS package-mlir-devel-static
-COPY --from=build /rootfs/usr/lib/libMLIR*.a /usr/lib/
-
-FROM stagex/core-filesystem AS package-libunwind
-COPY --from=build /rootfs/usr/lib/libunwind.so.* /usr/lib/
-
-FROM stagex/core-filesystem AS package-libunwind-devel
-COPY --from=build /rootfs/usr/lib/libunwind.so /usr/lib/
-COPY --from=build /rootfs/usr/include/*unwind* /usr/include/
-COPY --from=build /rootfs/usr/include/mach-o /usr/include/
-
-FROM stagex/core-filesystem AS package-libunwind-devel-static
-COPY --from=build /rootfs/usr/lib/libunwind.a /usr/lib/
-
-FROM stagex/core-filesystem AS package-libcxx
-COPY --from=build /rootfs/usr/lib/libc++.so.* /usr/lib/
-
-FROM stagex/core-filesystem AS package-libcxx-devel
-COPY --from=build /rootfs/usr/lib/libc++.modules.json /usr/lib/
-COPY --from=build /rootfs/usr/lib/libc++.so /usr/lib/
-COPY --from=build /rootfs/usr/lib/libc++experimental.a /usr/lib/
-COPY --from=build /rootfs/usr/include/c++ /usr/include/
-COPY --from=build /rootfs/usr/share/libc++ /usr/share/
-
-FROM stagex/core-filesystem AS package-libcxx-devel-static
-COPY --from=build /rootfs/usr/lib/libc++.a /usr/lib/
-
-FROM stagex/core-filesystem AS package-libcxxabi
-COPY --from=build /rootfs/usr/lib/libc++abi.so.* /usr/lib/
-
-FROM stagex/core-filesystem AS package-libcxxabi-devel
-COPY --from=build /rootfs/usr/lib/libc++abi.so /usr/lib/
-COPY --from=build /rootfs/usr/include/c++/v1/cxxabi.h /usr/include/c++/v1/
-COPY --from=build /rootfs/usr/include/c++/v1/__cxxabi_config.h /usr/include/c++/v1/
-
-FROM stagex/core-filesystem AS package-libcxxabi-devel-static
-COPY --from=build /rootfs/usr/lib/libc++abi.a /usr/lib/
-
-FROM stagex/core-filesystem AS package-llvm-libs
-COPY --from=build /rootfs/usr/lib/libLLVM.so.* /usr/lib/
-COPY --from=build /rootfs/usr/lib/libLLVM-*.so.* /usr/lib/
-
-FROM stagex/core-filesystem AS package-lld
-COPY --from=build /rootfs/usr/bin/*-ld* /usr/bin/
-COPY --from=build /rootfs/usr/bin/ld /usr/bin/
-COPY --from=build /rootfs/usr/bin/lld* /usr/bin/
-COPY --from=build /rootfs/usr/bin/ld.lld* /usr/bin/
-COPY --from=build /rootfs/usr/bin/ld64.lld* /usr/bin/
-
-FROM stagex/core-filesystem AS package-lld-devel
-COPY --from=build /rootfs/usr/include/lld /usr/include/
-COPY --from=build /rootfs/usr/lib/cmake/lld /usr/lib/cmake/
-
-FROM stagex/core-filesystem AS package-llvm-linker-tools
-COPY --from=build /rootfs/usr/lib/libLTO.so.* /usr/lib/
-
-FROM stagex/core-filesystem AS package-llvm-devel
-COPY --from=build /rootfs/usr/include/ /usr/include/
-COPY --from=build /rootfs/usr/lib/*.so /usr/lib/
-COPY --from=build /rootfs/usr/lib/libRemarks.so.* /usr/lib/
-COPY --from=build /rootfs/usr/lib/cmake /usr/lib/
-
-FROM stagex/core-filesystem AS package-llvm-devel-static
-COPY --from=build /rootfs/usr/lib/*.a /usr/lib/
-
-FROM stagex/core-filesystem AS package-llvm-tools
-COPY --from=build /rootfs/usr/bin/FileCheck /usr/bin/
-COPY --from=build /rootfs/usr/bin/count /usr/bin/
-COPY --from=build /rootfs/usr/bin/not /usr/bin/
-COPY --from=build /rootfs/usr/bin/split-file /usr/bin/
-COPY --from=build /rootfs/usr/bin/yaml-bench /usr/bin/
-COPY --from=build /rootfs/usr/share/opt-viewer /usr/share/
-
-FROM stagex/core-filesystem AS package-llvm-runtime
-COPY --from=build /rootfs/usr/bin/lli /usr/bin/
