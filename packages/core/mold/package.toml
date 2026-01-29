@@ -1,0 +1,10 @@
+[package]
+name = "mold"
+version = "2.40.4"
+description = "Modern linker focused on speed and reproducibility"
+license = "MIT"
+
+[sources.mold]
+hash = "69414c702ec1084e1fa8ca16da24f167f549e5e11e9ecd5d70a8dcda6f08c249"
+file = "mold-{version}.tar.gz"
+mirrors = [ "https://github.com/rui314/mold/archive/refs/tags/v{version}.tar.gz" ]

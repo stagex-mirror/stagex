@@ -1,0 +1,30 @@
+FROM scratch AS build
+ARG VERSION
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-samurai . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-onetbb . /
+ADD fetch/mold-${VERSION}.tar.gz .
+WORKDIR /mold-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
+RUN --network=none <<-EOF
+	set -ex
+	cmake -B build -G Ninja \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=/usr/lib \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON \
+		-DMOLD_LTO=ON \
+		-DMOLD_USE_SYSTEM_TBB=ON \
+		-DBUILD_TESTING=OFF
+	cmake --build build
+	DESTDIR="/rootfs" cmake --install build
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
