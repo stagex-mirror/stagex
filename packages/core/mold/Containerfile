@@ -1,6 +1,7 @@
 FROM scratch AS build
 ARG VERSION
-COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-llvm . / 
+COPY --from=stagex/core-mold . /
 COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-musl . /
@@ -25,6 +26,7 @@ RUN --network=none <<-EOF
 		-DBUILD_TESTING=OFF
 	cmake --build build
 	DESTDIR="/rootfs" cmake --install build
+	ln -s /usr/bin/mold /rootfs/usr/bin/ld
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

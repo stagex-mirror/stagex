@@ -9,7 +9,7 @@ COPY <<-'EOF' /etc/profile
 	export MAKEFLAGS="-j$(nproc)"
 	export CC=clang
 	export CXX=clang++
-	export LD=ld.lld
+	export LD=ld.mold
 	export CPP=clang-cpp
 	export AS=llvm-as
 	export AR=llvm-ar
@@ -23,6 +23,6 @@ COPY <<-'EOF' /etc/profile
 	export OBJDUMP=llvm-objdump
 	export SIZE=llvm-size
 	export LIBCC="/usr/lib/libclang_rt.builtins.a"
-	export LDFLAGS="--ld-path=/usr/bin/ld.lld"
+	export LDFLAGS="--ld-path=/usr/bin/${LD}"
 EOF
 SHELL ["/bin/sh","-l","-c"]

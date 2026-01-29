@@ -1,6 +1,7 @@
 FROM scratch AS build
 COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-llvm . / 
+COPY --from=stagex/core-mold . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-bzip2 . /
@@ -17,7 +18,7 @@ WORKDIR /boost_${VERSION_UNDER}
 
 ENV CC="clang"
 ENV CXX="clang++"
-ENV CFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security --ld-path=/usr/bin/ld.lld"
+ENV CFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security --ld-path=/usr/bin/ld.mold"
 ENV CXXFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security"
 ENV CXXFLAGS="$CXXFLAGS -D_LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS=1 -D_LIBCPP_ENABLE_HARDENED_MODE=1"
 ENV LDFLAGS="-Wl,--as-needed,-O1,--sort-common"
