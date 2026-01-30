@@ -25,9 +25,9 @@ NC='\033[0m' # No color
 SCRIPT_DIR=$(dirname "$0")
 
 git diff --quiet
-# check_command "Dirty Git tree (uncommitted files?)"
+check_command "Dirty Git tree (uncommitted files?)"
 
-if test "${1:-0}" = "0"; then
+if test "${2:-0}" = "0"; then
 	RELEASE=$("$SCRIPT_DIR"/gen-version.sh)
 fi
 
