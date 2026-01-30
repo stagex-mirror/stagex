@@ -16,10 +16,8 @@ RUN --network=none <<-EOF
 	mkdir -p "/rootfs/${sitedir}"
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 	python3 -m installer -d "/rootfs" .dist/*.whl
-	install -Dm0644 -t "/rootfs/usr/share/man/man1/" \
-		man/kernel-hardening-checker.1
-	install -Dm0644 -t "/rootfs/usr/share/doc/kernel-hardening-checker/" \
-		README.md
+	install -Dm0644 -t "/rootfs/usr/share/man/man1/" man/kernel-hardening-checker.1
+	install -Dm0644 -t "/rootfs/usr/share/licenses/kernel-hardening-checker/" LICENSE.txt
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
 FROM stagex/core-filesystem AS package
