@@ -1,9 +1,9 @@
 [package]
-name = "py-kernel-hardening-checker"
+name = "kernel-hardening-checker"
 version = "0.6.17.1"
 description = "A tool for checking the security hardening options of the Linux kernel"
 
-[sources.py-kernel-hardening-checker]
+[sources.kernel-hardening-checker]
 hash = "2383e851b44fe74c9a5db32919b897af05f022e676e8d1184cc53594bb9b344c"
 format = "tar.gz"
 file = "kernel-hardening-checker-{version}.{format}"
