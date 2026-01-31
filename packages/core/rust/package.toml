@@ -1,6 +1,6 @@
 [package]
 name = "rust"
-version = "1.91.1"
+version = "1.93.0"
 description = "Rust Programming Language toolchain"
 
 [sources.mrustc]
@@ -80,3 +80,11 @@ mirrors = [ "https://static.rust-lang.org/dist/rustc-1.90.0-src.tar.gz",]
 [sources.rust1_91_1]
 hash = "38dce205d39f61571261f0444237a1ce9efecb970e760d8ec4d957af5b445723"
 mirrors = [ "https://static.rust-lang.org/dist/rustc-1.91.1-src.tar.gz",]
+
+[sources.rust1_92_0]
+hash = "9e0d2ca75c7e275fdc758255bf4b03afb3d65d1543602746907c933b6901c3b8"
+mirrors = [ "https://static.rust-lang.org/dist/rustc-1.92.0-src.tar.gz",]
+
+[sources.rust1_93_0]
+hash = "69112bd83c321943ffc390b7db2f59ef3febb95dac700f67c2156fbf6b50a705"
+mirrors = [ "https://static.rust-lang.org/dist/rustc-1.93.0-src.tar.gz",]
