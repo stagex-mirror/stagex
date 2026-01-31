@@ -209,7 +209,7 @@ RUN ./build 1.90.0 1.89.0 ""
 
 ADD fetch/rustc-1.91.1-src.tar.gz .
 ADD patches/no-default-static.patch .
-RUN ./build ${VERSION} 1.90.0 cargo,clippy,rustdoc,rustfmt,rust-demangler,src no-default-static
+RUN ./build ${VERSION} 1.90.0 cargo,clippy,rustdoc,rustfmt,rust-demangler,src,wasm-component-ld no-default-static
 RUN <<-EOF
 	mv /rust-${VERSION} /rootfs
 	cd /rootfs/usr/lib/rustlib
