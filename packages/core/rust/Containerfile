@@ -142,6 +142,7 @@ COPY --chmod=0755 <<-'EOF' build
 		--set="target.${TARGET}.musl-root=/usr" \
 		--set="target.${TARGET}.llvm-config=${LLVM_BINDIR}/llvm-config" \
 		--set="rust.lld=false" \
+		--set="rust.llvm-tools=false" \
 		$CONFIGURE_FLAGS
 	python3 x.py dist
 	python3 x.py install
