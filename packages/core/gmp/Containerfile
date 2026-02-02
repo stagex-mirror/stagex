@@ -8,7 +8,9 @@ COPY --from=stagex/core-autoconf . /
 COPY --from=stagex/core-automake . /
 COPY --from=stagex/core-libtool . /
 COPY --from=stagex/core-m4 . /
-COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-llvm . / 
+COPY --from=stagex/core-mold . / 
+COPY --from=stagex/core-onetbb . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-libzstd . /
 ADD fetch/gmp-${VERSION}.tar.xz .

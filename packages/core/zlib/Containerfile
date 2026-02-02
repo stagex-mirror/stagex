@@ -3,7 +3,7 @@ ARG TARGETARCH
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-libzstd . /
-COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-llvm . / 
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
 ADD fetch/zlib-${VERSION}.tar.gz .
