@@ -72,8 +72,6 @@ RUN --network=none <<-EOF
 	# Configure compiler-rt
 	cmake_runtime_cache_set COMPILER_RT_BUILD_BUILTINS ON
 	cmake_runtime_cache_set COMPILER_RT_USE_BUILTINS_LIBRARY ON
-	cmake_runtime_cache_set COMPILER_RT_BUILD_STANDALONE_LIBATOMIC ON
-	cmake_runtime_cache_set COMPILER_RT_USE_ATOMIC_LIBRARY ON
 	cmake_runtime_cache_set COMPILER_RT_USE_LLVM_UNWINDER ON
 	# This does not work out-of-the-box with a `musl` host
 	cmake_runtime_cache_set COMPILER_RT_BUILD_GWP_ASAN OFF
@@ -149,11 +147,24 @@ RUN --network=none <<-EOF
 		-DCLANG_ENABLE_STATIC_ANALYZER=OFF \
 		$CMAKE_ARGS
 	cmake --build build -v --parallel $(nproc)
+
+	# Remove all static archives on the filesystem to ensure they aren't used for anything further
+	for static_archive in $(find /usr/lib -iname "*.a"); do
+	  rm $static_archive
+	done
+
 	cmake --install build
 EOF
 
 RUN --network=none <<-EOF
 	export LIBCC="/usr/lib/clang/21/lib/${TARGET}/libclang_rt.builtins.a"
+
+	# Build LLVM's `atomic.c` into `libatomic.so`
+	mkdir build-libatomic
+	cd build-libatomic
+	clang -std=c99 -fPIC -O2 -c -o atomic.o ../compiler-rt/lib/builtins/atomic.c
+	ld.lld --shared -o /usr/lib/libatomic.so atomic.o
+	cd ..
 
 	export CFLAGS="-fPIC"
 	export CXXFLAGS="$CFLAGS"
@@ -190,6 +201,7 @@ RUN --network=none <<-EOF
 	ln -sf /usr/bin/clang /rootfs/usr/bin/cc
 	ln -sf /usr/bin/ld.lld /rootfs/usr/bin/ld
 	ln -sf /usr/lib/clang/21/lib/${TARGET}/libclang_rt.builtins.a /rootfs/usr/lib/libclang_rt.builtins.a
+	cp /usr/lib/libatomic.so /rootfs/usr/lib/
 	strip /rootfs/usr/lib/libLLVM.so.21.1
 EOF
 
@@ -210,7 +222,6 @@ RUN --network=none <<-EOF
 		-DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
 		-DCOMPILER_RT_BUILD_BUILTINS=ON \
 		-DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
-		-DCOMPILER_RT_USE_ATOMIC_LIBRARY=ON \
 		-DCOMPILER_RT_USE_LLVM_UNWINDER=ON \
 		-DCOMPILER_RT_BUILD_GWP_ASAN=OFF
 	cmake --build build -v
