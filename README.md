@@ -245,10 +245,8 @@ A comparison of `stagex` to other distros in some of the areas we care about:
   * "Native": OCI layers are the native package management system
   * "Exported": Has the capability to export OCI from non-OCI build system
   * "Published": Has published official OCI images
-* "Packaging"
-  * "Declarative": Can declare exact dependency chain at time of usage
-  * "Imperative": Packaging system chooses dependencies for you at build time
-  * "None": No packages at all, only source code
+* "Language"
+  * Domain‑specific language used for package build definitions.
 * “FSB”
   * Can the entire distro be full-source-bootstrapped from Stage0
 * “Reproduced”
