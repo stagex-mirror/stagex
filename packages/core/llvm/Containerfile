@@ -142,19 +142,26 @@ RUN --network=none <<-EOF
 		-DLLVM_ENABLE_PEDANTIC=OFF \
 		-DLLVM_ENABLE_PLUGINS=OFF \
 		-DLLVM_ENABLE_TELEMETRY=OFF \
-		-DLLVM_ENABLE_ZLIB=OFF \
 		-DLLVM_ENABLE_ZSTD=OFF \
 		-DCLANG_ENABLE_STATIC_ANALYZER=OFF \
 		$CMAKE_ARGS
 	cmake --build build -v --parallel $(nproc)
 
-	# Remove all static archives on the filesystem to ensure they aren't used for anything further
-	for static_archive in $(find /usr/lib -iname "*.a"); do
-	  rm $static_archive
+	# Remove all object files, static archives from the bootstrap to ensure they aren't further used
+	for object_file in $(find /usr/lib -name "*.o"); do
+		rm $object_file
+	done
+	for static_archive in $(find /usr/lib -name "*.a"); do
+		rm $static_archive
 	done
 
+	# Install the LLVM toolchain we just built
 	cmake --install build
+	rm -rf build
 EOF
+
+# Install `musl` as we just erased all of our `*.a`, `*.o` files, including _our_ copy of `musl`
+COPY --from=stagex/core-musl . /
 
 RUN --network=none <<-EOF
 	export LIBCC="/usr/lib/clang/21/lib/${TARGET}/libclang_rt.builtins.a"
@@ -173,7 +180,6 @@ RUN --network=none <<-EOF
 	# Zig hard requires "all" so this also forces a messy patch there as well to remove AMDGPU support as well
 	export LLVM_TARGETS_TO_BUILD="AArch64;ARM;AVR;BPF;Hexagon;Lanai;LoongArch;Mips;MSP430;NVPTX;PowerPC;RISCV;Sparc;SPIRV;SystemZ;VE;WebAssembly;X86;XCore"
 
-	rm -rf build
 	cmake \
 		-B build \
 		-S llvm \
