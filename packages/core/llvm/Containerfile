@@ -200,6 +200,10 @@ RUN --network=none <<-EOF
 		$(cat ./cmake_args)
 	cmake --build build -v
 	DESTDIR="/rootfs" cmake --install build
+
+	# NSan, for whatever reason, is not being reproducibly built. It's removed here as it
+	# _should_ be unpopular and not a blocker, but ideally this would be solved (TODO).
+	rm /rootfs/usr/lib/clang/21/lib/${TARGET}/libclang_rt.nsan*
 EOF
 
 RUN --network=none <<-EOF
