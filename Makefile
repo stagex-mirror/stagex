@@ -28,7 +28,7 @@ new-digests: digests ## Provides only the newly changed digests
 	@git diff --minimal digests/* | grep -E '^(\+)[a-z0-9]' | sed 's/^\+//'
 
 sign: digests ## Sign all digests that match locally built targets
-	@./src/sign-all.sh $(REGISTRY)
+	@./src/sign-all.sh $(REGISTRY) $(RELEASE)
 
 compat: ## Check system compatibility for reproducible builds
 	@./src/compat.sh
