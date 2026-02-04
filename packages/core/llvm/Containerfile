@@ -213,28 +213,44 @@ EOF
 
 FROM build AS build-llvm-libgcc
 RUN --network=none <<-EOF
-	# The following is allowed to directly use `-DCOMPILER_RT` as it's building `runtimes` not `llvm`
+	# The following is allowed to directly use `-DCOMPILER_RT` as it's not building via `llvm`
 	cmake \
-		-B build \
+		-B build-libgcc \
 		-S runtimes \
 		-Wno-dev \
-		-DCMAKE_ASM_COMPILER_TARGET="${TARGET}" \
-    -DCMAKE_C_COMPILER_TARGET="${TARGET}" \
-    -DCMAKE_CXX_COMPILER_TARGET="${TARGET}" \
-		-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
+		-DCMAKE_C_COMPILER=/usr/bin/clang \
+		-DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
+		-DCMAKE_AR=/usr/bin/llvm-ar \
+		-DCMAKE_NM=/usr/bin/llvm-nm \
+		-DCMAKE_RANLIB=/usr/bin/llvm-ranlib \
+		-DCMAKE_C_COMPILER_TARGET="${TARGET}" \
+		-DCMAKE_CXX_COMPILER_TARGET="${TARGET}" \
 		-DCMAKE_BUILD_TYPE=Release \
-		-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON \
+		-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
+		-DLLVM_USE_LINKER=lld \
+		$(cat ./cmake_args) \
 		-DLLVM_ENABLE_RUNTIMES="llvm-libgcc" \
-		-DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
-		-DCOMPILER_RT_BUILD_BUILTINS=ON \
-		-DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
-		-DCOMPILER_RT_USE_LLVM_UNWINDER=ON \
-		-DCOMPILER_RT_BUILD_GWP_ASAN=OFF
-	cmake --build build -v
+		-DLLVM_LIBGCC_EXPLICIT_OPT_IN=Yes \
+		-DCOMPILER_RT_ENABLE_PEDANTIC=OFF \
+		-DCOMPILER_RT_ENABLE_STATIC_UNWINDER=OFF \
+		-DCOMPILER_RT_BUILD_SANITIZERS=OFF \
+		-DCOMPILER_RT_BUILD_XRAY=OFF \
+		-DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
+		-DCOMPILER_RT_BUILD_PROFILE=OFF \
+		-DCOMPILER_RT_BUILD_CTX_PROFILE=OFF \
+		-DCOMPILER_RT_BUILD_MEMPROF=OFF \
+		-DCOMPILER_RT_BUILD_ORC=OFF \
+		-DCOMPILER_RT_HWASAN_WITH_INTERCEPTORS=OFF
+	cmake --build build-libgcc -v
 
+	# Install the libraries to a temporary location
+	mkdir libgcc-libs
+	DESTDIR="libgcc-libs" cmake --install build-libgcc
+
+	# Before installing _solely_ `libgcc_s.so.1`, not the just-built copies of any other libraries
 	rm -rf /rootfs
 	mkdir -p /rootfs/usr/lib
-	cp $(find build/ -name "libgcc_s.so.1" | head -n1) /rootfs/usr/lib/
+	cp libgcc-libs/usr/lib/libgcc_s.so.1 /rootfs/usr/lib/
 EOF
 
 FROM stagex/core-filesystem AS package-llvm
