@@ -11,12 +11,12 @@ COPY --from=stagex/core-pkgconf . /
 # Populate Rust's self-contained toolchain's linker
 # https://github.com/rust-lang/rust/blob/44e34e1ac6d7e69b40856cf1403d3da145319c30/src/bootstrap/src/core/build_steps/dist.rs#L581-L601
 # https://github.com/rust-lang/rust/blob/44e34e1ac6d7e69b40856cf1403d3da145319c30/src/bootstrap/src/lib.rs#L79-L80
-RUN ln -s /bin/lld /usr/lib/rustlib/$(uname -m)-unknown-linux-musl/bin/rust-lld
+RUN ln /bin/lld /usr/lib/rustlib/$(uname -m)-unknown-linux-musl/bin/rust-lld
 RUN mkdir /usr/lib/rustlib/$(uname -m)-unknown-linux-musl/bin/gcc-ld
-RUN for bin in ld64.lld ld.lld lld-link wasm-ld; do ln -s /bin/$bin /usr/lib/rustlib/$(uname -m)-unknown-linux-musl/bin/gcc-ld/$bin; done
+RUN for bin in ld64.lld ld.lld lld-link wasm-ld; do ln /bin/$bin /usr/lib/rustlib/$(uname -m)-unknown-linux-musl/bin/gcc-ld/$bin; done
 
 # Populate Rust's self-contained LLVM tools
 # https://github.com/rust-lang/rust/blob/44e34e1ac6d7e69b40856cf1403d3da145319c30/src/bootstrap/src/core/build_steps/dist.rs#L603-L614
-RUN ln -s /bin/llvm-objcopy /usr/lib/rustlib/$(uname -m)-unknown-linux-musl/bin/rust-objcopy
+RUN ln /bin/llvm-objcopy /usr/lib/rustlib/$(uname -m)-unknown-linux-musl/bin/rust-objcopy
 
 ENTRYPOINT ["/usr/bin/cargo"]
