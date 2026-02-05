@@ -132,8 +132,8 @@ RUN --network=none <<-EOF
 		-S llvm \
 		-Wno-dev \
 		-DCMAKE_BUILD_TYPE=Release \
-		-DCMAKE_INSTALL_PREFIX=/usr/ \
-		-DCMAKE_INSTALL_RPATH=/usr/lib \
+		-DCMAKE_INSTALL_PREFIX=/usr/lib/llvm20 \
+		-DCMAKE_INSTALL_RPATH=/usr/lib/llvm20/lib \
 		-DCMAKE_C_COMPILER=/usr/bin/clang \
 		-DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
 		-DCMAKE_AR=/usr/bin/llvm-ar \
@@ -201,52 +201,8 @@ RUN --network=none <<-EOF
 	DESTDIR="/rootfs" cmake --install build
 EOF
 RUN --network=none <<-EOF
-	ln -sf /usr/bin/clang++ /rootfs/usr/bin/c++
-	ln -sf /usr/bin/clang /rootfs/usr/bin/cc
-	ln -sf /usr/bin/ld.lld /rootfs/usr/bin/ld
-	ln -sf /usr/lib/clang/20/lib/${TARGET}/libclang_rt.builtins.a /rootfs/usr/lib/libclang_rt.builtins.a
-	strip /rootfs/usr/lib/libLLVM.so.20.1
+	strip /rootfs/usr/lib/llvm20/lib/libLLVM.so.20.1
 EOF
 
-FROM build AS build-llvm-libgcc
-RUN --network=none <<-EOF
-	rm -rf /rootfs
-	mkdir -p /rootfs/usr/lib
-	cmake \
-		-B build \
-		-S llvm \
-		-Wno-dev \
-		-DCMAKE_ASM_COMPILER_TARGET="${TARGET}" \
-    -DCMAKE_C_COMPILER_TARGET="${TARGET}" \
-    -DCMAKE_CXX_COMPILER_TARGET="${TARGET}" \
-		-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
-		-DCMAKE_BUILD_TYPE=Release \
-		-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON \
-		-DCOMPILER_RT_BUILTINS_HIDE_SYMBOLS=OFF \
-		-DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
-		-DCOMPILER_RT_BUILD_BUILTINS=ON \
-		-DCOMPILER_RT_BUILD_CRT=OFF \
-		-DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
-		-DCOMPILER_RT_BUILD_MEMPROF=OFF \
-		-DCOMPILER_RT_BUILD_PROFILE=OFF \
-		-DCOMPILER_RT_BUILD_SANITIZERS=OFF \
-		-DCOMPILER_RT_BUILD_XRAY=OFF \
-		-DCOMPILER_RT_BUILD_ORC=OFF \
-		-DCOMPILER_RT_BUILD_CTX_PROFILE=OFF \
-		-DCOMPILER_RT_DEFAULT_TARGET_ONLY=YES
-	/usr/bin/clang++ \
-		-nodefaultlibs \
-		-shared \
-		-Wl,-soname,libgcc_s.so.1 \
-		-Wl,--no-undefined \
-		-Wl,--whole-archive \
-		build/lib/clang/20/lib/${TARGET}/libclang_rt.builtins.a \
-		-Wl,--no-as-needed \
-		-lc \
-		-lunwind \
-		-o build/libgcc_s.so.1
-	cp build/libgcc_s.so.1 /rootfs/usr/lib/
-EOF
-
-FROM stagex/core-filesystem AS package-llvm19
+FROM stagex/core-filesystem AS package-llvm20
 COPY --from=build /rootfs/ /
