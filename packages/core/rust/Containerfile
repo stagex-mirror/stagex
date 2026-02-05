@@ -118,6 +118,30 @@ COPY --chmod=0755 <<-'EOF' build
 	[[ -z "$PATCHES" ]] || for name in ${PATCHES//,/ }; do
 		patch -p1 < ../${name}.patch
 	done
+
+	# Tune how `rustc` is built for a faster build process.
+	#
+	# - `embed-bitcode-false` doesn't emit LLVM bitcode with the object files, as unnecessary.
+	# - `incremental=false` doesn't build a cache for incremental builds, as unnecessary here.
+	RUSTFLAGS="-Cembed-bitcode=false -Cincremental=false"
+	# For intermediary compilers, which aren't part of the committed output, be more aggressive
+	if [ ! "$TARGET_VERSION" = "$VERSION" ]; then
+		# Enable native codegen
+		RUSTFLAGS="$RUSTFLAGS -Ctarget-cpu=native"
+
+		# Set `codegen-units` to `nproc`, which will break reproducible builds as Rust builds are only
+		# deterministic with a consistent amount of units.
+		RUSTFLAGS="$RUSTFLAGS -Ccodegen-units=$(nproc)"
+
+		# Also, if the compiler is sufficiently modern, enable the threaded frontend. This was available
+		# under nightly as soon ~1.75, but we delay enabling it until it was more tested and stable.
+		# Note the usage of threads produces a non-deterministic output without flags such as
+		# `-Zcodegen-source-order` to sort the outputs after their compilation.
+		if [ $(printf "%s" "$BUILD_VERSION" | cut -d'.' -f2) -ge 85 ]; then
+			RUSTFLAGS="$RUSTFLAGS -Zthreads=$(nproc)"
+		fi
+	fi
+
 	./configure \
 		--build="${TARGET}" \
 		--host="${TARGET}" \
@@ -141,11 +165,42 @@ COPY --chmod=0755 <<-'EOF' build
 		--set="target.${TARGET}.crt-static=false" \
 		--set="target.${TARGET}.musl-root=/usr" \
 		--set="target.${TARGET}.llvm-config=${LLVM_BINDIR}/llvm-config" \
+		--set="rust.optimize=2" \
 		--set="rust.lld=false" \
 		--set="rust.llvm-tools=false" \
 		$CONFIGURE_FLAGS
-	python3 x.py dist
-	python3 x.py install
+
+	if [ ! "${TARGET_VERSION}" = "${VERSION}" ]; then
+		# We only build the first-stage Rust compiler, as sufficient for further bootstrapping.
+		#
+		# We specifically choose `library`, as in, the Rust standard library, as what to build up to.
+		#
+		# The exception is with more modern compilers, due to the bootstrap sequence changing such that
+		# `std` is only built _after_ the stage 1 compiler, requiring building the stage 1 compiler,
+		# then `std`, then the stage 2 compiler, then `std` again, to create a functional sysroot.
+		#
+		# For more context on the changes made, see
+		# https:/blog.rust-lang.org/inside-rust/2025/05/29/redesigning-the-initial-bootstrap-sequence.
+		STAGE=1
+		if [ $(printf "%s" "$TARGET_VERSION" | cut -d'.' -f2) -ge 90 ]; then
+			STAGE=2
+		fi
+		python3 x.py build --stage $STAGE library
+
+		# We also build `cargo`, as required to continue the bootstrap.
+		#
+		# We specify to build with the prior-stage toolchain, as acceptable, as building with the
+		# just-built toolchain causes Rust's bootstrap to try to flush it out _much_ more.
+		python3 x.py build --stage $(( $STAGE - 1 )) src/tools/cargo
+
+		# Manually 'install' it
+		mkdir -p ${PREFIX}
+		mv build/host/stage${STAGE}/* ${PREFIX}/
+		mv $(find build/host/ -type f -name "cargo" | head -n1) ${PREFIX}/bin/
+	else
+		python3 x.py install
+	fi
+
 	cd /
 	[ "${TARGET_VERSION}" == "${VERSION}" ] || rm -rf rustc-${TARGET_VERSION}-src /rust-${BUILD_VERSION}
 EOF
@@ -216,8 +271,15 @@ RUN ./build 1.92.0 1.91.1 ""
 ENV LLVM_VERSION="system"
 
 ADD fetch/rustc-1.93.0-src.tar.gz .
-ADD patches/no-default-static.patch .
-RUN ./build ${VERSION} 1.92.0 cargo,clippy,rustdoc,rustfmt,rust-demangler,src,wasm-component-ld no-default-static
+
+# Patch the default for `musl` targets to be dynamically, not statically, linked
+RUN <<-EOF
+	for file in $(find ./rustc-1.93.0-src/compiler/rustc_target/src/spec/targets/ -type f | grep "musl"); do
+		sed -i s/"crt_static_default = true"/"crt_static_default = false"/ $file
+	done
+EOF
+
+RUN ./build ${VERSION} 1.92.0 cargo,clippy,rustdoc,rustfmt,rust-demangler,src,wasm-component-ld
 RUN <<-EOF
 	mv /rust-${VERSION} /rootfs
 	cd /rootfs/usr/lib/rustlib
