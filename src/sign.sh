@@ -103,7 +103,7 @@ if dir_has_no_sig "$DIR" "$FPR"; then
   FILENAME="$(get_filename "$DIR")"
   printf \
       '{"critical":{"identity":{"docker-reference":"%s/%s:%s"},"image":{"docker-manifest-digest":"%s"},"type":"atomic container signature"},"optional":{}}' \
-      "$REGISTRY" "$PACKAGE_NAME" "$TAG" "sha256:$MANIFEST_ID" | $GPG_SIGN --sign > "$TEMPFILE"
+      "$REGISTRY" "$PACKAGE_NAME" "$TAG" "sha256:$MANIFEST_ID" | $GPG_SIGN --sign --no-armor > "$TEMPFILE"
   check_command "${RED}Failed to sign digest: $PACKAGE_NAME@sha256:$MANIFEST_ID"
   mv "$TEMPFILE" "$FILENAME"
 else
