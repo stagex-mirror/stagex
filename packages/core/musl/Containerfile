@@ -1,24 +1,65 @@
 FROM stagex/bootstrap-stage3 AS build
 ARG TARGETARCH
 ARG VERSION
+
 ADD fetch/musl-${VERSION}.tar.gz .
+COPY --from=stagex/core-mimalloc / /
+
 WORKDIR /musl-${VERSION}
 ADD *.patch .
 RUN --network=none <<-EOF
 	set -eux
 	ARCH=$(uname -m)
-	CFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security"
-	CXXFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security -D_GLIBCXX_ASSERTIONS=1 -D_LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS=1 -D_LIBCPP_ENABLE_HARDENED_MODE=1"
-	LDFLAGS="-Wl,--as-needed,-O1,--sort-common -Wl,-soname,libc.musl-${ARCH}.so.1"
+	export CFLAGS="-Wformat -Werror=format-security -fstack-protector-strong -fstack-clash-protection"
+	export LDFLAGS="-Wl,--as-needed,-O1,--sort-common -Wl,-soname,libc.musl-${ARCH}.so.1"
+
 	patch -p1 < CVE-2025-26519.patch
+
+	# Remove the existing allocator
+	rm -rf src/malloc
+	rm src/legacy/valloc.c
+	rm src/string/strdup.c
+	rm src/string/strndup.c
+	# Stub the `mallocng` folder so `musl` doesn't realize it's been removed
+	mkdir -p src/malloc/mallocng
+
+	# Stub the APIs `musl` requires but `mimalloc` doesn't provide
+	# These are constants which trigger some conditional branches re: assumptions made
+	echo "int __malloc_replaced = 1;" >> src/malloc/mallocng/stub.c
+	echo "int __aligned_alloc_replaced = 1;" >> src/malloc/mallocng/stub.c
+	# This allows a `mmap`'d page to be given to the allocator for use, which isn't possible with `mimalloc`
+	# TODO: Should we do _something_ with these pointers, like unmap the page?
+	echo "void __malloc_donate(char *a, char *b) {}" >> src/malloc/mallocng/stub.c
+
+	# Link in `mimalloc`
+	MIMALLOC_O=$(find /usr/lib -name mimalloc-secure.o)
+	# Strip the `mimalloc` files linked in to only what's required and what we're replacing in `musl`
+	KEEP="malloc __libc_malloc malloc_usable_size"
+	KEEP="$KEEP calloc __libc_calloc"
+	KEEP="$KEEP realloc __libc_realloc"
+	KEEP="$KEEP free __libc_free"
+	KEEP="$KEEP aligned_alloc memalign posix_memalign"
+	KEEP="$KEEP reallocarray"
+	KEEP="$KEEP valloc strdup strndup"
+	for symbol in $(nm -f just-symbols $MIMALLOC_O); do
+		EMPTY_IF_NOT_PRESENT=$(echo " $KEEP " | grep " $symbol " || true)
+		if [ "$EMPTY_IF_NOT_PRESENT" = "" ]; then
+			# This `strip` may not work if this symbol is still relied upon in a relocation
+			strip --strip-symbol="$symbol" $MIMALLOC_O || true
+		fi
+	done
+	# For whatever reason, this adds `mimalloc`'s object file only to the shared object...
+	export LDFLAGS="$LDFLAGS -Wl,--push-state,--whole-archive,$MIMALLOC_O,--pop-state"
+
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info \
 		--localstatedir=/var \
-		--enable-debug
+		--enable-optimize
 	make -j "$(nproc)"
+
 	make DESTDIR=/rootfs install
 	mkdir -p /rootfs/usr/bin /rootfs/usr/lib
 	rm -rf /rootfs/lib
@@ -26,6 +67,23 @@ RUN --network=none <<-EOF
 	mv -f /rootfs/usr/lib/libc.so /rootfs/usr/lib/ld-musl-${ARCH}.so.1
 	ln -sf ld-musl-${ARCH}.so.1 /rootfs/usr/lib/libc.musl-${ARCH}.so.1
 	ln -sf /usr/lib/ld-musl-${ARCH}.so.1 /rootfs/usr/lib/libc.so
+
+	# Manually add `mimalloc`'s static archive to the static `libc`
+	ar r /rootfs/usr/lib/libc.a $MIMALLOC_O
+
+	# `mimalloc` also depends on `__popcountdi2` from `libgcc` or `compiler-rt`.
+	# Frustratingly, `mimalloc` only does this if it detects GCC and assumes it can rely on it.
+	# It doesn't allow disabling it for those who use GCC but don't want to require `libgcc`.
+	# Thankfully, that also means this block of code should disappear if built by LLVM.
+	mkdir c_runtime
+	cd c_runtime
+	ar x $(find /usr/lib -type f -name libgcc.a)
+	for file in $(ls); do
+		if [ ! "$(nm -f just-symbols $file | grep __popcountdi2)" = "" ]; then
+			ar r /rootfs/usr/lib/libc.a $file
+			break
+		fi
+	done
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

@@ -1,0 +1,49 @@
+FROM stagex/bootstrap-stage3 AS build
+ARG VERSION
+ADD fetch/mimalloc-${VERSION}.tar.gz .
+WORKDIR /mimalloc-${VERSION}
+RUN --network=none <<-EOF
+  set -eux
+
+  # For some reason, `mimalloc` contains binary blobs in releases, so we explicitly remove those now
+  rm -rf .git bin
+
+  # Required as `mimalloc` compiles in the date, time it was built
+  export SOURCE_DATE_EPOCH=1
+
+  export CFLAGS="-Wformat -Werror=format-security"
+  export CFLAGS="$CFLAGS -O2 -fPIC"
+  # Enable basic hardening
+  export CFLAGS="$CFLAGS -fstack-protector-strong -fstack-clash-protection"
+
+  # Explicitly use `pthread` for TLS, as we expect to use with `musl` (providing `pthread`).
+  # Use the compiler builtin to obtain the thread's ID, as the default method
+  # (using the address of a thread-local variable) won't work when building into `musl`.
+  export CFLAGS="$CFLAGS -DMI_TLS_PTHREAD=1 -DMI_USE_BUILTIN_THREAD_POINTER=1"
+
+  mkdir out
+  cd out
+
+  cmake \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_INCLUDEDIR=/usr/include/mimalloc \
+    -DCMAKE_INSTALL_LIBDIR=/usr/lib/mimalloc \
+    -DMI_INSTALL_TOPLEVEL=ON \
+    -DMI_NO_OPT_ARCH=ON \
+    -DMI_OVERRIDE=ON \
+    -DMI_LIBC_MUSL=ON \
+    -DMI_SECURE=ON \
+    -DMI_XMALLOC=ON \
+    -DMI_BUILD_TESTS=OFF \
+    ..
+  make -j $(nproc)
+
+  mkdir /rootfs
+  make DESTDIR=/rootfs install
+
+  mkdir -p /rootfs/usr/share/licenses
+  cp ../LICENSE /rootfs/usr/share/licenses/mimalloc
+EOF
+
+FROM stagex/core-filesystem AS package-mimalloc
+COPY --from=build /rootfs /

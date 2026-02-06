@@ -224,7 +224,7 @@ A comparison of `stagex` to other distros in some of the areas we care about:
 
 | Distro    | Trust Model       | OCI        | Language           | FSB     | Repro.  | Base     | Libc     | Malloc       |
 |-----------|-------------------|------------|--------------------|---------|---------|----------|----------|--------------|
-| Stagex    | **Decentralized** | **Native** | **Containerfile**  | **Yes** | **Yes** | **LLVM** | **musl** | mallocng     |
+| Stagex    | **Decentralized** | **Native** | **Containerfile**  | **Yes** | **Yes** | **LLVM** | **musl** | **mimalloc** |
 | Guix      | Distributed       | Exported   | Custom             | **Yes** | Mostly  | GNU      | glibc    | glibc        |
 | Debian    | Distributed       | Published  | Custom             | No      | Mostly  | GNU      | glibc    | glibc        |
 | Arch      | Distributed       | Published  | Shell              | No      | Mostly  | GNU      | glibc    | glibc        |
