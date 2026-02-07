@@ -6,10 +6,9 @@ ENV BOOTSTRAP_RUST_VERSION="1.74"
 ENV BOOTSTRAP_GCC_VERSION="15.2.0"
 COPY --from=stagex/core-filesystem . /
 COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-ncurses . /
-COPY --from=stagex/core-bash . /
+# As `/bin/bash` is required by `mrustc`, wrap BusyBox's Bourne-inspired shell (`hush`) as `bash`
+RUN printf "%s\n%s\n" '#!/bin/sh' 'hush "$@"' > /usr/bin/bash && chmod +x /usr/bin/bash
 COPY --from=stagex/core-make . /
-COPY --from=stagex/core-cmake . /
 COPY --from=stagex/core-python . /
 COPY --from=stagex/core-py-setuptools . /
 COPY --from=stagex/core-zlib . /
@@ -31,8 +30,6 @@ COPY --from=stagex/core-mpc . /
 COPY --from=stagex/core-isl . /
 COPY --from=stagex/core-gmp . /
 COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-hiredis . /
-COPY --from=stagex/core-xxhash . /
 COPY --from=stagex/core-llvm17 . /
 COPY <<-'EOF' /etc/profile
 	set -eux
