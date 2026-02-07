@@ -30,8 +30,8 @@ RUN --network=none <<-EOF
 	[[ "$TARGETARCH" == "arm64" ]] \
 		&& ARCH="aarch64"
 	TARGET=$ARCH-unknown-linux-musl
-	LDFLAGS="-L/usr/lib/clang/20/lib/$ARCH-unknown-linux-musl"
-	LDFLAGS_FOR_TARGET="-L/usr/lib/clang/20/lib/$ARCH-unknown-linux-musl"
+	LDFLAGS="-L/usr/lib/clang/21/lib/$ARCH-unknown-linux-musl"
+	LDFLAGS_FOR_TARGET="-L/usr/lib/clang/21/lib/$ARCH-unknown-linux-musl"
 	cp /aports-${APORTS_VERSION}/main/gcc//*.patch .
 	patch -p1 < 0001-posix_memalign.patch
 	patch -p1 < 0002-gcc-poison-system-directories.patch
@@ -61,7 +61,7 @@ RUN --network=none <<-EOF
 	patch -p1 < 0038-static-PIE-ensure-static-reaches-the-linker.patch
 	patch -p1 < 0039-except-Don-t-use-the-cached-value-of-the-gcc_except_.patch
 	export TARGET=`echo ${TARGETARCH} | sed 's/amd64/x86_64/' | sed 's/arm64/aarch64/'`-linux-musl
-	export LDFLAGS="-L/usr/lib/clang/20/lib/${TARGET}"
+	export LDFLAGS="-L/usr/lib/clang/21/lib/${TARGET}"
 	./configure \
 		--target=${TARGET} \
 		--build=${TARGET} \
