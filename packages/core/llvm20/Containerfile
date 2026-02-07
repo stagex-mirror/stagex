@@ -1,0 +1,208 @@
+FROM scratch AS build
+COPY --from=stagex/bootstrap-stage3 . /
+
+ARG VERSION
+ARG CPORTS_VERSION
+ARG TARGETARCH
+COPY <<-'EOF' /etc/profile
+	set -eux
+	[[ "$TARGETARCH" == "amd64" ]] \
+		&& ARCH="x86_64" \
+		&& LLVM_TARGET_ARCH="X86"
+	[[ "$TARGETARCH" == "arm64" ]] \
+		&& ARCH="aarch64" \
+		&& LLVM_TARGET_ARCH="AArch64"
+	export ARCH
+	export MAKEFLAGS="-j$(nproc)"
+	export BUILD=${ARCH}-unknown-linux-musl
+	export TARGET=${ARCH}-unknown-linux-musl
+EOF
+SHELL ["/bin/sh","-l","-c"]
+
+ADD fetch/llvm20-${VERSION}.tar.xz .
+ADD fetch/cports-${CPORTS_VERSION}.tar.gz .
+WORKDIR /llvm-project-${VERSION}.src
+ADD patches/*.patch .
+RUN --network=none <<-EOF
+	cp /cports-${CPORTS_VERSION}/main/llvm/patches/*.patch .
+	patch -p1 < 0001-llvm-always-set-a-larger-stack-size-explicitly.patch
+	patch -p1 < 0002-llvm-musl-workarounds.patch
+	patch -p1 < 0003-llvm-fix-some-MF_EXEC-related-test-failures-on-aarch.patch
+	patch -p1 < 0004-llvm-disable-dependency-on-libexecinfo-everywhere.patch
+	patch -p1 < 0005-compiler-rt-ppc-sanitizer-fixes.patch
+	patch -p1 < 0006-compiler-rt-default-to-libc-for-sanitizers.patch
+	patch -p1 < 0007-compiler-rt-build-crt-in-runtimes-build.patch
+	patch -p1 < 0008-compiler-rt-lsan-basic-musl-fixes-on-various-archs.patch
+	patch -p1 < 0009-compiler-rt-HACK-hwasan-build-on-x86_64.patch
+	patch -p1 < 0010-compiler-rt-libcxx-abi-libunwind-HACK-force-fno-lto.patch
+	patch -p1 < 0011-compiler-rt-HACK-always-compile-in-gcc_personality_v.patch
+	patch -p1 < 0012-libc-libc-abi-libunwind-disable-multiarch-locations.patch
+	patch -p1 < 0013-llvm-fix-isOSGlibc-thinking-musl-is-glibc.patch
+	patch -p1 < 0014-clang-disable-multiarch-layout-on-musl.patch
+	patch -p1 < 0015-clang-drop-incorrect-warning-about-vector-equality-r.patch
+	patch -p1 < 0016-clang-add-fortify-include-paths-for-musl-triplets-en.patch
+	patch -p1 < 0017-clang-use-as-needed-by-default.patch
+	patch -p1 < 0018-clang-switch-on-default-now-relro.patch
+	patch -p1 < 0019-clang-default-to-fno-semantic-interposition.patch
+	patch -p1 < 0021-clang-use-strong-stack-protector-by-default.patch
+	patch -p1 < 0022-clang-fix-unwind-chain-inclusion.patch
+	patch -p1 < 0023-clang-error-when-using-ifunc-attribute-on-unsupporte.patch
+	patch -p1 < 0024-clang-link-libcxxabi-on-linux-when-using-libc.patch
+	patch -p1 < 0025-Get-rid-of-spurious-trailing-space-in-__clang_versio.patch
+	patch -p1 < 0026-clang-implicitly-include-stdc-predef.h.patch
+	patch -p1 < 0027-32-bit-musl-sanitizer-fixes.patch
+	patch -p1 < 0028-fix-scan-build.patch
+	patch -p1 < 0029-libcxx-default-to-type-2.patch
+	patch -p1 < 0030-various-musl-hacks.patch
+	patch -p1 < 0031-compiler-rt-cxx-header-build-order.patch
+	patch -p1 < 8f66fb784291c897a965a9ee4c280e314dc8cee4.patch
+	# Massive hack to force inject settings that are for some reason ignored as configure flags
+	find compiler-rt -iname CMakeLists.txt -exec sed -i '1s/^/set(COMPILER_RT_BUILD_SANITIZERS OFF)\n/' {} \;
+	find compiler-rt -iname CMakeLists.txt -exec sed -i '1s/^/set(COMPILER_RT_BUILD_GWP_ASAN OFF)\n/' {} \;
+	find compiler-rt -iname CMakeLists.txt -exec sed -i '1s/^/set(COMPILER_RT_HAS_GWP_ASAN FALSE)\n/' {} \;
+	find compiler-rt -iname *.cmake -exec sed -i '1s/^/set(COMPILER_RT_BUILD_SANITIZERS OFF)\n/' {} \;
+	find compiler-rt -iname *.cmake -exec sed -i '1s/^/set(COMPILER_RT_BUILD_GWP_ASAN OFF)\n/' {} \;
+	find compiler-rt -iname *.cmake -exec sed -i '1s/^/set(COMPILER_RT_HAS_GWP_ASAN FALSE)\n/' {} \;
+	cmake \
+		-B build \
+		-S llvm \
+		-Wno-dev \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr/ \
+		-DCMAKE_INSTALL_RPATH=/usr/lib \
+		-DLLVM_TARGET_ARCH="$LLVM_TARGET_ARCH" \
+		-DLLVM_TARGETS_TO_BUILD="$LLVM_TARGET_ARCH" \
+		-DLLVM_HOST_TRIPLE="${ARCH}-linux-musl" \
+		-DLLVM_RUNTIME_TARGETS="${ARCH}-linux-musl" \
+		-DLLVM_BUILTIN_TARGETS="${ARCH}-linux-musl" \
+		-DLLVM_ENABLE_PROJECTS="clang;lld" \
+		-DLLVM_ENABLE_RUNTIMES="compiler-rt;libunwind;libcxx;libcxxabi" \
+		-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON \
+		-DLLVM_ENABLE_LIBXML2=OFF \
+		-DLLVM_ENABLE_LIBEDIT=OFF \
+		-DLLVM_ENABLE_LIBPFM=OFF \
+		-DLLVM_ENABLE_LIBCXX=ON \
+		-DLLVM_BUILD_LLVM_DYLIB=ON \
+		-DLLVM_LINK_LLVM_DYLIB=ON \
+		-DLLVM_ENABLE_RTTI=ON \
+		-DLLVM_INSTALL_UTILS=ON \
+		-DLLVM_INSTALL_BINUTILS_SYMLINKS=ON \
+    -DCLANG_CONFIG_FILE_SYSTEM_DIR=/etc/clang \
+		-DCLANG_ENABLE_BOOTSTRAP=ON \
+		-DCLANG_DEFAULT_RTLIB=compiler-rt \
+		-DCLANG_DEFAULT_UNWINDLIB=libunwind \
+		-DCLANG_DEFAULT_CXX_STDLIB=libc++ \
+		-DLIBCXX_HAS_MUSL_LIBC=ON \
+		-DLIBCXX_CXX_ABI=libcxxabi \
+		-DLIBCXX_USE_COMPILER_RT=ON \
+		-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=OFF \
+		-DLIBCXX_HAS_MUSL_LIBC=ON \
+		-DLIBCXX_HARDENING_MODE=fast \
+		-DLIBCXX_ENABLE_LOCALIZATION=OFF \
+		-DLIBCXX_ENABLE_FILESYSTEM=OFF \
+		-DLIBCXXABI_ENABLE_STATIC_UNWINDER=OFF \
+		-DLIBCXXABI_USE_LLVM_UNWINDER=ON \
+    -DLIBCXXABI_USE_COMPILER_RT=ON \
+		-DLIBUNWIND_USE_COMPILER_RT=ON \
+		-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="${ARCH}-linux-musl" \
+		-DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
+		-DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
+		-DCOMPILER_RT_BUILD_GWP_ASAN=OFF \
+		-DCOMPILER_RT_HAS_GWP_ASAN=FALSE \
+		-DCOMPILER_RT_BUILD_SANITIZERS=OFF \
+		-DCOMPILER_RT_BUILD_XRAY=OFF \
+		-DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
+		-DCOMPILER_RT_BUILD_PROFILE=OFF \
+		-DCOMPILER_RT_BUILD_MEMPROF=OFF \
+		-DCOMPILER_RT_BUILD_CTX_PROFILE=OFF \
+		-DCOMPILER_RT_TEST_COMPILER=OFF \
+		-DCOMPILER_RT_TEST_CXX_COMPILER=OFF
+	cmake --build build -v --parallel $(nproc)
+	cmake --install build
+	export LDFLAGS="-fuse-ld=/usr/bin/ld.lld"
+	export CFLAGS="-fPIC"
+	export CXXFLAGS="$CFLAGS"
+	#HACK: The only reason we are not using "all" here is because AMDGPU does not build deterministically
+	# Zig hard requires "all" so this also forces a messy patch there as well to remove AMDGPU support as well
+	export LLVM_TARGETS_TO_BUILD="AArch64;ARM;AVR;BPF;Hexagon;Lanai;LoongArch;Mips;MSP430;NVPTX;PowerPC;RISCV;Sparc;SPIRV;SystemZ;VE;WebAssembly;X86;XCore"
+	export LIBCC="/usr/lib/clang/20/lib/${TARGET}/libclang_rt.builtins.a"
+	rm -rf build
+	cmake \
+		-B build \
+		-S llvm \
+		-Wno-dev \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr/lib/llvm20 \
+		-DCMAKE_INSTALL_RPATH=/usr/lib/llvm20/lib \
+		-DCMAKE_C_COMPILER=/usr/bin/clang \
+		-DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
+		-DCMAKE_AR=/usr/bin/llvm-ar \
+		-DCMAKE_AS=/usr/bin/llvm-as \
+		-DCMAKE_NM=/usr/bin/llvm-nm \
+		-DCMAKE_RANLIB=/usr/bin/llvm-ranlib \
+		-DCLANG_TABLEGEN=/usr/bin/clang-tblgen \
+		-DCLANG_PSEUDO_GEN=/usr/bin/clang-pseudo-gen \
+		-DLLVM_HEADERS_TABLEGEN=/usr/bin/llvm-tblgen \
+		-DCLANG_TIDY_CONFUSABLE_CHARS_GEN=/usr/bin/clang-tidy-confusable-chars-gen \
+		-DMLIR_TABLEGEN=/usr/bin/mlir-tblgen \
+		-DMLIR_PDLL_TABLEGEN=/usr/bin/mlir-pdll \
+		-DMLIR_LINALG_ODS_YAML_GEN=/usr/bin/mlir-linalg-ods-yaml-gen \
+		-DLLVM_NATIVE_TOOL_DIR=/usr/bin/ \
+		-DLLVM_CONFIG_PATH=/usr/bin/llvm-config \
+		-DLLVM_TARGET_ARCH="$LLVM_TARGET_ARCH" \
+		-DLLVM_TARGETS_TO_BUILD="$LLVM_TARGETS_TO_BUILD" \
+		-DLLVM_HOST_TRIPLE="${ARCH}-linux-musl" \
+		-DLLVM_RUNTIME_TARGETS="${ARCH}-linux-musl" \
+		-DLLVM_BUILTIN_TARGETS="${ARCH}-linux-musl" \
+		-DLLVM_ENABLE_PROJECTS="clang;lld" \
+		-DLLVM_ENABLE_RUNTIMES="compiler-rt;libunwind;libcxx;libcxxabi" \
+		-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON \
+		-DLLVM_ENABLE_LLD=YES \
+		-DLLVM_ENABLE_LIBXML2=OFF \
+		-DLLVM_ENABLE_LIBEDIT=OFF \
+		-DLLVM_ENABLE_LIBPFM=OFF \
+		-DLLVM_ENABLE_LIBCXX=ON \
+		-DLLVM_BUILD_LLVM_DYLIB=ON \
+		-DLLVM_LINK_LLVM_DYLIB=ON \
+		-DLLVM_ENABLE_RTTI=ON \
+		-DLLVM_INSTALL_UTILS=ON \
+		-DLLVM_INSTALL_BINUTILS_SYMLINKS=ON \
+    -DCLANG_CONFIG_FILE_SYSTEM_DIR=/etc/clang \
+		-DCLANG_ENABLE_BOOTSTRAP=ON \
+		-DCLANG_DEFAULT_RTLIB=compiler-rt \
+		-DCLANG_DEFAULT_UNWINDLIB=libunwind \
+		-DCLANG_DEFAULT_CXX_STDLIB=libc++ \
+		-DLIBCXX_HAS_MUSL_LIBC=ON \
+		-DLIBCXX_CXX_ABI=libcxxabi \
+		-DLIBCXX_USE_COMPILER_RT=ON \
+		-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=OFF \
+		-DLIBCXX_HAS_MUSL_LIBC=ON \
+		-DLIBCXX_HARDENING_MODE=fast \
+		-DLIBCXX_ENABLE_LOCALIZATION=OFF \
+		-DLIBCXX_ENABLE_FILESYSTEM=OFF \
+		-DLIBCXXABI_ENABLE_STATIC_UNWINDER=OFF \
+		-DLIBCXXABI_USE_LLVM_UNWINDER=ON \
+    -DLIBCXXABI_USE_COMPILER_RT=ON \
+		-DLIBUNWIND_USE_COMPILER_RT=ON \
+		-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="${ARCH}-linux-musl" \
+		-DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
+		-DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
+		-DCOMPILER_RT_BUILD_GWP_ASAN=OFF \
+		-DCOMPILER_RT_HAS_GWP_ASAN=FALSE \
+		-DCOMPILER_RT_BUILD_SANITIZERS=OFF \
+		-DCOMPILER_RT_BUILD_XRAY=OFF \
+		-DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
+		-DCOMPILER_RT_BUILD_PROFILE=OFF \
+		-DCOMPILER_RT_BUILD_MEMPROF=OFF \
+		-DCOMPILER_RT_BUILD_CTX_PROFILE=OFF \
+		-DCOMPILER_RT_TEST_COMPILER=OFF \
+		-DCOMPILER_RT_TEST_CXX_COMPILER=OFF
+	cmake --build build -v
+	DESTDIR="/rootfs" cmake --install build
+EOF
+RUN --network=none <<-EOF
+	strip /rootfs/usr/lib/llvm20/lib/libLLVM.so.20.1
+EOF
+
+FROM stagex/core-filesystem AS package-llvm20
+COPY --from=build /rootfs/ /

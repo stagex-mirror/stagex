@@ -23,229 +23,238 @@ ADD fetch/llvm-${VERSION}.tar.xz .
 ADD fetch/cports-${CPORTS_VERSION}.tar.gz .
 WORKDIR /llvm-project-${VERSION}.src
 ADD patches/*.patch .
+
 RUN --network=none <<-EOF
 	cp /cports-${CPORTS_VERSION}/main/llvm/patches/*.patch .
-	patch -p1 < 0001-llvm-always-set-a-larger-stack-size-explicitly.patch
-	patch -p1 < 0002-llvm-musl-workarounds.patch
-	patch -p1 < 0003-llvm-fix-some-MF_EXEC-related-test-failures-on-aarch.patch
-	patch -p1 < 0004-llvm-disable-dependency-on-libexecinfo-everywhere.patch
-	patch -p1 < 0005-compiler-rt-ppc-sanitizer-fixes.patch
-	patch -p1 < 0006-compiler-rt-default-to-libc-for-sanitizers.patch
-	patch -p1 < 0007-compiler-rt-build-crt-in-runtimes-build.patch
-	patch -p1 < 0008-compiler-rt-lsan-basic-musl-fixes-on-various-archs.patch
-	patch -p1 < 0009-compiler-rt-HACK-hwasan-build-on-x86_64.patch
-	patch -p1 < 0010-compiler-rt-libcxx-abi-libunwind-HACK-force-fno-lto.patch
-	patch -p1 < 0011-compiler-rt-HACK-always-compile-in-gcc_personality_v.patch
-	patch -p1 < 0012-libc-libc-abi-libunwind-disable-multiarch-locations.patch
-	patch -p1 < 0013-llvm-fix-isOSGlibc-thinking-musl-is-glibc.patch
-	patch -p1 < 0014-clang-disable-multiarch-layout-on-musl.patch
-	patch -p1 < 0015-clang-drop-incorrect-warning-about-vector-equality-r.patch
-	patch -p1 < 0016-clang-add-fortify-include-paths-for-musl-triplets-en.patch
-	patch -p1 < 0017-clang-use-as-needed-by-default.patch
-	patch -p1 < 0018-clang-switch-on-default-now-relro.patch
-	patch -p1 < 0019-clang-default-to-fno-semantic-interposition.patch
-	patch -p1 < 0021-clang-use-strong-stack-protector-by-default.patch
-	patch -p1 < 0022-clang-fix-unwind-chain-inclusion.patch
-	patch -p1 < 0023-clang-error-when-using-ifunc-attribute-on-unsupporte.patch
-	patch -p1 < 0024-clang-link-libcxxabi-on-linux-when-using-libc.patch
-	patch -p1 < 0025-Get-rid-of-spurious-trailing-space-in-__clang_versio.patch
-	patch -p1 < 0026-clang-implicitly-include-stdc-predef.h.patch
-	patch -p1 < 0027-32-bit-musl-sanitizer-fixes.patch
-	patch -p1 < 0028-fix-scan-build.patch
-	patch -p1 < 0029-libcxx-default-to-type-2.patch
-	patch -p1 < 0030-various-musl-hacks.patch
-	patch -p1 < 0031-compiler-rt-cxx-header-build-order.patch
-	patch -p1 < 8f66fb784291c897a965a9ee4c280e314dc8cee4.patch
-	# Massive hack to force inject settings that are for some reason ignored as configure flags
-	find compiler-rt -iname CMakeLists.txt -exec sed -i '1s/^/set(COMPILER_RT_BUILD_SANITIZERS OFF)\n/' {} \;
-	find compiler-rt -iname CMakeLists.txt -exec sed -i '1s/^/set(COMPILER_RT_BUILD_GWP_ASAN OFF)\n/' {} \;
-	find compiler-rt -iname CMakeLists.txt -exec sed -i '1s/^/set(COMPILER_RT_HAS_GWP_ASAN FALSE)\n/' {} \;
-	find compiler-rt -iname *.cmake -exec sed -i '1s/^/set(COMPILER_RT_BUILD_SANITIZERS OFF)\n/' {} \;
-	find compiler-rt -iname *.cmake -exec sed -i '1s/^/set(COMPILER_RT_BUILD_GWP_ASAN OFF)\n/' {} \;
-	find compiler-rt -iname *.cmake -exec sed -i '1s/^/set(COMPILER_RT_HAS_GWP_ASAN FALSE)\n/' {} \;
+	for file in $(find . -maxdepth 1 -name "*.patch" | sort); do
+	  patch -p1 < "$file"
+	done
+EOF
+
+RUN --network=none <<-EOF
+	# CMake configuration arguments applicable to both of the following builds
+
+	CMAKE_ARGS=""
+	cmake_cache_set() {
+	  CMAKE_ARGS="$CMAKE_ARGS -D$1=$2"
+	}
+	# The runtimes are built with nested `cmake` invocations which aren't proxied the variables
+	# declared here. They need to have their variables set with a prefix of `RUNTIMES_${TARGET}_`.
+	# This is hardcoded to a target of the host as it's the only target the runtimes are built for.
+	cmake_runtime_cache_set() {
+	  CMAKE_ARGS="$CMAKE_ARGS -DRUNTIMES_${ARCH}-linux-musl_$1=$2"
+	}
+
+	# Configure the build itself
+	cmake_cache_set CMAKE_BUILD_TYPE Release
+	cmake_cache_set CMAKE_INSTALL_PREFIX /usr/
+	# If the following is set, LLVM should automatically set `CMAKE_INSTALL_LIBDIR`
+	cmake_cache_set LLVM_LIBDIR_SUFFIX ""
+	# We explicitly set this as there's discussions to standardize around it
+	cmake_cache_set CMAKE_INSTALL_LIBDIR /usr/lib
+	cmake_cache_set CMAKE_INSTALL_RPATH /usr/lib
+	cmake_cache_set LLVM_INSTALL_UTILS ON
+	cmake_cache_set LLVM_INSTALL_BINUTILS_SYMLINKS ON
+	cmake_cache_set CLANG_CONFIG_FILE_SYSTEM_DIR /etc/clang
+
+	# Configure for `musl`
+	cmake_cache_set LLVM_HOST_TRIPLE "${ARCH}-linux-musl"
+	cmake_cache_set LLVM_TARGET_ARCH "$LLVM_TARGET_ARCH"
+	cmake_cache_set LLVM_RUNTIME_TARGETS "${ARCH}-linux-musl"
+	cmake_cache_set LLVM_BUILTIN_TARGETS "${ARCH}-linux-musl"
+	cmake_runtime_cache_set LIBCXX_HAS_MUSL_LIBC ON
+	cmake_runtime_cache_set COMPILER_RT_DEFAULT_TARGET_ONLY ON
+
+	# Configure which parts of LLVM are built
+	cmake_cache_set LLVM_ENABLE_PROJECTS "clang;lld"
+	cmake_cache_set LLVM_ENABLE_RUNTIMES "compiler-rt;libunwind;libcxx;libcxxabi"
+
+	# Configure compiler-rt
+	cmake_runtime_cache_set COMPILER_RT_BUILD_BUILTINS ON
+	cmake_runtime_cache_set COMPILER_RT_USE_BUILTINS_LIBRARY ON
+	cmake_runtime_cache_set COMPILER_RT_USE_LLVM_UNWINDER ON
+	# This does not work out-of-the-box with a `musl` host
+	cmake_runtime_cache_set COMPILER_RT_BUILD_GWP_ASAN OFF
+	cmake_cache_set CLANG_DEFAULT_RTLIB compiler-rt
+
+	# Configure libcxx(abi) (and libunwind)
+	cmake_cache_set LLVM_ENABLE_LIBCXX ON
+	cmake_runtime_cache_set LIBCXX_CXX_ABI libcxxabi
+	cmake_runtime_cache_set LIBCXX_HARDENING_MODE fast
+	cmake_runtime_cache_set LIBCXX_USE_COMPILER_RT ON
+	cmake_runtime_cache_set LIBCXXABI_USE_COMPILER_RT ON
+	cmake_runtime_cache_set LIBCXXABI_USE_LLVM_UNWINDER ON
+	cmake_runtime_cache_set LIBUNWIND_USE_COMPILER_RT ON
+
+	cmake_cache_set CLANG_DEFAULT_CXX_STDLIB libc++
+	cmake_cache_set CLANG_DEFAULT_UNWINDLIB libunwind
+
+	# Disable a variety of unused/uninstantiated features
+	cmake_cache_set LLVM_ENABLE_LIBXML2 OFF
+	cmake_cache_set LLVM_ENABLE_LIBEDIT OFF
+	cmake_cache_set LLVM_ENABLE_LIBPFM OFF
+	cmake_cache_set LLVM_ENABLE_ICU OFF
+	cmake_cache_set LLVM_ENABLE_ICONV OFF
+
+	cmake_runtime_cache_set COMPILER_RT_SCUDO_STANDALONE_BUILD_SHARED OFF
+
+	echo "$CMAKE_ARGS" > ./cmake_args
+EOF
+
+RUN --network=none <<-EOF
+	# We first build LLVM with GCC, before we will build LLVM with LLVM
+
+	# As this build only has to compile LLVM itself, we disable a variety of unnecessary components
+	CMAKE_ARGS="$(cat ./cmake_args)"
+	cmake_cache_set() {
+	  CMAKE_ARGS="$CMAKE_ARGS -D$1=$2"
+	}
+	cmake_runtime_cache_set() {
+	  CMAKE_ARGS="$CMAKE_ARGS -DRUNTIMES_${ARCH}-linux-musl_$1=$2"
+	}
+
+	cmake_runtime_cache_set COMPILER_RT_ENABLE_PEDANTIC OFF
+	cmake_runtime_cache_set COMPILER_RT_ENABLE_STATIC_UNWINDER OFF
+	cmake_runtime_cache_set COMPILER_RT_BUILD_SANITIZERS OFF
+	cmake_runtime_cache_set COMPILER_RT_BUILD_XRAY OFF
+	cmake_runtime_cache_set COMPILER_RT_BUILD_LIBFUZZER OFF
+	cmake_runtime_cache_set COMPILER_RT_BUILD_PROFILE OFF
+	cmake_runtime_cache_set COMPILER_RT_BUILD_CTX_PROFILE OFF
+	cmake_runtime_cache_set COMPILER_RT_BUILD_MEMPROF OFF
+	cmake_runtime_cache_set COMPILER_RT_BUILD_ORC OFF
+	cmake_runtime_cache_set COMPILER_RT_HWASAN_WITH_INTERCEPTORS OFF
+	cmake_runtime_cache_set LIBCXX_ENABLE_PEDANTIC OFF
+	cmake_runtime_cache_set LIBCXX_ENABLE_STATIC OFF
+	cmake_runtime_cache_set LIBCXX_ENABLE_STATIC_ABI_LIBRARY OFF
+	cmake_runtime_cache_set LIBCXXABI_ENABLE_PEDANTIC OFF
+	cmake_runtime_cache_set LIBCXXABI_ENABLE_STATIC_UNWINDER OFF
+	cmake_runtime_cache_set LIBUNWIND_ENABLE_PEDANTIC OFF
+	cmake_runtime_cache_set LIBUNWIND_ENABLE_STATIC OFF
+
 	cmake \
 		-B build \
 		-S llvm \
 		-Wno-dev \
-		-DCMAKE_BUILD_TYPE=Release \
-		-DCMAKE_INSTALL_PREFIX=/usr/ \
-		-DCMAKE_INSTALL_RPATH=/usr/lib \
-		-DLLVM_TARGET_ARCH="$LLVM_TARGET_ARCH" \
 		-DLLVM_TARGETS_TO_BUILD="$LLVM_TARGET_ARCH" \
-		-DLLVM_HOST_TRIPLE="${ARCH}-linux-musl" \
-		-DLLVM_RUNTIME_TARGETS="${ARCH}-linux-musl" \
-		-DLLVM_BUILTIN_TARGETS="${ARCH}-linux-musl" \
-		-DLLVM_ENABLE_PROJECTS="clang;lld" \
-		-DLLVM_ENABLE_RUNTIMES="compiler-rt;libunwind;libcxx;libcxxabi" \
-		-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON \
-		-DLLVM_ENABLE_LIBXML2=OFF \
-		-DLLVM_ENABLE_LIBEDIT=OFF \
-		-DLLVM_ENABLE_LIBPFM=OFF \
-		-DLLVM_ENABLE_LIBCXX=ON \
-		-DLLVM_BUILD_LLVM_DYLIB=ON \
-		-DLLVM_LINK_LLVM_DYLIB=ON \
-		-DLLVM_ENABLE_RTTI=ON \
-		-DLLVM_INSTALL_UTILS=ON \
-		-DLLVM_INSTALL_BINUTILS_SYMLINKS=ON \
-    -DCLANG_CONFIG_FILE_SYSTEM_DIR=/etc/clang \
-		-DCLANG_ENABLE_BOOTSTRAP=ON \
-		-DCLANG_DEFAULT_RTLIB=compiler-rt \
-		-DCLANG_DEFAULT_UNWINDLIB=libunwind \
-		-DCLANG_DEFAULT_CXX_STDLIB=libc++ \
-		-DLIBCXX_HAS_MUSL_LIBC=ON \
-		-DLIBCXX_CXX_ABI=libcxxabi \
-		-DLIBCXX_USE_COMPILER_RT=ON \
-		-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=OFF \
-		-DLIBCXX_HAS_MUSL_LIBC=ON \
-		-DLIBCXX_HARDENING_MODE=fast \
-		-DLIBCXX_ENABLE_LOCALIZATION=OFF \
-		-DLIBCXX_ENABLE_FILESYSTEM=OFF \
-		-DLIBCXXABI_ENABLE_STATIC_UNWINDER=OFF \
-		-DLIBCXXABI_USE_LLVM_UNWINDER=ON \
-    -DLIBCXXABI_USE_COMPILER_RT=ON \
-		-DLIBUNWIND_USE_COMPILER_RT=ON \
-		-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="${ARCH}-linux-musl" \
-		-DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
-		-DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
-		-DCOMPILER_RT_BUILD_GWP_ASAN=OFF \
-		-DCOMPILER_RT_HAS_GWP_ASAN=FALSE \
-		-DCOMPILER_RT_BUILD_SANITIZERS=OFF \
-		-DCOMPILER_RT_BUILD_XRAY=OFF \
-		-DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
-		-DCOMPILER_RT_BUILD_PROFILE=OFF \
-		-DCOMPILER_RT_BUILD_MEMPROF=OFF \
-		-DCOMPILER_RT_BUILD_CTX_PROFILE=OFF \
-		-DCOMPILER_RT_TEST_COMPILER=OFF \
-		-DCOMPILER_RT_TEST_CXX_COMPILER=OFF
+		-DLLVM_BUILD_LLVM_DYLIB=OFF \
+		-DLLVM_ENABLE_BACKTRACES=OFF \
+		-DLLVM_ENABLE_BINDINGS=OFF \
+		-DLLVM_ENABLE_PEDANTIC=OFF \
+		-DLLVM_ENABLE_PLUGINS=OFF \
+		-DLLVM_ENABLE_TELEMETRY=OFF \
+		-DLLVM_ENABLE_ZSTD=OFF \
+		-DCLANG_ENABLE_STATIC_ANALYZER=OFF \
+		$CMAKE_ARGS
 	cmake --build build -v --parallel $(nproc)
+
+	# Remove all object files, static archives from the bootstrap to ensure they aren't further used
+	for object_file in $(find /usr/lib -name "*.o"); do
+		rm $object_file
+	done
+	for static_archive in $(find /usr/lib -name "*.a"); do
+		rm $static_archive
+	done
+
+	# Install the LLVM toolchain we just built
 	cmake --install build
-	export LDFLAGS="-fuse-ld=/usr/bin/ld.lld"
+	rm -rf build
+EOF
+
+# Install `musl` as we just erased all of our `*.a`, `*.o` files, including _our_ copy of `musl`
+COPY --from=stagex/core-musl . /
+
+RUN --network=none <<-EOF
+	export LIBCC="/usr/lib/clang/21/lib/${TARGET}/libclang_rt.builtins.a"
+
+	# Build LLVM's `atomic.c` into `libatomic.so`
+	mkdir build-libatomic
+	cd build-libatomic
+	clang -std=c99 -fPIC -O2 -c -o atomic.o ../compiler-rt/lib/builtins/atomic.c
+	ld.lld --shared -o /usr/lib/libatomic.so atomic.o
+	cd ..
+
 	export CFLAGS="-fPIC"
 	export CXXFLAGS="$CFLAGS"
+
 	#HACK: The only reason we are not using "all" here is because AMDGPU does not build deterministically
 	# Zig hard requires "all" so this also forces a messy patch there as well to remove AMDGPU support as well
 	export LLVM_TARGETS_TO_BUILD="AArch64;ARM;AVR;BPF;Hexagon;Lanai;LoongArch;Mips;MSP430;NVPTX;PowerPC;RISCV;Sparc;SPIRV;SystemZ;VE;WebAssembly;X86;XCore"
-	export LIBCC="/usr/lib/clang/20/lib/${TARGET}/libclang_rt.builtins.a"
-	rm -rf build
+
 	cmake \
 		-B build \
 		-S llvm \
 		-Wno-dev \
-		-DCMAKE_BUILD_TYPE=Release \
-		-DCMAKE_INSTALL_PREFIX=/usr/ \
-		-DCMAKE_INSTALL_RPATH=/usr/lib \
 		-DCMAKE_C_COMPILER=/usr/bin/clang \
 		-DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
 		-DCMAKE_AR=/usr/bin/llvm-ar \
-		-DCMAKE_AS=/usr/bin/llvm-as \
 		-DCMAKE_NM=/usr/bin/llvm-nm \
 		-DCMAKE_RANLIB=/usr/bin/llvm-ranlib \
-		-DCLANG_TABLEGEN=/usr/bin/clang-tblgen \
-		-DCLANG_PSEUDO_GEN=/usr/bin/clang-pseudo-gen \
-		-DLLVM_HEADERS_TABLEGEN=/usr/bin/llvm-tblgen \
-		-DCLANG_TIDY_CONFUSABLE_CHARS_GEN=/usr/bin/clang-tidy-confusable-chars-gen \
-		-DMLIR_TABLEGEN=/usr/bin/mlir-tblgen \
-		-DMLIR_PDLL_TABLEGEN=/usr/bin/mlir-pdll \
-		-DMLIR_LINALG_ODS_YAML_GEN=/usr/bin/mlir-linalg-ods-yaml-gen \
 		-DLLVM_NATIVE_TOOL_DIR=/usr/bin/ \
-		-DLLVM_CONFIG_PATH=/usr/bin/llvm-config \
-		-DLLVM_TARGET_ARCH="$LLVM_TARGET_ARCH" \
+		-DLLVM_USE_LINKER=lld \
+		-DLLVM_HEADERS_TABLEGEN=/usr/bin/llvm-tblgen \
+		-DCLANG_TABLEGEN=/usr/bin/clang-tblgen \
 		-DLLVM_TARGETS_TO_BUILD="$LLVM_TARGETS_TO_BUILD" \
-		-DLLVM_HOST_TRIPLE="${ARCH}-linux-musl" \
-		-DLLVM_RUNTIME_TARGETS="${ARCH}-linux-musl" \
-		-DLLVM_BUILTIN_TARGETS="${ARCH}-linux-musl" \
-		-DLLVM_ENABLE_PROJECTS="clang;lld" \
-		-DLLVM_ENABLE_RUNTIMES="compiler-rt;libunwind;libcxx;libcxxabi" \
 		-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON \
-		-DLLVM_ENABLE_LLD=YES \
-		-DLLVM_ENABLE_LIBXML2=OFF \
-		-DLLVM_ENABLE_LIBEDIT=OFF \
-		-DLLVM_ENABLE_LIBPFM=OFF \
-		-DLLVM_ENABLE_LIBCXX=ON \
 		-DLLVM_BUILD_LLVM_DYLIB=ON \
 		-DLLVM_LINK_LLVM_DYLIB=ON \
-		-DLLVM_ENABLE_RTTI=ON \
-		-DLLVM_INSTALL_UTILS=ON \
-		-DLLVM_INSTALL_BINUTILS_SYMLINKS=ON \
-    -DCLANG_CONFIG_FILE_SYSTEM_DIR=/etc/clang \
-		-DCLANG_ENABLE_BOOTSTRAP=ON \
-		-DCLANG_DEFAULT_RTLIB=compiler-rt \
-		-DCLANG_DEFAULT_UNWINDLIB=libunwind \
-		-DCLANG_DEFAULT_CXX_STDLIB=libc++ \
-		-DLIBCXX_HAS_MUSL_LIBC=ON \
-		-DLIBCXX_CXX_ABI=libcxxabi \
-		-DLIBCXX_USE_COMPILER_RT=ON \
-		-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=OFF \
-		-DLIBCXX_HAS_MUSL_LIBC=ON \
-		-DLIBCXX_HARDENING_MODE=fast \
-		-DLIBCXX_ENABLE_LOCALIZATION=OFF \
-		-DLIBCXX_ENABLE_FILESYSTEM=OFF \
-		-DLIBCXXABI_ENABLE_STATIC_UNWINDER=OFF \
-		-DLIBCXXABI_USE_LLVM_UNWINDER=ON \
-    -DLIBCXXABI_USE_COMPILER_RT=ON \
-		-DLIBUNWIND_USE_COMPILER_RT=ON \
-		-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="${ARCH}-linux-musl" \
-		-DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
-		-DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
-		-DCOMPILER_RT_BUILD_GWP_ASAN=OFF \
-		-DCOMPILER_RT_HAS_GWP_ASAN=FALSE \
-		-DCOMPILER_RT_BUILD_SANITIZERS=OFF \
-		-DCOMPILER_RT_BUILD_XRAY=OFF \
-		-DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
-		-DCOMPILER_RT_BUILD_PROFILE=OFF \
-		-DCOMPILER_RT_BUILD_MEMPROF=OFF \
-		-DCOMPILER_RT_BUILD_CTX_PROFILE=OFF \
-		-DCOMPILER_RT_TEST_COMPILER=OFF \
-		-DCOMPILER_RT_TEST_CXX_COMPILER=OFF
+		$(cat ./cmake_args)
 	cmake --build build -v
 	DESTDIR="/rootfs" cmake --install build
+
+	# NSan, for whatever reason, is not being reproducibly built. It's removed here as it
+	# _should_ be unpopular and not a blocker, but ideally this would be solved (TODO).
+	rm /rootfs/usr/lib/clang/21/lib/${TARGET}/libclang_rt.nsan*
 EOF
+
 RUN --network=none <<-EOF
 	ln -sf /usr/bin/clang++ /rootfs/usr/bin/c++
 	ln -sf /usr/bin/clang /rootfs/usr/bin/cc
 	ln -sf /usr/bin/ld.lld /rootfs/usr/bin/ld
-	ln -sf /usr/lib/clang/20/lib/${TARGET}/libclang_rt.builtins.a /rootfs/usr/lib/libclang_rt.builtins.a
-	strip /rootfs/usr/lib/libLLVM.so.20.1
+	ln -sf /usr/lib/clang/21/lib/${TARGET}/libclang_rt.builtins.a /rootfs/usr/lib/libclang_rt.builtins.a
+	cp /usr/lib/libatomic.so /rootfs/usr/lib/
+	strip /rootfs/usr/lib/libLLVM.so.21.1
 EOF
 
 FROM build AS build-llvm-libgcc
 RUN --network=none <<-EOF
-	rm -rf /rootfs
-	mkdir -p /rootfs/usr/lib
+	# The following is allowed to directly use `-DCOMPILER_RT` as it's not building via `llvm`
 	cmake \
-		-B build \
-		-S llvm \
+		-B build-libgcc \
+		-S runtimes \
 		-Wno-dev \
-		-DCMAKE_ASM_COMPILER_TARGET="${TARGET}" \
-    -DCMAKE_C_COMPILER_TARGET="${TARGET}" \
-    -DCMAKE_CXX_COMPILER_TARGET="${TARGET}" \
-		-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
+		-DCMAKE_C_COMPILER=/usr/bin/clang \
+		-DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
+		-DCMAKE_AR=/usr/bin/llvm-ar \
+		-DCMAKE_NM=/usr/bin/llvm-nm \
+		-DCMAKE_RANLIB=/usr/bin/llvm-ranlib \
+		-DCMAKE_C_COMPILER_TARGET="${TARGET}" \
+		-DCMAKE_CXX_COMPILER_TARGET="${TARGET}" \
 		-DCMAKE_BUILD_TYPE=Release \
-		-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON \
-		-DCOMPILER_RT_BUILTINS_HIDE_SYMBOLS=OFF \
-		-DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
-		-DCOMPILER_RT_BUILD_BUILTINS=ON \
-		-DCOMPILER_RT_BUILD_CRT=OFF \
-		-DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
-		-DCOMPILER_RT_BUILD_MEMPROF=OFF \
-		-DCOMPILER_RT_BUILD_PROFILE=OFF \
+		-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
+		-DLLVM_USE_LINKER=lld \
+		$(cat ./cmake_args) \
+		-DLLVM_ENABLE_RUNTIMES="llvm-libgcc" \
+		-DLLVM_LIBGCC_EXPLICIT_OPT_IN=Yes \
+		-DCOMPILER_RT_ENABLE_PEDANTIC=OFF \
+		-DCOMPILER_RT_ENABLE_STATIC_UNWINDER=OFF \
 		-DCOMPILER_RT_BUILD_SANITIZERS=OFF \
 		-DCOMPILER_RT_BUILD_XRAY=OFF \
-		-DCOMPILER_RT_BUILD_ORC=OFF \
+		-DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
+		-DCOMPILER_RT_BUILD_PROFILE=OFF \
 		-DCOMPILER_RT_BUILD_CTX_PROFILE=OFF \
-		-DCOMPILER_RT_DEFAULT_TARGET_ONLY=YES
-	/usr/bin/clang++ \
-		-nodefaultlibs \
-		-shared \
-		-Wl,-soname,libgcc_s.so.1 \
-		-Wl,--no-undefined \
-		-Wl,--whole-archive \
-		build/lib/clang/20/lib/${TARGET}/libclang_rt.builtins.a \
-		-Wl,--no-as-needed \
-		-lc \
-		-lunwind \
-		-o build/libgcc_s.so.1
-	cp build/libgcc_s.so.1 /rootfs/usr/lib/
+		-DCOMPILER_RT_BUILD_MEMPROF=OFF \
+		-DCOMPILER_RT_BUILD_ORC=OFF \
+		-DCOMPILER_RT_HWASAN_WITH_INTERCEPTORS=OFF
+	cmake --build build-libgcc -v
+
+	# Install the libraries to a temporary location
+	mkdir libgcc-libs
+	DESTDIR="libgcc-libs" cmake --install build-libgcc
+
+	# Before installing _solely_ `libgcc_s.so.1`, not the just-built copies of any other libraries
+	rm -rf /rootfs
+	mkdir -p /rootfs/usr/lib
+	cp libgcc-libs/usr/lib/libgcc_s.so.1 /rootfs/usr/lib/
 EOF
 
 FROM stagex/core-filesystem AS package-llvm
