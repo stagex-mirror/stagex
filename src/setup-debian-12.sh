@@ -1,24 +1,25 @@
-#!/bin/sh
+#!/bin/bash
+set -eu
 
-# This script basically always needs root
-[[ $EUID -ne 0 ]] && exec sudo /bin/sh "$0" "$@"
+# This script basically always needs root:
+[[ "$(id -u)" -ne 0 ]] && exec sudo "$0" "$@"
 
 # Add Docker's official GPG key:
-sudo apt-get update
-sudo apt-get install ca-certificates curl
-sudo install -m 0755 -d /etc/apt/keyrings
-sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
-sudo chmod a+r /etc/apt/keyrings/docker.asc
+apt-get update
+apt-get install ca-certificates curl
+install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+chmod a+r /etc/apt/keyrings/docker.asc
 
 # Add the repository to Apt sources:
 echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
   $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo apt update
+apt update
 
-# Install required packages
-sudo apt install build-essential jq gpg docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+# Install required packages:
+apt install -y build-essential jq gpg docker-ce docker-ce-cli containerd.io docker-buildx-plugin
 
 cat << ENDHERE >/etc/docker/daemon.json
 {
@@ -31,3 +32,9 @@ ENDHERE
 systemctl restart docker
 
 docker buildx create --driver docker-container --bootstrap --name build --use
+
+# If this script was not executed by root, add the calling user to the docker group:
+if [[ -n "$SUDO_USER" && "$SUDO_USER" != root ]]; then
+  usermod -aG docker "$SUDO_USER"
+  echo "Added user $SUDO_USER to docker group, you may need to restart your session to invoke make / docker without sudo."
+fi
