@@ -1,21 +1,17 @@
 FROM scratch AS build
 ARG VERSION
-COPY --from=stagex/core-coreutils . /
+COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-openssl . /
-COPY --from=stagex/core-grep . /
 COPY --from=stagex/core-bison . /
 COPY --from=stagex/core-flex . /
-COPY --from=stagex/core-gawk . /
 COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-texinfo . /
-COPY --from=stagex/core-sed . /
 COPY --from=stagex/core-ncurses . /
-COPY --from=stagex/core-bash /bin/bash /bin/sh
 ADD fetch/bc-${VERSION}.tar.gz .
 WORKDIR /bc-${VERSION}
 RUN --network=none <<-EOF
