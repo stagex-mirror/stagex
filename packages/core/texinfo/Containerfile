@@ -1,23 +1,14 @@
 FROM scratch AS build
 ARG VERSION
+COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-openssl . /
-COPY --from=stagex/core-coreutils . /
-COPY --from=stagex/core-sed . /
-COPY --from=stagex/core-grep . /
-COPY --from=stagex/core-tar . /
-COPY --from=stagex/core-xz . /
-COPY --from=stagex/core-gawk . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-zlib . /
-COPY --from=stagex/core-diffutils . /
-COPY --from=stagex/core-findutils . /
 COPY --from=stagex/core-ncurses . /
-COPY --from=stagex/core-bash . /
-COPY --from=stagex/core-bash /bin/bash /bin/sh
 ADD fetch/texinfo-${VERSION}.tar.xz .
 WORKDIR /texinfo-${VERSION}
 RUN --network=none <<-EOF
