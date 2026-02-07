@@ -147,7 +147,10 @@ EOF
 COPY --chmod=755 <<-'EOF' /shell.sh
 	#!/usr/bin/bash
 	set -ex
-	JOBS=$(ls -1 /sys/bus/cpu/devices | wc -l | sed 's/^[ \t]*//')
+	JOBS=8
+	if [ -d "/sys/bus/cpu/devices" ]; then
+		JOBS=$(ls -1 /sys/bus/cpu/devices | wc -l | sed 's/^[ \t]*//')
+	fi
 	MAKEJOBS=-j${JOBS}
 	. /steps/helpers.sh
 	$@
