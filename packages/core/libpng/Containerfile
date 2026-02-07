@@ -1,5 +1,13 @@
-FROM stagex/pallet-clang-gnu-busybox AS build
+FROM scratch AS build
 ARG VERSION
+
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-busybox . /
+
 ADD fetch/libpng-${VERSION}.tar.gz .
 WORKDIR /libpng-${VERSION}
 RUN --network=none <<-EOF
