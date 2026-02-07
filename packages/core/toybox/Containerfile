@@ -1,0 +1,33 @@
+FROM scratch AS build
+ARG VERSION
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-ncurses . /
+COPY --from=stagex/core-busybox / /
+# `bash` is explicitly needed by `toybox/scripts` and `busybox hush` is insufficient
+COPY --from=stagex/core-bash / /
+COPY --from=stagex/core-llvm / /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-make / /
+COPY --from=stagex/core-profile / /
+ADD fetch/toybox-${VERSION}.tar.gz .
+WORKDIR /toybox-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+
+	export KCONFIG_NOTIMESTAMP=1
+	make defconfig
+
+	make -j$(nproc)
+
+	mkdir -p /rootfs/usr/shares/licenses
+	cp LICENSE /rootfs/usr/shares/licenses/toybox
+
+	mkdir -p /rootfs/usr/bin
+	PREFIX=/rootfs/usr/bin scripts/install.sh
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs /
+ENTRYPOINT ["/bin/sh"]

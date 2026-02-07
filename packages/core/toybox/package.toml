@@ -1,0 +1,12 @@
+[package]
+name = "toybox"
+version = "0.8.13"
+description = "Toybox combines many common Linux command line utilities together into a single BSD-licensed executable"
+licenses = "0BSD"
+website = "https://landley.net/toybox"
+
+[sources.toybox]
+hash = "9d4c124d7d731a2db399f6278baa2b42c2e3511f610c6ad30cc3f1a52581334b"
+format = "tar.gz"
+file = "toybox-{version}.{format}"
+mirrors = [ "https://landley.net/toybox/downloads/{file}",]
