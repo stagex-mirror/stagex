@@ -9,6 +9,10 @@ COPY --from=stagex/core-curl . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-pkgconf . /
 
+# The following MUST be done with the same version of LLVM used to build Rust
+# While that would imply `core-rust` should provide these definitions, they _cannot_ be symlinks
+# We can use hard links here, as we add `pallet-clang` first, but in `core-rust` we'd have to `cp`
+
 # Populate Rust's self-contained toolchain's linker
 # https://github.com/rust-lang/rust/blob/44e34e1ac6d7e69b40856cf1403d3da145319c30/src/bootstrap/src/core/build_steps/dist.rs#L581-L601
 # https://github.com/rust-lang/rust/blob/44e34e1ac6d7e69b40856cf1403d3da145319c30/src/bootstrap/src/lib.rs#L79-L80
