@@ -1,0 +1,29 @@
+FROM scratch AS build
+ARG VERSION
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-samurai . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-libucontext . /
+COPY --from=stagex/core-linux-headers . /
+ADD fetch/onetbb-${VERSION}.tar.gz .
+WORKDIR /oneTBB-${VERSION}
+ENV LDFLAGS="-Wl,--undefined-version"
+RUN --network=none <<-EOF
+	set -ex
+	cmake -B build -G Ninja \
+		-DCMAKE_INSTALL_PREFIX=/usr/ \
+		-DCMAKE_INSTALL_LIBDIR=/usr/lib \
+		-DTBB4PY_BUILD=OFF \
+    -DTBB_STRICT=OFF \
+    -DTBB_TEST=OFF
+	cmake --build build
+	DESTDIR="/rootfs" cmake --install build
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
