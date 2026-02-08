@@ -1,6 +1,5 @@
 FROM scratch AS build
 ARG VERSION
-COPY --from=stagex/core-bash . /
 COPY --from=stagex/core-pkgconf . /
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-make . /

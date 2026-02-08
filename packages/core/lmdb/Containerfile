@@ -4,10 +4,8 @@ COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-zlib . /
-COPY --from=stagex/core-bash . /
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-make . /
-COPY --from=stagex/core-openssl . /
 ADD fetch/lmdb-${VERSION}.tar.gz .
 WORKDIR /openldap-LMDB_${VERSION}/libraries/liblmdb
 COPY *.patch .

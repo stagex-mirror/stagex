@@ -1,7 +1,6 @@
 FROM scratch AS build
 ARG BUILD_VERSION
 COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-llvm . /

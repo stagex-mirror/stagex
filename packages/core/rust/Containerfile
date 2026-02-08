@@ -6,10 +6,9 @@ ENV BOOTSTRAP_RUST_VERSION="1.74"
 ENV BOOTSTRAP_GCC_VERSION="15.2.0"
 COPY --from=stagex/core-filesystem . /
 COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-ncurses . /
-COPY --from=stagex/core-bash . /
+# As `/bin/bash` is required by `mrustc`, wrap BusyBox's Bourne-inspired shell (`hush`) as `bash`
+RUN printf "%s\n%s\n" '#!/bin/sh' 'hush "$@"' > /usr/bin/bash && chmod +x /usr/bin/bash
 COPY --from=stagex/core-make . /
-COPY --from=stagex/core-cmake . /
 COPY --from=stagex/core-python . /
 COPY --from=stagex/core-py-setuptools . /
 COPY --from=stagex/core-zlib . /
@@ -31,8 +30,6 @@ COPY --from=stagex/core-mpc . /
 COPY --from=stagex/core-isl . /
 COPY --from=stagex/core-gmp . /
 COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-hiredis . /
-COPY --from=stagex/core-xxhash . /
 COPY --from=stagex/core-llvm17 . /
 COPY <<-'EOF' /etc/profile
 	set -eux
@@ -248,8 +245,6 @@ RUN ./build 1.85.0 1.84.0
 ADD fetch/rustc-1.86.0-src.tar.gz .
 RUN ./build 1.86.0 1.85.0
 
-ENV LLVM_VERSION="20"
-COPY --from=stagex/core-llvm20 . /
 ADD fetch/rustc-1.87.0-src.tar.gz .
 RUN ./build 1.87.0 1.86.0
 
@@ -262,13 +257,13 @@ RUN ./build 1.89.0 1.88.0 ""
 ADD fetch/rustc-1.90.0-src.tar.gz .
 RUN ./build 1.90.0 1.89.0 ""
 
+ENV LLVM_VERSION="system"
+
 ADD fetch/rustc-1.91.1-src.tar.gz .
 RUN ./build 1.91.1 1.90.0 ""
 
 ADD fetch/rustc-1.92.0-src.tar.gz .
 RUN ./build 1.92.0 1.91.1 ""
-
-ENV LLVM_VERSION="system"
 
 ADD fetch/rustc-1.93.0-src.tar.gz .
 
