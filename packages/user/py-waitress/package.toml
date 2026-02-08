@@ -4,6 +4,7 @@ version = "3.0.2"
 description = "A WSGI server for Python 3"
 license = "ZPL-2.1"
 website = "https://github.com/Pylons/waitress"
+makedeps = ["pallet-python", "core-filesystem"]
 
 [sources.py-waitress]
 hash = "4c5583cee40bee842b48443ed899b5d445947c5d88fe170d31c3becab09710c3"

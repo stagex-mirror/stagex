@@ -4,6 +4,8 @@ version = "6.16.0"
 description = "IP routing utilities"
 license = "GPL-2.0-or-later"
 website = "https://wiki.linuxfoundation.org/networking/iproute2"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["user-elfutils"]
 
 [sources.iproute2]
 hash = "5900ccc15f9ac3bf7b7eae81deb5937123df35e99347a7f11a22818482f0a8d0"

@@ -2,6 +2,7 @@
 name = "libmd"
 version = "1.1.0"
 description = "Message Digest functions from BSD systems"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
 
 [sources.libmd]
 hash = "1bd6aa42275313af3141c7cf2e5b964e8b1fd488025caf2f971f43b00776b332"

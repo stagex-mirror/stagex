@@ -4,6 +4,8 @@ version = "8.4.13"
 license = "PHP-3.0.1"
 website = "https://www.php.net/"
 description = "A popular general-purpose scripting language that is especially suited to web development."
+deps = ["user-argon2", "core-pkgconf", "core-curl", "core-libffi", "core-perl", "core-pcre2", "core-lzip", "core-openssl", "core-clang", "core-binutils", "core-zlib", "core-bc", "core-lld", "core-icu", "core-make", "core-bzip2", "core-automake", "core-sqlite3", "core-lmdb", "core-linux-headers", "core-re2c", "user-libsodium", "core-m4", "core-libunwind", "core-acl", "core-llvm", "core-bison", "core-gettext", "core-autoconf", "user-libiconv", "core-bash", "core-gmp", "core-libzstd", "core-gdbm", "core-libxml2", "core-expat", "core-musl", "core-busybox", "core-libedit"]
+makedeps = ["core-filesystem"]
 
 [sources.php]
 hash = "ba323619b322125dbd7bf09eefbd572863797359c7d127f986c58a71c872d531"

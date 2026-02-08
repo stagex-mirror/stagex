@@ -4,6 +4,8 @@ version = "1.17.1"
 description = "Foreign Function Interface for Python calling C code"
 licenses = "MIT"
 website = "https://cffi.readthedocs.org/"
+deps = ["core-py-wheel", "core-zlib", "core-libzstd", "core-python", "core-libffi", "core-py-flit", "core-py-installer", "core-py-gpep517", "core-llvm", "core-musl", "core-busybox", "core-py-setuptools"]
+makedeps = ["core-filesystem"]
 
 [sources.py-cffi]
 hash = "1c39c6016c32bc48dd54561950ebd6836e1670f2ae46128f67cf49e789c52824"

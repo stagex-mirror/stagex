@@ -11,6 +11,8 @@ subpackages = [
   "vim-common",
   "xxd",
 ]
+makedeps = ["pallet-python", "pallet-clang-cmake-busybox", "pallet-lua", "core-filesystem"]
+deps = ["user-libxt", "core-ruby", "core-ncurses", "core-tcl", "core-perl", "core-make"]
 
 [sources.vim]
 hash = "d11eb36b58c7cc5b2d4b26be3304253fbb39e1f6ba22fbaae71ef924dff262e4"

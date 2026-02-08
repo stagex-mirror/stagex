@@ -2,6 +2,8 @@
 name = "pcre2"
 version = "10.44"
 description = "TODO"
+deps = ["core-automake", "core-zlib", "core-readline", "core-linux-headers", "core-autoconf", "core-libtool", "core-m4", "core-ncurses", "core-libzstd", "core-perl", "core-make", "core-llvm", "core-bzip2", "core-gawk", "core-musl", "core-busybox", "core-libedit"]
+makedeps = ["core-filesystem"]
 
 [sources.pcre2]
 hash = "07a002e8216382a96f722bc4a831f3d77457fe3e9e62a6dff250a2dd0e9c5e6d"

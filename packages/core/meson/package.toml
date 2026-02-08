@@ -2,6 +2,8 @@
 name = "meson"
 version = "1.7.0"
 description = "Fast and user friendly build system"
+deps = ["core-musl", "core-zlib", "core-python", "core-busybox", "core-py-setuptools"]
+makedeps = ["core-filesystem"]
 
 [sources.meson]
 hash = "08efbe84803eed07f863b05092d653a9d348f7038761d900412fddf56deb0284"

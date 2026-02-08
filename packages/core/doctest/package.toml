@@ -4,6 +4,8 @@ version = "2.4.12"
 description = "Fast header-only C++ unit testing"
 license = "MIT"
 website = "https://github.com/doctest/doctest"
+deps = ["core-zlib", "core-libzstd", "core-openssl", "core-make", "core-cmake", "core-llvm", "core-samurai", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.doctest]
 hash = "73381c7aa4dee704bd935609668cf41880ea7f19fa0504a200e13b74999c2d70"

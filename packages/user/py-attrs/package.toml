@@ -4,6 +4,8 @@ version = "25.3.0"
 license = "MIT"
 description = "Python classes without boilerplate"
 website = "https://www.attrs.org"
+makedeps = ["pallet-python", "core-filesystem"]
+deps = ["user-py-trove-classifiers", "user-py-pluggy", "core-py-setuptools-scm", "user-py-hatch-vcs", "user-py-hatchling", "user-py-pathspec"]
 
 [sources.py-attrs]
 hash = "1116ff6fff7a79c8de6115e38532daa2507dfffeabd6bbc364d1d441fb14d00f"

@@ -2,6 +2,7 @@
 name = "py-sphinxcontrib-devhelp"
 version = "1.0.5"
 description = "TODO"
+makedeps = ["pallet-python", "core-filesystem"]
 
 [sources.py-sphinxcontrib-devhelp]
 hash = "e2b24fcee87da8fb6a3826ba072c8369cdbffee116bd38bcfaa0302b279dc844"

@@ -2,6 +2,8 @@
 name = "rust"
 version = "1.93.0"
 description = "Rust Programming Language toolchain"
+deps = ["core-pkgconf", "core-libcxx", "core-hiredis", "core-ncurses", "core-curl", "core-ca-certificates", "core-perl", "core-libffi", "core-openssl", "core-py-setuptools", "core-llvm17", "core-clang-rt-devel", "core-binutils", "core-libcxxabi", "core-zlib", "core-mpfr", "core-isl", "core-make", "core-xxhash", "core-libunwind", "core-llvm19", "core-llvm", "core-python", "core-llvm20", "core-gcc", "core-bash", "core-gmp", "core-libzstd", "core-mpc", "core-cmake", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.mrustc]
 hash = "baf1e86311e004a638b35730b4d7e72644938a6bbbbf65a862245b92ba5325ad"

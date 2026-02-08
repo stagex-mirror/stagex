@@ -2,6 +2,8 @@
 name = "utmps"
 version = "0.1.2.2"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["user-skalibs"]
 
 [sources.utmps]
 hash = "f7ffa3714c65973bb95fbcf1501c06fc0478d93a51cea1b373ec6811c2425f52"

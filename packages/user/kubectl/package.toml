@@ -4,6 +4,7 @@ version = "1.34.1"
 description = "A command line tool for communicating with a Kubernetes API server"
 license = "Apache-2.0"
 website = "https://kubernetes.io/"
+makedeps = ["core-filesystem", "pallet-go"]
 
 [sources.kubectl]
 hash = "b6054e61e26ca400e5afaa63defafb7dfcbbfad66356dd6d2598adec865a7685"

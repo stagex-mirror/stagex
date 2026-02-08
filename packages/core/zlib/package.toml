@@ -2,6 +2,8 @@
 name = "zlib"
 version = "1.3.1"
 description = "TODO"
+makedeps = ["core-filesystem"]
+deps = ["bootstrap-stage3", "core-libzstd", "core-make", "core-llvm", "core-musl", "core-busybox"]
 
 [sources.zlib]
 hash = "9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23"

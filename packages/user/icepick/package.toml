@@ -2,6 +2,8 @@
 name = "icepick"
 version = "1b5d16864723dda22ce12fc31a253c03b6698499"
 description = "Cryptography-oriented workflow utility."
+deps = ["user-pcsc-lite", "core-gmp", "user-nettle"]
+makedeps = ["core-filesystem", "pallet-rust"]
 
 [sources.icepick]
 hash = "29669409108b0c7fd97412c080fad55b2375cac52ad200a67e16da4d87e81e2f"

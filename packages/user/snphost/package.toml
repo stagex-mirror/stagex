@@ -4,6 +4,8 @@ version = "0.7.0"
 description = "CLI utility designed for administrators managing AMD SEV-SNP enabled host systems"
 licenses = "Apache-2.0"
 website = "https://github.com/virtee/snphost"
+makedeps = ["pallet-rust", "core-filesystem"]
+deps = ["core-perl", "core-make"]
 
 [sources.snphost]
 hash = "9ddbb6f2a7a0aadc9bb951292ecfeda88c07b4d6339e1ff31b3ec609ef080159"

@@ -2,6 +2,8 @@
 name = "py-gpep517"
 version = "16"
 description = "TODO"
+deps = ["core-musl", "core-zlib", "core-python", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.py-gpep517]
 hash = "965ff7cb2217fa03091face01fcb9a2b0205f58be80c8be9ccf832eab7a55414"

@@ -2,6 +2,8 @@
 name = "eudev"
 version = "3.2.14"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["user-gperf"]
 
 [sources.eudev]
 hash = "8da4319102f24abbf7fff5ce9c416af848df163b29590e666d334cc1927f006f"

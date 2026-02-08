@@ -2,6 +2,7 @@
 name = "stage2"
 description = "TODO"
 platforms = ["linux/386"]
+deps = ["bootstrap-stage1"]
 
 [sources.musl]
 version = "1.1.24"

@@ -2,6 +2,7 @@
 name = "py-jmespath"
 version = "1.0.1"
 description = "TODO"
+makedeps = ["pallet-python", "core-filesystem"]
 
 [sources.py-jmespath]
 hash = "90261b206d6defd58fdd5e85f478bf633a2901798906be2ad389150c5c60edbe"

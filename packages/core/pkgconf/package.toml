@@ -2,6 +2,8 @@
 name = "pkgconf"
 version = "1.6.3"
 description = "TODO"
+deps = ["core-zlib", "core-libzstd", "core-make", "core-llvm", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.pkgconf]
 hash = "61f0b31b0d5ea0e862b454a80c170f57bad47879c0c42bd8de89200ff62ea210"

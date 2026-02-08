@@ -4,6 +4,7 @@ version = "1.17.0"
 description = "Python 2 and 3 compatibility utilities"
 website = "https://pypi.python.org/pypi/six/"
 license = "MIT"
+makedeps = ["pallet-python", "core-filesystem"]
 
 [sources.py-six]
 hash = "ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81"

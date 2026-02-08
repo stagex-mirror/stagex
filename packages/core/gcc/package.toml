@@ -4,6 +4,8 @@ version = "15.2.0"
 description = "The GNU Compiler Collection"
 license="GPL-2.0-or-later AND LGPL-2.1-or-later"
 website="https://gcc.gnu.org"
+deps = ["core-libucontext", "core-perl", "core-gawk", "core-binutils", "core-mpfr", "core-zlib", "core-libatomic_ops", "core-texinfo", "core-isl", "core-make", "core-llvm", "core-bison", "core-flex", "core-gmp", "core-libzstd", "core-mpc", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.gcc]
 hash = "438fd996826b0c82485a29da03a72d71d6e3541a83ec702df4271f6fe025d24e"

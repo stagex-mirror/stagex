@@ -2,6 +2,8 @@
 name = "openpgp-card-tools"
 version = "0.10.1"
 description = "TODO"
+deps = ["user-pcsc-lite", "core-gmp", "user-nettle"]
+makedeps = ["core-filesystem", "pallet-rust"]
 
 [sources.openpgp-card-tools]
 hash = "fb8cd1c95c558f1e16a749746dadc6040deca54f4e3aa7735ffa5f082cdfcc01"

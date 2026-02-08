@@ -2,6 +2,7 @@
 name = "socat"
 version = "1.8.0.1"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
 
 [sources.socat]
 hash = "dc350411e03da657269e529c4d49fe23ba7b4610b0b225c020df4cf9b46e6982"

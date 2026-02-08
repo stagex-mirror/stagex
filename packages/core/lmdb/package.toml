@@ -2,6 +2,8 @@
 name = "lmdb"
 version = "0.9.31"
 description = "TODO"
+deps = ["core-zlib", "core-bash", "core-libzstd", "core-openssl", "core-make", "core-llvm", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.lmdb]
 hash = "f7aecdd1bcc69fb32bb33d8544cfe50f8e9e916f366d598a268e1f43ee9c7603"

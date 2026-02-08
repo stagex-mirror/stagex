@@ -2,6 +2,8 @@
 name = "pgbouncer"
 version = "1.23.1"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["core-openssl", "user-libevent"]
 
 [sources.pgbouncer]
 hash = "1963b497231d9a560a62d266e4a2eae6881ab401853d93e5d292c3740eec5084"

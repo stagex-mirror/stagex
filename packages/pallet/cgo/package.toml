@@ -2,3 +2,4 @@
 name = "cgo"
 description = "TODO"
 version_from = "core-go"
+makedeps = ["pallet-clang-gnu-busybox", "pallet-go"]

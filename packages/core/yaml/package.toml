@@ -3,6 +3,8 @@ name = "yaml"
 version = "0.2.5"
 description = "C library for parsing and emitting YAML"
 website = "https://pyyaml.org" 
+deps = ["core-zlib", "core-libzstd", "core-make", "core-llvm", "core-musl", "core-busybox", "core-attr"]
+makedeps = ["core-filesystem"]
 
 [sources.yaml]
 hash = "c642ae9b75fee120b2d96c712538bd2cf283228d2337df2cf2988e3c02678ef4"

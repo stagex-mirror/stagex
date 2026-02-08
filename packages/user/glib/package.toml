@@ -2,6 +2,8 @@
 name = "glib"
 description = "TODO"
 version = "2.82.1"
+deps = ["core-gettext", "user-util-linux", "core-libxslt", "core-perl", "core-pcre2", "core-libxml2", "user-rhash", "core-expat"]
+makedeps = ["core-filesystem", "pallet-clang-meson-busybox"]
 
 [sources.glib]
 hash = "478634440bf52ee4ec4428d558787398c0be6b043c521beb308334b3db4489a6"

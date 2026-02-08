@@ -8,6 +8,8 @@ subpackages = [
   "sequoia-sq",
   "sequoia-sq-completions"
 ]
+deps = ["user-capnproto", "core-gmp", "user-nettle", "core-sqlite3"]
+makedeps = ["core-filesystem", "pallet-rust"]
 
 [sources.sequoia-sq]
 hash = "ca4a6ef07ab9ca492c8166d6d6ed0354eb81f418bf819cf095c1ee856c461365"

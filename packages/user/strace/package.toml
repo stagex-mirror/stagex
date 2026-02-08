@@ -2,6 +2,7 @@
 name = "strace"
 version = "6.7"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
 
 [sources.strace]
 hash = "2090201e1a3ff32846f4fe421c1163b15f440bb38e31355d09f82d3949922af7"

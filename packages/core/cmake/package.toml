@@ -2,6 +2,8 @@
 name = "cmake"
 version = "3.31.5"
 description = "TODO"
+deps = ["core-zlib", "core-linux-headers", "core-libzstd", "core-openssl", "core-make", "core-llvm", "core-samurai", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.cmake]
 hash = "66fb53a145648be56b46fa9e8ccade3a4d0dfc92e401e52ce76bdad1fea43d27"

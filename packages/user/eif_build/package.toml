@@ -2,6 +2,7 @@
 name = "eif_build"
 version = "0.2.2"
 description = "TODO"
+makedeps = ["pallet-rust", "core-filesystem"]
 
 [sources.eif_build]
 hash = "525514cd5b28a315564e2c4b4425189b567b71bf13584804cf266ba6dee71a0e"

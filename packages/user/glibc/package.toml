@@ -2,6 +2,8 @@
 name = "glibc"
 version = "2.40"
 description = "TODO"
+makedeps = ["pallet-gcc-gnu-busybox", "core-filesystem"]
+deps = ["core-linux-headers", "core-grep", "core-gawk", "core-python"]
 
 [sources.glibc]
 hash = "2abc038f5022949cb67e996c3cae0e7764f99b009f0b9b7fd954dfc6577b599e"

@@ -4,6 +4,8 @@ version = "1.40.16"
 description = "The AWS SDK for Python"
 website = "https://github.com/boto/boto3"
 licenses = "Apache-2.0"
+makedeps = ["pallet-python", "core-filesystem"]
+deps = ["user-py-s3transfer", "user-py-jmespath", "user-py-botocore"]
 
 [sources.py-boto3]
 hash = "d8f113da24386f2694dd2ed3735e08341bb0bf253b8b049822a1a09bc3ffdd6d"

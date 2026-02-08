@@ -2,6 +2,7 @@
 name = "typst"
 version = "0.14.0"
 description = "A new markup-based typesetting system that is powerful and easy to learn."
+makedeps = ["pallet-rust", "core-filesystem"]
 
 [sources.typst]
 hash = "39df9db43c792b0ab71cde97bdc03d4763fff7d3525b67d549ffc8bfc99b6395"

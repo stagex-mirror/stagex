@@ -2,6 +2,7 @@
 name = "mdbook"
 version = "0.4.40"
 description = "TODO"
+makedeps = ["pallet-rust", "core-filesystem"]
 
 [sources.mdbook]
 hash = "550da7ff02ef62c60db6e813b6dbae65b9ed3d491186ea74929536feaceea94b"

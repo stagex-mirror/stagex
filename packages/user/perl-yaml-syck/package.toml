@@ -2,6 +2,7 @@
 name = "perl-yaml-syck"
 version = "1.36"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
 
 [sources.perl-yaml-syck]
 hash = "4dcd9d9b3b0ce3c65a2ff2b9b4c6fff8b649fdf243bfd7e1889543becdb91a52"

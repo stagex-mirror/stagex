@@ -2,6 +2,8 @@
 name = "libsm"
 version = "1.2.5"
 description = "X11 Session Management library"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["user-util-linux", "core-bash", "user-libice", "core-ncurses", "user-xtrans", "user-xorgproto", "user-util-macros", "user-xmlto"]
 
 [sources.libsm]
 hash = "2af9e12da5ef670dc3a7bce1895c9c0f1bfb0cb9e64e8db40fcc33f883bd20bc"

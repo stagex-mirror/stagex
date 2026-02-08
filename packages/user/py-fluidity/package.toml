@@ -4,6 +4,7 @@ version = "0.2.1"
 description = "Fluidity: state machine implementation for Python objects"
 website = "https://github.com/nsi-iff/fluidity"
 licenses = "MIT"
+makedeps = ["pallet-python", "core-filesystem"]
 
 [sources.py-fluidity]
 hash = "2471d195b5ddd3457f51ddaf7eeca920cfd39ae01a368faa4434a11eac86b2e4"

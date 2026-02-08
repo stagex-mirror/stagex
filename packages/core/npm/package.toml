@@ -2,6 +2,8 @@
 name = "npm"
 version = "11.6.0"
 description = "the package manager for JavaScript"
+makedeps = ["core-filesystem"]
+deps = ["core-musl", "core-busybox"]
 
 [sources.npm]
 hash = "ddf7e6e42ae5b9e28d84945d1c37188f9a741af492507b513b3e80af5aeba4f1"

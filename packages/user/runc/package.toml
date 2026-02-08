@@ -2,6 +2,8 @@
 name = "runc"
 version = "1.1.13"
 description = "TODO"
+makedeps = ["core-filesystem", "pallet-cgo"]
+deps = ["user-libseccomp", "user-go-md2man"]
 
 [sources.runc]
 hash = "789d5749a08ef1fbe5d1999b67883206a68a4e58e6ca0151c411d678f3480b25"

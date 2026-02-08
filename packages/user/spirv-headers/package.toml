@@ -4,6 +4,7 @@ version = "1.4.321.0"
 description = "Machine-readable files for the SPIR-V Registry"
 website = "https://github.com/KhronosGroup/SPIRV-Headers"
 licenses = "GPL-3.0-or-later"
+makedeps = ["pallet-clang-cmake-busybox", "core-filesystem"]
 
 [sources.spirv-headers]
 hash = "5bbea925663d4cd2bab23efad53874f2718248a73dcaf9dd21dff8cb48e602fc"

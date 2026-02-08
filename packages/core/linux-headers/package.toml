@@ -2,6 +2,8 @@
 name = "linux-headers"
 version = "6.6"
 description = "TODO"
+makedeps = ["core-filesystem"]
+deps = ["bootstrap-stage3"]
 
 [sources.linux-headers]
 hash = "d926a06c63dd8ac7df3f86ee1ffc2ce2a3b81a2d168484e76b5b389aba8e56d0"

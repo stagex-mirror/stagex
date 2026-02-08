@@ -4,6 +4,7 @@ version = "1.6.0"
 description = "Plugin and hook calling mechanisms for python"
 website = "https://github.com/pytest-dev/pluggy"
 licenses = "MIT"
+makedeps = ["core-filesystem", "pallet-cython"]
 
 [sources.py-pluggy]
 hash = "d35ec78be56dae9fd736e1378a2c3c176fd2aefd9daefc209abeab569c2732ee"

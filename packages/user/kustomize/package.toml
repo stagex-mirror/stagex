@@ -4,6 +4,7 @@ version = "5.7.1"
 description = "Template-free customization of Kubernetes YAML manifests"
 website = "https://kustomize.io/"
 license = "Apache-2.0"
+makedeps = ["core-filesystem", "pallet-go"]
 
 [sources.kustomize]
 hash = "9e3907f0ea58426a5a4f64a457e83bbe0a1370ca76048556146f38b52d5fa5f1"

@@ -2,6 +2,8 @@
 name = "argp-standalone"
 version = "1.5.0"
 description = "TODO"
+deps = ["core-zlib", "core-autoconf", "core-m4", "core-libzstd", "core-perl", "core-make", "core-llvm", "core-automake", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.argp-standalone]
 hash = "c29eae929dfebd575c38174f2c8c315766092cec99a8f987569d0cad3c6d64f6"

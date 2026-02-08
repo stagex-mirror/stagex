@@ -2,6 +2,8 @@
 name = "libslirp"
 version = "4.8.0"
 description = "TODO"
+makedeps = ["core-filesystem", "pallet-clang-meson-busybox"]
+deps = ["core-pcre2", "user-glib"]
 
 [sources.libslirp]
 hash = "378216c88c021c9ed7de9006db291127d30a0da94a23dffefdb26b26a5849bf7"

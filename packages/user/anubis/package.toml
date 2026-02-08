@@ -4,6 +4,8 @@ version = "1.22.0"
 description = "Weighs the souls of incoming HTTP requests using Proof-of-Work"
 license = "MIT"
 website = "https://anubis.techaro.lol"
+makedeps = ["pallet-nodejs", "core-filesystem", "pallet-go"]
+deps = ["core-bash", "core-ncurses", "core-libzstd", "core-make"]
 
 [sources.anubis]
 hash = "81b45cf8d210927c6bdf81b4d925734b623e0c0c3f04f48c2034a85eea3bcd32"

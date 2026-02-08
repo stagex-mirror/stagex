@@ -2,6 +2,8 @@
 name = "apr-util"
 version = "1.6.3"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["user-postgresql", "user-apr", "user-libevent", "user-openldap", "core-gdbm", "core-expat", "core-sqlite3", "core-openssl"]
 
 [sources.apr-util]
 hash = "a41076e3710746326c3945042994ad9a4fcac0ce0277dd8fea076fec3c9772b5"

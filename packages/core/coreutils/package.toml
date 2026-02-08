@@ -2,6 +2,8 @@
 name = "coreutils"
 version = "9.7"
 description = "TODO"
+deps = ["core-zlib", "core-libzstd", "core-openssl", "core-make", "core-llvm", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.coreutils]
 hash = "e8bb26ad0293f9b5a1fc43fb42ba970e312c66ce92c1b0b16713d7500db251bf"

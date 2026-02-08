@@ -2,6 +2,8 @@
 name = "libnghttp2"
 version = "1.62.1"
 description = "TODO"
+deps = ["core-pkgconf", "core-zlib", "core-libzstd", "core-c-ares", "core-openssl", "core-libev", "core-make", "core-llvm", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.libnghttp2]
 hash = "d0b0b9d00500ee4aa3bfcac00145d3b1ef372fd301c35bff96cf019c739db1b4"

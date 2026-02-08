@@ -2,6 +2,8 @@
 name = "pcsc-lite"
 version = "2.3.1"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["user-libusb", "user-autoconf-archive"]
 
 [sources.pcsc-lite]
 hash = "a641d44d57affe1edd8365dd75307afc307e7eefb4e7ad839f6f146baa41ed56"

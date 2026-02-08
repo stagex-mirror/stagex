@@ -4,6 +4,8 @@ version = "4.3.0"
 description = "Modern password hashing for your software and your servers"
 license = "Apache-2.0"
 website = "https://github.com/pyca/bcrypt"
+makedeps = ["pallet-python", "core-filesystem", "pallet-rust"]
+deps = ["user-py-setuptools-rust", "user-py-semantic-version"]
 
 [sources.py-bcrypt]
 hash = "5cf3964765a9e2ed592ceb721948592f6227abcf22dd7314c897363ddd49ac3e"

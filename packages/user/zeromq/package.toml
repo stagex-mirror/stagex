@@ -3,6 +3,8 @@ name = "zeromq"
 version = "4.3.5"
 description = "The ZeroMQ messaging library and tools"
 license = "MPL-2.0"
+deps = ["user-libsodium", "user-util-linux", "user-xmlto"]
+makedeps = ["pallet-clang-cmake-busybox"]
 
 [sources.zeromq]
 hash = "6653ef5910f17954861fe72332e68b03ca6e4d9c7160eb3a8de5a5a913bfab43"

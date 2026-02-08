@@ -4,6 +4,8 @@ version = "4.1.0"
 description = "multiple-precision floating-point library"
 website = "https://www.mpfr.org/"
 license = "LGPL-3.0-or-later"
+deps = ["core-zlib", "core-gmp", "core-libzstd", "core-make", "core-llvm", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.mpfr]
 hash = "feced2d430dd5a97805fa289fed3fc8ff2b094c02d05287fd6133e7f1f0ec926"

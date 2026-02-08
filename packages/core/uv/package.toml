@@ -4,6 +4,8 @@ version = "0.9.25"
 description = "Python package manager written in Rust"
 licenses = "Apache-2.0 OR MIT"
 website = "https://github.com/astral-sh/uv"
+deps = ["core-gcc", "core-pkgconf", "core-binutils", "core-zlib", "core-libunwind", "core-libzstd", "core-rust", "core-libffi", "core-xz", "core-git", "core-openssl", "core-ca-certificates", "core-make", "core-llvm", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem", "core-profile"]
 
 [sources.uv]
 hash = "e46145b24cc10c54598b697d2c5cf3747ae39f0eb6af57dc902cac06ad18eb07"

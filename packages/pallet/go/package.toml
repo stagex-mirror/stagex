@@ -2,3 +2,5 @@
 name = "go"
 description = "Go compiler with shell"
 version_from = "core-go"
+deps = ["core-clang-rt-devel", "core-go", "core-ca-certificates", "core-busybox"]
+makedeps = ["core-profile"]

@@ -2,6 +2,7 @@
 name = "py-sphinxcontrib-jquery"
 version = "4.1"
 description = "TODO"
+makedeps = ["pallet-python", "core-filesystem"]
 
 [sources.py-sphinxcontrib-jquery]
 hash = "f6a7578b00a8458e5edd38431d3ea4037b928a21ba1f82469ec2015127955c34"

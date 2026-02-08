@@ -2,6 +2,8 @@
 name = "vulkan-loader"
 version = "1.4.304.1"
 description = "Vulkan Installable Client Driver (ICD) Loader"
+makedeps = ["pallet-clang-cmake-busybox", "core-filesystem"]
+deps = ["user-libx11", "user-libxau", "user-libxcb", "user-vulkan-headers", "user-libxrandr", "user-xorgproto", "user-libxdmcp", "user-libxrender", "user-wayland", "core-python"]
 
 [sources.vulkan-loader]
 hash = "efb2c84da071765a8b0b15e9c60801d4611ef7501aa8b3d1268c3b779bfcfaf6"

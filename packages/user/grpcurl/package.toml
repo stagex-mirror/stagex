@@ -2,6 +2,7 @@
 name = "grpcurl"
 version = "1.8.9"
 description = "TODO"
+makedeps = ["core-filesystem", "pallet-go"]
 
 [sources.grpcurl]
 hash = "962fe7d3da7653519d2975e130244af9286db32041b0745613aebf89949a9009"

@@ -2,6 +2,8 @@
 name = "seabios"
 version = "1.17.0"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["core-gcc", "core-mpfr", "core-isl", "core-gmp", "core-mpc", "core-python"]
 
 [sources.seabios]
 hash = "cb708a548e4244c5021590a5e78ab6e331ded1750120b687039042994033a07c"

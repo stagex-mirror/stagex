@@ -2,6 +2,8 @@
 name = "e2fsprogs"
 version = "1.47.1"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["user-util-linux"]
 
 [sources.e2fsprogs]
 hash = "db95ff1cb6ef741c9aa8875d9f3f52a34168360febba765b6377b80bada09a8c"

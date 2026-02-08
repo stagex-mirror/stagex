@@ -2,6 +2,8 @@
 name = "py-pygments"
 version = "2.18.0"
 description = "TODO"
+deps = ["user-py-trove-classifiers", "user-py-pluggy", "user-py-hatchling", "user-py-pathspec"]
+makedeps = ["core-filesystem", "pallet-cython"]
 
 [sources.py-pygments]
 hash = "786ff802f32e91311bff3889f6e9a86e81505fe99f2735bb6d60ae0c5004f199"

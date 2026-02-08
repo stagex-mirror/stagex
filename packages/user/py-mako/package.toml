@@ -2,6 +2,7 @@
 name = "py-mako"
 version = "1.3.9"
 description = "Python3 fast templating language"
+makedeps = ["core-filesystem", "pallet-cython"]
 
 [sources.py-mako]
 hash = "b5d65ff3462870feec922dbccf38f6efb44e5714d7b593a656be86663d8600ac"

@@ -4,6 +4,8 @@ version = "1.7.4"
 description = "A password hashing library for Python"
 license = "BSD-3-Clause"
 website = "https://passlib.readthedocs.io/en/stable"
+makedeps = ["pallet-python", "core-filesystem"]
+deps = ["core-py-setuptools", "core-py-wheel"]
 
 [sources.py-passlib]
 hash = "defd50f72b65c5402ab2c573830a6978e5f202ad0d984793c8dde2c4152ebe04"

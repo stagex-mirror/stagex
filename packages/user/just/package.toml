@@ -2,6 +2,7 @@
 name = "just"
 description = "Command runner"
 version = "1.39.0"
+makedeps = ["pallet-rust", "core-filesystem"]
 
 [sources.just]
 hash = "8a900072d7f909bc91030df5896168752bb9108967dbb7149d2cfb11fdeb087a"

@@ -4,6 +4,7 @@ version = "1.3.2"
 description = "Pure Python RabbitMQ/AMQP 0-9-1 client library"
 license = "BSD-3-Clause"
 website = "https://github.com/pika/pika/"
+makedeps = ["pallet-python", "core-filesystem"]
 
 [sources.py-pika]
 hash = "5eb71b9a0047c77d99378e525a2041fc50aae4a177b060f9825b3e2fdcc96fc4"

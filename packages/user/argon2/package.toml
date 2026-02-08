@@ -2,6 +2,7 @@
 name = "argon2"
 version = "20190702"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
 
 [sources.argon2]
 hash = "daf972a89577f8772602bf2eb38b6a3dd3d922bf5724d45e7f9589b5e830442c"

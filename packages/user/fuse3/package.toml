@@ -2,6 +2,8 @@
 name = "fuse3"
 version = "3.16.2"
 description = "TODO"
+deps = ["core-gettext", "user-util-linux", "core-libxslt", "core-pcre2", "core-libxml2", "user-rhash", "core-expat"]
+makedeps = ["core-filesystem", "pallet-clang-meson-busybox"]
 
 [sources.fuse3]
 hash = "f797055d9296b275e981f5f62d4e32e089614fc253d1ef2985851025b8a0ce87"

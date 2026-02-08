@@ -2,6 +2,8 @@
 name = "swig"
 version = "4.3.0"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["core-perl", "core-pcre2", "core-python"]
 
 [sources.swig]
 hash = "f7203ef796f61af986c70c05816236cbd0d31b7aa9631e5ab53020ab7804aa9e"

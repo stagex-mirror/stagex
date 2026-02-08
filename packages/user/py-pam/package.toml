@@ -4,6 +4,8 @@ version = "2.0.2"
 description = "Pure Python interface to the Pluggable Authentication Modules system on Linux"
 license = "MIT"
 website = "https://github.com/FirefighterBlu3/python-pam"
+makedeps = ["pallet-python", "core-filesystem"]
+deps = ["user-py-six"]
 
 [sources.py-pam]
 hash = "23f5fd680b43d9dc8c96061c2c855f7c4758ee29c5d9f3cc469b558a0afd558b"

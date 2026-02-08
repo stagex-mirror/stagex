@@ -2,6 +2,8 @@
 name = "nettle"
 version = "3.9.1_release_20230601"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["core-gmp"]
 
 [sources.nettle]
 hash = "7278dd8fb89cae88552e1dc4a6294f1c62a8a9548a18f635515242f389797fed"

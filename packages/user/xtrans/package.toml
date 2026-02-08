@@ -2,6 +2,8 @@
 name = "xtrans"
 version = "1.5.2"
 description = "X transport library"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["user-util-macros", "user-xmlto"]
 
 [sources.xtrans]
 hash = "5c5cbfe34764a9131d048f03c31c19e57fb4c682d67713eab6a65541b4dff86c"

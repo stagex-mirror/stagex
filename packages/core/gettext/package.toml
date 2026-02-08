@@ -2,6 +2,8 @@
 name = "gettext"
 version = "0.23.2"
 description = "TODO"
+deps = ["core-zlib", "core-libzstd", "core-make", "core-libxml2", "core-llvm", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.gettext]
 hash = "86bec63472ae1e7a18871758a1358a9e9776f74643992a0276dd67e36de2da7d"

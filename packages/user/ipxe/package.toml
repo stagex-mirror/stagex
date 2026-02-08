@@ -2,6 +2,8 @@
 name = "ipxe"
 version = "c8f088d4e11a1dedda4829c4be1bb1b14e9da016"
 description = "TODO"
+makedeps = ["pallet-gcc-gnu-busybox", "core-filesystem"]
+deps = ["user-xorriso", "user-syslinux", "core-xz", "user-edk2"]
 
 [sources.ipxe]
 hash = "ff429558f9a303f4bd6952c6fffb5e530ad15efa853dda4d1a8662fe8eafee58"

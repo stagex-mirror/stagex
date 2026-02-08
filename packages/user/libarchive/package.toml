@@ -2,6 +2,7 @@
 name = "libarchive"
 version = "3.7.4"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
 
 [sources.libarchive]
 hash = "f887755c434a736a609cbd28d87ddbfbe9d6a3bb5b703c22c02f6af80a802735"

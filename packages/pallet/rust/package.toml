@@ -2,3 +2,5 @@
 name = "rust"
 description = "TODO"
 version_from = "core-rust"
+deps = ["core-pkgconf", "core-binutils", "core-libunwind", "core-curl", "core-rust", "core-ca-certificates", "core-git", "core-openssl", "core-busybox"]
+makedeps = ["pallet-clang"]

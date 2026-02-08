@@ -2,6 +2,8 @@
 name = "py-urllib3"
 version = "1.26.18"
 description = "TODO"
+deps = ["core-py-wheel", "core-musl", "core-zlib", "core-python", "core-py-flit", "core-libffi", "core-py-installer", "core-py-gpep517", "core-openssl", "core-busybox", "core-py-setuptools"]
+makedeps = ["core-filesystem"]
 
 [sources.py-urllib3]
 hash = "f8ecc1bba5667413457c529ab955bf8c67b45db799d159066261719e328580a0"

@@ -2,6 +2,8 @@
 name = "libxrandr"
 version = "1.5.4"
 description = "X11 RandR extension library"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["user-libx11", "user-libxau", "user-libxcb", "user-libxext", "user-xorgproto", "user-libxdmcp", "user-libxrender"]
 
 [sources.libxrandr]
 hash = "1ad5b065375f4a85915aa60611cc6407c060492a214d7f9daf214be752c3b4d3"

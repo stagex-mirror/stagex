@@ -2,6 +2,7 @@
 name = "libusb"
 version = "1.0.27"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
 
 [sources.libusb]
 hash = "ffaa41d741a8a3bee244ac8e54a72ea05bf2879663c098c82fc5757853441575"

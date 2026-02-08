@@ -2,6 +2,8 @@
 name = "libev"
 version = "4.33"
 description = "TODO"
+deps = ["core-zlib", "core-libtool", "core-autoconf", "core-m4", "core-libzstd", "core-perl", "core-make", "core-llvm", "core-automake", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.libev]
 hash = "507eb7b8d1015fbec5b935f34ebed15bf346bed04a11ab82b8eee848c4205aea"

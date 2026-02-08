@@ -2,6 +2,8 @@
 name = "iptables"
 version = "1.8.10"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["user-libnftnl", "user-libmnl"]
 
 [sources.iptables]
 hash = "5cc255c189356e317d070755ce9371eb63a1b783c34498fb8c30264f3cc59c9c"

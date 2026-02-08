@@ -2,6 +2,7 @@
 name = "py-imagesize"
 version = "1.4.1"
 description = "TODO"
+makedeps = ["core-filesystem", "pallet-cython"]
 
 [sources.py-imagesize]
 hash = "69150444affb9cb0d5cc5a92b3676f0b2fb7cd9ae39e947a5e11a36b4497cd4a"

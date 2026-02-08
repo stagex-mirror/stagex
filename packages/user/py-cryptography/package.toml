@@ -4,6 +4,8 @@ version = "45.0.5"
 description = "A package designed to expose cryptographic recipes and primitives to Python developers"
 website = "https://github.com/pyca/cryptography"
 licenses = "Apache-2.0 OR BSD-3-Clause"
+makedeps = ["pallet-python", "core-filesystem", "pallet-rust"]
+deps = ["user-py-setuptools-rust", "core-py-cffi", "user-py-typing-extensions", "user-py-cparser", "user-py-semantic-version", "user-maturin"]
 
 [sources.py-cryptography]
 hash = "72e76caa004ab63accdf26023fccd1d087f6d90ec6048ff33ad0445abf7f605a"

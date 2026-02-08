@@ -4,6 +4,8 @@ version = "8.0.3"
 description = "Cache, data structure server, document and vector query engine"
 license = "AGPL"
 website = "https://redis.io"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["core-openssl"]
 
 [sources.redis]
 hash = "33f37290b00b14e9a884dd4dcba335febd63ea16c51609d34fa41e031ad587df"

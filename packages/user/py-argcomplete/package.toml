@@ -4,6 +4,8 @@ version = "3.6.2"
 description = "Easy, extensible command line tab completion of arguments for your Python script"
 website = "https://github.com/kislyuk/argcomplete"
 licenses = "Apache-2.0"
+makedeps = ["pallet-python", "core-filesystem"]
+deps = ["user-py-trove-classifiers", "user-py-pluggy", "user-py-hatch-vcs", "user-py-hatchling", "user-py-pathspec"]
 
 [sources.py-argcomplete]
 hash = "27b617e3e481bb50c961103091210e1cbb6b54461afdd529decbb262f4ce88f5"

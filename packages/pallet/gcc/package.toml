@@ -2,3 +2,4 @@
 name = "gcc"
 description = "TODO"
 version_from = "core-gcc"
+deps = ["core-pkgconf", "core-libcxx", "core-clang-rt-devel", "core-mpfr", "core-binutils", "core-zlib", "core-libcxxabi", "core-musl-fts", "core-isl", "core-argp-standalone", "core-linux-headers", "core-m4", "core-libunwind", "core-bison", "core-gcc", "core-flex", "core-gmp", "core-libzstd", "core-mpc", "core-musl-obstack", "core-musl"]

@@ -2,6 +2,8 @@
 name = "perl-module-build"
 version = "0.4234"
 description = "TODO"
+deps = ["core-zlib", "core-libzstd", "core-perl", "core-make", "core-llvm", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.perl-module-build]
 hash = "66aeac6127418be5e471ead3744648c766bd01482825c5b66652675f2bc86a8f"

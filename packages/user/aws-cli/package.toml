@@ -2,6 +2,8 @@
 name = "aws-cli"
 version = "2.28.14"
 description = "TODO"
+deps = ["user-py-colorama", "user-py-docutils", "user-py-cryptography", "user-py-certifi", "core-libunwind", "user-py-prompt_toolkit", "user-py-botocore", "user-py-jmespath", "user-py-awscrt", "user-py-wcwidth", "user-py-ruamel.yaml", "user-py-six"]
+makedeps = ["core-filesystem", "pallet-cython"]
 
 [sources.aws-cli]
 hash = "646090b21d0d053e9ff2b9cd50c8a33b22836ed778b41cf2a1f58fdf7bbae25a"

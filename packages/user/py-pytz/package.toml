@@ -4,6 +4,8 @@ version = "2025.2"
 description = "Cross platform time zone library for Python"
 license = "MIT"
 website = "https://pypi.python.org/pypi/pytz"
+makedeps = ["pallet-python", "core-filesystem"]
+deps = ["core-py-setuptools", "core-py-wheel"]
 
 [sources.py-pytz]
 hash = "360b9e3dbb49a209c21ad61809c7fb453643e048b38924c765813546746e81c3"

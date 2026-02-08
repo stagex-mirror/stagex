@@ -2,6 +2,7 @@
 name = "py-prompt_toolkit"
 version = "3.0.48"
 description = "TODO"
+makedeps = ["pallet-python", "core-filesystem"]
 
 [sources.py-prompt_toolkit]
 hash = "d6623ab0477a80df74e646bdbc93621143f5caf104206aa29294d53de1a03d90"

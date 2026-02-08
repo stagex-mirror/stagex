@@ -2,6 +2,8 @@
 name = "rust-bindgen"
 version = "0.71.1"
 description = "automatically generates Rust FFI bindings to C (and some C++) libraries"
+deps = ["core-pkgconf", "core-zlib", "core-linux-headers", "core-libzstd", "core-rust", "core-libffi", "core-openssl", "core-ca-certificates", "core-llvm", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.rust-bindgen]
 hash = "620d80c32b6aaf42d12d85de86fc56950c86b2a13a5b943c10c29d30c4f3efb0"

@@ -2,6 +2,7 @@
 name = "py-markupsafe"
 version = "2.1.5"
 description = "TODO"
+makedeps = ["core-filesystem", "pallet-cython"]
 
 [sources.py-markupsafe]
 hash = "d283d37a890ba4c1ae73ffadf8046435c76e7bc2247bbb63c00bd1a709c6544b"

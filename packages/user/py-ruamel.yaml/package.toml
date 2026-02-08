@@ -2,6 +2,7 @@
 name = "py-ruamel.yaml"
 version = "0.17.28"
 description = "TODO"
+makedeps = ["pallet-python", "core-filesystem"]
 
 [sources.py-ruamel-yaml]
 hash = "3bf6df1c481d2463a633be6ee86e8aece941bb3298a9a0cd6d0865f47b1ddce6"

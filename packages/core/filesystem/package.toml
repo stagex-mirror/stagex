@@ -1,3 +1,4 @@
 [package]
 name = "filesystem"
 description = "The base filesystem for stagex-based runtimes" 
+deps = ["bootstrap-stage3"]

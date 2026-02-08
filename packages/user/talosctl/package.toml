@@ -8,6 +8,7 @@ subpackages = [
   "talosctl",
   "talosctl-completions",
 ]
+makedeps = ["core-filesystem", "pallet-go"]
 
 [sources.talosctl]
 hash = "b43168956aad4cb6aeb08bbce1fea31477204e44ed1a99b1a50880ceab9ad6c9"

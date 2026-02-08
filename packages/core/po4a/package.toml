@@ -2,6 +2,8 @@
 name = "po4a"
 version = "0.73"
 description = "TODO"
+deps = ["core-pkgconf", "core-diffutils", "core-docbook-xml", "core-perl", "core-docbook-xsl", "core-zlib", "core-perl-pod-parser", "core-make", "core-m4", "core-libxslt", "core-llvm", "core-perl-module-build", "core-gettext", "core-autoconf", "core-libzstd", "core-libxml2", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.po4a]
 hash = "ad5edc38bf004807843622fddbf67bd5ac604fc16e14c2bfefa7b07718ad21f3"

@@ -2,6 +2,8 @@
 name = "gpg"
 version = "2.5.1"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["user-npth", "user-libksba", "user-libgcrypt", "user-libassuan", "user-libgpg-error"]
 
 [sources.gpg]
 hash = "8a34bb318499867962c939e156666ada93ed81f01926590ac68f3ff79178375e"

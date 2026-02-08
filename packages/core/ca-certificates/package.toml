@@ -2,6 +2,8 @@
 name = "ca-certificates"
 description = "Common CA certificates for SSL/TLS"
 version = "f2e816d18e74480775f74a2620f48c4d4dc51b7e"
+deps = ["core-binutils", "core-zlib", "core-libzstd", "core-openssl", "core-perl", "core-make", "core-llvm", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.certdata]
 file = "certdata.txt"

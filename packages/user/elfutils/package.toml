@@ -2,6 +2,8 @@
 name = "elfutils"
 version = "0.193"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["core-bash", "core-curl", "core-bzip2", "user-libarchive", "core-openssl", "user-json-c"]
 
 [sources.elfutils]
 hash = "7857f44b624f4d8d421df851aaae7b1402cfe6bcdd2d8049f15fc07d3dde7635"

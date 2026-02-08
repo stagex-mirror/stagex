@@ -2,6 +2,8 @@
 name = "sqlite3"
 version = "3.50.1"
 description = "SQLite is a C-language library that implements a small, fast, self-contained, high-reliability, full-featured, SQL database engine."
+deps = ["core-zlib", "core-tcl", "core-libzstd", "core-make", "core-llvm", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.sqlite3]
 hash = "2534f37f8554f18b825c089835b100eaffe038b129b5e9127f8b91d623246852"

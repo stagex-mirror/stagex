@@ -4,6 +4,8 @@ version = "0.5.0"
 description = "Hatch plugin for versioning with your preferred VCS"
 website = "https://github.com/ofek/hatch-vcs"
 licenses = "MIT"
+makedeps = ["pallet-python", "core-filesystem"]
+deps = ["user-py-trove-classifiers", "user-py-pluggy", "user-py-hatchling", "user-py-pathspec"]
 
 [sources.py-hatch-vcs]
 hash = "0395fa126940340215090c344a2bf4e2a77bcbe7daab16f41b37b98c95809ff9"

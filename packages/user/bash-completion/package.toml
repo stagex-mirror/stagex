@@ -4,6 +4,8 @@ version = "2.16.0"
 description = "Command-line tab-completion for bash"
 license = "GPL-2.0-or-later"
 website = "https://github.com/scop/bash-completion"
+deps = ["core-cmake"]
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
 
 [sources.bash-completion]
 hash = "c4d7edf0b035d8f6ed33294380326bde1fb8a4a8e24699566d545b4276141cc2"

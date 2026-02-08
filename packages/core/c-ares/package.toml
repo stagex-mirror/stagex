@@ -2,6 +2,8 @@
 name = "c-ares"
 version = "1.34.2"
 description = "TODO"
+deps = ["core-zlib", "core-libzstd", "core-make", "core-llvm", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.c-ares]
 hash = "35410aa625cc9ee95b66475f54aea7c81c673fb63d75fad5eee267711503b72a"

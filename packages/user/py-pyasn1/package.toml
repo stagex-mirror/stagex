@@ -4,6 +4,7 @@ version = "0.6.1"
 description = "Python ASN.1 library with a focus on performance and a pythonic API"
 license = "BSD-2-Clause"
 website = "https://github.com/pyasn1/pyasn1"
+makedeps = ["pallet-python", "core-filesystem"]
 
 [sources.py-pyasn1]
 hash = "40179525f1622c0786df08b6a3766b7a03fe40ac74b4e4d93f5cd5608a4c39f3"

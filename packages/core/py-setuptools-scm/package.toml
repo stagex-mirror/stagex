@@ -2,6 +2,8 @@
 name = "py-setuptools-scm"
 version = "8.0.4"
 description = "TODO"
+deps = ["core-py-wheel", "core-py-packaging", "core-zlib", "core-py-build", "core-py-toml", "core-py-flit", "core-python", "core-libffi", "core-py-installer", "core-py-pep517", "core-musl", "core-busybox", "core-py-setuptools"]
+makedeps = ["core-filesystem"]
 
 [sources.py-setuptools-scm]
 hash = "b5f43ff6800669595193fd09891564ee9d1d7dcb196cab4b2506d53a2e1c95c7"

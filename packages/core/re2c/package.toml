@@ -2,6 +2,8 @@
 name = "re2c"
 version = "3.1"
 description = "TODO"
+deps = ["core-musl", "core-zlib", "core-libtool", "core-autoconf", "core-m4", "core-libzstd", "core-perl", "core-make", "core-llvm", "core-automake", "core-python", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.re2c]
 hash = "087c44de0400fb15caafde09fd72edc7381e688a35ef505ee65e0e3d2fac688b"

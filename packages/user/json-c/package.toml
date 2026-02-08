@@ -2,6 +2,7 @@
 name = "json-c"
 version = "0.17"
 description = "TODO"
+makedeps = ["pallet-clang-cmake-busybox", "core-filesystem"]
 
 [sources.json-c]
 hash = "7550914d58fb63b2c3546f3ccfbe11f1c094147bd31a69dcd23714d7956159e6"

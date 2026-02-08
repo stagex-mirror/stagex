@@ -4,6 +4,8 @@ version = "0.15.0"
 description = "A program for authenticating bindings between User IDs and certificates using OpenPGP's web of trust."
 license = "LGPL-2.0-only"
 website = "https://sequoia-pgp.gitlab.io/sequoia-wot/"
+makedeps = ["core-filesystem", "pallet-rust"]
+deps = ["core-gmp", "user-nettle", "core-sqlite3"]
 
 [sources.sequoia-sq-wot]
 hash = "66f58925029f5507a589296b9a78ccf54457b27f09b4fdbe1b24a713d1a6be5a"

@@ -4,6 +4,8 @@ version = "1.11.1"
 description = "Compile and distribute Python extensions written in rust as easily as if they were written in C."
 license = "MIT"
 website = "https://github.com/PyO3/setuptools-rust"
+makedeps = ["pallet-python", "core-filesystem"]
+deps = ["core-py-setuptools-scm"]
 
 [sources.py-setuptools-rust]
 hash = "7891482400f8511739f727f4045dcd72b41bf689e4e5b90c97ff98daee5dbe85"

@@ -2,6 +2,8 @@
 name = "libbsd"
 version = "0.12.2"
 description = "Commonly-used BSD functions not implemented by all libcs"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["user-libmd", "core-libtool"]
 
 [sources.libbsd]
 hash = "b88cc9163d0c652aaf39a99991d974ddba1c3a9711db8f1b5838af2a14731014"

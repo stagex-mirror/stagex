@@ -2,6 +2,8 @@
 name = "sed"
 version = "4.9"
 description = "TODO"
+deps = ["core-zlib", "core-libzstd", "core-make", "core-llvm", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.sed]
 hash = "6e226b732e1cd739464ad6862bd1a1aba42d7982922da7a53519631d24975181"

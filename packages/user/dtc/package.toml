@@ -2,6 +2,7 @@
 name = "dtc"
 version = "1.7.1"
 description = "TODO"
+makedeps = ["pallet-python", "pallet-clang-gnu-busybox", "core-filesystem"]
 
 [sources.dtc]
 hash = "398098bac205022b39d3dce5982b98c57f1023f3721a53ebcbb782be4cf7885e"

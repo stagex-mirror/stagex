@@ -2,3 +2,5 @@
 name = "clang-meson-busybox"
 version_from = "core-clang"
 description = "TODO"
+makedeps = ["pallet-python", "pallet-clang-cmake-busybox"]
+deps = ["core-meson"]

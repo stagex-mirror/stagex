@@ -2,6 +2,7 @@
 name = "alsa-lib"
 version = "1.2.12"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
 
 [sources.alsa-lib]
 hash = "4868cd908627279da5a634f468701625be8cc251d84262c7e5b6a218391ad0d2"

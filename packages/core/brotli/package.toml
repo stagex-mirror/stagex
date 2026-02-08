@@ -2,6 +2,8 @@
 name = "brotli"
 version = "1.1.0"
 description = "TODO"
+deps = ["core-zlib", "core-libzstd", "core-openssl", "core-make", "core-cmake", "core-llvm", "core-samurai", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.brotli]
 hash = "e720a6ca29428b803f4ad165371771f5398faba397edf6778837a18599ea13ff"

@@ -2,3 +2,5 @@
 name = "clang-gnu-busybox"
 description = "TODO"
 version_from = "core-clang"
+deps = ["core-pkgconf", "core-binutils", "core-gettext", "core-libtool", "core-autoconf", "core-flex", "core-m4", "core-perl", "core-make", "core-automake", "core-bison", "core-busybox"]
+makedeps = ["pallet-clang"]

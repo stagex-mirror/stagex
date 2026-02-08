@@ -2,6 +2,8 @@
 name = "qemu"
 version = "10.1.1"
 description = "TODO"
+deps = ["user-lzo", "user-py-babel", "user-dtc", "user-py-markupsafe", "user-libusb", "user-py-sphinxcontrib-applehelp", "core-curl", "user-glib", "core-pcre2", "user-libseccomp", "user-py-idna", "core-binutils", "core-mpfr", "core-isl", "user-py-alabaster", "user-py-sphinxcontrib-devhelp", "user-alsa-lib", "core-py-urllib3", "core-make", "user-py-requests", "user-numactl", "core-linux-headers", "user-py-docutils", "user-py-snowballstemmer", "user-py-sphinx", "core-git", "user-py-jinja2", "user-openssh", "user-py-sphinx_rtd_theme", "user-py-sphinxcontrib-htmlhelp", "core-gcc", "user-py-distlib", "core-py-packaging", "core-gettext", "core-gzip", "user-py-sphinxcontrib-qthelp", "user-libaio", "user-libcap-ng", "user-libslirp", "core-bash", "user-canokey-qemu", "core-gmp", "user-py-sphinxcontrib-serializinghtml", "core-mpc", "user-py-certifi", "user-py-imagesize", "user-py-sphinxcontrib-jquery", "user-py-pygments"]
+makedeps = ["core-filesystem", "pallet-clang-meson-busybox"]
 
 [sources.qemu]
 hash = "e56b93d95953a9b6a64d1985dbcedfb07dc54d92c50b7912526693536c589923"

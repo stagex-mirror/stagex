@@ -2,6 +2,8 @@
 name = "openldap"
 version = "2.6.8"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["user-argon2", "user-libevent", "user-groff", "core-pcre2", "user-unixodbc", "core-openssl"]
 
 [sources.openldap]
 hash = "48969323e94e3be3b03c6a132942dcba7ef8d545f2ad35401709019f696c3c4e"

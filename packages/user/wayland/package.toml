@@ -2,6 +2,8 @@
 name = "wayland"
 version = "1.24.0"
 description = "A computer display server protocol"
+deps = ["core-libxml2", "core-expat"]
+makedeps = ["core-filesystem", "pallet-clang-meson-busybox"]
 
 [sources.wayland]
 hash = "82eab21b355ba2b0b5c2b7e6bfa7335ef9eaf52e874d4e4884e5ba18423b0d3b"

@@ -2,6 +2,8 @@
 name = "canokey-qemu"                                                                        
 version = "151568c34f5e92b086b7a3a62a11c43dd39f628b"
 description = "TODO"
+makedeps = ["pallet-clang-cmake-busybox", "core-filesystem"]
+deps = ["core-zlib", "user-py-markupsafe", "core-perl", "user-py-jinja2", "user-py-jsonschema", "user-py-attrs", "core-make", "user-py-pyrsistent", "core-openssl"]
 
 [sources.canokey_qemu]
 hash = "2558378f6759036aeec8c976c3c5a0aaa1df766020f63c00194e53825287e9c6"

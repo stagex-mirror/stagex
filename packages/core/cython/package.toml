@@ -2,6 +2,8 @@
 name = "cython"
 version = "3.0.11-1"
 description = "TODO"
+makedeps = ["core-filesystem"]
+deps = ["core-py-flit", "core-libffi", "core-openssl", "core-py-setuptools", "core-zlib", "core-py-cffi", "core-py-gpep517", "core-make", "core-py-urllib3", "core-py-wheel", "core-py-distro", "core-py-installer", "core-py-dateutil", "core-llvm", "core-python", "core-libzstd", "core-cmake", "core-musl", "core-busybox"]
 
 [sources.cython]
 hash = "a6bcfc81ae0487c3d0de4226e0c5aff7c7d0a5e344cc7b75c17bbb6e713f154b"

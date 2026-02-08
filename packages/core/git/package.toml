@@ -2,6 +2,8 @@
 name = "git"
 version = "2.50.1"
 description = "Distributed version control system"
+deps = ["core-gettext", "core-zlib", "core-curl", "core-libzstd", "core-openssl", "core-perl", "core-make", "core-libxml2", "core-llvm", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.git]
 hash = "7e3e6c36decbd8f1eedd14d42db6674be03671c2204864befa2a41756c5c8fc4"

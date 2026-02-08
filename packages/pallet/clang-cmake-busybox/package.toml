@@ -2,3 +2,5 @@
 name = "clang-cmake-busybox"
 description = "TODO"
 version_from = "core-clang"
+deps = ["core-pkgconf", "core-binutils", "core-python", "core-cmake", "core-samurai", "core-openssl", "core-busybox"]
+makedeps = ["pallet-clang"]

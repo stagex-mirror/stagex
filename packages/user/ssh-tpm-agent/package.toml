@@ -2,6 +2,7 @@
 name = "ssh-tpm-agent"
 version = "0.6.0"
 description = "TODO"
+makedeps = ["core-filesystem", "pallet-cgo"]
 
 [sources.ssh-tpm-agent]
 hash = "897cdd7a83162d6330ecc5da493bddf9ab59e25d6dbc5337eafbdf8856030fac"

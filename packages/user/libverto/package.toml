@@ -2,6 +2,8 @@
 name = "libverto"
 version = "0.3.2"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["user-util-linux", "user-openldap", "user-libevent", "core-openssl", "user-groff", "user-e2fsprogs", "core-python", "core-libedit"]
 
 [sources.libverto]
 hash = "8d1756fd704f147549f606cd987050fb94b0b1ff621ea6aa4d6bf0b74450468a"

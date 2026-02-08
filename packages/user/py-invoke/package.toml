@@ -4,6 +4,8 @@ version = "2.2.0"
 description = "Pythonic task execution"
 website = "https://github.com/pyinvoke/invoke"
 licenses = "BSD-2-Clause"
+makedeps = ["pallet-python", "core-filesystem"]
+deps = ["user-py-fluidity", "user-py-yaml", "user-py-lexicon"]
 
 [sources.py-invoke]
 hash = "44a8c1c036855d7f75a947d00892934316e095dcb81f2637b12f11fadf29882d"

@@ -4,6 +4,7 @@ version = "1.22.22"
 description = "yarn classic dependency management"
 license = "BSD-2-Clause"
 website = "https://classic.yarnpkg.com"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
 
 [sources.yarn]
 hash = "88268464199d1611fcf73ce9c0a6c4d44c7d5363682720d8506f6508addf36a0"

@@ -2,6 +2,8 @@
 name = "perl-pod-parser"
 version = "1.67"
 description = "TODO"
+makedeps = ["core-filesystem"]
+deps = ["core-perl", "core-make", "core-musl", "core-busybox"]
 
 [sources.perl-pod-parser]
 hash = "5deccbf55d750ce65588cd211c1a03fa1ef3aaa15d1ac2b8d85383a42c1427ea"

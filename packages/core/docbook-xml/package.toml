@@ -2,6 +2,8 @@
 name = "docbook-xml"
 version = "4.5"
 description = "TODO"
+deps = ["core-pkgconf", "core-zlib", "core-libtool", "core-m4", "core-libzstd", "core-perl", "core-make", "core-libxml2", "core-llvm", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.docbook]
 hash = "4e4e037a2b83c98c6c94818390d4bdd3f6e10f6ec62dd79188594e26190dc7b4"

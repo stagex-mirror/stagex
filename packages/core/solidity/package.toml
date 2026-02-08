@@ -4,6 +4,8 @@ version = "0.8.30"
 description = "Statically-typed programming language for developing smart contracts for the Ethereum Virtual Machine."
 license = "GPL-3.0-only"
 website = "https://soliditylang.org"
+deps = ["core-musl", "core-binutils", "core-llvm", "core-zlib", "core-linux-headers", "core-fmt", "core-libzstd", "core-ca-certificates", "core-range-v3", "core-make", "core-cmake", "core-boost", "core-nlohmann-json", "core-samurai", "core-openssl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.solidity]
 hash = "3ab237f28e36c54ee7fb87be83a1f3074a585e60c48d6a5526afaf096332738b"

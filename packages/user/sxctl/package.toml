@@ -2,6 +2,7 @@
 name = "sxctl"
 version = "0.0.5"
 description = "TODO"
+makedeps = ["core-filesystem", "pallet-go"]
 
 [sources.sxctl]
 hash = "26f0dd95e72b632036c598d055ef6b78cec88c497dd67ede30d1498bb8229412"

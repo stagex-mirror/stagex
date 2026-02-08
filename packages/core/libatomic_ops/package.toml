@@ -4,6 +4,8 @@ version = "7.10.0"
 description = "Semi-portable access to hardware provided atomic memory operations"
 website = "https://github.com/bdwgc/libatomic_ops"
 license = "GPL-2.0-or-later AND MIT AND Boehm-GC"
+deps = ["core-zlib", "core-libzstd", "core-openssl", "core-make", "core-cmake", "core-llvm", "core-samurai", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.libatomicops]
 hash = "96443e58a6bb6c0ada61660ccb547254aaa97e44bceb10a340937f6ba3ba8243"

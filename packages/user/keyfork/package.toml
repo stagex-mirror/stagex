@@ -2,6 +2,8 @@
 name = "keyfork"
 version = "0.3.4"
 description = "An opinionated and modular toolchain for generating and managing cryptographic keys"
+deps = ["user-libzbar-optimized-qrcode", "user-pcsc-lite", "core-gmp", "user-nettle"]
+makedeps = ["core-filesystem", "pallet-rust"]
 
 [sources.keyfork]
 hash = "bc212289f4d7af9ab682a554112efb405c8c102b1bb0ad195ae90ea9961bab06"

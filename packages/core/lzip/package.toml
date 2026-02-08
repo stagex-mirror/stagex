@@ -2,6 +2,8 @@
 name = "lzip"
 version = "1.24.1"
 description = "TODO"
+deps = ["core-zlib", "core-libzstd", "core-make", "core-llvm", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.lzip]
 hash = "30c9cb6a0605f479c496c376eb629a48b0a1696d167e3c1e090c5defa481b162"

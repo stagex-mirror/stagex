@@ -2,3 +2,5 @@
 name = "cython"
 description = "TODO"
 version_from = "core-python"
+makedeps = ["pallet-python", "pallet-clang-gnu-busybox"]
+deps = ["core-py-cffi", "core-py-urllib3", "core-py-dateutil", "core-cmake", "core-cython"]

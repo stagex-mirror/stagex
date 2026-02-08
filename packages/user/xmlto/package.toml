@@ -2,6 +2,8 @@
 name = "xmlto"
 version = "0.0.29"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["core-perl-pod-parser", "core-bash", "core-ncurses", "core-libxslt", "user-glib", "core-docbook-xsl", "user-perl-yaml-syck", "core-libxml2"]
 
 [sources.xmlto]
 hash = "40504db68718385a4eaa9154a28f59e51e59d006d1aa14f5bc9d6fded1d6017a"

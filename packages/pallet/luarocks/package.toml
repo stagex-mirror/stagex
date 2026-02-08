@@ -2,3 +2,5 @@
 name = "luarocks"
 description = "Pallet to use luarocks to build lua packages"
 version_from = "core-luarocks"
+makedeps = ["pallet-clang-gnu-busybox", "pallet-lua"]
+deps = ["core-luarocks", "core-curl", "core-ca-certificates", "core-openssl"]

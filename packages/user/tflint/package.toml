@@ -2,6 +2,7 @@
 name = "tflint"
 version = "0.53.0"
 description = "TODO"
+makedeps = ["core-filesystem", "pallet-go"]
 
 [sources.tflint]
 hash = "22dd4644dd249b38b8cbb29bd4ca66aefa65a2d9dc38109a3ca5b428a4ba755b"

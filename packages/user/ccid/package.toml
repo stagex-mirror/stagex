@@ -2,6 +2,8 @@
 name = "ccid"
 version = "1.5.5"
 description = "TODO"
+deps = ["user-pcsc-lite", "user-libusb"]
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
 
 [sources.ccid]
 hash = "194708f75fe369d45dd7c15e8b3e8a7db8b49cfc5557574ca2a2e76ef12ca0ca"

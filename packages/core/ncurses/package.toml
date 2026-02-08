@@ -2,6 +2,8 @@
 name = "ncurses"
 version = "6.5"
 description = "TODO"
+deps = ["core-zlib", "core-linux-headers", "core-libzstd", "core-make", "core-llvm", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.ncurses]
 hash = "136d91bc269a9a5785e5f9e980bc76ab57428f604ce3e5a5a90cebc767971cc6"

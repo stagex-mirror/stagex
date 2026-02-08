@@ -3,6 +3,8 @@ name = "inotify-tools"
 version = "4.23.9.0"
 description = "inotify-tools is a C library and a set of command-line programs for Linux providing a simple interface to inotify."
 license = "GPL"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["core-sqlite3", "user-doxygen"]
 
 [sources.inotify-tools]
 hash = "1dfa33f80b6797ce2f6c01f454fd486d30be4dca1b0c5c2ea9ba3c30a5c39855"

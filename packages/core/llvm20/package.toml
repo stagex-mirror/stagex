@@ -2,6 +2,8 @@
 name = "llvm20"
 version = "20.1.8"
 description = "Collection of modular and reusable compiler and toolchain technologies"
+makedeps = ["core-filesystem"]
+deps = ["bootstrap-stage3"]
 
 [sources.llvm20]
 hash = "6898f963c8e938981e6c4a302e83ec5beb4630147c7311183cf61069af16333d"

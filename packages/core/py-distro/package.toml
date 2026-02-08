@@ -2,6 +2,8 @@
 name = "py-distro"
 version = "1.9.0"
 description = "TODO"
+deps = ["core-musl", "core-zlib", "core-py-flit", "core-py-gpep517", "core-python", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.py-distro]
 hash = "2fa77c6fd8940f116ee1d6b94a2f90b13b5ea8d019b98bc8bafdcabcdd9bdbed"

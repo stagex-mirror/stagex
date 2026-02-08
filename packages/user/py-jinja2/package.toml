@@ -2,6 +2,7 @@
 name = "py-jinja2"
 version = "3.1.4"
 description = "TODO"
+makedeps = ["core-filesystem", "pallet-cython"]
 
 [sources.py-jinja2]
 hash = "4a3aee7acbbe7303aede8e9648d13b8bf88a429282aa6122a993f0ac800cb369"

@@ -4,6 +4,8 @@ version = "3.5.2"
 description = "The Open Source toolkit for Secure Sockets Layer and Transport Layer Security"
 licenses = "Apache-2.0"
 website = "https://www.openssl.org"
+deps = ["core-zlib", "core-linux-headers", "core-libzstd", "core-perl", "core-make", "core-llvm", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.openssl]
 hash = "c53a47e5e441c930c3928cf7bf6fb00e5d129b630e0aa873b08258656e7345ec"

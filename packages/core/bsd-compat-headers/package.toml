@@ -4,6 +4,8 @@ description = "BSD compatability headers (cdefs, queue, tree)"
 version = "0.7.2"
 website = "https://gitlab.alpinelinux.org/alpine/aports"
 license = "BST-2-Clause AND BSD-3-Clause"
+makedeps = ["core-filesystem"]
+deps = ["core-busybox"]
 
 [sources.aports]
 hash = "f7ecc4754608f4e1cc0beef2a96900910ff84af75421879f175c8adb353a541c"

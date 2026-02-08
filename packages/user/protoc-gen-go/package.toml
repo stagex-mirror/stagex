@@ -2,6 +2,7 @@
 name = "protoc-gen-go"
 version = "1.5.4"
 description = "TODO"
+makedeps = ["core-filesystem", "pallet-go"]
 
 [sources.protoc-gen-go]
 hash = "d75e6960ecfabaaa83a7261b1b630d24e9c63aca79615fb15bf33e11b62fd019"

@@ -2,6 +2,8 @@
 name = "util-linux"
 version = "2.41.2"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["user-file", "core-pkgconf", "core-binutils", "core-zlib", "core-meson", "core-sqlite3", "user-libcap-ng", "core-bash", "core-ncurses", "core-python", "core-cmake", "core-coreutils", "core-samurai", "core-libxml2", "core-openssl", "core-busybox"]
 
 [sources.util-linux]
 hash = "534aa113a323d6866c5f46baf909618dcc60c391ad24a91814e5d21511cefd30"

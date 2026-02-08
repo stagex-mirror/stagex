@@ -2,6 +2,8 @@
 name = "libimobiledevice"
 version = "1.3.0"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["user-libplist", "user-libimobiledevice-glue", "user-libusbmuxd", "core-openssl"]
 
 [sources.libimobiledevice]
 hash = "53f2640c6365cd9f302a6248f531822dc94a6cced3f17128d4479a77bd75b0f6"

@@ -2,6 +2,8 @@
 name = "dhcpcd"
 version = "10.1.0"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["user-libmnl"]
 
 [sources.dhcpcd]
 hash = "abc307c63853da3199baa5c1e15fd5ede9d68d068b2a59ca14c5a6768e9cc3b7"

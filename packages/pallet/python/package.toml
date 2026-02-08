@@ -2,3 +2,5 @@
 name = "python"
 description = "Runtime for building python packages"
 version_from = "core-python"
+deps = ["core-py-toml", "core-ncurses", "core-py-flit", "core-libffi", "core-openssl", "core-py-setuptools", "core-clang-rt-devel", "core-zlib", "core-py-setuptools-scm", "core-xz", "core-py-gpep517", "core-bzip2", "core-sqlite3", "core-py-wheel", "core-py-distro", "core-py-installer", "core-python", "core-py-packaging", "core-py-build", "core-libzstd", "core-py-pep517", "core-musl", "core-busybox"]
+makedeps = ["core-profile"]

@@ -4,6 +4,8 @@ version = "2.7.0"
 description = "A DNS toolkit for Python"
 website = "http://www.dnspython.org"
 licenses = "ISC"
+makedeps = ["pallet-python", "core-filesystem"]
+deps = ["user-py-trove-classifiers", "user-py-pluggy", "user-py-hatchling", "user-py-pathspec"]
 
 [sources.py-dnspython]
 hash = "a18503bcd166c9ecb6b9ed91f38ed03d0d7ca282c4ac57282c9fd6b85726fc4b"

@@ -2,6 +2,7 @@
 name = "protoc-go-inject-tag"
 version = "1.4.0"
 description = "TODO"
+makedeps = ["core-filesystem", "pallet-go"]
 
 [sources.protoc-go-inject-tag]
 hash = "0ec154e2b8159b1e449a7d182accf925bdad3b084ba75b8a497bcc816e49f47d"

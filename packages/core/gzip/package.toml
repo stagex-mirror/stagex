@@ -2,6 +2,8 @@
 name = "gzip"
 version = "1.13"
 description = "TODO"
+deps = ["core-zlib", "core-libzstd", "core-make", "core-llvm", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.gzip]
 hash = "7454eb6935db17c6655576c2e1b0fabefd38b4d0936e0f87f48cd062ce91a057"

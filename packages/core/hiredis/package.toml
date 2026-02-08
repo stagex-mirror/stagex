@@ -2,6 +2,8 @@
 name = "hiredis"
 version = "1.2.0"
 description = "TODO"
+deps = ["core-zlib", "core-libzstd", "core-openssl", "core-make", "core-llvm", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.hiredis]
 hash = "82ad632d31ee05da13b537c124f819eb88e18851d9cb0c30ae0552084811588c"

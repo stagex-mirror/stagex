@@ -4,6 +4,8 @@ version = "0.9.9"
 description = "Module for parsing and generating vCard and vCalendar files"
 license = "Apache-2.0"
 website = "https://py-vobject.github.io"
+makedeps = ["pallet-python", "core-filesystem"]
+deps = ["core-py-dateutil", "user-py-pytz", "user-py-six"]
 
 [sources.py-vobject]
 hash = "2adfc34728d9d45b7b9ea215291aab34ae5d1e5a57a566ccd26710757ffd8e0f"

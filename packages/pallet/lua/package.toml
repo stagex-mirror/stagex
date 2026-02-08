@@ -2,3 +2,4 @@
 name = "lua"
 description = "The lua interpreter ready to use"
 version_from = "core-lua"
+deps = ["core-lua", "core-musl", "core-ncurses", "core-readline"]

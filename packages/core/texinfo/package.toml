@@ -2,6 +2,8 @@
 name = "texinfo"
 version = "7.1"
 description = "TODO"
+deps = ["core-sed", "core-tar", "core-musl", "core-zlib", "core-diffutils", "core-bash", "core-ncurses", "core-libzstd", "core-findutils", "core-perl", "core-xz", "core-grep", "core-make", "core-coreutils", "core-llvm", "core-gawk", "core-openssl"]
+makedeps = ["core-filesystem"]
 
 [sources.texinfo]
 hash = "deeec9f19f159e046fdf8ad22231981806dac332cc372f1c763504ad82b30953"

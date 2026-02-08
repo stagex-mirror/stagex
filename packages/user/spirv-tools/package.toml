@@ -4,6 +4,8 @@ version = "1.4.321.0"
 description = "API and commands for processing SPIR-V modules"
 website = "https://github.com/KhronosGroup/SPIRV-LLVM-Tools"
 license = "Apache-2.0"
+makedeps = ["pallet-clang-cmake-busybox", "core-filesystem"]
+deps = ["user-spirv-headers"]
 
 [sources.spirv-tools]
 hash = "8327fb8f3e9472346a004c91dbb83a6e5f3b36c3846c142cf8c0dc8fac8710f3"

@@ -4,6 +4,8 @@ version = "5.4.8"
 description = "Lua is a powerful, efficient, lightweight, embeddable scripting language"
 license = "MIT"
 website = "https://www.lua.org"
+deps = ["core-zlib", "core-libtool", "core-readline", "core-autoconf", "core-ncurses", "core-m4", "core-libzstd", "core-perl", "core-make", "core-cmake", "core-llvm", "core-automake", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.lua]
 hash = "4f18ddae154e793e46eeab727c59ef1c0c0c2b744e7b94219710d76f530629ae"

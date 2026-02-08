@@ -2,6 +2,8 @@
 name = "linux-pam"
 version = "1.6.1"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["user-utmps", "core-gettext"]
 
 [sources.linux-pam]
 hash = "f8923c740159052d719dbfc2a2f81942d68dd34fcaf61c706a02c9b80feeef8e"

@@ -2,6 +2,8 @@
 name = "fuse-overlayfs"
 version = "1.14"
 description = "TODO"
+deps = ["user-fuse3"]
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
 
 [sources.fuse-overlayfs]
 hash = "0779d1ee8fbb6adb48df40e54efa9c608e1d7bbd844800a4c32c110d5fcbe9f2"

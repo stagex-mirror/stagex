@@ -4,6 +4,7 @@ version = "3.18.4"
 description = "The Kubernetes Package Manager"
 license = "Apache-2.0"
 website = "https://github.com/helm/helm"
+makedeps = ["core-filesystem", "pallet-go"]
 
 [sources.helm]
 hash = "231b1f4ff2ddfc1bd812f29b6b7c3890c31e28cbc521e960ce858622425a357f"

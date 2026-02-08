@@ -2,3 +2,5 @@
 name = "gcc-meson-busybox"
 description = "TODO"
 version_from = "core-gcc"
+makedeps = ["pallet-python", "pallet-gcc-cmake-busybox"]
+deps = ["core-meson"]

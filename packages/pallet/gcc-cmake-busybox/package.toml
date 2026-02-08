@@ -2,3 +2,5 @@
 name = "gcc-cmake-busybox"
 description = "TODO"
 version_from = "core-gcc"
+deps = ["core-python", "core-cmake", "core-samurai", "core-openssl", "core-busybox"]
+makedeps = ["pallet-gcc"]

@@ -2,6 +2,8 @@
 name = "libucontext"
 version = "1.3.2"
 description = "ucontext function implementations"
+deps = ["core-zlib", "core-libzstd", "core-make", "core-llvm", "core-musl", "core-busybox", "core-attr"]
+makedeps = ["core-filesystem"]
 
 [sources.libucontext]
 hash = "96beee6f7fa0e8532f3bacee658124e142dcbad4f73f0a5d894b47d0ce20b96a"

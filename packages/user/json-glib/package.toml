@@ -2,6 +2,8 @@
 name = "json-glib"
 description = "TODO"
 version = "1.8.0"
+deps = ["core-gettext", "user-util-linux", "user-glib", "core-libxslt", "core-pcre2", "core-libxml2", "user-rhash", "core-expat"]
+makedeps = ["core-filesystem", "pallet-clang-meson-busybox"]
 
 [sources.json-glib]
 hash = "97ef5eb92ca811039ad50a65f06633f1aae64792789307be7170795d8b319454"

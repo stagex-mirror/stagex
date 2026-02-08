@@ -2,6 +2,8 @@
 name = "terminus-font"
 version = "4.49.1"
 description = "Monospace bitmap font (for X11 and console)"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["user-bdftopcf", "core-python"]
 
 [sources.font-terminus]
 hash = "d961c1b781627bf417f9b340693d64fc219e0113ad3a3af1a3424c7aa373ef79"

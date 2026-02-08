@@ -4,6 +4,8 @@ version = "20.1.7"
 description = "Library for bi-directional translation between SPIR-V and LLVM IR"
 website = "https://github.com/KhronosGroup/SPIRV-LLVM-Translator"
 license = "NCSA"
+makedeps = ["pallet-clang-cmake-busybox", "core-filesystem"]
+deps = ["user-spirv-tools", "core-libffi", "user-spirv-headers", "core-libxml2", "core-samurai"]
 
 [sources.spirv-llvm-translator]
 hash = "dd8a018becb2ed3647478744549b09372308f763d37d5fcde137fd9e129a7354"

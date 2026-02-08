@@ -4,6 +4,8 @@ version = "2.9.1"
 description = "A strictly RFC 4510 conforming LDAP V3 pure Python client library"
 license = "GPL-3.0-only AND LGPL-3.0-only"
 website = "https://github.com/cannatag/ldap3"
+makedeps = ["pallet-python", "core-filesystem"]
+deps = ["core-py-wheel", "user-py-pyasn1", "core-py-setuptools"]
 
 [sources.py-ldap3]
 hash = "d7482a10dabd90e8d3ca3dc9288af3e5c8e9547f5f17f676db1e983cafdd78b9"

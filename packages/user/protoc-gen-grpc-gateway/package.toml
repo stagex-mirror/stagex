@@ -2,6 +2,7 @@
 name = "protoc-gen-grpc-gateway"
 version = "2.22.0"
 description = "TODO"
+makedeps = ["core-filesystem", "pallet-go"]
 
 [sources.protoc-gen-grpc-gateway]
 hash = "509c86f389f4da5ac5ce06c6e2e85834070e4f774b4bb4c5c0536c464911ae25"

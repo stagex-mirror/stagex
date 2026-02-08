@@ -4,6 +4,8 @@ version = "0.50.13"
 description = "Kubernetes CLI To Manage Your Clusters In Style!"
 license = "Apache-2.0"
 website = "https://github.com/derailed/k9s"
+deps = ["core-go", "core-ca-certificates", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.k9s]
 hash = "5aa5b3142bb66a0a73fe0154cbe54a0eeead46d9406dca3c06835549cc05b3ca"

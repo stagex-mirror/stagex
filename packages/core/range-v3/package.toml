@@ -4,6 +4,8 @@ version = "0.12.0"
 description = "Experimental range library for C++11/14/17"
 license = "BSL-1.0"
 website = "https://ericniebler.github.io/range-v3"
+deps = ["core-binutils", "core-zlib", "core-libzstd", "core-openssl", "core-cmake", "core-llvm", "core-samurai", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.range-v3]
 hash = "015adb2300a98edfceaf0725beec3337f542af4915cec4d0b89fa0886f4ba9cb"

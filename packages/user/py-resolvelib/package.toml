@@ -4,6 +4,7 @@ version = "1.2.0"
 description = "Resolve abstract dependencies into concrete ones"
 website = "https://github.com/sarugaku/resolvelib"
 licenses = "ISC"
+makedeps = ["pallet-python", "core-filesystem"]
 
 [sources.py-resolvelib]
 hash = "cb5858fcd2c91bd14a77654883ec64d3de309fbca349494b084c36f4ff3ff05c"

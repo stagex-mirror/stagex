@@ -2,6 +2,8 @@
 name = "php"
 version = "8.4.4"
 description = "TODO"
+deps = ["core-pkgconf", "core-curl", "core-libffi", "core-perl", "core-pcre2", "core-lzip", "core-openssl", "core-clang", "core-zlib", "core-bc", "core-icu", "core-make", "core-bzip2", "core-automake", "core-sqlite3", "core-lmdb", "core-linux-headers", "core-re2c", "core-m4", "core-acl", "core-llvm", "core-bison", "core-python", "core-gettext", "core-autoconf", "core-bash", "core-gmp", "core-libzstd", "core-gdbm", "core-libxml2", "core-expat", "core-musl", "core-busybox", "core-libedit"]
+makedeps = ["core-filesystem"]
 
 [sources.php]
 hash = "b94a8a210441463cd337bff80dd5d52a7f97b6f6a7d909d061518ebf392aac6c"

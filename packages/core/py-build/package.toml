@@ -2,6 +2,8 @@
 name = "py-build"
 version = "0.7.0"
 description = "TODO"
+deps = ["core-musl", "core-zlib", "core-python", "core-busybox", "core-py-setuptools"]
+makedeps = ["core-filesystem"]
 
 [sources.py-build]
 hash = "1aaadcd69338252ade4f7ec1265e1a19184bf916d84c9b7df095f423948cb89f"

@@ -2,6 +2,8 @@
 name = "binutils"
 version = "2.44"
 description = "TODO"
+deps = ["core-zlib", "core-libzstd", "core-make", "core-llvm", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.binutils]
 hash = "ce2017e059d63e67ddb9240e9d4ec49c2893605035cd60e92ad53177f4377237"

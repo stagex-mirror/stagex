@@ -2,6 +2,7 @@
 name = "py-alabaster"
 version = "0.7.16"
 description = "TODO"
+makedeps = ["core-filesystem", "pallet-cython"]
 
 [sources.py-alabaster]
 hash = "75a8b99c28a5dad50dd7f8ccdd447a121ddb3892da9e53d1ca5cca3106d58d65"

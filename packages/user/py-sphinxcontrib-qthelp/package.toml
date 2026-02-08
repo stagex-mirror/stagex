@@ -2,6 +2,7 @@
 name = "py-sphinxcontrib-qthelp"
 version = "1.0.6"
 description = "TODO"
+makedeps = ["pallet-python", "core-filesystem"]
 
 [sources.py-sphinxcontrib-qthelp]
 hash = "a7bd74c400fc84fadbd0bd74c6c48b1a12465dc950af335b59ee5e62e082fce3"

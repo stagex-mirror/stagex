@@ -2,6 +2,8 @@
 name = "postgresql13"
 version = "13.16"
 description = "TODO"
+makedeps = ["pallet-python", "pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["user-util-linux", "core-readline", "core-tcl", "core-icu", "core-tcl8", "core-libxml2", "user-e2fsprogs"]
 
 [sources.postgresql13]
 hash = "33647543546202825bdf89bfb71523b5aea12b3b0153a689f694a08ed02aa204"

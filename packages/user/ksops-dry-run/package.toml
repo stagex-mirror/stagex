@@ -2,6 +2,7 @@
 name = "ksops-dry-run"
 version = "0.2.0"
 description = "TODO"
+makedeps = ["core-filesystem", "pallet-go"]
 
 [sources.ksops-dry-run]
 hash = "80690d0d702b997aeb1ae6d6a7dc8ea8800d64c7307c004209387947bbd33aa2"

@@ -2,3 +2,5 @@
 name = "gcc-gnu-gnu"
 description = "TODO"
 version_from = "core-gcc"
+deps = ["core-sed", "core-pkgconf", "core-libtool", "core-diffutils", "core-perl", "core-gawk", "core-zlib", "core-bc", "core-xz", "core-make", "core-coreutils", "core-automake", "core-tar", "core-findutils", "core-grep", "core-gzip", "core-autoconf", "core-bash"]
+makedeps = ["pallet-gcc"]

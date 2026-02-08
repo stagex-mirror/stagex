@@ -2,3 +2,5 @@
 name = "nodejs"
 description = "Basic Node.js ('Current Release') runtime with shell"
 version_from = "core-nodejs"
+deps = ["core-clang-rt-devel", "core-libnghttp2", "core-brotli", "core-clang", "core-libcxx", "core-libcxxabi", "core-zlib", "core-libunwind", "core-c-ares", "core-ca-certificates", "core-openssl", "core-icu", "core-nodejs", "core-npm", "core-musl", "core-busybox"]
+makedeps = ["core-profile"]

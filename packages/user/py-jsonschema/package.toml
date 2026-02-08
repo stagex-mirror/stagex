@@ -4,6 +4,7 @@ version = "4.2.1"
 description = "An implementation of JSON Schema validation for Python"
 website = "https://github.com/Julian/jsonschema"
 license = "MIT"
+makedeps = ["pallet-python", "core-filesystem"]
 
 [sources.py-jsonschema]
 hash = "390713469ae64b8a58698bb3cbc3859abe6925b565a973f87323ef21b09a27a8"

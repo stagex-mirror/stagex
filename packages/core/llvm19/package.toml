@@ -2,6 +2,8 @@
 name = "llvm19"
 version = "19.1.7"
 description = "Collection of modular and reusable compiler and toolchain technologies" 
+makedeps = ["core-filesystem"]
+deps = ["bootstrap-stage3"]
 
 [sources.llvm19]
 hash = "82401fea7b79d0078043f7598b835284d6650a75b93e64b6f761ea7b63097501"

@@ -2,6 +2,8 @@
 name = "expat"
 version = "2.6.2"
 description = "TODO"
+deps = ["core-zlib", "core-libzstd", "core-make", "core-llvm", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.expat]
 hash = "d4cf38d26e21a56654ffe4acd9cd5481164619626802328506a2869afab29ab3"

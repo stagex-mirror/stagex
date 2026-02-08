@@ -1,6 +1,8 @@
 [package]
 name = "cross-x86_64-gnu-gcc"
 description = "TODO"
+makedeps = ["core-filesystem"]
+deps = ["core-libfaketime", "core-perl", "core-gawk", "core-mpfr", "core-binutils", "core-zlib", "core-libatomic_ops", "core-isl", "core-make", "core-linux-headers", "core-m4", "core-grep", "core-llvm", "core-bison", "core-python", "core-gcc", "core-gmp", "core-libzstd", "core-mpc", "core-musl", "core-busybox"]
 
 [sources.gcc]
 version = "15.2.0"

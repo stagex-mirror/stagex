@@ -2,6 +2,8 @@
 name = "libcap-ng"
 version = "0.8.5"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["core-fmt"]
 
 [sources.libcap-ng]
 hash = "3ba5294d1cbdfa98afaacfbc00b6af9ed2b83e8a21817185dfd844cc8c7ac6ff"

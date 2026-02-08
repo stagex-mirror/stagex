@@ -2,6 +2,8 @@
 name = "libcap"
 version = "2.70"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["core-bash", "core-ncurses"]
 
 [sources.libcap]
 hash = "18f00ea97c7541af86379dec9d4d8ea838aac4a1f70177d81d91657e4e43b808"

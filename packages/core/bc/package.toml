@@ -2,6 +2,8 @@
 name = "bc"
 version = "1.07.1"
 description = "TODO"
+deps = ["core-sed", "core-ncurses", "core-perl", "core-ed", "core-gawk", "core-openssl", "core-zlib", "core-texinfo", "core-make", "core-coreutils", "core-tar", "core-findutils", "core-grep", "core-llvm", "core-bison", "core-gzip", "core-flex", "core-bash", "core-libzstd", "core-musl"]
+makedeps = ["core-filesystem"]
 
 [sources.bc]
 hash = "62adfca89b0a1c0164c2cdca59ca210c1d44c3ffc46daf9931cf4942664cb02a"

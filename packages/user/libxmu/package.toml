@@ -2,6 +2,8 @@
 name = "libxmu"
 version = "1.2.1"
 description = "X11 miscellaneous micro-utility library"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["user-libx11", "user-libxau", "user-libxcb", "user-libsm", "user-util-linux", "user-libxext", "user-libxt", "user-libice", "core-libxslt", "user-xtrans", "user-xorgproto", "user-libxdmcp"]
 
 [sources.libxmu]
 hash = "fcb27793248a39e5fcc5b9c4aec40cc0734b3ca76aac3d7d1c264e7f7e14e8b2"

@@ -2,3 +2,4 @@
 name = "solidity"
 description = "Solidity image containing all required runtime dependencies"
 version_from = "core-solidity"
+deps = ["core-gcc", "core-solidity", "core-musl", "core-busybox"]

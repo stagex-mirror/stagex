@@ -2,6 +2,7 @@
 name = "go-md2man"
 version = "2.0.5"
 description = "TODO"
+makedeps = ["core-filesystem", "pallet-go"]
 
 [sources.go-md2man]
 hash = "6bb799e8fff06d82ca4617190157338d336e2361aa6c5b1786f763a684ffc3f2"

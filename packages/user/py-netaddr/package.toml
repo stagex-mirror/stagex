@@ -4,6 +4,8 @@ version = "1.3.0"
 description = "Pure Python network address representation and manipulation library"
 website = "https://github.com/drkjam/netaddr"
 licenses = "BSD-3-Clause"
+makedeps = ["pallet-python", "core-filesystem"]
+deps = ["user-py-sphinx", "user-py-sphinx-issues"]
 
 [sources.py-netaddr]
 hash = "3c124c0f9dfbee83c0387abd8c624e752bb7c5d39d990482a794eb692873ca69"

@@ -2,6 +2,8 @@
 name = "gmp"
 version = "6.3.0"
 description = "TODO"
+deps = ["core-zlib", "core-libtool", "core-autoconf", "core-m4", "core-libzstd", "core-perl", "core-make", "core-llvm", "core-automake", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.gmp]
 hash = "a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898"

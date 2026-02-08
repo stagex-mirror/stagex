@@ -2,6 +2,8 @@
 name = "freetds"
 version = "1.4.23"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["core-readline", "user-unixodbc", "core-openssl"]
 
 [sources.freetds]
 hash = "93a3f186b82c6042a66a1970bd478d7914edb1c5669b642d80b4eaacf2a2d17e"

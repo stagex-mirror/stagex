@@ -2,6 +2,8 @@
 name = "protobuf"
 version = "26.1"
 description = "TODO"
+deps = ["user-abseil-cpp", "core-openssl"]
+makedeps = ["pallet-clang-cmake-busybox", "core-filesystem"]
 
 [sources.protobuf]
 hash = "4fc5ff1b2c339fb86cd3a25f0b5311478ab081e65ad258c6789359cd84d421f8"

@@ -2,3 +2,5 @@
 name = "clang"
 description = "TODO"
 version_from = "core-clang"
+deps = ["core-argp-standalone", "core-musl-obstack", "core-zlib", "core-linux-headers", "core-musl-fts", "core-libzstd", "core-libffi", "core-xz", "core-llvm", "core-musl"]
+makedeps = ["core-profile"]

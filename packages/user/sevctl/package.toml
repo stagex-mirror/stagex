@@ -4,6 +4,8 @@ version = "0.6.2"
 description = "Command line utility for managing the AMD SEV platform"
 licenses = "Apache-2.0"
 website = "https://github.com/virtee/sevctl"
+makedeps = ["pallet-rust", "core-filesystem"]
+deps = ["core-perl", "core-make"]
 
 [sources.sevctl]
 hash = "e368417ed7170820951fe6d085745131fb009b3f5d326031998bc8796a19e7ae"

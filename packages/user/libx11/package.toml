@@ -2,6 +2,8 @@
 name = "libx11"
 version = "1.8.11"
 description = "X11 client-side library"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["user-libxau", "user-libxcb", "user-xcb-proto", "user-xtrans", "user-xorgproto", "user-util-macros", "user-libxdmcp", "user-xmlto"]
 
 [sources.libx11]
 hash = "3b74e82943924b45a0b778cc6842976909c3010d9445a8fd185e1dca4d380e88"

@@ -2,6 +2,8 @@
 name = "lzo"
 version = "2.10"
 description = "TODO"
+makedeps = ["pallet-clang-cmake-busybox", "core-filesystem"]
+deps = ["core-openssl"]
 
 [sources.lzo]
 hash = "c0f892943208266f9b6543b3ae308fab6284c5c90e627931446fb49b4221a072"

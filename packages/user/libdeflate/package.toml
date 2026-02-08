@@ -2,6 +2,8 @@
 name = "libdeflate"
 version = "1.20"
 description = "TODO"
+makedeps = ["pallet-clang-cmake-busybox", "core-filesystem"]
+deps = ["user-libgcrypt"]
 
 [sources.libdeflate]
 hash = "ed1454166ced78913ff3809870a4005b7170a6fd30767dc478a09b96847b9c2a"

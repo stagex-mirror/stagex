@@ -2,6 +2,8 @@
 name = "xz"
 version = "5.6.2"
 description = "TODO"
+deps = ["core-po4a", "core-gettext", "core-zlib", "core-libtool", "core-autoconf", "core-m4", "core-libzstd", "core-perl", "core-make", "core-llvm", "core-automake", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.xz]
 hash = "92a439948bba24c2bc25bb67a087a19194905209c56b5e600bc94fd2a472e687"

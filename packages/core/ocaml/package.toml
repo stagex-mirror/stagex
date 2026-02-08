@@ -2,6 +2,8 @@
 name = "ocaml"
 version = "5.2.0"
 description = "TODO"
+deps = ["core-zlib", "core-libzstd", "core-make", "core-llvm", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.ocaml]
 hash = "48554abfd530fcdaa08f23f801b699e4f74c320ddf7d0bd56b0e8c24e55fc911"

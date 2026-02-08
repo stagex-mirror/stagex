@@ -2,6 +2,8 @@
 name = "numactl"
 version = "2.0.18"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["user-gperf"]
 
 [sources.numactl]
 hash = "b4fc0956317680579992d7815bc43d0538960dc73aa1dd8ca7e3806e30bc1274"

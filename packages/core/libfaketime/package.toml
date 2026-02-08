@@ -4,6 +4,8 @@ version = "0.9.11"
 description = "intercept system calls related to time/entropy and return user-defined values"
 license = "GPL-2.0-or-later"
 website = "https://github.com/wolfcw/libfaketime"
+deps = ["core-zlib", "core-libzstd", "core-make", "core-llvm", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.libfaketime]
 hash = "5912d8b4179402058d3847c0ad389e688630ea38898847b1190e636e12c33e44"

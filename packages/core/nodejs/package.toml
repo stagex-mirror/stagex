@@ -4,6 +4,8 @@ version = "24.9.0"
 description = "Evented I/O for V8 javascript ('Current' release)"
 website = "https://nodejs.org/"
 licenses = "MIT"
+deps = ["core-libnghttp2", "core-brotli", "core-pkgconf", "core-zlib", "core-linux-headers", "core-libzstd", "core-python", "core-openssl", "core-libffi", "core-c-ares", "core-icu", "core-make", "core-llvm", "core-samurai", "core-musl", "core-busybox", "core-bzip2"]
+makedeps = ["core-filesystem"]
 
 [sources.nodejs]
 hash = "3c868d88377cb05ed87674a6af6add3e04733dd429c3370620a5a6c547fe6460"

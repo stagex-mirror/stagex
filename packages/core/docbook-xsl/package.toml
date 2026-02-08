@@ -2,6 +2,8 @@
 name = "docbook-xsl"
 version = "1.79.2"
 description = "TODO"
+deps = ["core-zlib", "core-docbook-xml", "core-libxml2", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.docbook-xsl]
 hash = "966188d7c05fc76eaca115a55893e643dd01a3486f6368733c9ad974fcee7a26"

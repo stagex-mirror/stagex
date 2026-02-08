@@ -2,6 +2,7 @@
 name = "py-certifi"
 version = "2024.2.2"
 description = "TODO"
+makedeps = ["pallet-python", "core-filesystem"]
 
 [sources.py-certifi]
 hash = "0569859f95fc761b18b45ef421b1290a0f65f147e92a1e5eb3e635f9a5e4e66f"

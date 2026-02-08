@@ -2,6 +2,8 @@
 name = "libclc"
 version = "19.1.7"
 description = "Open source implementation of the library requirements of the OpenCL C programming language"
+makedeps = ["pallet-clang-cmake-busybox", "core-filesystem"]
+deps = ["user-spirv-tools", "user-spirv-llvm-translator", "core-samurai", "core-python"]
 
 [sources.libclc]
 hash = "77e2d71f5cea1d0b1014ba88186299d1a0848eb3dc20948baae649db9e7641cb"

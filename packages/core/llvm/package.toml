@@ -4,6 +4,8 @@ version = "21.1.8"
 description = "Collection of modular and reusable compiler and toolchain technologies"
 #HACK: omitting clang-tools-extra and clang-tools-extra-static due to build issues
 subpackages = ["llvm","llvm-libgcc","llvm-binutils","clang","clang-rt-devel","clang-devel-static","clang-devel","clang-analyzer","clang-libs","clang-cpp-libs","mlir","mlir-libs","mlir-devel","mlir-devel-static","libunwind","libunwind-devel","libunwind-devel-static","libcxx","libcxx-devel","libcxx-devel-static","libcxxabi","libcxxabi-devel","libcxxabi-devel-static","llvm-libs","lld","lld-devel","llvm-linker-tools","llvm-devel","llvm-devel-static","llvm-tools","llvm-runtime"]
+makedeps = ["core-filesystem"]
+deps = ["bootstrap-stage3", "core-musl"]
 
 [sources.llvm]
 hash = "4633a23617fa31a3ea51242586ea7fb1da7140e426bd62fc164261fe036aa142"

@@ -2,6 +2,7 @@
 name = "hwdata"
 version = "0.394"
 description = "Hardware identification and configuration data"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
 
 [sources.hwdata]
 hash = "b7c3fd7214a3b7c49d2661db127a712dc11cffd1799f793947aa1cb20aaf3298"

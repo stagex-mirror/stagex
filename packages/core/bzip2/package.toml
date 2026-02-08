@@ -2,6 +2,8 @@
 name = "bzip2"
 version = "1.0.8"
 description = "TODO"
+deps = ["core-zlib", "core-libzstd", "core-make", "core-llvm", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.bzip2]
 hash = "ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269"

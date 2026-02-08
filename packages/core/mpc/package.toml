@@ -4,6 +4,8 @@ version = "1.2.1"
 description = "Multiprecision C library"
 website = "http://www.multiprecision.org/"
 license = "LGPL-3.0-or-later"
+deps = ["core-mpfr", "core-zlib", "core-gmp", "core-libzstd", "core-make", "core-llvm", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.mpc]
 hash = "17503d2c395dfcf106b622dc142683c1199431d095367c6aacba6eec30340459"

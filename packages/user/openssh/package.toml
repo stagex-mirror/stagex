@@ -2,6 +2,8 @@
 name = "openssh"
 version = "9.8p1"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["core-openssl"]
 
 [sources.openssh]
 hash = "dd8bd002a379b5d499dfb050dd1fa9af8029e80461f4bb6c523c49973f5a39f3"

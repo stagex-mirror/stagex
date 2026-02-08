@@ -4,6 +4,7 @@ version = "3.11.0"
 description = "Simple and flexible tool for managing secrets"
 website = "https://getsops.io"
 licenses = "MPL-2.0"
+makedeps = ["core-filesystem", "pallet-go"]
 
 [sources.sops]
 hash = "0182659099cd6a2fbcb41b507f8cd363667a0d6eb442098f6cebdf4ca8ecd2ac"

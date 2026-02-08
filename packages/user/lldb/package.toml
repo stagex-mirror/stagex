@@ -2,6 +2,8 @@
 name = "lldb"
 version = "20.1.8"
 description = "A next generation, high-performance debugger built on LLVM."
+deps = ["user-swig"]
+makedeps = ["pallet-clang-cmake-busybox", "core-filesystem"]
 
 [sources.lldb]
 hash = "244cc34ef3d342f02f26c26f1afeb62a9df2ab0178b1baf2077fa43ecdd3186f"

@@ -2,6 +2,7 @@
 name = "docker-cli-buildx"
 version = "0.29.1"
 description = "TODO"
+makedeps = ["core-filesystem", "pallet-cgo"]
 
 [sources.docker-cli-buildx]
 hash = "20f62461257d3f20ac98c6e6d3f22ca676710644d9e4688c2e4c082bfba9b619"

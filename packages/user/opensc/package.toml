@@ -2,6 +2,8 @@
 name = "opensc"
 version = "0.25.1"
 description = "TODO"
+makedeps = ["pallet-clang-gnu-busybox", "core-filesystem"]
+deps = ["user-util-linux", "core-readline", "user-pcsc-lite", "core-ncurses", "core-openssl"]
 
 [sources.opensc]
 hash = "989e6305900d4f2f56ef84aa0da07c044459b4f8a508957a4cdefce6a1367c7b"

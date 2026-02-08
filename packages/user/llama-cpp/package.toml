@@ -2,6 +2,7 @@
 name = "llama-cpp"
 version = "b4663"
 description = "TODO"
+makedeps = ["pallet-clang-cmake-busybox", "core-filesystem"]
 
 [sources.llama_cpp]
 hash = "c630e767ce858e0ea16980bc38a1fa008c25a320610d07aa136b147446a1b3ef"

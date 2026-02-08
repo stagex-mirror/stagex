@@ -2,6 +2,8 @@
 name = "zig"
 version = "0.15.1"
 description = "General-purpose programming language designed for robustness, optimality, and maintainability"
+deps = ["core-zlib", "core-libzstd", "core-libffi", "core-openssl", "core-make", "core-cmake", "core-llvm", "core-samurai", "core-musl", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.zig]
 hash = "816c0303ab313f59766ce2097658c9fff7fafd1504f61f80f9507cd11652865f"

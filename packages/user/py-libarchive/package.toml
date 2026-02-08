@@ -2,6 +2,8 @@
 name = "py-libarchive"
 version = "5.1"
 description = "TODO"
+makedeps = ["core-filesystem", "pallet-cython"]
+deps = ["user-libarchive"]
 
 [sources.py-libarchive]
 hash = "5051c6d157d03cc0891e5f1051edf5122d6e9b82c58cd30e898dea818e7ff014"

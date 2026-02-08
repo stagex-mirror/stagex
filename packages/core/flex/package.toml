@@ -2,6 +2,8 @@
 name = "flex"
 version = "2.6.4"
 description = "TODO"
+deps = ["core-musl", "core-gettext", "core-zlib", "core-libtool", "core-autoconf", "core-m4", "core-libzstd", "core-perl", "core-make", "core-llvm", "core-automake", "core-bison", "core-busybox"]
+makedeps = ["core-filesystem"]
 
 [sources.flex]
 hash = "e87aae032bf07c26f85ac0ed3250998c37621d95f8bd748b31f15b33c45ee995"
