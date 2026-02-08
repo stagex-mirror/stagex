@@ -24,5 +24,11 @@ COPY <<-'EOF' /etc/profile
 	export SIZE=llvm-size
 	export LIBCC="/usr/lib/libclang_rt.builtins.a"
 	export LDFLAGS="--ld-path=/usr/bin/ld.lld"
+
+	# If `ninja` is installed and no default CMake generator is set, use `ninja`
+	# `ninja` is _significantly_ faster than `make` for some workloads
+	if [ -f /usr/bin/ninja ]; then
+		export CMAKE_GENERATOR=${CMAKE_GENERATOR:-ninja}
+	fi
 EOF
 SHELL ["/bin/sh","-l","-c"]
