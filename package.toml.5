@@ -1,0 +1,216 @@
+.TH PACKAGE.TOML 5 "2026-02-07" "StageX" "File Formats"
+.SH NAME
+package.toml \- StageX package configuration format
+.SH SYNOPSIS
+.I packages/{stage}/{name}/package.toml
+.SH DESCRIPTION
+The
+.B package.toml
+file defines package metadata and source information for packages in the
+StageX operating system. It uses the TOML (Tom's Obvious, Minimal Language)
+format to specify package details, dependencies, and source locations.
+.PP
+The file consists of two main sections:
+.B [package]
+and
+.BR [sources.*] .
+.SH FILE FORMAT
+.SS [package] Section
+The
+.B [package]
+section contains basic package metadata:
+.TP
+.BR name " (string, required)"
+The package name.
+.TP
+.BR version " (string, conditional)"
+The package version. Required unless
+.B version_from
+is set.
+.TP
+.BR version_from " (string, conditional)"
+Inherit version from another package. Format: "stage\-packagename" (e.g., "core\-python").
+Mutually exclusive with
+.BR version .
+Required for pallet packages that track a core package version.
+.TP
+.BR description " (string, required)"
+A brief description of the package.
+.TP
+.BR license " (string, required)"
+Software license for the package as an SPDX expression (e.g., "MIT",
+"GPL\-2.0\-or\-later AND LGPL\-2.1\-or\-later").
+.TP
+.BR website " (string, optional)"
+Homepage or project URL.
+.TP
+.BR subpackages " (array of strings, optional)"
+List of subpackages included with this package.
+.SS [sources.*] Section
+The
+.B [sources.*]
+section defines source download information. The section name follows the
+pattern
+.B [sources.SOURCE_NAME]
+where
+.I SOURCE_NAME
+typically matches the package name.
+.TP
+.BR hash " (string, required)"
+SHA\-256 hash of the source archive.
+.TP
+.BR version " (string, optional)"
+The source version. When not set, inherited from the
+.B [package]
+version.
+.TP
+.BR git_sha " (string, optional)"
+Git commit SHA for source traceability. Passed to the Containerfile as a build argument.
+.TP
+.BR format " (string, optional)"
+Archive format, such as "tar.gz", "tar.xz", etc. Defaults to empty string.
+.TP
+.BR file " (string, optional)"
+Filename template with placeholders. When not set, falls back to the filename
+derived from the mirror URL.
+.TP
+.BR mirrors " (array of strings, required)"
+Array of download URLs with placeholders.
+.SH PLACEHOLDERS
+Template strings in
+.B file
+and
+.B mirrors
+fields support the following placeholders:
+.TP
+.B {version}
+Replaced with the source version (or package version if source version is unset).
+.TP
+.B {version_major}
+Replaced with the major version number (e.g. X.Y.Z \(-> X).
+.TP
+.B {version_major_minor}
+Replaced with the major and minor version number (e.g. X.Y.Z \(-> X.Y).
+.TP
+.B {version_dash}
+Replaced with the dash version (e.g. X.Y.Z \(-> X\-Y\-Z).
+.TP
+.B {version_strip_suffix}
+Replaced with non\-candidate version (e.g. X.Y.Z\-rc.1 \(-> X.Y.Z).
+.TP
+.B {version_under}
+Replaced with a snake case version number (e.g. X.Y.Z \(-> X_Y_Z).
+.TP
+.B {format}
+Replaced with the archive format.
+.TP
+.B {file}
+Replaced with the computed filename (from the
+.B file
+field after placeholder expansion). Only available in
+.BR mirrors .
+.SH EXAMPLES
+Basic package with single source:
+.PP
+.in +4n
+.EX
+[package]
+name = "curl"
+version = "8.9.1"
+description = "TODO"
+
+[sources.curl]
+hash = "f292f6cc051d5bbabf725ef85d432dfeacc8711dd717ea97612ae590643801e5"
+format = "tar.xz"
+file = "curl-{version}.{format}"
+mirrors = ["https://curl.se/download/{file}"]
+.EE
+.in
+.PP
+Package with subpackages:
+.PP
+.in +4n
+.EX
+[package]
+name = "linux"
+version = "6.17.3"
+description = "The Linux Kernel"
+website = "https://kernel.org"
+license = "GPL-2.0-only"
+subpackages = [
+  "linux-generic",
+  "linux-airgap",
+  "linux-server",
+  "linux-guest",
+  "linux-guest-net",
+  "linux-nitro",
+  "gen_initramfs",
+]
+
+[sources.linux]
+hash = "3ecc8619d8a5b5f675224d2f52c71d1fc09bc3f9c019d8bd82d0581e03689499"
+format = "tar.xz"
+file = "linux-{version}.{format}"
+mirrors = ["http://mirrors.edge.kernel.org/pub/linux/kernel/v{version_major}.x/linux-{version}.{format}"]
+.EE
+.in
+.PP
+Pallet package using version_from:
+.PP
+.in +4n
+.EX
+[package]
+name = "python"
+description = "Runtime for building python packages"
+version_from = "core-python"
+.EE
+.in
+.PP
+Package with multiple sources:
+.PP
+.in +4n
+.EX
+[package]
+name = "gcc"
+version = "15.2.0"
+description = "The GNU Compiler Collection"
+license = "GPL-2.0-or-later AND LGPL-2.1-or-later"
+website = "https://gcc.gnu.org"
+
+[sources.gcc]
+hash = "438fd996826b0c82485a29da03a72d71d6e3541a83ec702df4271f6fe025d24e"
+format = "tar.xz"
+file = "gcc-{version}.{format}"
+mirrors = ["https://mirrors.kernel.org/gnu/gcc/gcc-{version}/{file}"]
+
+[sources.aports]
+hash = "f7ecc4754608f4e1cc0beef2a96900910ff84af75421879f175c8adb353a541c"
+file = "aports-{version}.tar.gz"
+version = "7fa6e7fd3465c5ff89cc33a56d20bf4d59105aaf"
+mirrors = ["https://gitlab.alpinelinux.org/alpine/aports/-/archive/{version}/aports-{version}.tar.gz"]
+.EE
+.in
+.SH FILES
+.TP
+.I packages/{stage}/{name}/package.toml
+Package configuration file located within each package directory.
+.SH NOTES
+.IP \(bu 2
+All hash values should be SHA\-256 checksums in hexadecimal format.
+.IP \(bu 2
+Mirror URLs should be reliable and publicly accessible.
+.IP \(bu 2
+Version placeholders are expanded during package processing.
+.IP \(bu 2
+The sources section name should typically match the package name for consistency.
+.SH AUTHORS
+.MT danny@drgrovellc.com
+Danny Grove
+.ME
+.SH SEE ALSO
+.UR https://toml.io
+TOML specification
+.UE ,
+.UR https://spdx.org/licenses/
+SPDX License List
+.UE
