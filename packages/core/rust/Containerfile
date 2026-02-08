@@ -248,8 +248,6 @@ RUN ./build 1.85.0 1.84.0
 ADD fetch/rustc-1.86.0-src.tar.gz .
 RUN ./build 1.86.0 1.85.0
 
-ENV LLVM_VERSION="20"
-COPY --from=stagex/core-llvm20 . /
 ADD fetch/rustc-1.87.0-src.tar.gz .
 RUN ./build 1.87.0 1.86.0
 
@@ -262,13 +260,13 @@ RUN ./build 1.89.0 1.88.0 ""
 ADD fetch/rustc-1.90.0-src.tar.gz .
 RUN ./build 1.90.0 1.89.0 ""
 
+ENV LLVM_VERSION="system"
+
 ADD fetch/rustc-1.91.1-src.tar.gz .
 RUN ./build 1.91.1 1.90.0 ""
 
 ADD fetch/rustc-1.92.0-src.tar.gz .
 RUN ./build 1.92.0 1.91.1 ""
-
-ENV LLVM_VERSION="system"
 
 ADD fetch/rustc-1.93.0-src.tar.gz .
 
