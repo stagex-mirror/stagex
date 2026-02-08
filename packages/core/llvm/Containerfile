@@ -180,24 +180,64 @@ RUN --network=none <<-EOF
 	# Zig hard requires "all" so this also forces a messy patch there as well to remove AMDGPU support as well
 	export LLVM_TARGETS_TO_BUILD="AArch64;ARM;AVR;BPF;Hexagon;Lanai;LoongArch;Mips;MSP430;NVPTX;PowerPC;RISCV;Sparc;SPIRV;SystemZ;VE;WebAssembly;X86;XCore"
 
+	CMAKE_ARGS="$(cat ./cmake_args)"
+	cmake_cache_set() {
+		CMAKE_ARGS="$CMAKE_ARGS -D$1=$2"
+	}
+	cmake_runtime_cache_set() {
+		CMAKE_ARGS="$CMAKE_ARGS -DRUNTIMES_${ARCH}-linux-musl_$1=$2"
+	}
+
+	cmake_cache_set CMAKE_C_COMPILER /usr/bin/clang
+	cmake_cache_set CMAKE_CXX_COMPILER /usr/bin/clang++
+	cmake_cache_set CMAKE_AR /usr/bin/llvm-ar
+	cmake_cache_set CMAKE_NM /usr/bin/llvm-nm
+	cmake_cache_set CMAKE_RANLIB /usr/bin/llvm-ranlib
+	cmake_cache_set LLVM_NATIVE_TOOL_DIR /usr/bin/
+	cmake_cache_set LLVM_USE_LINKER lld
+	cmake_cache_set LLVM_HEADERS_TABLEGEN /usr/bin/llvm-tblgen
+	cmake_cache_set CLANG_TABLEGEN /usr/bin/clang-tblgen
+	cmake_cache_set LLVM_TARGETS_TO_BUILD "$LLVM_TARGETS_TO_BUILD"
+	cmake_cache_set LLVM_ENABLE_PER_TARGET_RUNTIME_DIR ON
+	cmake_cache_set LLVM_BUILD_LLVM_DYLIB ON
+	cmake_cache_set LLVM_LINK_LLVM_DYLIB ON
+
+	echo "$CMAKE_ARGS" > ./cmake_args
+
+	# We disable the sanitizers from this build because they kept hitting a race condition
+	# https://codeberg.org/stagex/stagex/issues/778
+	cmake_runtime_cache_set COMPILER_RT_BUILD_SANITIZERS OFF
+
 	cmake \
 		-B build \
 		-S llvm \
 		-Wno-dev \
-		-DCMAKE_C_COMPILER=/usr/bin/clang \
-		-DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
-		-DCMAKE_AR=/usr/bin/llvm-ar \
-		-DCMAKE_NM=/usr/bin/llvm-nm \
-		-DCMAKE_RANLIB=/usr/bin/llvm-ranlib \
-		-DLLVM_NATIVE_TOOL_DIR=/usr/bin/ \
-		-DLLVM_USE_LINKER=lld \
-		-DLLVM_HEADERS_TABLEGEN=/usr/bin/llvm-tblgen \
-		-DCLANG_TABLEGEN=/usr/bin/clang-tblgen \
-		-DLLVM_TARGETS_TO_BUILD="$LLVM_TARGETS_TO_BUILD" \
-		-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON \
-		-DLLVM_BUILD_LLVM_DYLIB=ON \
-		-DLLVM_LINK_LLVM_DYLIB=ON \
-		$(cat ./cmake_args)
+		$CMAKE_ARGS
+	cmake --build build -v
+EOF
+
+RUN --network=none <<-EOF
+	export LIBCC="/usr/lib/clang/21/lib/${TARGET}/libclang_rt.builtins.a"
+
+	export CFLAGS="-fPIC"
+	export CXXFLAGS="$CFLAGS"
+
+	CMAKE_ARGS="$(cat ./cmake_args)"
+	cmake_cache_set() {
+		CMAKE_ARGS="$CMAKE_ARGS -D$1=$2"
+	}
+	cmake_runtime_cache_set() {
+		CMAKE_ARGS="$CMAKE_ARGS -DRUNTIMES_${ARCH}-linux-musl_$1=$2"
+	}
+
+	# Now that we've already built everything else, we additionally build the sanitizers
+	cmake_runtime_cache_set COMPILER_RT_BUILD_SANITIZERS ON
+
+	cmake \
+		-B build \
+		-S llvm \
+		-Wno-dev \
+		$CMAKE_ARGS
 	cmake --build build -v
 	DESTDIR="/rootfs" cmake --install build
 
