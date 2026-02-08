@@ -65,24 +65,42 @@ git config commit.gpgsign true
 The full tree must be reproduced on at least 2 different CPU vendors (e.g., 
 AMD and Intel) to detect vendor-specific microarchitectural backdoors.
 
-Release branches take the format `release/YYYY.MM.<release-revision>`. A release **MUST** include a
-PR to staging to introduce a bump to `digests.txt`, creating the release
-branch. Once the branch is created, other maintainers **MAY** begin reproducing.
-The release engineer should run `make sign` to ensure a signature exists for
-every package included in the release.
-
-In the Git forge UI, the release pull request **MUST** target the `main` branch,
-to provide a summary of all changes since the latest release.
+Release branches take the format `release/YYYY.MM.<release-revision>`, and
+**SHOULD** be created using `make prepare-release-branch`, followed by `make
+digests` to bump the digests, a commit to the branch, and a PR on the Git
+forge. Once the branch is created, other maintainers **MAY** begin reproducing.
+The release engineer **SHOULD** run `make sign` to ensure a signature exists
+for every package included in the release, followed by opening a PR in the
+[signatures] repo. In the Git forge UI, the release pull request **MUST**
+target the `main` branch, to provide a summary of all changes since the latest
+release.
 
 Any commits required once the branch is created, but before the release is
 published, **MUST** flow from a PR (if push access to the release branch is not
 given) to staging, where the release branch can then rebase on staging.
 
-Once a release is published, the release branch **MUST** perform a signed merge
-commit into staging, followed by a signed merge commit from staging to main.
-Any further pull requests to the branch after the series of releases is done
-(which may be published after release, if strictly necessary) **SHOULD** target 
-the release branch, and the release branch will live on its own.
+Two or more release engineers **MUST** contribute their signatures to all
+digests in a release, to the associated PR in the [signatures] repository.
+
+Once a release is ready to be published, the release engineer **MUST** perform
+a signed merge commit into staging, followed by a signed merge commit from
+staging to main. The commit to main **MUST** include the name of the release
+(an example message would be "Merge branch 'staging' (Release 2026.01.0)").
+The engineer **MUST** also merge and push the relevant branch in the
+[signatures] repository. After pushing the `staging` and `main` branches, a
+signed release tag **MUST** be created, with a list of major changes since the
+last release and a list of contributors (of both package signatures and
+contributions). The release engineer **MUST** then run `make RELEASE=<release>
+publish`.
+
+The website should also be updated, by following the instructions on the
+[website] repository and updating the [pages] repository.
+
+Once the release branch has been merged into main, if changes are required that
+can't be published in the next release, changes **MUST** be pushed or
+cherry-picked to the release branch.  Once an acceptable amount of signatures
+have been added to the [signatures] repository, the release may be published,
+and a new signed tag created, with no merge to the staging or main branch.
 
 ## Build Artifact Signing
 
@@ -145,3 +163,7 @@ git commit --allow-empty -m "Adopt"
 ```sh
 git push <new-remote-name> HEAD:<branch_name>
 ```
+
+[signatures]: https://codeberg.org/stagex/signatures
+[website]: https://codeberg.org/stagex/website
+[pages]: https://codeberg.org/stagex/pages

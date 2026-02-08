@@ -1,14 +1,14 @@
-STAGES := pallet bootstrap core user## Namespaces to build
-PROGRESS := auto## Buildkit progress output style
-PLATFORM := linux/amd64## Platform we are building for
+STAGES := pallet bootstrap core user ## Namespaces to build
+PROGRESS := auto ## Buildkit progress output style
+PLATFORM := linux/amd64 ## Platform we are building for
 BUILDER := $(shell command -v docker) ## Build backend to use
-REGISTRY_USERNAME := 127.0.0.1:5000/stagex## Example for registry-* targets
-REGISTRY := stagex## Registry url/namespace to build/publish for
+REGISTRY_USERNAME := 127.0.0.1:5000/stagex ## Example for registry-* targets
+REGISTRY := stagex ## Registry url/namespace to build/publish for
 SIGNATURES := git@codeberg.org:stagex/sigs.stagex.tools.git
-CHECK ?= 0## Run build with syntax checking enabled
-NOCACHE ?= 0## Run build ignoring all existing cache
-IMPORT ?= 0## Import and tag packages after build as ":local"
-RELEASE := 0## Set release version for release targets
+CHECK ?= 0 ## Run build with syntax checking enabled
+NOCACHE ?= 0 ## Run build ignoring all existing cache
+IMPORT ?= 0 ## Import and tag packages after build as ":local"
+RELEASE := 0 ## Set release version for release targets
 
 include src/global.mk
 include src/macros.mk
@@ -28,7 +28,7 @@ new-digests: digests ## Provides only the newly changed digests
 	@git diff --minimal digests/* | grep -E '^(\+)[a-z0-9]' | sed 's/^\+//'
 
 sign: digests ## Sign all digests that match locally built targets
-	@$(call sign)
+	@./src/sign-all.sh $(REGISTRY) $(RELEASE)
 
 compat: ## Check system compatibility for reproducible builds
 	@./src/compat.sh
@@ -38,6 +38,9 @@ preseed: ## Seed build cache from last published release
 
 fetch: ## Fetch and hash verify all external source files
 	@./src/fetch.py
+
+prep-release-branch: ## Prepare a branch for a new release
+	@./src/prep-release-branch.sh $(RELEASE)
 
 help:
 	@./src/help.sh Makefile

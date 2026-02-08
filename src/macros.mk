@@ -1,10 +1,3 @@
-# Sign all unsigned packages for a given category
-define sign
-	git diff --quiet \
-	|| { echo "Error: Dirty git tree"; exit 1; } \
-	&& cut -d' ' -f2 digests/*.txt | xargs -n1 bash ./src/sign.sh $(REGISTRY)
-endef
-
 # Verify a set of OCI Digests for a given category against local build
 define verify
 	$(eval CATEGORY := $(1))
