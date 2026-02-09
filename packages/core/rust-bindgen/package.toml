@@ -4,7 +4,7 @@ version = "0.72.1"
 description = "automatically generates Rust FFI bindings to C (and some C++) libraries"
 
 [sources.rust-bindgen]
-hash = "591865e0a91199a8cca4c4249c30d7b9810eef192a50ee0071f3eeb9090c9b92"
+hash = "4ffb17061b2d71f19c5062d2e17e64107248f484f9775c0b7d30a16a8238dfd1"
 format = "tar.gz"
 file = "v{version}.{format}"
 mirrors = [ "https://github.com/rust-lang/rust-bindgen/archive/refs/tags/{file}",]
