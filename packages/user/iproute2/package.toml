@@ -1,12 +1,12 @@
 [package]
 name = "iproute2"
-version = "6.16.0"
+version = "6.18.0"
 description = "IP routing utilities"
 license = "GPL-2.0-or-later"
 website = "https://wiki.linuxfoundation.org/networking/iproute2"
 
 [sources.iproute2]
-hash = "5900ccc15f9ac3bf7b7eae81deb5937123df35e99347a7f11a22818482f0a8d0"
+hash = "6ba520e1975e4c50dc931eeae91ea37c198b8a173744885f8895b84325f9d456"
 format = "tar.xz"
 file = "iproute2-{version}.{format}"
 mirrors = [ "http://mirrors.edge.kernel.org/pub/linux/utils/net/iproute2/{file}",]

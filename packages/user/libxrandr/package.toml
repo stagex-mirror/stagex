@@ -1,10 +1,10 @@
 [package]
 name = "libxrandr"
-version = "1.5.4"
+version = "1.5.5"
 description = "X11 RandR extension library"
 
 [sources.libxrandr]
-hash = "1ad5b065375f4a85915aa60611cc6407c060492a214d7f9daf214be752c3b4d3"
+hash = "72b922c2e765434e9e9f0960148070bd4504b288263e2868a4ccce1b7cf2767a"
 format = "tar.xz"
 file = "libXrandr-{version}.{format}"
 mirrors = [ "https://www.x.org/releases/individual/lib/{file}",]

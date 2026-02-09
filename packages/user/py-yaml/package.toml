@@ -1,10 +1,10 @@
 [package]
 name = "py-yaml"
-version = "6.0.2"
+version = "6.0.3"
 description = "Python3 bindings for YAML"
 
 [sources.py-yaml]
-hash = "9377c381ac3fccad8df73d96b5139ef8b1a2c57a0d913e95ab0a2275d66b5caa"
+hash = "c7b45011e052458ae79015d5eea3046c37d099023d4b253dde26ee1c29ea2f36"
 format = "tar.gz"
 file = "{version}.{format}"
-mirrors = [ "https://github.com/yaml/pyyaml/archive/{file}", ]
+mirrors = [ "https://github.com/yaml/pyyaml/archive/{file}",]

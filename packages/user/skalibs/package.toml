@@ -1,10 +1,10 @@
 [package]
 name = "skalibs"
-version = "2.14.1.1"
+version = "2.14.5.1"
 description = "TODO"
 
 [sources.skalibs]
-hash = "b6b79b816f4ba0b6801676b0ed4179b59c8c7809eeffe26db672e404636befc3"
+hash = "fa359c70439b480400a0a2ef68026a2736b315025a9d95df69d34601fb938f0f"
 format = "tar.gz"
 file = "skalibs-{version}.{format}"
 mirrors = [ "https://skarnet.org/software/skalibs/{file}",]

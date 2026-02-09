@@ -1,12 +1,12 @@
 [package]
 name = "helm"
-version = "3.18.4"
+version = "4.1.0"
 description = "The Kubernetes Package Manager"
 license = "Apache-2.0"
 website = "https://github.com/helm/helm"
 
 [sources.helm]
-hash = "231b1f4ff2ddfc1bd812f29b6b7c3890c31e28cbc521e960ce858622425a357f"
+hash = "06bc969b8a7185efdb2568bd9797f3da28ed3f2183e27af66c876e74d63c9209"
 format = "tar.gz"
 file = "helm-{version}.{format}"
 mirrors = [ "https://github.com/helm/helm/archive/refs/tags/v{version}.{format}",]

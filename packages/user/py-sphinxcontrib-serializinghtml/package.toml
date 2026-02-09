@@ -1,10 +1,10 @@
 [package]
 name = "py-sphinxcontrib-serializinghtml"
-version = "1.1.9"
+version = "2.0.0"
 description = "TODO"
 
 [sources.py-sphinxcontrib-serializinghtml]
-hash = "8ff6f82f0b7876eaaf258cb90d2ddfdc26ae069552bf6db6ae5eb534ae689c19"
+hash = "f418c9f2e93c2e732c5232b570c95e73b6b5c8dd54190f3645e96fb565ea272f"
 format = "tar.gz"
 file = "py-sphinxcontrib-serializinghtml-{version}.{format}"
 mirrors = [ "https://github.com/sphinx-doc/sphinxcontrib-serializinghtml/archive/refs/tags/{version}.{format}",]

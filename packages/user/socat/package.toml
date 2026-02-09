@@ -1,10 +1,10 @@
 [package]
 name = "socat"
-version = "1.8.0.1"
+version = "1.8.1.0"
 description = "TODO"
 
 [sources.socat]
-hash = "dc350411e03da657269e529c4d49fe23ba7b4610b0b225c020df4cf9b46e6982"
+hash = "9a884880b1b00dfb2ffc6959197b1554b200af731018174cd048115dc28ef239"
 format = "tar.gz"
 file = "socat-{version}.{format}"
 mirrors = [ "http://www.dest-unreach.org/socat/download/{file}",]

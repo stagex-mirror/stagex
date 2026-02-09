@@ -1,9 +1,9 @@
 [package]
 name = "swig"
-version = "4.3.0"
+version = "4.4.1"
 description = "TODO"
 
 [sources.swig]
-hash = "f7203ef796f61af986c70c05816236cbd0d31b7aa9631e5ab53020ab7804aa9e"
+hash = "40162a706c56f7592d08fd52ef5511cb7ac191f3593cf07306a0a554c6281fcf"
 file = "swig-{version}.tar.gz"
 mirrors = [ "https://downloads.sourceforge.net/swig/{file}",]

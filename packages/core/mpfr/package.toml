@@ -1,12 +1,12 @@
 [package]
 name = "mpfr"
-version = "4.1.0"
+version = "4.2.2"
 description = "multiple-precision floating-point library"
 website = "https://www.mpfr.org/"
 license = "LGPL-3.0-or-later"
 
 [sources.mpfr]
-hash = "feced2d430dd5a97805fa289fed3fc8ff2b094c02d05287fd6133e7f1f0ec926"
+hash = "9ad62c7dc910303cd384ff8f1f4767a655124980bb6d8650fe62c815a231bb7b"
 format = "tar.bz2"
 file = "mpfr-{version}.{format}"
-mirrors = ["https://gcc.gnu.org/pub/gcc/infrastructure/{file}", "https://ftpmirror.gnu.org/gnu/gmp/{file}", "https://mirrors.kernel.org/gnu/gmp/{file}"]
+mirrors = [ "https://gcc.gnu.org/pub/gcc/infrastructure/{file}", "https://ftpmirror.gnu.org/gnu/gmp/{file}", "https://mirrors.kernel.org/gnu/gmp/{file}",]

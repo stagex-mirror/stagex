@@ -1,10 +1,10 @@
 [package]
 name = "libxfixes"
-version = "6.0.1"
+version = "6.0.2"
 description = "X11 miscellaneous 'fixes' extension library"
 
 [sources.libxfixes]
-hash = "b695f93cd2499421ab02d22744458e650ccc88c1d4c8130d60200213abc02d58"
+hash = "39f115d72d9c5f8111e4684164d3d68cc1fd21f9b27ff2401b08fddfc0f409ba"
 format = "tar.xz"
 file = "libXfixes-{version}.{format}"
 mirrors = [ "https://www.x.org/releases/individual/lib/{file}",]

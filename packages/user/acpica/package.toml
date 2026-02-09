@@ -1,10 +1,10 @@
 [package]
 name = "acpica"
-version = "20250807"
+version = "20251212"
 description = "The ACPI Component Architecture (ACPICA) project provides an open-source operating system-independent implementation of the Advanced Configuration and Power Interface specification (ACPI)."
 
 [sources.acpica]
-hash = "971df1f78944e5f3bb314209acbf8a127c0db34b4a3c26e011b4076eba1c2bbc"
+hash = "6f77bd550655183c63f0a307fb0f29ef6140b1f522d61783a16b2af8d9149a0d"
 format = "tar.gz"
 file = "acpica-{version}.{format}"
 mirrors = [ "https://github.com/acpica/acpica/archive/refs/tags/{version}.{format}",]

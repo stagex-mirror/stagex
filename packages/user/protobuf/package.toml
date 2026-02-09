@@ -1,10 +1,10 @@
 [package]
 name = "protobuf"
-version = "26.1"
+version = "33.5"
 description = "TODO"
 
 [sources.protobuf]
-hash = "4fc5ff1b2c339fb86cd3a25f0b5311478ab081e65ad258c6789359cd84d421f8"
+hash = "440848dffa209beb8a04e41cc352762e44f8e91342b2a43aab6af9b30713c2f6"
 format = "tar.gz"
 file = "protobuf-{version}.{format}"
 mirrors = [ "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v{version}.{format}",]

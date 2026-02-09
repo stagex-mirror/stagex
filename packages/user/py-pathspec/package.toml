@@ -1,10 +1,10 @@
 [package]
 name = "py-pathspec"
-version = "0.12.1"
+version = "1.0.4"
 description = "TODO"
 
 [sources.py-pathspec]
-hash = "a482d51503a1ab33b1c67a6c3813a26953dbdc71c31dacaef9a838c4e29f5712"
+hash = "0210e2ae8a21a9137c0d470578cb0e595af87edaa6ebf12ff176f14a02e0e645"
 format = "tar.gz"
 file = "py-pathspec-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/p/pathspec/pathspec-{version}.{format}",]

@@ -1,13 +1,10 @@
 [package]
 name = "apr"
-version = "1.7.5"
+version = "1.7.6"
 description = "TODO"
 
 [sources.apr]
-hash = "cd0f5d52b9ab1704c72160c5ee3ed5d3d4ca2df4a7f8ab564e3cb352b67232f2"
+hash = "49030d92d2575da735791b496dc322f3ce5cff9494779ba8cc28c7f46c5deb32"
 format = "tar.bz2"
 file = "apr-{version}.{format}"
-mirrors = [
-	"https://www.apache.org/dist/apr/{file}",
-	"https://archive.apache.org/dist/apr/{file}",
-]
+mirrors = [ "https://www.apache.org/dist/apr/{file}", "https://archive.apache.org/dist/apr/{file}",]

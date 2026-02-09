@@ -1,10 +1,10 @@
 [package]
 name = "gawk"
-version = "5.3.0"
+version = "5.3.2"
 description = "TODO"
 
 [sources.gawk]
-hash = "ca9c16d3d11d0ff8c69d79dc0b47267e1329a69b39b799895604ed447d3ca90b"
+hash = "f8c3486509de705192138b00ef2c00bbbdd0e84c30d5c07d23fc73a9dc4cc9cc"
 format = "tar.xz"
 file = "gawk-{version}.{format}"
-mirrors = [ "https://ftpmirror.gnu.org/gnu/gawk/{file}", "https://mirrors.kernel.org/gnu/gawk/{file}"] 
+mirrors = [ "https://ftpmirror.gnu.org/gnu/gawk/{file}", "https://mirrors.kernel.org/gnu/gawk/{file}",]

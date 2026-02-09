@@ -1,10 +1,10 @@
 [package]
 name = "yq"
-version = "4.42.1"
+version = "4.52.2"
 description = "TODO"
 
 [sources.yq]
-hash = "be31e5e828a0251721ea71964596832d4a40cbc21c8a8392a804bc8d1c55dd62"
+hash = "598ad3719f6b8a199f374baf7a32e9ff527300e56816f4652cd3640c230bf79b"
 format = "tar.gz"
 file = "yq-{version}.{format}"
 mirrors = [ "https://github.com/mikefarah/yq/archive/refs/tags/v{version}.{format}",]

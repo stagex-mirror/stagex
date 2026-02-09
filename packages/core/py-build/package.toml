@@ -1,10 +1,10 @@
 [package]
 name = "py-build"
-version = "0.7.0"
+version = "1.4.0"
 description = "TODO"
 
 [sources.py-build]
-hash = "1aaadcd69338252ade4f7ec1265e1a19184bf916d84c9b7df095f423948cb89f"
+hash = "f1b91b925aa322be454f8330c6fb48b465da993d1e7e7e6fa35027ec49f3c936"
 format = "tar.gz"
 file = "py-build-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/b/build/build-{version}.{format}",]

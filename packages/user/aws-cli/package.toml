@@ -1,10 +1,10 @@
 [package]
 name = "aws-cli"
-version = "2.28.14"
+version = "2.33.17"
 description = "TODO"
 
 [sources.aws-cli]
-hash = "646090b21d0d053e9ff2b9cd50c8a33b22836ed778b41cf2a1f58fdf7bbae25a"
+hash = "c19be117b3e9b43810347ca8d0dafb81d3114876073783e939c6c070d71cc8f4"
 format = "tar.gz"
 file = "aws-cli-{version}.{format}"
 mirrors = [ "https://github.com/aws/aws-cli/archive/refs/tags/{version}/{version}.{format}",]

@@ -1,10 +1,10 @@
 [package]
 name = "py-sphinx"
-version = "7.2.6"
+version = "9.1.0"
 description = "TODO"
 
 [sources.py-sphinx]
-hash = "b41c04543148937b887097f396d7b2b54ae49d0597b68625f06ffdf702d4d917"
+hash = "fc64c3d18fe9614fec5dddb3eff0b74c5f0a73ff244e03e129d7d8862ac00815"
 format = "tar.gz"
 file = "py-sphinx-{version}.{format}"
 mirrors = [ "https://github.com/sphinx-doc/sphinx/archive/v{version}.{format}",]

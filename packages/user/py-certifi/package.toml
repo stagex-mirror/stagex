@@ -1,10 +1,10 @@
 [package]
 name = "py-certifi"
-version = "2024.2.2"
+version = "2026.1.4"
 description = "TODO"
 
 [sources.py-certifi]
-hash = "0569859f95fc761b18b45ef421b1290a0f65f147e92a1e5eb3e635f9a5e4e66f"
+hash = "ac726dd470482006e014ad384921ed6438c457018f4b3d204aea4281258b2120"
 format = "tar.gz"
 file = "py-certifi-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/c/certifi/certifi-{version}.{format}",]
