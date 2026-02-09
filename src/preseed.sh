@@ -6,7 +6,7 @@ if [ "${1:-}" = "--worker" ]; then
     hash="${line%% *}"
     package="${line#* }"
     ref="stagex/${package}@sha256:${hash}"
-    docker pull "${ref}"
+    docker pull --platform linux/amd64 "${ref}"
     rm -rf "out/${package}"
     mkdir -p "out/${package}"
     docker save "${ref}" | tar -xC "out/${package}"
