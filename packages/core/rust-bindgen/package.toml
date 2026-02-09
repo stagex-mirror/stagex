@@ -7,4 +7,4 @@ description = "automatically generates Rust FFI bindings to C (and some C++) lib
 hash = "591865e0a91199a8cca4c4249c30d7b9810eef192a50ee0071f3eeb9090c9b92"
 format = "tar.gz"
 file = "v{version}.{format}"
-mirrors = [ "https://github.com/rust-lang/rust-bindgen/archive/{file}",]
+mirrors = [ "https://github.com/rust-lang/rust-bindgen/archive/refs/tags/{file}",]
