@@ -1,10 +1,10 @@
 [package]
 name = "qemu"
-version = "10.1.1"
+version = "10.2.0"
 description = "TODO"
 
 [sources.qemu]
-hash = "e56b93d95953a9b6a64d1985dbcedfb07dc54d92c50b7912526693536c589923"
+hash = "9e30ad1b8b9f7b4463001582d1ab297f39cfccea5d08540c0ca6d6672785883a"
 format = "tar.xz"
 file = "qemu-{version}.{format}"
 mirrors = [ "https://download.qemu.org/{file}",]

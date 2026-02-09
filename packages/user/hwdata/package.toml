@@ -1,10 +1,10 @@
 [package]
 name = "hwdata"
-version = "0.394"
+version = "0.404"
 description = "Hardware identification and configuration data"
 
 [sources.hwdata]
-hash = "b7c3fd7214a3b7c49d2661db127a712dc11cffd1799f793947aa1cb20aaf3298"
+hash = "5c14fc99bf193faad1ccc267ccfff14ee4e4550a582b17a76aec72178539f837"
 format = "tar.gz"
 file = "v{version}.{format}"
 mirrors = [ "https://github.com/vcrhonek/hwdata/archive/refs/tags/{file}",]

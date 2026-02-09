@@ -1,10 +1,10 @@
 [package]
 name = "py-pep517"
-version = "0.9.1"
+version = "0.13.1"
 description = "TODO"
 
 [sources.py-pep517]
-hash = "aeb78601f2d1aa461960b43add204cc7955667687fbcf9cdb5170f00556f117f"
+hash = "1b2fa2ffd3938bb4beffe5d6146cbcb2bda996a5a4da9f31abffd8b24e07b317"
 format = "tar.gz"
 file = "py-pep517-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/p/pep517/pep517-{version}.{format}",]

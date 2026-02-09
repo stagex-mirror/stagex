@@ -1,10 +1,10 @@
 [package]
 name = "py-botocore"
-version = "1.34.68"
+version = "1.42.44"
 description = "TODO"
 
 [sources.py-botocore]
-hash = "e7ae9d69cc3e7b31d926e6a1a9ae673ba02da263e35cf12ff2bae35a21755cc6"
+hash = "47ba27360f2afd2c2721545d8909217f7be05fdee16dd8fc0b09589535a0701c"
 format = "tar.gz"
 file = "py-botocore-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/b/botocore/botocore-{version}.{format}",]

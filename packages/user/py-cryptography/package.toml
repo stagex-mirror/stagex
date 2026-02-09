@@ -1,12 +1,12 @@
 [package]
 name = "py-cryptography"
-version = "45.0.5"
+version = "46.0.4"
 description = "A package designed to expose cryptographic recipes and primitives to Python developers"
 website = "https://github.com/pyca/cryptography"
 licenses = "Apache-2.0 OR BSD-3-Clause"
 
 [sources.py-cryptography]
-hash = "72e76caa004ab63accdf26023fccd1d087f6d90ec6048ff33ad0445abf7f605a"
+hash = "bfd019f60f8abc2ed1b9be4ddc21cfef059c841d86d710bb69909a688cbb8f59"
 format = "tar.gz"
 file = "py-cryptography-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/c/cryptography/cryptography-{version}.{format}",]

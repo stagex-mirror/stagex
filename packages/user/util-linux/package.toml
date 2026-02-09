@@ -1,9 +1,9 @@
 [package]
 name = "util-linux"
-version = "2.41.2"
+version = "2.41.3"
 description = "TODO"
 
 [sources.util-linux]
-hash = "534aa113a323d6866c5f46baf909618dcc60c391ad24a91814e5d21511cefd30"
+hash = "25dc2fd70c6b6bec1c0c97cb11636edd2d5b2645df2324eef4820db3677bd412"
 file = "util-linux-{version}.tar.gz"
 mirrors = [ "https://github.com/util-linux/util-linux/archive/refs/tags/v{version}.tar.gz",]

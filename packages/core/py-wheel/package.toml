@@ -1,10 +1,10 @@
 [package]
 name = "py-wheel"
-version = "0.43.0"
+version = "0.46.3"
 description = "TODO"
 
 [sources.py-wheel]
-hash = "465ef92c69fa5c5da2d1cf8ac40559a8c940886afcef87dcf14b9470862f1d85"
+hash = "e3e79874b07d776c40bd6033f8ddf76a7dad46a7b8aa1b2787a83083519a1803"
 format = "tar.gz"
 file = "py-wheel-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/w/wheel/wheel-{version}.{format}",]

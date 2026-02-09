@@ -1,10 +1,10 @@
 [package]
 name = "py-jmespath"
-version = "1.0.1"
+version = "1.1.0"
 description = "TODO"
 
 [sources.py-jmespath]
-hash = "90261b206d6defd58fdd5e85f478bf633a2901798906be2ad389150c5c60edbe"
+hash = "472c87d80f36026ae83c6ddd0f1d05d4e510134ed462851fd5f754c8c3cbb88d"
 format = "tar.gz"
 file = "py-jmespath-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/j/jmespath/jmespath-{version}.{format}",]

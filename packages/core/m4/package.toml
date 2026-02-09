@@ -1,10 +1,10 @@
 [package]
 name = "m4"
-version = "1.4.19"
+version = "1.4.21"
 description = "TODO"
 
 [sources.m4]
-hash = "3be4a26d825ffdfda52a56fc43246456989a3630093cced3fbddf4771ee58a70"
+hash = "38ae59f7a30bf9c108193cc5c25fbb06014f21e230c7ede2eff614f7b7c37ed8"
 format = "tar.gz"
 file = "m4-{version}.{format}"
-mirrors = [ "https://ftpmirror.gnu.org/gnu/m4/{file}", "https://mirrors.kernel.org/gnu/m4/{file}"] 
+mirrors = [ "https://ftpmirror.gnu.org/gnu/m4/{file}", "https://mirrors.kernel.org/gnu/m4/{file}",]

@@ -1,10 +1,10 @@
 [package]
 name = "py-docutils"
-version = "0.20.1"
+version = "0.22.4"
 description = "TODO"
 
 [sources.py-docutils]
-hash = "f08a4e276c3a1583a86dce3e34aba3fe04d02bba2dd51ed16106244e8a923e3b"
+hash = "4db53b1fde9abecbb74d91230d32ab626d94f6badfc575d6db9194a49df29968"
 format = "tar.gz"
 file = "py-docutils-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/d/docutils/docutils-{version}.{format}",]

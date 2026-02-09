@@ -1,10 +1,10 @@
 [package]
 name = "xorgproto"
-version = "2024.1"
+version = "2025.1"
 description = "Combined X.Org X11 protocol headers"
 
 [sources.xorgproto]
-hash = "4f6b9b4faf91e5df8265b71843a91fc73dc895be6210c84117a996545df296ce"
+hash = "d6f89f65bafb8c9b735e0515882b8a1511e8e864dde5e9513e191629369f2256"
 format = "tar.gz"
 file = "xorgproto-{version}.{format}"
-mirrors = [ "https://xorg.freedesktop.org/archive/individual/proto/{file}" ]
+mirrors = [ "https://xorg.freedesktop.org/archive/individual/proto/{file}",]

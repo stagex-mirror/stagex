@@ -1,10 +1,10 @@
 [package]
 name = "pcre2"
-version = "10.44"
+version = "10.47"
 description = "TODO"
 
 [sources.pcre2]
-hash = "07a002e8216382a96f722bc4a831f3d77457fe3e9e62a6dff250a2dd0e9c5e6d"
+hash = "409c443549b13b216da40049850a32f3e6c57d4224ab11553ab5a786878a158e"
 format = "tar.gz"
 file = "pcre2-{version}.{format}"
 mirrors = [ "https://github.com/PCRE2Project/pcre2/archive/refs/tags/{file}",]

@@ -1,10 +1,9 @@
 [package]
 name = "binutils"
-version = "2.44"
+version = "2.45.1"
 description = "TODO"
 
 [sources.binutils]
-hash = "ce2017e059d63e67ddb9240e9d4ec49c2893605035cd60e92ad53177f4377237"
+hash = "5fe101e6fe9d18fdec95962d81ed670fdee5f37e3f48f0bef87bddf862513aa5"
 file = "binutils-{version}.tar.xz"
-mirrors = [ "https://ftpmirror.gnu.org/gnu/binutils/{file}", "https://mirrors.kernel.org/gnu/binutils/{file}"]
-
+mirrors = [ "https://ftpmirror.gnu.org/gnu/binutils/{file}", "https://mirrors.kernel.org/gnu/binutils/{file}",]

@@ -1,10 +1,10 @@
 [package]
 name = "py-wcwidth"
-version = "0.2.13"
+version = "0.6.0"
 description = "TODO"
 
 [sources.py-wcwidth]
-hash = "72ea0c06399eb286d978fdedb6923a9eb47e1c486ce63e9b4e64fc18303972b5"
+hash = "cdc4e4262d6ef9a1a57e018384cbeb1208d8abbc64176027e2c2455c81313159"
 format = "tar.gz"
 file = "py-wcwidth-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/w/wcwidth/wcwidth-{version}.{format}",]

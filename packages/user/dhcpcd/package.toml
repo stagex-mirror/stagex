@@ -1,10 +1,10 @@
 [package]
 name = "dhcpcd"
-version = "10.1.0"
+version = "10.3.0"
 description = "TODO"
 
 [sources.dhcpcd]
-hash = "abc307c63853da3199baa5c1e15fd5ede9d68d068b2a59ca14c5a6768e9cc3b7"
+hash = "06e4c1aaf958523f3fd1c57258c613c6c7ae56b8f1d678fa7943495d5ea6aeb5"
 format = "tar.xz"
 file = "dhcpcd-{version}.{format}"
 mirrors = [ "https://github.com/NetworkConfiguration/dhcpcd/releases/download/v{version}/{file}",]

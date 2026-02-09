@@ -1,10 +1,10 @@
 [package]
 name = "libnghttp2"
-version = "1.62.1"
+version = "1.68.0"
 description = "TODO"
 
 [sources.libnghttp2]
-hash = "d0b0b9d00500ee4aa3bfcac00145d3b1ef372fd301c35bff96cf019c739db1b4"
+hash = "2c16ffc588ad3f9e2613c3fad72db48ecb5ce15bc362fcc85b342e48daf51013"
 format = "tar.gz"
 file = "libnghttp2-{version}.{format}"
 mirrors = [ "https://github.com/nghttp2/nghttp2/releases/download/v{version}/nghttp2-{version}.{format}",]

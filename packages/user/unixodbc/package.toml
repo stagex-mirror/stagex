@@ -1,10 +1,10 @@
 [package]
 name = "unixodbc"
-version = "2.3.12"
+version = "2.3.14"
 description = "TODO"
 
 [sources.unixodbc]
-hash = "f210501445ce21bf607ba51ef8c125e10e22dffdffec377646462df5f01915ec"
+hash = "4e2814de3e01fc30b0b9f75e83bb5aba91ab0384ee951286504bb70205524771"
 format = "tar.gz"
 file = "unixodbc-{version}.{format}"
 mirrors = [ "https://www.unixodbc.org/unixODBC-{version}.{format}",]

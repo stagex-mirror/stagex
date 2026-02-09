@@ -1,10 +1,10 @@
 [package]
 name = "grub"
-version = "2.12"
+version = "2.14"
 description = "TODO"
 
 [sources.grub]
-hash = "b30919fa5be280417c17ac561bb1650f60cfb80cc6237fa1e2b6f56154cb9c91"
+hash = "d0415fbb3e739237064e173743a6e5f60c33a81ec02a069cc9152d80efff4967"
 format = "tar.gz"
 file = "grub-{version}.{format}"
 mirrors = [ "https://mirrors.kernel.org/gnu/grub/{file}",]

@@ -1,10 +1,10 @@
 [package]
 name = "runc"
-version = "1.1.13"
+version = "1.4.0"
 description = "TODO"
 
 [sources.runc]
-hash = "789d5749a08ef1fbe5d1999b67883206a68a4e58e6ca0151c411d678f3480b25"
+hash = "94d566d8b017d6cdffc684560a4f069bb87f86534976c41d768711c85e194884"
 format = "tar.gz"
 file = "runc-{version}.{format}"
 mirrors = [ "https://github.com/opencontainers/runc/archive/v{version}/runc-v{version}.{format}",]

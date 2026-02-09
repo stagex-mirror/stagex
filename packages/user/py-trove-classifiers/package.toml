@@ -1,10 +1,10 @@
 [package]
 name = "py-trove-classifiers"
-version = "2024.5.17"
+version = "2026.1.14.14"
 description = "TODO"
 
 [sources.py-trove-classifiers]
-hash = "5d0a143e5977e5c32a34265f803fcdbf064c57940ce95492fe6c559622f7497c"
+hash = "aad9b7b24472eda66c29566d546804ac5eaf625ceed359a16fd25e3351766102"
 format = "tar.gz"
 file = "py-trove-classifiers-{version}.{format}"
 mirrors = [ "https://github.com/pypa/trove-classifiers/archive/{version}/py3-trove-classifiers-{version}.{format}",]

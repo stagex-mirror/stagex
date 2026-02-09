@@ -1,10 +1,10 @@
 [package]
 name = "diffoscope"
-version = "274"
+version = "312"
 description = "TODO"
 
 [sources.diffoscope]
-hash = "c5398be0f26cb13344f4e27cf5a53df2b7a246a7b08944d114eee140989e5bb5"
+hash = "f4444beef3a43f0d69cca5681119af65a1de9830a59b603a64aeab13b4e71992"
 format = "tar.gz"
 file = "diffoscope-{version}.{format}"
 mirrors = [ "https://salsa.debian.org/reproducible-builds/diffoscope/-/archive/{version}/{file}",]

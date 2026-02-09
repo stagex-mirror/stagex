@@ -1,10 +1,10 @@
 [package]
 name = "git"
-version = "2.50.1"
+version = "2.53.0"
 description = "Distributed version control system"
 
 [sources.git]
-hash = "7e3e6c36decbd8f1eedd14d42db6674be03671c2204864befa2a41756c5c8fc4"
+hash = "5818bd7d80b061bbbdfec8a433d609dc8818a05991f731ffc4a561e2ca18c653"
 format = "tar.xz"
 file = "git-{version}.{format}"
 mirrors = [ "http://mirrors.edge.kernel.org/pub/software/scm/git/{file}",]

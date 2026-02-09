@@ -1,10 +1,10 @@
 [package]
 name = "cython"
-version = "3.0.11-1"
+version = "3.2.4"
 description = "TODO"
 
 [sources.cython]
-hash = "a6bcfc81ae0487c3d0de4226e0c5aff7c7d0a5e344cc7b75c17bbb6e713f154b"
+hash = "9631e586c49b9d3f72c3962c376119479a6a98e3c0e3c14d5218e199ef563b18"
 format = "tar.gz"
 file = "cython-{version}.{format}"
 mirrors = [ "https://github.com/cython/cython/archive/{version}.{format}",]

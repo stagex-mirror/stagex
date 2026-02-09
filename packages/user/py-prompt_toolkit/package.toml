@@ -1,10 +1,10 @@
 [package]
 name = "py-prompt_toolkit"
-version = "3.0.48"
+version = "3.0.52"
 description = "TODO"
 
 [sources.py-prompt_toolkit]
-hash = "d6623ab0477a80df74e646bdbc93621143f5caf104206aa29294d53de1a03d90"
+hash = "28cde192929c8e7321de85de1ddbe736f1375148b02f2e17edd840042b1be855"
 format = "tar.gz"
 file = "py-prompt_toolkit-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/p/prompt_toolkit/prompt_toolkit-{version}.{format}",]

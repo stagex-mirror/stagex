@@ -1,10 +1,10 @@
 [package]
 name = "buf"
-version = "1.30.1"
+version = "1.65.0"
 description = "TODO"
 
 [sources.buf]
-hash = "56da0c31b11bd15b99049af8b364c7bf4e11106152ab27d5ccb98d28123ab785"
+hash = "386b49aaa2d763fa5d73ff2eb7e88fff89c6b1feacdc6b5e1badc1a173d79fbf"
 format = "tar.gz"
 file = "buf-{version}.{format}"
 mirrors = [ "https://github.com/bufbuild/buf/archive/refs/tags/v{version}.{format}",]

@@ -1,9 +1,9 @@
 [package]
 name = "glibc"
-version = "2.40"
+version = "2.43"
 description = "TODO"
 
 [sources.glibc]
-hash = "2abc038f5022949cb67e996c3cae0e7764f99b009f0b9b7fd954dfc6577b599e"
+hash = "e1e622cbd635019090fa23260e5d9ec219b12f97ae7ae02f033d4ae42cf2c004"
 file = "glibc-{version}.tar.gz"
-mirrors = ["https://ftpmirror.gnu.org/gnu/glibc/{file}", "https://mirrors.kernel.org/gnu/glibc/{file}"]
+mirrors = [ "https://ftpmirror.gnu.org/gnu/glibc/{file}", "https://mirrors.kernel.org/gnu/glibc/{file}",]
