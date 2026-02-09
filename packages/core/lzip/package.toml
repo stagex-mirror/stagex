@@ -4,7 +4,7 @@ version = "1.25"
 description = "TODO"
 
 [sources.lzip]
-hash = "f43d5bc2da0d8bb92f21a6573fc91569602fb11222ab909e256ff3895098a176"
+hash = "09418a6d8fb83f5113f5bd856e09703df5d37bae0308c668d0f346e3d3f0a56f"
 format = "tar.gz"
 file = "lzip-{version}.{format}"
 mirrors = [ "http://download.savannah.gnu.org/releases/lzip/{file}",]
