@@ -10,7 +10,8 @@ file = "libclc-{version}.src.{format}"
 mirrors = [ "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/{file}",]
 
 [sources.cmake]
-hash = "11c5a28f90053b0c43d0dec3d0ad579347fc277199c005206b963c19aae514e3"
+hash = "85735f20fd8c81ecb0a09abb0c267018475420e93b65050cc5b7634eab744de9"
 format = "tar.xz"
 file = "cmake-{version}.src.{format}"
 mirrors = [ "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/{file}",]
+
