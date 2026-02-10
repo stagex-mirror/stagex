@@ -114,9 +114,9 @@ RUN --network=none <<-EOF
 	rm /rootfs/usr/bin/qemu-system-rx
 	rm /rootfs/usr/bin/qemu-system-sparc
 	rm /rootfs/usr/bin/qemu-system-sparc64
-	rm /rootfs/usr/bin/qemu-system-avr                                        
-	rm /rootfs/usr/bin/qemu-system-i386                                       
-	rm /rootfs/usr/bin/qemu-system-m68k                                       
+	rm /rootfs/usr/bin/qemu-system-avr
+	rm /rootfs/usr/bin/qemu-system-i386
+	rm /rootfs/usr/bin/qemu-system-m68k
 	rm /rootfs/usr/bin/qemu-system-microblaze
 	rm /rootfs/usr/bin/qemu-system-microblazeel
 EOF
