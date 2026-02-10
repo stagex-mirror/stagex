@@ -61,12 +61,17 @@ RUN --network=none <<-EOF
 	done
 	mkdir -p \
 		/rootfs/usr/bin \
-    /rootfs/usr/share/edk2/Conf \
-    /rootfs/usr/share/edk2/Scripts
-  install BaseTools/Source/C/bin/* BaseTools/BinWrappers/PosixLike/LzmaF86Compress /rootfs/usr/bin
-  install BaseTools/BuildEnv /rootfs/usr/share/edk2/
-  install BaseTools/Conf/*.template /rootfs/usr/share/edk2/Conf
-  install BaseTools/Scripts/GccBase.lds /rootfs/usr/share/edk2/Scripts
+		/rootfs/usr/share/edk2/Conf \
+		/rootfs/usr/share/edk2/Scripts
+	install BaseTools/Source/C/bin/* BaseTools/BinWrappers/PosixLike/LzmaF86Compress /rootfs/usr/bin
+	install BaseTools/BuildEnv /rootfs/usr/share/edk2/
+	install BaseTools/Conf/*.template /rootfs/usr/share/edk2/Conf
+	install BaseTools/Scripts/GccBase.lds /rootfs/usr/share/edk2/Scripts
+	for fw in Build/OvmfX64/"$RELEASE"_"$TOOLCHAIN"/FV/*.fd; do
+		install -Dm644 $fw /rootfs/usr/share/OVMF/${fw##*/}
+	done
+	install -d /rootfs/usr/share/ovmf
+	ln -sf ../OVMF/OVMF.fd /rootfs/usr/share/ovmf/bios.bin
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
