@@ -4,7 +4,12 @@ version = "0.26.1"
 description = "TODO"
 
 [sources.opensc]
+<<<<<<< Updated upstream
 hash = "7af1409465c098131d98dc4b700c17da2208f1055675e18825124a60ddec373c"
+=======
+hash = "5c4928bac2786dcaff9b2dfa43cd3de301bd137193a57adfb1a7a555656691ce"
+>>>>>>> Stashed changes
 format = "tar.gz"
 file = "opensc-{version}.{format}"
-mirrors = [ "https://github.com/opensc/opensc/archive/{version}.{format}",]
+mirrors = [ "https://github.com/OpenSC/OpenSC/archive/refs/tags/{version}.{format}",]
+
