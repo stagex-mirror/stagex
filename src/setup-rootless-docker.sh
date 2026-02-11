@@ -40,6 +40,11 @@ if [ "$(command -v docker; echo $?)" -eq 0 ]; then
   exit 1
 fi
 
+if [ \( ! XDG_RUNTIME_DIR = "" \) -o \( ! DOCKER_HOST = "" \) ]; then
+  echo "Existing \`docker\` configuration (\`XDG_RUNTIME_DIR\`, \`DOCKER_HOST\`) found"
+  exit 1
+fi
+
 PYTHON3_MINOR_VERSION=$(python3 --version | cut -d'.' -f2)
 if [ "$PYTHON3_MINOR_VERSION" -lt 11 ]; then
   echo "The installed \`python3\` is not at least 3.11, as required"
@@ -59,14 +64,14 @@ wget https://github.com/docker/buildx/releases/download/v${BUILDKIT_VERSION}/$BU
 chmod +x $BUILDX_PATH
 
 # Configure the user's profile
-CONFIG="
+CONFIG='
 export XDG_RUNTIME_DIR=~/.docker/run
 export DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock
 # Define where the `containerd` socket lives as necessary to run `ctr`
-export CONTAINERD_ADDRESS=$XDG_RUNTIME_DIR/docker/containerd/containerd.sock
+export CONTAINERD_ADDRESS=${CONTAINERD_ADDRESS:-$XDG_RUNTIME_DIR/docker/containerd/containerd.sock}
 # Have `ctr` use Docker's `moby` namespace by default
-export CONTAINERD_NAMESPACE=moby
-"
+export CONTAINERD_NAMESPACE=${CONTAINERD_NAMESPACE:-moby}
+'
 
 if [ ! -f "~/.profile" ]; then
   echo "\`~/.profile\` not found. Please add the following lines to your profile:"
