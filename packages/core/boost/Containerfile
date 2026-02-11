@@ -1,6 +1,8 @@
 FROM scratch AS build
 COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-llvm . / 
+COPY --from=stagex/core-mold . / 
+COPY --from=stagex/core-onetbb . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-bzip2 . /
@@ -17,9 +19,9 @@ WORKDIR /boost_${VERSION_UNDER}
 
 ENV CC="clang"
 ENV CXX="clang++"
-ENV CFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security --ld-path=/usr/bin/ld.lld"
+ENV CFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security --ld-path=/usr/bin/ld.mold"
 ENV CXXFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security"
-ENV CXXFLAGS="$CXXFLAGS -D_LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS=1 -D_LIBCPP_ENABLE_HARDENED_MODE=1"
+ENV CXXFLAGS="$CXXFLAGS -D_LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS=1 -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_NONE"
 ENV LDFLAGS="-Wl,--as-needed,-O1,--sort-common"
 ENV abiflags="$(python3-config --abiflags)"
 ENV LIBCC="/usr/lib/libclang_rt.builtins.a"
@@ -40,11 +42,11 @@ RUN --network=none <<-EOF
 		&& ARCH="aarch64" \
 		&& BOOST_ARCH="$TARGETARCH"
 	ln -s "/lib/clang/21/lib/$ARCH-unknown-linux-musl" "/lib/clang/21/lib/$BOOST_ARCH-pc-linux"
-	ln -sf /usr/bin/ld.lld /usr/bin/ld
+	ln -sf /usr/bin/ld.mold /usr/bin/ld
 
 	(
 	 cd "./tools/build"
-	 ./bootstrap.sh --cxxflags="$CXXFLAGS $LDFLAGS"
+	 ./bootstrap.sh --cxxflags="$CXXFLAGS $LDFLAGS" clang
 	)
 
 	(

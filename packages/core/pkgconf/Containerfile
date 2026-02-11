@@ -1,7 +1,7 @@
 FROM scratch AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-llvm . / 
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-make . /

@@ -2,7 +2,9 @@ FROM scratch AS build
 ARG VERSION
 ENV SOURCE_DATE_EPOCH=1
 COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-llvm . / 
+COPY --from=stagex/core-mold . / 
+COPY --from=stagex/core-onetbb . /
 COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-make . /

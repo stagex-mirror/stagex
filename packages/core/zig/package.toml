@@ -1,10 +1,10 @@
 [package]
 name = "zig"
-version = "0.15.1"
+version = "0.15.2"
 description = "General-purpose programming language designed for robustness, optimality, and maintainability"
 
 [sources.zig]
-hash = "816c0303ab313f59766ce2097658c9fff7fafd1504f61f80f9507cd11652865f"
+hash = "d9b30c7aa983fcff5eed2084d54ae83eaafe7ff3a84d8fb754d854165a6e521c"
 format = "tar.xz"
 file = "zig-{version}.{format}"
 mirrors = [ "https://ziglang.org/download/{version}/{file}",]

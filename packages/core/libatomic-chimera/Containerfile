@@ -4,23 +4,15 @@ COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-llvm . / 
 COPY --from=stagex/core-mold . / 
 COPY --from=stagex/core-onetbb . /
-COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-make . /
-ADD fetch/gdbm-${VERSION}.tar.gz .
-WORKDIR /gdbm-${VERSION}
-ENV SOURCE_DATE_EPOCH=1
+ADD fetch/libatomic-chimera-${VERSION}.tar.gz .
+WORKDIR /libatomic-chimera-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
-	./configure \
-		--prefix=/usr \
-		--enable-libgdbm-compat \
-		--disable-largefile \
-		--disable-dependency-tracking \
-		--enable-fast-install
-	make -j "$(nproc)"
-	make DESTDIR=/rootfs install
+	make
+	LIBDIR=/usr/lib DESTDIR=/rootfs make install
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

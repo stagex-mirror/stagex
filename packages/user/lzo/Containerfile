@@ -5,6 +5,7 @@ ADD fetch/lzo-${VERSION}.tar.gz .
 WORKDIR /lzo-${VERSION}
 RUN <<-EOF
 	cmake -B build -G Ninja \
+		-DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
     -DBUILD_TESTING=ON \
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DCMAKE_INSTALL_LIBDIR=lib \

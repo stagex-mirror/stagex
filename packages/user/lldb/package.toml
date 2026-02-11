@@ -1,14 +1,14 @@
 [package]
 name = "lldb"
-version = "20.1.8"
+version = "21.1.8"
 description = "A next generation, high-performance debugger built on LLVM."
 
 [sources.lldb]
-hash = "244cc34ef3d342f02f26c26f1afeb62a9df2ab0178b1baf2077fa43ecdd3186f"
+hash = "e28d73ed3f9e231f798ed66865e652a641eb0666cfa6c7b36e116da92fb72e56"
 file = "lldb-{version}.tar.xz"
 mirrors = [ "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/lldb-{version}.src.tar.xz",]
 
 [sources.cmake]
-hash = "3319203cfd1172bbac50f06fa68e318af84dcb5d65353310c0586354069d6634"
+hash = "85735f20fd8c81ecb0a09abb0c267018475420e93b65050cc5b7634eab744de9"
 file = "cmake-{version}.tar.xz"
 mirrors = [ "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/cmake-{version}.src.tar.xz",]

@@ -1,19 +1,11 @@
 [package]
 name = "spirv-headers"
-version = "1.4.321.0"
+version = "1.4.341.0"
 description = "Machine-readable files for the SPIR-V Registry"
 website = "https://github.com/KhronosGroup/SPIRV-Headers"
 licenses = "GPL-3.0-or-later"
 
 [sources.spirv-headers]
-hash = "5bbea925663d4cd2bab23efad53874f2718248a73dcaf9dd21dff8cb48e602fc"
-format = "tar.gz"
-file = "vulkan-sdk-{version}.{format}"
-mirrors = [ "https://github.com/KhronosGroup/SPIRV-Headers/archive/refs/tags/{file}", ]
-
-# Can drop when we can build a version newer than 1.4.321.0
-[sources.spv_intel_patch]
-version = "532"
-hash = "1ae55155f0819f96f9005c930c365ff63f0a38a1fa2653d8fe79c5510ac8c76c"
-file = "spv_intel_fix.patch"
-mirrors = [ "https://github.com/KhronosGroup/SPIRV-Headers/pull/{version}.patch" ]
+hash = "cab0a654c4917e16367483296b44cdb1d614e3120c721beafcd37e3a8580486c"
+file = "spirv-headers-{version}.tar.gz"
+mirrors = [ "https://github.com/KhronosGroup/SPIRV-Headers/archive/refs/tags/vulkan-sdk-{version}.tar.gz", ]

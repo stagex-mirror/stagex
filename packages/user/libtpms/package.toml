@@ -1,10 +1,10 @@
 [package]
 name = "libtpms"
-version = "0.9.6"
-description = "TODO"
+version = "0.10.2"
+description = "library providing software emulation of a Trusted Platform Module (TPM 1.2 and TPM 2.0)"
 
 [sources.libtpms]
-hash = "2807466f1563ebe45fdd12dd26e501e8a0c4fbb99c7c428fbb508789efd221c0"
+hash = "edac03680f8a4a1c5c1d609a10e3f41e1a129e38ff5158f0c8deaedc719fb127"
 format = "tar.gz"
 file = "libtpms-{version}.{format}"
 mirrors = [ "https://github.com/stefanberger/libtpms/archive/v{version}.{format}",]

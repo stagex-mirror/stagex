@@ -1,10 +1,17 @@
 FROM scratch AS build
 ARG VERSION
+ARG TARGETARCH
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-cmake . /
 COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-libffi . /
-COPY --from=stagex/core-llvm . /
+#COPY --from=stagex/core-libunwind-devel . / 
+#COPY --from=stagex/core-libcxx . / 
+#COPY --from=stagex/core-libcxxabi . / 
+COPY --from=stagex/core-llvm . / 
+COPY --from=stagex/core-llvm20 . / 
+COPY --from=stagex/core-mold . / 
+COPY --from=stagex/core-onetbb . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-openssl . /
@@ -15,8 +22,30 @@ WORKDIR /zig-${VERSION}
 ADD patches/*.patch .
 RUN --network=none <<-EOF
 	set -eux
+	#[[ "$TARGETARCH" == "amd64" ]] && ARCH="x86_64"
+	#[[ "$TARGETARCH" == "arm64" ]] && ARCH="aarch64"
+	#export ARCH
+	#export TARGET=${ARCH}-unknown-linux-musl
+	#export LD=ld.mold
+	#export CXX=/usr/lib/llvm20/bin/clang++
+	#export CC=/usr/lib/llvm20/bin/clang
+	#export LIBCC="/usr/lib/clang/20/lib/${TARGET}/libclang_rt.builtins.a"
+	#export LDFLAGS="--ld-path=/usr/bin/mold -L/usr/lib/bin/llvm20/lib -L/usr/lib"
+	#export LIB_DIR="$(/usr/lib/llvm20/bin/llvm-config --libdir):/usr/lib"
+	#export CFLAGS="$(/usr/lib/llvm20/bin/llvm-config --cflags)"
+	#export CXXFLAGS="$(/usr/lib/llvm20/bin/llvm-config --cxxflags)"
+	#export INCLUDE_DIR="$(/usr/lib/llvm20/bin/llvm-config --includedir):/usr/include"
+	#export PATH="/usr/lib/llvm20/bin/:$PATH"
 	patch -p1 < disable-amdgpu.patch
+	#HACK: zig ignores all env or cmake args to use multiple lib search paths at once
+	cp /usr/lib/libz.so /usr/lib/llvm20/lib/
+	cp /usr/lib/libzstd.so /usr/lib/llvm20/lib/
 	cmake -B build -G Ninja \
+		-DCMAKE_C_COMPILER=/usr/lib/llvm20/bin/clang \
+		-DCMAKE_CXX_COMPILER=/usr/lib/llvm20/bin/clang++ \
+		-DCMAKE_EXE_LINKER_FLAGS="--ld-path=mold" \
+		-DCMAKE_SHARED_LINKER_FLAGS="--ld-path=mold" \
+		-DCMAKE_PREFIX_PATH=/usr/lib/llvm20 \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DCMAKE_VERBOSE_MAKEFILE=ON \
