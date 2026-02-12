@@ -5,6 +5,7 @@ ARG SOURCE_DATE_EPOCH
 
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-ca-certificates . /
+COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-curl . /
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-zlib . /
@@ -13,7 +14,7 @@ COPY --from=stagex/core-sqlite3 . /
 COPY --from=stagex/user-argon2 . /
 COPY --from=stagex/user-libiconv . /
 COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-php-zts . /
+COPY --from=stagex/core-php . /
 
 # Build the composer boot
 ADD fetch/composer-boot-${COMPOSER_BOOT_VERSION}.tar.gz ./composer-boot

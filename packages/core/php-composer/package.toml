@@ -1,11 +1,11 @@
 [package]
 name = "php-composer"
 license = "MIT"
-version = "2.8.12"
+version = "2.9.5"
 description = "A Dependency Manager for PHP"
 
 [sources.php-composer]
-hash = "8f8e915130549abde025d1100b9297366b4f103d0447af7d9588ec4617bb530d"
+hash = "3fac7a83935223c6381542c03c6002439b7842a01897be5fbd957b105768ade5"
 format = "tar.gz"
 file = "composer-{version}.{format}"
 mirrors = [ "https://github.com/composer/composer/archive/refs/tags/{version}.{format}" ]
