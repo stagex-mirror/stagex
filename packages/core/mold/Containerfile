@@ -14,7 +14,17 @@ ADD fetch/mold-${VERSION}.tar.gz .
 WORKDIR /mold-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
-	set -ex
+	set -eux
+
+	# Downscope `third-party` (the libs `mold` vendors itself) to only what's used
+	# TODO: Vendor `blake3` via StageX, as `mold` will automatically prefer a system lib to its own
+	mkdir used-third-party
+	for folder in blake3 xxhash rust-demangle; do
+		mv third-party/$folder used-third-party/
+	done
+	rm -rf third-party
+	mv used-third-party third-party
+
 	cmake -B build -G Ninja \
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DCMAKE_INSTALL_LIBDIR=/usr/lib \
