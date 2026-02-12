@@ -4,8 +4,8 @@ ARG VERSION_UNDER
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-llvm . / 
-COPY --from=stagex/core-mold . / 
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-mold . /
 COPY --from=stagex/core-onetbb . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-libzstd . /

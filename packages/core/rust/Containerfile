@@ -30,7 +30,7 @@ COPY --from=stagex/core-mpc . /
 COPY --from=stagex/core-isl . /
 COPY --from=stagex/core-gmp . /
 COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-mold . / 
+COPY --from=stagex/core-mold . /
 COPY --from=stagex/core-onetbb . /
 COPY --from=stagex/core-llvm17 . /
 COPY <<-'EOF' /etc/profile
@@ -83,9 +83,7 @@ EOF
 #HACK: We import llvm late because it clobbers binutils tools needed ealier in the build
 # remove when binutils tools replaced by llvm are gnu- prefixed by default in package
 # This frees up /usr/bin/ld to point at ld.lld by default, etc
-COPY --from=stagex/core-llvm . / 
-COPY --from=stagex/core-mold . / 
-COPY --from=stagex/core-onetbb . /
+COPY --from=stagex/core-llvm . /
 
 WORKDIR /
 
