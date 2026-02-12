@@ -170,6 +170,8 @@ RUN --network=none <<-EOF
 	mkdir build-libatomic
 	cd build-libatomic
 	clang -std=c99 -fPIC -O2 -c -o atomic.o ../compiler-rt/lib/builtins/atomic.c
+	rm -rf /usr/lib/libatomic*
+	ar rcs /usr/lib/libatomic.a atomic.o
 	ld.lld --shared -o /usr/lib/libatomic.so atomic.o
 	cd ..
 
@@ -251,7 +253,7 @@ RUN --network=none <<-EOF
 	ln -sf /usr/bin/clang /rootfs/usr/bin/cc
 	ln -sf /usr/bin/ld.lld /rootfs/usr/bin/ld
 	ln -sf /usr/lib/clang/21/lib/${TARGET}/libclang_rt.builtins.a /rootfs/usr/lib/libclang_rt.builtins.a
-	cp /usr/lib/libatomic.so /rootfs/usr/lib/
+	cp /usr/lib/libatomic.* /rootfs/usr/lib/
 	strip /rootfs/usr/lib/libLLVM.so.21.1
 EOF
 
