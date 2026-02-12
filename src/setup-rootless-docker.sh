@@ -52,7 +52,8 @@ if [ "$PYTHON3_MINOR_VERSION" -lt 11 ]; then
 fi
 
 # Install rootless Docker
-curl -fsSL https://get.docker.com/rootless | sh
+GET_ROOTLESS_DOCKER=$(curl -fsSL https://get.docker.com/rootless)
+echo "$GET_ROOTLESS_DOCKER" | sh
 
 # Install BuildKit (specifically, `buildx`)
 BUILDKIT_VERSION=0.31.1
