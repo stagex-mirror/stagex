@@ -51,18 +51,15 @@ if [ "$PYTHON3_MINOR_VERSION" -lt 11 ]; then
   exit 1
 fi
 
+# if [ ! -f "./digests/user.txt" ]; then
+#  echo "Could not find \`./digests/user.txt\`. Please run this from the root of the Stageˣ repository."
+#  exit 1
+# fi
+# BUILDKIT_DIGEST=$(grep " user-buildkit$" "./digests/user.txt" | cut -d' ' -f1)
+
 # Install rootless Docker
 GET_ROOTLESS_DOCKER=$(curl -fsSL https://get.docker.com/rootless)
 echo "$GET_ROOTLESS_DOCKER" | sh
-
-# Install BuildKit (specifically, `buildx`)
-BUILDKIT_VERSION=0.31.1
-BUILDX_FILE=buildx-v${BUILDKIT_VERSION}.linux-amd64
-BUILDX_PATH=~/.docker/cli-plugins/docker-buildx
-
-mkdir -p ~/.docker/cli-plugins
-wget https://github.com/docker/buildx/releases/download/v${BUILDKIT_VERSION}/$BUILDX_FILE -O $BUILDX_PATH
-chmod +x $BUILDX_PATH
 
 # Configure the user's profile
 CONFIG='
@@ -82,3 +79,9 @@ if [ ! -f "~/.profile" ]; then
   exit 2
 fi
 echo "$CONFIG" >> ~/.profile
+
+# TODO: Uncomment when `stagex/user-buildkit` is packaged as necessary for this.
+# echo "Please install BuildKit via running the following command, when your Docker daemon is up:"
+# echo "\`docker plugin install stagex/user-buildkit@sha256:$BUILDKIT_DIGEST\`"
+
+echo "Please manually install BuildKit to complete the requirements for Stageˣ."
