@@ -267,11 +267,11 @@ RUN ./build 1.91.1 1.90.0 ""
 ADD fetch/rustc-1.92.0-src.tar.gz .
 RUN ./build 1.92.0 1.91.1 ""
 
-ADD fetch/rustc-1.93.0-src.tar.gz .
+ADD fetch/rustc-1.93.1-src.tar.gz .
 
 # Patch the default for `musl` targets to be dynamically, not statically, linked
 RUN <<-EOF
-	for file in $(find ./rustc-1.93.0-src/compiler/rustc_target/src/spec/targets/ -type f | grep "musl"); do
+	for file in $(find ./rustc-1.93.1-src/compiler/rustc_target/src/spec/targets/ -type f | grep "musl"); do
 		sed -i s/"crt_static_default = true"/"crt_static_default = false"/ $file
 	done
 EOF
