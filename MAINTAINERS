@@ -65,6 +65,12 @@ website = "https://panekj.eu"
 fediverse = "@pj@donotsta.re"
 keyoxide = "https://keyoxide.org/aspe:keyoxide.org:WNHRCLJSCUR4UWCJDOSZAPFPDM"
 
+[people.kronzoew]
+name = "Zoë Finja Emilia Kron
+location = "North Rhine-Westphalia, Germany"
+email = ["z.kron@lugges.eu", "zoe.kron@posteo.de"]
+website = "https://kron.fi"
+
 [keys]
 
 [keys.lancevick.personal]
@@ -132,6 +138,13 @@ interaction = true
 
 [keys.panekj.KY1]
 id = "C8635605A11CF6A3CB53C707D5E8A1F82F3BDA9D"
+algorithm = "ED25519"
+offline-ca = true
+backup = false
+interaction = true
+
+[keys.kronzoew.personal]
+id = "677C7924397810FDD3F922C33FC71170CB9E8963"
 algorithm = "ED25519"
 offline-ca = true
 backup = false
@@ -256,3 +269,15 @@ ghz = 2.2
 cores = 12
 os = "Linux"
 runtime = "Linux"
+
+[machines.kronzoew.main]
+owner = "Zoë Finja Emilia Kron"
+location = "Europe"
+type = "metal"
+arch = "x86_64"
+brand = "AMD"
+model = "Ryzen 7"
+ghz = 4.83
+cores = 16
+os = "Fedora"
+runtime = "Docker"
