@@ -1,11 +1,11 @@
 [package]
 name = "spirv-llvm-translator"
-version = "20.1.7"
+version = "f57c44c79895f35d7d02a2ee716148c48a73ec3f"
 description = "Library for bi-directional translation between SPIR-V and LLVM IR"
 website = "https://github.com/KhronosGroup/SPIRV-LLVM-Translator"
 license = "NCSA"
 
 [sources.spirv-llvm-translator]
-hash = "dd8a018becb2ed3647478744549b09372308f763d37d5fcde137fd9e129a7354"
+hash = "cdff3e1f5a09172f899d3f64934fb422e4772851703b0f397da4befe5afb868a"
 file = "llvm-translator-{version}.tar.gz"
-mirrors = [ "https://github.com/KhronosGroup/SPIRV-LLVM-Translator/archive/v{version}/{file}", ]
+mirrors = [ "https://github.com/KhronosGroup/SPIRV-LLVM-Translator/archive/{version}.tar.gz", ]

@@ -294,7 +294,7 @@ RUN --network=none <<-EOF
 	# Before installing _solely_ `libgcc_s.so.1`, not the just-built copies of any other libraries
 	rm -rf /rootfs
 	mkdir -p /rootfs/usr/lib
-	cp libgcc-libs/usr/lib/libgcc_s.so.1 /rootfs/usr/lib/
+	cp libgcc-libs/usr/lib/${ARCH}-unknown-linux-gnu/libgcc_s.so /rootfs/usr/lib/
 EOF
 
 FROM stagex/core-filesystem AS package-llvm

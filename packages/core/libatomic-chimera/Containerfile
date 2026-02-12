@@ -8,16 +8,11 @@ COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-make . /
-ADD fetch/lmdb-${VERSION}.tar.gz .
-WORKDIR /openldap-LMDB_${VERSION}/libraries/liblmdb
-COPY *.patch .
+ADD fetch/libatomic-chimera-${VERSION}.tar.gz .
+WORKDIR /libatomic-chimera-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
-	ln -s /usr/bin/clang /usr/bin/gcc
-	patch -p1 lmdb-make.patch
-	export CFLAGS="-O2 -fPIC"
-	make -j "$(nproc)"
-	make DESTDIR=/rootfs install
+	make
+	LIBDIR=/usr/lib DESTDIR=/rootfs make install
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

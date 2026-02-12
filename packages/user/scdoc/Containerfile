@@ -4,7 +4,7 @@ ADD fetch/scdoc-${VERSION}.tar.gz .
 WORKDIR /scdoc-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
-	make PREFIX="/usr" -j "$(nproc)"
+	make PREFIX="/usr"
 	make DESTDIR=/rootfs install
 EOF
 FROM stagex/core-filesystem AS package

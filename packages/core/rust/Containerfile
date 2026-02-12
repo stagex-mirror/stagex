@@ -30,6 +30,8 @@ COPY --from=stagex/core-mpc . /
 COPY --from=stagex/core-isl . /
 COPY --from=stagex/core-gmp . /
 COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-mold . /
+COPY --from=stagex/core-onetbb . /
 COPY --from=stagex/core-llvm17 . /
 COPY <<-'EOF' /etc/profile
 	set -eux
@@ -63,7 +65,7 @@ RUN --network=none <<-EOF
 	export CXX=/usr/bin/g++
 	mkdir -p /etc/clang
 	echo "--gcc-install-dir=/usr/lib/gcc/${ARCH}-linux-musl/${BOOTSTRAP_GCC_VERSION}/" > /etc/clang/${ARCH}-unknown-linux-musl.cfg
-	ln -sf ${LLVM_BINDIR}/ld.lld /usr/bin/ld
+	ln -sf /usr/bin/ld.mold /usr/bin/ld
 	patch -p1 < fix-lib-linking.patch
 	patch -p1 < add-missing-std-lib-includes.patch
 	make
@@ -107,10 +109,10 @@ COPY --chmod=0755 <<-'EOF' build
 	export OBJDUMP=${LLVM_BINDIR}/llvm-objdump
 	export SIZE=${LLVM_BINDIR}/llvm-size
 	export LIBCC="/usr/lib/clang/${LLVM_VERSION}/lib/${TARGET}/libclang_rt.builtins.a"
-	export LDFLAGS="-fuse-ld=${LLVM_BINDIR}/ld.lld"
+	export LDFLAGS="-fuse-ld=/usr/bin/ld.mold"
 	ln -sf ${LLVM_BINDIR}/clang++ /usr/bin/c++
 	ln -sf ${LLVM_BINDIR}/clang /usr/bin/cc
-	ln -sf ${LLVM_BINDIR}/ld.lld /usr/bin/ld
+	ln -sf /usr/bin/mold /usr/bin/ld
 	cd rustc-${TARGET_VERSION}-src
 	[[ -z "$PATCHES" ]] || for name in ${PATCHES//,/ }; do
 		patch -p1 < ../${name}.patch
@@ -120,7 +122,7 @@ COPY --chmod=0755 <<-'EOF' build
 	#
 	# - `embed-bitcode-false` doesn't emit LLVM bitcode with the object files, as unnecessary.
 	# - `incremental=false` doesn't build a cache for incremental builds, as unnecessary here.
-	RUSTFLAGS="-Cembed-bitcode=false -Cincremental=false"
+	RUSTFLAGS="-Clinker=clang -Clink-arg=-Wl,-fuse-ld=mold -Cembed-bitcode=false -Cincremental=false"
 	# For intermediary compilers, which aren't part of the committed output, be more aggressive
 	if [ ! "$TARGET_VERSION" = "$VERSION" ]; then
 		# Enable native codegen

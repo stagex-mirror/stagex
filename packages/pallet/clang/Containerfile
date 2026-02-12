@@ -9,4 +9,7 @@ COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-libffi . /
 COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-mold . /
+COPY --from=stagex/core-onetbb . /
+COPY --from=stagex/core-libatomic-chimera . /
 ENTRYPOINT ["/usr/bin/clang"]

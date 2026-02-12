@@ -11,7 +11,6 @@ WORKDIR /libdrm-${VERSION}
 RUN --network=none <<-EOF
 	meson setup \
 		--prefix=/usr \
-		-Db_lto=true \
 		-Dintel=enabled \
 		-Dradeon=enabled \
 		-Damdgpu=enabled \

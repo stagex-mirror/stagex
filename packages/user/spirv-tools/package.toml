@@ -1,19 +1,11 @@
 [package]
 name = "spirv-tools"
-version = "1.4.321.0"
+version = "1.4.341.0"
 description = "API and commands for processing SPIR-V modules"
 website = "https://github.com/KhronosGroup/SPIRV-LLVM-Tools"
 license = "Apache-2.0"
 
 [sources.spirv-tools]
-hash = "8327fb8f3e9472346a004c91dbb83a6e5f3b36c3846c142cf8c0dc8fac8710f3"
-format = "tar.gz"
-file = "vulkan-sdk-{version}.{format}"
-mirrors = [ "https://github.com/KhronosGroup/SPIRV-Tools/archive/refs/tags/{file}", ]
-
-# Can drop when we can build a version newer than 1.4.321.0
-[sources.spv_intel_patch]
-version = "6195"
-hash = "dbef8e1106738d0ee1d01aca44a67ba95c991bbe215dd98b3f47933db2a7f40b"
-file = "spv_intel_fix.patch"
-mirrors = [ "https://github.com/KhronosGroup/SPIRV-tools/pull/{version}.patch" ]
+hash = "15bfb678138cdf9cd1480dfb952547bbb66b763a735b6d5582578572f5c2e6f9"
+file = "spirv-tools-{version}.tar.gz"
+mirrors = [ "https://github.com/KhronosGroup/SPIRV-Tools/archive/refs/tags/vulkan-sdk-{version}.tar.gz", ]
