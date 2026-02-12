@@ -11,7 +11,7 @@ fi
 
 CATEGORY="$1"
 PACKAGE="$2"
-OUTDIR="out/${PACKAGE}"
+OUTDIR="out/${CATEGORY}-${PACKAGE}"
 CONTAINERFILE="packages/${CATEGORY}/${PACKAGE}/Containerfile"
 
 # Check if the containerfile exists
@@ -45,11 +45,11 @@ for entry in "${lines[@]}"; do
 
   # Clean build output
   echo "Cleaning ${OUTDIR}..."
-  rm -rf "${OUTDIR}"
+  rm -rf "${OUTDIR}" out/targets.mk
 
   # Try to build
   echo "Building package '${PACKAGE}'..."
-  if ! make "${PACKAGE}"; then
+  if ! make NOCACHE=1 "${PACKAGE}"; then
     echo "Build failed with line ${lineno} commented. Reverting."
     sed -i "${lineno}s/^# TEMP_COMMENTED: //" "${CONTAINERFILE}"
     continue
