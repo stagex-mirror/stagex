@@ -244,28 +244,37 @@ COPY --chmod=0755 <<-'EOF' build
 		sed -i s/'"--frozen"'/'"--offline"'/ "$file"
 	done
 
+	export RUSTFLAGS="${RUSTFLAGS:-}"
+
 	# Tune how `rustc` is built for a faster build process.
 	#
 	# - `incremental=false` doesn't build a cache for incremental builds, as unnecessary here.
-	RUSTFLAGS="-Clinker=clang -Clink-arg=-Wl,-fuse-ld=mold -Cincremental=false"
+	export RUSTFLAGS="-Clinker=clang -Clink-arg=-Wl,-fuse-ld=mold -Cincremental=false"
 	# For intermediary compilers, which aren't part of the committed output, be more aggressive
 	if [ ! "$TARGET_VERSION" = "$VERSION" ]; then
-		# Disable unnecessarily embedded LLVM bitcode
-		RUSTFLAGS="$RUSTFLAGS -Cembed-bitcode=false"
+		# Disable generating/embedding LLVM bitcode within the objects as it won't be used
+		export RUSTFLAGS="$RUSTFLAGS -Cembed-bitcode=false"
 
-		# Enable native codegen
-		RUSTFLAGS="$RUSTFLAGS -Ctarget-cpu=native"
+		# Enable native codegen for versions greater than 1.93
+		# https://github.com/rust-lang/rust/pull/148841 prevents doing do for some prior versions.
+		if [ $(printf "%s" "$BUILD_VERSION" | cut -d'.' -f2) -ge 93 ]; then
+			export RUSTFLAGS="$RUSTFLAGS -Ctarget-cpu=native"
+		fi
 
 		# Set `codegen-units` to `nproc`, which will break reproducible builds as Rust builds are only
 		# deterministic with a consistent amount of units.
-		RUSTFLAGS="$RUSTFLAGS -Ccodegen-units=$(nproc)"
+		export RUSTFLAGS="$RUSTFLAGS -Ccodegen-units=$(nproc)"
 
 		# Also, if the compiler is sufficiently modern, enable the threaded frontend. This was available
 		# under nightly as soon ~1.75, but we delay enabling it until it was more tested and stable.
-		# Note the usage of threads produces a non-deterministic output without flags such as
+		# Note the usage of threads may produce a non-deterministic output without flags such as
 		# `-Zcodegen-source-order` to sort the outputs after their compilation.
 		if [ $(printf "%s" "$BUILD_VERSION" | cut -d'.' -f2) -ge 85 ]; then
-			RUSTFLAGS="$RUSTFLAGS -Zthreads=$(nproc)"
+			THREADS_TO_USE=8
+			if [ $(nproc) -lt $THREADS_TO_USE ]; then
+				THREADS_TO_USE=$(nproc)
+			fi
+			export RUSTFLAGS="$RUSTFLAGS -Zthreads=$THREADS_TO_USE"
 		fi
 	fi
 
