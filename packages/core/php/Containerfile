@@ -1,77 +1,136 @@
 FROM scratch AS build
 ARG VERSION
-ENV PKG_NAME=php84
+ARG SOURCE_DATE_EPOCH=1
+
 COPY --from=stagex/core-automake . /
-COPY --from=stagex/core-bc . /
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-libzstd . /
-COPY --from=stagex/core-llvm . /
-COPY --from=stagex/core-mold . /
-COPY --from=stagex/core-onetbb . /
 COPY --from=stagex/core-curl . /
-COPY --from=stagex/core-bison . /
 COPY --from=stagex/core-pkgconf . /
 COPY --from=stagex/core-autoconf . /
 COPY --from=stagex/core-make . /
+COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-mold . /
 COPY --from=stagex/core-onetbb . /
 COPY --from=stagex/core-openssl . /
-COPY --from=stagex/core-expat . /
 COPY --from=stagex/core-libxml2 . /
-COPY --from=stagex/core-re2c . /
 COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-libffi . /
 COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-m4 . /
 COPY --from=stagex/core-zlib . /
-COPY --from=stagex/core-pcre2 . /
-COPY --from=stagex/core-bzip2 . /
-COPY --from=stagex/core-libedit . /
 COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/core-sqlite3 . /
+COPY --from=stagex/user-argon2 . /
+COPY --from=stagex/user-libsodium . /
+COPY --from=stagex/user-libiconv . /
+COPY --from=stagex/core-bzip2 . /
+
 ADD fetch/php-${VERSION}.tar.gz .
-WORKDIR /php-src-php-${VERSION}
+
+WORKDIR /php-${VERSION}
 COPY *.patch .
-ENV SOURCE_DATE_EPOCH=1
-ENV PHP_UNAME="Linux stagex"
+
+ENV SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH
+ENV PHP_UNAME="Linux StageX"
+ENV PHP_BUILD_PROVIDER="StageX"
 ENV PHP_BUILD_SYSTEM="${PHP_UNAME}"
 ENV CC=clang
 ENV CXX=clang++
-ENV EXTENSION_DIR=/usr/lib/modules
-ENV CFLAGS="-O2"
-ENV CXXFLAGS="-O2"
+ENV EXTENSION_DIR=/usr/lib/php-modules
+ENV CFLAGS="-march=x86-64 -mtune=generic -fstack-protector-strong -fpic -fpie -O2 -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
+ENV CXXFLAGS="$CFLAGS"
+ENV LDFLAGS="-Wl,-O1, -pie"
+
 RUN --network=none <<-EOF
 	set -eux
-	patch -p1 fix-lfs64-2.patch
-	patch -p1 fix-tests-devserver.patch
-	patch -p1 includedir.patch
-	patch -p1 install-pear.patch
-	patch -p1 php83-fpm-verison-suffix.patch
-	patch -p1 phpinfo-avif.patch
-	patch -p1 sharedir.patch
+
+	patch -p1 < remove-timestamps-from-phar.patch
+	patch -p1 < file-order-phar-pack.patch
+
+	export rootfs="rootfs"
 	./buildconf --force
 	./configure \
-		--prefix=/usr \
-		--program-suffix=php83#php \
+		--with-config-file-path=/etc/php \
+		--with-config-file-scan-dir=/etc/php/conf.d \
+		--enable-option-checking=fatal \
 		--libdir=/usr/lib \
-		--datadir=/usr/share/php83 \
-		--sysconfdir=/etc/php83 \
+		--datadir=/usr/share/php \
 		--localstatedir=/var \
 		--with-layout=GNU \
+		--prefix=/usr \
 		--with-pic \
-		--with-config-file-path=/etc/php83 \
-		--with-config-file-scan-dir=/etc/php83/conf.d \
-		--disable-rpath \
-		--disable-short-tags \
 		--disable-all \
-		--enable-bcmath=shared \
+		--disable-zend-signals \
 		--with-bz2=shared \
-		--enable-calendar=shared \
-		--enable-ctype=shared \
-		--with-curl=shared
+		--with-curl=shared \
+		--with-password-argon2 \
+		--with-sodium=shared \
+		--with-iconv=/usr \
+		--with-openssl=shared \
+		--enable-mysqlnd \
+		--enable-fpm
 	make -j "$(nproc)"
-	make INSTALL_ROOT=/rootfs install
-	rm -rf /rootfs/var/run
+	make INSTALL_ROOT="/${rootfs}" install
+	rm -rf "/${rootfs}/var/run"
+	install -vDm644 -t "/${rootfs}/usr/share/licenses/php" LICENSE
+	unset rootfs
+
+	make distclean
+
+	export rootfs="rootfs-zts"
+	./buildconf --force
+	./configure \
+		--with-config-file-path=/etc/php \
+		--with-config-file-scan-dir=/etc/php/conf.d \
+		--enable-option-checking=fatal \
+		--libdir=/usr/lib \
+		--datadir=/usr/share/php \
+		--localstatedir=/var \
+		--with-layout=GNU \
+		--prefix=/usr \
+		--with-pic \
+		--disable-all \
+		--disable-zend-signals \
+		--with-bz2=shared \
+		--with-curl=shared \
+		--with-password-argon2 \
+		--with-sodium=shared \
+		--with-iconv=/usr \
+		--with-openssl=shared \
+		--enable-mysqlnd \
+		--enable-zts
+	make -j "$(nproc)"
+	make INSTALL_ROOT="/${rootfs}" install
+	rm -rf "/${rootfs}/var/run"
+	install -vDm644 -t "/${rootfs}/usr/share/licenses/php" LICENSE
+	unset rootfs
+
 EOF
-FROM stagex/core-filesystem AS package
-COPY --from=build /rootfs/ /
+FROM stagex/core-filesystem AS package-php
+COPY --from=build /rootfs/usr/bin/php /usr/bin/php
+
+FROM stagex/core-filesystem AS package-php-zts
+COPY --from=build /rootfs-zts/usr/bin/php /usr/bin/php
+
+FROM stagex/core-filesystem AS package-php-fpm
+COPY --from=build /rootfs/usr/sbin/php-fpm /usr/bin/php-fpm
+
+##############################
+####### PHP Extensions #######
+##############################
+
+FROM stagex/core-filesystem AS package-php-ext-curl
+COPY --from=build /rootfs/usr/lib/php-modules/curl.so /usr/lib/php-modules/curl.so
+
+FROM stagex/core-filesystem AS package-php-ext-openssl
+COPY --from=build /rootfs/usr/lib/php-modules/openssl.so /usr/lib/php-modules/openssl.so
+
+##############################
+### PHP Extensions w. ZTS ####
+##############################
+
+FROM stagex/core-filesystem AS package-php-ext-curl-zts
+COPY --from=build /rootfs-zts/usr/lib/php-modules/curl.so /usr/lib/php-modules/curl.so
+
+FROM stagex/core-filesystem AS package-php-ext-openssl-zts
+COPY --from=build /rootfs-zts/usr/lib/php-modules/openssl.so /usr/lib/php-modules/openssl.so

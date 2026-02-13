@@ -1,10 +1,21 @@
 [package]
 name = "php"
-version = "8.4.4"
-description = "TODO"
+version = "8.5.3"
+description = "A popular general-purpose scripting language that is especially suited to web development."
+license = "PHP-3.0.1"
+website = "https://www.php.net/"
+subpackages = [
+  "php",
+  "php-zts",
+  "php-fpm",
+  "php-ext-curl",
+  "php-ext-openssl",
+  "php-ext-curl-zts",
+  "php-ext-openssl-zts"
+]
 
 [sources.php]
-hash = "b94a8a210441463cd337bff80dd5d52a7f97b6f6a7d909d061518ebf392aac6c"
+hash = "402654d99b4beda602d4daec4f1cd39aafdacf5923e3e947da87392826660146"
 format = "tar.gz"
 file = "php-{version}.{format}"
-mirrors = [ "https://github.com/php/php-src/archive/refs/tags/{file}",]
+mirrors = [ "https://www.php.net/distributions/{file}" ]
