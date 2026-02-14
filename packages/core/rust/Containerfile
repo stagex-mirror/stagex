@@ -2,12 +2,11 @@ FROM scratch AS build
 ARG VERSION
 ARG TARGETARCH
 ARG MRUSTC_VERSION
-ENV BOOTSTRAP_RUST_VERSION="1.74"
-ENV BOOTSTRAP_GCC_VERSION="15.2.0"
+ENV BOOTSTRAP_RUST_VERSION="1.90"
 COPY --from=stagex/core-filesystem . /
 COPY --from=stagex/core-busybox . /
 # As `/bin/bash` is required by `mrustc`, wrap BusyBox's Bourne-inspired shell (`hush`) as `bash`
-RUN printf "%s\n%s\n" '#!/bin/sh' 'hush "$@"' > /usr/bin/bash && chmod +x /usr/bin/bash
+RUN --network=none printf "%s\n%s\n" '#!/bin/sh' 'hush "$@"' > /usr/bin/bash && chmod +x /usr/bin/bash
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-python . /
 COPY --from=stagex/core-py-setuptools . /
@@ -20,11 +19,9 @@ COPY --from=stagex/core-curl . /
 COPY --from=stagex/core-ca-certificates . /
 COPY --from=stagex/core-libffi . /
 COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-clang-rt-devel . /
-COPY --from=stagex/core-libunwind . /
-COPY --from=stagex/core-libcxx . /
-COPY --from=stagex/core-libcxxabi . /
 COPY --from=stagex/core-binutils . /
+# `busybox patch` isn't compatible with `mrustc`'s patch files. GNU `patch` is required
+COPY --from=stagex/core-patch . /
 COPY --from=stagex/core-mpfr . /
 COPY --from=stagex/core-mpc . /
 COPY --from=stagex/core-isl . /
@@ -32,7 +29,8 @@ COPY --from=stagex/core-gmp . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-mold . /
 COPY --from=stagex/core-onetbb . /
-COPY --from=stagex/core-llvm17 . /
+COPY --from=stagex/core-llvm20 . /
+COPY --from=stagex/core-llvm . /
 COPY <<-'EOF' /etc/profile
 	set -eux
 	[[ "$TARGETARCH" == "amd64" ]] && ARCH="x86_64"
@@ -47,43 +45,91 @@ COPY <<-'EOF' /etc/profile
 EOF
 SHELL ["/bin/sh","-l","-c"]
 
+# Rust defaults to static linking for `musl` targets when we want dynamic linking.
+ENV RUSTFLAGS="-Ctarget-feature=-crt-static"
+
 ADD fetch/mrustc-${MRUSTC_VERSION}.tar.gz .
+ADD fetch/*.patch .
 WORKDIR /mrustc-${MRUSTC_VERSION}
 COPY fetch/rustc-${BOOTSTRAP_RUST_VERSION}.0-src.tar.gz .
-ADD patches/add-missing-std-lib-includes.patch .
-ADD patches/fix-lib-linking.patch .
-ENV LLVM_VERSION="17"
+ENV LLVM_VERSION="20"
 RUN --network=none <<-EOF
 	export RUSTC_VERSION="${BOOTSTRAP_RUST_VERSION}.0"
 	export MRUSTC_TARGET_VER="${BOOTSTRAP_RUST_VERSION}"
 	export RUSTC_INSTALL_BINDIR="bin"
 	export LIBGIT2_SYS_USE_PKG_CONFIG="1"
 	export OUTDIR_SUF=
-	export CXXFLAGS_EXTRA="-L/usr/lib/gcc/${ARCH}-linux-musl/${BOOTSTRAP_GCC_VERSION}/"
 	export RUSTC_TARGET="${TARGET}"
-	export CC=/usr/bin/gcc
-	export CXX=/usr/bin/g++
-	mkdir -p /etc/clang
-	echo "--gcc-install-dir=/usr/lib/gcc/${ARCH}-linux-musl/${BOOTSTRAP_GCC_VERSION}/" > /etc/clang/${ARCH}-unknown-linux-musl.cfg
-	ln -sf /usr/bin/ld.mold /usr/bin/ld
-	patch -p1 < fix-lib-linking.patch
-	patch -p1 < add-missing-std-lib-includes.patch
-	make
+	export LD="mold"
+	# Because `g++` didn't respect `$LD, -fuse-ld=mold`, replace `ld` entirely
+	ln -sf /usr/bin/mold /usr/bin/ld
+	export LDFLAGS="${LDFLAGS:-} -L/usr/lib"
+	export CFLAGS="${CFLAGS:-} -O2 -fuse-ld=mold"
+	export CXXFLAGS="${CXXFLAGS:-} -O2 -fuse-ld=mold"
+	export CC=clang
+	# Remove `gcc`-specific flags since we're using `clang`
+	export CCC_OVERRIDE_OPTIONS="x-fno-tree-sra"
+	# `g++` is required to build `mrustc` itself due to an issue `clang++` had with `mrustc`'s macros
+	export CXX=g++
+
+	# Revert the recently 'optimized' type inference as it segfaults
+	patch -p1 --reverse -i ../99d9bd0c788b0c72fc2f4fee6187a462ceb059f2.patch
+	# Apply the upstream fixes to `run_rustc`
+	patch -p1 -i ../0b8ce630d0cabe07bc42632015c1fe558dc36af8.patch
+	patch -p1 -i ../df7034215681d6562afea0ecc3c10847f67d27d7.patch
+
+	# Build `mrustc`
+	# We're much more aggressive with optimizing `mrustc` due to how long it takes
+	make CXXFLAGS="$CXXFLAGS -O3"
+	# Apply `mrustc`'s patches to the `rustc` source so it'll build with `mrustc`
 	make RUSTCSRC
-	make LIBS
+
+	# `mrustc` wants to build the LLVM toolchain vendored within Rust. We don't.
+	# Shim `cmake` to a NOP so `mrustc` believes `cmake` worked without issue
+	echo "#!/bin/sh" > /usr/bin/cmake
+	echo "exit 0" >> /usr/bin/cmake
+	chmod +x /usr/bin/cmake
+	# Shim the build directory to our existing LLVM toolchain
+	ln -s $LLVM_ROOT /mrustc-rust${BOOTSTRAP_RUST_VERSION}_bootstrapped/rustc-${BOOTSTRAP_RUST_VERSION}.0-src/build
+	# Stub a `Makefile` so `make` doesn't error when it tries to actually build LLVM (after `cmake`)
+	echo "all:" > $LLVM_ROOT/Makefile
+
+	# Compile the Rust standard library
+	make -f minicargo.mk LIBS
+
+	# Move to `clang++` now that we're done compiling `mrustc`, as required by some Rust crates
 	export CXX="${LLVM_BINDIR}/clang++"
-	make -f minicargo.mk LLVM_CONFIG=${LLVM_CONFIG} output/cargo
-	make -f minicargo.mk LLVM_CONFIG=${LLVM_CONFIG} output/rustc
-	ln -sf /usr/bin/gcc /usr/bin/cc
-	make -C run_rustc LLVM_CONFIG=${LLVM_CONFIG}
+
+	# `gcc` is required here due to the way some ASM is formatted when compiling `rustix`
+	export CC=gcc
+	make -f minicargo.mk output/rustc
+	make -f minicargo.mk output/cargo
+	export CC=clang
+
+	# Build a dynamically-linked `rustc`
+	sed -i s/'RUSTFLAGS="'/'RUSTFLAGS="-Ctarget-feature=-crt-static '/ run_rustc/Makefile
+
+	RUN_RUSTC_OUTPUT=/mrustc-rust${BOOTSTRAP_RUST_VERSION}_bootstrapped/run_rustc/output
+	# Populate what will be Rust's self-contained toolchain with the necessary object files
+	for prefix in prefix-s prefix-2 prefix; do
+		SELF_CONTAINED=$RUN_RUSTC_OUTPUT/$prefix/lib/rustlib/${TARGET}/lib/self-contained/
+		mkdir -p $SELF_CONTAINED
+		for file in rcrt1.o crti.o crtn.o; do
+			cp /usr/lib/$file $SELF_CONTAINED
+		done
+		for file in crtbeginS.o crtendS.o; do
+			cp /usr/lib/gcc/${ARCH}-linux-musl/$(gcc -dumpversion)/$file $SELF_CONTAINED
+		done
+	done
+
+	# We also use `gcc` here due to _some_ issue finding the necessary object files...
+	export CC=gcc
+	make -C run_rustc
+	export CC=clang
+
 	mkdir /rust-${RUSTC_VERSION}
 	cp -R run_rustc/output/prefix /rust-${RUSTC_VERSION}/usr
 EOF
-
-#HACK: We import llvm late because it clobbers binutils tools needed ealier in the build
-# remove when binutils tools replaced by llvm are gnu- prefixed by default in package
-# This frees up /usr/bin/ld to point at ld.lld by default, etc
-COPY --from=stagex/core-llvm . /
 
 WORKDIR /
 
@@ -204,80 +250,25 @@ COPY --chmod=0755 <<-'EOF' build
 	[ "${TARGET_VERSION}" == "${VERSION}" ] || rm -rf rustc-${TARGET_VERSION}-src /rust-${BUILD_VERSION}
 EOF
 
-# HACK: Required by Rust 1.75.0
-# https://github.com/rust-lang/rust/issues/117885
-RUN mkdir -p $HOME/.cargo/registry/src/index.crates.io-6f17d22bba15001f/
-ADD fetch/rustc-1.75.0-src.tar.gz .
-RUN ./build 1.75.0 1.74.0
-
-ADD fetch/rustc-1.76.0-src.tar.gz .
-RUN ./build 1.76.0 1.75.0
-
-ADD fetch/rustc-1.77.0-src.tar.gz .
-RUN ./build 1.77.0 1.76.0
-
-ADD fetch/rustc-1.78.0-src.tar.gz .
-RUN ./build 1.78.0 1.77.0
-
-ADD fetch/rustc-1.79.0-src.tar.gz .
-RUN ./build 1.79.0 1.78.0
-
-ADD fetch/rustc-1.80.0-src.tar.gz .
-RUN ./build 1.80.0 1.79.0
-
-ADD fetch/rustc-1.81.0-src.tar.gz .
-RUN ./build 1.81.0 1.80.0
-
-ADD fetch/rustc-1.82.0-src.tar.gz .
-RUN ./build 1.82.0 1.81.0
-
-ENV LLVM_VERSION="19"
-COPY --from=stagex/core-llvm19 . /
-ADD fetch/rustc-1.83.0-src.tar.gz .
-RUN ./build 1.83.0 1.82.0
-
-ADD fetch/rustc-1.84.0-src.tar.gz .
-RUN ./build 1.84.0 1.83.0
-
-ADD fetch/rustc-1.85.0-src.tar.gz .
-# HACK: rust 1.85.0 literally cannot build if .git does not exist. No idea why
-RUN mkdir -p rustc-1.85.0-src/.git
-RUN ./build 1.85.0 1.84.0
-
-ADD fetch/rustc-1.86.0-src.tar.gz .
-RUN ./build 1.86.0 1.85.0
-
-ADD fetch/rustc-1.87.0-src.tar.gz .
-RUN ./build 1.87.0 1.86.0
-
-ADD fetch/rustc-1.88.0-src.tar.gz .
-RUN ./build 1.88.0 1.87.0 ""
-
-ADD fetch/rustc-1.89.0-src.tar.gz .
-RUN ./build 1.89.0 1.88.0 ""
-
-ADD fetch/rustc-1.90.0-src.tar.gz .
-RUN ./build 1.90.0 1.89.0 ""
-
 ENV LLVM_VERSION="system"
 
 ADD fetch/rustc-1.91.1-src.tar.gz .
-RUN ./build 1.91.1 1.90.0 ""
+RUN --network=none ./build 1.91.1 1.90.0 ""
 
 ADD fetch/rustc-1.92.0-src.tar.gz .
-RUN ./build 1.92.0 1.91.1 ""
+RUN --network=none ./build 1.92.0 1.91.1 ""
 
 ADD fetch/rustc-1.93.1-src.tar.gz .
 
 # Patch the default for `musl` targets to be dynamically, not statically, linked
-RUN <<-EOF
-	for file in $(find ./rustc-1.93.1-src/compiler/rustc_target/src/spec/targets/ -type f | grep "musl"); do
+RUN --network=none <<-EOF
+	for file in $(find ./rustc-${VERSION}-src/compiler/rustc_target/src/spec/targets/ -type f | grep "musl"); do
 		sed -i s/"crt_static_default = true"/"crt_static_default = false"/ $file
 	done
 EOF
 
-RUN ./build ${VERSION} 1.92.0 cargo,clippy,rustdoc,rustfmt,rust-demangler,src,wasm-component-ld
-RUN <<-EOF
+RUN --network=none ./build ${VERSION} 1.92.0 cargo,clippy,rustdoc,rustfmt,rust-demangler,src,wasm-component-ld
+RUN --network=none <<-EOF
 	mv /rust-${VERSION} /rootfs
 	cd /rootfs/usr/lib/rustlib
 	rm install.log
