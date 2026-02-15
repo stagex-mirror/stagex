@@ -8,6 +8,8 @@ subpackages = [
   "php",
   "php-zts",
   "php-fpm",
+  "php-ext-filter",
+  "php-ext-phar",
   "php-ext-curl",
   "php-ext-openssl",
   "php-ext-curl-zts",

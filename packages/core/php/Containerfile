@@ -67,6 +67,8 @@ RUN --network=none <<-EOF
 		--with-sodium=shared \
 		--with-iconv=/usr \
 		--with-openssl=shared \
+		--enable-filter=shared \
+		--enable-phar=shared \
 		--enable-mysqlnd \
 		--enable-fpm
 	make -j "$(nproc)"
@@ -97,6 +99,8 @@ RUN --network=none <<-EOF
 		--with-sodium=shared \
 		--with-iconv=/usr \
 		--with-openssl=shared \
+		--enable-filter=shared \
+		--enable-phar=shared \
 		--enable-mysqlnd \
 		--enable-zts
 	make -j "$(nproc)"
@@ -105,12 +109,22 @@ RUN --network=none <<-EOF
 	install -vDm644 -t "/${rootfs}/usr/share/licenses/php" LICENSE
 	unset rootfs
 
+	mkdir -p /rootfs/etc/php/conf.d
+  printf "extension=%s.so" "phar" > /rootfs/etc/php/conf.d/ext-phar.ini
+	printf "extension=%s.so" "filter" > /rootfs/etc/php/conf.d/ext-filter.ini
+	printf "extension=%s.so" "openssl" > /rootfs/etc/php/conf.d/ext-openssl.ini
+	printf "extension=%s.so" "curl" > /rootfs/etc/php/conf.d/ext-curl.ini
+
 EOF
+
+
 FROM stagex/core-filesystem AS package-php
 COPY --from=build /rootfs/usr/bin/php /usr/bin/php
+COPY --from=build /rootfs/usr/share/licenses/php/LICENSE /usr/share/licenses/php/LICENSE
 
 FROM stagex/core-filesystem AS package-php-zts
 COPY --from=build /rootfs-zts/usr/bin/php /usr/bin/php
+COPY --from=build /rootfs-zts/usr/share/licenses/php/LICENSE /usr/share/licenses/php/LICENSE
 
 FROM stagex/core-filesystem AS package-php-fpm
 COPY --from=build /rootfs/usr/sbin/php-fpm /usr/bin/php-fpm
@@ -119,18 +133,38 @@ COPY --from=build /rootfs/usr/sbin/php-fpm /usr/bin/php-fpm
 ####### PHP Extensions #######
 ##############################
 
+FROM stagex/core-filesystem AS package-php-ext-phar
+COPY --from=build /rootfs/usr/lib/php-modules/phar.so /usr/lib/php-modules/phar.so
+COPY --from=build /rootfs/etc/php/conf.d/ext-phar.ini /etc/php/conf.d/ext-phar.ini
+
+FROM stagex/core-filesystem AS package-php-ext-filter
+COPY --from=build /rootfs/usr/lib/php-modules/filter.so /usr/lib/php-modules/filter.so
+COPY --from=build /rootfs/etc/php/conf.d/ext-filter.ini /etc/php/conf.d/ext-filter.ini
+
 FROM stagex/core-filesystem AS package-php-ext-curl
 COPY --from=build /rootfs/usr/lib/php-modules/curl.so /usr/lib/php-modules/curl.so
+COPY --from=build /rootfs/etc/php/conf.d/ext-curl.ini /etc/php/conf.d/ext-curl.ini
 
 FROM stagex/core-filesystem AS package-php-ext-openssl
 COPY --from=build /rootfs/usr/lib/php-modules/openssl.so /usr/lib/php-modules/openssl.so
+COPY --from=build /rootfs/etc/php/conf.d/ext-openssl.ini /etc/php/conf.d/ext-openssl.ini
 
 ##############################
 ### PHP Extensions w. ZTS ####
 ##############################
 
+FROM stagex/core-filesystem AS package-php-ext-phar-zts
+COPY --from=build /rootfs-zts/usr/lib/php-modules/phar.so /usr/lib/php-modules/phar.so
+COPY --from=build /rootfs/etc/php/conf.d/ext-phar.ini /etc/php/conf.d/ext-phar.ini
+
+FROM stagex/core-filesystem AS package-php-ext-filter-zts
+COPY --from=build /rootfs-zts/usr/lib/php-modules/filter.so /usr/lib/php-modules/filter.so
+COPY --from=build /rootfs/etc/php/conf.d/ext-filter.ini /etc/php/conf.d/ext-filter.ini
+
 FROM stagex/core-filesystem AS package-php-ext-curl-zts
 COPY --from=build /rootfs-zts/usr/lib/php-modules/curl.so /usr/lib/php-modules/curl.so
+COPY --from=build /rootfs/etc/php/conf.d/ext-curl.ini /etc/php/conf.d/ext-curl.ini
 
 FROM stagex/core-filesystem AS package-php-ext-openssl-zts
 COPY --from=build /rootfs-zts/usr/lib/php-modules/openssl.so /usr/lib/php-modules/openssl.so
+COPY --from=build /rootfs/etc/php/conf.d/ext-openssl.ini /etc/php/conf.d/ext-openssl.ini
