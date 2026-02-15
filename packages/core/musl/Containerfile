@@ -15,6 +15,23 @@ RUN --network=none <<-EOF
 
 	patch -p1 < CVE-2025-26519.patch
 
+	# Double the amount of TLS keys from 128 (default) to 256 (default in `glibc`)
+	#
+	# When `mrustc` builds Rust 1.90.0, the `mrustc`-built `rustc` panics when ran due to running out
+	# of TLS keys. Unfortunately, that can't reasonably be fixed downstream in the `core-rust` package
+	# because this limit is defined in `libc` and compiled into the `libc` artifacts. Rust 1.90.0 also
+	# had issues with Termux's packaging for Android, their solution being to emulate TLS instead of
+	# using the `libc`'s, adding evidence of `rustc` using _more and more_ TLS keys. A `rustc`-built
+	# `rustc 1.90.0` didn't have these issues within StageX however, suggesting while `rustc` uses
+	# many TLS keys, it's `mrustc`'s compilation of it adding the overhead which is our killer blow.
+	#
+	# This should be acceptable here as a patch for greater compatibility with various
+	# programs/packages even if ideally, `core-rust` sorted this out on its end and this was removed
+	# so `core-musl` could be more stock. Note this does increase the size of a static allocation, so
+	# this does have a performance penalty. It shouldn't be unacceptable though as the limit in
+	# `glibc` is 1024. `musl` is generally much more conservative regarding thread overhead though.
+	sed -i -E s/"PTHREAD_KEYS_MAX[ ]+128"/"PTHREAD_KEYS_MAX 256"/ include/limits.h
+
 	# Remove the existing allocator
 	rm -rf src/malloc
 	rm src/legacy/valloc.c
