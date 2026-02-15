@@ -409,7 +409,7 @@ mirrors = [
 hash = "4f46d1f9380c8a3506280750f630e9fc915cb1a435b724be56b499d016368718"
 file = "automake-1.11.2.tar.bz2"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/gnu/automake/{file}",
+  "https://ftpmirror.gnu.org/gnu/automake/{file}",
   "https://mirrors.kernel.org/gnu/automake/{file}",
 ]
 
