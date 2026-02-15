@@ -29,7 +29,6 @@ COPY --from=stagex/core-gmp . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-mold . /
 COPY --from=stagex/core-onetbb . /
-COPY --from=stagex/core-llvm20 . /
 COPY --from=stagex/core-llvm . /
 COPY <<-'EOF' /etc/profile
 	set -eux
@@ -52,7 +51,7 @@ ADD fetch/mrustc-${MRUSTC_VERSION}.tar.gz .
 ADD fetch/*.patch .
 WORKDIR /mrustc-${MRUSTC_VERSION}
 COPY fetch/rustc-${BOOTSTRAP_RUST_VERSION}.0-src.tar.gz .
-ENV LLVM_VERSION="20"
+ENV LLVM_VERSION="system"
 RUN --network=none <<-EOF
 	export RUSTC_VERSION="${BOOTSTRAP_RUST_VERSION}.0"
 	export MRUSTC_TARGET_VER="${BOOTSTRAP_RUST_VERSION}"
@@ -154,7 +153,7 @@ COPY --chmod=0755 <<-'EOF' build
 	export OBJCOPY=${LLVM_BINDIR}/llvm-objcopy
 	export OBJDUMP=${LLVM_BINDIR}/llvm-objdump
 	export SIZE=${LLVM_BINDIR}/llvm-size
-	export LIBCC="/usr/lib/clang/${LLVM_VERSION}/lib/${TARGET}/libclang_rt.builtins.a"
+	export LIBCC="/usr/lib/clang/$($CC -dumpversion | cut -d'.' -f1)/lib/${TARGET}/libclang_rt.builtins.a"
 	export LDFLAGS="-fuse-ld=/usr/bin/ld.mold"
 	ln -sf ${LLVM_BINDIR}/clang++ /usr/bin/c++
 	ln -sf ${LLVM_BINDIR}/clang /usr/bin/cc
@@ -249,8 +248,6 @@ COPY --chmod=0755 <<-'EOF' build
 	cd /
 	[ "${TARGET_VERSION}" == "${VERSION}" ] || rm -rf rustc-${TARGET_VERSION}-src /rust-${BUILD_VERSION}
 EOF
-
-ENV LLVM_VERSION="system"
 
 ADD fetch/rustc-1.91.1-src.tar.gz .
 RUN --network=none ./build 1.91.1 1.90.0 ""
