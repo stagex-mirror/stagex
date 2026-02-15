@@ -1,75 +1,81 @@
 FROM scratch AS build
+
 ARG VERSION
 ARG TARGETARCH
 ARG MRUSTC_VERSION
 ENV BOOTSTRAP_RUST_VERSION="1.90"
+
 COPY --from=stagex/core-filesystem . /
 COPY --from=stagex/core-busybox . /
 # As `/bin/bash` is required by `mrustc`, wrap BusyBox's Bourne-inspired shell (`hush`) as `bash`
 RUN --network=none printf "%s\n%s\n" '#!/bin/sh' 'hush "$@"' > /usr/bin/bash && chmod +x /usr/bin/bash
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-python . /
-COPY --from=stagex/core-py-setuptools . /
-COPY --from=stagex/core-zlib . /
-COPY --from=stagex/core-pkgconf . /
-COPY --from=stagex/core-openssl . /
-COPY --from=stagex/core-libzstd . /
-COPY --from=stagex/core-perl . /
-COPY --from=stagex/core-curl . /
-COPY --from=stagex/core-ca-certificates . /
-COPY --from=stagex/core-libffi . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-binutils . /
 # `busybox patch` isn't compatible with `mrustc`'s patch files. GNU `patch` is required
 COPY --from=stagex/core-patch . /
+
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-python . /
+
 COPY --from=stagex/core-mpfr . /
 COPY --from=stagex/core-mpc . /
 COPY --from=stagex/core-isl . /
 COPY --from=stagex/core-gmp . /
+COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-mold . /
+
 COPY --from=stagex/core-onetbb . /
+COPY --from=stagex/core-mold . /
+
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-musl . /
+
+COPY --from=stagex/core-ca-certificates . /
+COPY --from=stagex/core-curl . /
+
 COPY <<-'EOF' /etc/profile
 	set -eux
-	[[ "$TARGETARCH" == "amd64" ]] && ARCH="x86_64"
-	[[ "$TARGETARCH" == "arm64" ]] && ARCH="aarch64"
-	export ARCH
+	if [ "$TARGETARCH" = "amd64" ]; then
+		export ARCH="x86_64"
+	fi
+	if [ "$TARGETARCH" = "arm64" ]; then
+		export ARCH="aarch64"
+	fi
 	export TARGET=${ARCH}-unknown-linux-musl
 	export MAKEFLAGS="-j$(nproc)"
 	export LLVM_ROOT="/usr/lib/llvm${LLVM_VERSION}"
-	[[ "$LLVM_VERSION" == "system" ]] && LLVM_ROOT="/usr"
+	if [ "$LLVM_VERSION" = "system" ]; then
+		export LLVM_ROOT="/usr"
+	fi
 	export LLVM_BINDIR=${LLVM_ROOT}/bin
 	export LLVM_CONFIG=${LLVM_BINDIR}/llvm-config
+
+	export CC=${LLVM_BINDIR}/clang
+	export CXX=clang++
+	export CCC_OVERRIDE_OPTIONS="${CCC_OVERRIDE_OPTIONS:-}"
+	export CLANG_LIB=/usr/lib/clang/$($CC -dumpversion | cut -d'.' -f1)/lib/${TARGET}
 EOF
 SHELL ["/bin/sh","-l","-c"]
 
 # Rust defaults to static linking for `musl` targets when we want dynamic linking.
 ENV RUSTFLAGS="-Ctarget-feature=-crt-static"
+# Don't use the `openssl` vendored within the Rust source tarball
+COPY --from=stagex/core-openssl . /
+ENV OPENSSL_NO_VENDOR=1
 
 ADD fetch/mrustc-${MRUSTC_VERSION}.tar.gz .
 ADD fetch/*.patch .
 WORKDIR /mrustc-${MRUSTC_VERSION}
 COPY fetch/rustc-${BOOTSTRAP_RUST_VERSION}.0-src.tar.gz .
+
 ENV LLVM_VERSION="system"
+
+# We start by applying our set of patches to `mrustc` and the bootstrapped Rust source
 RUN --network=none <<-EOF
+	set -eux
+
 	export RUSTC_VERSION="${BOOTSTRAP_RUST_VERSION}.0"
-	export MRUSTC_TARGET_VER="${BOOTSTRAP_RUST_VERSION}"
-	export RUSTC_INSTALL_BINDIR="bin"
-	export LIBGIT2_SYS_USE_PKG_CONFIG="1"
-	export OUTDIR_SUF=
-	export RUSTC_TARGET="${TARGET}"
-	export LD="mold"
-	# Because `g++` didn't respect `$LD, -fuse-ld=mold`, replace `ld` entirely
-	ln -sf /usr/bin/mold /usr/bin/ld
-	export LDFLAGS="${LDFLAGS:-} -L/usr/lib"
-	export CFLAGS="${CFLAGS:-} -O2 -fuse-ld=mold"
-	export CXXFLAGS="${CXXFLAGS:-} -O2 -fuse-ld=mold"
-	export CC=clang
-	# Remove `gcc`-specific flags since we're using `clang`
-	export CCC_OVERRIDE_OPTIONS="x-fno-tree-sra"
-	# `g++` is required to build `mrustc` itself due to an issue `clang++` had with `mrustc`'s macros
-	export CXX=g++
 
 	# Revert the recently 'optimized' type inference as it segfaults
 	patch -p1 --reverse -i ../99d9bd0c788b0c72fc2f4fee6187a462ceb059f2.patch
@@ -77,55 +83,115 @@ RUN --network=none <<-EOF
 	patch -p1 -i ../0b8ce630d0cabe07bc42632015c1fe558dc36af8.patch
 	patch -p1 -i ../df7034215681d6562afea0ecc3c10847f67d27d7.patch
 
-	# Build `mrustc`
-	# We're much more aggressive with optimizing `mrustc` due to how long it takes
-	make CXXFLAGS="$CXXFLAGS -O3"
 	# Apply `mrustc`'s patches to the `rustc` source so it'll build with `mrustc`
 	make RUSTCSRC
 
-	# `mrustc` wants to build the LLVM toolchain vendored within Rust. We don't.
-	# Shim `cmake` to a NOP so `mrustc` believes `cmake` worked without issue
-	echo "#!/bin/sh" > /usr/bin/cmake
-	echo "exit 0" >> /usr/bin/cmake
-	chmod +x /usr/bin/cmake
+	RUSTC_SRC=rustc-${BOOTSTRAP_RUST_VERSION}.0-src
+	# Remove binaries shipped within the source tarball
+	for file in $(find $RUSTC_SRC -type f | grep -E "\.(o|a|so|lib|dll|exe)$"); do
+		rm $file
+	done
+	# Strip executable bits from everything marked executable
+	# This doesn't erase such files outright as a variety of scripts are marked executable
+	# This does stop outright execution of any compiled artifacts included within the source tarball
+	for executable in $(find $RUSTC_SRC -type f -type f -executable); do
+		chmod -x $executable
+	done
+
+	# `mrustc` wants to build the LLVM toolchain vendored within Rust. We don't
 	# Shim the build directory to our existing LLVM toolchain
-	ln -s $LLVM_ROOT /mrustc-rust${BOOTSTRAP_RUST_VERSION}_bootstrapped/rustc-${BOOTSTRAP_RUST_VERSION}.0-src/build
-	# Stub a `Makefile` so `make` doesn't error when it tries to actually build LLVM (after `cmake`)
-	echo "all:" > $LLVM_ROOT/Makefile
+	ln -s $LLVM_ROOT $RUSTC_SRC/build
+	# Stub a `Makefile` so `mrustc`'s `Makefile` thinks the target was created and it can itself build LLVM
+	echo "all:" > $RUSTC_SRC/build/Makefile
 
-	# Compile the Rust standard library
-	make -f minicargo.mk LIBS
-
-	# Move to `clang++` now that we're done compiling `mrustc`, as required by some Rust crates
-	export CXX="${LLVM_BINDIR}/clang++"
-
-	# `gcc` is required here due to the way some ASM is formatted when compiling `rustix`
-	export CC=gcc
-	make -f minicargo.mk output/rustc
-	make -f minicargo.mk output/cargo
-	export CC=clang
-
-	# Build a dynamically-linked `rustc`
-	sed -i s/'RUSTFLAGS="'/'RUSTFLAGS="-Ctarget-feature=-crt-static '/ run_rustc/Makefile
-
-	RUN_RUSTC_OUTPUT=/mrustc-rust${BOOTSTRAP_RUST_VERSION}_bootstrapped/run_rustc/output
-	# Populate what will be Rust's self-contained toolchain with the necessary object files
-	for prefix in prefix-s prefix-2 prefix; do
-		SELF_CONTAINED=$RUN_RUSTC_OUTPUT/$prefix/lib/rustlib/${TARGET}/lib/self-contained/
-		mkdir -p $SELF_CONTAINED
-		for file in rcrt1.o crti.o crtn.o; do
-			cp /usr/lib/$file $SELF_CONTAINED
-		done
-		for file in crtbeginS.o crtendS.o; do
-			cp /usr/lib/gcc/${ARCH}-linux-musl/$(gcc -dumpversion)/$file $SELF_CONTAINED
+	# `rustix`'s ASM (as transpiled by `mrustc`) is rejected by `clang`, so use the `libc` backend
+	for rustix in $(ls $RUSTC_SRC/vendor | grep rustix); do
+		for toml in $(find $RUSTC_SRC/vendor/$rustix -name "Cargo.toml"); do
+			sed -i s/'default = \['/'default = \["use-libc",'/ $toml
 		done
 	done
 
-	# We also use `gcc` here due to _some_ issue finding the necessary object files...
-	export CC=gcc
-	make -C run_rustc
-	export CC=clang
+	# Build a dynamically-linked `rustc`
+	sed -i s/'RUSTFLAGS="'/'RUSTFLAGS="-Ctarget-feature=-crt-static '/ run_rustc/Makefile
+EOF
 
+# We now prepare our working tree by defining what will be Rust's self-contained libraries
+RUN --network=none <<-EOF
+	set -eux
+
+	mkdir self-contained
+	for file in rcrt1.o crti.o crtn.o; do
+		cp /usr/lib/${file} self-contained/
+	done
+	for file in crtbegin crtend; do
+		cp $CLANG_LIB/clang_rt.${file}.o self-contained/${file}S.o
+	done
+	# Populate each prefix `mrustc` will build with the self-contained toolchain
+	for prefix in prefix-s prefix-2 prefix; do
+		PREFIX_LIB=run_rustc/output/$prefix/lib/rustlib/$TARGET/lib
+		mkdir -p $PREFIX_LIB
+		ln -s $(realpath ./self-contained) $PREFIX_LIB/self-contained
+	done
+EOF
+
+# Build `mrustc`, `minicargo`
+RUN --network=none <<-EOF
+	set -eux
+
+	# `g++` is required to build `mrustc` itself due to an issue `clang++` had with `mrustc`'s macros
+	make CXX="g++" CXXFLAGS="-O3"
+	# `clang++` _can_ build `minicargo`, but it reuses libraries from the first build where were
+	# linked against `glibc++`. Building `mrustc` with `g++`, `libc++` caused it to segfault when
+	# building Rust's standard library. To solve this, we build both with `g++` and `glibc++`.
+	make -f minicargo.mk CXX="g++" bin/minicargo
+EOF
+
+# Build `rustc`, `cargo` with `mrustc`, `minicargo`
+RUN --network=none <<-EOF
+	set -eux
+
+	# Because the following `Makefile`s don't observe `$LD`, install `mold` as `ld`
+	ln -sf /usr/bin/mold /usr/bin/ld
+
+	export RUSTC_TARGET="${TARGET}"
+	export RUSTC_VERSION="${BOOTSTRAP_RUST_VERSION}.0"
+	export RUSTC_INSTALL_BINDIR="bin"
+	export OUTDIR_SUF=
+	export MRUSTC_TARGET_VER="${BOOTSTRAP_RUST_VERSION}"
+
+	# Don't compile any debug information
+	export CCC_OVERRIDE_OPTIONS="${CCC_OVERRIDE_OPTIONS:-} +-g0"
+	# Remove `gcc`-specific flags since we're using `clang`
+	# Disable optimizations due to `clang`-compiled `mrustc` immediately segfaulting otherwise
+	export CCC_OVERRIDE_OPTIONS="$CCC_OVERRIDE_OPTIONS x-fno-tree-sra O0"
+
+	# Explicitly disable usage of `rustix`'s' 'raw' (assembly) backend, which `mrustc` compiles to
+	# an inline `__asm__` which `gcc` accepts yet `clang` does not. While we disable some vendored
+	# libraries with `ENV`, we only do this here as it's a bootstrap-only limitation, not a
+	# preference.
+	export CARGO_CFG_RUSTIX_NO_LINUX_RAW=1
+
+	# Build the default targets from `minicargo.mk` (effectively the Rust standard library)
+	make -f minicargo.mk
+	# Compile `rustc`, `cargo`
+	make -f minicargo.mk output/rustc
+	make -f minicargo.mk output/cargo
+EOF
+
+
+RUN --network=none <<-EOF
+	set -eux
+
+	export RUSTC_TARGET="${TARGET}"
+	export RUSTC_VERSION="${BOOTSTRAP_RUST_VERSION}.0"
+	export RUSTC_INSTALL_BINDIR="bin"
+	export OUTDIR_SUF=
+
+	export CCC_OVERRIDE_OPTIONS="${CCC_OVERRIDE_OPTIONS:-} +-g0"
+
+	make -C run_rustc
+
+	# Move the sysroot `mrustc` created to the format expected by the rest of this process
 	mkdir /rust-${RUSTC_VERSION}
 	cp -R run_rustc/output/prefix /rust-${RUSTC_VERSION}/usr
 EOF
@@ -138,11 +204,8 @@ COPY --chmod=0755 <<-'EOF' build
 	TARGET_VERSION=${1}
 	BUILD_VERSION=${2}
 	TOOLS=${3:-cargo}
-	PATCHES=${4:-}
 	PREFIX=/rust-${TARGET_VERSION}/usr
 	BUILD_PREFIX=/rust-${BUILD_VERSION}/usr
-	export CC=${LLVM_BINDIR}/clang
-	export CXX=${LLVM_BINDIR}/clang++
 	export AS=${LLVM_BINDIR}/llvm-as
 	export AR=${LLVM_BINDIR}/llvm-ar
 	export NM=${LLVM_BINDIR}/llvm-nm
@@ -153,14 +216,39 @@ COPY --chmod=0755 <<-'EOF' build
 	export OBJCOPY=${LLVM_BINDIR}/llvm-objcopy
 	export OBJDUMP=${LLVM_BINDIR}/llvm-objdump
 	export SIZE=${LLVM_BINDIR}/llvm-size
-	export LIBCC="/usr/lib/clang/$($CC -dumpversion | cut -d'.' -f1)/lib/${TARGET}/libclang_rt.builtins.a"
-	export LDFLAGS="-fuse-ld=/usr/bin/ld.mold"
+	export LIBCC="$CLANG_LIB/libclang_rt.builtins.a"
 	ln -sf ${LLVM_BINDIR}/clang++ /usr/bin/c++
 	ln -sf ${LLVM_BINDIR}/clang /usr/bin/cc
 	ln -sf /usr/bin/mold /usr/bin/ld
 	cd rustc-${TARGET_VERSION}-src
-	[[ -z "$PATCHES" ]] || for name in ${PATCHES//,/ }; do
-		patch -p1 < ../${name}.patch
+
+	# Remove binaries shipped within the source tarball
+	for file in $(find . -type f | grep -E "\.(o|a|so|lib|dll|exe)$"); do
+		rm $file
+	done
+	# Strip executable bits from everything marked executable
+	# This doesn't erase such files outright as a variety of scripts are marked executable
+	# This does stop outright execution of any compiled artifacts included within the source tarball
+	for executable in $(find . -type f -type f -executable); do
+		chmod -x $executable
+	done
+	# Remove all outstanding `cargo-checksum` files as we removed files they may or may not commit to
+	for crate in $(ls ./vendor); do
+		if [ -f "./vendor/$crate/.cargo-checksum.json" ]; then
+			# Outright removal of this file will cause an error
+			# It being a stub with no actual metadata won't however
+			echo '{ "files": {} }' > "./vendor/$crate/.cargo-checksum.json"
+		fi
+	done
+	# Remove all checksums from existing lockfiles as they've now been invalidated.
+	for file in $(find . -type f -name "Cargo.lock"); do
+		WITHOUT_CHECKSUMS=$(grep -v '^checksum = "' "$file")
+		echo "$WITHOUT_CHECKSUMS" > $file
+	done
+	# Remove specification of the `--frozen` argument, saying not to use the exact existing lockfiles,
+	# with the `--offline` argument, saying not to use the internet to decide the lockfile.
+	for file in $(find ./src/bootstrap -type f); do
+		sed -i s/'"--frozen"'/'"--offline"'/ "$file"
 	done
 
 	# Tune how `rustc` is built for a faster build process.
@@ -186,7 +274,7 @@ COPY --chmod=0755 <<-'EOF' build
 		fi
 	fi
 
-	./configure \
+	python3 ./src/bootstrap/configure.py \
 		--build="${TARGET}" \
 		--host="${TARGET}" \
 		--target="${TARGET}" \
@@ -197,7 +285,6 @@ COPY --chmod=0755 <<-'EOF' build
 		--enable-local-rust \
 		--enable-clang \
 		--enable-option-checking \
-		--enable-locked-deps \
 		--enable-vendor \
 		--dist-compression-formats=gz \
 		--disable-docs \
@@ -259,6 +346,7 @@ ADD fetch/rustc-1.93.1-src.tar.gz .
 
 # Patch the default for `musl` targets to be dynamically, not statically, linked
 RUN --network=none <<-EOF
+	set -eux
 	for file in $(find ./rustc-${VERSION}-src/compiler/rustc_target/src/spec/targets/ -type f | grep "musl"); do
 		sed -i s/"crt_static_default = true"/"crt_static_default = false"/ $file
 	done
@@ -266,13 +354,13 @@ EOF
 
 RUN --network=none ./build ${VERSION} 1.92.0 cargo,clippy,rustdoc,rustfmt,rust-demangler,src,wasm-component-ld
 RUN --network=none <<-EOF
+	set -eux
 	mv /rust-${VERSION} /rootfs
-	cd /rootfs/usr/lib/rustlib
-	rm install.log
-	sort -o manifest-cargo manifest-cargo
-	sort -o manifest-rustc manifest-rustc
-	sort -o manifest-rust-std-${TARGET} manifest-rust-std-${TARGET}
-	rm -f ${TARGET}/lib/self-contained/libunwind.a
+	find /rootfs -type f -name "*.log" -delete
+	find /rootfs -type f -name "*.a" -delete
+	for manifest in $(find /rootfs -type f -name "manifest-*"); do
+		sort -o $manifest $manifest
+	done
 EOF
 
 FROM stagex/core-filesystem AS package-rust
