@@ -75,7 +75,14 @@ RUN --network=none <<-EOF
 	make INSTALL_ROOT="/${rootfs}" install
 	rm -rf "/${rootfs}/var/run"
 	install -vDm644 -t "/${rootfs}/usr/share/licenses/php" LICENSE
-	unset rootfs
+
+	mkdir -p "/${rootfs}/etc/php/conf.d"
+  for path in "/${rootfs}/usr/lib/php-modules/"*.so; do
+    name=$(basename "$path" .so)
+  	printf "extension=%s.so\n" "$name" > "/${rootfs}/etc/php/conf.d/ext-$name.ini"
+  done
+
+  unset rootfs
 
 	make distclean
 
@@ -107,13 +114,6 @@ RUN --network=none <<-EOF
 	make INSTALL_ROOT="/${rootfs}" install
 	rm -rf "/${rootfs}/var/run"
 	install -vDm644 -t "/${rootfs}/usr/share/licenses/php" LICENSE
-	unset rootfs
-
-	mkdir -p /rootfs/etc/php/conf.d
-  printf "extension=%s.so" "phar" > /rootfs/etc/php/conf.d/ext-phar.ini
-	printf "extension=%s.so" "filter" > /rootfs/etc/php/conf.d/ext-filter.ini
-	printf "extension=%s.so" "openssl" > /rootfs/etc/php/conf.d/ext-openssl.ini
-	printf "extension=%s.so" "curl" > /rootfs/etc/php/conf.d/ext-curl.ini
 
 EOF
 
