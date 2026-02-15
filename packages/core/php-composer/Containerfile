@@ -15,6 +15,10 @@ COPY --from=stagex/user-argon2 . /
 COPY --from=stagex/user-libiconv . /
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-php . /
+COPY --from=stagex/core-php-ext-phar . /
+COPY --from=stagex/core-php-ext-filter . /
+COPY --from=stagex/core-php-ext-openssl . /
+COPY --from=stagex/core-php-ext-curl . /
 
 # Build the composer boot
 ADD fetch/composer-boot-${COMPOSER_BOOT_VERSION}.tar.gz ./composer-boot
