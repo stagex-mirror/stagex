@@ -1,0 +1,12 @@
+[package]
+name = "libzip"
+version = "1.11.4"
+description = "C library for manipulating zip archives"
+website = "https://libzip.org/"
+license = "BSD-3-Clause"
+
+[sources.libzip]
+hash = "82e9f2f2421f9d7c2466bbc3173cd09595a88ea37db0d559a9d0a2dc60dc722e"
+format = "tar.gz"
+file = "libzip-{version}.{format}"
+mirrors = [ "https://libzip.org/download/{file}",]
