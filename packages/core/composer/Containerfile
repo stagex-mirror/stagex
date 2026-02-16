@@ -134,7 +134,7 @@ RUN --network=none <<-EOF
 	install -Dm755 composer.phar /rootfs/usr/bin/composer
 	/rootfs/usr/bin/composer completion bash > completions.bash
 	install -Dm644 completions.bash /rootfs/usr/share/bash-completion/completions/composer
-
+	install -Dm644 -t "/rootfs/usr/share/licenses/composer" LICENSE
 EOF
 
 FROM stagex/core-filesystem AS package
