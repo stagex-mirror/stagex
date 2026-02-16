@@ -12,6 +12,8 @@ subpackages = [
   "php-ext-phar",
   "php-ext-curl",
   "php-ext-openssl",
+  "php-ext-filter-zts",
+  "php-ext-phar-zts",
   "php-ext-curl-zts",
   "php-ext-openssl-zts"
 ]
