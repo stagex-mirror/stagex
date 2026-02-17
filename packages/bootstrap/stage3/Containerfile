@@ -64,11 +64,12 @@ RUN --network=none <<-EOF
 	make CROSS_COMPILE=${TARGET}- defconfig
 	echo "CONFIG_STATIC=y" >> .config
 	make CROSS_COMPILE=${TARGET}-
-	mkdir -p /rootfs/usr/bin
-	cp busybox /rootfs/usr/bin
-	cp busybox /usr/bin
-	cd /rootfs
-	/usr/bin/busybox --install -s usr/bin
+	make CROSS_COMPILE=${TARGET}- busybox.links
+	# Create symlinks without actually invoking busybox - this is essential for cross-compilation
+	cat busybox.links | while read link; do
+	  ln -sf busybox "/rootfs/usr/bin/$(basename "$link")"
+	done
+	cp busybox /rootfs/usr/bin/
 	rm -rf /busybox-*
 EOF
 
@@ -351,9 +352,18 @@ RUN --network=none <<-EOF
 	rm -rf /libffi-*
 EOF
 
-FROM base AS libunwind
-ARG TARGETARCH
+# perl and other autoconf dependencies are only in the i386 image
+# However, libunwind dependencies are in target-native images
+# To overcome this, generate the config using stage2 and copy it
+FROM base AS libunwind-configure
 ARG LIBUNWIND_VERSION
+ADD fetch/libunwind-${LIBUNWIND_VERSION}.tar.gz /
+WORKDIR /libunwind-${LIBUNWIND_VERSION}
+RUN autoreconf -i
+
+FROM scratch AS libunwind
+ARG LIBUNWIND_VERSION
+COPY --from=base /rootfs/ /
 COPY --from=musl /rootfs/ /
 COPY --from=busybox /rootfs/ /
 COPY --from=make /rootfs/ /
@@ -366,15 +376,15 @@ COPY --from=zlib /rootfs/ /
 COPY --from=libucontext /rootfs/ /
 ADD fetch/libunwind-${LIBUNWIND_VERSION}.tar.gz /
 WORKDIR /libunwind-${LIBUNWIND_VERSION}
+COPY --from=libunwind-configure /libunwind-${LIBUNWIND_VERSION}/ /libunwind-${LIBUNWIND_VERSION}
 RUN <<-EOF
 	set -eux
 	export CFLAGS="-llzma -lucontext"
 	export CXXFLAGS="$CFLAGS"
 	export CPPFLAGS="$CFLAGS"
-	autoreconf -i
+
 	./configure \
 		--prefix=/usr \
-		--host=${TARGET} \
 		--enable-cxx-exceptions \
 		--disable-tests
 	make
