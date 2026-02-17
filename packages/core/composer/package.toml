@@ -1,0 +1,224 @@
+[package]
+name = "composer"
+license = "MIT"
+version = "2.9.5"
+description = "A Dependency Manager for PHP"
+
+[sources.composer]
+hash = "3fac7a83935223c6381542c03c6002439b7842a01897be5fbd957b105768ade5"
+format = "tar.gz"
+file = "composer-{version}.{format}"
+mirrors = [ "https://github.com/composer/composer/archive/refs/tags/{version}.{format}" ]
+
+# This version is fixed and is only used to bootstrap composer
+[sources.composer_boot]
+hash = "f72d482dd079c0ba5294dce16d9e63255e4ed78c3abb40b9461589a6c7ad4679"
+version = "2.8.8" # fixed version
+format = "tar.gz"
+file = "composer-boot-{version}.{format}"
+mirrors = [ "https://github.com/composer/composer/archive/refs/tags/{version}.{format}" ]
+
+# Dependencies fixed for composer_boot version,
+# this has to be regenerated if needed to upgrade the composer_boot version
+[sources.php_package_composer_ca_bundle]
+hash = "5c092517717384b97ab5090cff6351e87a8fe9fbaa116977116630a126a8ec17"
+format = "tar.gz"
+version = "f65c239c970e7f072f067ab78646e9f0b2935175"
+file = "php_package_composer_ca_bundle-{version}.{format}"
+mirrors = [ "https://github.com/composer/ca-bundle/archive/{version}.{format}", ]
+
+[sources.php_package_composer_class_map_generator]
+hash = "980fd070fff123d65c362badfc633b096f641bd25ea03d09f1b3201f93b520d7"
+format = "tar.gz"
+version = "134b705ddb0025d397d8318a75825fe3c9d1da34"
+file = "php_package_composer_class_map_generator-{version}.{format}"
+mirrors = [ "https://github.com/composer/class-map-generator/archive/{version}.{format}", ]
+
+[sources.php_package_composer_metadata_minifier]
+hash = "e4389d2221c24f2894a53a27db277610cc9c18ce98aeefea7e47f1572c27868b"
+format = "tar.gz"
+version = "c549d23829536f0d0e984aaabbf02af91f443207"
+file = "php_package_composer_metadata_minifier-{version}.{format}"
+mirrors = [ "https://github.com/composer/metadata-minifier/archive/{version}.{format}", ]
+
+[sources.php_package_composer_pcre]
+hash = "e4c222dba679d884d4798b55a3332add923596c6c28503845547cc8229608811"
+format = "tar.gz"
+version = "ebb81df8f52b40172d14062ae96a06939d80a069"
+file = "php_package_composer_pcre-{version}.{format}"
+mirrors = [ "https://github.com/composer/pcre/archive/{version}.{format}", ]
+
+[sources.php_package_composer_semver]
+hash = "9bb606e44e54aed5e1daace79607a1f99ab2fa9e296a396d7169c9e3e9233fa0"
+format = "tar.gz"
+version = "4313d26ada5e0c4edfbd1dc481a92ff7bff91f12"
+file = "php_package_composer_semver-{version}.{format}"
+mirrors = [ "https://github.com/composer/semver/archive/{version}.{format}", ]
+
+[sources.php_package_composer_spdx_licenses]
+hash = "81c4643337f98608ad4725748ca4ee9ce552f392db852946f33b693a1894c6ff"
+format = "tar.gz"
+version = "560bdcf8deb88ae5d611c80a2de8ea9d0358cc0a"
+file = "php_package_composer_spdx_licenses-{version}.{format}"
+mirrors = [ "https://github.com/composer/spdx-licenses/archive/{version}.{format}", ]
+
+[sources.php_package_composer_xdebug_handler]
+hash = "ab087d635bd3cce16c1c22ae4fbdb9bf922f2bce19b0d6eda6c23421136eac81"
+format = "tar.gz"
+version = "6c1925561632e83d60a44492e0b344cf48ab85ef"
+file = "php_package_composer_xdebug_handler-{version}.{format}"
+mirrors = [ "https://github.com/composer/xdebug-handler/archive/{version}.{format}", ]
+
+[sources.php_package_justinrainbow_json_schema]
+hash = "a7a81223475e4ea689f3f9c1fd182fe7ae6cb465af610f5574188ea90e1e0bc9"
+format = "tar.gz"
+version = "35d262c94959571e8736db1e5c9bc36ab94ae900"
+file = "php_package_justinrainbow_json_schema-{version}.{format}"
+mirrors = [ "https://github.com/jsonrainbow/json-schema/archive/{version}.{format}", ]
+
+[sources.php_package_marc_mabe_php_enum]
+hash = "b685fcbdb3e0f1808f3dc5be3a91be41618455560b95ea3e16f0808f8a950ef7"
+format = "tar.gz"
+version = "7159809e5cfa041dca28e61f7f7ae58063aae8ed"
+file = "php_package_marc_mabe_php_enum-{version}.{format}"
+mirrors = [ "https://github.com/marc-mabe/php-enum/archive/{version}.{format}", ]
+
+[sources.php_package_psr_container]
+hash = "7cfd6423eb8653104d986e1677c7755732175473eccee8e01564ffef58b70c51"
+format = "tar.gz"
+version = "8622567409010282b7aeebe4bb841fe98b58dcaf"
+file = "php_package_psr_container-{version}.{format}"
+mirrors = [ "https://github.com/php-fig/container/archive/{version}.{format}", ]
+
+[sources.php_package_psr_log]
+hash = "0ef9bb7e9b9f84dc92a27e150a63b0f9c828a117c2fc36490649f262b7dda977"
+format = "tar.gz"
+version = "d49695b909c3b7628b6289db5479a1c204601f11"
+file = "php_package_psr_log-{version}.{format}"
+mirrors = [ "https://github.com/php-fig/log/archive/{version}.{format}", ]
+
+[sources.php_package_react_promise]
+hash = "5d8be3557926b195aed5bb0df8d8283fd1bcb02a04b7f148848c91312b4396d7"
+format = "tar.gz"
+version = "8a164643313c71354582dc850b42b33fa12a4b63"
+file = "php_package_react_promise-{version}.{format}"
+mirrors = [ "https://github.com/reactphp/promise/archive/{version}.{format}", ]
+
+[sources.php_package_seld_jsonlint]
+hash = "f154aa150cc291f5056e41fa9e480c75a0b29e74b9457f0d88d8c6af12640cf5"
+format = "tar.gz"
+version = "1748aaf847fc731cfad7725aec413ee46f0cc3a2"
+file = "php_package_seld_jsonlint-{version}.{format}"
+mirrors = [ "https://github.com/Seldaek/jsonlint/archive/{version}.{format}", ]
+
+[sources.php_package_seld_phar_utils]
+hash = "f8593801fcea340dfbd2a46965206a013acbf356a88f680553de6decaaa9f7eb"
+format = "tar.gz"
+version = "ea2f4014f163c1be4c601b9b7bd6af81ba8d701c"
+file = "php_package_seld_phar_utils-{version}.{format}"
+mirrors = [ "https://github.com/Seldaek/phar-utils/archive/{version}.{format}", ]
+
+[sources.php_package_seld_signal_handler]
+hash = "568ee15d20326306f6b607181dbd6fa15ec6a5c295b1f39ad0586ec400176be6"
+format = "tar.gz"
+version = "04a6112e883ad76c0ada8e4a9f7520bbfdb6bb98"
+file = "php_package_seld_signal_handler-{version}.{format}"
+mirrors = [ "https://github.com/Seldaek/signal-handler/archive/{version}.{format}", ]
+
+[sources.php_package_symfony_console]
+hash = "7fd3fa39a283cbe7c644ad2a06619e6bc22de85792f10cd5f4fabc6ed17c5c62"
+format = "tar.gz"
+version = "c4ba980ca61a9eb18ee6bcc73f28e475852bb1ed"
+file = "php_package_symfony_console-{version}.{format}"
+mirrors = [ "https://github.com/symfony/console/archive/{version}.{format}", ]
+
+[sources.php_package_symfony_deprecation_contracts]
+hash = "b46c60ed8b9b9d8f8fa752cf39bb0d1753a648dfc98e6394ce1a7387c9244090"
+format = "tar.gz"
+version = "605389f2a7e5625f273b53960dc46aeaf9c62918"
+file = "php_package_symfony_deprecation_contracts-{version}.{format}"
+mirrors = [ "https://github.com/symfony/deprecation-contracts/archive/{version}.{format}", ]
+
+[sources.php_package_symfony_filesystem]
+hash = "caf52373fcd12e73161c1755e3a774101302787686753deffbe34f7793af90e5"
+format = "tar.gz"
+version = "57c8294ed37d4a055b77057827c67f9558c95c54"
+file = "php_package_symfony_filesystem-{version}.{format}"
+mirrors = [ "https://github.com/symfony/filesystem/archive/{version}.{format}", ]
+
+[sources.php_package_symfony_finder]
+hash = "92b40df0dccab005acd961f70bf4c1bb55e51a5c0a770ef6318798aec14a48ba"
+format = "tar.gz"
+version = "63741784cd7b9967975eec610b256eed3ede022b"
+file = "php_package_symfony_finder-{version}.{format}"
+mirrors = [ "https://github.com/symfony/finder/archive/{version}.{format}", ]
+
+[sources.php_package_symfony_polyfill_ctype]
+hash = "0acbbe0c832f54eb92426b6f4c9c1b8fa1b2b0e47764a99c05f7c96d32eaf074"
+format = "tar.gz"
+version = "a3cc8b044a6ea513310cbd48ef7333b384945638"
+file = "php_package_symfony_polyfill_ctype-{version}.{format}"
+mirrors = [ "https://github.com/symfony/polyfill-ctype/archive/{version}.{format}", ]
+
+[sources.php_package_symfony_polyfill_intl_grapheme]
+hash = "fde4eff79cd8efdbbcc34e94e7734a7c878169a39610279f7806c7c9182fc8d6"
+format = "tar.gz"
+version = "b9123926e3b7bc2f98c02ad54f6a4b02b91a8abe"
+file = "php_package_symfony_polyfill_intl_grapheme-{version}.{format}"
+mirrors = [ "https://github.com/symfony/polyfill-intl-grapheme/archive/{version}.{format}", ]
+
+[sources.php_package_symfony_polyfill_intl_normalizer]
+hash = "18e23465077d9947a0acaa71506aedcfc7afc1aeb71c11803daa995f601bb390"
+format = "tar.gz"
+version = "3833d7255cc303546435cb650316bff708a1c75c"
+file = "php_package_symfony_polyfill_intl_normalizer-{version}.{format}"
+mirrors = [ "https://github.com/symfony/polyfill-intl-normalizer/archive/{version}.{format}", ]
+
+[sources.php_package_symfony_polyfill_mbstring]
+hash = "98f12d8064a8783368834ea27fbef5cbf6b4feee7967cdef29f2d371ff1cebe3"
+format = "tar.gz"
+version = "85181ba99b2345b0ef10ce42ecac37612d9fd341"
+file = "php_package_symfony_polyfill_mbstring-{version}.{format}"
+mirrors = [ "https://github.com/symfony/polyfill-mbstring/archive/{version}.{format}", ]
+
+[sources.php_package_symfony_polyfill_php73]
+hash = "8b8dd6c5e0dda85cb4f17646d86bf4a9070e47e8e711e8ff59bd3c0918b0fd93"
+format = "tar.gz"
+version = "0f68c03565dcaaf25a890667542e8bd75fe7e5bb"
+file = "php_package_symfony_polyfill_php73-{version}.{format}"
+mirrors = [ "https://github.com/symfony/polyfill-php73/archive/{version}.{format}", ]
+
+[sources.php_package_symfony_polyfill_php80]
+hash = "5570f8e46be63468a1cb24ada905fc25b59ece08adae20cd7d8b45bc8bcb5cc9"
+format = "tar.gz"
+version = "60328e362d4c2c802a54fcbf04f9d3fb892b4cf8"
+file = "php_package_symfony_polyfill_php80-{version}.{format}"
+mirrors = [ "https://github.com/symfony/polyfill-php80/archive/{version}.{format}", ]
+
+[sources.php_package_symfony_polyfill_php81]
+hash = "6fc84b024cc3259bbf604c2a2c6b88e691b05c30378af7660fcf2300105a16d1"
+format = "tar.gz"
+version = "4a4cfc2d253c21a5ad0e53071df248ed48c6ce5c"
+file = "php_package_symfony_polyfill_php81-{version}.{format}"
+mirrors = [ "https://github.com/symfony/polyfill-php81/archive/{version}.{format}", ]
+
+[sources.php_package_symfony_process]
+hash = "00a8048603b3bc1297d74b146367933aa42e0cf8e35bbf94b9c75481813debd7"
+format = "tar.gz"
+version = "5d1662fb32ebc94f17ddb8d635454a776066733d"
+file = "php_package_symfony_process-{version}.{format}"
+mirrors = [ "https://github.com/symfony/process/archive/{version}.{format}", ]
+
+[sources.php_package_symfony_service_contracts]
+hash = "5439890e6b6ef6591a084804facbbdbe89085eed1ebf6da1bd5901da91c5d4bd"
+format = "tar.gz"
+version = "f37b419f7aea2e9abf10abd261832cace12e3300"
+file = "php_package_symfony_service_contracts-{version}.{format}"
+mirrors = [ "https://github.com/symfony/service-contracts/archive/{version}.{format}", ]
+
+[sources.php_package_symfony_string]
+hash = "4b0d69dc3e31cf514a58648ec0a320f041cbe3862453453e190c6af5cfee60e5"
+format = "tar.gz"
+version = "136ca7d72f72b599f2631aca474a4f8e26719799"
+file = "php_package_symfony_string-{version}.{format}"
+mirrors = [ "https://github.com/symfony/string/archive/{version}.{format}", ]
