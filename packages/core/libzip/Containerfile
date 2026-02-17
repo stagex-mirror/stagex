@@ -1,0 +1,34 @@
+FROM scratch AS build
+ARG VERSION
+
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-openssl . / 
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-samurai . /
+COPY --from=stagex/core-bzip2 . /
+COPY --from=stagex/core-xz . /
+
+ADD fetch/libzip-${VERSION}.tar.gz .
+WORKDIR /libzip-${VERSION}
+RUN --network=none <<-EOF
+        set -ex
+        CFLAGS="$CFLAGS -flto=auto" \
+        cmake -B build -G Ninja \
+            -DCMAKE_INSTALL_PREFIX=/usr \
+            -DCMAKE_INSTALL_LIBDIR=lib \
+            -DBUILD_EXAMPLES=OFF \
+            -DENABLE_BZIP2=ON \
+            -DENABLE_LZMA=ON \
+            -DENABLE_OPENSSL=ON \
+            -DENABLE_ZSTD=ON \
+            -DCMAKE_BUILD_TYPE=MinSizeRel
+        cmake --build build
+        DESTDIR="/rootfs" cmake --install build
+        install -vDm644 -t /rootfs/usr/share/licenses/libzip LICENSE
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
