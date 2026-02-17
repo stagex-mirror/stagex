@@ -9,7 +9,6 @@ COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-cmake . /
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-samurai . /
-COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-bzip2 . /
 COPY --from=stagex/core-xz . /
 
