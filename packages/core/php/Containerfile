@@ -69,6 +69,7 @@ RUN --network=none <<-EOF
 		--with-iconv=/usr \
 		--with-openssl=shared \
 		--with-zip=shared \
+		--with-zlib=shared \
 		--enable-filter=shared \
 		--enable-phar=shared \
 		--enable-mysqlnd \
@@ -109,6 +110,7 @@ RUN --network=none <<-EOF
 		--with-iconv=/usr \
 		--with-openssl=shared \
 		--with-zip=shared \
+		--with-zlib=shared \
 		--enable-filter=shared \
 		--enable-phar=shared \
 		--enable-mysqlnd \
@@ -156,6 +158,10 @@ FROM stagex/core-filesystem AS package-php-ext-zip
 COPY --from=build /rootfs/usr/lib/php-modules/zip.so /usr/lib/php-modules/zip.so
 COPY --from=build /rootfs/etc/php/conf.d/ext-zip.ini /etc/php/conf.d/ext-zip.ini
 
+FROM stagex/core-filesystem AS package-php-ext-zlib
+COPY --from=build /rootfs/usr/lib/php-modules/zlib.so /usr/lib/php-modules/zlib.so
+COPY --from=build /rootfs/etc/php/conf.d/ext-zlib.ini /etc/php/conf.d/ext-zlib.ini
+
 ##############################
 ### PHP Extensions w. ZTS ####
 ##############################
@@ -179,3 +185,7 @@ COPY --from=build /rootfs/etc/php/conf.d/ext-openssl.ini /etc/php/conf.d/ext-ope
 FROM stagex/core-filesystem AS package-php-ext-zip-zts
 COPY --from=build /rootfs-zts/usr/lib/php-modules/zip.so /usr/lib/php-modules/zip.so
 COPY --from=build /rootfs/etc/php/conf.d/ext-zip.ini /etc/php/conf.d/ext-zip.ini
+
+FROM stagex/core-filesystem AS package-php-ext-zlib-zts
+COPY --from=build /rootfs-zts/usr/lib/php-modules/zlib.so /usr/lib/php-modules/zlib.so
+COPY --from=build /rootfs/etc/php/conf.d/ext-zlib.ini /etc/php/conf.d/ext-zlib.ini
