@@ -4,22 +4,14 @@ version = "1.93.1"
 description = "Rust Programming Language toolchain"
 
 [sources.mrustc]
-hash = "9d5f5b8f07c2be5c276c289bfece1645cf8e8d33f992b54b693e9b28f5d93998"
-version = "rust1.90_bootstrapped"
+hash = "c1ba35f5fc5c4ca2952d9f5526e900dcb6632ea7fd4d71fa58029b3bb563ae56"
+version = "0.12.0"
 file = "mrustc-{version}.tar.gz"
-mirrors = [ "https://github.com/thepowersgang/mrustc/archive/refs/tags/{version}.tar.gz",]
+mirrors = [ "https://github.com/thepowersgang/mrustc/archive/refs/tags/v{version}.tar.gz",]
 
 [sources.mrustc-typecheck-patch]
-hash = "22d643b3246ecef257a72cc95553ea110506178083d426bb2ea1d9cbb95bd1a5"
-mirrors = ["https://github.com/thepowersgang/mrustc/commit/99d9bd0c788b0c72fc2f4fee6187a462ceb059f2.patch"]
-
-[sources.mrustc-run_rustc-patch0]
-hash = "332493740be76cbd694be9c3e4cc8fa79e0c5f9cd514ff1b3753c0f9ae0a9125"
-mirrors = ["https://github.com/thepowersgang/mrustc/commit/0b8ce630d0cabe07bc42632015c1fe558dc36af8.patch"]
-
-[sources.mrustc-run_rustc-patch1]
-hash = "1205570dc636515962bdde4c32a693f7cde7b8c297fbb3f2e0459eaaeacfa17a"
-mirrors = ["https://github.com/thepowersgang/mrustc/commit/df7034215681d6562afea0ecc3c10847f67d27d7.patch"]
+hash = "0bf96f3e7d3e2643cc46ed67598f3c17b349ea7f29ee48774b582806ca1020cc"
+mirrors = ["https://github.com/thepowersgang/mrustc/commit/aea331a4f60535eb6c146b82c50255334e4abf3a.patch"]
 
 [sources.rust1_90_0]
 hash = "799a9f9cba4ed5351e071048bcf6b5560755d9009648def33a407dd4961f9b7e"

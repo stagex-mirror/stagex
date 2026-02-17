@@ -16,19 +16,13 @@ COPY --from=stagex/core-make . /
 COPY --from=stagex/core-pkgconf . /
 COPY --from=stagex/core-python . /
 
-COPY --from=stagex/core-mpfr . /
-COPY --from=stagex/core-mpc . /
-COPY --from=stagex/core-isl . /
-COPY --from=stagex/core-gmp . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-gcc . /
-
 COPY --from=stagex/core-onetbb . /
 COPY --from=stagex/core-mold . /
 
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-llvm-libgcc . /
 COPY --from=stagex/core-musl . /
 
 COPY --from=stagex/core-ca-certificates . /
@@ -66,6 +60,7 @@ ENV OPENSSL_NO_VENDOR=1
 
 ADD fetch/mrustc-${MRUSTC_VERSION}.tar.gz .
 ADD fetch/*.patch .
+ADD *.patch .
 WORKDIR /mrustc-${MRUSTC_VERSION}
 COPY fetch/rustc-${BOOTSTRAP_RUST_VERSION}.0-src.tar.gz .
 
@@ -77,11 +72,14 @@ RUN --network=none <<-EOF
 
 	export RUSTC_VERSION="${BOOTSTRAP_RUST_VERSION}.0"
 
-	# Revert the recently 'optimized' type inference as it segfaults
-	patch -p1 --reverse -i ../99d9bd0c788b0c72fc2f4fee6187a462ceb059f2.patch
-	# Apply the upstream fixes to `run_rustc`
-	patch -p1 -i ../0b8ce630d0cabe07bc42632015c1fe558dc36af8.patch
-	patch -p1 -i ../df7034215681d6562afea0ecc3c10847f67d27d7.patch
+	# Patch a segfault in type inference, fixed after the release was tagged
+	patch -p1 -i ../aea331a4f60535eb6c146b82c50255334e4abf3a.patch
+	# Patch undefined behavior `mrustc` relies on, `g++` graces, but `clang++` doesn't
+	patch -p1 -i ../mrustc-undefined-behavior.patch
+	# `inline` a `const static` so its value may be used from distinct objects which don't inherently
+	# have visibility. Weirdly, `clang++` only requires this with `-O0` and not `-O1`. Presumably,
+	# with even a minimal amount of optimizations, this will already be inlined as necessary.
+	sed -i s/"static const unsigned PTR_BASE"/"inline static const unsigned PTR_BASE"/ src/hir/encoded_literal.hpp
 
 	# Apply `mrustc`'s patches to the `rustc` source so it'll build with `mrustc`
 	make RUSTCSRC
@@ -138,12 +136,9 @@ EOF
 RUN --network=none <<-EOF
 	set -eux
 
-	# `g++` is required to build `mrustc` itself due to an issue `clang++` had with `mrustc`'s macros
-	make CXX="g++" CXXFLAGS="-O3"
-	# `clang++` _can_ build `minicargo`, but it reuses libraries from the first build where were
-	# linked against `glibc++`. Building `mrustc` with `g++`, `libc++` caused it to segfault when
-	# building Rust's standard library. To solve this, we build both with `g++` and `glibc++`.
-	make -f minicargo.mk CXX="g++" bin/minicargo
+	# TODO: Revisit why this requires disabling `libc++`'s assertions
+	make CXXFLAGS="-g0 -O2 -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_NONE"
+	make -f minicargo.mk bin/minicargo
 EOF
 
 # Build `rustc`, `cargo` with `mrustc`, `minicargo`
@@ -160,10 +155,10 @@ RUN --network=none <<-EOF
 	export MRUSTC_TARGET_VER="${BOOTSTRAP_RUST_VERSION}"
 
 	# Don't compile any debug information
-	export CCC_OVERRIDE_OPTIONS="${CCC_OVERRIDE_OPTIONS:-} +-g0"
+	export CCC_OVERRIDE_OPTIONS="$CCC_OVERRIDE_OPTIONS +-g0"
 	# Remove `gcc`-specific flags since we're using `clang`
-	# Disable optimizations due to `clang`-compiled `mrustc` immediately segfaulting otherwise
-	export CCC_OVERRIDE_OPTIONS="$CCC_OVERRIDE_OPTIONS x-fno-tree-sra O0"
+	# Limit optimizations due to `clang`-compiled `mrustc` output seemingly having undefined behavior
+	export CCC_OVERRIDE_OPTIONS="$CCC_OVERRIDE_OPTIONS x-fno-tree-sra O2 +-fno-strict-return +-fno-delete-null-pointer-checks"
 
 	# Explicitly disable usage of `rustix`'s' 'raw' (assembly) backend, which `mrustc` compiles to
 	# an inline `__asm__` which `gcc` accepts yet `clang` does not. While we disable some vendored
@@ -171,8 +166,6 @@ RUN --network=none <<-EOF
 	# preference.
 	export CARGO_CFG_RUSTIX_NO_LINUX_RAW=1
 
-	# Build the default targets from `minicargo.mk` (effectively the Rust standard library)
-	make -f minicargo.mk
 	# Compile `rustc`, `cargo`
 	make -f minicargo.mk output/rustc
 	make -f minicargo.mk output/cargo
@@ -187,7 +180,7 @@ RUN --network=none <<-EOF
 	export RUSTC_INSTALL_BINDIR="bin"
 	export OUTDIR_SUF=
 
-	export CCC_OVERRIDE_OPTIONS="${CCC_OVERRIDE_OPTIONS:-} +-g0"
+	export CCC_OVERRIDE_OPTIONS="$CCC_OVERRIDE_OPTIONS +-g0"
 
 	make -C run_rustc
 
