@@ -8,10 +8,18 @@ subpackages = [
   "php",
   "php-zts",
   "php-fpm",
+  "php-ext-filter",
+  "php-ext-phar",
   "php-ext-curl",
   "php-ext-openssl",
+  "php-ext-zip",
+  "php-ext-zlib",
+  "php-ext-filter-zts",
+  "php-ext-phar-zts",
   "php-ext-curl-zts",
-  "php-ext-openssl-zts"
+  "php-ext-openssl-zts",
+  "php-ext-zip-zts",
+  "php-ext-zlib-zts"
 ]
 
 [sources.php]
