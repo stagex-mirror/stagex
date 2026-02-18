@@ -9,8 +9,6 @@ COPY --from=stagex/core-filesystem . /
 COPY --from=stagex/core-busybox . /
 # As `/bin/bash` is required by `mrustc`, wrap BusyBox's Bourne-inspired shell (`hush`) as `bash`
 RUN --network=none printf "%s\n%s\n" '#!/bin/sh' 'hush "$@"' > /usr/bin/bash && chmod +x /usr/bin/bash
-# `busybox patch` isn't compatible with `mrustc`'s patch files. GNU `patch` is required
-COPY --from=stagex/core-patch . /
 
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-pkgconf . /
@@ -81,6 +79,8 @@ RUN --network=none <<-EOF
 	# with even a minimal amount of optimizations, this will already be inlined as necessary.
 	sed -i s/"static const unsigned PTR_BASE"/"inline static const unsigned PTR_BASE"/ src/hir/encoded_literal.hpp
 
+	# Patch the patch file `mrustc` will apply itself, as it isn't accepted by `busybox` as-is due to misc oddities
+	patch -p1 -i ../patch.patch
 	# Apply `mrustc`'s patches to the `rustc` source so it'll build with `mrustc`
 	make RUSTCSRC
 
