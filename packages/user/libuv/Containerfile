@@ -1,0 +1,18 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-linux-headers . /
+
+ADD fetch/v${VERSION}.tar.gz .
+WORKDIR /libuv-${VERSION}
+ENV SOURCE_DATE_EPOCH="1"
+RUN --network=none <<-EOF
+	set -eu
+	sh autogen.sh release
+	./configure \
+		--prefix=/usr
+	make -j "$(nproc)" 
+	make install DESTDIR=/rootfs
+	install -Dm644 -t /rootfs/usr/share/licenses/libuv/ LICENSE 
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
