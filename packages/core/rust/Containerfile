@@ -299,27 +299,22 @@ COPY --chmod=0755 <<-'EOF' build
 		#
 		# We specifically choose `library`, as in, the Rust standard library, as what to build up to.
 		#
-		# The exception is with more modern compilers, due to the bootstrap sequence changing such that
-		# `std` is only built _after_ the stage 1 compiler, requiring building the stage 1 compiler,
-		# then `std`, then the stage 2 compiler, then `std` again, to create a functional sysroot.
-		#
 		# For more context on the changes made, see
 		# https:/blog.rust-lang.org/inside-rust/2025/05/29/redesigning-the-initial-bootstrap-sequence.
-		STAGE=1
-		if [ $(printf "%s" "$TARGET_VERSION" | cut -d'.' -f2) -ge 90 ]; then
-			STAGE=2
+		python3 x.py build --stage 1 library
+		STAGE_FOR_CARGO=1
+		if [ $(printf "%s" "$TARGET_VERSION" | cut -d'.' -f2) -lt 90 ]; then
+			# We specify to build `cargo` with the original toolchain, as acceptable, as building with the
+			# just-built toolchain causes Rust's bootstrap to try to flush it out _much_ more.
+			STAGE_FOR_CARGO=0
 		fi
-		python3 x.py build --stage $STAGE library
 
 		# We also build `cargo`, as required to continue the bootstrap.
-		#
-		# We specify to build with the prior-stage toolchain, as acceptable, as building with the
-		# just-built toolchain causes Rust's bootstrap to try to flush it out _much_ more.
-		python3 x.py build --stage $(( $STAGE - 1 )) src/tools/cargo
+		python3 x.py build --stage $STAGE_FOR_CARGO src/tools/cargo
 
 		# Manually 'install' it
 		mkdir -p ${PREFIX}
-		mv build/host/stage${STAGE}/* ${PREFIX}/
+		mv build/host/stage1/* ${PREFIX}/
 		mv $(find build/host/ -type f -name "cargo" | head -n1) ${PREFIX}/bin/
 	else
 		python3 x.py install
