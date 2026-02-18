@@ -63,8 +63,8 @@ file = "make-{version}.tar.gz"
 mirrors = ["https://ftpmirror.gnu.org/gnu/make/{file}", "https://mirrors.kernel.org/gnu/make/{file}"]
 
 [sources.go]
-hash = "a6f3f4bbd3e6bdd626f79b668f212fbb5649daf75084fb79b678a0ae4d97423b"
-version = "1.23.5"
+hash = "e1cb5582aab588668bc04c07de18688070f6b8c9b2aaf361f821e19bd47cfdbd"
+version = "1.24.6"
 mirrors = ["https://go.dev/dl/go{version}.src.tar.gz"]
 
 [sources.cmake]
@@ -112,8 +112,8 @@ file = "libzstd-{version}.{format}"
 mirrors = [ "https://github.com/facebook/zstd/archive/v{version}.{format}",]
 
 [sources.zlib]
-version = "1.3.1"
-hash = "9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23"
+version = "1.3.2"
+hash = "bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16"
 format = "tar.gz"
 file = "zlib-{version}.{format}"
-mirrors = [ "https://www.zlib.net/{file}",]
+mirrors = [ "https://www.zlib.net/fossils/{file}",]
