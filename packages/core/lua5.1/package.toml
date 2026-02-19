@@ -5,7 +5,7 @@ description = "Lua is a powerful, efficient, lightweight, embeddable scripting l
 license = "MIT"
 website = "https://www.lua.org"
 
-[sources.lua5.1]
+[sources.lua]
 hash = "2640fc56a795f29d28ef15e13c34a47e223960b0240e8cb0a82d9b0738695333"
 format = "tar.gz"
 file = "lua-{version}.{format}"
