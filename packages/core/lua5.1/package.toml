@@ -1,0 +1,12 @@
+[package]
+name = "lua5.1"
+version = "5.1.5"
+description = "Lua is a powerful, efficient, lightweight, embeddable scripting language"
+license = "MIT"
+website = "https://www.lua.org"
+
+[sources.lua5.1]
+hash = "4f18ddae154e793e46eeab727c59ef1c0c0c2b744e7b94219710d76f530629ae"
+format = "tar.gz"
+file = "lua-{version}.{format}"
+mirrors = [ "https://www.lua.org/ftp/{file}",]

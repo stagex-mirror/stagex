@@ -1,40 +1,11 @@
-FROM scratch AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-llvm . /
-COPY --from=stagex/core-mold . /
-COPY --from=stagex/core-onetbb . /
-COPY --from=stagex/core-libzstd . /
-COPY --from=stagex/core-libtool . /
-COPY --from=stagex/core-perl . /
-COPY --from=stagex/core-autoconf . /
-COPY --from=stagex/core-automake . /
-COPY --from=stagex/core-ncurses . /
-COPY --from=stagex/core-readline . /
-COPY --from=stagex/core-m4 . /
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-cmake . /
-COPY --from=stagex/core-zlib . /
-ADD fetch/lua-${VERSION}.tar.gz .
+COPY --from=stagex/core-lua5.1 . /
+
+ADD fetch/lua-compat-${VERSION}.tar.gz .
 WORKDIR /lua-${VERSION}
-COPY <<-EOF configure.ac
-	top_buildir=.
-	AC_INIT(src/luaconf.h)
-	AC_PROG_LIBTOOL
-	AC_OUTPUT()
-EOF
-ADD *.patch .
 RUN --network=none <<-EOF
 	set -eu
-	patch -p1 < paths.patch
-	patch -p1 < liblua.so.patch
-	#patch -p1 < skip-ranlib.patch
-	libtoolize --force --install
-	aclocal
-	autoconf
-	./configure \
-		--prefix=/usr
 	make \
 		-j "$(nproc)" \
 		V="${VERSION}" \
