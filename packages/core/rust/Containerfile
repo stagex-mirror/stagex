@@ -1,89 +1,193 @@
 FROM scratch AS build
+
 ARG VERSION
 ARG TARGETARCH
 ARG MRUSTC_VERSION
-ENV BOOTSTRAP_RUST_VERSION="1.74"
-ENV BOOTSTRAP_GCC_VERSION="15.2.0"
+ENV BOOTSTRAP_RUST_VERSION="1.90"
+
 COPY --from=stagex/core-filesystem . /
 COPY --from=stagex/core-busybox . /
 # As `/bin/bash` is required by `mrustc`, wrap BusyBox's Bourne-inspired shell (`hush`) as `bash`
-RUN printf "%s\n%s\n" '#!/bin/sh' 'hush "$@"' > /usr/bin/bash && chmod +x /usr/bin/bash
+RUN --network=none printf "%s\n%s\n" '#!/bin/sh' 'hush "$@"' > /usr/bin/bash && chmod +x /usr/bin/bash
+
 COPY --from=stagex/core-make . /
-COPY --from=stagex/core-python . /
-COPY --from=stagex/core-py-setuptools . /
-COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-pkgconf . /
-COPY --from=stagex/core-openssl . /
-COPY --from=stagex/core-libzstd . /
-COPY --from=stagex/core-perl . /
-COPY --from=stagex/core-curl . /
-COPY --from=stagex/core-ca-certificates . /
-COPY --from=stagex/core-libffi . /
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/core-clang-rt-devel . /
-COPY --from=stagex/core-libunwind . /
-COPY --from=stagex/core-libcxx . /
-COPY --from=stagex/core-libcxxabi . /
-COPY --from=stagex/core-binutils . /
-COPY --from=stagex/core-mpfr . /
-COPY --from=stagex/core-mpc . /
-COPY --from=stagex/core-isl . /
-COPY --from=stagex/core-gmp . /
-COPY --from=stagex/core-gcc . /
-COPY --from=stagex/core-mold . /
+COPY --from=stagex/core-python . /
+
 COPY --from=stagex/core-onetbb . /
-COPY --from=stagex/core-llvm17 . /
+COPY --from=stagex/core-mold . /
+
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-llvm-libgcc . /
+COPY --from=stagex/core-musl . /
+
+COPY --from=stagex/core-ca-certificates . /
+COPY --from=stagex/core-curl . /
+
 COPY <<-'EOF' /etc/profile
 	set -eux
-	[[ "$TARGETARCH" == "amd64" ]] && ARCH="x86_64"
-	[[ "$TARGETARCH" == "arm64" ]] && ARCH="aarch64"
-	export ARCH
+	if [ "$TARGETARCH" = "amd64" ]; then
+		export ARCH="x86_64"
+	fi
+	if [ "$TARGETARCH" = "arm64" ]; then
+		export ARCH="aarch64"
+	fi
 	export TARGET=${ARCH}-unknown-linux-musl
 	export MAKEFLAGS="-j$(nproc)"
 	export LLVM_ROOT="/usr/lib/llvm${LLVM_VERSION}"
-	[[ "$LLVM_VERSION" == "system" ]] && LLVM_ROOT="/usr"
+	if [ "$LLVM_VERSION" = "system" ]; then
+		export LLVM_ROOT="/usr"
+	fi
 	export LLVM_BINDIR=${LLVM_ROOT}/bin
 	export LLVM_CONFIG=${LLVM_BINDIR}/llvm-config
+
+	export CC=${LLVM_BINDIR}/clang
+	export CXX=clang++
+	export CCC_OVERRIDE_OPTIONS="${CCC_OVERRIDE_OPTIONS:-}"
+	export CLANG_LIB=/usr/lib/clang/$($CC -dumpversion | cut -d'.' -f1)/lib/${TARGET}
 EOF
 SHELL ["/bin/sh","-l","-c"]
 
+# Rust defaults to static linking for `musl` targets when we want dynamic linking.
+ENV RUSTFLAGS="-Ctarget-feature=-crt-static"
+# Don't use the `openssl` vendored within the Rust source tarball
+COPY --from=stagex/core-openssl . /
+ENV OPENSSL_NO_VENDOR=1
+
 ADD fetch/mrustc-${MRUSTC_VERSION}.tar.gz .
+ADD fetch/*.patch .
+ADD *.patch .
 WORKDIR /mrustc-${MRUSTC_VERSION}
 COPY fetch/rustc-${BOOTSTRAP_RUST_VERSION}.0-src.tar.gz .
-ADD patches/add-missing-std-lib-includes.patch .
-ADD patches/fix-lib-linking.patch .
-ENV LLVM_VERSION="17"
+
+ENV LLVM_VERSION="system"
+
+# We start by applying our set of patches to `mrustc` and the bootstrapped Rust source
 RUN --network=none <<-EOF
+	set -eux
+
 	export RUSTC_VERSION="${BOOTSTRAP_RUST_VERSION}.0"
-	export MRUSTC_TARGET_VER="${BOOTSTRAP_RUST_VERSION}"
-	export RUSTC_INSTALL_BINDIR="bin"
-	export LIBGIT2_SYS_USE_PKG_CONFIG="1"
-	export OUTDIR_SUF=
-	export CXXFLAGS_EXTRA="-L/usr/lib/gcc/${ARCH}-linux-musl/${BOOTSTRAP_GCC_VERSION}/"
-	export RUSTC_TARGET="${TARGET}"
-	export CC=/usr/bin/gcc
-	export CXX=/usr/bin/g++
-	mkdir -p /etc/clang
-	echo "--gcc-install-dir=/usr/lib/gcc/${ARCH}-linux-musl/${BOOTSTRAP_GCC_VERSION}/" > /etc/clang/${ARCH}-unknown-linux-musl.cfg
-	ln -sf /usr/bin/ld.mold /usr/bin/ld
-	patch -p1 < fix-lib-linking.patch
-	patch -p1 < add-missing-std-lib-includes.patch
-	make
+
+	# Patch a segfault in type inference, fixed after the release was tagged
+	patch -p1 -i ../aea331a4f60535eb6c146b82c50255334e4abf3a.patch
+	# Patch undefined behavior `mrustc` relies on, `g++` graces, but `clang++` doesn't
+	patch -p1 -i ../mrustc-undefined-behavior.patch
+	# `inline` a `const static` so its value may be used from distinct objects which don't inherently
+	# have visibility. Weirdly, `clang++` only requires this with `-O0` and not `-O1`. Presumably,
+	# with even a minimal amount of optimizations, this will already be inlined as necessary.
+	sed -i s/"static const unsigned PTR_BASE"/"inline static const unsigned PTR_BASE"/ src/hir/encoded_literal.hpp
+
+	# Patch the patch file `mrustc` will apply itself, as it isn't accepted by `busybox` as-is due to misc oddities
+	patch -p1 -i ../patch.patch
+	# Apply `mrustc`'s patches to the `rustc` source so it'll build with `mrustc`
 	make RUSTCSRC
-	make LIBS
-	export CXX="${LLVM_BINDIR}/clang++"
-	make -f minicargo.mk LLVM_CONFIG=${LLVM_CONFIG} output/cargo
-	make -f minicargo.mk LLVM_CONFIG=${LLVM_CONFIG} output/rustc
-	ln -sf /usr/bin/gcc /usr/bin/cc
-	make -C run_rustc LLVM_CONFIG=${LLVM_CONFIG}
+
+	RUSTC_SRC=rustc-${BOOTSTRAP_RUST_VERSION}.0-src
+	# Remove binaries shipped within the source tarball
+	for file in $(find $RUSTC_SRC -type f | grep -E "\.(o|a|so|lib|dll|exe)$"); do
+		rm $file
+	done
+	# Strip executable bits from everything marked executable
+	# This doesn't erase such files outright as a variety of scripts are marked executable
+	# This does stop outright execution of any compiled artifacts included within the source tarball
+	for executable in $(find $RUSTC_SRC -type f -type f -executable); do
+		chmod -x $executable
+	done
+
+	# `mrustc` wants to build the LLVM toolchain vendored within Rust. We don't
+	# Shim the build directory to our existing LLVM toolchain
+	ln -s $LLVM_ROOT $RUSTC_SRC/build
+	# Stub a `Makefile` so `mrustc`'s `Makefile` thinks the target was created and it can itself build LLVM
+	echo "all:" > $RUSTC_SRC/build/Makefile
+
+	# `rustix`'s ASM (as transpiled by `mrustc`) is rejected by `clang`, so use the `libc` backend
+	for rustix in $(ls $RUSTC_SRC/vendor | grep rustix); do
+		for toml in $(find $RUSTC_SRC/vendor/$rustix -name "Cargo.toml"); do
+			sed -i s/'default = \['/'default = \["use-libc",'/ $toml
+		done
+	done
+
+	# Build a dynamically-linked `rustc`
+	sed -i s/'RUSTFLAGS="'/'RUSTFLAGS="-Ctarget-feature=-crt-static '/ run_rustc/Makefile
+EOF
+
+# We now prepare our working tree by defining what will be Rust's self-contained libraries
+RUN --network=none <<-EOF
+	set -eux
+
+	mkdir self-contained
+	for file in rcrt1.o crti.o crtn.o; do
+		cp /usr/lib/${file} self-contained/
+	done
+	for file in crtbegin crtend; do
+		cp $CLANG_LIB/clang_rt.${file}.o self-contained/${file}S.o
+	done
+	# Populate each prefix `mrustc` will build with the self-contained toolchain
+	for prefix in prefix-s prefix-2 prefix; do
+		PREFIX_LIB=run_rustc/output/$prefix/lib/rustlib/$TARGET/lib
+		mkdir -p $PREFIX_LIB
+		ln -s $(realpath ./self-contained) $PREFIX_LIB/self-contained
+	done
+EOF
+
+# Build `mrustc`, `minicargo`
+RUN --network=none <<-EOF
+	set -eux
+
+	# TODO: Revisit why this requires disabling `libc++`'s assertions
+	make CXXFLAGS="-g0 -O2 -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_NONE"
+	make -f minicargo.mk bin/minicargo
+EOF
+
+# Build `rustc`, `cargo` with `mrustc`, `minicargo`
+RUN --network=none <<-EOF
+	set -eux
+
+	# Because the following `Makefile`s don't observe `$LD`, install `mold` as `ld`
+	ln -sf /usr/bin/mold /usr/bin/ld
+
+	export RUSTC_TARGET="${TARGET}"
+	export RUSTC_VERSION="${BOOTSTRAP_RUST_VERSION}.0"
+	export RUSTC_INSTALL_BINDIR="bin"
+	export OUTDIR_SUF=
+	export MRUSTC_TARGET_VER="${BOOTSTRAP_RUST_VERSION}"
+
+	# Don't compile any debug information
+	export CCC_OVERRIDE_OPTIONS="$CCC_OVERRIDE_OPTIONS +-g0"
+	# Remove `gcc`-specific flags since we're using `clang`
+	# Limit optimizations due to `clang`-compiled `mrustc` output seemingly having undefined behavior
+	export CCC_OVERRIDE_OPTIONS="$CCC_OVERRIDE_OPTIONS x-fno-tree-sra O2 +-fno-strict-return +-fno-delete-null-pointer-checks"
+
+	# Explicitly disable usage of `rustix`'s' 'raw' (assembly) backend, which `mrustc` compiles to
+	# an inline `__asm__` which `gcc` accepts yet `clang` does not. While we disable some vendored
+	# libraries with `ENV`, we only do this here as it's a bootstrap-only limitation, not a
+	# preference.
+	export CARGO_CFG_RUSTIX_NO_LINUX_RAW=1
+
+	# Compile `rustc`, `cargo`
+	make -f minicargo.mk output/rustc
+	make -f minicargo.mk output/cargo
+EOF
+
+
+RUN --network=none <<-EOF
+	set -eux
+
+	export RUSTC_TARGET="${TARGET}"
+	export RUSTC_VERSION="${BOOTSTRAP_RUST_VERSION}.0"
+	export RUSTC_INSTALL_BINDIR="bin"
+	export OUTDIR_SUF=
+
+	export CCC_OVERRIDE_OPTIONS="$CCC_OVERRIDE_OPTIONS +-g0"
+
+	make -C run_rustc
+
+	# Move the sysroot `mrustc` created to the format expected by the rest of this process
 	mkdir /rust-${RUSTC_VERSION}
 	cp -R run_rustc/output/prefix /rust-${RUSTC_VERSION}/usr
 EOF
-
-#HACK: We import llvm late because it clobbers binutils tools needed ealier in the build
-# remove when binutils tools replaced by llvm are gnu- prefixed by default in package
-# This frees up /usr/bin/ld to point at ld.lld by default, etc
-COPY --from=stagex/core-llvm . /
 
 WORKDIR /
 
@@ -93,11 +197,8 @@ COPY --chmod=0755 <<-'EOF' build
 	TARGET_VERSION=${1}
 	BUILD_VERSION=${2}
 	TOOLS=${3:-cargo}
-	PATCHES=${4:-}
 	PREFIX=/rust-${TARGET_VERSION}/usr
 	BUILD_PREFIX=/rust-${BUILD_VERSION}/usr
-	export CC=${LLVM_BINDIR}/clang
-	export CXX=${LLVM_BINDIR}/clang++
 	export AS=${LLVM_BINDIR}/llvm-as
 	export AR=${LLVM_BINDIR}/llvm-ar
 	export NM=${LLVM_BINDIR}/llvm-nm
@@ -108,14 +209,39 @@ COPY --chmod=0755 <<-'EOF' build
 	export OBJCOPY=${LLVM_BINDIR}/llvm-objcopy
 	export OBJDUMP=${LLVM_BINDIR}/llvm-objdump
 	export SIZE=${LLVM_BINDIR}/llvm-size
-	export LIBCC="/usr/lib/clang/${LLVM_VERSION}/lib/${TARGET}/libclang_rt.builtins.a"
-	export LDFLAGS="-fuse-ld=/usr/bin/ld.mold"
+	export LIBCC="$CLANG_LIB/libclang_rt.builtins.a"
 	ln -sf ${LLVM_BINDIR}/clang++ /usr/bin/c++
 	ln -sf ${LLVM_BINDIR}/clang /usr/bin/cc
 	ln -sf /usr/bin/mold /usr/bin/ld
 	cd rustc-${TARGET_VERSION}-src
-	[[ -z "$PATCHES" ]] || for name in ${PATCHES//,/ }; do
-		patch -p1 < ../${name}.patch
+
+	# Remove binaries shipped within the source tarball
+	for file in $(find . -type f | grep -E "\.(o|a|so|lib|dll|exe)$"); do
+		rm $file
+	done
+	# Strip executable bits from everything marked executable
+	# This doesn't erase such files outright as a variety of scripts are marked executable
+	# This does stop outright execution of any compiled artifacts included within the source tarball
+	for executable in $(find . -type f -type f -executable); do
+		chmod -x $executable
+	done
+	# Remove all outstanding `cargo-checksum` files as we removed files they may or may not commit to
+	for crate in $(ls ./vendor); do
+		if [ -f "./vendor/$crate/.cargo-checksum.json" ]; then
+			# Outright removal of this file will cause an error
+			# It being a stub with no actual metadata won't however
+			echo '{ "files": {} }' > "./vendor/$crate/.cargo-checksum.json"
+		fi
+	done
+	# Remove all checksums from existing lockfiles as they've now been invalidated.
+	for file in $(find . -type f -name "Cargo.lock"); do
+		WITHOUT_CHECKSUMS=$(grep -v '^checksum = "' "$file")
+		echo "$WITHOUT_CHECKSUMS" > $file
+	done
+	# Remove specification of the `--frozen` argument, saying not to use the exact existing lockfiles,
+	# with the `--offline` argument, saying not to use the internet to decide the lockfile.
+	for file in $(find ./src/bootstrap -type f); do
+		sed -i s/'"--frozen"'/'"--offline"'/ "$file"
 	done
 
 	# Tune how `rustc` is built for a faster build process.
@@ -141,7 +267,7 @@ COPY --chmod=0755 <<-'EOF' build
 		fi
 	fi
 
-	./configure \
+	python3 ./src/bootstrap/configure.py \
 		--build="${TARGET}" \
 		--host="${TARGET}" \
 		--target="${TARGET}" \
@@ -152,7 +278,6 @@ COPY --chmod=0755 <<-'EOF' build
 		--enable-local-rust \
 		--enable-clang \
 		--enable-option-checking \
-		--enable-locked-deps \
 		--enable-vendor \
 		--dist-compression-formats=gz \
 		--disable-docs \
@@ -174,27 +299,22 @@ COPY --chmod=0755 <<-'EOF' build
 		#
 		# We specifically choose `library`, as in, the Rust standard library, as what to build up to.
 		#
-		# The exception is with more modern compilers, due to the bootstrap sequence changing such that
-		# `std` is only built _after_ the stage 1 compiler, requiring building the stage 1 compiler,
-		# then `std`, then the stage 2 compiler, then `std` again, to create a functional sysroot.
-		#
 		# For more context on the changes made, see
 		# https:/blog.rust-lang.org/inside-rust/2025/05/29/redesigning-the-initial-bootstrap-sequence.
-		STAGE=1
-		if [ $(printf "%s" "$TARGET_VERSION" | cut -d'.' -f2) -ge 90 ]; then
-			STAGE=2
+		python3 x.py build --stage 1 library
+		STAGE_FOR_CARGO=1
+		if [ $(printf "%s" "$TARGET_VERSION" | cut -d'.' -f2) -lt 90 ]; then
+			# We specify to build `cargo` with the original toolchain, as acceptable, as building with the
+			# just-built toolchain causes Rust's bootstrap to try to flush it out _much_ more.
+			STAGE_FOR_CARGO=0
 		fi
-		python3 x.py build --stage $STAGE library
 
 		# We also build `cargo`, as required to continue the bootstrap.
-		#
-		# We specify to build with the prior-stage toolchain, as acceptable, as building with the
-		# just-built toolchain causes Rust's bootstrap to try to flush it out _much_ more.
-		python3 x.py build --stage $(( $STAGE - 1 )) src/tools/cargo
+		python3 x.py build --stage $STAGE_FOR_CARGO src/tools/cargo
 
 		# Manually 'install' it
 		mkdir -p ${PREFIX}
-		mv build/host/stage${STAGE}/* ${PREFIX}/
+		mv build/host/stage1/* ${PREFIX}/
 		mv $(find build/host/ -type f -name "cargo" | head -n1) ${PREFIX}/bin/
 	else
 		python3 x.py install
@@ -204,87 +324,31 @@ COPY --chmod=0755 <<-'EOF' build
 	[ "${TARGET_VERSION}" == "${VERSION}" ] || rm -rf rustc-${TARGET_VERSION}-src /rust-${BUILD_VERSION}
 EOF
 
-# HACK: Required by Rust 1.75.0
-# https://github.com/rust-lang/rust/issues/117885
-RUN mkdir -p $HOME/.cargo/registry/src/index.crates.io-6f17d22bba15001f/
-ADD fetch/rustc-1.75.0-src.tar.gz .
-RUN ./build 1.75.0 1.74.0
-
-ADD fetch/rustc-1.76.0-src.tar.gz .
-RUN ./build 1.76.0 1.75.0
-
-ADD fetch/rustc-1.77.0-src.tar.gz .
-RUN ./build 1.77.0 1.76.0
-
-ADD fetch/rustc-1.78.0-src.tar.gz .
-RUN ./build 1.78.0 1.77.0
-
-ADD fetch/rustc-1.79.0-src.tar.gz .
-RUN ./build 1.79.0 1.78.0
-
-ADD fetch/rustc-1.80.0-src.tar.gz .
-RUN ./build 1.80.0 1.79.0
-
-ADD fetch/rustc-1.81.0-src.tar.gz .
-RUN ./build 1.81.0 1.80.0
-
-ADD fetch/rustc-1.82.0-src.tar.gz .
-RUN ./build 1.82.0 1.81.0
-
-ENV LLVM_VERSION="19"
-COPY --from=stagex/core-llvm19 . /
-ADD fetch/rustc-1.83.0-src.tar.gz .
-RUN ./build 1.83.0 1.82.0
-
-ADD fetch/rustc-1.84.0-src.tar.gz .
-RUN ./build 1.84.0 1.83.0
-
-ADD fetch/rustc-1.85.0-src.tar.gz .
-# HACK: rust 1.85.0 literally cannot build if .git does not exist. No idea why
-RUN mkdir -p rustc-1.85.0-src/.git
-RUN ./build 1.85.0 1.84.0
-
-ADD fetch/rustc-1.86.0-src.tar.gz .
-RUN ./build 1.86.0 1.85.0
-
-ADD fetch/rustc-1.87.0-src.tar.gz .
-RUN ./build 1.87.0 1.86.0
-
-ADD fetch/rustc-1.88.0-src.tar.gz .
-RUN ./build 1.88.0 1.87.0 ""
-
-ADD fetch/rustc-1.89.0-src.tar.gz .
-RUN ./build 1.89.0 1.88.0 ""
-
-ADD fetch/rustc-1.90.0-src.tar.gz .
-RUN ./build 1.90.0 1.89.0 ""
-
-ENV LLVM_VERSION="system"
-
 ADD fetch/rustc-1.91.1-src.tar.gz .
-RUN ./build 1.91.1 1.90.0 ""
+RUN --network=none ./build 1.91.1 1.90.0 ""
 
 ADD fetch/rustc-1.92.0-src.tar.gz .
-RUN ./build 1.92.0 1.91.1 ""
+RUN --network=none ./build 1.92.0 1.91.1 ""
 
 ADD fetch/rustc-1.93.1-src.tar.gz .
 
 # Patch the default for `musl` targets to be dynamically, not statically, linked
-RUN <<-EOF
-	for file in $(find ./rustc-1.93.1-src/compiler/rustc_target/src/spec/targets/ -type f | grep "musl"); do
+RUN --network=none <<-EOF
+	set -eux
+	for file in $(find ./rustc-${VERSION}-src/compiler/rustc_target/src/spec/targets/ -type f | grep "musl"); do
 		sed -i s/"crt_static_default = true"/"crt_static_default = false"/ $file
 	done
 EOF
 
-RUN ./build ${VERSION} 1.92.0 cargo,clippy,rustdoc,rustfmt,rust-demangler,src,wasm-component-ld
-RUN <<-EOF
+RUN --network=none ./build ${VERSION} 1.92.0 cargo,clippy,rustdoc,rustfmt,rust-demangler,src
+RUN --network=none <<-EOF
+	set -eux
 	mv /rust-${VERSION} /rootfs
-	cd /rootfs/usr/lib/rustlib
-	rm install.log
-	sort -o manifest-cargo manifest-cargo
-	sort -o manifest-rustc manifest-rustc
-	sort -o manifest-rust-std-${TARGET} manifest-rust-std-${TARGET}
-	rm -f ${TARGET}/lib/self-contained/libunwind.a
+	find /rootfs -type f -name "*.log" -delete
+	find /rootfs -type f -name "*.a" -delete
+	for manifest in $(find /rootfs -type f -name "manifest-*"); do
+		sort -o $manifest $manifest
+	done
 EOF
 
 FROM stagex/core-filesystem AS package-rust

@@ -1,0 +1,9 @@
+[package]
+name = "patch"
+version = "2.8"
+description = "GNU patch"
+
+[sources.patch]
+hash = "f87cee69eec2b4fcbf60a396b030ad6aa3415f192aa5f7ee84cad5e11f7f5ae3"
+file = "patch-{version}.tar.xz"
+mirrors = [ "https://ftp.gnu.org/gnu/patch/{file}",]

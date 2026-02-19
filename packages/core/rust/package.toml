@@ -4,74 +4,14 @@ version = "1.93.1"
 description = "Rust Programming Language toolchain"
 
 [sources.mrustc]
-hash = "baf1e86311e004a638b35730b4d7e72644938a6bbbbf65a862245b92ba5325ad"
-version = "0.11.2"
+hash = "c1ba35f5fc5c4ca2952d9f5526e900dcb6632ea7fd4d71fa58029b3bb563ae56"
+version = "0.12.0"
 file = "mrustc-{version}.tar.gz"
 mirrors = [ "https://github.com/thepowersgang/mrustc/archive/refs/tags/v{version}.tar.gz",]
 
-[sources.rust1_74_0]
-hash = "882b584bc321c5dcfe77cdaa69f277906b936255ef7808fcd5c7492925cf1049"
-mirrors = [ "https://static.rust-lang.org/dist/rustc-1.74.0-src.tar.gz",]
-
-[sources.rust1_75_0]
-hash = "5b739f45bc9d341e2d1c570d65d2375591e22c2d23ef5b8a37711a0386abc088"
-mirrors = [ "https://static.rust-lang.org/dist/rustc-1.75.0-src.tar.gz",]
-
-[sources.rust1_76_0]
-hash = "9e5cff033a7f0d2266818982ad90e4d3e4ef8f8ee1715776c6e25073a136c021"
-mirrors = [ "https://static.rust-lang.org/dist/rustc-1.76.0-src.tar.gz",]
-
-[sources.rust1_77_0]
-hash = "0d6ccd1fa845fe3456b9ed4d483fc06acf9bbae9417e396b5144488c1a522d87"
-mirrors = [ "https://static.rust-lang.org/dist/rustc-1.77.0-src.tar.gz",]
-
-[sources.rust1_78_0]
-hash = "ff544823a5cb27f2738128577f1e7e00ee8f4c83f2a348781ae4fc355e91d5a9"
-mirrors = [ "https://static.rust-lang.org/dist/rustc-1.78.0-src.tar.gz",]
-
-[sources.rust1_79_0]
-hash = "172ecf3c7d1f9d9fb16cd2a628869782670416ded0129e524a86751f961448c0"
-mirrors = [ "https://static.rust-lang.org/dist/rustc-1.79.0-src.tar.gz",]
-
-[sources.rust1_80_0]
-hash = "6f606c193f230f6b2cae4576f7b24d50f5f9b25dff11dbf9b22f787d3521d672"
-mirrors = [ "https://static.rust-lang.org/dist/rustc-1.80.0-src.tar.gz",]
-
-[sources.rust1_81_0]
-hash = "872448febdff32e50c3c90a7e15f9bb2db131d13c588fe9071b0ed88837ccfa7"
-mirrors = [ "https://static.rust-lang.org/dist/rustc-1.81.0-src.tar.gz",]
-
-[sources.rust1_82_0]
-hash = "7c53f4509eda184e174efa6ba7d5eeb586585686ce8edefc781a2b11a7cf512a"
-mirrors = [ "https://static.rust-lang.org/dist/rustc-1.82.0-src.tar.gz",]
-
-[sources.rust1_83_0]
-hash = "722d773bd4eab2d828d7dd35b59f0b017ddf9a97ee2b46c1b7f7fac5c8841c6e"
-mirrors = [ "https://static.rust-lang.org/dist/rustc-1.83.0-src.tar.gz",]
-
-[sources.rust1_84_0]
-hash = "15cee7395b07ffde022060455b3140366ec3a12cbbea8f1ef2ff371a9cca51bf"
-mirrors = [ "https://static.rust-lang.org/dist/rustc-1.84.0-src.tar.gz",]
-
-[sources.rust1_85_0]
-hash = "2f4f3142ffb7c8402139cfa0796e24baaac8b9fd3f96b2deec3b94b4045c6a8a"
-mirrors = [ "https://static.rust-lang.org/dist/rustc-1.85.0-src.tar.gz",]
-
-[sources.rust1_86_0]
-hash = "022a27286df67900a044d227d9db69d4732ec3d833e4ffc259c4425ed71eed80"
-mirrors = [ "https://static.rust-lang.org/dist/rustc-1.86.0-src.tar.gz",]
-
-[sources.rust1_87_0]
-hash = "149bb9fd29be592da4e87900fc68f0629a37bf6850b46339dd44434c04fd8e76"
-mirrors = [ "https://static.rust-lang.org/dist/rustc-1.87.0-src.tar.gz",]
-
-[sources.rust1_88_0]
-hash = "3a97544434848ae3d193d1d6bc83d6f24cb85c261ad95f955fde47ec64cfcfbe"
-mirrors = [ "https://static.rust-lang.org/dist/rustc-1.88.0-src.tar.gz",]
-
-[sources.rust1_89_0]
-hash = "2576f9f440dd99b0151bd28f59aa0ac6102d5c4f3ed4ef8a810c8dd05057250d"
-mirrors = [ "https://static.rust-lang.org/dist/rustc-1.89.0-src.tar.gz",]
+[sources.mrustc-typecheck-patch]
+hash = "0bf96f3e7d3e2643cc46ed67598f3c17b349ea7f29ee48774b582806ca1020cc"
+mirrors = ["https://github.com/thepowersgang/mrustc/commit/aea331a4f60535eb6c146b82c50255334e4abf3a.patch"]
 
 [sources.rust1_90_0]
 hash = "799a9f9cba4ed5351e071048bcf6b5560755d9009648def33a407dd4961f9b7e"

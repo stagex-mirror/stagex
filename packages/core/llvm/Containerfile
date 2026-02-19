@@ -275,6 +275,7 @@ RUN --network=none <<-EOF
 		-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
 		-DLLVM_USE_LINKER=lld \
 		$(cat ./cmake_args) \
+		-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=OFF \
 		-DLLVM_ENABLE_RUNTIMES="llvm-libgcc" \
 		-DLLVM_LIBGCC_EXPLICIT_OPT_IN=Yes \
 		-DCOMPILER_RT_ENABLE_PEDANTIC=OFF \
@@ -293,10 +294,15 @@ RUN --network=none <<-EOF
 	mkdir libgcc-libs
 	DESTDIR="libgcc-libs" cmake --install build-libgcc
 
-	# Before installing _solely_ `libgcc_s.so.1`, not the just-built copies of any other libraries
+	# Before installing _solely_ `libgcc*`, not the just-built copies of any other libraries
 	rm -rf /rootfs
 	mkdir -p /rootfs/usr/lib
-	cp libgcc-libs/usr/lib/${ARCH}-unknown-linux-gnu/libgcc_s.so /rootfs/usr/lib/
+	for libgcc in $(find libgcc-libs ! -type d -name "libgcc*"); do
+		cp -P $libgcc /rootfs/usr/lib/
+	done
+	# Also copy the expected `linux` subdirectory which symbolic links point to
+	# This is justified as this subdirectory isn't built by default and is specific to the `libgcc` build
+	cp -r libgcc-libs/usr/lib/linux /rootfs/usr/lib
 EOF
 
 FROM stagex/core-filesystem AS package-llvm
