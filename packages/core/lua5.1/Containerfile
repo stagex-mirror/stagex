@@ -29,7 +29,6 @@ RUN --network=none <<-EOF
 	set -eu
 	patch -p1 < paths.patch
 	patch -p1 < liblua.so.patch
-	#patch -p1 < skip-ranlib.patch
 	libtoolize --force --install
 	aclocal
 	autoconf
@@ -39,10 +38,10 @@ RUN --network=none <<-EOF
 		-j "$(nproc)" \
 		V="${VERSION}" \
 		LDFLAGS="-lncurses" \
-		CFLAGS="-fPIC -DLUA_USE_LINUX -DLUA_COMPAT_5_2 -DLUA_USE_LINENOISE" \
+		CFLAGS="-fPIC -DLUA_USE_LINUX -DLUA_USE_LINENOISE" \
 		RPATH="/usr/lib" \
 		CC=clang \
-		LIB_LIBS="-lpthread -lm -ldl -llinenoise" \
+		LIB_LIBS="-lpthread -lm -ldl -llinenoise -lncurses" \
 		linux
 	make \
 		V="${VERSION}" \
