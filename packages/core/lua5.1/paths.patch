@@ -1,24 +1,5 @@
-97a98
-> #define LUA_ROOT2	"/usr/"
-98a100
-> #define LUA_LDIR2	LUA_ROOT2 "share/lua/5.1/"
-99a102
-> #define LUA_CDIR2	LUA_ROOT2 "lib/lua/5.1/"
-102c105,106
-< 		            LUA_CDIR"?.lua;"  LUA_CDIR"?/init.lua"
----
-> 		            LUA_CDIR"?.lua;"  LUA_CDIR"?/init.lua;" \
-> 			    LUA_LDIR2"?.lua;"  LUA_LDIR2"?/init.lua" 
-104c108,112
-< 	"./?.so;"  LUA_CDIR"?.so;" LUA_CDIR"loadall.so"
----
-> 	"./?.so;"  
-> 	LUA_CDIR"?.so;" \
-> 	LUA_CDIR2"?.so;" \ 
-> 	LUA_CDIR"loadall.so" \
-> 	LUA_CDIR2"loadall.so" \
---- src/luaconf.h.orig	2026-02-19 20:45:46.106971935 +0100
-+++ src/luaconf.h	2026-02-19 21:10:01.180296035 +0100
+--- ./src/luaconf.h.orig	2026-02-19 20:45:46.106971935 +0100
++++ ./src/luaconf.h	2026-02-19 22:48:32.912119952 +0100
 @@ -95,13 +95,21 @@
  
  #else
@@ -35,11 +16,11 @@
 +			    LUA_LDIR2"?.lua;"  LUA_LDIR2"?/init.lua" 
  #define LUA_CPATH_DEFAULT \
 -	"./?.so;"  LUA_CDIR"?.so;" LUA_CDIR"loadall.so"
-+	"./?.so;"  
++	"./?.so;" \ 
 +	LUA_CDIR"?.so;" \
 +	LUA_CDIR2"?.so;" \ 
 +	LUA_CDIR"loadall.so" \
-+	LUA_CDIR2"loadall.so" \
++	LUA_CDIR2"loadall.so" 
  #endif
  
  
