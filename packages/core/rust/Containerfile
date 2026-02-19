@@ -340,7 +340,7 @@ RUN --network=none <<-EOF
 	done
 EOF
 
-RUN --network=none ./build ${VERSION} 1.92.0 cargo,clippy,rustdoc,rustfmt,rust-demangler,src,wasm-component-ld
+RUN --network=none ./build ${VERSION} 1.92.0 cargo,clippy,rustdoc,rustfmt,rust-demangler,src
 RUN --network=none <<-EOF
 	set -eux
 	mv /rust-${VERSION} /rootfs
