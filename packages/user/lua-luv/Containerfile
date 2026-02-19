@@ -2,6 +2,7 @@ FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
 COPY --from=stagex/user-lua-compat53 . /
 COPY --from=stagex/user-libuv . /
+COPY --from=stagex/core-lua5.1 . /
 
 ADD fetch/v${VERSION}.tar.gz .
 WORKDIR /lua-luv-${VERSION}
