@@ -6,7 +6,7 @@ license = "MIT"
 website = "https://www.lua.org"
 
 [sources.lua5.1]
-hash = "4f18ddae154e793e46eeab727c59ef1c0c0c2b744e7b94219710d76f530629ae"
+hash = "2640fc56a795f29d28ef15e13c34a47e223960b0240e8cb0a82d9b0738695333"
 format = "tar.gz"
 file = "lua-{version}.{format}"
 mirrors = [ "https://www.lua.org/ftp/{file}",]
