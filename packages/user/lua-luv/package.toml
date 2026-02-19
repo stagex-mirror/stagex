@@ -1,14 +1,14 @@
 [package]
 name = "lua-luv"
-version = "1.51.0"
-description = "Cross-platform asynchronous I/O"
-website = "https://www.libuv.org"
-licenses = "MIT"
+version = "1.51.0-1"
+description = "Bare libuv bindings for Lua"
+website = "https://github.com/luvit/luv"
+licenses = "Apache-2.0"
 
 [sources.lua-luv]
-hash = "27e55cf7083913bfb6826ca78cde9de7647cded648d35f24163f2d31bb9f51cd"
+hash = "d4a11178ae8e16ba5886799ea91905dd9b0b479c75aebd67866d37373e41526f"
 format = "tar.gz"
-file = "v{version}.{format}"
-mirrors = [ "https://www.github.com/libuv/libuv/archive/refs/tags/{file}",]
+file = "{version}.{format}"
+mirrors = [ "https://github.com/luvit/luv/archive/refs/tags/{file}",]
 
 
