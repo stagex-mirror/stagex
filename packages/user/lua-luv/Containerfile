@@ -1,17 +1,35 @@
 FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/user-lua-compat53 . /
+COPY --from=stagex/user-libuv . /
 
 ADD fetch/v${VERSION}.tar.gz .
-WORKDIR /libuv-${VERSION}
+WORKDIR /lua-luv-${VERSION}
 ENV SOURCE_DATE_EPOCH="1"
 RUN --network=none <<-EOF
 	set -eu
-	sh autogen.sh release
-	./configure \
-		--prefix=/usr
-	make -j "$(nproc)" 
-	make install DESTDIR=/rootfs
+	cmake -B build -G Ninja \
+				-DCMAKE_INSTALL_PREFIX=/usr \
+				-DWITH_LUA_ENGINE=Lua \
+				-DWITH_SHARED_LIBUV=ON \
+				-DLUA_BUILD_TYPE=System \
+				-DLUA_COMPAT53_DIR="/usr/include/lua${lver/jit/5.1}" \
+				-DBUILD_MODULE=OFF \
+				-DBUILD_SHARED_LIBS=ON \
+				-DBUILD_STATIC_LIBS=OFF
+	cmake --build build
+  DESTDIR="/rootfs" cmake --install build
+	cmake -B build-static -G Ninja \
+				-DCMAKE_INSTALL_PREFIX=/usr \
+				-DWITH_LUA_ENGINE=Lua \
+				-DWITH_SHARED_LIBUV=ON \
+				-DLUA_BUILD_TYPE=System \
+				-DLUA_COMPAT53_DIR="/usr/include/lua${lver/jit/5.1}" \
+				-DBUILD_MODULE=OFF \
+				-DBUILD_SHARED_LIBS=OFF \
+				-DBUILD_STATIC_LIBS=ON
+	cmake --build build-static
+  DESTDIR="/rootfs" cmake --install build-static
 	install -Dm644 -t /rootfs/usr/share/licenses/lua-luv/ LICENSE 
 EOF
 FROM stagex/core-filesystem AS package

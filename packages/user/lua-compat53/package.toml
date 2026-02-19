@@ -1,0 +1,12 @@
+[package]
+name = "lua-compat-5.3"
+version = "0.14.4"
+description = "Compatibility module providing Lua-5.3-style APIs for Lua"
+license = "MIT"
+website = "https://github.com/lunarmodules/lua-compat-5.3"
+
+[sources.lua-compat53]
+hash = "a9afa2eb812996039a05c5101067e6a31af9a75eded998937a1ce814afe1b150"
+format = "tar.gz"
+file = "v{version}.{format}"
+mirrors = [ "https://github.com/lunarmodules/lua-compat-5.3/archive/refs/tags/{file}",]
