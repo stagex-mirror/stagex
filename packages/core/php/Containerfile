@@ -72,6 +72,9 @@ RUN --network=none <<-EOF
 		--with-zlib=shared \
 		--enable-filter=shared \
 		--enable-phar=shared \
+		--enable-mbstring=shared \
+		--disable-mbregex \
+		--enable-tokenizer=shared \
 		--enable-mysqlnd \
 		--enable-fpm
 	make -j "$(nproc)"
@@ -113,6 +116,9 @@ RUN --network=none <<-EOF
 		--with-zlib=shared \
 		--enable-filter=shared \
 		--enable-phar=shared \
+		--enable-mbstring=shared \
+		--disable-mbregex \
+		--enable-tokenizer=shared \
 		--enable-mysqlnd \
 		--enable-zts
 	make -j "$(nproc)"
@@ -150,9 +156,21 @@ FROM stagex/core-filesystem AS package-php-ext-curl
 COPY --from=build /rootfs/usr/lib/php-modules/curl.so /usr/lib/php-modules/curl.so
 COPY --from=build /rootfs/etc/php/conf.d/ext-curl.ini /etc/php/conf.d/ext-curl.ini
 
+FROM stagex/core-filesystem AS package-php-ext-mbstring
+COPY --from=build /rootfs/usr/lib/php-modules/mbstring.so /usr/lib/php-modules/mbstring.so
+COPY --from=build /rootfs/etc/php/conf.d/ext-mbstring.ini /etc/php/conf.d/ext-mbstring.ini
+
 FROM stagex/core-filesystem AS package-php-ext-openssl
 COPY --from=build /rootfs/usr/lib/php-modules/openssl.so /usr/lib/php-modules/openssl.so
 COPY --from=build /rootfs/etc/php/conf.d/ext-openssl.ini /etc/php/conf.d/ext-openssl.ini
+
+FROM stagex/core-filesystem AS package-php-ext-sodium
+COPY --from=build /rootfs/usr/lib/php-modules/sodium.so /usr/lib/php-modules/sodium.so
+COPY --from=build /rootfs/etc/php/conf.d/ext-sodium.ini /etc/php/conf.d/ext-sodium.ini
+
+FROM stagex/core-filesystem AS package-php-ext-tokenizer
+COPY --from=build /rootfs/usr/lib/php-modules/tokenizer.so /usr/lib/php-modules/tokenizer.so
+COPY --from=build /rootfs/etc/php/conf.d/ext-tokenizer.ini /etc/php/conf.d/ext-tokenizer.ini
 
 FROM stagex/core-filesystem AS package-php-ext-zip
 COPY --from=build /rootfs/usr/lib/php-modules/zip.so /usr/lib/php-modules/zip.so
@@ -178,9 +196,21 @@ FROM stagex/core-filesystem AS package-php-ext-curl-zts
 COPY --from=build /rootfs-zts/usr/lib/php-modules/curl.so /usr/lib/php-modules/curl.so
 COPY --from=build /rootfs/etc/php/conf.d/ext-curl.ini /etc/php/conf.d/ext-curl.ini
 
+FROM stagex/core-filesystem AS package-php-ext-mbstring-zts
+COPY --from=build /rootfs-zts/usr/lib/php-modules/mbstring.so /usr/lib/php-modules/mbstring.so
+COPY --from=build /rootfs/etc/php/conf.d/ext-mbstring.ini /etc/php/conf.d/ext-mbstring.ini
+
 FROM stagex/core-filesystem AS package-php-ext-openssl-zts
 COPY --from=build /rootfs-zts/usr/lib/php-modules/openssl.so /usr/lib/php-modules/openssl.so
 COPY --from=build /rootfs/etc/php/conf.d/ext-openssl.ini /etc/php/conf.d/ext-openssl.ini
+
+FROM stagex/core-filesystem AS package-php-ext-sodium-zts
+COPY --from=build /rootfs-zts/usr/lib/php-modules/sodium.so /usr/lib/php-modules/sodium.so
+COPY --from=build /rootfs/etc/php/conf.d/ext-sodium.ini /etc/php/conf.d/ext-sodium.ini
+
+FROM stagex/core-filesystem AS package-php-ext-tokenizer-zts
+COPY --from=build /rootfs-zts/usr/lib/php-modules/tokenizer.so /usr/lib/php-modules/tokenizer.so
+COPY --from=build /rootfs/etc/php/conf.d/ext-tokenizer.ini /etc/php/conf.d/ext-tokenizer.ini
 
 FROM stagex/core-filesystem AS package-php-ext-zip-zts
 COPY --from=build /rootfs-zts/usr/lib/php-modules/zip.so /usr/lib/php-modules/zip.so
