@@ -46,6 +46,8 @@ class ResourceFetcher(object):
           version_under=source_info.version_under,
           version_dash=source_info.version_dash,
           version_major=source_info.version_major,
+          version_major_minor=source_info.version_major_minor,
+          version_strip_suffix=source_info.version_strip_suffix,
           format=source_info.format,
         )
 
@@ -54,6 +56,8 @@ class ResourceFetcher(object):
           version_under=source_info.version_under,
           version_dash=source_info.version_dash,
           version_major=source_info.version_major,
+          version_major_minor=source_info.version_major_minor,
+          version_strip_suffix=source_info.version_strip_suffix,
           format=source_info.format,
           file=file,
         )
@@ -156,7 +160,7 @@ if __name__ == "__main__":
       thrds = pool._max_workers - 1
   else:
       thrds = 1
-  rfetchers = [ResourceFetcher(path) for path in package_files]  
+  rfetchers = [ResourceFetcher(path) for path in package_files]
   signal.signal(signal.SIGINT, interrupt_handler)
   with ThreadPoolExecutor(max_workers=thrds) as executor:
       pkgs = executor.map(lambda fetcher: fetcher.fetch_resource(), rfetchers)
