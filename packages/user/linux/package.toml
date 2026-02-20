@@ -1,13 +1,13 @@
 [package]
 name = "linux"
-version = "6.19"
+version = "6.19.3"
 description = "The Linux Kernel"
 website = "https://kernel.org"
 license = "GPL-2.0-only"
 subpackages = ["linux-generic","linux-airgap","linux-server","linux-guest","linux-guest-net","linux-nitro","gen_initramfs"]
 
 [sources.linux]
-hash = "303079a8250b8f381f82b03f90463d12ac98d4f6b149b761ea75af1323521357"
+hash = "0e474968adfcbee32916fd01a89d8ccfd1168d8d32569e76a5c664c793198ebe"
 format = "tar.xz"
 file = "linux-{version}.{format}"
 mirrors = [ "http://mirrors.edge.kernel.org/pub/linux/kernel/v{version_major}.x/linux-{version}.{format}",]
