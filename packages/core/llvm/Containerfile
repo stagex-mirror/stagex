@@ -242,7 +242,8 @@ RUN --network=none <<-EOF
 
 	# NSan, for whatever reason, is not being reproducibly built. It's removed here as it
 	# _should_ be unpopular and not a blocker, but ideally this would be solved (TODO).
-	rm /rootfs/usr/lib/clang/$MAJOR_VERSION/lib/${TARGET}/libclang_rt.nsan*
+	# It is built only for some platforms, -f to avoid failing when missing.
+	rm -f /rootfs/usr/lib/clang/$MAJOR_VERSION/lib/${TARGET}/libclang_rt.nsan*
 EOF
 
 RUN --network=none <<-EOF
