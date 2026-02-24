@@ -89,26 +89,6 @@ RUN --network=none <<-EOF
 	rm -rf /linux-*
 EOF
 
-FROM base AS go
-ARG TARGETARCH
-ARG GO_VERSION
-ADD fetch/go${GO_VERSION}.src.tar.gz /
-WORKDIR /go
-RUN --network=none <<-EOF
-	export GOROOT_BOOTSTRAP=/usr/lib/go
-	export GOHOSTARCH=386
-  export GOARCH=${TARGETARCH}
-	env -C src bash -- make.bash
-	rm -rf src/testdata
-	mv bin/linux_${TARGETARCH}/* bin
-	rm -rf bin/linux_${TARGETARCH}
-	mkdir -p /rootfs/usr/lib/go /rootfs/usr/bin
-	cp -a bin lib pkg src /rootfs/usr/lib/go
-	ln -s /usr/lib/go/bin/go /rootfs/usr/bin/go
-	ln -s /usr/lib/go/bin/gofmt /rootfs/usr/bin/gofmt
-	rm -rf /go
-EOF
-
 FROM base AS binutils
 ARG TARGETARCH
 ARG BINUTILS_VERSION
@@ -412,7 +392,6 @@ COPY --from=musl /rootfs/ /
 COPY --from=gcc /rootfs/ /
 COPY --from=binutils /rootfs/ /
 COPY --from=python /rootfs/ /
-COPY --from=go /rootfs/ /
 COPY --from=cmake /rootfs/ /
 COPY --from=linux-headers /rootfs/ /
 COPY --from=libffi /rootfs/ /

@@ -62,11 +62,6 @@ hash = "581f4d4e872da74b3941c874215898a7d35802f03732bdccee1d4a7979105d18"
 file = "make-{version}.tar.gz"
 mirrors = ["https://ftpmirror.gnu.org/gnu/make/{file}", "https://mirrors.kernel.org/gnu/make/{file}"]
 
-[sources.go]
-hash = "e1cb5582aab588668bc04c07de18688070f6b8c9b2aaf361f821e19bd47cfdbd"
-version = "1.24.6"
-mirrors = ["https://go.dev/dl/go{version}.src.tar.gz"]
-
 [sources.cmake]
 version = "3.31.5"
 hash = "66fb53a145648be56b46fa9e8ccade3a4d0dfc92e401e52ce76bdad1fea43d27"
