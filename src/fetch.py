@@ -130,13 +130,10 @@ class ResourceFetcher(object):
       with open(file_path, "rb") as f:
           return expected_digest == file_digest(f, "sha256").hexdigest()
 
-def interrupt_handler(signum, frame, ask=True):
+def interrupt_handler(signum, frame):
     print(f"Handling signal {signum} ({signal.Signals(signum).name}).")
-    if ask:
-        signal.signal(signal.SIGINT, partial(interrupt_handler, ask=False))
-        print("To confirm interrupt, press ctrl-c again.")
-        return
-
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+    #print("To confirm interrupt, press ctrl-c again.")
     print("Cleaning/exiting...")
     time.sleep(1)
     sys.exit(0)
@@ -161,11 +158,11 @@ if __name__ == "__main__":
   else:
       thrds = 1
   rfetchers = [ResourceFetcher(path) for path in package_files]
-  signal.signal(signal.SIGINT, interrupt_handler)
+  #signal.signal(signal.SIGINT, interrupt_handler)
   with ThreadPoolExecutor(max_workers=thrds) as executor:
-      pkgs = executor.map(lambda fetcher: fetcher.fetch_resource(), rfetchers)
+      pkgs = list(executor.map(lambda fetcher: fetcher.fetch_resource(), rfetchers))
       print()
-      if len(pkgs):
+      if any(pkgs):
         for fail in pkgs:
           print(f"\nFailed: {fail}")
         exit(1)
