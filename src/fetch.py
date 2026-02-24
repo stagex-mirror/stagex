@@ -132,9 +132,8 @@ class ResourceFetcher(object):
 
 def interrupt_handler(signum, frame):
     print(f"Handling signal {signum} ({signal.Signals(signum).name}).")
+    print(f"\033[91m To confirm interrupt, press ctrl-c again. \033[0m")
     signal.signal(signal.SIGINT, signal.SIG_DFL)
-    #print("To confirm interrupt, press ctrl-c again.")
-    print("Cleaning/exiting...")
     time.sleep(1)
     sys.exit(0)
 
@@ -158,7 +157,6 @@ if __name__ == "__main__":
   else:
       thrds = 1
   rfetchers = [ResourceFetcher(path) for path in package_files]
-  #signal.signal(signal.SIGINT, interrupt_handler)
   with ThreadPoolExecutor(max_workers=thrds) as executor:
       pkgs = list(executor.map(lambda fetcher: fetcher.fetch_resource(), rfetchers))
       print()
