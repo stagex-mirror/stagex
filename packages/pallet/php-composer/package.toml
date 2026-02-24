@@ -1,0 +1,4 @@
+[package]
+name = "php-composer"
+description = "Composer Runtime with Git"
+version_from = "core-composer"

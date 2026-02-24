@@ -1,0 +1,4 @@
+[package]
+name = "php"
+description = "PHP Runtime with Shell and Extensions"
+version_from = "core-php"
