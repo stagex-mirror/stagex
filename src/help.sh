@@ -44,7 +44,7 @@ _help_variables() {
     grep -E "$pattern" "$1" | sort | while read -r line; do
         variable=${line%% *}
         default=${line#*= }
-        default=${default%%##*}
+        default=$(echo ${default%%##*} | sed -e 's/^*[[:space:]]//')
         description=${line##*## }
         printf "  %b%-30s%b%s %b(default: %s)%b\n" "$variable_col" "$variable" "$col_off" "$description" "$grey" "$default" "$col_off"
     done
