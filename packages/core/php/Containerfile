@@ -76,6 +76,7 @@ RUN --network=none <<-EOF
 		--disable-mbregex \
 		--enable-tokenizer=shared \
 		--enable-mysqlnd \
+		--enable-embed=shared \
 		--enable-fpm
 	make -j "$(nproc)"
 	make INSTALL_ROOT="/${rootfs}" install
@@ -120,11 +121,13 @@ RUN --network=none <<-EOF
 		--disable-mbregex \
 		--enable-tokenizer=shared \
 		--enable-mysqlnd \
+		--enable-embed=shared \
 		--enable-zts
 	make -j "$(nproc)"
 	make INSTALL_ROOT="/${rootfs}" install
 	rm -rf "/${rootfs}/var/run"
 	install -vDm644 -t "/${rootfs}/usr/share/licenses/php" LICENSE
+	unset rootfs
 
 EOF
 
@@ -133,8 +136,24 @@ FROM stagex/core-filesystem AS package-php
 COPY --from=build /rootfs/usr/bin/php /usr/bin/php
 COPY --from=build /rootfs/usr/share/licenses/php/LICENSE /usr/share/licenses/php/LICENSE
 
+FROM package-php AS package-php-dev
+COPY --from=build /rootfs/usr/bin /usr/bin
+COPY --from=build /rootfs/usr/include/php /usr/include/php
+
+FROM stagex/core-filesystem AS package-php-embed
+COPY --from=build /rootfs/usr/lib/libphp.so /usr/lib/libphp.so
+COPY --from=build /rootfs/usr/share/licenses/php/LICENSE /usr/share/licenses/php/LICENSE
+
 FROM stagex/core-filesystem AS package-php-zts
 COPY --from=build /rootfs-zts/usr/bin/php /usr/bin/php
+COPY --from=build /rootfs-zts/usr/share/licenses/php/LICENSE /usr/share/licenses/php/LICENSE
+
+FROM package-php-zts AS package-php-dev-zts
+COPY --from=build /rootfs-zts/usr/bin /usr/bin
+COPY --from=build /rootfs-zts/usr/include/php /usr/include/php
+
+FROM stagex/core-filesystem AS package-php-embed-zts
+COPY --from=build /rootfs-zts/usr/lib/libphp.so /usr/lib/libphp.so
 COPY --from=build /rootfs-zts/usr/share/licenses/php/LICENSE /usr/share/licenses/php/LICENSE
 
 FROM stagex/core-filesystem AS package-php-fpm

@@ -6,7 +6,11 @@ license = "PHP-3.0.1"
 website = "https://www.php.net/"
 subpackages = [
   "php",
+  "php-dev",
+  "php-embed",
   "php-zts",
+  "php-dev-zts",
+  "php-embed-zts",
   "php-fpm",
   "php-ext-filter",
   "php-ext-phar",
