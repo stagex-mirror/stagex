@@ -249,21 +249,22 @@ COPY --chmod=0755 <<-'EOF' build
 	# Tune how `rustc` is built for a faster build process.
 	#
 	# - `incremental=false` doesn't build a cache for incremental builds, as unnecessary here.
-	export RUSTFLAGS="-Clinker=clang -Clink-arg=-Wl,-fuse-ld=mold -Cincremental=false"
+	export RUSTFLAGS="-Clinker=clang -Clink-arg=-Wl,-fuse-ld=mold -Cincremental=false $RUSTFLAGS"
 	# For intermediary compilers, which aren't part of the committed output, be more aggressive
 	if [ ! "$TARGET_VERSION" = "$VERSION" ]; then
 		# Disable generating/embedding LLVM bitcode within the objects as it won't be used
-		export RUSTFLAGS="$RUSTFLAGS -Cembed-bitcode=false"
+		export RUSTFLAGS="-Cembed-bitcode=false $RUSTFLAGS"
 
-		# Enable native codegen for versions greater than 1.93
-		# https://github.com/rust-lang/rust/pull/148841 prevents doing do for some prior versions.
-		if [ $(printf "%s" "$BUILD_VERSION" | cut -d'.' -f2) -ge 93 ]; then
-			export RUSTFLAGS="$RUSTFLAGS -Ctarget-cpu=native"
+		# Enable native codegen as this intermediary step doesn't have to be reproducible
+		export RUSTFLAGS="-Ctarget-cpu=native $RUSTFLAGS"
+		# But handle the edge-case https://github.com/rust-lang/rust/pull/148841 presents
+		if [ $(printf "%s" "$BUILD_VERSION" | cut -d'.' -f2) -lt 93 ]; then
+			export RUSTFLAGS="$RUSTFLAGS -Ctarget-feature=-avx512f"
 		fi
 
 		# Set `codegen-units` to `nproc`, which will break reproducible builds as Rust builds are only
 		# deterministic with a consistent amount of units.
-		export RUSTFLAGS="$RUSTFLAGS -Ccodegen-units=$(nproc)"
+		export RUSTFLAGS="-Ccodegen-units=$(nproc) $RUSTFLAGS"
 
 		# Also, if the compiler is sufficiently modern, enable the threaded frontend. This was available
 		# under nightly as soon ~1.75, but we delay enabling it until it was more tested and stable.
@@ -274,7 +275,7 @@ COPY --chmod=0755 <<-'EOF' build
 			if [ $(nproc) -lt $THREADS_TO_USE ]; then
 				THREADS_TO_USE=$(nproc)
 			fi
-			export RUSTFLAGS="$RUSTFLAGS -Zthreads=$THREADS_TO_USE"
+			export RUSTFLAGS="-Zthreads=$THREADS_TO_USE $RUSTFLAGS"
 		fi
 	fi
 
