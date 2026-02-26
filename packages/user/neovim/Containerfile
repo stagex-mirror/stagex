@@ -1,12 +1,16 @@
 FROM stagex/pallet-clang-cmake-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-make . /
-COPY --from=stagex/core-coreutils . /
-COPY --from=stagex/core-curl . /
 COPY --from=stagex/core-gettext . /
 COPY --from=stagex/core-git . /
-COPY --from=stagex/core-openssl . /
-COPY --from=stagex/pallet-lua . /
+COPY --from=stagex/core-coreutils . /
+COPY --from=stagex/core-curl . /
+COPY --from=stagex/core-lua5.1 . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-readline . /
+COPY --from=stagex/core-ncurses . /
+COPY --from=stagex/user-gperf . /
+COPY --from=stagex/user-libuv . /
+
 ADD fetch/v${VERSION}.tar.gz .
 WORKDIR /neovim-${VERSION}
 ENV CFLAGS="-march=x86-64 -mtune=generic -fno-lto"
