@@ -4,7 +4,7 @@
 name = "Lance Vick"
 location = "Silicon Valley, USA"
 email = "stagex@lance.vick.house"
-matrix = "@lance:matrix.org"
+matrix = ["@lrvick:matrix.org", "@lance:distrust.co"]
 fediverse = "@lrvick@mastodon.social"
 keyoxide = "https://keyoxide.org/E90A401336C8AAA9"
 website = "https://lance.dev"
@@ -13,7 +13,7 @@ website = "https://lance.dev"
 name = "Anton Livaja"
 location = "Toronto, Canada"
 email = "stagex@livaja.me"
-matrix = "@antonleviathan:matrix.org"
+matrix = ["@antonleviathan:matrix.org", "@anton:distrust.co"]
 fediverse = "@anton@mastodon.online"
 keyoxide = "https://keyoxide.org/DC4B7D1F52E0BA4D"
 website = "https://antonlivaja.com/"
@@ -22,7 +22,7 @@ website = "https://antonlivaja.com/"
 name = "Ryan Heywood"
 location = "Florida, USA"
 email = "me@ryansquared.pub"
-matrix = "@ryansquared:beeper.com"
+matrix = ["@ryansquared:matrix.org", "@ryan:distrust.co"]
 fediverse = "@ryan@tilde.zone"
 keyoxide = "https://keyoxide.org/8E401478A3FBEF72"
 website = "https://ryansquared.pub"
@@ -31,7 +31,7 @@ website = "https://ryansquared.pub"
 name = "Danny Grove"
 location = "California, USA"
 email = "stagex@dannygrove.com"
-matrix = "@dgrove:matrix.org"
+matrix = ["@dgrove:matrix.org"]
 keyoxide = "https://keyoxide.org/C92FE5A3FBD58DD3EC5AA26BB10116B8193F2DBD"
 website = "https://dannygrove.com"
 
@@ -45,7 +45,7 @@ website = "https://www.linkedin.com/in/mavrukin/"
 name = "Konstantinos Geles"
 location = "Lille, France"
 email = "bioinformaticiannextdoor@gmail.com"
-matrix = "@bioinformatician_next_door:matrix.org"
+matrix = ["@fire_element:matrix.org"]
 fediverse = "@bioinformatician_next_door@kafeneio.social"
 keyoxide = "https://keyoxide.org/8208F8E4F9D61005F5706A4E28E42797A19977AC"
 website = "https://silvertides.net"
@@ -54,7 +54,7 @@ website = "https://silvertides.net"
 name = "Matthew Brooks"
 location = "San Francisco, USA"
 email = "*@logicwax.com"
-matrix = "@logicwax:matrix.org"
+matrix = ["@logicwax:matrix.org"]
 website = "https://logicwax.com"
 
 [people.panekj]
@@ -69,6 +69,7 @@ keyoxide = "https://keyoxide.org/aspe:keyoxide.org:WNHRCLJSCUR4UWCJDOSZAPFPDM"
 [people.kronzoew]
 name = "Zoë Finja Emilia Kron
 location = "North Rhine-Westphalia, Germany"
+matrix = ["@zoefinja:tchncs.de"]
 email = ["z.kron@lugges.eu", "zoe.kron@posteo.de"]
 website = "https://kron.fi"
 
