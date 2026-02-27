@@ -13,6 +13,7 @@ from urllib.request import build_opener, install_opener, urlopen, urlretrieve
 from email.message import Message
 from typing import List, Tuple
 from concurrent.futures import ThreadPoolExecutor
+import threading
 
 class ResourceFetcher(object):
   START_TIME: 0
@@ -20,7 +21,11 @@ class ResourceFetcher(object):
     self.package_file: str = package_file_path
 
   def fetch_resource(self) -> List[Tuple[str, str, str, str]]:
-    print(f"\nParsing: {self.package_file}")
+    time.sleep(3)
+    thread_id = threading.get_ident()
+    start = time.time()
+    print(f"[Thread {thread_id}] Starting: {self.package_file}", flush=True)
+    print(f"\nParsing: {self.package_file}", flush=True)
     stage: str = self.package_file.split(os.path.sep)[1]
     toml_package = CommonUtils.toml_read(self.package_file)
     package_info = CommonUtils.parse_package_toml_no_deps(toml_package)
@@ -74,19 +79,20 @@ class ResourceFetcher(object):
         print(f"Mirror: {url}")
         try:
           ResourceFetcher.download(url, filepath)
+          print(f"\nFinished downloading: {file}")
         except:
           error = (file, source_info.hash, url, "download")
-          print("Failed downloading from mirror")
+          print("Failed downloading from mirror: {url}")
           continue
         if not ResourceFetcher.verify(filepath, source_info.hash):
           error = (file, source_info.hash, url, "verify_download")
-          print("Failed verifying downloaded file")
+          print("Failed verifying downloaded file, from mirror: {url}")
           continue
         error = None
         break
       if error:
         failed_fetch.append(error)
-
+    print(f"[Thread {thread_id}] Finished: {self.package_file} in {time.time()-start:.2f}s", flush=True)
     return failed_fetch
 
   @staticmethod
@@ -158,7 +164,8 @@ if __name__ == "__main__":
       thrds = 1
   rfetchers = [ResourceFetcher(path) for path in package_files]
   with ThreadPoolExecutor(max_workers=thrds) as executor:
-      pkgs = list(executor.map(lambda fetcher: fetcher.fetch_resource(), rfetchers))
+      futures = [executor.submit(fetcher.fetch_resource) for fetcher in rfetchers]
+      pkgs = [f.result() for f in futures]
       print()
       if any(pkgs):
         for fail in pkgs:
