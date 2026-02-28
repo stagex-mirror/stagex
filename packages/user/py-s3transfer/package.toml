@@ -3,7 +3,7 @@ name = "py-s3transfer"
 version = "0.13.1"
 description = "Amazon S3 Transfer Manager for Python"
 website = "https://github.com/boto/s3transfer"
-licenses = "Apache-2.0"
+license = "Apache-2.0"
 
 [sources.py-s3transfer]
 hash = "db83109f50ab8f1965caff907716b2a2c4f5b7cef024780890aa397883e964a4"

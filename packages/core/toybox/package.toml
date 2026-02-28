@@ -2,7 +2,7 @@
 name = "toybox"
 version = "0.8.13"
 description = "Toybox combines many common Linux command line utilities together into a single BSD-licensed executable"
-licenses = "0BSD"
+license = "0BSD"
 website = "https://landley.net/toybox"
 
 [sources.toybox]

@@ -2,6 +2,7 @@
 name = "yaml"
 version = "0.2.5"
 description = "C library for parsing and emitting YAML"
+license = "MIT"
 website = "https://pyyaml.org" 
 
 [sources.yaml]

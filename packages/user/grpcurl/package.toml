@@ -1,7 +1,9 @@
 [package]
 name = "grpcurl"
 version = "1.8.9"
-description = "TODO"
+description = "Command-line tool for interacting with gRPC servers"
+license = "MIT"
+website = "https://github.com/fullstorydev/grpcurl"
 
 [sources.grpcurl]
 hash = "962fe7d3da7653519d2975e130244af9286db32041b0745613aebf89949a9009"

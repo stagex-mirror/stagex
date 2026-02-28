@@ -1,7 +1,9 @@
 [package]
 name = "cpio"
 version = "2.15"
-description = "TODO"
+description = "GNU cpio copies files into or out of a cpio or tar archive"
+license = "GPL-3.0-or-later"
+website = "https://www.gnu.org/software/cpio/"
 
 [sources.cpio]
 hash = "efa50ef983137eefc0a02fdb51509d624b5e3295c980aa127ceee4183455499e"

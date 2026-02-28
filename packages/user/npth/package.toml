@@ -1,7 +1,9 @@
 [package]
 name = "npth"
 version = "1.6"
-description = "TODO"
+description = "New portable threads library"
+license = "LGPL-2.1-or-later"
+website = "https://gnupg.org/software/npth/"
 
 [sources.npth]
 hash = "1393abd9adcf0762d34798dc34fdcf4d0d22a8410721e76f1e3afcd1daa4e2d1"

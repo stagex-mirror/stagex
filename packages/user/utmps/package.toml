@@ -1,7 +1,9 @@
 [package]
 name = "utmps"
 version = "0.1.2.2"
-description = "TODO"
+description = "Implementation of the utmpx.h family of functions"
+license = "ISC"
+website = "https://skarnet.org/software/utmps/"
 
 [sources.utmps]
 hash = "f7ffa3714c65973bb95fbcf1501c06fc0478d93a51cea1b373ec6811c2425f52"

@@ -1,7 +1,9 @@
 [package]
 name = "py-trove-classifiers"
 version = "2024.5.17"
-description = "TODO"
+description = "Canonical source for classifiers on PyPI"
+license = "Apache-2.0"
+website = "https://github.com/pypa/trove-classifiers"
 
 [sources.py-trove-classifiers]
 hash = "5d0a143e5977e5c32a34265f803fcdbf064c57940ce95492fe6c559622f7497c"

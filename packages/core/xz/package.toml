@@ -1,7 +1,9 @@
 [package]
 name = "xz"
 version = "5.6.2"
-description = "TODO"
+description = "XZ Utils data compression software"
+license = "0BSD AND LGPL-2.1-or-later AND GPL-2.0-or-later"
+website = "https://tukaani.org/xz/"
 
 [sources.xz]
 hash = "92a439948bba24c2bc25bb67a087a19194905209c56b5e600bc94fd2a472e687"

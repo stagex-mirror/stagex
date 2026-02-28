@@ -1,7 +1,9 @@
 [package]
 name = "perl-dbi"
 version = "1.643"
-description = "TODO"
+description = "Perl database interface"
+license = "Artistic-1.0-Perl OR GPL-1.0-or-later"
+website = "https://dbi.perl.org"
 
 [sources.perl-dbi]
 hash = "8a2b993db560a2c373c174ee976a51027dd780ec766ae17620c20393d2e836fa"

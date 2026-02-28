@@ -1,7 +1,9 @@
 [package]
 name = "libnghttp2"
 version = "1.62.1"
-description = "TODO"
+description = "HTTP/2 C library and tools"
+license = "MIT"
+website = "https://nghttp2.org"
 
 [sources.libnghttp2]
 hash = "d0b0b9d00500ee4aa3bfcac00145d3b1ef372fd301c35bff96cf019c739db1b4"

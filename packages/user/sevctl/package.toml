@@ -2,7 +2,7 @@
 name = "sevctl"
 version = "0.6.2"
 description = "Command line utility for managing the AMD SEV platform"
-licenses = "Apache-2.0"
+license = "Apache-2.0"
 website = "https://github.com/virtee/sevctl"
 
 [sources.sevctl]

@@ -3,7 +3,7 @@ name = "talosctl"
 version = "1.11.2"
 description = "CLI for Talos - A modern OS for Kubernetes"
 website = "https://www.talos.dev/"
-licenses = "MPL-2.0"
+license = "MPL-2.0"
 subpackages = [
   "talosctl",
   "talosctl-completions",

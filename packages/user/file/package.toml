@@ -1,7 +1,9 @@
 [package]
 name = "file"
 version = "5.46"
-description = "TODO"
+description = "File type identification utility"
+license = "BSD-2-Clause"
+website = "https://www.darwinsys.com/file/"
 
 [sources.file]
 hash = "73c5f11a8edf0fded2fe3471b23a7fccb3f3369a13ea612529b869c8dc96aa2b"

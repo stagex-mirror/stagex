@@ -1,7 +1,9 @@
 [package]
 name = "samurai"
 version = "1.2"
-description = "TODO"
+description = "Ninja-compatible build tool written in C"
+license = "Apache-2.0 OR MIT"
+website = "https://github.com/michaelforney/samurai"
 
 [sources.samurai]
 hash = "3b8cf51548dfc49b7efe035e191ff5e1963ebc4fe8f6064a5eefc5343eaf78a5"

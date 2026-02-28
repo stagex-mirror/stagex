@@ -1,7 +1,9 @@
 [package]
 name = "libcap"
 version = "2.70"
-description = "TODO"
+description = "POSIX capabilities library"
+license = "GPL-2.0-only OR BSD-3-Clause"
+website = "https://sites.google.com/site/fullycapable/"
 
 [sources.libcap]
 hash = "18f00ea97c7541af86379dec9d4d8ea838aac4a1f70177d81d91657e4e43b808"

@@ -1,7 +1,9 @@
 [package]
 name = "libaio"
 version = "0.3.113"
-description = "TODO"
+description = "Linux-native asynchronous I/O access library"
+license = "LGPL-2.1-or-later"
+website = "https://pagure.io/libaio"
 
 [sources.libaio]
 hash = "2c44d1c5fd0d43752287c9ae1eb9c023f04ef848ea8d4aafa46e9aedb678200b"

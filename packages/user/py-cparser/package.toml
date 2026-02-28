@@ -1,7 +1,9 @@
 [package]
 name = "py-cparser"
 version = "2.22"
-description = "TODO"
+description = "C parser written in pure Python"
+license = "BSD-3-Clause"
+website = "https://github.com/eliben/pycparser"
 
 [sources.py-cparser]
 hash = "491c8be9c040f5390f5bf44a5b07752bd07f56edf992381b05c701439eec10f6"

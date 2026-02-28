@@ -1,7 +1,9 @@
 [package]
 name = "containerd"
 version = "1.7.22"
-description = "TODO"
+description = "Open and reliable container runtime"
+license = "Apache-2.0"
+website = "https://containerd.io"
 
 [sources.containerd]
 hash = "8c5edde741b7596af63c021429a1212bd616350ed65a7b741eeffc47e27ee9a9"

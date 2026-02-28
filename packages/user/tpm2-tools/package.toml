@@ -1,7 +1,9 @@
 [package]
 name = "tpm2-tools"
 version = "5.6"
-description = "TODO"
+description = "TPM 2.0 tools based on tpm2-tss"
+license = "BSD-3-Clause"
+website = "https://github.com/tpm2-software/tpm2-tools"
 
 [sources.tpm2-tools]
 hash = "7169fac7b5afb3ce20091b8d66ee13a69cf0b107ea1e17f5d1aa087d99bcf8e2"

@@ -1,7 +1,9 @@
 [package]
 name = "py-babel"
 version = "2.14.0"
-description = "TODO"
+description = "Internationalization utilities for Python"
+license = "BSD-3-Clause"
+website = "https://babel.pocoo.org"
 
 [sources.py-babel]
 hash = "6919867db036398ba21eb5c7a0f6b28ab8cbc3ae7a73a44ebe34ae74a4e7d363"

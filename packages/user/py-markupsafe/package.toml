@@ -1,7 +1,9 @@
 [package]
 name = "py-markupsafe"
 version = "2.1.5"
-description = "TODO"
+description = "Safely add untrusted strings to HTML/XML markup"
+license = "BSD-3-Clause"
+website = "https://palletsprojects.com/p/markupsafe/"
 
 [sources.py-markupsafe]
 hash = "d283d37a890ba4c1ae73ffadf8046435c76e7bc2247bbb63c00bd1a709c6544b"

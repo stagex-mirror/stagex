@@ -1,4 +1,6 @@
 [package]
 name = "solidity"
-description = "Solidity image containing all required runtime dependencies"
 version_from = "core-solidity"
+description = "Solidity image containing all required runtime dependencies"
+license = "GPL-2.0-only AND GPL-2.0-or-later AND GPL-3.0-only AND LGPL-2.1-or-later AND MIT"
+website = "https://soliditylang.org"

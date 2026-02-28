@@ -1,4 +1,6 @@
 [package]
 name = "luarocks"
-description = "Pallet to use luarocks to build lua packages"
 version_from = "core-luarocks"
+description = "Pallet to use luarocks to build lua packages"
+license = "0BSD AND Apache-2.0 AND Apache-2.0 WITH LLVM-exception AND (Artistic-1.0-Perl OR GPL-1.0-or-later) AND BSD-2-Clause AND BSD-3-Clause AND GPL-2.0-only AND GPL-2.0-or-later AND GPL-3.0-or-later AND ISC AND LGPL-2.0-or-later AND LGPL-2.1-or-later AND MIT AND MPL-2.0 AND Zlib AND curl"
+website = "https://luarocks.org"

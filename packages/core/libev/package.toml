@@ -1,7 +1,9 @@
 [package]
 name = "libev"
 version = "4.33"
-description = "TODO"
+description = "High-performance event loop library"
+license = "BSD-2-Clause OR GPL-2.0-or-later"
+website = "http://software.schmorp.de/pkg/libev.html"
 
 [sources.libev]
 hash = "507eb7b8d1015fbec5b935f34ebed15bf346bed04a11ab82b8eee848c4205aea"

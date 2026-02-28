@@ -1,7 +1,9 @@
 [package]
 name = "strace"
 version = "6.18"
-description = "TODO"
+description = "Diagnostic, debugging and instructional userspace tracer for Linux"
+license = "LGPL-2.1-or-later"
+website = "https://strace.io"
 
 [sources.strace]
 hash = "0ad5dcba973a69e779650ef1cb335b12ee60716fc7326609895bd33e6d2a7325"

@@ -1,7 +1,9 @@
 [package]
 name = "ccache"
 version = "4.10.2"
-description = "TODO"
+description = "Fast C/C++ compiler cache"
+license = "GPL-3.0-or-later"
+website = "https://ccache.dev/"
 
 [sources.ccache]
 hash = "c0b85ddfc1a3e77b105ec9ada2d24aad617fa0b447c6a94d55890972810f0f5a"

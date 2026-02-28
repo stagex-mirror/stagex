@@ -1,6 +1,8 @@
 [package]
 name = "stage0"
-description = "TODO"
+description = "Minimal x86 bootstrap from 181 bytes of assembly"
+license = "GPL-3.0-or-later"
+website = "https://codeberg.org/stagex/stagex"
 platforms = ["linux/386"]
 
 [sources.stage0_posix_x86]

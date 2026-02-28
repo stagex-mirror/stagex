@@ -1,7 +1,9 @@
 [package]
 name = "py-jinja2"
 version = "3.1.4"
-description = "TODO"
+description = "Fast, expressive, extensible templating engine for Python"
+license = "BSD-3-Clause"
+website = "https://jinja.palletsprojects.com"
 
 [sources.py-jinja2]
 hash = "4a3aee7acbbe7303aede8e9648d13b8bf88a429282aa6122a993f0ac800cb369"

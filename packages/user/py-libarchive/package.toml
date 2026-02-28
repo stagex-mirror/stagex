@@ -1,7 +1,9 @@
 [package]
 name = "py-libarchive"
 version = "5.1"
-description = "TODO"
+description = "Python interface to libarchive"
+license = "CC0-1.0"
+website = "https://github.com/Changaco/python-libarchive-c"
 
 [sources.py-libarchive]
 hash = "5051c6d157d03cc0891e5f1051edf5122d6e9b82c58cd30e898dea818e7ff014"

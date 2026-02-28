@@ -2,6 +2,8 @@
 name = "rust"
 version = "1.93.1"
 description = "Rust Programming Language toolchain"
+license = "Apache-2.0 OR MIT"
+website = "https://www.rust-lang.org"
 
 [sources.mrustc]
 hash = "c1ba35f5fc5c4ca2952d9f5526e900dcb6632ea7fd4d71fa58029b3bb563ae56"

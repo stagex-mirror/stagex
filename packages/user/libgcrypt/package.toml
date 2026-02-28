@@ -1,7 +1,9 @@
 [package]
 name = "libgcrypt"
 version = "1.11.0"
-description = "TODO"
+description = "General purpose cryptographic library based on GnuPG"
+license = "LGPL-2.1-or-later"
+website = "https://gnupg.org/software/libgcrypt/"
 
 [sources.libgcrypt]
 hash = "09120c9867ce7f2081d6aaa1775386b98c2f2f246135761aae47d81f58685b9c"
