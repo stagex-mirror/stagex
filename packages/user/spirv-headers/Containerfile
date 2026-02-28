@@ -2,7 +2,6 @@ FROM stagex/pallet-clang-cmake-busybox AS build
 ARG VERSION
 ADD fetch/spirv-headers-${VERSION}.tar.gz .
 WORKDIR /SPIRV-Headers-vulkan-sdk-${VERSION}
-ADD fetch/spv_intel_fix.patch .
 RUN --network=none <<-EOF
 	cmake -B build -G Ninja \
 		-DCMAKE_INSTALL_PREFIX=/usr \
