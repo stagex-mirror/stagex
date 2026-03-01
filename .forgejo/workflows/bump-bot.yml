@@ -1,0 +1,17 @@
+name: StageX Package-Updates
+
+on:
+  schedule:
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+jobs:
+  test-run:
+    runs-on: codeberg-medium
+    container:
+      image: codeberg.org/stagex/release-bot@sha256:55fe96a1a3ada234a371c0ab577a6c87e0b16de0e33a64d8fdbbfe62b8b21cec
+    steps:
+      - name: Create PR
+        run: /app/venv/bin/python3 /app/main.py upgrade-single
+        env:
+          CODEBERG_TOKEN: ${{ secrets.CODEBERG_TOKEN }}
