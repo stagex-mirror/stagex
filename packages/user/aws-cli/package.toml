@@ -1,7 +1,9 @@
 [package]
 name = "aws-cli"
 version = "2.28.14"
-description = "TODO"
+description = "Universal command line interface for Amazon Web Services"
+license = "Apache-2.0"
+website = "https://aws.amazon.com/cli/"
 
 [sources.aws-cli]
 hash = "646090b21d0d053e9ff2b9cd50c8a33b22836ed778b41cf2a1f58fdf7bbae25a"

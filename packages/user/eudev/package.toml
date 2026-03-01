@@ -1,7 +1,9 @@
 [package]
 name = "eudev"
 version = "3.2.14"
-description = "TODO"
+description = "Standalone dynamic device management daemon"
+license = "GPL-2.0-or-later"
+website = "https://github.com/eudev-project/eudev"
 
 [sources.eudev]
 hash = "8da4319102f24abbf7fff5ce9c416af848df163b29590e666d334cc1927f006f"

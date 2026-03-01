@@ -1,7 +1,9 @@
 [package]
 name = "py-idna"
 version = "3.7"
-description = "TODO"
+description = "Internationalized Domain Names in Applications support"
+license = "BSD-3-Clause"
+website = "https://github.com/kjd/idna"
 
 [sources.py-idna]
 hash = "07017f753632624abaa31aa2c1b243aea6409367256de4183671d95e019f7d70"

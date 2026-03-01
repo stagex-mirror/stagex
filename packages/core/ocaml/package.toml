@@ -1,7 +1,9 @@
 [package]
 name = "ocaml"
 version = "5.2.0"
-description = "TODO"
+description = "General-purpose, multi-paradigm programming language"
+license = "LGPL-2.1-or-later WITH OCaml-LGPL-linking-exception"
+website = "https://ocaml.org/"
 
 [sources.ocaml]
 hash = "48554abfd530fcdaa08f23f801b699e4f74c320ddf7d0bd56b0e8c24e55fc911"

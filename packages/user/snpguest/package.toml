@@ -2,7 +2,7 @@
 name = "snpguest"
 version = "0.10.0"
 description = "CLI utility for managing an AMD SEV-SNP enabled guest"
-licenses = "Apache-2.0"
+license = "Apache-2.0"
 website = "https://github.com/virtee/snpguest"
 
 [sources.snpguest]

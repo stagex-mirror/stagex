@@ -1,7 +1,9 @@
 [package]
 name = "pgbouncer"
 version = "1.23.1"
-description = "TODO"
+description = "Lightweight connection pooler for PostgreSQL"
+license = "ISC"
+website = "https://www.pgbouncer.org"
 
 [sources.pgbouncer]
 hash = "1963b497231d9a560a62d266e4a2eae6881ab401853d93e5d292c3740eec5084"

@@ -1,7 +1,7 @@
 [package]
 name = "isl"
 version = "0.24"
-licenses = "MIT"
+license = "MIT"
 description = "An Integer Set Library for the Polyhedral Model (development files)"
 website = "http://isl.gforge.inria.fr/"
 

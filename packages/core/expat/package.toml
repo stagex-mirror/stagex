@@ -1,7 +1,9 @@
 [package]
 name = "expat"
 version = "2.6.2"
-description = "TODO"
+description = "Stream-oriented XML parser library"
+license = "MIT"
+website = "https://libexpat.github.io"
 
 [sources.expat]
 hash = "d4cf38d26e21a56654ffe4acd9cd5481164619626802328506a2869afab29ab3"

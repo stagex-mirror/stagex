@@ -1,7 +1,9 @@
 [package]
 name = "linux-headers"
 version = "6.6"
-description = "TODO"
+description = "Linux kernel header files"
+license = "GPL-2.0-only"
+website = "https://www.kernel.org"
 
 [sources.linux-headers]
 hash = "d926a06c63dd8ac7df3f86ee1ffc2ce2a3b81a2d168484e76b5b389aba8e56d0"

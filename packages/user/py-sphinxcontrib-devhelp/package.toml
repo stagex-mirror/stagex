@@ -1,7 +1,9 @@
 [package]
 name = "py-sphinxcontrib-devhelp"
 version = "1.0.5"
-description = "TODO"
+description = "Sphinx extension for Devhelp documents"
+license = "BSD-2-Clause"
+website = "https://github.com/sphinx-doc/sphinxcontrib-devhelp"
 
 [sources.py-sphinxcontrib-devhelp]
 hash = "e2b24fcee87da8fb6a3826ba072c8369cdbffee116bd38bcfaa0302b279dc844"

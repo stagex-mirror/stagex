@@ -2,7 +2,7 @@
 name = "py-cffi"
 version = "1.17.1"
 description = "Foreign Function Interface for Python calling C code"
-licenses = "MIT"
+license = "MIT"
 website = "https://cffi.readthedocs.org/"
 
 [sources.py-cffi]

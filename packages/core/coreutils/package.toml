@@ -1,7 +1,9 @@
 [package]
 name = "coreutils"
 version = "9.7"
-description = "TODO"
+description = "GNU core utilities for basic file, shell, and text manipulation"
+license = "GPL-3.0-or-later"
+website = "https://www.gnu.org/software/coreutils/"
 
 [sources.coreutils]
 hash = "e8bb26ad0293f9b5a1fc43fb42ba970e312c66ce92c1b0b16713d7500db251bf"

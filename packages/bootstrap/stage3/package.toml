@@ -1,6 +1,8 @@
 [package]
 name = "stage3"
-description = "TODO"
+description = "Native 64-bit toolchain for building StageX packages"
+license = "0BSD AND BSD-3-Clause AND GPL-2.0-only AND GPL-2.0-only WITH Linux-syscall-note AND GPL-2.0-or-later AND GPL-3.0-or-later AND ISC AND LGPL-2.1-or-later AND LGPL-3.0-or-later AND MIT AND PSF-2.0 AND Zlib"
+website = "https://codeberg.org/stagex/stagex"
 
 [sources.musl]
 version = "1.1.24"

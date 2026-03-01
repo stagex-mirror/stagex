@@ -1,7 +1,9 @@
 [package]
 name = "py-colorama"
 version = "0.4.6"
-description = "TODO"
+description = "Cross-platform colored terminal text"
+license = "BSD-3-Clause"
+website = "https://github.com/tartley/colorama"
 
 [sources.py-colorama]
 hash = "08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"

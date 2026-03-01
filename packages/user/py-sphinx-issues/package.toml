@@ -3,7 +3,7 @@ name = "py-sphinx-issues"
 version = "5.0.1"
 description = "Sphinx extension for linking to your project's issue tracker"
 website = "https://github.com/sloria/sphinx-issues"
-licenses = "MIT"
+license = "MIT"
 
 [sources.py-sphinx-issues]
 hash = "c9355214fa54461e2428b309472e5f7d9187a81126379fc207645965aa8c3022"

@@ -2,6 +2,8 @@
 name = "libtpms"
 version = "0.10.2"
 description = "library providing software emulation of a Trusted Platform Module (TPM 1.2 and TPM 2.0)"
+license = "BSD-3-Clause"
+website = "https://github.com/stefanberger/libtpms"
 
 [sources.libtpms]
 hash = "edac03680f8a4a1c5c1d609a10e3f41e1a129e38ff5158f0c8deaedc719fb127"

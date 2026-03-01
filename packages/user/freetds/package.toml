@@ -1,7 +1,9 @@
 [package]
 name = "freetds"
 version = "1.4.23"
-description = "TODO"
+description = "Free implementation of the TDS protocol for Sybase and Microsoft SQL Server"
+license = "LGPL-2.0-or-later"
+website = "https://www.freetds.org"
 
 [sources.freetds]
 hash = "93a3f186b82c6042a66a1970bd478d7914edb1c5669b642d80b4eaacf2a2d17e"

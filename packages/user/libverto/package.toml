@@ -1,7 +1,9 @@
 [package]
 name = "libverto"
 version = "0.3.2"
-description = "TODO"
+description = "Main loop abstraction library"
+license = "MIT"
+website = "https://github.com/latchset/libverto"
 
 [sources.libverto]
 hash = "8d1756fd704f147549f606cd987050fb94b0b1ff621ea6aa4d6bf0b74450468a"

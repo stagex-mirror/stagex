@@ -1,7 +1,9 @@
 [package]
 name = "curl"
 version = "8.9.1"
-description = "TODO"
+description = "Command line tool and library for transferring data with URLs"
+license = "curl"
+website = "https://curl.se/"
 
 [sources.curl]
 hash = "f292f6cc051d5bbabf725ef85d432dfeacc8711dd717ea97612ae590643801e5"

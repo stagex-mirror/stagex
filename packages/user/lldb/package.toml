@@ -2,6 +2,8 @@
 name = "lldb"
 version = "21.1.8"
 description = "A next generation, high-performance debugger built on LLVM."
+license = "Apache-2.0 WITH LLVM-exception"
+website = "https://lldb.llvm.org"
 
 [sources.lldb]
 hash = "e28d73ed3f9e231f798ed66865e652a641eb0666cfa6c7b36e116da92fb72e56"

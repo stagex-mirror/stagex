@@ -1,7 +1,9 @@
 [package]
 name = "xmlto"
 version = "0.0.29"
-description = "TODO"
+description = "Tool for converting XML files to various formats"
+license = "GPL-2.0-or-later"
+website = "https://pagure.io/xmlto"
 
 [sources.xmlto]
 hash = "40504db68718385a4eaa9154a28f59e51e59d006d1aa14f5bc9d6fded1d6017a"

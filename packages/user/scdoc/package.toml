@@ -2,6 +2,7 @@
 name = "scdoc"
 version = "1.11.4"
 description = "Simple man page generator written for POSIX systems written in C99"
+license = "MIT"
 website = "https://git.sr.ht/~sircmpwn/scdoc"
 
 [sources.scdoc]

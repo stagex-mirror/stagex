@@ -1,7 +1,9 @@
 [package]
 name = "grep"
 version = "3.11"
-description = "TODO"
+description = "GNU utility for searching text with regular expressions"
+license = "GPL-3.0-or-later"
+website = "https://www.gnu.org/software/grep/"
 
 [sources.grep]
 hash = "1db2aedde89d0dea42b16d9528f894c8d15dae4e190b59aecc78f5a951276eab"

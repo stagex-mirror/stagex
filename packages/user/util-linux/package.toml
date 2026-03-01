@@ -1,7 +1,9 @@
 [package]
 name = "util-linux"
 version = "2.41.2"
-description = "TODO"
+description = "Miscellaneous system utilities for Linux"
+license = "GPL-2.0-or-later AND LGPL-2.1-or-later AND BSD-3-Clause"
+website = "https://github.com/util-linux/util-linux"
 
 [sources.util-linux]
 hash = "534aa113a323d6866c5f46baf909618dcc60c391ad24a91814e5d21511cefd30"

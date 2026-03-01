@@ -1,7 +1,9 @@
 [package]
 name = "py-sphinxcontrib-jquery"
 version = "4.1"
-description = "TODO"
+description = "Sphinx extension to include jQuery on newer Sphinx releases"
+license = "0BSD"
+website = "https://github.com/sphinx-contrib/jquery"
 
 [sources.py-sphinxcontrib-jquery]
 hash = "f6a7578b00a8458e5edd38431d3ea4037b928a21ba1f82469ec2015127955c34"

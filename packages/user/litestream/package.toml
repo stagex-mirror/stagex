@@ -3,6 +3,7 @@ name = "litestream"
 version = "0.3.13"
 description = "Streaming replication for SQLite"
 license = "Apache-2.0"
+website = "https://litestream.io"
 
 [sources.litestream]
 hash = "92cb22323b8168f6efdfcad270772fea9e78c709a7149b1bf35d81fcb88bdaf9"

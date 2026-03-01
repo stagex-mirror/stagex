@@ -1,8 +1,9 @@
 [package]
 name = "composer"
-license = "MIT"
 version = "2.9.5"
 description = "A Dependency Manager for PHP"
+license = "MIT"
+website = "https://getcomposer.org"
 
 [sources.composer]
 hash = "3fac7a83935223c6381542c03c6002439b7842a01897be5fbd957b105768ade5"

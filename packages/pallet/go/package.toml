@@ -1,4 +1,6 @@
 [package]
 name = "go"
-description = "Go compiler with shell"
 version_from = "core-go"
+description = "Go compiler with shell"
+license = "Apache-2.0 WITH LLVM-exception AND BSD-3-Clause AND GPL-2.0-only AND ISC AND MPL-2.0"
+website = "https://go.dev"

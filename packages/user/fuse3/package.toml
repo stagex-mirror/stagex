@@ -1,7 +1,9 @@
 [package]
 name = "fuse3"
 version = "3.16.2"
-description = "TODO"
+description = "Filesystem in Userspace library and utilities"
+license = "GPL-2.0-only AND LGPL-2.1-only"
+website = "https://github.com/libfuse/libfuse"
 
 [sources.fuse3]
 hash = "f797055d9296b275e981f5f62d4e32e089614fc253d1ef2985851025b8a0ce87"

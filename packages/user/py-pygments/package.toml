@@ -1,7 +1,9 @@
 [package]
 name = "py-pygments"
 version = "2.18.0"
-description = "TODO"
+description = "Generic syntax highlighter"
+license = "BSD-2-Clause"
+website = "https://pygments.org"
 
 [sources.py-pygments]
 hash = "786ff802f32e91311bff3889f6e9a86e81505fe99f2735bb6d60ae0c5004f199"

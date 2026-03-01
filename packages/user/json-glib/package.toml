@@ -1,7 +1,9 @@
 [package]
 name = "json-glib"
-description = "TODO"
 version = "1.8.0"
+description = "JSON parser and generator for GLib"
+license = "LGPL-2.1-or-later"
+website = "https://gnome.pages.gitlab.gnome.org/json-glib/"
 
 [sources.json-glib]
 hash = "97ef5eb92ca811039ad50a65f06633f1aae64792789307be7170795d8b319454"

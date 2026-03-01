@@ -1,7 +1,9 @@
 [package]
 name = "qemu"
 version = "10.1.1"
-description = "TODO"
+description = "Generic and open source machine emulator and virtualizer"
+license = "GPL-2.0-only"
+website = "https://www.qemu.org"
 
 [sources.qemu]
 hash = "e56b93d95953a9b6a64d1985dbcedfb07dc54d92c50b7912526693536c589923"

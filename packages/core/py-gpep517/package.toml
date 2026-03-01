@@ -1,7 +1,9 @@
 [package]
 name = "py-gpep517"
 version = "16"
-description = "TODO"
+description = "Minimal backend script for PEP 517 build systems"
+license = "MIT"
+website = "https://github.com/projg2/gpep517"
 
 [sources.py-gpep517]
 hash = "965ff7cb2217fa03091face01fcb9a2b0205f58be80c8be9ccf832eab7a55414"

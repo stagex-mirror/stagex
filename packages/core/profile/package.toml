@@ -1,3 +1,5 @@
 [package]
 name = "profile"
 description = "Global /etc/profile used for most RUN blocks"
+license = "ISC"
+website = "https://codeberg.org/stagex/stagex"

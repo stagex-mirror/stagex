@@ -1,7 +1,9 @@
 [package]
 name = "alsa-lib"
 version = "1.2.12"
-description = "TODO"
+description = "Advanced Linux Sound Architecture library"
+license = "LGPL-2.1-or-later"
+website = "https://www.alsa-project.org"
 
 [sources.alsa-lib]
 hash = "4868cd908627279da5a634f468701625be8cc251d84262c7e5b6a218391ad0d2"

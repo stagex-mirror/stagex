@@ -3,7 +3,7 @@ name = "libatomic-chimera"
 version = "0.90.0"
 description = "ABI-compatible GNU libatomic alternative"
 website = "https://github.com/chimera-linux/libatomic-chimera"
-license = "Apache2"
+license = "Apache-2.0"
 
 [sources.libatomic-chimera]
 hash = "fccbd8c0ef7fd473275f835b3fca9275fb27a0c196cdcdff1f6d14ab12ed3a53"

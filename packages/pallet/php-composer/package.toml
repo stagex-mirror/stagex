@@ -1,4 +1,6 @@
 [package]
 name = "php-composer"
-description = "Composer Runtime with Git"
 version_from = "core-composer"
+description = "Composer Runtime with Git"
+license = "0BSD AND Apache-2.0 AND (Apache-2.0 OR CC0-1.0) AND BSD-3-Clause AND GPL-2.0-only AND GPL-2.0-or-later AND ISC AND LGPL-2.1-or-later AND MIT AND MPL-2.0 AND PHP-3.0.1 AND Zlib AND curl"
+website = "https://getcomposer.org"

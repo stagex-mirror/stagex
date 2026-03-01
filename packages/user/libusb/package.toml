@@ -1,7 +1,9 @@
 [package]
 name = "libusb"
 version = "1.0.27"
-description = "TODO"
+description = "Cross-platform library for USB device access"
+license = "LGPL-2.1-or-later"
+website = "https://libusb.info"
 
 [sources.libusb]
 hash = "ffaa41d741a8a3bee244ac8e54a72ea05bf2879663c098c82fc5757853441575"
