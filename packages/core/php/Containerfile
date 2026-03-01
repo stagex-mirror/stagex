@@ -81,12 +81,13 @@ RUN --network=none <<-EOF
 	make -j "$(nproc)"
 	make INSTALL_ROOT="/${rootfs}" install
 	rm -rf "/${rootfs}/var/run"
+	rm "/${rootfs}/usr/bin/phar.phar"
 	install -vDm644 -t "/${rootfs}/usr/share/licenses/php" LICENSE
 
 	mkdir -p "/${rootfs}/etc/php/conf.d"
   for path in "/${rootfs}/usr/lib/php-modules/"*.so; do
     name=$(basename "$path" .so)
-  	printf "extension=%s.so\n" "$name" > "/${rootfs}/etc/php/conf.d/ext-$name.ini"
+    printf "extension=%s.so\n" "$name" > "/${rootfs}/etc/php/conf.d/ext-$name.ini"
   done
 
   unset rootfs
@@ -126,6 +127,7 @@ RUN --network=none <<-EOF
 	make -j "$(nproc)"
 	make INSTALL_ROOT="/${rootfs}" install
 	rm -rf "/${rootfs}/var/run"
+	rm "/${rootfs}/usr/bin/phar.phar"
 	install -vDm644 -t "/${rootfs}/usr/share/licenses/php" LICENSE
 	unset rootfs
 
