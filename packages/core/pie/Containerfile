@@ -51,3 +51,5 @@ RUN --network=none <<-EOF
   install -Dm644 -t "/rootfs/usr/share/licenses/pie" LICENSE.md
 EOF
 
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
