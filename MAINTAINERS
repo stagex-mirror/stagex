@@ -60,7 +60,7 @@ website = "https://panekj.eu"
 fediverse = "@pj@donotsta.re"
 keyoxide = "https://keyoxide.org/aspe:keyoxide.org:WNHRCLJSCUR4UWCJDOSZAPFPDM"
 
-[people.kronzoew]
+[people.zoe]
 name = "Zoë Finja Emilia Kron"
 location = "North Rhine-Westphalia, Germany"
 matrix = ["@zoefinja:tchncs.de"]
@@ -130,7 +130,7 @@ offline-ca = true
 backup = false
 interaction = true
 
-[keys.kronzoew.personal]
+[keys.zoe.personal]
 id = "677C7924397810FDD3F922C33FC71170CB9E8963"
 algorithm = "ED25519"
 offline-ca = true
@@ -245,7 +245,7 @@ cores = 12
 os = "Linux"
 runtime = "Linux"
 
-[machines.kronzoew.main]
+[machines.zoe.main]
 owner = "Zoë Finja Emilia Kron"
 location = "Europe"
 type = "metal"
