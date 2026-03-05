@@ -127,7 +127,9 @@ COPY --chmod=0755 <<-'EOF' build
 	# For intermediary compilers, which aren't part of the committed output, be more aggressive
 	if [ ! "$TARGET_VERSION" = "$VERSION" ]; then
 		# Enable native codegen
-		RUSTFLAGS="$RUSTFLAGS -Ctarget-cpu=native"
+		# NOTE: This is temporarily disabled to test reproduction of
+		# Rust 1.93.0
+		# RUSTFLAGS="$RUSTFLAGS -Ctarget-cpu=native"
 
 		# Set `codegen-units` to `nproc`, which will break reproducible builds as Rust builds are only
 		# deterministic with a consistent amount of units.
