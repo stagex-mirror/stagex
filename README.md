@@ -120,7 +120,7 @@ Unlike most Linux distros, StageX adopts an OCI-first design: Open Container
 Initiative (OCI) images are the native packaging system, not just a
 distribution format. This means system components are immutable, pre-built
 container images that are constructed, signed, and verified outside the runtime
-environment. During installation, no arbitrary scripts are run — image
+environment. During installation, no arbitrary scripts are run. Image
 verification and unpacking are the primary operations, significantly reducing
 the attack surface.
 
@@ -130,7 +130,7 @@ StageX ships no first-party code at all. We just package things in the most
 Every image is "from scratch" and contains an empty filesystem with the
 installed package. Because StageX images comply with OCI specifications, they
 run without modification across Docker, Podman, containerd, and any other
-compliant runtime — reducing single points of failure in the runtime layer.
+compliant runtime, reducing single points of failure in the runtime layer.
 Distribution is handled through established tooling (skopeo, oras) with
 built-in support for security hardening, sandboxing, and provenance tracking.
 Immutable images facilitate atomic upgrades and rollbacks, enhancing
@@ -161,7 +161,7 @@ for the formal analysis.
 * No pre-compiled binaries are used at any build stage
 * Each bootstrap stage (Stage0 → Stage1 → Stage2 → Stage3 → StageX) is
   deterministic and independently verifiable
-* Languages that lack a bootstrap path from source (e.g., Haskell, Ada) are
+* Any software that lacks a bootstrap path from source (e.g., Haskell, Ada) are
   excluded by policy until one exists
 
 ### Reproducibility
@@ -179,8 +179,8 @@ for the formal analysis.
 ### Cryptographic Accountability
 
 * Every code change must be reviewed and signed off by at least two maintainers
-* A single maintainer merging a non-maintainer's code — even with a signed
-  commit — is insufficient
+* A single maintainer merging a non-maintainer's code, even with a signed
+  commit, is insufficient
 * All commits are signed (PGP or SSH) with keys backed by
   [Keyoxide](https://keyoxide.org) and [Hagrid](https://keys.openpgp.org)
   profiles
@@ -190,7 +190,7 @@ for the formal analysis.
 ### Quorum Artifact Signing
 
 * No artifact is considered trusted until at least two independent maintainers
-  rebuild and verify it — only then is it co-signed using PGP signatures
+  rebuild and verify it. Only then is it co-signed using PGP signatures
 * This guarantees a 1-to-1 mapping between source and binary, enforced
   *before* distribution rather than audited after the fact
 * Signatures use the [Container Signature Format](https://github.com/containers/image/blob/main/docs/containers-signature.5.md)
@@ -207,14 +207,14 @@ for the formal analysis.
   * mimalloc (by Microsoft Research) used as default allocator to address
     musl's multi-threaded performance limitations
 * LLVM/Clang toolchain by default rather than GCC
-  * Clang functions as a native cross-compiler — a single installation can
+  * Clang functions as a native cross-compiler, so a single installation can
     emit code for x86_64, aarch64, and other architectures
   * Reduces maintenance burden and attack surface vs. per-target GCC builds
 * Package using tools you already have
   * OCI build tool of choice (Docker, Buildah, Podman)
   * Make (for dependency management)
   * Prove hashes of bootstrap layer builds match before proceeding
-* All images are built FROM scratch containing only the installed package —
+* All images are built FROM scratch containing only the installed package,
   no base distribution bloat
 * Keep package definitions lean and readable with simple CLI and no magic
 
@@ -347,7 +347,7 @@ be [bootstrapped](https://en.wikipedia.org/wiki/Bootstrapping_(compilers)) all t
   * OCI allows unlimited signatures on builds as part of the spec
     * E.g: each party that chooses to reproduce adds their own signature
 * We always "Full Source Bootstrap" everything from 0
-  * [Stage0](packages/bootstrap/stage0/Containerfile): 181 bytes of x86 machine code — a concrete trust anchor small enough for any programmer to audit by hand
+  * [Stage0](packages/bootstrap/stage0/Containerfile): 181 bytes of x86 machine code, a concrete trust anchor small enough for any programmer to audit by hand
     * Reproduced with the same hash across multiple distros and wildly different toolchains
       * Relevant: [Guix: Building From Source All The Way Down](https://guix.gnu.org/en/blog/2023/the-full-source-bootstrap-building-from-source-all-the-way-down/)
   * [Stage1](packages/bootstrap/stage1/Containerfile): A primitive C toolchain built from Stage0 via [live-bootstrap](https://github.com/fosslinux/live-bootstrap/blob/master/parts.rst)
