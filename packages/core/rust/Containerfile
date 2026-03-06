@@ -343,6 +343,9 @@ ADD fetch/rustc-1.92.0-src.tar.gz .
 RUN --network=none ./build 1.92.0 1.91.1 ""
 
 ADD fetch/rustc-1.93.1-src.tar.gz .
+RUN --network=none ./build 1.93.1 1.92.0 ""
+
+ADD fetch/rustc-1.94.0-src.tar.gz .
 
 # Patch the default for `musl` targets to be dynamically, not statically, linked
 RUN --network=none <<-EOF
@@ -352,7 +355,7 @@ RUN --network=none <<-EOF
 	done
 EOF
 
-RUN --network=none ./build ${VERSION} 1.92.0 cargo,clippy,rustdoc,rustfmt,rust-demangler,src
+RUN --network=none ./build ${VERSION} 1.93.1 cargo,clippy,rustdoc,rustfmt,rust-demangler,src
 RUN --network=none <<-EOF
 	set -eux
 	mv /rust-${VERSION} /rootfs
