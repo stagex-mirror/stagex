@@ -311,7 +311,7 @@ Table is ordered by objective supply chain security metrics: “Signers”,
 * Signatures are made by any tool that implements "[Container Signature Format](https://github.com/containers/image/blob/main/docs/containers-signature.5.md)"
   * We provide a minimal shell script implementation as a convenience
   * Podman also [implements support](https://github.com/containers/podman/blob/main/docs/tutorials/image_signing.md) for this signature scheme
-* Signatures are "PR"ed and committed to the [signatures repo](https://codeberg.org/stagex/signatrues) as a source of truth and they're made available via an HTTPS endpoint for as a lookaside.
+* Signatures are "PR"ed and committed to the [signatures repo](https://codeberg.org/stagex/signatures) as a source of truth and they're made available via an HTTPS endpoint for as a lookaside.
 * Signatures can be mirrored to any HTTPS url
 * Container daemons can verify signatures on pull with a [containers-policy.json](https://github.com/containers/image/blob/main/docs/containers-policy.json.5.md)
 * As a policy, we expect all published signers to:
