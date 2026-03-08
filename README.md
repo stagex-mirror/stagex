@@ -124,8 +124,8 @@ environment. During installation, no arbitrary scripts are run. Image
 verification and unpacking are the primary operations, significantly reducing
 the attack surface.
 
-StageX ships no first-party code at all. We just package things in the most
-"stock" way possible, with exceptions only to maintain determinism.
+StageX packages things in the most "stock" way possible, with exceptions only to
+maintain determinism.
 
 Every image is "from scratch" and contains an empty filesystem with the
 installed package. Because StageX images comply with OCI specifications, they
@@ -140,9 +140,8 @@ By default you always get the latest updates to dependencies on the fly, but
 you retain the option for bit-for-bit reproducible builds by locking any given
 dependency at a particular tag or image hash.
 
-If you want an old version of rust with a recent version of clang to work around
-some problem build, you can do that without resorting to low security
-"curl | bash" style solutions like rustup.
+This allows you to use the version you need regardless of the situation without
+resorting to low security "curl | bash" style solutions.
 
 ## Goals
 
@@ -277,7 +276,7 @@ A comparison of StageX to other distros in some of the areas we care about:
 | Distribution | Signers | OCI       | Language        | Bootstrapped | Reproducible | Toolchain | C Library | Allocator    |
 |--------------|---------|-----------|-----------------|--------------|--------------|-----------|-----------|--------------|
 | **StageX**   | **2**   | **Native** | **Containerfile** | **Yes**  | **Yes**      | **LLVM**  | **musl**  | **mimalloc** |
-| Guix         | 1       | Exported  | Custom          | Yes          | Mostly       | GNU       | glibc     | glibc        |
+| Guix         | 1       | Exported  | Scheme          | Yes          | Mostly       | GNU       | glibc     | glibc        |
 | Arch         | 1       | Published | Shell           | No           | Mostly       | GNU       | glibc     | glibc        |
 | Debian       | 1       | Published | Custom          | No           | Mostly       | GNU       | glibc     | glibc        |
 | Alpine       | 1       | Published | Shell           | No           | No           | GNU       | musl      | mallocng     |
