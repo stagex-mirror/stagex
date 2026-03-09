@@ -14,11 +14,10 @@ RUN --network=none <<-EOF
 	set -ex
 	./configure \
 		--prefix=/usr \
-		--datadir=/usr/share/doc/gc \
 		--enable-static
 	make -j "$(nproc)"
 	make DESTDIR="/rootfs" install
-	install -Dm644 -t /rootfs/usr/share/licenses/gc/ COPYING 
+	install -Dm644 -t /rootfs/usr/share/licenses/gc/ README.md
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
