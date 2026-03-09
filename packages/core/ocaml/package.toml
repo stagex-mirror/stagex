@@ -1,0 +1,25 @@
+[package]
+name = "ocaml"
+version = "5.2.0"
+description = "General-purpose, multi-paradigm programming language"
+license = "LGPL-2.1-or-later WITH OCaml-LGPL-linking-exception"
+website = "https://ocaml.org/"
+
+[sources.camlboot]
+hash = "56199fb4430af8bebb6b36467ee647e0409a59dc7ed7887f8dbfdc4dc647a2d8"
+format = "tar.gz"
+file = "camlboot.{format}"
+version = "2692b14a4e685387194556e511fe23057d25c6c3"
+mirrors = [ "https://github.com/Ekdohibs/camlboot/archive/{version}.tar.gz",]
+
+[sources.ocaml-bootstrap]
+hash = "0807e798a054fde8749bb9a7c2d2911cd395cd26078a4d57eb236914a1fb1b68"
+file = "ocaml-bootstrap.tar.gz"
+version = "31e7a6dd1aa50a31a236dbcfc555dad0bdb9b600"
+mirrors = ["https://github.com/Ekdohibs/ocaml/archive/{version}.tar.gz"]
+
+[sources.ocaml]
+hash = "48554abfd530fcdaa08f23f801b699e4f74c320ddf7d0bd56b0e8c24e55fc911"
+format = "tar.gz"
+file = "ocaml-{version}.{format}"
+mirrors = [ "https://github.com/ocaml/ocaml/archive/refs/tags/{version}.{format}",]

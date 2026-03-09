@@ -1,0 +1,14 @@
+[package]
+name = "guile"
+version = "3.0.11"
+description = "The Guile Scheme implementation"
+license = "LGPL-3.0-or-later"
+website = "https://gnu.org/software/guile"
+
+[sources.guile]
+hash = "818c79d236657a7fa96fb364137cc7b41b3bdee0d65c6174ca03769559579460"
+file = "guile-{version}.tar.xz"
+mirrors = [
+  "https://ftpmirror.gnu.org/gnu/guile/{file}",
+  "https://mirrors.kernel.org/gnu/guile/{file}",
+]
