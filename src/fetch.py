@@ -21,7 +21,7 @@ class ResourceFetcher(object):
     self.package_file: str = package_file_path
 
   def fetch_resource(self) -> List[Tuple[str, str, str, str]]:
-    time.sleep(3)
+   # time.sleep(3)
     thread_id = threading.get_ident()
     start = time.time()
     print(f"[Thread {thread_id}] Starting: {self.package_file}", flush=True)
