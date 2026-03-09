@@ -1,0 +1,12 @@
+[package]
+name = "gc"
+version = "8.2.10"
+description = "Garbage collector for C and C++"
+license = "Boehm-GC"
+website = "https://sourceware.org/libffi/"
+
+[sources.gc]
+hash = "832cf4f7cf676b59582ed3b1bbd90a8d0e0ddbc3b11cb3b2096c5177ce39cc47"
+format = "tar.gz"
+file = "gc-{version}.{format}"
+mirrors = [ "https://github.com/ivmai/bdwgc/releases/download/v$pkgver/{file}",]
