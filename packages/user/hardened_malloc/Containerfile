@@ -6,7 +6,7 @@ WORKDIR /hardened_malloc-${VERSION}
 
 RUN --network=none <<-EOF
 	set -eux
-	make CC=gcc -j "$(nproc)"
+	make CONFIG_NATIVE=false CC=gcc -j "$(nproc)"
 	mkdir -p /rootfs/usr/lib
 	install -m755 out/libhardened_malloc.so /rootfs/usr/lib/
 	install -vDm644 -t "/rootfs/usr/share/licenses/hardened_malloc" LICENSE
