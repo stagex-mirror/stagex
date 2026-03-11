@@ -14,6 +14,8 @@ COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-yaml . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-autoconf . /
+COPY --from=stagex/core-m4 . /
 ADD fetch/ruby-${VERSION}.tar.gz .
 WORKDIR /ruby-${VERSION}
 ENV LDFLAGS="-Wl,-O1 -Wl,--sort-common"
@@ -33,6 +35,9 @@ RUN --network=none <<-EOF
 
         # ruby saves path to install. we want use $PATH
         export INSTALL=install
+
+        rm ./configure
+        autoconf -f
 
         # the configure script does not detect isnan/isinf as macros
         export ac_cv_func_isnan=yes
