@@ -2,14 +2,14 @@ name: StageX Package-Updates
 
 on:
   schedule:
-    - cron: '0 4 * * *'
+    - cron: '0 */4 * * *'
   workflow_dispatch:
 
 jobs:
   test-run:
     runs-on: lugges-micro
     container:
-      image: codeberg.org/stagex/release-bot@sha256:55fe96a1a3ada234a371c0ab577a6c87e0b16de0e33a64d8fdbbfe62b8b21cec
+      image: codeberg.org/stagex/release-bot@sha256:9f3285106c8310bd90a0e1114cb2836c28d3a6b1d94b53c81e034e17d3765d4f
     steps:
       - name: Create PR
         run: /app/venv/bin/python3 /app/main.py upgrade
