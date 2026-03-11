@@ -11,10 +11,6 @@ version = "0.12.0"
 file = "mrustc-{version}.tar.gz"
 mirrors = [ "https://github.com/thepowersgang/mrustc/archive/refs/tags/v{version}.tar.gz",]
 
-[sources.mrustc-typecheck-patch]
-hash = "0bf96f3e7d3e2643cc46ed67598f3c17b349ea7f29ee48774b582806ca1020cc"
-mirrors = ["https://github.com/thepowersgang/mrustc/commit/aea331a4f60535eb6c146b82c50255334e4abf3a.patch"]
-
 [sources.rust1_90_0]
 hash = "799a9f9cba4ed5351e071048bcf6b5560755d9009648def33a407dd4961f9b7e"
 mirrors = [ "https://static.rust-lang.org/dist/rustc-1.90.0-src.tar.gz",]
