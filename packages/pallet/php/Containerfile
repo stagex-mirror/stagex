@@ -31,3 +31,9 @@ COPY --from=stagex/core-openssl /usr/lib/libssl.so* /usr/lib/
 COPY --from=stagex/core-openssl /usr/lib/libcrypto.so* /usr/lib/
 COPY --from=stagex/core-libzstd /lib/libzstd.so* /lib/
 COPY --from=stagex/core-zlib /usr/lib/libz.so* /usr/lib/
+
+FROM stagex/core-filesystem as package-php-filter
+COPY --from=stagex/core-php-ext-filter . /
+
+FROM stagex/core-filesystem as package-php-phar
+COPY --from=stagex/core-php-ext-phar . /
