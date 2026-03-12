@@ -15,15 +15,15 @@ COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-xz . /
 COPY --from=stagex/core-libzip . /
 COPY --from=stagex/core-php . /
-COPY --from=stagex/core-php-ext-phar . /
-COPY --from=stagex/core-php-ext-filter . /
-COPY --from=stagex/core-php-ext-openssl . /
-COPY --from=stagex/core-php-ext-curl . /
-COPY --from=stagex/core-php-ext-zlib . /
-COPY --from=stagex/core-php-ext-zip . /
-COPY --from=stagex/core-php-ext-sodium . /
-COPY --from=stagex/core-php-ext-mbstring . /
-COPY --from=stagex/core-php-ext-tokenizer . /
+COPY --from=stagex/core-php-phar . /
+COPY --from=stagex/core-php-filter . /
+COPY --from=stagex/core-php-openssl . /
+COPY --from=stagex/core-php-curl . /
+COPY --from=stagex/core-php-zlib . /
+COPY --from=stagex/core-php-zip . /
+COPY --from=stagex/core-php-sodium . /
+COPY --from=stagex/core-php-mbstring . /
+COPY --from=stagex/core-php-tokenizer . /
 COPY --from=stagex/core-composer . /
 
 ADD fetch/pie-${VERSION}.tar.gz /
