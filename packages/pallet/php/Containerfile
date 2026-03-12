@@ -1,5 +1,5 @@
 FROM stagex/core-profile AS package-php
-COPY --from=stagex/core-musl /usr/lib/*.so* /usr/lib/
+COPY --from=stagex/core-musl-lib . /
 COPY --from=stagex/user-libiconv /usr/lib/libiconv.so* /usr/lib/
 COPY --from=stagex/user-argon2 /usr/lib/libargon2.so* /usr/lib/
 COPY --from=stagex/core-zlib /usr/lib/libz.so* /usr/lib/
@@ -32,8 +32,8 @@ COPY --from=stagex/core-openssl /usr/lib/libcrypto.so* /usr/lib/
 COPY --from=stagex/core-libzstd /lib/libzstd.so* /lib/
 COPY --from=stagex/core-zlib /usr/lib/libz.so* /usr/lib/
 
-FROM stagex/core-filesystem as package-php-filter
+FROM stagex/core-filesystem AS package-php-filter
 COPY --from=stagex/core-php-ext-filter . /
 
-FROM stagex/core-filesystem as package-php-phar
+FROM stagex/core-filesystem AS package-php-phar
 COPY --from=stagex/core-php-ext-phar . /

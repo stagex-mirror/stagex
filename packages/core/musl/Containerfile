@@ -102,5 +102,8 @@ RUN --network=none <<-EOF
 		fi
 	done
 EOF
-FROM stagex/core-filesystem AS package
+FROM stagex/core-filesystem AS package-musl
 COPY --from=build /rootfs/ /
+
+FROM stagex/core-filesystem AS package-musl-lib
+COPY --from=build /rootfs/usr/lib/*.so* /usr/lib/
