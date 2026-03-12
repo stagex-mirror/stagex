@@ -79,7 +79,7 @@ RUN --network=none <<-EOF
 		--enable-mysqlnd \
 		--enable-embed=shared \
 		--enable-bcmath=shared \
-                --enable-fileinfo=shared \
+		--enable-fileinfo=shared \
 		--enable-intl=shared \
 		--enable-fpm
 	make -j "$(nproc)"
@@ -127,8 +127,8 @@ RUN --network=none <<-EOF
 		--enable-tokenizer=shared \
 		--enable-mysqlnd \
 		--enable-embed=shared \
-                --enable-bcmath=shared \
-                --enable-fileinfo=shared \
+		--enable-bcmath=shared \
+		--enable-fileinfo=shared \
 		--enable-intl=shared \
 		--enable-zts
 	make -j "$(nproc)"
