@@ -25,6 +25,7 @@ COPY --from=stagex/user-libsodium . /
 COPY --from=stagex/user-libiconv . /
 COPY --from=stagex/core-bzip2 . /
 COPY --from=stagex/core-libzip . /
+COPY --from=stagex/core-icu . /
 
 ADD fetch/php-${VERSION}.tar.gz .
 
@@ -79,6 +80,7 @@ RUN --network=none <<-EOF
 		--enable-embed=shared \
 		--enable-bcmath=shared \
                 --enable-fileinfo=shared \
+		--enable-intl=shared \
 		--enable-fpm
 	make -j "$(nproc)"
 	make INSTALL_ROOT="/${rootfs}" install
@@ -127,6 +129,7 @@ RUN --network=none <<-EOF
 		--enable-embed=shared \
                 --enable-bcmath=shared \
                 --enable-fileinfo=shared \
+		--enable-intl=shared \
 		--enable-zts
 	make -j "$(nproc)"
 	make INSTALL_ROOT="/${rootfs}" install
@@ -215,6 +218,10 @@ FROM stagex/core-filesystem AS package-php-ext-fileinfo
 COPY --from=build /rootfs/usr/lib/php-modules/fileinfo.so /usr/lib/php-modules/fileinfo.so
 COPY --from=build /rootfs/etc/php/conf.d/ext-fileinfo.ini /etc/php/conf.d/ext-fileinfo.ini
 
+FROM stagex/core-filesystem AS package-php-ext-intl
+COPY --from=build /rootfs/usr/lib/php-modules/intl.so /usr/lib/php-modules/intl.so
+COPY --from=build /rootfs/etc/php/conf.d/ext-intl.ini /etc/php/conf.d/ext-intl.ini
+
 ##############################
 ### PHP Extensions w. ZTS ####
 ##############################
@@ -262,3 +269,7 @@ COPY --from=build /rootfs/etc/php/conf.d/ext-bcmath.ini /etc/php/conf.d/ext-bcma
 FROM stagex/core-filesystem AS package-php-ext-fileinfo-zts
 COPY --from=build /rootfs-zts/usr/lib/php-modules/fileinfo.so /usr/lib/php-modules/fileinfo.so
 COPY --from=build /rootfs/etc/php/conf.d/ext-fileinfo.ini /etc/php/conf.d/ext-fileinfo.ini
+
+FROM stagex/core-filesystem AS package-php-ext-intl-zts    
+COPY --from=build /rootfs-zts/usr/lib/php-modules/intl.so /usr/lib/php-modules/intl.so
+COPY --from=build /rootfs/etc/php/conf.d/ext-intl.ini /etc/php/conf.d/ext-intl.ini
