@@ -77,6 +77,8 @@ RUN --network=none <<-EOF
 		--enable-tokenizer=shared \
 		--enable-mysqlnd \
 		--enable-embed=shared \
+		--enable-bcmath=shared \
+                --enable-fileinfo=shared \
 		--enable-fpm
 	make -j "$(nproc)"
 	make INSTALL_ROOT="/${rootfs}" install
@@ -123,6 +125,8 @@ RUN --network=none <<-EOF
 		--enable-tokenizer=shared \
 		--enable-mysqlnd \
 		--enable-embed=shared \
+                --enable-bcmath=shared \
+                --enable-fileinfo=shared \
 		--enable-zts
 	make -j "$(nproc)"
 	make INSTALL_ROOT="/${rootfs}" install
@@ -203,6 +207,14 @@ FROM stagex/core-filesystem AS package-php-ext-zlib
 COPY --from=build /rootfs/usr/lib/php-modules/zlib.so /usr/lib/php-modules/zlib.so
 COPY --from=build /rootfs/etc/php/conf.d/ext-zlib.ini /etc/php/conf.d/ext-zlib.ini
 
+FROM stagex/core-filesystem AS package-php-ext-bcmath
+COPY --from=build /rootfs/usr/lib/php-modules/bcmath.so /usr/lib/php-modules/bcmath.so
+COPY --from=build /rootfs/etc/php/conf.d/ext-bcmath.ini /etc/php/conf.d/ext-bcmath.ini
+
+FROM stagex/core-filesystem AS package-php-ext-fileinfo
+COPY --from=build /rootfs/usr/lib/php-modules/fileinfo.so /usr/lib/php-modules/fileinfo.so
+COPY --from=build /rootfs/etc/php/conf.d/ext-fileinfo.ini /etc/php/conf.d/ext-fileinfo.ini
+
 ##############################
 ### PHP Extensions w. ZTS ####
 ##############################
@@ -242,3 +254,11 @@ COPY --from=build /rootfs/etc/php/conf.d/ext-zip.ini /etc/php/conf.d/ext-zip.ini
 FROM stagex/core-filesystem AS package-php-ext-zlib-zts
 COPY --from=build /rootfs-zts/usr/lib/php-modules/zlib.so /usr/lib/php-modules/zlib.so
 COPY --from=build /rootfs/etc/php/conf.d/ext-zlib.ini /etc/php/conf.d/ext-zlib.ini
+
+FROM stagex/core-filesystem AS package-php-ext-bcmath-zts
+COPY --from=build /rootfs-zts/usr/lib/php-modules/bcmath.so /usr/lib/php-modules/bcmath.so
+COPY --from=build /rootfs/etc/php/conf.d/ext-bcmath.ini /etc/php/conf.d/ext-bcmath.ini
+
+FROM stagex/core-filesystem AS package-php-ext-fileinfo-zts
+COPY --from=build /rootfs-zts/usr/lib/php-modules/fileinfo.so /usr/lib/php-modules/fileinfo.so
+COPY --from=build /rootfs/etc/php/conf.d/ext-fileinfo.ini /etc/php/conf.d/ext-fileinfo.ini

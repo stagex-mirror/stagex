@@ -29,7 +29,11 @@ subpackages = [
   "php-ext-sodium-zts",
   "php-ext-tokenizer-zts",
   "php-ext-zip-zts",
-  "php-ext-zlib-zts"
+  "php-ext-zlib-zts",
+  "php-ext-bcmath",
+  "php-ext-bcmath-zts",
+  "php-ext-fileinfo",
+  "php-ext-fileinfo-zts"
 ]
 
 [sources.php]
