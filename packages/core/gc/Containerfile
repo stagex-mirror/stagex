@@ -1,27 +1,23 @@
 FROM scratch AS build
 ARG VERSION
-ENV SOURCE_DATE_EPOCH=1
 COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-mold . /
-COPY --from=stagex/core-onetbb . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-libzstd . /
-ADD fetch/ocaml-${VERSION}.tar.gz .
-WORKDIR /ocaml-${VERSION}
+ADD fetch/gc-${VERSION}.tar.gz .
+WORKDIR /gc-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
-	CFLAGS="-fPIC" \
+	set -ex
 	./configure \
 		--prefix=/usr \
-		--sysconfdir=/etc \
-		--mandir=/usr/share/man \
-		--infodir=/usr/share/info \
-		--localstatedir=/var
+		--enable-static
 	make -j "$(nproc)"
 	make DESTDIR="/rootfs" install
+	install -Dm644 -t /rootfs/usr/share/licenses/gc/ README.md
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

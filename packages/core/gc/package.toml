@@ -1,0 +1,12 @@
+[package]
+name = "gc"
+version = "8.2.12"
+description = "Garbage collector for C and C++"
+license = "Boehm-GC"
+website = "https://hboehm.info/gc/"
+
+[sources.gc]
+hash = "42e5194ad06ab6ffb806c83eb99c03462b495d979cda782f3c72c08af833cd4e"
+format = "tar.gz"
+file = "gc-{version}.{format}"
+mirrors = [ "https://github.com/bdwgc/bdwgc/releases/download/v{version}/{file}",]

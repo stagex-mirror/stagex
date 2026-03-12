@@ -247,10 +247,8 @@ COPY --chmod=0755 <<-'EOF' build
 	export RUSTFLAGS="${RUSTFLAGS:-}"
 
 	# Tune how `rustc` is built for a faster build process.
-	#
-	# - `incremental=false` doesn't build a cache for incremental builds, as unnecessary here.
-	export RUSTFLAGS="-Clinker=clang -Clink-arg=-Wl,-fuse-ld=mold -Cincremental=false $RUSTFLAGS"
-	# For intermediary compilers, which aren't part of the committed output, be more aggressive
+	export RUSTFLAGS="-Clinker=clang -Clink-arg=-Wl,-fuse-ld=mold $RUSTFLAGS"
+	# For intermediary compilers, which aren't part of the committed output, we're more aggressive.
 	if [ ! "$TARGET_VERSION" = "$VERSION" ]; then
 		# Disable generating/embedding LLVM bitcode within the objects as it won't be used
 		export RUSTFLAGS="-Cembed-bitcode=false $RUSTFLAGS"
@@ -343,6 +341,9 @@ ADD fetch/rustc-1.92.0-src.tar.gz .
 RUN --network=none ./build 1.92.0 1.91.1 ""
 
 ADD fetch/rustc-1.93.1-src.tar.gz .
+RUN --network=none ./build 1.93.1 1.92.0 ""
+
+ADD fetch/rustc-1.94.0-src.tar.gz .
 
 # Patch the default for `musl` targets to be dynamically, not statically, linked
 RUN --network=none <<-EOF
@@ -352,7 +353,7 @@ RUN --network=none <<-EOF
 	done
 EOF
 
-RUN --network=none ./build ${VERSION} 1.92.0 cargo,clippy,rustdoc,rustfmt,rust-demangler,src
+RUN --network=none ./build ${VERSION} 1.93.1 cargo,clippy,rustdoc,rustfmt,rust-demangler,src
 RUN --network=none <<-EOF
 	set -eux
 	mv /rust-${VERSION} /rootfs

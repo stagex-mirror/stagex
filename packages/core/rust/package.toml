@@ -1,6 +1,6 @@
 [package]
 name = "rust"
-version = "1.93.1"
+version = "1.94.0"
 description = "Rust Programming Language toolchain"
 license = "Apache-2.0 OR MIT"
 website = "https://www.rust-lang.org"
@@ -10,10 +10,6 @@ hash = "c1ba35f5fc5c4ca2952d9f5526e900dcb6632ea7fd4d71fa58029b3bb563ae56"
 version = "0.12.0"
 file = "mrustc-{version}.tar.gz"
 mirrors = [ "https://github.com/thepowersgang/mrustc/archive/refs/tags/v{version}.tar.gz",]
-
-[sources.mrustc-typecheck-patch]
-hash = "0bf96f3e7d3e2643cc46ed67598f3c17b349ea7f29ee48774b582806ca1020cc"
-mirrors = ["https://github.com/thepowersgang/mrustc/commit/aea331a4f60535eb6c146b82c50255334e4abf3a.patch"]
 
 [sources.rust1_90_0]
 hash = "799a9f9cba4ed5351e071048bcf6b5560755d9009648def33a407dd4961f9b7e"
@@ -30,3 +26,7 @@ mirrors = [ "https://static.rust-lang.org/dist/rustc-1.92.0-src.tar.gz",]
 [sources.rust1_93_1]
 hash = "4c230a44b3d9c9f3cef950943719f8380058d27c91fda5e36a9a947ef013e01f"
 mirrors = [ "https://static.rust-lang.org/dist/rustc-1.93.1-src.tar.gz",]
+
+[sources.rust1_94_0]
+hash = "b83f921cd3f321ff614f9c06a8b870d89299fc02888b48a5549683a36823474c"
+mirrors = [ "https://static.rust-lang.org/dist/rustc-1.94.0-src.tar.gz",]
