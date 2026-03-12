@@ -1,20 +1,33 @@
-FROM stagex/core-profile
-
-COPY --from=stagex/core-musl . /
+FROM stagex/core-profile AS package-php
+COPY --from=stagex/core-musl /usr/lib/*.so* /usr/lib/
+COPY --from=stagex/user-libiconv /usr/lib/libiconv.so* /usr/lib/
+COPY --from=stagex/user-argon2 /usr/lib/libargon2.so* /usr/lib/
+COPY --from=stagex/core-zlib /usr/lib/libz.so* /usr/lib/
+COPY --from=stagex/core-openssl /usr/lib/libcrypto.so* /usr/lib/
 COPY --from=stagex/core-ca-certificates . /
-COPY --from=stagex/core-libzstd . /
-COPY --from=stagex/core-curl . /
-COPY --from=stagex/core-openssl . /
-COPY --from=stagex/core-zlib . /
-COPY --from=stagex/user-argon2 . /
-COPY --from=stagex/user-libiconv . /
 COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-xz . /
-COPY --from=stagex/core-libzip . /
 COPY --from=stagex/core-php . /
-COPY --from=stagex/core-php-ext-phar . /
-COPY --from=stagex/core-php-ext-filter . /
+
+FROM stagex/core-filesystem AS package-php-openssl
 COPY --from=stagex/core-php-ext-openssl . /
-COPY --from=stagex/core-php-ext-curl . /
+COPY --from=stagex/core-openssl /usr/lib/libssl.so* /usr/lib/
+
+FROM stagex/core-filesystem AS package-php-zlib
 COPY --from=stagex/core-php-ext-zlib . /
+COPY --from=stagex/core-zlib /lib/libz.so* /lib/
+
+FROM stagex/core-filesystem AS package-php-zip
 COPY --from=stagex/core-php-ext-zip . /
+COPY --from=stagex/core-openssl /usr/lib/libcrypto.so* /usr/lib/
+COPY --from=stagex/core-libzip /usr/lib/libzip.so* /usr/lib/
+COPY --from=stagex/core-xz /usr/lib/liblzma.so* /usr/lib/
+COPY --from=stagex/core-libzstd /usr/lib/libzstd.so* /usr/lib/
+COPY --from=stagex/core-zlib /usr/lib/libz.so* /usr/lib/
+
+FROM stagex/core-filesystem AS package-php-curl
+COPY --from=stagex/core-php-ext-curl . /
+COPY --from=stagex/core-curl /usr/lib/libcurl.so* /usr/lib/
+COPY --from=stagex/core-openssl /usr/lib/libssl.so* /usr/lib/
+COPY --from=stagex/core-openssl /usr/lib/libcrypto.so* /usr/lib/
+COPY --from=stagex/core-libzstd /lib/libzstd.so* /lib/
+COPY --from=stagex/core-zlib /usr/lib/libz.so* /usr/lib/
