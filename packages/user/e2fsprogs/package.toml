@@ -1,12 +1,12 @@
 [package]
 name = "e2fsprogs"
-version = "1.47.1"
+version = "1.47.4"
 description = "Ext2/3/4 filesystem utilities"
 license = "GPL-2.0-only"
 website = "https://e2fsprogs.sourceforge.net"
 
 [sources.e2fsprogs]
-hash = "db95ff1cb6ef741c9aa8875d9f3f52a34168360febba765b6377b80bada09a8c"
+hash = "9f82eaa7002673291629077b80ee005cadfcd49854907a22007fed70b0ef596e"
 format = "tar.gz"
 file = "e2fsprogs-{version}.{format}"
 mirrors = [ "https://github.com/tytso/e2fsprogs/archive/v{version}.{format}",]
