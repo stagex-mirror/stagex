@@ -1,7 +1,9 @@
 [package]
 name = "ccid"
 version = "1.5.5"
-description = "TODO"
+description = "PC/SC driver for USB CCID smart card readers"
+license = "LGPL-2.1-or-later"
+website = "https://ccid.apdu.fr"
 
 [sources.ccid]
 hash = "194708f75fe369d45dd7c15e8b3e8a7db8b49cfc5557574ca2a2e76ef12ca0ca"

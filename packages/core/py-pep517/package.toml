@@ -1,7 +1,9 @@
 [package]
 name = "py-pep517"
 version = "0.9.1"
-description = "TODO"
+description = "Wrappers to build Python packages using PEP 517 hooks"
+license = "MIT"
+website = "https://github.com/pypa/pep517"
 
 [sources.py-pep517]
 hash = "aeb78601f2d1aa461960b43add204cc7955667687fbcf9cdb5170f00556f117f"

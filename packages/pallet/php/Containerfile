@@ -1,0 +1,20 @@
+FROM stagex/core-profile
+
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-ca-certificates . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-curl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/user-argon2 . /
+COPY --from=stagex/user-libiconv . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-xz . /
+COPY --from=stagex/core-libzip . /
+COPY --from=stagex/core-php . /
+COPY --from=stagex/core-php-ext-phar . /
+COPY --from=stagex/core-php-ext-filter . /
+COPY --from=stagex/core-php-ext-openssl . /
+COPY --from=stagex/core-php-ext-curl . /
+COPY --from=stagex/core-php-ext-zlib . /
+COPY --from=stagex/core-php-ext-zip . /

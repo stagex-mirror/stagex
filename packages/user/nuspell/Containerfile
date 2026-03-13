@@ -4,7 +4,6 @@ ARG VERSION
 ADD fetch/nuspell-${VERSION}.tar.gz .
 WORKDIR /nuspell-${VERSION}
 RUN --network=none <<-EOF
-	CXXFLAGS="-flto=auto" \
 	cmake -B build -G Ninja \
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DCMAKE_INSTALL_LIBDIR=lib \

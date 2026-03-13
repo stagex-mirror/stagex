@@ -10,6 +10,7 @@ ADD fetch/postgresql-${VERSION}.tar.gz .
 WORKDIR /postgresql-${VERSION}
 RUN --network=none <<-EOF
 	./configure \
+		LDFLAGS_EX_BE="-Wl,--export-dynamic" \
 		--prefix=/usr \
 		--mandir=/usr/share/man \
 		--with-libxml \

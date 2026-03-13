@@ -1,7 +1,9 @@
 [package]
 name = "just"
-description = "Command runner"
 version = "1.39.0"
+description = "Command runner"
+license = "CC0-1.0"
+website = "https://just.systems"
 
 [sources.just]
 hash = "8a900072d7f909bc91030df5896168752bb9108967dbb7149d2cfb11fdeb087a"

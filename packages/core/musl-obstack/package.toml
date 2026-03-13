@@ -1,7 +1,9 @@
 [package]
 name = "musl-obstack"
 version = "1.2.3"
-description = "TODO"
+description = "Implementation of obstack(3) for musl libc"
+license = "LGPL-2.1-or-later"
+website = "https://github.com/void-linux/musl-obstack"
 
 [sources.musl-obstack]
 hash = "9ffb3479b15df0170eba4480e51723c3961dbe0b461ec289744622db03a69395"

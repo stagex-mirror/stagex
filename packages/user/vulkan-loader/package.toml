@@ -2,6 +2,8 @@
 name = "vulkan-loader"
 version = "1.4.304.1"
 description = "Vulkan Installable Client Driver (ICD) Loader"
+license = "Apache-2.0"
+website = "https://github.com/KhronosGroup/Vulkan-Loader"
 
 [sources.vulkan-loader]
 hash = "efb2c84da071765a8b0b15e9c60801d4611ef7501aa8b3d1268c3b779bfcfaf6"

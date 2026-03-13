@@ -1,7 +1,9 @@
 [package]
 name = "valgrind"
 version = "3.26.0"
-description = "TODO"
+description = "Instrumentation framework for building dynamic analysis tools"
+license = "GPL-2.0-or-later"
+website = "https://valgrind.org"
 
 [sources.valgrind]
 hash = "8d54c717029106f1644aadaf802ab9692e53d93dd015cbd19e74190eba616bd7"

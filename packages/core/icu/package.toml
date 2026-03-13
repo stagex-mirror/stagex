@@ -1,7 +1,9 @@
 [package]
 name = "icu"
 version = "74.2"
-description = "TODO"
+description = "International Components for Unicode"
+license = "ICU"
+website = "https://icu.unicode.org"
 
 [sources.icu]
 hash = "68db082212a96d6f53e35d60f47d38b962e9f9d207a74cfac78029ae8ff5e08c"

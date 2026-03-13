@@ -1,7 +1,9 @@
 [package]
 name = "seabios"
 version = "1.17.0"
-description = "TODO"
+description = "Open source implementation of a 16bit x86 BIOS"
+license = "LGPL-3.0-or-later"
+website = "https://www.seabios.org"
 
 [sources.seabios]
 hash = "cb708a548e4244c5021590a5e78ab6e331ded1750120b687039042994033a07c"

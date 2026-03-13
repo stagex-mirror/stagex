@@ -1,4 +1,6 @@
 [package]
 name = "nodejs"
-description = "Basic Node.js ('Current Release') runtime with shell"
 version_from = "core-nodejs"
+description = "Basic Node.js ('Current Release') runtime with shell"
+license = "Apache-2.0 AND Apache-2.0 WITH LLVM-exception AND Artistic-2.0 AND GPL-2.0-only AND ICU AND ISC AND MIT AND MPL-2.0 AND Zlib"
+website = "https://nodejs.org/"

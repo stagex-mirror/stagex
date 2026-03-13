@@ -1,7 +1,9 @@
 [package]
 name = "py-requests"
 version = "2.32.3"
-description = "TODO"
+description = "HTTP library for Python"
+license = "Apache-2.0"
+website = "https://requests.readthedocs.io"
 
 [sources.py-requests]
 hash = "55365417734eb18255590a9ff9eb97e9e1da868d4ccd6402399eaf68af20a760"

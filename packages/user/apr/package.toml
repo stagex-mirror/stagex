@@ -1,7 +1,9 @@
 [package]
 name = "apr"
 version = "1.7.5"
-description = "TODO"
+description = "Apache Portable Runtime library"
+license = "Apache-2.0"
+website = "https://apr.apache.org"
 
 [sources.apr]
 hash = "cd0f5d52b9ab1704c72160c5ee3ed5d3d4ca2df4a7f8ab564e3cb352b67232f2"

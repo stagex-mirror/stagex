@@ -1,7 +1,9 @@
 [package]
 name = "protoc-go-inject-tag"
 version = "1.4.0"
-description = "TODO"
+description = "Inject custom tags into protobuf generated Go structs"
+license = "MIT"
+website = "https://github.com/favadi/protoc-go-inject-tag"
 
 [sources.protoc-go-inject-tag]
 hash = "0ec154e2b8159b1e449a7d182accf925bdad3b084ba75b8a497bcc816e49f47d"

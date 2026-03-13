@@ -1,18 +1,44 @@
 [package]
 name = "go"
-version = "1.25.5"
+version = "1.26.0"
 description = "The Go programming language"
 website = "https://go.dev"
-licenses = "BSD-3-Clause"
+license = "BSD-3-Clause"
+
+[sources.go1_4]
+hash = "f4ff5b5eb3a3cae1c993723f3eab519c5bae18866b5e5f96fe1102f0cb5c3e52"
+version = "1.4"
+file = "go{version}.src.tar.gz"
+mirrors = ["https://dl.google.com/go/go{version}-bootstrap-20171003.tar.gz"]
+
+[sources.go1_19_11]
+hash = "e25c9ab72d811142b7f41ff6da5165fec2d1be5feec3ef2c66bc0bdecb431489"
+version = "1.19.11"
+mirrors = ["https://go.dev/dl/go{version}.src.tar.gz"]
+
+[sources.go1_20_6]
+hash = "62ee5bc6fb55b8bae8f705e0cb8df86d6453626b4ecf93279e2867092e0b7f70"
+version = "1.20.6"
+mirrors = ["https://go.dev/dl/go{version}.src.tar.gz"]
+
+[sources.go1_22_12]
+hash = "012a7e1f37f362c0918c1dfa3334458ac2da1628c4b9cf4d9ca02db986e17d71"
+version = "1.22.12"
+mirrors = ["https://go.dev/dl/go{version}.src.tar.gz"]
+
+[sources.go1_24_6]
+hash = "e1cb5582aab588668bc04c07de18688070f6b8c9b2aaf361f821e19bd47cfdbd"
+version = "1.24.6"
+mirrors = ["https://go.dev/dl/go{version}.src.tar.gz"]
 
 [sources.go]
-hash = "22a5fd0a91efcd28a1b0537106b9959b2804b61f59c3758b51e8e5429c1a954f"
+hash = "c9132a8a1f6bd2aa4aad1d74b8231d95274950483a4950657ee6c56e6e817790"
 mirrors = ["https://go.dev/dl/go{version}.src.tar.gz"]
 
 [sources.go-linux-amd64]
-hash = "9e9b755d63b36acf30c12a9a3fc379243714c1c6d3dd72861da637f336ebb35b"
+hash = "aac1b08a0fb0c4e0a7c1555beb7b59180b05dfc5a3d62e40e9de90cd42f88235"
 mirrors = ["https://go.dev/dl/go{version}.linux-amd64.tar.gz"]
 
 [sources.go-linux-arm64]
-hash = "b00b694903d126c588c378e72d3545549935d3982635ba3f7a964c9fa23fe3b9"
+hash = "bd03b743eb6eb4193ea3c3fd3956546bf0e3ca5b7076c8226334afe6b75704cd"
 mirrors = ["https://go.dev/dl/go{version}.linux-arm64.tar.gz"]

@@ -1,7 +1,9 @@
 [package]
 name = "elfutils"
 version = "0.193"
-description = "TODO"
+description = "ELF object file access and analysis utilities"
+license = "GPL-2.0-or-later AND LGPL-3.0-or-later"
+website = "https://sourceware.org/elfutils/"
 
 [sources.elfutils]
 hash = "7857f44b624f4d8d421df851aaae7b1402cfe6bcdd2d8049f15fc07d3dde7635"

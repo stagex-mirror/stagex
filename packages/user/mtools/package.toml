@@ -1,7 +1,9 @@
 [package]
 name = "mtools"
 version = "4.0.45"
-description = "TODO"
+description = "Utilities to access MS-DOS disks without mounting them"
+license = "GPL-3.0-or-later"
+website = "https://www.gnu.org/software/mtools/"
 
 [sources.mtools]
 hash = "0b008a96bd0efe0e542fa4383d469af66bc4a93394990b103730a8160a67d618"

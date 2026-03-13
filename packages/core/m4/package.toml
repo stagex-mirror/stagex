@@ -1,7 +1,9 @@
 [package]
 name = "m4"
 version = "1.4.19"
-description = "TODO"
+description = "GNU implementation of the traditional Unix macro processor"
+license = "GPL-3.0-or-later"
+website = "https://www.gnu.org/software/m4/"
 
 [sources.m4]
 hash = "3be4a26d825ffdfda52a56fc43246456989a3630093cced3fbddf4771ee58a70"

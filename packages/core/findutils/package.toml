@@ -1,7 +1,9 @@
 [package]
 name = "findutils"
 version = "4.9.0"
-description = "TODO"
+description = "GNU utilities for finding files"
+license = "GPL-3.0-or-later"
+website = "https://www.gnu.org/software/findutils/"
 
 [sources.findutils]
 hash = "a2bfb8c09d436770edc59f50fa483e785b161a3b7b9d547573cb08065fd462fe"

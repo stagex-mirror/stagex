@@ -1,7 +1,9 @@
 [package]
 name = "buildkit"
 version = "0.24.0"
-description = "TODO"
+description = "Concurrent, cache-efficient, and Dockerfile-agnostic builder toolkit"
+license = "Apache-2.0"
+website = "https://github.com/moby/buildkit"
 
 [sources.buildkit]
 hash = "748cec64d012c5d9506ef479e6047290e0af8091938ec276f75bb9e2c5297ba0"

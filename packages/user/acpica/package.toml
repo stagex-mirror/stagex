@@ -2,6 +2,8 @@
 name = "acpica"
 version = "20250807"
 description = "The ACPI Component Architecture (ACPICA) project provides an open-source operating system-independent implementation of the Advanced Configuration and Power Interface specification (ACPI)."
+license = "Intel-ACPI"
+website = "https://www.intel.com/content/www/us/en/developer/topic-technology/open/acpica/overview.html"
 
 [sources.acpica]
 hash = "971df1f78944e5f3bb314209acbf8a127c0db34b4a3c26e011b4076eba1c2bbc"

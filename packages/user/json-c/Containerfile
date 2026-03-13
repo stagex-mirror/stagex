@@ -1,7 +1,7 @@
 FROM stagex/pallet-clang-cmake-busybox AS build
 ARG VERSION
 ADD fetch/json-c-${VERSION}.tar.gz .
-WORKDIR /json-c-${VERSION}
+WORKDIR /json-c-json-c-${VERSION}
 RUN <<-EOF
 	cmake \
 		-B build \
@@ -12,7 +12,8 @@ RUN <<-EOF
 		-DBUILD_SHARED_LIBS=ON \
 		-DBUILD_STATIC_LIBS=ON \
 		-DCMAKE_SYSTEM_NAME=Linux \
-		-DCMAKE_HOST_SYSTEM_NAME=Linux
+		-DCMAKE_HOST_SYSTEM_NAME=Linux \
+		-DCMAKE_POLICY_VERSION_MINIMUM=3.5
 	cmake --build build --target all
 	DESTDIR="/rootfs" cmake --install build
 EOF

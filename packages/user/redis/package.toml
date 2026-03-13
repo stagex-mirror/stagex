@@ -2,7 +2,7 @@
 name = "redis"
 version = "8.0.3"
 description = "Cache, data structure server, document and vector query engine"
-license = "AGPL"
+license = "AGPL-3.0-only"
 website = "https://redis.io"
 
 [sources.redis]

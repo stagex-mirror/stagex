@@ -16,7 +16,6 @@ WORKDIR /libva-${VERSION}
 RUN --network=none <<-EOF
 	meson setup \
 		--prefix=/usr \
-		-Db_lto=true \
 		-Dwith_x11=yes \
 		-Dwith_glx=no \
 		-Dwith_wayland=yes \

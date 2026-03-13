@@ -1,7 +1,9 @@
 [package]
 name = "py-dateutil"
 version = "2.9.0.post0"
-description = "TODO"
+description = "Extensions to the standard Python datetime module"
+license = "Apache-2.0"
+website = "https://github.com/dateutil/dateutil"
 
 [sources.py-dateutil]
 hash = "37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3"

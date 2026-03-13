@@ -1,15 +1,76 @@
-FROM scratch AS build
-ARG VERSION
-COPY --from=stagex/bootstrap-stage3 . /
-ADD fetch/go${VERSION}.src.tar.gz .
-WORKDIR /go
-ENV GOROOT_BOOTSTRAP=/usr/lib/go
+# Go only supports targeting arm64 from version 1.9
+# This requires bootstrapping on 386/amd64 host
+FROM --platform=linux/386 stagex/bootstrap-stage1 AS base
+
+# Go bootstrapping is described by this order:
+# C -> 1.4 -> 1.19 -> 1.20 -> steps of +2 -> current version
+# Here, the last step (building current from last bootstrap) is also cross-compiling to the target arch
+
+FROM base AS build
+ADD fetch/go1.4.src.tar.gz /go1_4
+WORKDIR /go1_4/go
+ENV GOHOSTARCH=386
+RUN --network=none <<-EOF
+	mkdir -p /var/tmp
+
+	set -eux
+	cd src
+	bash -- make.bash -v=1 -d
+EOF
+
+ADD fetch/go1.19.11.src.tar.gz /go1_19_11
+WORKDIR /go1_19_11/go
+ENV GOROOT_BOOTSTRAP=/go1_4/go
 RUN --network=none <<-EOF
 	set -eux
 	cd src
-	sh make.bash
-	cd ..
+	bash -- make.bash -v=1 -d
+EOF
+
+ADD fetch/go1.20.6.src.tar.gz /go1_20_6
+WORKDIR /go1_20_6/go
+ENV GOROOT_BOOTSTRAP=/go1_19_11/go
+RUN --network=none <<-EOF
+	set -eux
+	cd src
+	bash -- make.bash -v=1 -d
+EOF
+
+ADD fetch/go1.22.12.src.tar.gz /go1_22_12
+WORKDIR /go1_22_12/go
+ENV GOROOT_BOOTSTRAP=/go1_20_6/go
+RUN --network=none <<-EOF
+	set -eux
+	cd src
+	bash -- make.bash -v=1 -d
+EOF
+
+ADD fetch/go1.24.6.src.tar.gz /go1_24_6
+WORKDIR /go1_24_6/go
+ENV GOROOT_BOOTSTRAP=/go1_22_12/go
+RUN --network=none <<-EOF
+	set -eux
+	cd src
+	bash -- make.bash -v=1 -d
+EOF
+
+ARG VERSION
+ARG TARGETARCH
+ADD fetch/go${VERSION}.src.tar.gz /
+WORKDIR /go
+ENV GOROOT_BOOTSTRAP=/go1_24_6/go
+ENV GOARCH=${TARGETARCH}
+RUN --network=none <<-EOF
+	set -eux
+	cd src
+	bash -- make.bash -v=1 -d
+EOF
+
+RUN --network=none <<-EOF
+	set -eux
 	mkdir -p /rootfs/usr/lib/go
+	mv bin/linux_${TARGETARCH}/* bin
+	rm -rf bin/linux_386 bin/linux_${TARGETARCH}
 	cp -a bin lib pkg src /rootfs/usr/lib/go
 	mkdir -p /rootfs/usr/bin
 	ln -s /usr/lib/go/bin/go /rootfs/usr/bin/go

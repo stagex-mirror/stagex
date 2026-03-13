@@ -1,7 +1,9 @@
 [package]
 name = "py-distro"
 version = "1.9.0"
-description = "TODO"
+description = "OS platform information API for Python"
+license = "Apache-2.0"
+website = "https://github.com/nir0s/distro"
 
 [sources.py-distro]
 hash = "2fa77c6fd8940f116ee1d6b94a2f90b13b5ea8d019b98bc8bafdcabcdd9bdbed"

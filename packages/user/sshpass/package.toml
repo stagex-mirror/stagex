@@ -2,7 +2,7 @@
 name = "sshpass"
 version = "1.10"
 description = "Fool ssh into accepting an interactive password non-interactively"
-licenses = "GPL"
+license = "GPL-2.0-or-later"
 website = "https://sourceforge.net/projects/sshpass/"
 
 [sources.openssh]

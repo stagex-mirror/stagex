@@ -1,7 +1,9 @@
 [package]
 name = "protobuf"
 version = "26.1"
-description = "TODO"
+description = "Protocol Buffers data interchange format"
+license = "BSD-3-Clause"
+website = "https://protobuf.dev"
 
 [sources.protobuf]
 hash = "4fc5ff1b2c339fb86cd3a25f0b5311478ab081e65ad258c6789359cd84d421f8"

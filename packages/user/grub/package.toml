@@ -1,7 +1,9 @@
 [package]
 name = "grub"
 version = "2.12"
-description = "TODO"
+description = "GNU GRand Unified Bootloader"
+license = "GPL-3.0-or-later"
+website = "https://www.gnu.org/software/grub/"
 
 [sources.grub]
 hash = "b30919fa5be280417c17ac561bb1650f60cfb80cc6237fa1e2b6f56154cb9c91"

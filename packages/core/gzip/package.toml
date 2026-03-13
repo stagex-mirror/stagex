@@ -1,7 +1,9 @@
 [package]
 name = "gzip"
 version = "1.13"
-description = "TODO"
+description = "GNU data compression program"
+license = "GPL-3.0-or-later"
+website = "https://www.gnu.org/software/gzip/"
 
 [sources.gzip]
 hash = "7454eb6935db17c6655576c2e1b0fabefd38b4d0936e0f87f48cd062ce91a057"

@@ -1,7 +1,9 @@
 [package]
 name = "py-certifi"
 version = "2024.2.2"
-description = "TODO"
+description = "Python package for providing Mozilla CA bundle"
+license = "MPL-2.0"
+website = "https://github.com/certifi/python-certifi"
 
 [sources.py-certifi]
 hash = "0569859f95fc761b18b45ef421b1290a0f65f147e92a1e5eb3e635f9a5e4e66f"

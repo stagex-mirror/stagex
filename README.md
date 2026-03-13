@@ -11,7 +11,7 @@ images of common open source software toolchains full-source bootstrapped from
 Stage 0 all the way up.
 
 If you want to build or deploy software on a foundation of minimalism and
-determinism with reasonable security, stagex might be the solution you are
+determinism with reasonable security, StageX might be the solution you are
 looking for.
 
 ## Table of Contents
@@ -20,7 +20,10 @@ looking for.
   * [Examples](#examples)
   * [Package Management Policies](#package-management-policies)
 * [Goals](#goals)
-  * [Integrity](#integrity)
+  * [Full-Source Bootstrapping](#full-source-bootstrapping)
+  * [Reproducibility](#reproducibility)
+  * [Cryptographic Accountability](#cryptographic-accountability)
+  * [Quorum Artifact Signing](#quorum-artifact-signing)
   * [Minimalism](#minimalism)
 * [Background](#background)
 * [Comparison](#comparison)
@@ -42,11 +45,11 @@ looking for.
 
 ## Usage
 
-You can do anything with these images you would with most any other musl based
-containerized linux distro, only with high supply chain integrity and
+You can do anything with these images you would with almost any other musl based
+containerized Linux distro, only with high supply chain integrity and
 determinism.
 
-For a full list of images see the "packages" directory.
+For a full list of images see the "packages" directory or check our [website](https://stagex.tools/packages/)
 
 ### Examples
 
@@ -113,61 +116,105 @@ No `RUN` commands needed.
 
 ### Package Management Policies
 
-Unlike most linux distros, stagex was built for determinism, minimalism, and
-containers first, and thus has no concept of a traditional package manager.
-In fact, stagex ships no first-party code at all. We just package things in the
-most "stock" way possible with exceptions only to maintain determinism.
+Unlike most Linux distros, StageX adopts an OCI-first design: Open Container
+Initiative (OCI) images are the native packaging system, not just a
+distribution format. This means system components are immutable, pre-built
+container images that are constructed, signed, and verified outside the runtime
+environment. During installation, no arbitrary scripts are run. Image
+verification and unpacking are the primary operations, significantly reducing
+the attack surface.
+
+StageX packages things in the most "stock" way possible, with exceptions only to
+maintain determinism.
 
 Every image is "from scratch" and contains an empty filesystem with the
-installed package.
+installed package. Because StageX images comply with OCI specifications, they
+run without modification across Docker, Podman, containerd, and any other
+compliant runtime, reducing single points of failure in the runtime layer.
+Distribution is handled through established tooling (skopeo, oras) with
+built-in support for security hardening, sandboxing, and provenance tracking.
+Immutable images facilitate atomic upgrades and rollbacks, enhancing
+operational stability.
 
 By default you always get the latest updates to dependencies on the fly, but
 you retain the option for bit-for-bit reproducible builds by locking any given
 dependency at a particular tag or image hash.
 
-If you want an old version of rust with a recent version of GCC to work around
-some problem build, you can do that without resorting to low security \
-"curl | bash" style solutions like rustup.
+This allows you to use the version you need regardless of the situation without
+resorting to low security "curl | bash" style solutions.
 
 ## Goals
 
-We built to support very high risk threat models where trusting any single
-system or maintainer in our software supply chain cannot be tolerated. That
-said, we should also function as a drop-in replacement for musl-based linux
-distributions for virtually any threat model.
+We built StageX to satisfy high-assurance threat models where trusting any
+single system or maintainer in the software supply chain cannot be tolerated.
+Our design enforces strict verifiability across five core criteria, making
+StageX the first Linux distribution to integrate all of the following into a
+unified, self-consistent model. See our
+[whitepaper](https://codeberg.org/stagex/whitepapers/src/branch/main/out/stagex.pdf)
+for the formal analysis.
 
-Our aim is to provide a reasonably secure set of toolchains for every major
-programming language to be the basis of your containers, build systems,
-firmware, secure enclaves, or hosting infrastructure.
+### Full-Source Bootstrapping
 
-Not all of these goals are 100% realized yet, but should at least help you
-decide if this project is something you want to contribute to or keep an eye on
-for the future.
+* The entire toolchain is bootstrappable from source, starting from a 181-byte
+  Stage0 machine code seed that any programmer can audit by hand
+* No pre-compiled binaries are used at any build stage
+* Each bootstrap stage (Stage0 → Stage1 → Stage2 → Stage3 → StageX) is
+  deterministic and independently verifiable
+* Any software that lacks a bootstrap path from source (e.g., Haskell, Ada) are
+  excluded by policy until one exists
 
-### Integrity
+### Reproducibility
 
-* Anyone can reproduce the entire tree with tools from their current distro
-* Hosted CI servers auto-sign confirmed deterministic builds
-  * Like NixOS
-* Multiple maintainers reproduce the entire build and ensure that everything
-matches down to the last bit
-* Maintainers sign all package additions/changes
-  * Like Gentoo, Debian, Fedora, Guix
-* Reviewers/Reproducers locally build and counter-sign all new binary packages
-  * No one does this, as far as we can tell
+* Every package must build deterministically; non-reproducible software is
+  rejected
+* Builds are hermetic (hash-locked inputs, no network access), deterministic
+  (bit-for-bit identical output), and reproducible (portable across different
+  systems and hardware)
+* Reproducibility is verified by building on at least two different CPU vendors
+  (e.g., AMD and Intel) before release
+* OCI container images enable reproduction by totally different toolchains
+  (Docker, Podman, Kaniko, Buildah)
+
+### Cryptographic Accountability
+
+* Every code change must be reviewed and signed off by at least two maintainers
+* A single maintainer merging a non-maintainer's code, even with a signed
+  commit, is insufficient
+* All commits are signed (PGP or SSH) with keys backed by
+  [Keyoxide](https://keyoxide.org) and [Hagrid](https://keys.openpgp.org)
+  profiles
+* Signing keys are maintained offline or on hardware security modules
+  (YubiKey, NitroKey, Split GPG via QubesOS)
+
+### Quorum Artifact Signing
+
+* No artifact is considered trusted until at least two independent maintainers
+  rebuild and verify it. Only then is it co-signed using PGP signatures
+* This guarantees a 1-to-1 mapping between source and binary, enforced
+  *before* distribution rather than audited after the fact
+* Signatures use the [Container Signature Format](https://github.com/containers/image/blob/main/docs/containers-signature.5.md)
+  and are committed to the repository as the source of truth
+* As far as we can tell, no other distribution requires multi-party
+  reproduction proofs for every released artifact
 
 ### Minimalism
 
-* Based on musl libc
-  * Basis of successful minimal distros like Alpine, Adelie, Talos, Void
-  * Implemented with about 1/4 the code of glibc
-  * Required to produce portable static binaries in some languages
-  * Less prone to buffer overflows
-  * Puts being light, fast, and correct before compatibility
+* Based on musl libc by default, with glibc also supported for GNU system
+  compatibility
+  * musl: ~1/4 the code of glibc, easier to audit, consistent cross-platform
+    behavior
+  * mimalloc (by Microsoft Research) used as default allocator to address
+    musl's multi-threaded performance limitations
+* LLVM/Clang toolchain by default rather than GCC
+  * Clang functions as a native cross-compiler, so a single installation can
+    emit code for x86_64, aarch64, and other architectures
+  * Reduces maintenance burden and attack surface vs. per-target GCC builds
 * Package using tools you already have
   * OCI build tool of choice (Docker, Buildah, Podman)
   * Make (for dependency management)
   * Prove hashes of bootstrap layer builds match before proceeding
+* All images are built FROM scratch containing only the installed package,
+  no base distribution bloat
 * Keep package definitions lean and readable with simple CLI and no magic
 
 ## Background
@@ -191,7 +238,7 @@ public, which can give a false sense of security to the unassuming user.
 We will cover an exhaustive comparison of the supply chain strategies of other
 package management solutions elsewhere, but while many are pursuing reproducible
 builds, minimalism, or signing, there isn't currently another solution which delivers
-on all of these basic tenets of supply chain security. `stagex` is an attempt to fix
+on all of these basic tenets of supply chain security. StageX is an attempt to fix
 this, in order to satisfy the criteria of reasonably secure supply chain strategy,
 which requires more than one individual to deterministically build and sign software.
 
@@ -202,10 +249,14 @@ While software is often reviewed for security flaws, and sometimes provides sign
 releases, what is missing is the ability to prove that the resulting binary is the
 direct result of that code and nothing has been modified along the way. To achieve
 this, we have to make the software always build the exact same thing, down to the
-last bit - this is what determinism or reproducibility is. You may be reading this
-and thinking "of course it should always build to the same exact binary", but this
-is usually not the case - it's highly unlikely that any of the software you have ever
-built is deterministic. By forcing software to always produce the same binary, we
+last bit. More precisely, we distinguish three properties: a build is *hermetic*
+if its inputs are hash-locked with no network access or external influences; it
+is *deterministic* if it always produces bit-for-bit identical output; and it is
+*reproducible* if it can produce deterministic artifacts across different systems
+and hardware. You may be reading this and thinking "of course it should always build
+to the same exact binary", but this is usually not the case - it's highly unlikely
+that any of the software you have ever built is deterministic.
+By forcing software to always produce the same binary, we
 can use hashes to easily verify nothing has been modified and no new code has been
 introduced to the software during compilation. This is a significant security
 improvement, but it's not enough for only one individual to build something deterministically
@@ -220,38 +271,37 @@ seminal paper by Ken Thomson, [Reflections on Trusting Trust](https://www.cs.cmu
 
 ## Comparison
 
-A comparison of `stagex` to other distros in some of the areas we care about:
+A comparison of StageX to other distros in some of the areas we care about:
 
-| Distro    | Trust Model       | OCI        | Language           | FSB     | Repro.  | Base     | Libc     | Malloc       |
-|-----------|-------------------|------------|--------------------|---------|---------|----------|----------|--------------|
-| Stagex    | **Decentralized** | **Native** | **Containerfile**  | **Yes** | **Yes** | **LLVM** | **musl** | mallocng     |
-| Guix      | Distributed       | Exported   | Custom             | **Yes** | Mostly  | GNU      | glibc    | glibc        |
-| Debian    | Distributed       | Published  | Custom             | No      | Mostly  | GNU      | glibc    | glibc        |
-| Arch      | Distributed       | Published  | Shell              | No      | Mostly  | GNU      | glibc    | glibc        |
-| Nix       | Centralized       | Exported   | Custom             | Partial | Mostly  | GNU      | glibc    | glibc        |
-| Yocto     | Centralized       | Exported   | Custom             | No      | No      | GNU      | glibc    | glibc        |
-| Buildroot | Centralized       | Exported   | Makefile           | No      | No      | GNU      | glibc    | glibc        |
-| Chimera   | Centralized       | Published  | Python             | No      | No      | **LLVM** | **musl** | **mimalloc** |
-| Fedora    | Centralized       | Published  | Custom             | No      | No      | GNU      | glibc    | glibc        |
-| Alpine    | Centralized       | Published  | Shell              | No      | No      | GNU      | **musl** | mallocng     |
+| Distribution | Signers | OCI       | Language        | Bootstrapped | Reproducible | Toolchain | C Library | Allocator    |
+|--------------|---------|-----------|-----------------|--------------|--------------|-----------|-----------|--------------|
+| **StageX**   | **2**   | **Native** | **Containerfile** | **Yes**  | **Yes**      | **LLVM**  | **musl**  | **mimalloc** |
+| Guix         | 1       | Exported  | Scheme          | Yes          | Mostly       | GNU       | glibc     | glibc        |
+| Arch         | 1       | Published | Shell           | No           | Mostly       | GNU       | glibc     | glibc        |
+| Debian       | 1       | Published | Custom          | No           | Mostly       | GNU       | glibc     | glibc        |
+| Alpine       | 1       | Published | Shell           | No           | No           | GNU       | musl      | mallocng     |
+| NixOS        | 0       | Exported  | Custom          | Partial      | Mostly       | GNU       | glibc     | glibc        |
+| Buildroot    | 0       | Exported  | Makefile        | No           | No           | GNU       | glibc     | glibc        |
+| Chimera      | 0       | Published | Python          | No           | No           | LLVM      | musl      | mimalloc     |
+| Wolfi        | 0       | Native    | YAML            | Partial      | No           | GNU       | glibc     | glibc        |
+| Yocto        | 0       | Exported  | Custom          | No           | No           | GNU       | glibc     | glibc        |
 
 ### Notes
 
-* “Trust Model”
-  * "Decentralized": No single system or individual is trusted
-  * "Centralized": One single system or individual is trusted
-  * "Distributed": All members of a system or organization are trusted
-* "OCI"
-  * "Native": OCI layers are the native package management system
-  * "Exported": Has the capability to export OCI from non-OCI build system
-  * "Published": Has published official OCI images
-* "Packaging"
-  * "Declarative": Can declare exact dependency chain at time of usage
-  * "Imperative": Packaging system chooses dependencies for you at build time
-  * "None": No packages at all, only source code
-* “FSB”
+Table is ordered by objective supply chain security metrics: “Signers”,
+“Bootstrapped”, and “Reproducible”.
+
+* “Signers”
+  * The minimum number of human signers required to make changes to the
+    distribution. Keys controlled by machines or signers controlled by multiple
+    individuals do not count as a signer.
+* “OCI”
+  * “Native”: OCI layers are the native package management system
+  * “Exported”: Has the capability to export OCI from non-OCI build system
+  * “Published”: Has published official OCI images
+* “Bootstrapped”
   * Can the entire distro be full-source-bootstrapped from Stage0
-* “Reproduced”
+* “Reproducible”
   * Is the entire distro reproduced bit-for-bit identically for every release
 
 ### Signatures
@@ -260,15 +310,15 @@ A comparison of `stagex` to other distros in some of the areas we care about:
 * Signatures are made by any tool that implements "[Container Signature Format](https://github.com/containers/image/blob/main/docs/containers-signature.5.md)"
   * We provide a minimal shell script implementation as a convenience
   * Podman also [implements support](https://github.com/containers/podman/blob/main/docs/tutorials/image_signing.md) for this signature scheme
-* Signatures are "PR"ed and committed to this repo as a source of truth
+* Signatures are "PR"ed and committed to the [signatures repo](https://codeberg.org/stagex/signatures) as a source of truth and they're made available via an HTTPS endpoint for as a lookaside.
 * Signatures can be mirrored to any HTTPS url
 * Container daemons can verify signatures on pull with a [containers-policy.json](https://github.com/containers/image/blob/main/docs/containers-policy.json.5.md)
 * As a policy, we expect all published signers to:
   * Maintain their PGP private keys offline and/or on personal HSMs
-    * E.g. Nitrokey, Yubikey, Leger, Trezor, etc.
-  * Maintain a [keyoxide](https://keyoxide.org) profile self-certifying keys
+    * E.g. Nitrokey, Yubikey, Ledger, Trezor, etc.
+  * Maintain a [Keyoxide](https://keyoxide.org) profile self-certifying keys
   * Maintain a [Hagrid](https://keys.openpgp.org) profile with verified UIDs
-  * Make best efforts to meet in person and sign each others keys
+  * Make best efforts to meet in person and sign each others' keys
   * Create signatures from highly trusted operating systems
     * E.g Dedicated QubesOS VM, or a an airgapped signing system
 
@@ -292,19 +342,19 @@ be [bootstrapped](https://en.wikipedia.org/wiki/Bootstrapping_(compilers)) all t
 
 * Final distributable packages are always OCI container images
   * OCI allows reproduction by totally different toolchains
-      E.g: Docker, Podman, Kaniko, or Buildah.
+      * E.g: Docker, Podman, Kaniko, or Buildah.
   * OCI allows unlimited signatures on builds as part of the spec
     * E.g: each party that chooses to reproduce adds their own signature
 * We always "Full Source Bootstrap" everything from 0
-  * [Stage0](packages/bootstrap/stage0/Containerfile): 387 bytes of x86 assembly built by 3 distros with the same hash
-    * Also the same hash many others get from wildly different toolchains
+  * [Stage0](packages/bootstrap/stage0/Containerfile): 181 bytes of x86 machine code, a concrete trust anchor small enough for any programmer to audit by hand
+    * Reproduced with the same hash across multiple distros and wildly different toolchains
       * Relevant: [Guix: Building From Source All The Way Down](https://guix.gnu.org/en/blog/2023/the-full-source-bootstrap-building-from-source-all-the-way-down/)
-  * [Stage1](packages/bootstrap/stage1/Containerfile): A full x86 toolchain built from stage0 via [live-bootstrap](https://github.com/fosslinux/live-bootstrap/blob/master/parts.rst)
-  * [Stage2](packages/bootstrap/stage2/Containerfile): Cross toolchain bridging us to modern 64 bit architectures
-  * [Stage3](packages/bootstrap/stage3/Containerfile): Native toolchain in native 64 bit architecture
+  * [Stage1](packages/bootstrap/stage1/Containerfile): A primitive C toolchain built from Stage0 via [live-bootstrap](https://github.com/fosslinux/live-bootstrap/blob/master/parts.rst)
+  * [Stage2](packages/bootstrap/stage2/Containerfile): Cross-compiler toolchain bridging to modern 64-bit architectures
+  * [Stage3](packages/bootstrap/stage3/Containerfile): Final modern C toolchain in native 64-bit architecture
   * [Stage(x)](.): Later stages build the distributed packages in this repo
 
-For further reading see the [Bootstrappable Builds](https://bootstrappable.org/) Project.
+For further reading, see the [Bootstrappable Builds](https://bootstrappable.org/) Project.
 
 ## Building
 
@@ -387,6 +437,9 @@ make sign
 
 ### Academic
 
+* [StageX: Eliminating Single Points of Failure in Linux Distributions](https://codeberg.org/stagex/whitepapers/src/branch/main/out/stagex.pdf)
+  * Anton D. Livaja, Lance R. Vick, Ryan Heywood, Daniel R. Grove | March 2026
+
 * [SoK: Analysis of Software Supply Chain Security by Establishing Secure Design Properties](https://arxiv.org/abs/2406.10109)
   * Chinenye Okafor, Taylor R. Schorlemmer, Santiago Torres-Arias, James C. Davis | June 2024
 * [A Review of Attacks Against Language-Based Package Managers](https://arxiv.org/abs/2302.08959)
@@ -436,13 +489,15 @@ https://arxiv.org/abs/1506.02822)
 
 ### Presentations
 
-* [Breaking Bitcoin: The Bitcoin Build System](http://diyhpl.us/wiki/transcripts/breaking-bitcoin/2019/bitcoin-build-system/)
+* [Breaking Bitcoin: The Bitcoin Build System](https://diyhpl.us/wiki/transcripts/breaking-bitcoin/2019/bitcoin-build-system/)
   * Carl Dong | 2020
 * [Expanding (Dis)trust](https://antonlivaja.com/videos/2024-incyber-stagex-talk.mp4)
   * Anton Livaja | 2024
 
 ## Sponsors
 
-* [Turnkey](https://turnkey.com)
+* [Caution SECZ](https://caution.co)
+* [DR Grove Software LLC](https://drgrovellc.com)
 * [Distrust](https://distrust.co)
 * [Mysten Labs](https://mystenlabs.com)
+* [Turnkey](https://turnkey.com)

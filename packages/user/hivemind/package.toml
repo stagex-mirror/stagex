@@ -1,0 +1,11 @@
+[package]
+name = "hivemind"
+version = "1.1.0"
+description = "Hivemind is a process manager for Procfile-based applications."
+website = "https://github.com/DarthSim/hivemind"
+license = "MIT"
+
+[sources.hivemind]
+hash = "b4f7259663ef5b99906af0d98fe4b964d8f9a4d86a8f5aff30ab8df305d3a996"
+file = "hivemind-{version}.tar.gz"
+mirrors = [ "https://github.com/DarthSim/hivemind/archive/v{version}.tar.gz",]

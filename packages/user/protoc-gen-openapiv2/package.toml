@@ -1,7 +1,9 @@
 [package]
 name = "protoc-gen-openapiv2"
 version = "2.22.0"
-description = "TODO"
+description = "OpenAPI v2 spec generator for gRPC-Gateway"
+license = "BSD-3-Clause"
+website = "https://github.com/grpc-ecosystem/grpc-gateway"
 
 [sources.protoc-gen-openapiv2]
 hash = "509c86f389f4da5ac5ce06c6e2e85834070e4f774b4bb4c5c0536c464911ae25"

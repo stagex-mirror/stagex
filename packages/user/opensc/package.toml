@@ -1,7 +1,9 @@
 [package]
 name = "opensc"
 version = "0.25.1"
-description = "TODO"
+description = "Tools and libraries for smart card access"
+license = "LGPL-2.1-only"
+website = "https://github.com/OpenSC/OpenSC"
 
 [sources.opensc]
 hash = "989e6305900d4f2f56ef84aa0da07c044459b4f8a508957a4cdefce6a1367c7b"

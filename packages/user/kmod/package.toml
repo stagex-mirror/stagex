@@ -1,7 +1,9 @@
 [package]
 name = "kmod"
 version = "34.2"
-description = "TODO"
+description = "Linux kernel module handling tools and library"
+license = "GPL-2.0-or-later AND LGPL-2.1-or-later"
+website = "https://github.com/kmod-project/kmod"
 
 [sources.kmod]
 hash = "5a5d5073070cc7e0c7a7a3c6ec2a0e1780850c8b47b3e3892226b93ffcb9cb54"

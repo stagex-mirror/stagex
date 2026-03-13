@@ -2,7 +2,7 @@
 name = "snphost"
 version = "0.7.0"
 description = "CLI utility designed for administrators managing AMD SEV-SNP enabled host systems"
-licenses = "Apache-2.0"
+license = "Apache-2.0"
 website = "https://github.com/virtee/snphost"
 
 [sources.snphost]

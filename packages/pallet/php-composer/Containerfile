@@ -1,0 +1,4 @@
+FROM stagex/pallet-php
+
+COPY --from=stagex/core-composer . /
+COPY --from=stagex/core-git . /

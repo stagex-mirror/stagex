@@ -3,7 +3,7 @@ name = "nodejs"
 version = "24.9.0"
 description = "Evented I/O for V8 javascript ('Current' release)"
 website = "https://nodejs.org/"
-licenses = "MIT"
+license = "MIT"
 
 [sources.nodejs]
 hash = "3c868d88377cb05ed87674a6af6add3e04733dd429c3370620a5a6c547fe6460"

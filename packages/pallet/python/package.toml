@@ -1,4 +1,6 @@
 [package]
 name = "python"
-description = "Runtime for building python packages"
 version_from = "core-python"
+description = "Runtime for building python packages"
+license = "0BSD AND Apache-2.0 AND (Apache-2.0 OR BSD-2-Clause) AND Apache-2.0 WITH LLVM-exception AND BSD-3-Clause AND GPL-2.0-only AND GPL-2.0-or-later AND ISC AND LGPL-2.1-or-later AND MIT AND PSF-2.0 AND Zlib AND blessing AND bzip2-1.0.6"
+website = "https://python.org/"

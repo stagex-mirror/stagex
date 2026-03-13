@@ -2,7 +2,7 @@
 name = "busybox"
 version = "1.37.0"
 description = "Utilities for rescue and embedded systems"
-licenses = "GPL-2.0-only"
+license = "GPL-2.0-only"
 website = "https://www.busybox.ne"
 
 [sources.busybox]
