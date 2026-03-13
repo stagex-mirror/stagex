@@ -1,12 +1,12 @@
 [package]
 name = "py-botocore"
-version = "1.34.68"
+version = "1.42.68"
 description = "Low-level interface to AWS services"
 license = "Apache-2.0"
 website = "https://github.com/boto/botocore"
 
 [sources.py-botocore]
-hash = "e7ae9d69cc3e7b31d926e6a1a9ae673ba02da263e35cf12ff2bae35a21755cc6"
+hash = "3951c69e12ac871dda245f48dac5c7dd88ea1bfdd74a8879ec356cf2874b806a"
 format = "tar.gz"
 file = "py-botocore-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/b/botocore/botocore-{version}.{format}",]
