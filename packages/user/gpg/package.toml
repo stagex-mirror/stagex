@@ -1,7 +1,9 @@
 [package]
 name = "gpg"
 version = "2.5.1"
-description = "TODO"
+description = "GNU Privacy Guard encryption and signing tool"
+license = "GPL-3.0-or-later"
+website = "https://gnupg.org"
 
 [sources.gpg]
 hash = "8a34bb318499867962c939e156666ada93ed81f01926590ac68f3ff79178375e"

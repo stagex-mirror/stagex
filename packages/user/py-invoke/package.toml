@@ -3,7 +3,7 @@ name = "py-invoke"
 version = "2.2.0"
 description = "Pythonic task execution"
 website = "https://github.com/pyinvoke/invoke"
-licenses = "BSD-2-Clause"
+license = "BSD-2-Clause"
 
 [sources.py-invoke]
 hash = "44a8c1c036855d7f75a947d00892934316e095dcb81f2637b12f11fadf29882d"

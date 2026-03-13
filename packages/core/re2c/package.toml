@@ -1,7 +1,9 @@
 [package]
 name = "re2c"
 version = "3.1"
-description = "TODO"
+description = "Lexer generator for C, C++, and Go"
+license = "Unlicense"
+website = "https://re2c.org"
 
 [sources.re2c]
 hash = "087c44de0400fb15caafde09fd72edc7381e688a35ef505ee65e0e3d2fac688b"

@@ -1,6 +1,8 @@
 [package]
 name = "stage3"
-description = "TODO"
+description = "Native 64-bit toolchain for building StageX packages"
+license = "0BSD AND BSD-3-Clause AND GPL-2.0-only AND GPL-2.0-only WITH Linux-syscall-note AND GPL-2.0-or-later AND GPL-3.0-or-later AND ISC AND LGPL-2.1-or-later AND LGPL-3.0-or-later AND MIT AND PSF-2.0 AND Zlib"
+website = "https://codeberg.org/stagex/stagex"
 
 [sources.musl]
 version = "1.1.24"
@@ -62,11 +64,6 @@ hash = "581f4d4e872da74b3941c874215898a7d35802f03732bdccee1d4a7979105d18"
 file = "make-{version}.tar.gz"
 mirrors = ["https://ftpmirror.gnu.org/gnu/make/{file}", "https://mirrors.kernel.org/gnu/make/{file}"]
 
-[sources.go]
-hash = "a6f3f4bbd3e6bdd626f79b668f212fbb5649daf75084fb79b678a0ae4d97423b"
-version = "1.23.5"
-mirrors = ["https://go.dev/dl/go{version}.src.tar.gz"]
-
 [sources.cmake]
 version = "3.31.5"
 hash = "66fb53a145648be56b46fa9e8ccade3a4d0dfc92e401e52ce76bdad1fea43d27"
@@ -112,8 +109,8 @@ file = "libzstd-{version}.{format}"
 mirrors = [ "https://github.com/facebook/zstd/archive/v{version}.{format}",]
 
 [sources.zlib]
-version = "1.3.1"
-hash = "9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23"
+version = "1.3.2"
+hash = "bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16"
 format = "tar.gz"
 file = "zlib-{version}.{format}"
-mirrors = [ "https://www.zlib.net/{file}",]
+mirrors = [ "https://www.zlib.net/fossils/{file}",]

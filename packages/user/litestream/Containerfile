@@ -1,0 +1,20 @@
+FROM stagex/pallet-cgo AS build
+ARG VERSION
+COPY --from=stagex/core-sqlite3 . /
+ADD fetch/litestream-v${VERSION}.tar.gz .
+WORKDIR /litestream-${VERSION}
+RUN go mod download
+ENV CGO_ENABLED=1
+# Remove workaround when go-sqlite3 is updated in litestream
+ENV CGO_CFLAGS="-D_LARGEFILE64_SOURCE"
+RUN go build \
+  -trimpath \
+  -ldflags "-s -w -X 'main.Version=${VERSION}' -extldflags '-static'" \
+  -tags osusergo,netgo,sqlite_omit_load_extension \
+  -o . ./cmd/litestream
+RUN --network=none <<-EOF
+	set -eu
+	install -Dm755 -t /rootfs/usr/bin litestream
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

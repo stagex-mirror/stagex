@@ -1,7 +1,9 @@
 [package]
 name = "argon2"
 version = "20190702"
-description = "TODO"
+description = "Reference C implementation of the Argon2 password hashing algorithm"
+license = "Apache-2.0 OR CC0-1.0"
+website = "https://github.com/P-H-C/phc-winner-argon2"
 
 [sources.argon2]
 hash = "daf972a89577f8772602bf2eb38b6a3dd3d922bf5724d45e7f9589b5e830442c"

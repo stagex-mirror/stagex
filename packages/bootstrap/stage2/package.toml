@@ -1,6 +1,8 @@
 [package]
 name = "stage2"
-description = "TODO"
+description = "Cross-compilation toolchain bridging x86 to 64-bit architectures"
+license = "0BSD AND Apache-2.0 AND (Artistic-1.0-Perl OR GPL-1.0-or-later) AND BSD-2-Clause AND GPL-2.0-only WITH Linux-syscall-note AND GPL-2.0-or-later AND GPL-3.0-or-later AND LGPL-2.0-or-later AND LGPL-2.1-or-later AND LGPL-3.0-or-later AND MIT AND PSF-2.0 AND Zlib"
+website = "https://codeberg.org/stagex/stagex"
 platforms = ["linux/386"]
 
 [sources.musl]

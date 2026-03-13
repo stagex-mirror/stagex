@@ -1,7 +1,9 @@
 [package]
 name = "docbook-xsl"
 version = "1.79.2"
-description = "TODO"
+description = "DocBook XSLT stylesheets"
+license = "MIT"
+website = "https://docbook.org"
 
 [sources.docbook-xsl]
 hash = "966188d7c05fc76eaca115a55893e643dd01a3486f6368733c9ad974fcee7a26"

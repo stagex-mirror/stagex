@@ -1,7 +1,9 @@
 [package]
 name = "stage1"
 version = "fc6eeb6bd75ea0d0025a79ea9fe45614bd60ba14"
-description = "TODO"
+description = "Full x86 toolchain bootstrapped from stage0 via live-bootstrap"
+license = "0BSD AND Apache-2.0 AND (Artistic-1.0-Perl OR GPL-1.0-or-later) AND BSD-2-Clause AND GPL-2.0-only WITH Linux-syscall-note AND GPL-2.0-or-later AND GPL-3.0-or-later AND LGPL-2.0-or-later AND LGPL-2.1-or-later AND LGPL-3.0-or-later AND MIT AND PSF-2.0 AND Zlib"
+website = "https://codeberg.org/stagex/stagex"
 platforms = ["linux/386"]
 
 [sources.live_bootstrap]
@@ -409,7 +411,7 @@ mirrors = [
 hash = "4f46d1f9380c8a3506280750f630e9fc915cb1a435b724be56b499d016368718"
 file = "automake-1.11.2.tar.bz2"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/gnu/automake/{file}",
+  "https://ftpmirror.gnu.org/gnu/automake/{file}",
   "https://mirrors.kernel.org/gnu/automake/{file}",
 ]
 
@@ -1631,24 +1633,3 @@ mirrors = [
   "https://ftpmirror.gnu.org/gnu/automake/{file}",
   "https://mirrors.kernel.org/gnu/automake/{file}",
 ]
-
-[sources.go1_4]
-hash = "f4ff5b5eb3a3cae1c993723f3eab519c5bae18866b5e5f96fe1102f0cb5c3e52"
-version = "1.4"
-file = "go{version}.src.tar.gz"
-mirrors = ["https://dl.google.com/go/go{version}-bootstrap-20171003.tar.gz"]
-
-[sources.go1_19_11]
-hash = "e25c9ab72d811142b7f41ff6da5165fec2d1be5feec3ef2c66bc0bdecb431489"
-version = "1.19.11"
-mirrors = ["https://go.dev/dl/go{version}.src.tar.gz"]
-
-[sources.go1_20_6]
-hash = "62ee5bc6fb55b8bae8f705e0cb8df86d6453626b4ecf93279e2867092e0b7f70"
-version = "1.20.6"
-mirrors = ["https://go.dev/dl/go{version}.src.tar.gz"]
-
-[sources.go]
-hash = "a6f3f4bbd3e6bdd626f79b668f212fbb5649daf75084fb79b678a0ae4d97423b"
-version = "1.23.5"
-mirrors = ["https://go.dev/dl/go{version}.src.tar.gz"]

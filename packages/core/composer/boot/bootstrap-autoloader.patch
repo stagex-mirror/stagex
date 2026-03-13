@@ -1,0 +1,15 @@
+Index: bin/composer
+<+>UTF-8
+===================================================================
+diff --git a/bin/composer b/bin/composer
+--- a/bin/composer	(revision 29e47ed68cea82a0006c1c8949d85c7b15b11a0e)
++++ b/bin/composer	(date 1746221810904)
+@@ -16,7 +16,7 @@
+ }
+
+ setlocale(LC_ALL, 'C');
+-require __DIR__.'/../src/bootstrap.php';
++require __DIR__.'/../vendor/autoload.php';
+
+ use Composer\Console\Application;
+ use Composer\XdebugHandler\XdebugHandler;

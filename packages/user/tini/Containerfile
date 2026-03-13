@@ -4,12 +4,15 @@ ARG VERSION
 ADD fetch/tini-${VERSION}.tar.gz .
 WORKDIR /tini-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
-ENV CFLAGS="-DPR_SET_CHILD_SUBREAPER=36 -DPR_GET_CHILD_SUBREAPER=37 -Wno-strict-prototypes -Wno-macro-redefined -Wno-unused-command-line-argument"
+ENV CFLAGS="-DPR_SET_CHILD_SUBREAPER=36 -DPR_GET_CHILD_SUBREAPER=37 -Wno-strict-prototypes -Wno-macro-redefined -Wno-unused-command-line-argument -v"
 ADD fix-basename.patch .
 RUN --network=none <<-EOF
 	patch -Np1 -i fix-basename.patch
-	cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=None
-	cmake --build build --target all tini-static
+	cmake \
+		-B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=None \
+		-DCMAKE_POLICY_VERSION_MINIMUM=3.5
+	cmake --build build --target all tini
 	install -Dm755 build/tini /rootfs/usr/sbin/tini
 	install -Dm755 build/tini-static /rootfs/usr/sbin/tini-static
 EOF

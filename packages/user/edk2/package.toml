@@ -1,7 +1,9 @@
 [package]
 name = "edk2"
 version = "202508"
-description = "TODO"
+description = "UEFI firmware development environment"
+license = "BSD-2-Clause-Patent"
+website = "https://github.com/tianocore/edk2"
 
 [sources.edk2]
 hash = "ea373d69f8e2b8c1e63e958e538e4a7b493a71a3680ad709df1733f2780608ec"

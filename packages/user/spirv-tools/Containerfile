@@ -1,13 +1,11 @@
 FROM stagex/pallet-clang-cmake-busybox AS build
 COPY --from=stagex/user-spirv-headers . /
 ARG VERSION
-ADD fetch/vulkan-sdk-${VERSION}.tar.gz .
+ADD fetch/spirv-tools-${VERSION}.tar.gz .
 WORKDIR /SPIRV-Tools-vulkan-sdk-${VERSION}
-ENV CXXFLAGS="-g1 -flto=auto"
+ENV CXXFLAGS="-g1"
 ENV SOURCE_DATE_EPOCH=1
-ADD fetch/spv_intel_fix.patch .
 RUN --network=none <<-EOF
-	patch -p1 < spv_intel_fix.patch
 	cmake -B build -G Ninja \
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DCMAKE_INSTALL_LIBDIR=/usr/lib \

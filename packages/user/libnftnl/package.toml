@@ -1,7 +1,9 @@
 [package]
 name = "libnftnl"
 version = "1.2.8"
-description = "TODO"
+description = "Low-level netlink interface to nf_tables"
+license = "GPL-2.0-or-later"
+website = "https://www.netfilter.org/projects/libnftnl/"
 
 [sources.libnftnl]
 hash = "37fea5d6b5c9b08de7920d298de3cdc942e7ae64b1a3e8b880b2d390ae67ad95"

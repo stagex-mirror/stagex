@@ -1,0 +1,18 @@
+FROM scratch AS build
+ARG VERSION
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-mold . /
+COPY --from=stagex/core-onetbb . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-make . /
+ADD fetch/libatomic-chimera-${VERSION}.tar.gz .
+WORKDIR /libatomic-chimera-${VERSION}
+RUN --network=none <<-EOF
+	make
+	LIBDIR=/usr/lib DESTDIR=/rootfs make install
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

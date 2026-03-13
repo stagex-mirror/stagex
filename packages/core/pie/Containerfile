@@ -1,0 +1,55 @@
+FROM scratch AS build
+ARG VERSION
+ARG SOURCE_DATE_EPOCH=1
+
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-ca-certificates . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-curl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/user-argon2 . /
+COPY --from=stagex/user-libiconv . /
+COPY --from=stagex/user-libsodium . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-xz . /
+COPY --from=stagex/core-libzip . /
+COPY --from=stagex/core-php . /
+COPY --from=stagex/core-php-ext-phar . /
+COPY --from=stagex/core-php-ext-filter . /
+COPY --from=stagex/core-php-ext-openssl . /
+COPY --from=stagex/core-php-ext-curl . /
+COPY --from=stagex/core-php-ext-zlib . /
+COPY --from=stagex/core-php-ext-zip . /
+COPY --from=stagex/core-php-ext-sodium . /
+COPY --from=stagex/core-php-ext-mbstring . /
+COPY --from=stagex/core-php-ext-tokenizer . /
+COPY --from=stagex/core-composer . /
+
+ADD fetch/pie-${VERSION}.tar.gz /
+WORKDIR /pie-${VERSION}
+
+RUN composer install --no-dev
+
+
+RUN <<-EOF
+  set -eux
+  mkdir /box
+  composer require -n -d /box humbug/box=4.6.10
+EOF
+
+RUN --network=none <<-EOF
+  set -eux
+  # Change the version replacements from git to the $VERSION variable
+  sed -i "s|\"git\": \"pie_version\",|\"replacements\": {\"pie_version\": \"${VERSION}\"},|g" box.json.dist
+
+  /box/vendor/bin/box compile --sort-compiled-files --no-interaction
+
+  install -Dm755 pie.phar /rootfs/usr/bin/pie
+  /rootfs/usr/bin/pie completion bash > completions.bash
+  install -Dm644 completions.bash /rootfs/usr/share/bash-completion/completions/pie
+  install -Dm644 -t "/rootfs/usr/share/licenses/pie" LICENSE.md
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

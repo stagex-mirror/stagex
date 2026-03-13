@@ -6,9 +6,7 @@ WORKDIR /libpciaccess-${VERSION}
 RUN --network=none <<-EOF
 	meson setup \
 		--prefix=/usr \
-		-Db_lto=true \
 		. output
-
 	meson compile -C output
 	DESTDIR=/rootfs meson install --no-rebuild -C output
 EOF

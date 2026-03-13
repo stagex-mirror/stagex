@@ -1,7 +1,9 @@
 [package]
 name = "py-typing-extensions"
 version = "4.10.0"
-description = "TODO"
+description = "Backported and experimental type hints for Python"
+license = "PSF-2.0"
+website = "https://github.com/python/typing_extensions"
 
 [sources.py-typing-extensions]
 hash = "b0abd7c89e8fb96f98db18d86106ff1d90ab692004eb746cf6eda2682f91b3cb"

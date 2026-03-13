@@ -1,7 +1,9 @@
 [package]
 name = "libffi"
 version = "3.4.6"
-description = "TODO"
+description = "Portable foreign function interface library"
+license = "MIT"
+website = "https://sourceware.org/libffi/"
 
 [sources.libffi]
 hash = "b0dea9df23c863a7a50e825440f3ebffabd65df1497108e5d437747843895a4e"

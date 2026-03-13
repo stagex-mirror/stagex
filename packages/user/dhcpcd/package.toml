@@ -1,7 +1,9 @@
 [package]
 name = "dhcpcd"
 version = "10.1.0"
-description = "TODO"
+description = "DHCP and DHCPv6 client with IPv4LL and IPv6RS support"
+license = "BSD-2-Clause"
+website = "https://github.com/NetworkConfiguration/dhcpcd"
 
 [sources.dhcpcd]
 hash = "abc307c63853da3199baa5c1e15fd5ede9d68d068b2a59ca14c5a6768e9cc3b7"

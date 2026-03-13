@@ -1,7 +1,9 @@
 [package]
 name = "linux-pam"
 version = "1.6.1"
-description = "TODO"
+description = "Pluggable Authentication Modules for Linux"
+license = "BSD-3-Clause OR GPL-2.0-only"
+website = "https://github.com/linux-pam/linux-pam"
 
 [sources.linux-pam]
 hash = "f8923c740159052d719dbfc2a2f81942d68dd34fcaf61c706a02c9b80feeef8e"

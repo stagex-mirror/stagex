@@ -1,7 +1,9 @@
 [package]
 name = "nettle"
 version = "3.9.1_release_20230601"
-description = "TODO"
+description = "Low-level cryptographic library"
+license = "LGPL-3.0-or-later AND GPL-2.0-or-later"
+website = "https://www.lysator.liu.se/~nisse/nettle/"
 
 [sources.nettle]
 hash = "7278dd8fb89cae88552e1dc4a6294f1c62a8a9548a18f635515242f389797fed"

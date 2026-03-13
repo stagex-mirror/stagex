@@ -2,6 +2,7 @@
 name = "gdb"
 version = "17.1"
 description = "The GNU Debugger"
+license = "GPL-3.0-or-later"
 website = "https://www.gnu.org/software/gdb"
 
 [sources.gdb]

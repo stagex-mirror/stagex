@@ -34,23 +34,25 @@ RUN --network=none <<-EOF
 	mv canokey-crypto* canokey-qemu/canokey-core/canokey-crypto
 	rm -rf canokey-qemu/canokey-core/canokey-crypto/mbedtls
 	mv mbedtls* canokey-qemu/canokey-core/canokey-crypto/mbedtls
-	sed 's/-Wdocumentation//g' -i canokey-qemu/canokey-core/canokey-crypto/mbedtls/library/CMakeLists.txt
-	sed 's/-Wunused-but-set-parameter//g' -i canokey-qemu/canokey-core/canokey-crypto/mbedtls/library/CMakeLists.txt
-	echo 'set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-but-set-variable -Wno-unused-but-set-parameter")' >> canokey-qemu/canokey-core/canokey-crypto/mbedtls/library/CMakeLists.txt
 	rm -rf canokey-qemu/canokey-core/littlefs
-	mv littlefs* canokey-qemu/canokey-core/littlefs
+	mv ../littlefs* canokey-qemu/canokey-core/littlefs
 	rm -rf canokey-qemu/canokey-core/tinycbor
 	mv tinycbor* canokey-qemu/canokey-core/tinycbor
 	cd canokey-qemu
-	mkdir build/
-	cd build
+	find . -name "CMakeLists.txt" -exec sed -i 's/^cmake_minimum_required.*/cmake_minimum_required\(VERSION 4.1.2\)/g' {} \;
+	sed 's/-Wdocumentation//g' -i canokey-core/canokey-crypto/mbedtls/library/CMakeLists.txt
+	sed 's/-Wunused-but-set-parameter//g' -i canokey-core/canokey-crypto/mbedtls/library/CMakeLists.txt
+	echo 'set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-but-set-variable -Wno-unused-but-set-parameter")' >> canokey-core/canokey-crypto/mbedtls/library/CMakeLists.txt
 	cmake \
+		-B build \
+		-G Ninja \
+		-DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
 		-DCMAKE_C_STANDARD=23 \
 		-DCMAKE_CXX_STANDARD=17 \
 		-DCMAKE_INSTALL_PREFIX=/usr \
-		-DCMAKE_INSTALL_LIBDIR=lib ..
-	make
-	make DESTDIR=/rootfs install
+		-DCMAKE_INSTALL_LIBDIR=lib
+	cmake --build build
+	DESTDIR="/rootfs" cmake --install build
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

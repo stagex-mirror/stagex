@@ -1,7 +1,9 @@
 [package]
 name = "yq"
 version = "4.42.1"
-description = "TODO"
+description = "Lightweight and portable command-line YAML processor"
+license = "MIT"
+website = "https://github.com/mikefarah/yq"
 
 [sources.yq]
 hash = "be31e5e828a0251721ea71964596832d4a40cbc21c8a8392a804bc8d1c55dd62"

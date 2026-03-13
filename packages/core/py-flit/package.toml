@@ -1,7 +1,9 @@
 [package]
 name = "py-flit"
 version = "3.9.0"
-description = "TODO"
+description = "Simplified packaging of Python modules"
+license = "BSD-3-Clause"
+website = "https://github.com/pypa/flit"
 
 [sources.py-flit]
 hash = "d75edf5eb324da20d53570a6a6f87f51e606eee8384925cd66a90611140844c7"

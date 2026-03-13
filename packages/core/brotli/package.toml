@@ -1,7 +1,9 @@
 [package]
 name = "brotli"
 version = "1.1.0"
-description = "TODO"
+description = "Generic-purpose lossless compression algorithm"
+license = "MIT"
+website = "https://github.com/google/brotli"
 
 [sources.brotli]
 hash = "e720a6ca29428b803f4ad165371771f5398faba397edf6778837a18599ea13ff"

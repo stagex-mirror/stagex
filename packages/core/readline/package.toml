@@ -1,7 +1,9 @@
 [package]
 name = "readline"
 version = "8.2"
-description = "TODO"
+description = "GNU readline library for command-line editing"
+license = "GPL-3.0-or-later"
+website = "https://tiswww.case.edu/php/chet/readline/rltop.html"
 
 [sources.readline]
 hash = "3feb7171f16a84ee82ca18a36d7b9be109a52c04f492a053331d7d1095007c35"

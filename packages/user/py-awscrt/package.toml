@@ -1,7 +1,9 @@
 [package]
 name = "py-awscrt"
 version = "0.27.6"
-description = "TODO"
+description = "Python bindings for the AWS Common Runtime"
+license = "Apache-2.0"
+website = "https://github.com/awslabs/aws-crt-python"
 
 [sources.py-awscrt]
 hash = "45f3dd0b3fb13dfbea856dd96c9acfe77beba57b9b019444ee962ed2b76276dd"

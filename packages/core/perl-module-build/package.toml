@@ -1,7 +1,9 @@
 [package]
 name = "perl-module-build"
 version = "0.4234"
-description = "TODO"
+description = "Build and install Perl modules"
+license = "Artistic-1.0-Perl OR GPL-1.0-or-later"
+website = "https://metacpan.org/pod/Module::Build"
 
 [sources.perl-module-build]
 hash = "66aeac6127418be5e471ead3744648c766bd01482825c5b66652675f2bc86a8f"

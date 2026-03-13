@@ -1,7 +1,9 @@
 [package]
 name = "py-setuptools-scm"
 version = "8.0.4"
-description = "TODO"
+description = "Python package version management based on SCM tags"
+license = "MIT"
+website = "https://github.com/pypa/setuptools-scm"
 
 [sources.py-setuptools-scm]
 hash = "b5f43ff6800669595193fd09891564ee9d1d7dcb196cab4b2506d53a2e1c95c7"

@@ -3,14 +3,23 @@ ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-mold . /
+COPY --from=stagex/core-onetbb . /
 COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-ncurses . /
 COPY --from=stagex/core-make . /
+COPY --from=stagex/core-autoconf . /
+COPY --from=stagex/core-m4 . /
+COPY --from=stagex/core-perl . /
 ADD fetch/bash-${VERSION}.tar.gz .
 WORKDIR /bash-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
+
+	rm ./configure
+	autoconf -f
+
 	./configure \
 		--prefix=/usr \
 		--bindir=/usr/bin \
@@ -20,9 +29,9 @@ RUN --network=none <<-EOF
 		--enable-readline \
 		--without-bash-malloc \
 		gl_cv_func_working_acl_get_file=yes \
-    ac_cv_lib_error_at_line=no \
-    ac_cv_header_sys_cdefs_h=no
-	make -j "$(nproc)"
+		ac_cv_lib_error_at_line=no \
+		ac_cv_header_sys_cdefs_h=no
+	make -j1
 	make DESTDIR=/rootfs install
 EOF
 FROM stagex/core-filesystem AS package

@@ -1,7 +1,9 @@
 [package]
 name = "socat"
 version = "1.8.0.1"
-description = "TODO"
+description = "Multipurpose relay for bidirectional data transfer"
+license = "GPL-2.0-only"
+website = "http://www.dest-unreach.org/socat/"
 
 [sources.socat]
 hash = "dc350411e03da657269e529c4d49fe23ba7b4610b0b225c020df4cf9b46e6982"

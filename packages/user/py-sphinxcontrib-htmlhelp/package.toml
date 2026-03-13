@@ -1,7 +1,9 @@
 [package]
 name = "py-sphinxcontrib-htmlhelp"
 version = "2.0.1"
-description = "TODO"
+description = "Sphinx extension for HTML help files"
+license = "BSD-2-Clause"
+website = "https://github.com/sphinx-doc/sphinxcontrib-htmlhelp"
 
 [sources.py-sphinxcontrib-htmlhelp]
 hash = "0cbdd302815330058422b98a113195c9249825d681e18f11e8b1f78a2f11efff"

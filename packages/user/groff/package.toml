@@ -1,7 +1,9 @@
 [package]
 name = "groff"
 version = "1.23.0"
-description = "TODO"
+description = "GNU troff document formatting system"
+license = "GPL-3.0-or-later"
+website = "https://www.gnu.org/software/groff/"
 
 [sources.groff]
 hash = "6b9757f592b7518b4902eb6af7e54570bdccba37a871fddb2d30ae3863511c13"

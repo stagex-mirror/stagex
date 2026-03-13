@@ -1,7 +1,9 @@
 [package]
 name = "py-urllib3"
 version = "1.26.18"
-description = "TODO"
+description = "HTTP library with thread-safe connection pooling and file post support"
+license = "MIT"
+website = "https://github.com/urllib3/urllib3"
 
 [sources.py-urllib3]
 hash = "f8ecc1bba5667413457c529ab955bf8c67b45db799d159066261719e328580a0"

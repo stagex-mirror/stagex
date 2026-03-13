@@ -1,7 +1,9 @@
 [package]
 name = "ca-certificates"
-description = "Common CA certificates for SSL/TLS"
 version = "f2e816d18e74480775f74a2620f48c4d4dc51b7e"
+description = "Common CA certificates for SSL/TLS"
+license = "MPL-2.0"
+website = "https://wiki.mozilla.org/CA"
 
 [sources.certdata]
 file = "certdata.txt"

@@ -1,7 +1,9 @@
 [package]
 name = "pcsc-lite"
 version = "2.3.1"
-description = "TODO"
+description = "Middleware to access a smart card using SCard API"
+license = "BSD-3-Clause"
+website = "https://pcsclite.apdu.fr"
 
 [sources.pcsc-lite]
 hash = "a641d44d57affe1edd8365dd75307afc307e7eefb4e7ad839f6f146baa41ed56"
