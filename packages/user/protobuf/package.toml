@@ -1,12 +1,12 @@
 [package]
 name = "protobuf"
-version = "26.1"
+version = "34.0"
 description = "Protocol Buffers data interchange format"
 license = "BSD-3-Clause"
 website = "https://protobuf.dev"
 
 [sources.protobuf]
-hash = "4fc5ff1b2c339fb86cd3a25f0b5311478ab081e65ad258c6789359cd84d421f8"
+hash = "61c47fabb1190e0acb2d47e67f31baac05d9b4ce69d7d1b43f6c83744f83898e"
 format = "tar.gz"
 file = "protobuf-{version}.{format}"
 mirrors = [ "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v{version}.{format}",]
