@@ -10,6 +10,9 @@ COPY --from=stagex/core-busybox . /
 # As `/bin/bash` is required by `mrustc`, wrap BusyBox's Bourne-inspired shell (`hush`) as `bash`
 RUN --network=none printf "%s\n%s\n" '#!/bin/sh' 'hush "$@"' > /usr/bin/bash && chmod +x /usr/bin/bash
 
+COPY --from=stagex/core-llvm / /
+COPY --from=stagex/core-llvm-libgcc / /
+
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-pkgconf . /
 COPY --from=stagex/core-python . /
@@ -19,8 +22,6 @@ COPY --from=stagex/core-mold . /
 
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-libzstd . /
-COPY --from=stagex/core-llvm . /
-COPY --from=stagex/core-llvm-libgcc . /
 COPY --from=stagex/core-musl . /
 
 COPY --from=stagex/core-ca-certificates . /
@@ -43,10 +44,24 @@ COPY <<-'EOF' /etc/profile
 	export LLVM_BINDIR=${LLVM_ROOT}/bin
 	export LLVM_CONFIG=${LLVM_BINDIR}/llvm-config
 
-	export CC=${LLVM_BINDIR}/clang
+	export AS=${LLVM_BINDIR}/llvm-as
+	export AR=${LLVM_BINDIR}/llvm-ar
+	export NM=${LLVM_BINDIR}/llvm-nm
+	export DWP=${LLVM_BINDIR}/llvm-dwp
+	export RANLIB=${LLVM_BINDIR}/llvm-ranlib
+	export READELF=${LLVM_BINDIR}/llvm-readelf
+	export STRIP=${LLVM_BINDIR}/llvm-strip
+	export OBJCOPY=${LLVM_BINDIR}/llvm-objcopy
+	export OBJDUMP=${LLVM_BINDIR}/llvm-objdump
+	export SIZE=${LLVM_BINDIR}/llvm-size
+
+	export LD=mold
+	export CC=clang
 	export CXX=clang++
-	export CCC_OVERRIDE_OPTIONS="${CCC_OVERRIDE_OPTIONS:-}"
-	export CLANG_LIB=/usr/lib/clang/$($CC -dumpversion | cut -d'.' -f1)/lib/${TARGET}
+	export CCC_OVERRIDE_OPTIONS="${CCC_OVERRIDE_OPTIONS:-} +-fuse-ld=mold"
+
+	export LLVM_LIB=${LLVM_ROOT}/lib/${TARGET}
+	export LIBCC="$LLVM_LIB/libclang_rt.builtins.a"
 EOF
 SHELL ["/bin/sh","-l","-c"]
 
@@ -56,13 +71,15 @@ ENV RUSTFLAGS="-Ctarget-feature=-crt-static"
 COPY --from=stagex/core-openssl . /
 ENV OPENSSL_NO_VENDOR=1
 
+# We begin ratcheting Rust from a version which requires LLVM 21
+COPY --from=stagex/core-llvm21 . /
+ENV LLVM_VERSION="21"
+
 ADD fetch/mrustc-${MRUSTC_VERSION}.tar.gz .
 ADD fetch/*.patch .
 ADD *.patch .
 WORKDIR /mrustc-${MRUSTC_VERSION}
 COPY fetch/rustc-${BOOTSTRAP_RUST_VERSION}.0-src.tar.gz .
-
-ENV LLVM_VERSION="system"
 
 # We start by applying our set of patches to `mrustc` and the bootstrapped Rust source
 RUN --network=none <<-EOF
@@ -122,7 +139,7 @@ RUN --network=none <<-EOF
 		cp /usr/lib/${file} self-contained/
 	done
 	for file in crtbegin crtend; do
-		cp $CLANG_LIB/clang_rt.${file}.o self-contained/${file}S.o
+		cp $LLVM_LIB/clang_rt.${file}.o self-contained/${file}S.o
 	done
 	# Populate each prefix `mrustc` will build with the self-contained toolchain
 	for prefix in prefix-s prefix-2 prefix; do
@@ -136,17 +153,29 @@ EOF
 RUN --network=none <<-EOF
 	set -eux
 
+	# `mrustc` wants to compile in version information obtained with `git`, which we don't care for
+	# and don't bother adding a dependency upon `git` to enable
+	STUBBED_GIT=0
+	if [ ! -f /usr/bin/git ]; then
+		echo 'int main() { return 0; }' > git.c
+		$CC git.c -o /usr/bin/git
+		rm git.c
+		STUBBED_GIT=1
+	fi
+
 	# TODO: Revisit why this requires disabling `libc++`'s assertions
 	make CXXFLAGS="-g0 -O2 -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_NONE"
+
+	if [ $STUBBED_GIT -eq 1 ]; then
+		rm /usr/bin/git
+	fi
+
 	make -f minicargo.mk bin/minicargo
 EOF
 
 # Build `rustc`, `cargo` with `mrustc`, `minicargo`
 RUN --network=none <<-EOF
 	set -eux
-
-	# Because the following `Makefile`s don't observe `$LD`, install `mold` as `ld`
-	ln -sf /usr/bin/mold /usr/bin/ld
 
 	export RUSTC_TARGET="${TARGET}"
 	export RUSTC_VERSION="${BOOTSTRAP_RUST_VERSION}.0"
@@ -171,6 +200,10 @@ RUN --network=none <<-EOF
 	make -f minicargo.mk output/cargo
 EOF
 
+# Rust, when linking the C++ standard library, does so based off of the declared `llvm-config`. Our
+# `LLVM_CONFIG` lacks `libc++` (pointing to a historical LLVM intending to be solely the LLVM IR),
+# but our system does have (and only has) `libc++`, so we explicitly direct Rust to use `libc++`.
+ENV LLVM_USE_LIBCXX=1
 
 RUN --network=none <<-EOF
 	set -eux
@@ -199,20 +232,8 @@ COPY --chmod=0755 <<-'EOF' build
 	TOOLS=${3:-cargo}
 	PREFIX=/rust-${TARGET_VERSION}/usr
 	BUILD_PREFIX=/rust-${BUILD_VERSION}/usr
-	export AS=${LLVM_BINDIR}/llvm-as
-	export AR=${LLVM_BINDIR}/llvm-ar
-	export NM=${LLVM_BINDIR}/llvm-nm
-	export DWP=${LLVM_BINDIR}/llvm-dwp
-	export RANLIB=${LLVM_BINDIR}/llvm-ranlib
-	export READELF=${LLVM_BINDIR}/llvm-readelf
-	export STRIP=${LLVM_BINDIR}/llvm-strip
-	export OBJCOPY=${LLVM_BINDIR}/llvm-objcopy
-	export OBJDUMP=${LLVM_BINDIR}/llvm-objdump
-	export SIZE=${LLVM_BINDIR}/llvm-size
-	export LIBCC="$CLANG_LIB/libclang_rt.builtins.a"
-	ln -sf ${LLVM_BINDIR}/clang++ /usr/bin/c++
-	ln -sf ${LLVM_BINDIR}/clang /usr/bin/cc
-	ln -sf /usr/bin/mold /usr/bin/ld
+	ln -sf /usr/bin/clang /usr/bin/cc
+	ln -sf /usr/bin/clang++ /usr/bin/c++
 	cd rustc-${TARGET_VERSION}-src
 
 	# Remove binaries shipped within the source tarball
