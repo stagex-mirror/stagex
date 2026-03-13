@@ -1,0 +1,13 @@
+[package]
+name = "libunistring"
+version = "1.4.2"
+description = "Library for manipulating Unicode strings and C strings"
+url = ["https://www.gnu.org/software/libunistring/"]
+licenses = "GPL-2.0-or-later OR LGPL-3.0-or-later"
+
+[sources.libunistring]
+hash = "e82664b170064e62331962126b259d452d53b227bb4a93ab20040d846fec01d8"
+format = "tar.gz"
+file = "libunistring-{version}.{format}"
+mirrors = ["https://ftpmirror.gnu.org/gnu/libunistring/{file}"]
+
