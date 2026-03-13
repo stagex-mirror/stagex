@@ -24,6 +24,31 @@ index a866a7e65183..74a2608a1fe5 100644
  #  if __has_feature(cxx_atomic) || __has_extension(c_atomic) || __has_keyword(_Atomic)
  #    define _LIBCPP_HAS_C_ATOMIC_IMP 1
  #    define _LIBCPP_HAS_GCC_ATOMIC_IMP 0
+diff --git a/libcxx/include/__locale b/libcxx/include/__locale
+index 93187dc1d0d9..bf1dc527c86f 100644
+--- a/libcxx/include/__locale
++++ b/libcxx/include/__locale
+@@ -15,6 +15,7 @@
+ #if _LIBCPP_HAS_LOCALIZATION
+ 
+ #  include <__locale_dir/locale_base_api.h>
++#  include <__locale_dir/locale_base_api/musl.h>
+ #  include <__memory/addressof.h>
+ #  include <__memory/shared_count.h>
+ #  include <__mutex/once_flag.h>
+diff --git a/libcxx/include/__locale_dir/locale_base_api.h b/libcxx/include/__locale_dir/locale_base_api.h
+index 9d92a5ea1f0a..3847b1cb5abf 100644
+--- a/libcxx/include/__locale_dir/locale_base_api.h
++++ b/libcxx/include/__locale_dir/locale_base_api.h
+@@ -137,6 +137,8 @@
+ #      include <__locale_dir/locale_base_api/musl.h>
+ #    endif
+ 
++#    include <__locale_dir/locale_base_api/musl.h>
++
+ #    include <__locale_dir/locale_base_api/bsd_locale_fallbacks.h>
+ 
+ #    include <__cstddef/size_t.h>
 diff --git a/libunwind/include/unwind.h b/libunwind/include/unwind.h
 index b1775d3a3dec..04e4477fa9c5 100644
 --- a/libunwind/include/unwind.h

@@ -2,10 +2,12 @@ FROM scratch AS build
 COPY --from=stagex/bootstrap-stage3 . /
 
 ARG VERSION
-ARG CPORTS_VERSION
 ARG TARGETARCH
 COPY <<-'EOF' /etc/profile
 	set -eux
+
+	export MAJOR_VERSION=$(echo "$VERSION" | cut -d'.' -f1)
+
 	[[ "$TARGETARCH" == "amd64" ]] \
 		&& ARCH="x86_64" \
 		&& LLVM_TARGET_ARCH="X86"
@@ -20,14 +22,12 @@ EOF
 SHELL ["/bin/sh","-l","-c"]
 
 ADD fetch/llvm-${VERSION}.tar.xz .
-ADD fetch/cports-${CPORTS_VERSION}.tar.gz .
 WORKDIR /llvm-project-${VERSION}.src
-ADD patches/*.patch .
 
+ADD patches/*.patch .
 RUN --network=none <<-EOF
-	cp /cports-${CPORTS_VERSION}/main/llvm/patches/*.patch .
 	for file in $(find . -maxdepth 1 -name "*.patch" | sort); do
-	  patch -p1 < "$file"
+		patch -p1 < "$file"
 	done
 EOF
 
@@ -164,7 +164,7 @@ EOF
 COPY --from=stagex/core-musl . /
 
 RUN --network=none <<-EOF
-	export LIBCC="/usr/lib/clang/21/lib/${TARGET}/libclang_rt.builtins.a"
+	export LIBCC="/usr/lib/clang/$MAJOR_VERSION/lib/${TARGET}/libclang_rt.builtins.a"
 
 	# Build LLVM's `atomic.c` into `libatomic.so`
 	mkdir build-libatomic
@@ -173,6 +173,7 @@ RUN --network=none <<-EOF
 	rm -rf /usr/lib/libatomic*
 	ar rcs /usr/lib/libatomic.a atomic.o
 	ld.lld --shared -o /usr/lib/libatomic.so atomic.o
+	ln -s /usr/lib/libatomic.so /usr/lib/libatomic.so.1
 	cd ..
 
 	export CFLAGS="-fPIC"
@@ -219,7 +220,7 @@ RUN --network=none <<-EOF
 EOF
 
 RUN --network=none <<-EOF
-	export LIBCC="/usr/lib/clang/21/lib/${TARGET}/libclang_rt.builtins.a"
+	export LIBCC="/usr/lib/clang/$MAJOR_VERSION/lib/${TARGET}/libclang_rt.builtins.a"
 
 	export CFLAGS="-fPIC"
 	export CXXFLAGS="$CFLAGS"
@@ -245,16 +246,16 @@ RUN --network=none <<-EOF
 
 	# NSan, for whatever reason, is not being reproducibly built. It's removed here as it
 	# _should_ be unpopular and not a blocker, but ideally this would be solved (TODO).
-	rm /rootfs/usr/lib/clang/21/lib/${TARGET}/libclang_rt.nsan*
+	rm /rootfs/usr/lib/clang/$MAJOR_VERSION/lib/${TARGET}/libclang_rt.nsan*
 EOF
 
 RUN --network=none <<-EOF
 	ln -sf /usr/bin/clang++ /rootfs/usr/bin/c++
 	ln -sf /usr/bin/clang /rootfs/usr/bin/cc
 	ln -sf /usr/bin/ld.lld /rootfs/usr/bin/ld
-	ln -sf /usr/lib/clang/21/lib/${TARGET}/libclang_rt.builtins.a /rootfs/usr/lib/libclang_rt.builtins.a
+	ln -sf /usr/lib/clang/$MAJOR_VERSION/lib/${TARGET}/libclang_rt.builtins.a /rootfs/usr/lib/libclang_rt.builtins.a
 	cp /usr/lib/libatomic.* /rootfs/usr/lib/
-	strip /rootfs/usr/lib/libLLVM.so.21.1
+	strip /rootfs/usr/lib/libLLVM.so.$MAJOR_VERSION.1
 EOF
 
 FROM build AS build-llvm-libgcc
@@ -425,10 +426,10 @@ FROM stagex/core-filesystem AS package-mlir-devel-static
 COPY --from=build /rootfs/usr/lib/libMLIR*.a /usr/lib/
 
 FROM stagex/core-filesystem AS package-libunwind
-COPY --from=build /rootfs/usr/lib/libunwind.so.* /usr/lib/
+COPY --from=build /rootfs/usr/lib/libunwind.so* /usr/lib/
 
 FROM stagex/core-filesystem AS package-libunwind-devel
-COPY --from=build /rootfs/usr/lib/libunwind.so /usr/lib/
+COPY --from=build /rootfs/usr/lib/libunwind.so* /usr/lib/
 COPY --from=build /rootfs/usr/include/*unwind* /usr/include/
 COPY --from=build /rootfs/usr/include/mach-o /usr/include/
 
@@ -436,23 +437,23 @@ FROM stagex/core-filesystem AS package-libunwind-devel-static
 COPY --from=build /rootfs/usr/lib/libunwind.a /usr/lib/
 
 FROM stagex/core-filesystem AS package-libcxx
-COPY --from=build /rootfs/usr/lib/libc++.so.* /usr/lib/
+COPY --from=build /rootfs/usr/lib/libc++.so* /usr/lib/
 
 FROM stagex/core-filesystem AS package-libcxx-devel
 COPY --from=build /rootfs/usr/lib/libc++.modules.json /usr/lib/
-COPY --from=build /rootfs/usr/lib/libc++.so /usr/lib/
+COPY --from=build /rootfs/usr/lib/libc++.so* /usr/lib/
 COPY --from=build /rootfs/usr/lib/libc++experimental.a /usr/lib/
-COPY --from=build /rootfs/usr/include/c++ /usr/include/
-COPY --from=build /rootfs/usr/share/libc++ /usr/share/
+COPY --from=build /rootfs/usr/include/c++ /usr/include/c++
+COPY --from=build /rootfs/usr/share/libc++ /usr/share/libc++
 
 FROM stagex/core-filesystem AS package-libcxx-devel-static
 COPY --from=build /rootfs/usr/lib/libc++.a /usr/lib/
 
 FROM stagex/core-filesystem AS package-libcxxabi
-COPY --from=build /rootfs/usr/lib/libc++abi.so.* /usr/lib/
+COPY --from=build /rootfs/usr/lib/libc++abi.so* /usr/lib/
 
 FROM stagex/core-filesystem AS package-libcxxabi-devel
-COPY --from=build /rootfs/usr/lib/libc++abi.so /usr/lib/
+COPY --from=build /rootfs/usr/lib/libc++abi.so* /usr/lib/
 COPY --from=build /rootfs/usr/include/c++/v1/cxxabi.h /usr/include/c++/v1/
 COPY --from=build /rootfs/usr/include/c++/v1/__cxxabi_config.h /usr/include/c++/v1/
 
