@@ -6,8 +6,10 @@ COPY --from=stagex/user-libgpg-error . /
 COPY --from=stagex/user-libassuan . /
 COPY --from=stagex/user-libgcrypt . /
 ADD fetch/gpg-${VERSION}.tar.bz2 .
+ADD patches/musl-time_t.patch .
 WORKDIR /gnupg-${VERSION}
 RUN --network=none <<-EOF
+	patch -p1 < ../musl-time_t.patch
 	./configure \
 		--prefix=/usr \
 		--bindir=/usr/bin \
