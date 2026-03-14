@@ -1,12 +1,12 @@
 [package]
 name = "libgcrypt"
-version = "1.11.0"
+version = "1.12.1"
 description = "General purpose cryptographic library based on GnuPG"
 license = "LGPL-2.1-or-later"
 website = "https://gnupg.org/software/libgcrypt/"
 
 [sources.libgcrypt]
-hash = "09120c9867ce7f2081d6aaa1775386b98c2f2f246135761aae47d81f58685b9c"
+hash = "7df5c08d952ba33f9b6bdabdb06a61a78b2cf62d2122c2d1d03a91a79832aa3c"
 format = "tar.bz2"
 file = "libgcrypt-{version}.{format}"
 mirrors = [ "https://gnupg.org/ftp/gcrypt/libgcrypt/{file}",]
