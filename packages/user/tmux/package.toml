@@ -1,12 +1,12 @@
 [package]
 name = "tmux"
-version = "3.5"
+version = "3.6a"
 description = "A terminal multiplexer"
 license = "ISC"
 website = "https://github.com/tmux/tmux"
 
 [sources.tmux]
-hash = "2fe01942e7e7d93f524a22f2c883822c06bc258a4d61dba4b407353d7081950f"
+hash = "b6d8d9c76585db8ef5fa00d4931902fa4b8cbe8166f528f44fc403961a3f3759"
 format = "tar.gz"
 file = "tmux-{version}.{format}"
-mirrors = ["https://github.com/tmux/tmux/releases/download/{version}/tmux-{version}.{format}"]
+mirrors = [ "https://github.com/tmux/tmux/releases/download/{version}/tmux-{version}.{format}",]
