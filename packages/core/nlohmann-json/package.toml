@@ -1,12 +1,12 @@
 [package]
 name = "nlohmann-json"
-version = "3.11.3"
+version = "3.12.0"
 description = "Open-source formatting library for C++"
 license = "MIT"
 website = "https://json.nlohmann.me"
 
 [sources.nlohmann-json]
-hash = "0d8ef5af7f9794e3263480193c491549b2ba6cc74bb018906202ada498a79406"
+hash = "4b92eb0c06d10683f7447ce9406cb97cd4b453be18d7279320f7b2f025c10187"
 format = "tar.gz"
 file = "v{version}.{format}"
-mirrors = [ "https://github.com/nlohmann/json/archive/refs/tags/{file}", ]
+mirrors = [ "https://github.com/nlohmann/json/archive/refs/tags/{file}",]
