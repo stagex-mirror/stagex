@@ -1,39 +1,13 @@
 [package]
 name = "php"
-version = "8.5.3"
+version = "8.5.4"
 description = "A popular general-purpose scripting language that is especially suited to web development."
 license = "PHP-3.0.1"
 website = "https://www.php.net/"
-subpackages = [
-  "php",
-  "php-dev",
-  "php-embed",
-  "php-zts",
-  "php-dev-zts",
-  "php-embed-zts",
-  "php-fpm",
-  "php-ext-filter",
-  "php-ext-phar",
-  "php-ext-curl",
-  "php-ext-mbstring",
-  "php-ext-openssl",
-  "php-ext-sodium",
-  "php-ext-tokenizer",
-  "php-ext-zip",
-  "php-ext-zlib",
-  "php-ext-filter-zts",
-  "php-ext-phar-zts",
-  "php-ext-curl-zts",
-  "php-ext-mbstring-zts",
-  "php-ext-openssl-zts",
-  "php-ext-sodium-zts",
-  "php-ext-tokenizer-zts",
-  "php-ext-zip-zts",
-  "php-ext-zlib-zts"
-]
+subpackages = [ "php", "php-dev", "php-embed", "php-zts", "php-dev-zts", "php-embed-zts", "php-fpm", "php-ext-filter", "php-ext-phar", "php-ext-curl", "php-ext-mbstring", "php-ext-openssl", "php-ext-sodium", "php-ext-tokenizer", "php-ext-zip", "php-ext-zlib", "php-ext-filter-zts", "php-ext-phar-zts", "php-ext-curl-zts", "php-ext-mbstring-zts", "php-ext-openssl-zts", "php-ext-sodium-zts", "php-ext-tokenizer-zts", "php-ext-zip-zts", "php-ext-zlib-zts",]
 
 [sources.php]
-hash = "402654d99b4beda602d4daec4f1cd39aafdacf5923e3e947da87392826660146"
+hash = "4fef7f44eff3c18e329504cb0d3eb30b41cf54e2db05cb4ebe8b78fc37d38ce1"
 format = "tar.gz"
 file = "php-{version}.{format}"
-mirrors = [ "https://www.php.net/distributions/{file}" ]
+mirrors = [ "https://www.php.net/distributions/{file}",]
