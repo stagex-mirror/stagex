@@ -1,12 +1,12 @@
 [package]
 name = "gawk"
-version = "5.3.0"
+version = "5.4.0"
 description = "GNU implementation of the AWK programming language"
 license = "GPL-3.0-or-later"
 website = "https://www.gnu.org/software/gawk/"
 
 [sources.gawk]
-hash = "ca9c16d3d11d0ff8c69d79dc0b47267e1329a69b39b799895604ed447d3ca90b"
+hash = "3dd430f0cd3b4428c6c3f6afc021b9cd3c1f8c93f7a688dc268ca428a90b4ac1"
 format = "tar.xz"
 file = "gawk-{version}.{format}"
-mirrors = [ "https://ftpmirror.gnu.org/gnu/gawk/{file}", "https://mirrors.kernel.org/gnu/gawk/{file}"] 
+mirrors = [ "https://ftpmirror.gnu.org/gnu/gawk/{file}", "https://mirrors.kernel.org/gnu/gawk/{file}",]
