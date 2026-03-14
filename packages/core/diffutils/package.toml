@@ -1,12 +1,12 @@
 [package]
 name = "diffutils"
-version = "3.10"
+version = "3.12"
 description = "GNU utilities for finding differences between files"
 license = "GPL-3.0-or-later"
 website = "https://www.gnu.org/software/diffutils/"
 
 [sources.diffutils]
-hash = "90e5e93cc724e4ebe12ede80df1634063c7a855692685919bfe60b556c9bd09e"
+hash = "7c8b7f9fc8609141fdea9cece85249d308624391ff61dedaf528fcb337727dfd"
 format = "tar.xz"
 file = "diffutils-{version}.{format}"
-mirrors = [ "https://ftpmirror.gnu.org/gnu/diffutils/{file}", "https://mirrors.kernel.org/gnu/diffutils/{file}"] 
+mirrors = [ "https://ftpmirror.gnu.org/gnu/diffutils/{file}", "https://mirrors.kernel.org/gnu/diffutils/{file}",]
