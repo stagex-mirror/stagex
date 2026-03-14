@@ -1,12 +1,12 @@
 [package]
 name = "caddy"
-version = "2.10.0"
+version = "2.11.2"
 description = "Fast and extensible multi-platform HTTP/1-2-3 web server with automatic HTTPS"
 license = "Apache-2.0"
 website = "https://caddyserver.com"
 
 [sources.caddy]
-hash = "e07e2747c394a6549751950ec8f7457ed346496f131ee38538ae39cf89ebcc68"
+hash = "ee12f7b5f97308708de5067deebb3d3322fc24f6d54f906a47a0a4e8db799122"
 format = "tar.gz"
 file = "caddy-v{version}.{format}"
-mirrors = ["https://github.com/caddyserver/caddy/archive/refs/tags/v{version}.{format}",]
+mirrors = [ "https://github.com/caddyserver/caddy/archive/refs/tags/v{version}.{format}",]
