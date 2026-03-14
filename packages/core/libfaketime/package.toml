@@ -1,12 +1,12 @@
 [package]
 name = "libfaketime"
-version = "0.9.11"
+version = "0.9.12"
 description = "intercept system calls related to time/entropy and return user-defined values"
 license = "GPL-2.0-or-later"
 website = "https://github.com/wolfcw/libfaketime"
 
 [sources.libfaketime]
-hash = "5912d8b4179402058d3847c0ad389e688630ea38898847b1190e636e12c33e44"
+hash = "4fc32218697c052adcdc5ee395581f2554ca56d086ac817ced2be0d6f1f8a9fa"
 format = "tar.gz"
 file = "libfaketime-{version}.{format}"
 mirrors = [ "https://github.com/wolfcw/libfaketime/archive/v{version}.{format}",]
