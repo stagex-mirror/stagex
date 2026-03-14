@@ -1,12 +1,12 @@
 [package]
 name = "npm"
-version = "11.6.0"
+version = "11.11.1"
 description = "the package manager for JavaScript"
 license = "Artistic-2.0"
 website = "https://www.npmjs.com/"
 
 [sources.npm]
-hash = "ddf7e6e42ae5b9e28d84945d1c37188f9a741af492507b513b3e80af5aeba4f1"
+hash = "a3b2dbeb2544809a75f186cbae27adc5ceb5adc1ee696e17dfed689d7f46fcf2"
 format = "tgz"
 file = "npm-{version}.{format}"
 mirrors = [ "https://registry.npmjs.org/npm/-/{file}",]
