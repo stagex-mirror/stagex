@@ -1,14 +1,13 @@
 [package]
 name = "llvm"
-version = "21.1.8"
+version = "22.1.1"
 description = "Collection of modular and reusable compiler and toolchain technologies"
 license = "Apache-2.0 WITH LLVM-exception"
 website = "https://llvm.org"
-#HACK: omitting clang-tools-extra and clang-tools-extra-static due to build issues
-subpackages = ["llvm","llvm-libgcc","llvm-binutils","clang","clang-rt-devel","clang-devel-static","clang-devel","clang-analyzer","clang-libs","clang-cpp-libs","mlir","mlir-libs","mlir-devel","mlir-devel-static","libunwind","libunwind-devel","libunwind-devel-static","libcxx","libcxx-devel","libcxx-devel-static","libcxxabi","libcxxabi-devel","libcxxabi-devel-static","llvm-libs","lld","lld-devel","llvm-linker-tools","llvm-devel","llvm-devel-static","llvm-tools","llvm-runtime"]
+subpackages = [ "llvm", "llvm-libgcc", "llvm-binutils", "clang", "clang-rt-devel", "clang-devel-static", "clang-devel", "clang-analyzer", "clang-libs", "clang-cpp-libs", "mlir", "mlir-libs", "mlir-devel", "mlir-devel-static", "libunwind", "libunwind-devel", "libunwind-devel-static", "libcxx", "libcxx-devel", "libcxx-devel-static", "libcxxabi", "libcxxabi-devel", "libcxxabi-devel-static", "llvm-libs", "lld", "lld-devel", "llvm-linker-tools", "llvm-devel", "llvm-devel-static", "llvm-tools", "llvm-runtime",]
 
 [sources.llvm]
-hash = "4633a23617fa31a3ea51242586ea7fb1da7140e426bd62fc164261fe036aa142"
+hash = "9c6f37f6f5f68d38f435d25f770fc48c62d92b2412205767a16dac2c942f0c95"
 file = "llvm-{version}.tar.xz"
 mirrors = [ "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/llvm-project-{version}.src.tar.xz",]
 
@@ -16,4 +15,4 @@ mirrors = [ "https://github.com/llvm/llvm-project/releases/download/llvmorg-{ver
 hash = "478cad379e6c88ecf68c4f5be708d00c070f3b4c1adfd243726c6967cec5e3d7"
 file = "cports-{version}.tar.gz"
 version = "ae38ab55f1f9317f96af2cc75bc488f81729e16e"
-mirrors = [ "https://github.com/chimera-linux/cports/archive/{version}.tar.gz"]
+mirrors = [ "https://github.com/chimera-linux/cports/archive/{version}.tar.gz",]
