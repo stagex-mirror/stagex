@@ -1,12 +1,12 @@
 [package]
 name = "iptables"
-version = "1.8.10"
+version = "1.8.13"
 description = "Administration tools for packet filtering and NAT"
 license = "GPL-2.0-or-later"
 website = "https://www.netfilter.org/projects/iptables/"
 
 [sources.iptables]
-hash = "5cc255c189356e317d070755ce9371eb63a1b783c34498fb8c30264f3cc59c9c"
+hash = "1afcd33da9e8f913ace6a2126788162e207e26f5d5e29c6573c0e581ffc58b99"
 format = "tar.xz"
 file = "iptables-{version}.{format}"
 mirrors = [ "https://netfilter.org/projects/iptables/files/{file}",]
