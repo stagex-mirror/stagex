@@ -1,12 +1,12 @@
 [package]
 name = "just"
-version = "1.39.0"
+version = "1.47.0"
 description = "Command runner"
 license = "CC0-1.0"
 website = "https://just.systems"
 
 [sources.just]
-hash = "8a900072d7f909bc91030df5896168752bb9108967dbb7149d2cfb11fdeb087a"
+hash = "6b5d6f172c8f1c7babd0d76047143741b54b54d62e2abf4061863b24931461d5"
 format = "tar.gz"
 file = "just-{version}.{format}"
-mirrors = [ "https://github.com/casey/just/archive/refs/tags/{version}.{format}"]
+mirrors = [ "https://github.com/casey/just/archive/refs/tags/{version}.{format}",]
