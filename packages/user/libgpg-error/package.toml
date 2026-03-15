@@ -1,12 +1,12 @@
 [package]
 name = "libgpg-error"
-version = "1.50"
+version = "1.59"
 description = "Common error values for GnuPG components"
 license = "LGPL-2.1-or-later"
 website = "https://gnupg.org/software/libgpg-error/"
 
 [sources.libgpg-error]
-hash = "69405349e0a633e444a28c5b35ce8f14484684518a508dc48a089992fe93e20a"
+hash = "a19bc5087fd97026d93cb4b45d51638d1a25202a5e1fbc3905799f424cfa6134"
 format = "tar.bz2"
 file = "libgpg-error-{version}.{format}"
 mirrors = [ "https://gnupg.org/ftp/gcrypt/libgpg-error/{file}",]
