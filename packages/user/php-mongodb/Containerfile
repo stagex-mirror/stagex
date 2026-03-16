@@ -18,14 +18,14 @@ ADD fetch/mongodb-${VERSION}.tgz .
 
 WORKDIR /mongodb-${VERSION}/
 RUN --network=none <<-EOF
-    set -ex
+	set -ex
 	phpize
 	./configure \
 		--enable-mongodb \
 		--with-mongodb-ssl=openssl
-    make
+	make
 	make install INSTALL_ROOT=/rootfs
-    install -vDm644 -t /rootfs/usr/share/licenses/php-mongodb LICENSE
+	install -vDm644 -t /rootfs/usr/share/licenses/php-mongodb LICENSE
 	mkdir -p "/rootfs/etc/php/conf.d"
 	echo "extension=mongodb.so" > "/rootfs/etc/php/conf.d/10-mongodb.ini"
 EOF

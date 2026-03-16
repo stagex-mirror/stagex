@@ -13,8 +13,8 @@ COPY --from=stagex/core-llvm . /
 ADD fetch/mongo-c-driver-${VERSION}.tar.gz .
 WORKDIR /mongo-c-driver-${VERSION}
 RUN --network=none <<-EOF
-    set -ex
-    cmake -B build -G Ninja \
+	set -ex
+	cmake -B build -G Ninja \
 		-DCMAKE_BUILD_TYPE=None \
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DCMAKE_INSTALL_LIBDIR=lib \
@@ -29,7 +29,7 @@ RUN --network=none <<-EOF
 		-DCMAKE_SKIP_RPATH=ON
 	cmake --build build
 	DESTDIR=/rootfs cmake --install build
-    install -vDm644 -t /rootfs/usr/share/licenses/mongo-c COPYING
+	install -vDm644 -t /rootfs/usr/share/licenses/mongo-c COPYING
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
