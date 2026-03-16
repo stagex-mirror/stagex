@@ -77,7 +77,7 @@ ENV LLVM_VERSION="21"
 
 ADD fetch/mrustc-${MRUSTC_VERSION}.tar.gz .
 ADD fetch/*.patch .
-ADD *.patch .
+ADD patches/*.patch .
 WORKDIR /mrustc-${MRUSTC_VERSION}
 COPY fetch/rustc-${BOOTSTRAP_RUST_VERSION}.0-src.tar.gz .
 
