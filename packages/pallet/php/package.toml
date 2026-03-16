@@ -11,5 +11,6 @@ subpackages = [
   "php-zip",
   "php-curl",
   "php-filter",
-  "php-phar"
+  "php-phar",
+  "php-mongodb"
 ]

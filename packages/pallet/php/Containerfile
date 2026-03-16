@@ -45,7 +45,7 @@ COPY --from=stagex/core-php-phar . /
 COPY --from=stagex/core-musl /usr/lib/*.so* /usr/lib/
 
 FROM stagex/core-filesystem AS package-php-mongodb
-COPY --from=stagex/core-php-mongodb . /
+COPY --from=stagex/user-php-mongodb . /
 COPY --from=stagex/core-musl /usr/lib/*.so* /usr/lib/
 COPY --from=stagex/core-openssl /usr/lib/libssl.so* /usr/lib/
 COPY --from=stagex/core-libzstd /lib/libzstd.so* /lib/
