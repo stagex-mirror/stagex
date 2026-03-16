@@ -81,6 +81,12 @@ RUN --network=none <<-EOF
 		--enable-bcmath=shared \
 		--enable-fileinfo=shared \
 		--enable-intl=shared \
+		--with-libxml \
+		--enable-dom=shared \
+		--enable-xml=shared \
+		--enable-simplexml=shared \
+		--enable-xmlreader=shared \
+		--enable-xmlwriter=shared \
 		--enable-fpm
 	make -j "$(nproc)"
 	make INSTALL_ROOT="/${rootfs}" install
@@ -89,10 +95,10 @@ RUN --network=none <<-EOF
 	install -vDm644 -t "/${rootfs}/usr/share/licenses/php" LICENSE
 
 	mkdir -p "/${rootfs}/etc/php/conf.d"
-  for path in "/${rootfs}/usr/lib/php-modules/"*.so; do
-    name=$(basename "$path" .so)
-    printf "extension=%s.so\n" "$name" > "/${rootfs}/etc/php/conf.d/10-$name.ini"
-  done
+	for path in "/${rootfs}/usr/lib/php-modules/"*.so; do
+		name=$(basename "$path" .so)
+		printf "extension=%s.so\n" "$name" > "/${rootfs}/etc/php/conf.d/ext-$name.ini"
+	done
 
   unset rootfs
 
@@ -130,6 +136,12 @@ RUN --network=none <<-EOF
 		--enable-bcmath=shared \
 		--enable-fileinfo=shared \
 		--enable-intl=shared \
+		--with-libxml \
+		--enable-dom=shared \
+		--enable-xml=shared \
+		--enable-simplexml=shared \
+		--enable-xmlreader=shared \
+		--enable-xmlwriter=shared \
 		--enable-zts
 	make -j "$(nproc)"
 	make INSTALL_ROOT="/${rootfs}" install
@@ -183,6 +195,10 @@ FROM stagex/core-filesystem AS package-php-curl
 COPY --from=build /rootfs/usr/lib/php-modules/curl.so /usr/lib/php-modules/curl.so
 COPY --from=build /rootfs/etc/php/conf.d/10-curl.ini /etc/php/conf.d/10-curl.ini
 
+FROM stagex/core-filesystem AS package-php-dom
+COPY --from=build /rootfs/usr/lib/php-modules/dom.so /usr/lib/php-modules/dom.so
+COPY --from=build /rootfs/etc/php/conf.d/10-dom.ini /etc/php/conf.d/10-dom.ini
+
 FROM stagex/core-filesystem AS package-php-fileinfo
 COPY --from=build /rootfs/usr/lib/php-modules/fileinfo.so /usr/lib/php-modules/fileinfo.so
 COPY --from=build /rootfs/etc/php/conf.d/10-fileinfo.ini /etc/php/conf.d/10-fileinfo.ini
@@ -234,6 +250,10 @@ COPY --from=build /rootfs/etc/php/conf.d/10-bcmath.ini /etc/php/conf.d/10-bcmath
 FROM stagex/core-filesystem AS package-php-zts-curl
 COPY --from=build /rootfs-zts/usr/lib/php-modules/curl.so /usr/lib/php-modules/curl.so
 COPY --from=build /rootfs/etc/php/conf.d/10-curl.ini /etc/php/conf.d/10-curl.ini
+
+FROM stagex/core-filesystem AS package-php-zts-dom
+COPY --from=build /rootfs-zts/usr/lib/php-modules/dom.so /usr/lib/php-modules/dom.so
+COPY --from=build /rootfs/etc/php/conf.d/10-dom.ini /etc/php/conf.d/10-dom.ini
 
 FROM stagex/core-filesystem AS package-php-zts-fileinfo
 COPY --from=build /rootfs-zts/usr/lib/php-modules/fileinfo.so /usr/lib/php-modules/fileinfo.so
