@@ -10,14 +10,17 @@ COPY --from=stagex/core-php . /
 
 FROM stagex/core-filesystem AS package-php-openssl
 COPY --from=stagex/core-php-openssl . /
+COPY --from=stagex/core-musl /usr/lib/*.so* /usr/lib/
 COPY --from=stagex/core-openssl /usr/lib/libssl.so* /usr/lib/
 
 FROM stagex/core-filesystem AS package-php-zlib
 COPY --from=stagex/core-php-zlib . /
+COPY --from=stagex/core-musl /usr/lib/*.so* /usr/lib/
 COPY --from=stagex/core-zlib /lib/libz.so* /lib/
 
 FROM stagex/core-filesystem AS package-php-zip
 COPY --from=stagex/core-php-zip . /
+COPY --from=stagex/core-musl /usr/lib/*.so* /usr/lib/
 COPY --from=stagex/core-openssl /usr/lib/libcrypto.so* /usr/lib/
 COPY --from=stagex/core-libzip /usr/lib/libzip.so* /usr/lib/
 COPY --from=stagex/core-xz /usr/lib/liblzma.so* /usr/lib/
@@ -26,6 +29,7 @@ COPY --from=stagex/core-zlib /usr/lib/libz.so* /usr/lib/
 
 FROM stagex/core-filesystem AS package-php-curl
 COPY --from=stagex/core-php-curl . /
+COPY --from=stagex/core-musl /usr/lib/*.so* /usr/lib/
 COPY --from=stagex/core-curl /usr/lib/libcurl.so* /usr/lib/
 COPY --from=stagex/core-openssl /usr/lib/libssl.so* /usr/lib/
 COPY --from=stagex/core-openssl /usr/lib/libcrypto.so* /usr/lib/
@@ -34,6 +38,14 @@ COPY --from=stagex/core-zlib /usr/lib/libz.so* /usr/lib/
 
 FROM stagex/core-filesystem AS package-php-filter
 COPY --from=stagex/core-php-filter . /
+COPY --from=stagex/core-musl /usr/lib/*.so* /usr/lib/
 
 FROM stagex/core-filesystem AS package-php-phar
 COPY --from=stagex/core-php-phar . /
+COPY --from=stagex/core-musl /usr/lib/*.so* /usr/lib/
+
+FROM stagex/core-filesystem AS package-php-mongodb
+COPY --from=stagex/core-php-mongodb . /
+COPY --from=stagex/core-musl /usr/lib/*.so* /usr/lib/
+COPY --from=stagex/core-openssl /usr/lib/libssl.so* /usr/lib/
+COPY --from=stagex/core-libzstd /lib/libzstd.so* /lib/
