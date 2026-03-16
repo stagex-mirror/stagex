@@ -1,12 +1,12 @@
 [package]
 name = "dhcpcd"
-version = "10.1.0"
+version = "10.3.1"
 description = "DHCP and DHCPv6 client with IPv4LL and IPv6RS support"
 license = "BSD-2-Clause"
 website = "https://github.com/NetworkConfiguration/dhcpcd"
 
 [sources.dhcpcd]
-hash = "abc307c63853da3199baa5c1e15fd5ede9d68d068b2a59ca14c5a6768e9cc3b7"
+hash = "1aed450dfd22f280a64f7e5feee148d29727c292a3d1819287cf4f98b12d4a68"
 format = "tar.xz"
 file = "dhcpcd-{version}.{format}"
 mirrors = [ "https://github.com/NetworkConfiguration/dhcpcd/releases/download/v{version}/{file}",]
