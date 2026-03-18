@@ -502,7 +502,7 @@ RUN --network=none <<-EOF
 	done
 EOF
 
-RUN --network=none ./build ${VERSION} 1.93.1 cargo,clippy,rustdoc,rustfmt,rust-demangler,src
+RUN --network=none ./build ${VERSION} 1.93.1 cargo,clippy,rustfmt,rust-demangler,src
 RUN --network=none <<-EOF
 	set -eux
 	mv /rust-${VERSION} /rootfs
