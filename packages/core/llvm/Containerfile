@@ -1,5 +1,5 @@
 FROM scratch AS build
-COPY --from=stagex/bootstrap-stage3 . /
+COPY --from=stagex/bootstrap-stage2 . /
 
 ARG VERSION
 ARG CPORTS_VERSION
@@ -100,68 +100,6 @@ RUN --network=none <<-EOF
 
 	echo "$CMAKE_ARGS" > ./cmake_args
 EOF
-
-RUN --network=none <<-EOF
-	# We first build LLVM with GCC, before we will build LLVM with LLVM
-
-	# As this build only has to compile LLVM itself, we disable a variety of unnecessary components
-	CMAKE_ARGS="$(cat ./cmake_args)"
-	cmake_cache_set() {
-	  CMAKE_ARGS="$CMAKE_ARGS -D$1=$2"
-	}
-	cmake_runtime_cache_set() {
-	  CMAKE_ARGS="$CMAKE_ARGS -DRUNTIMES_${ARCH}-linux-musl_$1=$2"
-	}
-
-	cmake_runtime_cache_set COMPILER_RT_ENABLE_PEDANTIC OFF
-	cmake_runtime_cache_set COMPILER_RT_ENABLE_STATIC_UNWINDER OFF
-	cmake_runtime_cache_set COMPILER_RT_BUILD_SANITIZERS OFF
-	cmake_runtime_cache_set COMPILER_RT_BUILD_XRAY OFF
-	cmake_runtime_cache_set COMPILER_RT_BUILD_LIBFUZZER OFF
-	cmake_runtime_cache_set COMPILER_RT_BUILD_PROFILE OFF
-	cmake_runtime_cache_set COMPILER_RT_BUILD_CTX_PROFILE OFF
-	cmake_runtime_cache_set COMPILER_RT_BUILD_MEMPROF OFF
-	cmake_runtime_cache_set COMPILER_RT_BUILD_ORC OFF
-	cmake_runtime_cache_set COMPILER_RT_HWASAN_WITH_INTERCEPTORS OFF
-	cmake_runtime_cache_set LIBCXX_ENABLE_PEDANTIC OFF
-	cmake_runtime_cache_set LIBCXX_ENABLE_STATIC OFF
-	cmake_runtime_cache_set LIBCXX_ENABLE_STATIC_ABI_LIBRARY OFF
-	cmake_runtime_cache_set LIBCXXABI_ENABLE_PEDANTIC OFF
-	cmake_runtime_cache_set LIBCXXABI_ENABLE_STATIC_UNWINDER OFF
-	cmake_runtime_cache_set LIBUNWIND_ENABLE_PEDANTIC OFF
-	cmake_runtime_cache_set LIBUNWIND_ENABLE_STATIC OFF
-
-	cmake \
-		-B build \
-		-S llvm \
-		-Wno-dev \
-		-DLLVM_TARGETS_TO_BUILD="$LLVM_TARGET_ARCH" \
-		-DLLVM_BUILD_LLVM_DYLIB=OFF \
-		-DLLVM_ENABLE_BACKTRACES=OFF \
-		-DLLVM_ENABLE_BINDINGS=OFF \
-		-DLLVM_ENABLE_PEDANTIC=OFF \
-		-DLLVM_ENABLE_PLUGINS=OFF \
-		-DLLVM_ENABLE_TELEMETRY=OFF \
-		-DLLVM_ENABLE_ZSTD=OFF \
-		-DCLANG_ENABLE_STATIC_ANALYZER=OFF \
-		$CMAKE_ARGS
-	cmake --build build -v --parallel $(nproc)
-
-	# Remove all object files, static archives from the bootstrap to ensure they aren't further used
-	for object_file in $(find /usr/lib -name "*.o"); do
-		rm $object_file
-	done
-	for static_archive in $(find /usr/lib -name "*.a"); do
-		rm $static_archive
-	done
-
-	# Install the LLVM toolchain we just built
-	cmake --install build
-	rm -rf build
-EOF
-
-# Install `musl` as we just erased all of our `*.a`, `*.o` files, including _our_ copy of `musl`
-COPY --from=stagex/core-musl . /
 
 RUN --network=none <<-EOF
 	export LIBCC="/usr/lib/clang/21/lib/${TARGET}/libclang_rt.builtins.a"

@@ -1,12 +1,39 @@
 FROM scratch AS build
-ARG GCC_SOURCE
-ARG GCC_VERSION
+ARG LLVM_SOURCE
+ARG LLVM_VERSION
+ARG CPORTS_SOURCE
+ARG CPORTS_VERSION
+ARG CMAKE_SOURCE
+ARG CMAKE_VERSION
 ARG LINUX_SOURCE
 ARG LINUX_VERSION
 ARG MUSL_SOURCE
 ARG MUSL_VERSION
 ARG BINUTILS_SOURCE
 ARG BINUTILS_VERSION
+ARG BUSYBOX_SOURCE
+ARG BUSYBOX_VERSION
+ARG MAKE_SOURCE
+ARG MAKE_VERSION
+ARG SED_SOURCE
+ARG SED_VERSION
+ARG MKSH_SOURCE
+ARG MKSH_VERSION
+ARG PYTHON_SOURCE
+ARG PYTHON_VERSION
+ARG XZ_SOURCE
+ARG XZ_VERSION
+ARG LIBUCONTEXT_SOURCE
+ARG LIBUCONTEXT_VERSION
+ARG LIBUNWIND_SOURCE
+ARG LIBUNWIND_VERSION
+ARG LIBFFI_SOURCE
+ARG LIBFFI_VERSION
+ARG LIBZSTD_SOURCE
+ARG LIBZSTD_VERSION
+ARG ZLIB_SOURCE
+ARG ZLIB_VERSION
+ARG TARGETARCH
 ENV TZ=UTC
 ENV LANG=C.UTF-8
 ENV SOURCE_DATE_EPOCH=1
@@ -15,260 +42,781 @@ ENV BASE_PATH=/usr/sbin:/usr/bin:/sbin:/bin
 ENV PATH=${BASE_PATH}
 COPY --from=fetch . .
 COPY --from=stagex/bootstrap-stage1 . /
+ADD patches/*.patch /patches/
 
-RUN --network=none <<-EOF
+# Determine target arch from TARGETARCH
+COPY <<-'EOF' /etc/profile
 	set -eux
+	if [ "$TARGETARCH" = "amd64" ]; then
+		ARCH="x86_64"
+		LLVM_TARGET_ARCH="X86"
+	elif [ "$TARGETARCH" = "arm64" ]; then
+		ARCH="aarch64"
+		LLVM_TARGET_ARCH="AArch64"
+	fi
+	export ARCH
+	export LLVM_TARGET_ARCH
+	export TARGET=${ARCH}-linux-musl
+	export SYSROOT=/sysroot
+	export MAKEFLAGS="-j$(nproc)"
+	export CLANG_RESOURCE_DIR="/usr/lib/clang/${LLVM_VERSION%%.*}"
+EOF
+SHELL ["/bin/sh","-l","-c"]
+
+# Extract all sources
+RUN --network=none <<-EOF
+	tar -xf ${LLVM_SOURCE}
+	tar -xzf ${CPORTS_SOURCE}
+	tar -xzf ${CMAKE_SOURCE}
 	tar -xf ${LINUX_SOURCE}
 	tar -xzf ${MUSL_SOURCE}
 	tar -xf ${BINUTILS_SOURCE}
-	tar -xf ${GCC_SOURCE}
-	cd gcc-${GCC_VERSION}
-	mv ../*.tar.* .; \
-	./contrib/download_prerequisites
+	tar -xjf ${BUSYBOX_SOURCE}
+	tar -xzf ${MAKE_SOURCE}
+	tar -xf ${PYTHON_SOURCE}
+	tar -xzf ${XZ_SOURCE}
+	tar -xzf ${LIBUCONTEXT_SOURCE}
+	tar -xzf ${LIBUNWIND_SOURCE}
+	tar -xzf ${LIBFFI_SOURCE}
+	tar -xzf ${LIBZSTD_SOURCE}
+	tar -xzf ${ZLIB_SOURCE}
 EOF
 
-# Set environment variables based on target (gcc target format, like x86_64 or aarch64)
-COPY --chmod=755 <<-'EOF' /env.sh
-	export TARGET=${TARGET_ARCH}-linux-musl
-	export SYSROOT=/usr/${TARGET}
-	export PATH=${SYSROOT}/bin:${BASE_PATH}
-EOF
-
-ARG TARGET_LIST="x86_64 aarch64"
-
-# Setup sysroot
-COPY --chmod=755 <<-'EOF' /sysroot.sh
-	set -eux
-	. /env.sh
-	mkdir -p ${SYSROOT}
-	cd ${SYSROOT}
-	mkdir -pv bin lib lib32 include usr "${TARGET}/bin"
-	ln -sfv ../bin ../lib ../lib32 ../include usr
-	cd ${SYSROOT}/${TARGET}
-	ln -sfv ../lib lib
-	ln -sfv ../lib32 lib32
-	ln -sfv ../include include
-EOF
+# Patch LLVM for musl
 RUN --network=none <<-EOF
-	set -eux
-	for arch in ${TARGET_LIST}; do
-		TARGET_ARCH=$arch /sysroot.sh
+	cd /llvm-project-${LLVM_VERSION}.src
+	cp /cports-${CPORTS_VERSION}/main/llvm/patches/*.patch .
+	cp /patches/*.patch .
+	for file in $(find . -maxdepth 1 -name "*.patch" | sort); do
+		patch -p1 < "$file"
 	done
+	find compiler-rt -iname CMakeLists.txt -exec sed -i '1s/^/set(COMPILER_RT_BUILD_SANITIZERS OFF)\n/' {} \;
+	find compiler-rt -iname CMakeLists.txt -exec sed -i '1s/^/set(COMPILER_RT_BUILD_GWP_ASAN OFF)\n/' {} \;
+	find compiler-rt -iname CMakeLists.txt -exec sed -i '1s/^/set(COMPILER_RT_HAS_GWP_ASAN FALSE)\n/' {} \;
+	find compiler-rt -iname '*.cmake' -exec sed -i '1s/^/set(COMPILER_RT_BUILD_SANITIZERS OFF)\n/' {} \;
+	find compiler-rt -iname '*.cmake' -exec sed -i '1s/^/set(COMPILER_RT_BUILD_GWP_ASAN OFF)\n/' {} \;
+	find compiler-rt -iname '*.cmake' -exec sed -i '1s/^/set(COMPILER_RT_HAS_GWP_ASAN FALSE)\n/' {} \;
 EOF
 
-# Install musl headers
-COPY --chmod=755 <<-'EOF' /musl1.sh
-	set -eux
-	. /env.sh
+###############################################################################
+# Phase A: Build host tools natively on i386
+###############################################################################
+
+# Build cmake natively on i386 (host tool for driving cross-builds)
+RUN --network=none <<-EOF
+	cd /cmake-${CMAKE_VERSION}
+	./configure \
+		--prefix=/usr \
+		-- \
+		-DCMAKE_USE_OPENSSL=OFF
+	make
+	make install
+	rm -rf /cmake-${CMAKE_VERSION}/build
+EOF
+
+###############################################################################
+# Phase B: Cross-compile minimum toolchain (i386 → target arch)
+###############################################################################
+
+# Step 1: Install linux-headers for target arch
+RUN --network=none <<-EOF
+	cd /linux-${LINUX_VERSION}
+	LINUX_ARCH="$ARCH"
+	if [ "$TARGETARCH" = "arm64" ]; then
+		LINUX_ARCH="arm64"
+	fi
+	make ARCH="$LINUX_ARCH" headers
+	find usr/include ! -name '*.h' -type f -delete
+	mkdir -p ${SYSROOT}/usr/include
+	cp -Rv usr/include/* ${SYSROOT}/usr/include/
+EOF
+
+# Step 2: Install musl headers for target arch (headers only)
+RUN --network=none <<-EOF
 	cd /musl-${MUSL_VERSION}
-	make clean distclean
 	make \
-		-j$(nproc) \
-		ARCH="${TARGET_ARCH}" \
-		prefix="" \
+		ARCH="${ARCH}" \
+		prefix=/usr \
 		DESTDIR="${SYSROOT}" \
 		install-headers
 EOF
+
+# Step 3: Cross-compile LLVM (clang + lld + compiler-rt builtins only)
+# compiler-rt builtins are freestanding — no libc needed
 RUN --network=none <<-EOF
-	set -eux
-	for arch in ${TARGET_LIST}; do
-		TARGET_ARCH=$arch /musl1.sh
-	done
+	cd /llvm-project-${LLVM_VERSION}.src
+	cmake \
+		-B build-stage1 \
+		-S llvm \
+		-Wno-dev \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_C_FLAGS="-Os" \
+		-DCMAKE_CXX_FLAGS="-Os" \
+		-DLLVM_TARGET_ARCH="$LLVM_TARGET_ARCH" \
+		-DLLVM_TARGETS_TO_BUILD="$LLVM_TARGET_ARCH" \
+		-DLLVM_DEFAULT_TARGET_TRIPLE="${TARGET}" \
+		-DLLVM_HOST_TRIPLE="i386-linux-musl" \
+		-DLLVM_ENABLE_PROJECTS="clang;lld" \
+		-DLLVM_BUILD_LLVM_DYLIB=OFF \
+		-DLLVM_LINK_LLVM_DYLIB=OFF \
+		-DLLVM_ENABLE_BACKTRACES=OFF \
+		-DLLVM_ENABLE_BINDINGS=OFF \
+		-DLLVM_ENABLE_PLUGINS=OFF \
+		-DLLVM_ENABLE_TELEMETRY=OFF \
+		-DLLVM_ENABLE_ZSTD=OFF \
+		-DLLVM_ENABLE_LIBXML2=OFF \
+		-DLLVM_ENABLE_LIBEDIT=OFF \
+		-DLLVM_ENABLE_LIBPFM=OFF \
+		-DLLVM_ENABLE_RTTI=ON \
+		-DCLANG_ENABLE_STATIC_ANALYZER=OFF \
+		-DCLANG_ENABLE_ARCMT=OFF \
+		-DLLVM_ENABLE_Z3_SOLVER=OFF \
+		-DCLANG_DEFAULT_RTLIB=compiler-rt \
+		-DCLANG_DEFAULT_CXX_STDLIB=libc++ \
+		-DCLANG_DEFAULT_UNWINDLIB=libunwind \
+		-DCLANG_DEFAULT_LINKER=lld
+	cmake --build build-stage1 --parallel $(nproc)
+	cmake --install build-stage1
+	rm -rf build-stage1
 EOF
 
-# Build and install cross binutils
-COPY --chmod=755 <<-'EOF' /binutils.sh
-	set -eux
-	. /env.sh
-	mkdir -p /build-binutils-${TARGET_ARCH}
-	cd /build-binutils-${TARGET_ARCH}
-	/binutils-${BINUTILS_VERSION}/configure \
-		--target="${TARGET}" \
-		--prefix="" \
-		--exec-prefix="" \
-		--sbindir=/bin \
-		--libexecdir=/lib \
-		--datarootdir=/_tmp \
-		--with-sysroot=/ \
-		--with-build-sysroot="${SYSROOT}" \
-		--disable-nls \
-		--disable-multilib \
-		--disable-plugins \
-		--disable-gprofng \
-		--enable-64-bit-bfd \
-		--enable-ld=default \
-		--enable-install-libiberty \
-		--enable-deterministic-archives
-	make \
-		-j$(nproc) \
-		all-binutils \
-		all-gas \
-		all-ld
-	make \
-		-j$(nproc) \
-		DESTDIR="${SYSROOT}" \
-		install-strip-binutils \
-		install-strip-gas \
-		install-strip-ld
-EOF
+# Build compiler-rt builtins + CRT for target
 RUN --network=none <<-EOF
-	set -eux
-	for arch in ${TARGET_LIST}; do
-		TARGET_ARCH=$arch /binutils.sh
+	cd /llvm-project-${LLVM_VERSION}.src
+	cmake \
+		-B build-builtins \
+		-S compiler-rt \
+		-Wno-dev \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_C_COMPILER=/usr/bin/clang \
+		-DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
+		-DCMAKE_C_COMPILER_TARGET="${TARGET}" \
+		-DCMAKE_CXX_COMPILER_TARGET="${TARGET}" \
+		-DCMAKE_ASM_COMPILER_TARGET="${TARGET}" \
+		-DCMAKE_AR=/usr/bin/llvm-ar \
+		-DCMAKE_NM=/usr/bin/llvm-nm \
+		-DCMAKE_RANLIB=/usr/bin/llvm-ranlib \
+		-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
+		-DCMAKE_SYSROOT="${SYSROOT}" \
+		-DCMAKE_INSTALL_PREFIX="/usr" \
+		-DCOMPILER_RT_BUILTINS_ENABLE_PIC=ON \
+		-DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
+		-DCOMPILER_RT_BUILD_BUILTINS=ON \
+		-DCOMPILER_RT_BUILD_CRT=ON \
+		-DCOMPILER_RT_BUILD_SANITIZERS=OFF \
+		-DCOMPILER_RT_BUILD_XRAY=OFF \
+		-DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
+		-DCOMPILER_RT_BUILD_PROFILE=OFF \
+		-DCOMPILER_RT_BUILD_MEMPROF=OFF \
+		-DCOMPILER_RT_BUILD_ORC=OFF \
+		-DCOMPILER_RT_BUILD_GWP_ASAN=OFF \
+		-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=OFF
+	cmake --build build-builtins --target builtins --target crt --parallel $(nproc)
+	# Install builtins/crt to all paths clang may search (handle triple normalization)
+	NORMALIZED="${ARCH}-unknown-linux-musl"
+	for dir in \
+		"${SYSROOT}/usr/lib/linux" \
+		"${SYSROOT}${CLANG_RESOURCE_DIR}/lib/${TARGET}" \
+		"${SYSROOT}${CLANG_RESOURCE_DIR}/lib/${NORMALIZED}" \
+		"${CLANG_RESOURCE_DIR}/lib/${TARGET}" \
+		"${CLANG_RESOURCE_DIR}/lib/${NORMALIZED}"; do
+		mkdir -p "$dir"
+		cp -a build-builtins/lib/linux/* "$dir/"
+		# Create arch-stripped names (clang looks for libclang_rt.builtins.a not libclang_rt.builtins-x86_64.a)
+		for f in "$dir"/*-*.a "$dir"/*-*.o; do
+			[ -e "$f" ] || continue
+			stripped=$(echo "$(basename "$f")" | sed "s/-${ARCH}//")
+			cp -f "$f" "$dir/$stripped"
+		done
 	done
+	rm -rf build-builtins
 EOF
 
-# Build and install cross gcc and bootstrap libgcc
-COPY --chmod=755 <<-'EOF' /gcc1.sh
-	set -eux
-	. /env.sh
-	mkdir -p /build-gcc-${TARGET_ARCH}
-	cd /build-gcc-${TARGET_ARCH}
-	/gcc-${GCC_VERSION}/configure \
-	--prefix="" \
-	--exec-prefix="" \
-	--sbindir=/bin \
-	--libexecdir=/lib \
-	--datarootdir=/_tmp \
-	--target=${TARGET} \
-	--disable-multilib \
-	--disable-bootstrap \
-	--disable-assembly \
-	--disable-libmudflap \
-	--disable-libsanitizer \
-	--disable-gnu-indirect-function \
-	--disable-libmpx \
-	--disable-werror \
-	--enable-languages=c,c++ \
-	--enable-tls \
-	--enable-initfini-array \
-	--enable-libstdcxx-time=rt \
-	--enable-deterministic-archives \
-	--with-build-sysroot=${SYSROOT} \
-	--with-sysroot=/
-	make \
-		-j$(nproc) \
-		all-gcc
-	make \
-		-j$(nproc) \
-		enable_shared=no \
-		all-target-libgcc
-	make \
-		-j$(nproc) \
-		DESTDIR="${SYSROOT}" \
-		install-strip-gcc \
-		install-strip-target-libgcc
-EOF
+# Step 4: Cross-compile full musl for target using cross-clang + builtins
 RUN --network=none <<-EOF
-	set -eux
-	for arch in ${TARGET_LIST}; do
-		TARGET_ARCH=$arch /gcc1.sh
-	done
-EOF
-
-# Build and install cross musl
-COPY --chmod=755 <<-'EOF' /musl2.sh
-	set -eux
-	. /env.sh
-	mkdir -p /build-musl-${TARGET_ARCH}
-	cd /build-musl-${TARGET_ARCH}
-	ARCH="${TARGET_ARCH}" \
-	CC="${TARGET}-gcc" \
-	CROSS_COMPILE="${TARGET}-" \
-	LIBCC="${SYSROOT}/lib/gcc/${TARGET}/${GCC_VERSION}/libgcc.a" \
+	mkdir -p /build-musl
+	cd /build-musl
+	LIBCC="${SYSROOT}${CLANG_RESOURCE_DIR}/lib/${TARGET}/libclang_rt.builtins.a"
+	CC="clang --target=${TARGET} --sysroot=${SYSROOT}" \
+	AR=llvm-ar \
+	RANLIB=llvm-ranlib \
+	LIBCC="$LIBCC" \
 	/musl-${MUSL_VERSION}/configure \
 		--host="${TARGET}" \
-		--prefix="" \
+		--prefix=/usr \
 		--disable-wrapper
-	make \
-		-j$(nproc) \
-		AR="${TARGET}-ar" \
-		RANLIB="${TARGET}-ranlib"
-	make \
-		-j$(nproc) \
-		AR="${TARGET}-ar" \
-		RANLIB="${TARGET}-ranlib" \
-		DESTDIR="${SYSROOT}" \
-		install-libs
-	rm -f "${SYSROOT}"/lib/ld-musl-${TARGET_ARCH}.so.1
-	cp -af \
-		"${SYSROOT}/usr/lib/libc.so" \
-		"${SYSROOT}/lib/ld-musl-${TARGET_ARCH}.so.1"
+	make AR=llvm-ar RANLIB=llvm-ranlib
+	make AR=llvm-ar RANLIB=llvm-ranlib DESTDIR="${SYSROOT}" install
+	rm -f "${SYSROOT}"/usr/lib/ld-musl-${ARCH}.so.1
+	cp -af "${SYSROOT}/usr/lib/libc.so" "${SYSROOT}/usr/lib/ld-musl-${ARCH}.so.1"
+	mkdir -p "${SYSROOT}/lib"
+	ln -sf /usr/lib/ld-musl-${ARCH}.so.1 "${SYSROOT}/lib/ld-musl-${ARCH}.so.1"
+	rm -rf /build-musl
 EOF
+
+# Step 4b: Build libatomic for target (needed by libunwind)
 RUN --network=none <<-EOF
-	set -eux
-	for arch in ${TARGET_LIST}; do
-		TARGET_ARCH=$arch /musl2.sh
+	cd /llvm-project-${LLVM_VERSION}.src
+	ATOMIC_FLAGS=""
+	[ "$ARCH" = "aarch64" ] && ATOMIC_FLAGS="-mno-outline-atomics"
+	clang --target=${TARGET} --sysroot=${SYSROOT} -std=c99 -fPIC -O2 ${ATOMIC_FLAGS} -c -o atomic.o compiler-rt/lib/builtins/atomic.c
+	llvm-ar rcs "${SYSROOT}/usr/lib/libatomic.a" atomic.o
+	ld.lld --shared -o "${SYSROOT}/usr/lib/libatomic.so" atomic.o
+	rm -f atomic.o
+EOF
+
+# Step 5: Cross-compile LLVM runtimes (libunwind, libc++abi, libc++) for target
+RUN --network=none <<-EOF
+	cd /llvm-project-${LLVM_VERSION}.src
+	cmake \
+		-B build-runtimes \
+		-S runtimes \
+		-Wno-dev \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_C_COMPILER=/usr/bin/clang \
+		-DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
+		-DCMAKE_C_COMPILER_TARGET="${TARGET}" \
+		-DCMAKE_CXX_COMPILER_TARGET="${TARGET}" \
+		-DCMAKE_AR=/usr/bin/llvm-ar \
+		-DCMAKE_NM=/usr/bin/llvm-nm \
+		-DCMAKE_RANLIB=/usr/bin/llvm-ranlib \
+		-DCMAKE_SYSROOT="${SYSROOT}" \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
+		-DLLVM_ENABLE_RUNTIMES="libunwind;libcxxabi;libcxx" \
+		-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=OFF \
+		-DLIBUNWIND_USE_COMPILER_RT=ON \
+		-DLIBUNWIND_ENABLE_SHARED=ON \
+		-DLIBUNWIND_ENABLE_STATIC=ON \
+		-DLIBCXXABI_USE_COMPILER_RT=ON \
+		-DLIBCXXABI_USE_LLVM_UNWINDER=ON \
+		-DLIBCXXABI_HAS_CXA_THREAD_ATEXIT_IMPL=OFF \
+		-DLIBCXXABI_ENABLE_SHARED=ON \
+		-DLIBCXXABI_ENABLE_STATIC=ON \
+		-DLIBCXX_USE_COMPILER_RT=ON \
+		-DLIBCXX_HAS_MUSL_LIBC=ON \
+		-DLIBCXX_CXX_ABI=libcxxabi \
+		-DLIBCXX_ENABLE_SHARED=ON \
+		-DLIBCXX_ENABLE_STATIC=ON \
+		-DLIBCXX_HARDENING_MODE=fast
+	cmake --build build-runtimes --parallel $(nproc)
+	DESTDIR="${SYSROOT}" cmake --install build-runtimes
+	rm -rf build-runtimes
+EOF
+
+# Step 6: Cross-compile LLVM/clang/lld for target arch
+# This produces a native clang that runs on the target
+RUN --network=none <<-EOF
+	cd /llvm-project-${LLVM_VERSION}.src
+	LIBCC="${SYSROOT}${CLANG_RESOURCE_DIR}/lib/${TARGET}/libclang_rt.builtins.a"
+	cmake \
+		-B build-target \
+		-S llvm \
+		-Wno-dev \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_C_COMPILER=/usr/bin/clang \
+		-DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
+		-DCMAKE_C_COMPILER_TARGET="${TARGET}" \
+		-DCMAKE_CXX_COMPILER_TARGET="${TARGET}" \
+		-DCMAKE_C_FLAGS="--sysroot=${SYSROOT} -Os" \
+		-DCMAKE_CXX_FLAGS="--sysroot=${SYSROOT} -Os -stdlib=libc++" \
+		-DCMAKE_EXE_LINKER_FLAGS="--sysroot=${SYSROOT} -L${SYSROOT}/usr/lib -lc++abi -lunwind" \
+		-DCMAKE_SHARED_LINKER_FLAGS="--sysroot=${SYSROOT} -L${SYSROOT}/usr/lib" \
+		-DCMAKE_AR=/usr/bin/llvm-ar \
+		-DCMAKE_NM=/usr/bin/llvm-nm \
+		-DCMAKE_RANLIB=/usr/bin/llvm-ranlib \
+		-DCMAKE_SYSROOT="${SYSROOT}" \
+		-DCMAKE_CROSSCOMPILING=ON \
+		-DCMAKE_SYSTEM_NAME=Linux \
+		-DLLVM_TABLEGEN=/usr/bin/llvm-tblgen \
+		-DCLANG_TABLEGEN=/usr/bin/clang-tblgen \
+		-DLLVM_NATIVE_TOOL_DIR=/usr/bin \
+		-DLLVM_TARGET_ARCH="$LLVM_TARGET_ARCH" \
+		-DLLVM_TARGETS_TO_BUILD="$LLVM_TARGET_ARCH" \
+		-DLLVM_DEFAULT_TARGET_TRIPLE="${TARGET}" \
+		-DLLVM_HOST_TRIPLE="${TARGET}" \
+		-DLLVM_ENABLE_PROJECTS="clang;lld" \
+		-DLLVM_BUILD_LLVM_DYLIB=OFF \
+		-DLLVM_LINK_LLVM_DYLIB=OFF \
+		-DLLVM_BUILD_UTILS=OFF \
+		-DLLVM_INCLUDE_UTILS=OFF \
+		-DLLVM_INCLUDE_TESTS=OFF \
+		-DLLVM_INCLUDE_BENCHMARKS=OFF \
+		-DLLVM_ENABLE_BACKTRACES=OFF \
+		-DLLVM_ENABLE_BINDINGS=OFF \
+		-DLLVM_ENABLE_PLUGINS=OFF \
+		-DLLVM_ENABLE_TELEMETRY=OFF \
+		-DLLVM_ENABLE_ZSTD=OFF \
+		-DLLVM_ENABLE_LIBXML2=OFF \
+		-DLLVM_ENABLE_LIBEDIT=OFF \
+		-DLLVM_ENABLE_LIBPFM=OFF \
+		-DLLVM_ENABLE_RTTI=ON \
+		-DLLVM_ENABLE_LLD=ON \
+		-DCLANG_ENABLE_STATIC_ANALYZER=OFF \
+		-DCLANG_ENABLE_ARCMT=OFF \
+		-DLLVM_ENABLE_Z3_SOLVER=OFF \
+		-DCLANG_DEFAULT_RTLIB=compiler-rt \
+		-DCLANG_DEFAULT_CXX_STDLIB=libc++ \
+		-DCLANG_DEFAULT_UNWINDLIB=libunwind \
+		-DCLANG_DEFAULT_LINKER=lld \
+		-DCLANG_CONFIG_FILE_SYSTEM_DIR=/etc/clang
+	cmake --build build-target --parallel $(nproc)
+	DESTDIR="/cross-rootfs" cmake --install build-target
+	rm -rf build-target
+EOF
+
+# Step 7: Cross-compile cmake for target
+RUN --network=none <<-EOF
+	mkdir -p /build-cmake
+	cd /cmake-${CMAKE_VERSION}
+	cmake \
+		-B /build-cmake \
+		-Wno-dev \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_C_COMPILER=/usr/bin/clang \
+		-DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
+		-DCMAKE_C_COMPILER_TARGET="${TARGET}" \
+		-DCMAKE_CXX_COMPILER_TARGET="${TARGET}" \
+		-DCMAKE_C_FLAGS="--sysroot=${SYSROOT} -Os" \
+		-DCMAKE_CXX_FLAGS="--sysroot=${SYSROOT} -Os -stdlib=libc++" \
+		-DCMAKE_EXE_LINKER_FLAGS="--sysroot=${SYSROOT} -L${SYSROOT}/usr/lib -lc++abi -lunwind" \
+		-DCMAKE_SYSROOT="${SYSROOT}" \
+		-DCMAKE_CROSSCOMPILING=ON \
+		-DCMAKE_SYSTEM_NAME=Linux \
+		-DCMAKE_USE_OPENSSL=OFF \
+		-DCMAKE_USE_SYSTEM_CURL=OFF \
+		-DCMAKE_USE_SYSTEM_EXPAT=OFF \
+		-DCMAKE_USE_SYSTEM_ZLIB=OFF \
+		-DCMAKE_USE_SYSTEM_BZIP2=OFF \
+		-DCMAKE_USE_SYSTEM_LIBLZMA=OFF \
+		-DCMAKE_USE_SYSTEM_ZSTD=OFF
+	cmake --build /build-cmake --parallel $(nproc)
+	DESTDIR="/cross-rootfs" cmake --install /build-cmake
+	rm -rf /build-cmake
+EOF
+
+# Step 8: Cross-compile busybox (static) for target
+RUN --network=none <<-EOF
+	cd /busybox-${BUSYBOX_VERSION}
+	make \
+		CC="clang --target=${TARGET} --sysroot=${SYSROOT}" \
+		CROSS_COMPILE="" \
+		defconfig
+	echo "CONFIG_STATIC=y" >> .config
+	make \
+		CC="clang --target=${TARGET} --sysroot=${SYSROOT}" \
+		CROSS_COMPILE="" \
+		AR=llvm-ar \
+		RANLIB=llvm-ranlib \
+		STRIP=llvm-strip
+	mkdir -p /cross-rootfs/usr/bin /cross-rootfs/bin
+	cp busybox /cross-rootfs/usr/bin/
+	for cmd in ash install find ln mkdir cp rm cat chmod chown \
+		tar xargs env expr head tail sort wc grep tr cut diff patch \
+		basename dirname ls test readlink printf uname id mv rmdir \
+		od tee touch which nproc; do
+		ln -sf /usr/bin/busybox "/cross-rootfs/usr/bin/$cmd"
 	done
 EOF
 
-# Build and install final libgcc/libstdc++
-COPY --chmod=755 <<-'EOF' /gcc2.sh
-	set -eux
-	. /env.sh
-	mkdir -p /build-gcc-${TARGET_ARCH}
-	cd /build-gcc-${TARGET_ARCH}
-	make \
-		-j $(nproc) \
-		-C "${TARGET}/libgcc" \
-		distclean
-	make \
-		-j$(nproc) \
-		enable_shared=yes \
-		all-target-libgcc \
-		all-target-libstdc++-v3
-	make \
-		-j$(nproc) \
-		DESTDIR="${SYSROOT}" \
-		install-strip-target-libgcc \
-		install-strip-target-libstdc++-v3
-EOF
+# Step 9: Cross-compile make for target
 RUN --network=none <<-EOF
-	set -eux
-	for arch in ${TARGET_LIST}; do
-		TARGET_ARCH=$arch /gcc2.sh
-	done
+	cd /make-${MAKE_VERSION}
+	CC="clang --target=${TARGET} --sysroot=${SYSROOT}" \
+	AR=llvm-ar \
+	RANLIB=llvm-ranlib \
+	LDFLAGS="-fuse-ld=lld" \
+	./configure \
+		--build=i386-linux-musl \
+		--host=${TARGET} \
+		--prefix=/usr \
+		--disable-nls
+	make
+	make DESTDIR=/cross-rootfs install
 EOF
 
-# Build and install linux headers
-COPY --chmod=755 <<-'EOF' /linux.sh
-	set -eux
-	. /env.sh
-	cp -r /linux-${LINUX_VERSION} /linux-build-${TARGET_ARCH}
-	cd /linux-build-${TARGET_ARCH}
-	set -eux
-	make -j$(nproc) ARCH="$(echo ${TARGET_ARCH} | sed 's/aarch64/arm64/')" headers
-	find usr/include ! -name '*.h' -type f -delete
-	cp -Rv usr/include/* "${SYSROOT}/include/"
-	rm -rf "${SYSROOT}/_tmp"
-EOF
+# Step 10: Cross-compile GNU sed for target (busybox sed segfaults on large config.status)
 RUN --network=none <<-EOF
-	set -eux
-	for arch in ${TARGET_LIST}; do
-		TARGET_ARCH=$arch /linux.sh
-	done
+	tar -xf sed-${SED_VERSION}.tar.xz
+	cd /sed-${SED_VERSION}
+	CC="clang --target=${TARGET} --sysroot=${SYSROOT}" \
+	AR=llvm-ar \
+	RANLIB=llvm-ranlib \
+	LDFLAGS="-fuse-ld=lld" \
+	./configure \
+		--build=i386-linux-musl \
+		--host=${TARGET} \
+		--prefix=/usr \
+		--disable-nls \
+		--disable-acl \
+		--disable-i18n
+	make
+	make DESTDIR=/cross-rootfs install
 EOF
 
-# Finalize installation, copy prefixed binaries to /usr/bin
-COPY --chmod=755 <<-'EOF' /install.sh
-	set -eux
-	. /env.sh
-	rm -rf "${SYSROOT}/_tmp"
-	mkdir -p /rootfs/${SYSROOT}
-	cd /rootfs/${SYSROOT}
-	mv ${SYSROOT}/* .
-	mkdir -p /rootfs/usr/bin
-	for bin_path in $(find bin -name ${TARGET}-*); do
-		bin_name=$(basename "$bin_path")
-		ln -s ${SYSROOT}/bin/${bin_name} /rootfs/usr/bin/${bin_name}
-	done
-EOF
+# Step 11: Cross-compile mksh for target (busybox ash segfaults on large config.status scripts)
 RUN --network=none <<-EOF
-	set -eux
-	for arch in ${TARGET_LIST}; do
-		TARGET_ARCH=$arch /install.sh
-	done
+	tar -xzf ${MKSH_SOURCE}
+	cd /mksh-mksh-${MKSH_VERSION}
+	CC="clang --target=${TARGET} --sysroot=${SYSROOT}" \
+	CFLAGS="-Os" \
+	LDFLAGS="-static -fuse-ld=lld" \
+	TARGET_OS="Linux" \
+	sh Build.sh -r
+	mkdir -p /cross-rootfs/usr/bin
+	cp mksh /cross-rootfs/usr/bin/mksh
+	ln -sf mksh /cross-rootfs/usr/bin/sh
+	ln -sf /usr/bin/mksh /cross-rootfs/bin/sh
 EOF
 
-FROM stagex/bootstrap-stage1 AS package
-COPY --from=build /rootfs/ /
+# Step 12: Build host Python (on i386, for cross-compiling target Python)
+# Wrap gcc to fix -print-multiarch (stage1 GCC reports gnu instead of musl)
+RUN --network=none <<-EOF
+	real_gcc=$(which gcc)
+	mkdir -p /usr/local/bin
+	printf '#!/bin/sh\ncase "$*" in *-print-multiarch*) echo "i386-linux-musl"; exit 0;; esac\nexec %s "$@"\n' "$real_gcc" > /usr/local/bin/gcc
+	chmod +x /usr/local/bin/gcc
+	cd /Python-${PYTHON_VERSION}
+	PATH="/usr/local/bin:$PATH" \
+	./configure \
+		--prefix=/host-python \
+		--without-ensurepip \
+		--disable-ipv6 \
+		--disable-shared
+	make
+	make install
+	make distclean
+	rm -f /usr/local/bin/gcc
+EOF
+
+# Step 13: Cross-compile Python for target
+COPY <<-'PYEOF' /python-config.site
+ac_cv_file__dev_ptmx=no
+ac_cv_file__dev_ptc=no
+ac_cv_buggy_getaddrinfo=no
+ac_cv_have_long_long_format=yes
+ac_cv_working_tzset=yes
+PYEOF
+RUN --network=none <<-EOF
+	cd /Python-${PYTHON_VERSION}
+	CONFIG_SITE=/python-config.site \
+	CC="clang --target=${TARGET} --sysroot=${SYSROOT}" \
+	CXX="clang++ --target=${TARGET} --sysroot=${SYSROOT}" \
+	AR=llvm-ar \
+	RANLIB=llvm-ranlib \
+	READELF=llvm-readelf \
+	LDFLAGS="-fuse-ld=lld" \
+	./configure \
+		--host=${TARGET} \
+		--build=i386-linux-musl \
+		--prefix=/usr \
+		--with-build-python=/host-python/bin/python3 \
+		--without-ensurepip \
+		--disable-ipv6
+	make
+	make DESTDIR=/cross-rootfs install
+	ln -sf python3 /cross-rootfs/usr/bin/python
+EOF
+
+# Step 14: Cross-compile libffi for target (release tarball has autoconf only, config.status segfaults natively)
+RUN --network=none <<-EOF
+	tar -xzf libffi-${LIBFFI_VERSION}.tar.gz
+	cd /libffi-${LIBFFI_VERSION}
+	CC="clang --target=${TARGET} --sysroot=${SYSROOT}" \
+	CXX="clang++ --target=${TARGET} --sysroot=${SYSROOT}" \
+	AR=llvm-ar \
+	RANLIB=llvm-ranlib \
+	LDFLAGS="-fuse-ld=lld" \
+	./configure \
+		--host=${TARGET} \
+		--build=i386-linux-musl \
+		--prefix=/usr \
+		--enable-shared \
+		--disable-static
+	make
+	make DESTDIR=/cross-rootfs install
+	rm -rf /cross-rootfs/usr/lib64
+EOF
+
+# Assemble cross-rootfs with all cross-compiled outputs
+RUN --network=none <<-EOF
+	mkdir -p /cross-rootfs/usr/lib /cross-rootfs/usr/include /cross-rootfs/lib
+
+	# Copy musl
+	cp -a ${SYSROOT}/usr/lib/libc.* /cross-rootfs/usr/lib/
+	cp -a ${SYSROOT}/usr/lib/libcrypt.* /cross-rootfs/usr/lib/ 2>/dev/null || true
+	cp -a ${SYSROOT}/usr/lib/libdl.* /cross-rootfs/usr/lib/ 2>/dev/null || true
+	cp -a ${SYSROOT}/usr/lib/libm.* /cross-rootfs/usr/lib/ 2>/dev/null || true
+	cp -a ${SYSROOT}/usr/lib/libpthread.* /cross-rootfs/usr/lib/ 2>/dev/null || true
+	cp -a ${SYSROOT}/usr/lib/librt.* /cross-rootfs/usr/lib/ 2>/dev/null || true
+	cp -a ${SYSROOT}/usr/lib/libutil.* /cross-rootfs/usr/lib/ 2>/dev/null || true
+	cp -a ${SYSROOT}/usr/lib/libxnet.* /cross-rootfs/usr/lib/ 2>/dev/null || true
+	cp -a ${SYSROOT}/usr/lib/libresolv.* /cross-rootfs/usr/lib/ 2>/dev/null || true
+	cp -a ${SYSROOT}/usr/lib/ld-musl-*.so.1 /cross-rootfs/usr/lib/
+	cp -a ${SYSROOT}/usr/lib/musl-gcc.specs /cross-rootfs/usr/lib/ 2>/dev/null || true
+	cp -a ${SYSROOT}/usr/lib/crt*.o /cross-rootfs/usr/lib/ 2>/dev/null || true
+	cp -a ${SYSROOT}/usr/lib/rcrt*.o /cross-rootfs/usr/lib/ 2>/dev/null || true
+	cp -a ${SYSROOT}/usr/lib/Scrt*.o /cross-rootfs/usr/lib/ 2>/dev/null || true
+	ln -sf /usr/lib/ld-musl-${ARCH}.so.1 /cross-rootfs/lib/ld-musl-${ARCH}.so.1
+
+	# Copy musl headers
+	cp -a ${SYSROOT}/usr/include/* /cross-rootfs/usr/include/
+
+	# Copy compiler-rt builtins + triple normalization
+	mkdir -p /cross-rootfs${CLANG_RESOURCE_DIR}/lib/${TARGET}
+	cp -a ${SYSROOT}${CLANG_RESOURCE_DIR}/lib/${TARGET}/* /cross-rootfs${CLANG_RESOURCE_DIR}/lib/${TARGET}/
+	NORMALIZED="${ARCH}-unknown-linux-musl"
+	[ "$NORMALIZED" != "$TARGET" ] && \
+		ln -sfn ${TARGET} /cross-rootfs${CLANG_RESOURCE_DIR}/lib/${NORMALIZED}
+
+	# Copy libatomic
+	cp -a ${SYSROOT}/usr/lib/libatomic.* /cross-rootfs/usr/lib/ 2>/dev/null || true
+
+	# Copy LLVM runtimes (libunwind, libc++, libc++abi)
+	cp -a ${SYSROOT}/usr/lib/libunwind* /cross-rootfs/usr/lib/
+	cp -a ${SYSROOT}/usr/lib/libc++* /cross-rootfs/usr/lib/
+	cp -a ${SYSROOT}/usr/include/c++ /cross-rootfs/usr/include/ 2>/dev/null || true
+	cp -a ${SYSROOT}/usr/include/*unwind* /cross-rootfs/usr/include/ 2>/dev/null || true
+
+	# Create dynamic linker symlink
+	mkdir -p /cross-rootfs/usr/bin
+	ln -sf /usr/lib/ld-musl-${ARCH}.so.1 /cross-rootfs/usr/bin/ldd
+
+	# Install busybox symlinks (use busybox to list applets, create symlinks with correct target)
+	cd /cross-rootfs
+	for applet in $(/cross-rootfs/usr/bin/busybox --list 2>/dev/null); do
+		[ -e "usr/bin/$applet" ] || ln -sf /usr/bin/busybox "usr/bin/$applet"
+	done
+
+	# Create clang/lld symlinks
+	ln -sf /usr/bin/clang /cross-rootfs/usr/bin/cc
+	ln -sf /usr/bin/clang++ /cross-rootfs/usr/bin/c++
+	ln -sf /usr/bin/ld.lld /cross-rootfs/usr/bin/ld
+
+	# Create essential directories
+	mkdir -p /cross-rootfs/tmp
+	chmod 1777 /cross-rootfs/tmp
+EOF
+
+###############################################################################
+# Phase C: Native pivot (target arch)
+###############################################################################
+
+FROM scratch AS base
+ARG TARGETARCH
+COPY --from=build /cross-rootfs/ /
+ENV SOURCE_DATE_EPOCH=1
+COPY <<-'EOF' /etc/profile
+	set -eux
+	if [ "$TARGETARCH" = "amd64" ]; then
+		ARCH="x86_64"
+	elif [ "$TARGETARCH" = "arm64" ]; then
+		ARCH="aarch64"
+	fi
+	export ARCH
+	export MAKEFLAGS="-j$(nproc 2>/dev/null || grep -c ^processor /proc/cpuinfo 2>/dev/null || echo 1)"
+	export TARGET=${ARCH}-linux-musl
+	export CC=clang
+	export CXX=clang++
+	export AR=llvm-ar
+	export NM=llvm-nm
+	export RANLIB=llvm-ranlib
+	export LDFLAGS="-fuse-ld=lld"
+	ulimit -s unlimited 2>/dev/null || true
+	export GREP=/usr/bin/grep
+	export EGREP="/usr/bin/grep -E"
+	export FGREP="/usr/bin/grep -F"
+	export SED=/usr/bin/sed
+EOF
+SHELL ["/bin/sh","-l","-c"]
+WORKDIR /rootfs
+RUN --network=none <<-EOF
+	install -d -m0750 root
+	install -d -m0755 etc
+	install -d -m0755 usr
+	install -d -m0755 usr/bin
+	install -d -m0755 usr/lib
+	install -d -m0755 usr/include
+	install -d -m1777 tmp
+	install -d -m1777 var/tmp
+	install -d -m1777 var/spool/mail
+	install -o 1000 -g 1000 -d -m0755 home/user
+	install -m0755 /etc/profile /rootfs/etc/profile
+	find /rootfs/ -type f -exec install -Dm 755 "{}" "/{}" \;
+EOF
+
+# Native build: libucontext
+FROM base AS libucontext
+ARG TARGETARCH
+ARG LIBUCONTEXT_VERSION
+COPY --from=build /libucontext-${LIBUCONTEXT_VERSION}.tar.gz /
+WORKDIR /
+RUN --network=none <<-EOF
+	tar -xzf libucontext-${LIBUCONTEXT_VERSION}.tar.gz
+	cd /libucontext-libucontext-${LIBUCONTEXT_VERSION}
+	sed 's/\((wildcard .*)\)/(sort $\1)/g' -i Makefile
+	make -j1 ARCH=${ARCH} DESTDIR=/rootfs install
+	rm -rf /libucontext-*
+EOF
+
+# Native build: cmake (needs python, make, clang from base - python is in cross-rootfs)
+FROM scratch AS cmake
+COPY --from=base / /
+ARG TARGETARCH
+ARG CMAKE_VERSION
+COPY --from=build /cmake-${CMAKE_VERSION}.tar.gz /
+WORKDIR /
+SHELL ["/bin/sh","-l","-c"]
+RUN --network=none <<-EOF
+	tar -xzf cmake-${CMAKE_VERSION}.tar.gz
+	cd /cmake-${CMAKE_VERSION}/build
+	export CFLAGS="-fPIC"
+	export CXXFLAGS="$CFLAGS"
+	../configure \
+		--prefix=/usr \
+		-- \
+		-DCMAKE_USE_OPENSSL=OFF
+	make
+	make DESTDIR=/rootfs install
+	rm -rf /cmake-*
+EOF
+
+# Native build: xz (cmake, since GitHub archive lacks pre-generated configure)
+FROM scratch AS xz
+COPY --from=base / /
+COPY --from=cmake /rootfs/ /
+ARG TARGETARCH
+ARG XZ_VERSION
+COPY --from=build /xz-${XZ_VERSION}.tar.gz /
+WORKDIR /
+SHELL ["/bin/sh","-l","-c"]
+RUN --network=none <<-EOF
+	tar -xzf xz-${XZ_VERSION}.tar.gz
+	cd /xz-${XZ_VERSION}
+	cmake -B build \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DBUILD_SHARED_LIBS=ON \
+		-DCMAKE_BUILD_TYPE=Release
+	cmake --build build --parallel $(nproc 2>/dev/null || echo 1)
+	DESTDIR=/rootfs cmake --install build
+	rm -rf /xz-*
+EOF
+
+# Native build: libzstd (needs cmake)
+FROM scratch AS libzstd
+COPY --from=base / /
+COPY --from=cmake /rootfs/ /
+ARG TARGETARCH
+ARG LIBZSTD_VERSION
+COPY --from=build /libzstd-${LIBZSTD_VERSION}.tar.gz /
+WORKDIR /
+SHELL ["/bin/sh","-l","-c"]
+RUN --network=none <<-EOF
+	tar -xzf libzstd-${LIBZSTD_VERSION}.tar.gz
+	cd /zstd-${LIBZSTD_VERSION}
+	cmake \
+		-B build-cmake \
+		-S build/cmake \
+		-DCMAKE_INSTALL_PREFIX=/usr/ \
+		-Dbacktrace=disabled \
+		-Db_lto=false \
+		-Db_staticpic=true \
+		-Db_pie=true \
+		-Dpython.bytecompile=0 \
+		-Dwerror=false \
+		-Db_ndebug=true \
+		-Dbin_tests=false \
+		-Dbin_contrib=false \
+		-Dbin_programs=true \
+		-Dbacktrace=disabled \
+		-Dmulti_thread=enabled \
+		-Dlz4=disabled \
+		-Dlzma=disabled \
+		-Dzlib=disabled
+	cmake --build build-cmake -v --parallel $(nproc)
+	mkdir -p /rootfs/usr/lib
+	ln -s lib /rootfs/usr/lib64
+	DESTDIR=/rootfs cmake --install build-cmake
+	rm -rf /rootfs/usr/lib64
+	rm -rf /zstd-*
+EOF
+
+# Native build: zlib (needs cmake)
+FROM scratch AS zlib
+COPY --from=base / /
+COPY --from=cmake /rootfs/ /
+COPY --from=libzstd /rootfs/ /
+ARG TARGETARCH
+ARG ZLIB_VERSION
+COPY --from=build /zlib-${ZLIB_VERSION}.tar.gz /
+WORKDIR /
+SHELL ["/bin/sh","-l","-c"]
+RUN --network=none <<-EOF
+	tar -xzf zlib-${ZLIB_VERSION}.tar.gz
+	cd /zlib-${ZLIB_VERSION}
+	CFLAGS="-fPIC" \
+	LDSHARED="clang -shared -fuse-ld=lld" \
+	./configure \
+		--prefix=/usr \
+		--libdir=/usr/lib \
+		--shared
+	make -j "$(nproc)"
+	DESTDIR=/rootfs make install
+	rm -rf /zlib-*
+EOF
+
+# Native build: libunwind (GNU, cmake since GitHub archive lacks configure)
+FROM scratch AS libunwind
+COPY --from=base / /
+COPY --from=cmake /rootfs/ /
+COPY --from=xz /rootfs/ /
+COPY --from=zlib /rootfs/ /
+COPY --from=libucontext /rootfs/ /
+COPY --from=libzstd /rootfs/ /
+ARG TARGETARCH
+ARG LIBUNWIND_VERSION
+COPY --from=build /libunwind-${LIBUNWIND_VERSION}.tar.gz /
+WORKDIR /
+SHELL ["/bin/sh","-l","-c"]
+RUN --network=none <<-EOF
+	unset TARGET
+	tar -xzf libunwind-${LIBUNWIND_VERSION}.tar.gz
+	cd /libunwind-${LIBUNWIND_VERSION}
+	cmake -B build \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DBUILD_SHARED_LIBS=ON \
+		-DBUILD_TESTS=OFF
+	cmake --build build --parallel $(nproc 2>/dev/null || echo 1)
+	DESTDIR=/rootfs cmake --install build
+	rm -rf /libunwind-*
+EOF
+
+###############################################################################
+# Assembly: collect all /rootfs/ layers
+###############################################################################
+
+FROM scratch AS install
+ARG TARGETARCH
+COPY --from=base / /
+COPY --from=cmake /rootfs/ /
+COPY --from=xz /rootfs/ /
+COPY --from=libucontext /rootfs/ /
+COPY --from=libzstd /rootfs/ /
+COPY --from=zlib /rootfs/ /
+COPY --from=libunwind /rootfs/ /
+RUN set -ex && \
+	rm -rf /usr/share/info/dir /rootfs && \
+	rm -rf /lib64 && ln -sT usr/lib lib64 && \
+	rm -rf /usr/lib64 && ln -sT lib usr/lib64 && \
+	rm -rf /lib && ln -sT usr/lib lib && \
+	rm -rf /bin && ln -sT usr/bin bin && \
+	rm -rf /sbin && ln -sT usr/sbin sbin && \
+	mkdir -p /var && rm -rf /var/run && ln -sT ../run var/run && \
+	rm -rf /var/lock && ln -sT ../run/lock var/lock
+
+FROM scratch AS package
+COPY --from=install . /

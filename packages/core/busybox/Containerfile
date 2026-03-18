@@ -1,4 +1,4 @@
-FROM stagex/bootstrap-stage3 AS build
+FROM stagex/bootstrap-stage2 AS build
 ARG VERSION
 ARG TARGETARCH
 ADD fetch/busybox-${VERSION}.tar.bz2 .

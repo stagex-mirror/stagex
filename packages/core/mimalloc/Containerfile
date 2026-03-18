@@ -1,4 +1,4 @@
-FROM stagex/bootstrap-stage3 AS build
+FROM stagex/bootstrap-stage2 AS build
 ARG VERSION
 ADD fetch/mimalloc-${VERSION}.tar.gz .
 WORKDIR /mimalloc-${VERSION}

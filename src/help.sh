@@ -54,7 +54,7 @@ _help_variables() {
 # Function to display examples
 _help_examples() {
     echo "Example(s):"
-    echo "  make bootstrap-stage3"
+    echo "  make bootstrap-stage2"
 }
 
 # Call main function
