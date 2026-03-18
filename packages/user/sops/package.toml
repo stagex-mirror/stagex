@@ -1,12 +1,12 @@
 [package]
 name = "sops"
-version = "3.11.0"
+version = "3.12.2"
 description = "Simple and flexible tool for managing secrets"
 website = "https://getsops.io"
 license = "MPL-2.0"
 
 [sources.sops]
-hash = "0182659099cd6a2fbcb41b507f8cd363667a0d6eb442098f6cebdf4ca8ecd2ac"
+hash = "24b1f23a677535d1e06b63f8b4f7793d4f325b86c5454724fac90f5e73903e26"
 format = "tar.gz"
 file = "sops-{version}.{format}"
 mirrors = [ "https://github.com/getsops/sops/archive/refs/tags/v{version}.{format}",]
