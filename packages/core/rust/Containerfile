@@ -332,6 +332,16 @@ RUN --network=none <<-EOF
 
 	export CCC_OVERRIDE_OPTIONS="$CCC_OVERRIDE_OPTIONS +-g0"
 
+	# Building the standard library is cheap (only taking a few minutes), but has been
+	# observed to sporadically fail. Since it's such a cheap operation, to limit requiring
+	# human intervention, this will re-attempt it a limited amount of times.
+	# TODO: Identify why this sometimes fails and fix the underlying root cause
+	STD_ATTEMPTS=5
+	while [ $STD_ATTEMPTS -ne 0 ]; do
+		make -C run_rustc output/prefix-s/lib/rustlib/$ARCH-unknown-linux-musl/lib/libstd.rlib || true
+		STD_ATTEMPTS=$(( $STD_ATTEMPTS - 1 ))
+	done
+
 	make -C run_rustc
 
 	# Move the sysroot `mrustc` created to the format expected by the rest of this process
