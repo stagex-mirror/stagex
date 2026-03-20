@@ -1,12 +1,15 @@
 [package]
 name = "musl"
-version = "1.2.5"
+version = "5122f9f3c99fee366167c5de98b31546312921ab"
 description = "musl is an implementation of the C standard library"
 website = "http://musl.libc.org"
 license = "MIT"
 
 [sources.musl]
-hash = "a9a118bbe84d8764da0ea0d28b3ab3fae8477fc7e4085d90102b8596fc7c75e4"
+hash = "ad3278d03b8355938bebcca39085d02214ec9af8f30d598d3add6d2f2811c25b"
 format = "tar.gz"
 file = "musl-{version}.{format}"
-mirrors = [ "http://musl.libc.org/releases/{file}",]
+# Temporarily pulling from cgit to avoid having to patch manually
+# This can be reset once 1.2.7 is released
+# mirrors = ["http://musl.libc.org/releases/{file}"]
+mirrors = ["https://git.musl-libc.org/cgit/musl/snapshot/{file}"]

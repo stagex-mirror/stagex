@@ -13,8 +13,6 @@ RUN --network=none <<-EOF
 	export CFLAGS="-Wformat -Werror=format-security -fstack-protector-strong -fstack-clash-protection"
 	export LDFLAGS="-Wl,--as-needed,-O1,--sort-common -Wl,-soname,libc.musl-${ARCH}.so.1"
 
-	patch -p1 < CVE-2025-26519.patch
-
 	# Double the amount of TLS keys from 128 (default) to 256 (default in `glibc`)
 	#
 	# When `mrustc` builds Rust 1.90.0, the `mrustc`-built `rustc` panics when ran due to running out
