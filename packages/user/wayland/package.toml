@@ -1,13 +1,12 @@
 [package]
 name = "wayland"
-version = "1.24.0"
+version = "1.25.0"
 description = "A computer display server protocol"
 license = "MIT"
 website = "https://wayland.freedesktop.org"
 
 [sources.wayland]
-hash = "82eab21b355ba2b0b5c2b7e6bfa7335ef9eaf52e874d4e4884e5ba18423b0d3b"
-
+hash = "cb5a85adac2d0009214949bce3b87088ccec48c58109300bb6273182a1201198"
 format = "tar.gz"
 file = "wayland-{version}.{format}"
-mirrors = [ "https://gitlab.freedesktop.org/wayland/wayland/-/archive/{version}.{format}", ]
+mirrors = [ "https://gitlab.freedesktop.org/wayland/wayland/-/archive/{version}.{format}",]
