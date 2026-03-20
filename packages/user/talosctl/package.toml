@@ -1,13 +1,13 @@
 [package]
 name = "talosctl"
-version = "1.12.5"
+version = "1.12.6"
 description = "CLI for Talos - A modern OS for Kubernetes"
 website = "https://www.talos.dev/"
 license = "MPL-2.0"
 subpackages = [ "talosctl", "talosctl-completions",]
 
 [sources.talosctl]
-hash = "a6eca6410d5adaea158d4fca5d0bfd9a0f2c854e49517fd3c816ebafe4e846a4"
+hash = "bfae01fe1db88cadde1502c552f5bae673524f4dc3512fd99e001c85a86b4515"
 format = "tar.gz"
 file = "talosctl-{version}.{format}"
 mirrors = [ "https://github.com/siderolabs/talos/archive/refs/tags/v{version}.{format}",]
