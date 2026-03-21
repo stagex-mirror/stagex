@@ -1,12 +1,12 @@
 [package]
 name = "perl-yaml-syck"
-version = "1.36"
+version = "1.39"
 description = "Fast lightweight YAML loader and dumper for Perl"
 license = "MIT"
 website = "https://metacpan.org/dist/YAML-Syck"
 
 [sources.perl-yaml-syck]
-hash = "4dcd9d9b3b0ce3c65a2ff2b9b4c6fff8b649fdf243bfd7e1889543becdb91a52"
+hash = "6b0227835d0300b7fe7f77a4ce42eba947384dc5f48aeb00a87b389fd763773a"
 format = "tar.gz"
 file = "perl-yaml-syck-{version}.{format}"
 mirrors = [ "https://cpan.metacpan.org/authors/id/T/TO/TODDR/YAML-Syck-{version}.{format}",]
