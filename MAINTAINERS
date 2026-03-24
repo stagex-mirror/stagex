@@ -2,7 +2,7 @@
 
 [people.lancevick]
 name = "Lance Vick"
-location = "Silicon Valley, USA"
+location = "US-CA"
 email = "stagex@lance.vick.house"
 matrix = ["@lrvick:matrix.org", "@lance:distrust.co"]
 fediverse = "@lrvick@mastodon.social"
@@ -11,7 +11,7 @@ website = "https://lance.dev"
 
 [people.antonlivaja]
 name = "Anton Livaja"
-location = "Toronto, Canada"
+location = "CA-ON"
 email = "stagex@livaja.me"
 matrix = ["@antonleviathan:matrix.org", "@anton:distrust.co"]
 fediverse = "@anton@mastodon.online"
@@ -20,7 +20,7 @@ website = "https://antonlivaja.com/"
 
 [people.ryanheywood]
 name = "Ryan Heywood"
-location = "Florida, USA"
+location = "US-FL"
 email = "me@ryansquared.pub"
 matrix = ["@ryansquared:matrix.org", "@ryan:distrust.co"]
 fediverse = "@ryan@tilde.zone"
@@ -29,7 +29,7 @@ website = "https://ryansquared.pub"
 
 [people.dannygrove]
 name = "Danny Grove"
-location = "California, USA"
+location = "US-CA"
 email = "stagex@dannygrove.com"
 matrix = ["@dgrove:matrix.org"]
 keyoxide = "https://keyoxide.org/C92FE5A3FBD58DD3EC5AA26BB10116B8193F2DBD"
@@ -37,7 +37,7 @@ website = "https://dannygrove.com"
 
 [people.conyel]
 name = "Konstantinos Geles"
-location = "Lille, France"
+location = "FR-HDF"
 email = "bioinformaticiannextdoor@gmail.com"
 matrix = ["@fire_element:matrix.org"]
 fediverse = "@bioinformatician_next_door@kafeneio.social"
@@ -46,7 +46,7 @@ website = "https://silvertides.net"
 
 [people.logicwax]
 name = "Matthew Brooks"
-location = "San Francisco, USA"
+location = "US-CA"
 email = "*@logicwax.com"
 matrix = ["@logicwax:matrix.org"]
 website = "https://logicwax.com"
@@ -62,7 +62,7 @@ keyoxide = "https://keyoxide.org/aspe:keyoxide.org:WNHRCLJSCUR4UWCJDOSZAPFPDM"
 
 [people.zoe]
 name = "Zoë Finja Emilia Kron"
-location = "North Rhine-Westphalia, Germany"
+location = "DE-NW"
 matrix = ["@zoefinja:tchncs.de"]
 email = ["z.kron@lugges.eu", "zoe.kron@posteo.de"]
 website = "https://kron.fi"
