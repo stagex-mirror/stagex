@@ -1,12 +1,12 @@
 [package]
 name = "re2c"
-version = "3.1"
+version = "4.5"
 description = "Lexer generator for C, C++, and Go"
 license = "Unlicense"
 website = "https://re2c.org"
 
 [sources.re2c]
-hash = "087c44de0400fb15caafde09fd72edc7381e688a35ef505ee65e0e3d2fac688b"
+hash = "18aad06a4877bf15caf5411258e34cd4a6961c6f5b9ed9d9caa45a34d3abb947"
 format = "tar.gz"
 file = "re2c-{version}.{format}"
 mirrors = [ "https://github.com/skvadrik/re2c/archive/refs/tags/{version}.{format}",]
