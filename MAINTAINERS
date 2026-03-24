@@ -141,7 +141,7 @@ interaction = true
 
 [machines.lancevick.local1]
 owner = "Lance Vick"
-location = "Silicon Valley, USA"
+location = "US-CA"
 type = "metal"
 arch = "x86_64"
 brand = "AMD"
@@ -153,7 +153,7 @@ runtime = "Docker"
 
 [machines.antonlivaja.local1]
 owner = "Anton Livaja"
-location = "Toronto, Canada"
+location = "CA-ON"
 type = "metal"
 arch = "x86_64"
 brand = "AMD"
@@ -165,7 +165,7 @@ runtime = "Docker"
 
 [machines.lancevick.remote1]
 owner = "Hetzner Online GmbH"
-location = "Finland, Europe"
+location = "FI-18"
 type = "metal"
 arch = "x86_64"
 brand = "AMD"
@@ -177,7 +177,7 @@ runtime = "Docker"
 
 [machines.antonlivaja.remote1]
 owner = "Hetzner Online GmbH"
-location = "Hillsboro, OR, USA"
+location = "US-OR"
 type = "vm"
 arch = "x86_64"
 brand = "AMD"
@@ -189,7 +189,7 @@ runtime = "Docker"
 
 [machines.ryanheywood.remote]
 owner = "Hetzner Online GmbH"
-location = "Falkstein, Germany"
+location = "DE-BY"
 type = "metal"
 arch = "x86_64"
 brand = "AMD"
@@ -201,7 +201,7 @@ runtime = "Docker"
 
 [machines.dannygrove.local1]
 owner = "Danny Grove"
-location = "California, USA"
+location = "US-CA"
 type = "metal"
 arch = "x86_64"
 brand = "Intel"
@@ -213,7 +213,7 @@ runtime = "Docker"
 
 [machines.dannygrove.local2]
 owner = "Danny Grove"
-location = "California, USA"
+location = "US-CA"
 type = "metal"
 arch = "x86_64"
 brand = "AMD"
@@ -225,7 +225,7 @@ runtime = "Docker"
 
 [machines.conyel.remote1]
 owner = "Konstantinos Geles"
-location = "EMEA"
+location = "FR-HDF"
 type = "vm"
 arch = "x86_64"
 brand = "AMD"
@@ -238,6 +238,7 @@ runtime = "Docker"
 [machines.panekj.main]
 type = "metal"
 arch = "x86_64"
+location = "PL-24"
 brand = "AuthenticAMD"
 model = "1"
 ghz = 2.2
@@ -247,7 +248,7 @@ runtime = "Linux"
 
 [machines.zoe.main]
 owner = "Zoë Finja Emilia Kron"
-location = "Europe"
+location = "DE-NW"
 type = "metal"
 arch = "x86_64"
 brand = "AMD"
