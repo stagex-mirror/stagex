@@ -11,7 +11,7 @@ website = "https://lance.dev"
 
 [people.antonlivaja]
 name = "Anton Livaja"
-location = "CA-ON"
+location = "KY"
 email = "stagex@livaja.me"
 matrix = ["@antonleviathan:matrix.org", "@anton:distrust.co"]
 fediverse = "@anton@mastodon.online"
@@ -153,7 +153,7 @@ runtime = "Docker"
 
 [machines.antonlivaja.local1]
 owner = "Anton Livaja"
-location = "CA-ON"
+location = "KY"
 type = "metal"
 arch = "x86_64"
 brand = "AMD"
