@@ -131,7 +131,7 @@ backup = false
 interaction = true
 
 [keys.zoe.personal]
-id = "677C7924397810FDD3F922C33FC71170CB9E8963"
+id = "21684C20478F95A277FA54A000B81DC07B71A212"
 algorithm = "ED25519"
 offline-ca = true
 backup = false
