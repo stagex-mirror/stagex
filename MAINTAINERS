@@ -225,7 +225,7 @@ runtime = "Docker"
 
 [machines.conyel.remote1]
 owner = "Konstantinos Geles"
-location = "FR-HDF"
+location = "PT"
 type = "vm"
 arch = "x86_64"
 brand = "AMD"
