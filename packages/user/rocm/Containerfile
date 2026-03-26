@@ -1,0 +1,23 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+ARG VERSION
+COPY --from=stagex/user-ninja . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-bison . /
+COPY --from=stagex/core-flex . /
+COPY --from=stagex/core-m4 . /
+COPY --from=stagex/core-elfutils . /
+COPY --from=stagex/core-numactl . /
+COPY --from=stagex/core-util-linux . /
+COPY --from=stagex/core-libffi . /
+COPY --from=stagex/core-ncurses . /
+COPY --from=stagex/core-readline . /
+ADD fetch/therock-${VERSION}.tar.gz .
+WORKDIR /TheRock-${VERSION}
+RUN --network=none <<-EOF
+	python3 ./build_tools/fetch_sources.py
+	cmake -B build -GNinja -DCMAKE_BUILD_TYPE=None -DCMAKE_INSTALL_PREFIX=/usr -DTHEROCK_AMDGPU_FAMILIES=gfx110X-all -DTHEROCK_ENABLE_ALL=OFF -DTHEROCK_ENABLE_CORE=ON -DTHEROCK_ENABLE_COMPILER=ON -DTHEROCK_ENABLE_HIP_RUNTIME=ON -DTHEROCK_ENABLE_CORE_RUNTIME=ON .
+	cmake --build build
+	DESTDIR=/rootfs cmake --install build
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

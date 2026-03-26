@@ -1,0 +1,34 @@
+[package]
+name = "rocm"
+version = "7.11"
+description = "ROCm is an open-source software platform for GPU computation"
+license = "MIT"
+website = "https://rocm.docs.amd.com"
+
+[sources.therock]
+hash = "c976ba2f29de9300b7b95ad9d761ac211ffecf4452690b0ba3576c9981c3bf7b"
+format = "tar.gz"
+file = "therock-{version}.{format}"
+mirrors = [ "https://github.com/ROCm/TheRock/archive/refs/tags/therock-{version}.tar.gz", ]
+
+[dependencies]
+build = [
+    "ninja",
+    "cmake",
+    "python",
+    "perl",
+    "bison",
+    "flex",
+    "m4",
+]
+runtime = [
+    "llvm",
+    "clang",
+    "zlib",
+    "elfutils",
+    "numactl",
+    "libffi",
+    "ncurses",
+    "readline",
+    "util-linux",
+]
