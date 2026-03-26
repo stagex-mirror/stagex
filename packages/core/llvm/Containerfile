@@ -1,23 +1,12 @@
 FROM scratch AS build
 COPY --from=stagex/bootstrap-stage3 . /
+COPY --from=stagex/core-profile . /
 
 ARG VERSION
 ARG CPORTS_VERSION
 ARG TARGETARCH
-COPY <<-'EOF' /etc/profile
-	set -eux
-	[[ "$TARGETARCH" == "amd64" ]] \
-		&& ARCH="x86_64" \
-		&& LLVM_TARGET_ARCH="X86"
-	[[ "$TARGETARCH" == "arm64" ]] \
-		&& ARCH="aarch64" \
-		&& LLVM_TARGET_ARCH="AArch64"
-	export ARCH
-	export MAKEFLAGS="-j$(nproc)"
-	export BUILD=${ARCH}-unknown-linux-musl
-	export TARGET=${ARCH}-unknown-linux-musl
-EOF
 SHELL ["/bin/sh","-l","-c"]
+ENV LLVM_BOOTSTRAP=true
 
 ADD fetch/llvm-${VERSION}.tar.xz .
 ADD fetch/cports-${CPORTS_VERSION}.tar.gz .
@@ -145,7 +134,7 @@ RUN --network=none <<-EOF
 		-DLLVM_ENABLE_ZSTD=OFF \
 		-DCLANG_ENABLE_STATIC_ANALYZER=OFF \
 		$CMAKE_ARGS
-	cmake --build build -v --parallel $(nproc)
+	cmake --build build -v --parallel ${JOBS}
 
 	# Remove all object files, static archives from the bootstrap to ensure they aren't further used
 	for object_file in $(find /usr/lib -name "*.o"); do

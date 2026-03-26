@@ -1,5 +1,6 @@
 FROM scratch AS build
 ARG VERSION
+COPY --from=stagex/core-profile . /
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-mold . /
@@ -55,7 +56,7 @@ RUN --network=none <<-EOF
 		--with-intl=system-icu \
 		--with-icu-default-data-dir=$(icu-config --icudatadir) \
 		--openssl-use-def-ca-store
-	make BUILDTYPE=Release -j $(nproc)
+	make BUILDTYPE=Release
 	make DESTDIR=/rootfs install
 EOF
 FROM stagex/core-filesystem AS package

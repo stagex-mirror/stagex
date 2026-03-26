@@ -3,31 +3,44 @@ COPY <<-'EOF' /etc/profile
 	set -eux
 	TARGETARCH=${TARGETARCH:-}
 	ARCH=${ARCH:-}
-	[[ "$TARGETARCH" == "amd64" ]] && export ARCH="x86_64"
-	[[ "$TARGETARCH" == "arm64" ]] && export ARCH="aarch64"
-	[[ -n "$ARCH" ]] && TARGET=${ARCH}-unknown-linux-musl
+	[[ "$TARGETARCH" == "amd64" ]] \
+		&& ARCH="x86_64" \
+		&& LLVM_TARGET_ARCH="X86"
+	[[ "$TARGETARCH" == "arm64" ]] \
+		&& ARCH="aarch64" \
+		&& LLVM_TARGET_ARCH="AArch64"
+	export ARCH
 	export MAKEFLAGS="-j$(nproc)"
-	export CC=clang
-	export CXX=clang++
-	export LD=ld.mold
-	export CPP=clang-cpp
-	export AS=llvm-as
-	export AR=llvm-ar
-	export NM=llvm-nm
-	export DWP=llvm-dwp
-	export RANLIB=llvm-ranlib
-	export READELF=llvm-readelf
-	export STRIP=llvm-strip
-	export DEPMOD=llvm-depmod
-	export OBJCOPY=llvm-objcopy
-	export OBJDUMP=llvm-objdump
-	export SIZE=llvm-size
-	export LIBCC="/usr/lib/libclang_rt.builtins.a"
+	export BUILD=${ARCH}-unknown-linux-musl
+	export TARGET=${ARCH}-unknown-linux-musl
+	MEM_GB=$(free -g | awk '/^Mem:/ {print $2}')
+	JOBS=$((MEM_GB / 2))
+	[ $JOBS -gt $(nproc) ] && JOBS=$(nproc)
+	export MAKEFLAGS="-j${JOBS}"
+	export JOBS
+	if [[ -f /usr/bin/clang && ! -v LLVM_BOOTSTRAP ]]; then
+		export CC=clang
+		export CXX=clang++
+		export LD=ld.mold
+		export CPP=clang-cpp
+		export AS=llvm-as
+		export AR=llvm-ar
+		export NM=llvm-nm
+		export DWP=llvm-dwp
+		export RANLIB=llvm-ranlib
+		export READELF=llvm-readelf
+		export STRIP=llvm-strip
+		export DEPMOD=llvm-depmod
+		export OBJCOPY=llvm-objcopy
+		export OBJDUMP=llvm-objdump
+		export SIZE=llvm-size
+		export LIBCC="/usr/lib/libclang_rt.builtins.a"
+		export LDFLAGS="--ld-path=/usr/bin/${LD}"
+	fi
 	# If `ninja` is installed and no default CMake generator is set, use `ninja`
 	# `ninja` is _significantly_ faster than `make` for some workloads
 	if [ -f /usr/bin/ninja ]; then
 		export CMAKE_GENERATOR=${CMAKE_GENERATOR:-ninja}
 	fi
-	export LDFLAGS="--ld-path=/usr/bin/${LD}"
 EOF
 SHELL ["/bin/sh","-l","-c"]
