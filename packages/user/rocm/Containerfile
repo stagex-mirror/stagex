@@ -67,6 +67,19 @@ GITEOF
     tar -xzf ./therock.tar.gz -C / TheRock-main/
     
     # Extract submodules to /tmp first, then move to expected paths
+    # Remove existing submodule directories from TheRock first
+    rm -rf /TheRock-main/base/half
+    rm -rf /TheRock-main/compiler/hipify
+    rm -rf /TheRock-main/compiler/amd-llvm/llvm
+    rm -rf /TheRock-main/rocm-libraries
+    rm -rf /TheRock-main/rocm-systems
+    rm -rf /TheRock-main/compiler/spirv-llvm-translator
+    rm -rf /TheRock-main/third-party/sysdeps/linux/amd-mesa/mesa-fork
+    rm -rf /TheRock-main/iree-libs/iree
+    rm -rf /TheRock-main/iree-libs/fusilli
+    rm -rf /TheRock-main/math-libs/libhipcxx
+    rm -rf /TheRock-main/debug-tools/rocgdb/source
+    
     # half -> base/half
     tar -xzf ./half.tar.gz -C /tmp/
     mv /tmp/half-rocm /TheRock-main/base/half
