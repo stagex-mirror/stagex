@@ -1,0 +1,18 @@
+[package]
+name = "flatbuffers"
+version = "24.3.25"
+description = "Memory efficient serialization library"
+license = "Apache-2.0"
+website = "https://google.github.io/flatbuffers/"
+
+[sources.source]
+hash = "4157c5cacdb59737c5d627e47ac26b140e9ee28b1102f812b36068aab728c1ed"
+format = "tar.gz"
+file = "v{version}.tar.gz"
+mirrors = [ "https://github.com/google/flatbuffers/archive/refs/tags/v{version}.tar.gz", ]
+
+[dependencies]
+build = [
+    "ninja",
+    "cmake",
+]

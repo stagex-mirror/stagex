@@ -1,0 +1,18 @@
+[package]
+name = "googletest"
+version = "1.14.0"
+description = "Google Testing and Mocking Framework"
+license = "BSD-3-Clause"
+website = "https://github.com/google/googletest"
+
+[sources.source]
+hash = "8ad598c73ad796e0d8280b082cebd82a630d73e73cd3c70057938a6501bba5d7"
+format = "tar.gz"
+file = "v{version}.tar.gz"
+mirrors = [ "https://github.com/google/googletest/archive/refs/tags/v{version}.tar.gz", ]
+
+[dependencies]
+build = [
+    "ninja",
+    "cmake",
+]

@@ -1,0 +1,18 @@
+[package]
+name = "simde"
+version = "0.8.2"
+description = "SIMD intrinsics portability layer"
+license = "BSD-3-Clause"
+website = "https://github.com/simd-everywhere/simde"
+
+[sources.source]
+hash = "ed2a3268658f2f2a9b5367628a85ccd4cf9516460ed8604eed369653d49b25fb"
+format = "tar.gz"
+file = "v0.8.2.tar.gz"
+mirrors = [ "https://github.com/simd-everywhere/simde/archive/refs/tags/v0.8.2.tar.gz", ]
+
+[dependencies]
+build = [
+    "ninja",
+    "meson",
+]

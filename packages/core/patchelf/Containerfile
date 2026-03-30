@@ -1,0 +1,14 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-make . /
+ADD fetch/patchelf-${VERSION}.tar.gz .
+WORKDIR /patchelf-${VERSION}
+RUN --network=none <<-EOF
+    set -e
+    ./configure --prefix=/usr --disable-dependency-tracking
+    /usr/bin/make -j "$(nproc)"
+    DESTDIR=/rootfs /usr/bin/make install
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

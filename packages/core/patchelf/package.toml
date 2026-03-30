@@ -1,0 +1,19 @@
+[package]
+name = "patchelf"
+version = "0.15.5"
+description = "Modify ELF binaries"
+license = "GPL-3.0"
+website = "https://github.com/NixOS/patchelf"
+
+[sources.source]
+hash = "b94cd3ce2361fbbbf7bb055a9d90d1a33878a594191a7c4a60370b7c320fde08"
+format = "tar.gz"
+file = "patchelf-{version}.tar.gz"
+mirrors = [ "https://github.com/NixOS/patchelf/releases/download/{version}/patchelf-{version}.tar.gz", ]
+
+[dependencies]
+build = [
+    "autoconf",
+    "automake",
+    "libtool",
+]

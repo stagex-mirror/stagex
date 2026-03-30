@@ -1,0 +1,14 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+ARG VERSION
+COPY --from=stagex/user-ninja . /
+ADD fetch/v0.2.21.tar.gz .
+WORKDIR /FunctionalPlus-0.2.21-p0
+RUN --network=none <<-EOF
+    set -e
+    mkdir -p build
+    cmake -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DFP_BUILD_TESTS=OFF -DFP_BUILD_BENCHMARKS=OFF .
+    cmake --build build
+    DESTDIR=/rootfs cmake --install build
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

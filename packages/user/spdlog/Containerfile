@@ -1,0 +1,14 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+ARG VERSION
+COPY --from=stagex/user-ninja . /
+ADD fetch/v1.13.0.tar.gz .
+WORKDIR /spdlog-1.13.0
+RUN --network=none <<-EOF
+    set -e
+    mkdir -p build
+    cmake -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DSPDLOG_BUILD_TESTS=OFF -DSPDLOG_BUILD_EXAMPLE=OFF .
+    cmake --build build
+    DESTDIR=/rootfs cmake --install build
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

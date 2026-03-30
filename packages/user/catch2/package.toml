@@ -1,0 +1,18 @@
+[package]
+name = "catch2"
+version = "3.5.3"
+description = "Modern C++ Testing Framework"
+license = "BSL-1.0"
+website = "https://github.com/catchorg/Catch2"
+
+[sources.source]
+hash = "8d723b0535c94860ef8cf6231580fa47d67a3416757ecb10639e40d748ab6c71"
+format = "tar.gz"
+file = "v{version}.tar.gz"
+mirrors = [ "https://github.com/catchorg/Catch2/archive/refs/tags/v{version}.tar.gz", ]
+
+[dependencies]
+build = [
+    "ninja",
+    "cmake",
+]

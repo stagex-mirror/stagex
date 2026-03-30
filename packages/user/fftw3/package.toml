@@ -1,0 +1,18 @@
+[package]
+name = "fftw3"
+version = "3.3.10"
+description = "Fast Fourier Transform library"
+license = "GPL-2.0"
+website = "https://www.fftw.org/"
+
+[sources.source]
+hash = "56c932549852cddcfafdab3820b0200c7742675be92179e59e6215b340e26467"
+format = "tar.gz"
+file = "fftw-{version}.tar.gz"
+mirrors = [ "https://www.fftw.org/pub/fftw/fftw-{version}.tar.gz", ]
+
+[dependencies]
+build = [
+    "make",
+    "cmake",
+]

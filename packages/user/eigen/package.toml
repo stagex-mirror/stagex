@@ -1,0 +1,18 @@
+[package]
+name = "eigen"
+version = "3.4.0"
+description = "C++ template library for linear algebra"
+license = "MPL-2.0"
+website = "https://eigen.tuxfamily.org/"
+
+[sources.source]
+hash = "8586084f71f9bde545ee7fa6d00288b264a2b7ac3607b974e54d13e7162c1c72"
+format = "tar.gz"
+file = "eigen-{version}.tar.gz"
+mirrors = [ "https://gitlab.com/libeigen/eigen/-/archive/{version}/eigen-{version}.tar.gz", ]
+
+[dependencies]
+build = [
+    "ninja",
+    "cmake",
+]

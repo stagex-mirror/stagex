@@ -1,0 +1,18 @@
+[package]
+name = "yaml-cpp"
+version = "0.8.0"
+description = "YAML parser and emitter for C++"
+license = "MIT"
+website = "https://github.com/jbeder/yaml-cpp"
+
+[sources.source]
+hash = "fbe74bbdcee21d656715688706da3c8becfd946d92cd44705cc6098bb23b3a16"
+format = "tar.gz"
+file = "yaml-cpp-0.8.0.tar.gz"
+mirrors = [ "https://github.com/jbeder/yaml-cpp/archive/refs/tags/0.8.0.tar.gz", ]
+
+[dependencies]
+build = [
+    "ninja",
+    "cmake",
+]

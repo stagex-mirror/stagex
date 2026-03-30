@@ -1,0 +1,18 @@
+[package]
+name = "msgpack-cxx"
+version = "6.1.0"
+description = "MessagePack serialization library"
+license = "BSL-1.0"
+website = "https://github.com/msgpack/msgpack-c"
+
+[sources.source]
+hash = "5e63e4d9b12ab528fccf197f7e6908031039b1fc89cd8da0e97fbcbf5a6c6d3a"
+format = "tar.gz"
+file = "msgpack-cxx-{version}.tar.gz"
+mirrors = [ "https://github.com/msgpack/msgpack-c/archive/refs/tags/cpp-{version}.tar.gz", ]
+
+[dependencies]
+build = [
+    "ninja",
+    "cmake",
+]

@@ -1,0 +1,14 @@
+FROM stagex/pallet-gcc-cmake-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-make . /
+ADD fetch/fftw-3.3.10.tar.gz .
+WORKDIR /fftw-3.3.10
+RUN --network=none <<-EOF
+    set -e
+    ./configure --prefix=/usr --enable-shared --enable-threads --disable-fortran --disable-dependency-tracking
+    make -j "$(nproc)"
+    DESTDIR=/rootfs make install
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

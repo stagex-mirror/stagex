@@ -1,0 +1,19 @@
+[package]
+name = "grpc"
+version = "1.67.1"
+description = "High performance gRPC RPC framework"
+license = "Apache-2.0"
+website = "https://grpc.io/"
+
+[sources.source]
+hash = "d74f8e99a433982a12d7899f6773e285c9824e1d9a173ea1d1fb26c9bd089299"
+format = "tar.gz"
+file = "v{version}.tar.gz"
+mirrors = [ "https://github.com/grpc/grpc/archive/refs/tags/v{version}.tar.gz", ]
+
+[dependencies]
+build = [
+    "ninja",
+    "cmake",
+    "protobuf",
+]

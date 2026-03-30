@@ -1,0 +1,18 @@
+[package]
+name = "functionalplus"
+version = "0.2.21"
+description = "Functional Programming Library for C++"
+license = "MIT"
+website = "https://github.com/RegiusQuant/functionalplus"
+
+[sources.source]
+hash = "d8ce124ac4be887debff825d6925d8505311305c8a968586285ae44516763a71"
+format = "tar.gz"
+file = "v0.2.21.tar.gz"
+mirrors = [ "https://github.com/Dobiasd/FunctionalPlus/archive/refs/tags/v0.2.21-p0.tar.gz", ]
+
+[dependencies]
+build = [
+    "ninja",
+    "cmake",
+]

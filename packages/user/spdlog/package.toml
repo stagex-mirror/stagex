@@ -1,0 +1,18 @@
+[package]
+name = "spdlog"
+version = "1.13.0"
+description = "Very fast C++ logging library"
+license = "MIT"
+website = "https://github.com/gabime/spdlog"
+
+[sources.source]
+hash = "534f2ee1a4dcbeb22249856edfb2be76a1cf4f708a20b0ac2ed090ee24cfdbc9"
+format = "tar.gz"
+file = "v{version}.tar.gz"
+mirrors = [ "https://github.com/gabime/spdlog/archive/refs/tags/v{version}.tar.gz", ]
+
+[dependencies]
+build = [
+    "ninja",
+    "cmake",
+]
