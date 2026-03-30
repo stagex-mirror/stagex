@@ -54,21 +54,13 @@ GITEOF
     chmod +x /tmp/fake-bin/git
     export PATH="/tmp/fake-bin:$PATH"
     
-    # Install rocm-cmake first
-    mkdir -p /rootfs/usr
-    cmake -B rocm-cmake-build -GNinja \
-        -DCMAKE_BUILD_TYPE=None \
-        -DCMAKE_INSTALL_PREFIX=/usr \
-        ./rocm-cmake-master
-    cmake --build rocm-cmake-build
-    DESTDIR=/rootfs cmake --install rocm-cmake-build
-    
     # Extract main TheRock source
     tar -xzf ./therock.tar.gz -C / TheRock-main/
     
     # Extract submodules to /tmp first, then move to expected paths
     # Remove existing submodule directories from TheRock first
     rm -rf /TheRock-main/base/half
+    rm -rf /TheRock-main/base/rocm-cmake
     rm -rf /TheRock-main/compiler/hipify
     rm -rf /TheRock-main/compiler/amd-llvm/llvm
     rm -rf /TheRock-main/rocm-libraries
@@ -79,6 +71,10 @@ GITEOF
     rm -rf /TheRock-main/iree-libs/fusilli
     rm -rf /TheRock-main/math-libs/libhipcxx
     rm -rf /TheRock-main/debug-tools/rocgdb/source
+    
+    # rocm-cmake -> base/rocm-cmake
+    tar -xzf ./rocm-cmake.tar.gz -C /tmp/
+    mv /tmp/rocm-cmake-master /TheRock-main/base/rocm-cmake
     
     # half -> base/half
     tar -xzf ./half.tar.gz -C /tmp/
