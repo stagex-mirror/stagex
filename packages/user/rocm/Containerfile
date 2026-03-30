@@ -2,7 +2,6 @@ FROM stagex/pallet-gcc-cmake-busybox AS build
 ARG VERSION
 COPY --from=stagex/user-ninja . /
 COPY --from=stagex/core-make . /
-COPY --from=stagex/core-git . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-patchelf . /
 COPY --from=stagex/core-python . /
@@ -112,10 +111,6 @@ RUN --network=none <<-EOF
     tar -xzf ./rocgdb.tar.gz -C /tmp/
     mv /tmp/ROCgdb-amd-staging-rocgdb-16 /TheRock-main/debug-tools/rocgdb/source
 
-    # Initialize nested submodules using git
-    cd /TheRock-main/rocm-systems
-    git submodule init
-    git submodule update --recursive
     
     
     # Build TheRock - will build all ROCm components
