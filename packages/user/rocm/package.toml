@@ -1,34 +1,112 @@
 [package]
 name = "rocm"
 version = "7.11"
-description = "ROCm is an open-source software platform for GPU computation"
+description = "ROCm build system with TheRock"
 license = "MIT"
 website = "https://rocm.docs.amd.com"
 
-[sources.therock]
-hash = "c976ba2f29de9300b7b95ad9d761ac211ffecf4452690b0ba3576c9981c3bf7b"
+[sources.rocm-cmake]
+hash = "3d9c1797595f92d74b7ffa9ab50a97e0c893507b557c7fe0e364cf3940d6538c"
 format = "tar.gz"
-file = "therock-{version}.{format}"
-mirrors = [ "https://github.com/ROCm/TheRock/archive/refs/tags/therock-{version}.tar.gz", ]
+file = "rocm-cmake.tar.gz"
+mirrors = [ "https://github.com/ROCm/rocm-cmake/archive/refs/heads/master.tar.gz", ]
+
+[sources.half]
+hash = "3324ac8749f0c9c1fc024c92dd07b67601a87e061abcd5f6542e2cb52d9700c7"
+format = "tar.gz"
+file = "half.tar.gz"
+mirrors = [ "https://github.com/ROCm/half/archive/refs/heads/rocm.tar.gz", ]
+
+[sources.therock]
+hash = "b2680f378f6ca7aed3e83bd277b804dcc898dc0669b980600593ab86958cc6bc"
+format = "tar.gz"
+file = "therock.tar.gz"
+mirrors = [ "https://github.com/ROCm/TheRock/archive/refs/heads/main.tar.gz", ]
+
+[sources.hipify]
+hash = "218c2ba4a0641fdd67e9f41b0aaa65f7b75f125e95bbfa0245fd20dca652ee8b"
+format = "tar.gz"
+file = "hipify.tar.gz"
+mirrors = [ "https://github.com/ROCm/HIPIFY/archive/refs/heads/amd-mainline.tar.gz", ]
+
+[sources.llvm-project]
+hash = "5113356728a978d342d266124f7abbc750a9bb9335e28dfa724a954c1cad5e64"
+format = "tar.gz"
+file = "llvm-project.tar.gz"
+mirrors = [ "https://github.com/ROCm/llvm-project/archive/refs/heads/amd-mainline.tar.gz", ]
+
+[sources.rocm-libraries]
+hash = "9a4f227eb27f7f7b97cab413b8176150a40fb85843c6bcdc4eb12c463ca8a5fd"
+format = "tar.gz"
+file = "rocm-libraries.tar.gz"
+mirrors = [ "https://github.com/ROCm/rocm-libraries/archive/refs/heads/develop.tar.gz", ]
+
+[sources.rocm-systems]
+hash = "63a31c2b00a53c4f78a8f68da95e632baf7d27f6c43a02094d21b05d8ca73c23"
+format = "tar.gz"
+file = "rocm-systems.tar.gz"
+mirrors = [ "https://github.com/ROCm/rocm-systems/archive/refs/heads/develop.tar.gz", ]
+
+[sources.spirv-llvm-translator]
+hash = "269718d02de485decc986a258d2c8cf2295029c0347b62acca33e3dd37317f9c"
+format = "tar.gz"
+file = "spirv-llvm-translator.tar.gz"
+mirrors = [ "https://github.com/ROCm/SPIRV-LLVM-Translator/archive/refs/heads/amd-mainline.tar.gz", ]
+
+[sources.mesa-fork]
+hash = "8bebb9cb520722b5aca161bb24f04fcbba6f14fc3b11956ca2a6dcd2e87e6e2a"
+format = "tar.gz"
+file = "mesa-fork.tar.gz"
+mirrors = [ "https://github.com/ROCm/mesa-fork/archive/refs/heads/amd-decode-only.tar.gz", ]
+
+[sources.iree]
+hash = "cdc723679091fe68bd5acf086445e944dd5f2fdb9bfa9306a07e54ca8917b1c7"
+format = "tar.gz"
+file = "iree.tar.gz"
+mirrors = [ "https://github.com/iree-org/iree/archive/refs/heads/main.tar.gz", ]
+
+[sources.fusilli]
+hash = "d785b660f05a62892a68da49d87ba858dfa87f377cce83d06f1997936e82d2f2"
+format = "tar.gz"
+file = "fusilli.tar.gz"
+mirrors = [ "https://github.com/iree-org/fusilli/archive/refs/heads/main.tar.gz", ]
+
+[sources.libhipcxx]
+hash = "34a1969c1011ce5f93bd089e8754f615523c76679e190e148951b3a941fbad89"
+format = "tar.gz"
+file = "libhipcxx.tar.gz"
+mirrors = [ "https://github.com/ROCm/libhipcxx/archive/refs/heads/amd-develop.tar.gz", ]
+
+[sources.rocgdb]
+hash = "a54ee392b98fa6416c2ed7d6616448eb0c545458d28992fcdef3fc6c33594126"
+format = "tar.gz"
+file = "rocgdb.tar.gz"
+mirrors = [ "https://github.com/ROCm/rocgdb/archive/refs/heads/amd-staging-rocgdb-16.tar.gz", ]
 
 [dependencies]
 build = [
     "ninja",
     "cmake",
+    "gcc",
     "python",
-    "perl",
-    "bison",
-    "flex",
-    "m4",
-]
-runtime = [
-    "llvm",
-    "clang",
-    "zlib",
-    "elfutils",
+    "protobuf",
+    "eigen",
+    "fftw3",
+    "flatbuffers",
+    "yaml-cpp",
+    "spdlog",
+    "msgpack-cxx",
+    "libdivide",
+    "simde",
+    "functionalplus",
+    "catch2",
+    "googletest",
     "numactl",
-    "libffi",
-    "ncurses",
-    "readline",
-    "util-linux",
+    "elfutils",
+    "libdrm",
+    "boost",
+    "libzstd",
+    "openssl",
+    "zlib",
+    "patchelf",
 ]

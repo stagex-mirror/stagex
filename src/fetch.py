@@ -156,6 +156,7 @@ if __name__ == "__main__":
       for file_name in file_list:
         if file_name == "package.toml":
           package_files.append(os.path.join(base_dir, file_name))
+<<<<<<< HEAD
 
   for package_file in package_files:
     rf = ResourceFetcher(package_file)
@@ -165,3 +166,19 @@ if __name__ == "__main__":
       for fail in failed:
         print(f"\nFailed: {fail}")
       exit(1)
+=======
+  pool = ThreadPoolExecutor(max_workers=16)
+  if pool._max_workers >= 2:
+      thrds = 16
+  else:
+      thrds = 1
+  rfetchers = [ResourceFetcher(path) for path in package_files]
+  with ThreadPoolExecutor(max_workers=thrds) as executor:
+      futures = [executor.submit(fetcher.fetch_resource) for fetcher in rfetchers]
+      pkgs = [f.result() for f in futures]
+      print()
+      if any(pkgs):
+        for fail in pkgs:
+          print(f"\nFailed: {fail}")
+        exit(1)
+>>>>>>> 3fb9a286 (Add complete TheRock-based ROCm package with all submodules as tarballs)

@@ -78,8 +78,6 @@ RUN --network=none <<-EOF
 		--disable-libsanitizer \
 		--disable-libssp \
 		--disable-libstdcxx-pch \
-    --disable-libquadmath \
-    --disable-libquadmath-support \
     --disable-multilib \
     --disable-symvers \
 		--disable-target-libiberty \
@@ -90,7 +88,7 @@ RUN --network=none <<-EOF
     --enable-__cxa_atexit \
     --enable-default-pie \
     --enable-default-ssp \
-		--enable-languages=c,c++ \
+		--enable-languages=c,c++,fortran \
 		--enable-linker-build-id \
 		--enable-link-serialization=2 \
     --enable-threads \
