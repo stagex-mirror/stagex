@@ -75,38 +75,38 @@ GITEOF
     mkdir -p /TheRock-main/debug-tools/rocgdb/source
     
     # Extract main TheRock source
-    tar -xzf ./therock.tar.gz -C / TheRock-main/ --strip-components=1
+    tar -xzf ./therock.tar.gz -C / TheRock-main/ 
     
     # Extract submodules to correct locations
-    tar -xzf ./half.tar.gz -C /TheRock-main/base/ --strip-components=1
+    tar -xzf ./half.tar.gz -C /TheRock-main/base/ 
     mv /TheRock-main/base/half-rocm /TheRock-main/base/half
     
-    tar -xzf ./hipify.tar.gz -C /TheRock-main/compiler/ --strip-components=1
+    tar -xzf ./hipify.tar.gz -C /TheRock-main/compiler/ 
     mv /TheRock-main/compiler/HIPIFY-amd-mainline /TheRock-main/compiler/hipify
     
-    tar -xzf ./llvm-project.tar.gz -C /TheRock-main/compiler/amd-llvm/ --strip-components=1
+    tar -xzf ./llvm-project.tar.gz -C /TheRock-main/compiler/amd-llvm/ 
     mv /TheRock-main/compiler/amd-llvm/llvm-project-mainline /TheRock-main/compiler/amd-llvm/llvm 2>/dev/null || true
     
-    tar -xzf ./rocm-libraries.tar.gz -C /TheRock-main/ --strip-components=1
+    tar -xzf ./rocm-libraries.tar.gz -C /TheRock-main/ 
     
-    tar -xzf ./rocm-systems.tar.gz -C /TheRock-main/ --strip-components=1
+    tar -xzf ./rocm-systems.tar.gz -C /TheRock-main/ 
     
-    tar -xzf ./spirv-llvm-translator.tar.gz -C /TheRock-main/compiler/ --strip-components=1
+    tar -xzf ./spirv-llvm-translator.tar.gz -C /TheRock-main/compiler/ 
     mv /TheRock-main/compiler/SPIRV-LLVM-Translator-amd-mainline /TheRock-main/compiler/spirv-llvm-translator 2>/dev/null || true
     
-    tar -xzf ./mesa-fork.tar.gz -C /TheRock-main/third-party/sysdeps/linux/amd-mesa/ --strip-components=1
+    tar -xzf ./mesa-fork.tar.gz -C /TheRock-main/third-party/sysdeps/linux/amd-mesa/ 
     mv /TheRock-main/third-party/sysdeps/linux/amd-mesa/mesa-fork-amd-decode-only /TheRock-main/third-party/sysdeps/linux/amd-mesa/mesa-fork 2>/dev/null || true
     
-    tar -xzf ./iree.tar.gz -C /TheRock-main/iree-libs/ --strip-components=1
+    tar -xzf ./iree.tar.gz -C /TheRock-main/iree-libs/ 
     mv /TheRock-main/iree-libs/iree-main /TheRock-main/iree-libs/iree 2>/dev/null || true
     
-    tar -xzf ./fusilli.tar.gz -C /TheRock-main/iree-libs/ --strip-components=1
+    tar -xzf ./fusilli.tar.gz -C /TheRock-main/iree-libs/ 
     mv /TheRock-main/iree-libs/fusilli-main /TheRock-main/iree-libs/fusilli 2>/dev/null || true
     
-    tar -xzf ./libhipcxx.tar.gz -C /TheRock-main/math-libs/ --strip-components=1
+    tar -xzf ./libhipcxx.tar.gz -C /TheRock-main/math-libs/ 
     mv /TheRock-main/math-libs/libhipcxx-amd-develop /TheRock-main/math-libs/libhipcxx 2>/dev/null || true
     
-    tar -xzf ./rocgdb.tar.gz -C /TheRock-main/debug-tools/ --strip-components=1
+    tar -xzf ./rocgdb.tar.gz -C /TheRock-main/debug-tools/ 
     mv /TheRock-main/debug-tools/rocgdb-amd-staging-rocgdb-16 /TheRock-main/debug-tools/rocgdb/source 2>/dev/null || true
     
     # Build TheRock - will build all ROCm components
