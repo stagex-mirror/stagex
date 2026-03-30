@@ -1,0 +1,129 @@
+FROM stagex/pallet-gcc-cmake-busybox AS build
+ARG VERSION
+COPY --from=stagex/user-ninja . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-patchelf . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/user-protobuf . /
+COPY --from=stagex/user-eigen . /
+COPY --from=stagex/user-fftw3 . /
+COPY --from=stagex/user-flatbuffers . /
+COPY --from=stagex/user-yaml-cpp . /
+COPY --from=stagex/user-spdlog . /
+COPY --from=stagex/user-msgpack-cxx . /
+COPY --from=stagex/user-libdivide . /
+COPY --from=stagex/user-simde . /
+COPY --from=stagex/user-functionalplus . /
+COPY --from=stagex/user-catch2 . /
+COPY --from=stagex/user-googletest . /
+COPY --from=stagex/user-numactl . /
+COPY --from=stagex/user-elfutils . /
+COPY --from=stagex/user-libdrm . /
+COPY --from=stagex/core-boost . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-zlib . /
+COPY fetch/rocm-cmake.tar.gz /src/
+COPY fetch/half.tar.gz /src/
+COPY fetch/hipify.tar.gz /src/
+COPY fetch/llvm-project.tar.gz /src/
+COPY fetch/rocm-libraries.tar.gz /src/
+COPY fetch/rocm-systems.tar.gz /src/
+COPY fetch/spirv-llvm-translator.tar.gz /src/
+COPY fetch/mesa-fork.tar.gz /src/
+COPY fetch/iree.tar.gz /src/
+COPY fetch/fusilli.tar.gz /src/
+COPY fetch/libhipcxx.tar.gz /src/
+COPY fetch/rocgdb.tar.gz /src/
+COPY fetch/therock.tar.gz /src/
+WORKDIR /src
+RUN --network=none <<-EOF
+    set -e
+    
+    # Extract rocm-cmake first
+    tar -xzf ./rocm-cmake.tar.gz
+    
+    # Create a fake git command that always succeeds (to prevent TheRock from trying to use git)
+    mkdir -p /tmp/fake-bin
+    cat > /tmp/fake-bin/git << 'GITEOF'
+#!/bin/sh
+# Fake git command for TheRock submodules - always succeeds
+exit 0
+GITEOF
+    chmod +x /tmp/fake-bin/git
+    export PATH="/tmp/fake-bin:$PATH"
+    
+    # Install rocm-cmake first
+    mkdir -p /rootfs/usr
+    cmake -B rocm-cmake-build -GNinja \
+        -DCMAKE_BUILD_TYPE=None \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        ./rocm-cmake-master
+    cmake --build rocm-cmake-build
+    DESTDIR=/rootfs cmake --install rocm-cmake-build
+    
+    # Extract all submodules to their expected locations in TheRock
+    mkdir -p /TheRock-main
+    mkdir -p /TheRock-main/base
+    mkdir -p /TheRock-main/compiler
+    mkdir -p /TheRock-main/compiler/amd-llvm
+    mkdir -p /TheRock-main/compiler/spirv-llvm-translator
+    mkdir -p /TheRock-main/third-party/sysdeps/linux/amd-mesa
+    mkdir -p /TheRock-main/iree-libs
+    mkdir -p /TheRock-main/math-libs
+    mkdir -p /TheRock-main/debug-tools/rocgdb/source
+    
+    # Extract main TheRock source
+    tar -xzf ./therock.tar.gz -C / TheRock-main/ --strip-components=1
+    
+    # Extract submodules to correct locations
+    tar -xzf ./half.tar.gz -C /TheRock-main/base/ --strip-components=1
+    mv /TheRock-main/base/half-rocm /TheRock-main/base/half
+    
+    tar -xzf ./hipify.tar.gz -C /TheRock-main/compiler/ --strip-components=1
+    mv /TheRock-main/compiler/HIPIFY-amd-mainline /TheRock-main/compiler/hipify
+    
+    tar -xzf ./llvm-project.tar.gz -C /TheRock-main/compiler/amd-llvm/ --strip-components=1
+    mv /TheRock-main/compiler/amd-llvm/llvm-project-mainline /TheRock-main/compiler/amd-llvm/llvm 2>/dev/null || true
+    
+    tar -xzf ./rocm-libraries.tar.gz -C /TheRock-main/ --strip-components=1
+    
+    tar -xzf ./rocm-systems.tar.gz -C /TheRock-main/ --strip-components=1
+    
+    tar -xzf ./spirv-llvm-translator.tar.gz -C /TheRock-main/compiler/ --strip-components=1
+    mv /TheRock-main/compiler/SPIRV-LLVM-Translator-amd-mainline /TheRock-main/compiler/spirv-llvm-translator 2>/dev/null || true
+    
+    tar -xzf ./mesa-fork.tar.gz -C /TheRock-main/third-party/sysdeps/linux/amd-mesa/ --strip-components=1
+    mv /TheRock-main/third-party/sysdeps/linux/amd-mesa/mesa-fork-amd-decode-only /TheRock-main/third-party/sysdeps/linux/amd-mesa/mesa-fork 2>/dev/null || true
+    
+    tar -xzf ./iree.tar.gz -C /TheRock-main/iree-libs/ --strip-components=1
+    mv /TheRock-main/iree-libs/iree-main /TheRock-main/iree-libs/iree 2>/dev/null || true
+    
+    tar -xzf ./fusilli.tar.gz -C /TheRock-main/iree-libs/ --strip-components=1
+    mv /TheRock-main/iree-libs/fusilli-main /TheRock-main/iree-libs/fusilli 2>/dev/null || true
+    
+    tar -xzf ./libhipcxx.tar.gz -C /TheRock-main/math-libs/ --strip-components=1
+    mv /TheRock-main/math-libs/libhipcxx-amd-develop /TheRock-main/math-libs/libhipcxx 2>/dev/null || true
+    
+    tar -xzf ./rocgdb.tar.gz -C /TheRock-main/debug-tools/ --strip-components=1
+    mv /TheRock-main/debug-tools/rocgdb-amd-staging-rocgdb-16 /TheRock-main/debug-tools/rocgdb/source 2>/dev/null || true
+    
+    # Build TheRock - will build all ROCm components
+    mkdir -p /TheRock-main/build
+    cmake -B /TheRock-main/build -GNinja \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DPython3_EXECUTABLE=/usr/bin/python3 \
+        -DTHEROCK_BUILD_SHARED_LIBS=ON \
+        -DTHEROCK_BUNDLE_SYSDEPS=OFF \
+        -DTHEROCK_ENABLE_TESTS=OFF \
+        -DTHEROCK_ENABLE_ROCGDB=OFF \
+        -DTHEROCK_ENABLE_LIBHIPCXX=OFF \
+        -DTHEROCK_AMDGPU_FAMILIES=gfx1100 \
+        /TheRock-main
+    cmake --build /TheRock-main/build -j "$(nproc)"
+    DESTDIR=/rootfs cmake --install /TheRock-main/build
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

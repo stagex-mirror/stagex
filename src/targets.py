@@ -26,9 +26,9 @@ out/{stage}-{name}/index.json: \\
 \t mkdir -p packages/{stage}/{origin}/fetch && \\
 \t ( [ -z "$$(ls -A fetch/{stage}/{origin})" ] || \\
 \t   cp -lR fetch/{stage}/{origin}/* packages/{stage}/{origin}/fetch ) && \\
-\t$(BUILDER) \\
+\t./src/docker-lock.sh $(BUILDER) \\
 \t  build \\
-\t  --ulimit nofile=2048:16384 \\
+\t  --ulimit nofile=65536:131072 \\
 \t  --tag stagex/{stage}-{name}:{version} \\
 \t  --provenance=false \\
 \t  --build-arg SOURCE_DATE_EPOCH=1 \\
@@ -63,9 +63,9 @@ registry-{stage}-{name}:
 \t mkdir -p packages/{stage}/{origin}/fetch && \\
 \t ( [ -z "$$(ls -A fetch/{stage}/{origin})" ] || \\
 \t   cp -lR fetch/{stage}/{origin}/* packages/{stage}/{origin}/fetch ) && \\
-\t$(BUILDER) \\
+\t./src/docker-lock.sh $(BUILDER) \\
 \t  build \\
-\t  --ulimit nofile=2048:16384 \\
+\t  --ulimit nofile=65536:131072 \\
 \t  --tag $(REGISTRY_USERNAME)/{stage}-{name}:{version} \\
 \t  --tag $(REGISTRY_USERNAME)/{stage}-{name}:latest \\
 \t  --provenance=false \\
