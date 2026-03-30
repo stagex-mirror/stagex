@@ -44,15 +44,6 @@ RUN --network=none <<-EOF
     # Extract rocm-cmake first
     tar -xzf ./rocm-cmake.tar.gz
     
-    # Create a fake git command that always succeeds (to prevent TheRock from trying to use git)
-    mkdir -p /tmp/fake-bin
-    cat > /tmp/fake-bin/git << 'GITEOF'
-#!/bin/sh
-# Fake git command for TheRock submodules - always succeeds
-exit 0
-GITEOF
-    chmod +x /tmp/fake-bin/git
-    export PATH="/tmp/fake-bin:$PATH"
     
     # Extract main TheRock source
     tar -xzf ./therock.tar.gz -C / TheRock-main/
@@ -119,6 +110,12 @@ GITEOF
     # rocgdb -> debug-tools/rocgdb/source
     tar -xzf ./rocgdb.tar.gz -C /tmp/
     mv /tmp/ROCgdb-amd-staging-rocgdb-16 /TheRock-main/debug-tools/rocgdb/source
+
+    # Initialize nested submodules using git
+    cd /TheRock-main/rocm-systems
+    git submodule init
+    git submodule update --recursive
+    
     
     # Build TheRock - will build all ROCm components
     mkdir -p /TheRock-main/build
