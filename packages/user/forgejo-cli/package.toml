@@ -1,0 +1,14 @@
+[package]
+name        = "forgejo-cli"
+version     = "0.4.1"
+description = "Command-line interface for Forgejo"
+license     = "MIT"
+website     = "https://codeberg.org/forgejo-contrib/forgejo-cli"
+
+[sources.forgejo-cli]
+hash = "8f6a93c5f97e45308aead0154d4ec53e672ca90ab0809db543cde6be8078729e"
+format = "tar.gz"
+file = "forgejo-cli-{version}.{format}"
+mirrors = [
+  "https://codeberg.org/forgejo-contrib/forgejo-cli/archive/{version}.{format}",
+]
