@@ -62,7 +62,7 @@ GITEOF
     rm -rf /TheRock-main/base/half
     rm -rf /TheRock-main/base/rocm-cmake
     rm -rf /TheRock-main/compiler/hipify
-    rm -rf /TheRock-main/compiler/amd-llvm/llvm
+    rm -rf /TheRock-main/compiler/amd-llvm
     rm -rf /TheRock-main/rocm-libraries
     rm -rf /TheRock-main/rocm-systems
     rm -rf /TheRock-main/compiler/spirv-llvm-translator
@@ -84,7 +84,7 @@ GITEOF
     tar -xzf ./hipify.tar.gz -C /tmp/
     mv /tmp/HIPIFY-amd-mainline /TheRock-main/compiler/hipify
     
-    # llvm-project -> compiler/amd-llvm (full project, not just llvm subdirectory)
+    # llvm-project -> compiler/amd-llvm (full project, llvm CMakeLists.txt is at llvm/CMakeLists.txt)
     tar -xzf ./llvm-project.tar.gz -C /tmp/
     mv /tmp/llvm-project-amd-mainline /TheRock-main/compiler/amd-llvm
     
