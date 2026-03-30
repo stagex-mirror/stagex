@@ -4,6 +4,7 @@ version = "b4663"
 description = "LLM inference in C/C++"
 license = "MIT"
 website = "https://github.com/ggerganov/llama.cpp"
+subpackages = ["llama-cpp","llama-cpp-rocm"]
 
 [sources.llama_cpp]
 hash = "c630e767ce858e0ea16980bc38a1fa008c25a320610d07aa136b147446a1b3ef"

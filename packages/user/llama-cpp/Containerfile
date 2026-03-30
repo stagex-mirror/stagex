@@ -5,17 +5,47 @@ WORKDIR /llama.cpp-${VERSION}
 RUN <<-EOF
 	mkdir -p .git
 	touch .git/index
-	cmake -B build -G Ninja \
-    -DBUILD_TESTING=ON \
+EOF
+
+FROM build AS build-llama-cpp
+RUN <<-EOF
+	mkdir -p build
+	cd build
+	cmake .. -G Ninja \
+		-DBUILD_TESTING=ON \
 		-DGGML_BUILD_NUMBER=1 \
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DCMAKE_INSTALL_LIBDIR=lib \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DLLAMA_BUILD_SERVER=ON \
 		-DGGML_NATIVE=OFF \
-    -DENABLE_SHARED=ON
-	cmake --build build
-	DESTDIR="/rootfs" cmake --install build
+		-DENABLE_SHARED=ON
+	cmake --build .
+	DESTDIR="/rootfs" cmake --install .
 EOF
-FROM stagex/core-filesystem AS package
-COPY --from=build /rootfs/ /
+
+FROM build AS build-llama-cpp-rocm
+COPY --from=stagex/user-rocminfo . /
+RUN <<-EOF
+	mkdir -p build-rocm
+	cd build-rocm
+	cmake .. -G Ninja \
+		-DBUILD_TESTING=ON \
+		-DGGML_BUILD_NUMBER=1 \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DLLAMA_BUILD_SERVER=ON \
+		-DGGML_NATIVE=OFF \
+		-DENABLE_SHARED=ON \
+		-DGGML_HIP=ON \
+		-DAMDGPU_TARGETS="gfx900;gfx906;gfx908;gfx90a;gfx940;gfx941;gfx942;gfx1030;gfx1100;gfx1101;gfx1102"
+	cmake --build .
+	DESTDIR="/rootfs" cmake --install .
+EOF
+
+FROM stagex/core-filesystem AS package-llama-cpp
+COPY --from=build-llama-cpp /rootfs/ /
+
+FROM stagex/core-filesystem AS package-llama-cpp-rocm
+COPY --from=build-llama-cpp-rocm /rootfs/ /
