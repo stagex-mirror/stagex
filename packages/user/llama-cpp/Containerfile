@@ -26,8 +26,8 @@ EOF
 
 FROM build AS build-llama-cpp-rocm
 # Note: ROCm build requires ROCm toolkit and GPU hardware.
-# This target will fail on systems without ROCm installed.
-COPY --from=stagex/user-rocm . /
+# This target requires stagex/user-rocm to be built first.
+# Add COPY --from=stagex/user-rocm . / above RUN when rocm package is available.
 RUN <<-EOF
 	mkdir -p build-rocm
 	cd build-rocm
