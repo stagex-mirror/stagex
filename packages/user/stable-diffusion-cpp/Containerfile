@@ -1,0 +1,20 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+ARG VERSION
+ADD fetch/stable-diffusion-cpp-${VERSION}.tar.gz .
+WORKDIR /stable-diffusion.cpp-${VERSION}
+RUN --network=none <<-EOF
+	mkdir build
+	cd build
+	cmake .. \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+		-DBUILD_SHARED_LIBS=OFF \
+		-DSD_BUILD_EXAMPLES=ON \
+		-DCMAKE_INSTALL_LIBDIR=lib
+	cmake --build . -j "$(nproc)"
+	DESTDIR="/rootfs/" cmake --install .
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs /
