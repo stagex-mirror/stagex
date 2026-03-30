@@ -1,0 +1,14 @@
+[package]
+name        = "crush"
+version     = "0.53.0"
+description = "AI-powered terminal assistant from Charm"
+license     = "MIT"
+website     = "https://github.com/charmbracelet/crush"
+
+[sources.crush]
+hash = "d7017677fbb3e59be745353795e219bd73c9228ca4231f73a73cef303004004b"
+format = "tar.gz"
+file = "crush-{version}.{format}"
+mirrors = [
+  "https://github.com/charmbracelet/crush/archive/refs/tags/v{version}.{format}",
+]

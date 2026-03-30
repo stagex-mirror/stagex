@@ -1,0 +1,20 @@
+FROM stagex/pallet-go AS build
+ARG VERSION
+ADD fetch/crush-${VERSION}.tar.gz .
+WORKDIR /crush-${VERSION}
+RUN go mod download
+RUN --network=none <<-EOF
+	set +eux
+	go \
+		build \
+		-trimpath \
+		-o crush \
+		-v \
+		-ldflags="-s -w" \
+		./cmd/crush
+	mkdir -p /rootfs/usr/bin/
+	install -vDm755 -t /rootfs/usr/bin crush
+	install -vDm644 -t /rootfs/usr/share/licenses/crush LICENSE
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs /
