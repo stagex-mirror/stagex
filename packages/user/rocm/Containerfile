@@ -88,9 +88,9 @@ GITEOF
     tar -xzf ./hipify.tar.gz -C /tmp/
     mv /tmp/HIPIFY-amd-mainline /TheRock-main/compiler/hipify
     
-    # llvm-project -> compiler/amd-llvm/llvm
+    # llvm-project -> compiler/amd-llvm/llvm (move llvm subdirectory, not root)
     tar -xzf ./llvm-project.tar.gz -C /tmp/
-    mv /tmp/llvm-project-amd-mainline /TheRock-main/compiler/amd-llvm/llvm
+    mv /tmp/llvm-project-amd-mainline/llvm /TheRock-main/compiler/amd-llvm/llvm
     
     # rocm-libraries -> rocm-libraries
     tar -xzf ./rocm-libraries.tar.gz -C /tmp/
