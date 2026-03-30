@@ -2,6 +2,7 @@ FROM stagex/pallet-gcc-cmake-busybox AS build
 ARG VERSION
 COPY --from=stagex/user-ninja . /
 COPY --from=stagex/core-make . /
+COPY --from=stagex/core-git . /
 COPY --from=stagex/core-gcc . /
 COPY --from=stagex/core-patchelf . /
 COPY --from=stagex/core-python . /
