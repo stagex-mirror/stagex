@@ -63,51 +63,53 @@ GITEOF
     cmake --build rocm-cmake-build
     DESTDIR=/rootfs cmake --install rocm-cmake-build
     
-    # Extract all submodules to their expected locations in TheRock
-    mkdir -p /TheRock-main
-    mkdir -p /TheRock-main/base
-    mkdir -p /TheRock-main/compiler
-    mkdir -p /TheRock-main/compiler/amd-llvm
-    mkdir -p /TheRock-main/compiler/spirv-llvm-translator
-    mkdir -p /TheRock-main/third-party/sysdeps/linux/amd-mesa
-    mkdir -p /TheRock-main/iree-libs
-    mkdir -p /TheRock-main/math-libs
-    mkdir -p /TheRock-main/debug-tools/rocgdb/source
-    
     # Extract main TheRock source
-    tar -xzf ./therock.tar.gz -C / TheRock-main/ 
+    tar -xzf ./therock.tar.gz -C / TheRock-main/
     
-    # Extract submodules to correct locations
-    tar -xzf ./half.tar.gz -C /TheRock-main/base/ 
-    mv /TheRock-main/base/half-rocm /TheRock-main/base/half
+    # Extract submodules to /tmp first, then move to expected paths
+    # half -> base/half
+    tar -xzf ./half.tar.gz -C /tmp/
+    mv /tmp/half-rocm /TheRock-main/base/half
     
-    tar -xzf ./hipify.tar.gz -C /TheRock-main/compiler/ 
-    mv /TheRock-main/compiler/HIPIFY-amd-mainline /TheRock-main/compiler/hipify
+    # HIPIFY -> compiler/hipify
+    tar -xzf ./hipify.tar.gz -C /tmp/
+    mv /tmp/HIPIFY-amd-mainline /TheRock-main/compiler/hipify
     
-    tar -xzf ./llvm-project.tar.gz -C /TheRock-main/compiler/amd-llvm/ 
-    mv /TheRock-main/compiler/amd-llvm/llvm-project-mainline /TheRock-main/compiler/amd-llvm/llvm 2>/dev/null || true
+    # llvm-project -> compiler/amd-llvm/llvm
+    tar -xzf ./llvm-project.tar.gz -C /tmp/
+    mv /tmp/llvm-project-amd-mainline /TheRock-main/compiler/amd-llvm/llvm
     
-    tar -xzf ./rocm-libraries.tar.gz -C /TheRock-main/ 
+    # rocm-libraries -> rocm-libraries
+    tar -xzf ./rocm-libraries.tar.gz -C /tmp/
+    mv /tmp/rocm-libraries-develop /TheRock-main/rocm-libraries
     
-    tar -xzf ./rocm-systems.tar.gz -C /TheRock-main/ 
+    # rocm-systems -> rocm-systems
+    tar -xzf ./rocm-systems.tar.gz -C /tmp/
+    mv /tmp/rocm-systems-develop /TheRock-main/rocm-systems
     
-    tar -xzf ./spirv-llvm-translator.tar.gz -C /TheRock-main/compiler/ 
-    mv /TheRock-main/compiler/SPIRV-LLVM-Translator-amd-mainline /TheRock-main/compiler/spirv-llvm-translator 2>/dev/null || true
+    # SPIRV-LLVM-Translator -> compiler/spirv-llvm-translator
+    tar -xzf ./spirv-llvm-translator.tar.gz -C /tmp/
+    mv /tmp/SPIRV-LLVM-Translator-amd-mainline /TheRock-main/compiler/spirv-llvm-translator
     
-    tar -xzf ./mesa-fork.tar.gz -C /TheRock-main/third-party/sysdeps/linux/amd-mesa/ 
-    mv /TheRock-main/third-party/sysdeps/linux/amd-mesa/mesa-fork-amd-decode-only /TheRock-main/third-party/sysdeps/linux/amd-mesa/mesa-fork 2>/dev/null || true
+    # mesa-fork -> third-party/sysdeps/linux/amd-mesa/mesa-fork
+    tar -xzf ./mesa-fork.tar.gz -C /tmp/
+    mv /tmp/mesa-fork-amd-decode-only /TheRock-main/third-party/sysdeps/linux/amd-mesa/mesa-fork
     
-    tar -xzf ./iree.tar.gz -C /TheRock-main/iree-libs/ 
-    mv /TheRock-main/iree-libs/iree-main /TheRock-main/iree-libs/iree 2>/dev/null || true
+    # iree -> iree-libs/iree
+    tar -xzf ./iree.tar.gz -C /tmp/
+    mv /tmp/iree-main /TheRock-main/iree-libs/iree
     
-    tar -xzf ./fusilli.tar.gz -C /TheRock-main/iree-libs/ 
-    mv /TheRock-main/iree-libs/fusilli-main /TheRock-main/iree-libs/fusilli 2>/dev/null || true
+    # fusilli -> iree-libs/fusilli
+    tar -xzf ./fusilli.tar.gz -C /tmp/
+    mv /tmp/fusilli-main /TheRock-main/iree-libs/fusilli
     
-    tar -xzf ./libhipcxx.tar.gz -C /TheRock-main/math-libs/ 
-    mv /TheRock-main/math-libs/libhipcxx-amd-develop /TheRock-main/math-libs/libhipcxx 2>/dev/null || true
+    # libhipcxx -> math-libs/libhipcxx
+    tar -xzf ./libhipcxx.tar.gz -C /tmp/
+    mv /tmp/libhipcxx-amd-develop /TheRock-main/math-libs/libhipcxx
     
-    tar -xzf ./rocgdb.tar.gz -C /TheRock-main/debug-tools/ 
-    mv /TheRock-main/debug-tools/rocgdb-amd-staging-rocgdb-16 /TheRock-main/debug-tools/rocgdb/source 2>/dev/null || true
+    # rocgdb -> debug-tools/rocgdb/source
+    tar -xzf ./rocgdb.tar.gz -C /tmp/
+    mv /tmp/ROCgdb-amd-staging-rocgdb-16 /TheRock-main/debug-tools/rocgdb/source
     
     # Build TheRock - will build all ROCm components
     mkdir -p /TheRock-main/build
