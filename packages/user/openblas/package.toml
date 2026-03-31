@@ -1,0 +1,17 @@
+[package]
+name = "openblas"
+version = "0.3.27"
+description = "Optimized Basic Linear Algebra Subprograms (BLAS)"
+license = "BSD-3-Clause"
+website = "https://www.openblas.net"
+
+[sources.source]
+hash = "aa2d68b1564fe2b13bc292672608e9cdeeeb6dc34995512e65c3b10f4599e897"
+format = "tar.gz"
+file = "v{version}.tar.gz"
+mirrors = [ "https://github.com/xianyi/OpenBLAS/archive/refs/tags/v0.3.27.tar.gz", ]
+
+[dependencies]
+build = [
+    "gcc",
+]
