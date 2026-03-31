@@ -1,12 +1,12 @@
 [package]
 name = "xz"
-version = "5.6.2"
+version = "5.8.3"
 description = "XZ Utils data compression software"
 license = "0BSD AND LGPL-2.1-or-later AND GPL-2.0-or-later"
 website = "https://tukaani.org/xz/"
 
 [sources.xz]
-hash = "92a439948bba24c2bc25bb67a087a19194905209c56b5e600bc94fd2a472e687"
+hash = "8ec1767fa517642ecb4cf08b891ce667ba6f143551e382b07c7ef437bda335e2"
 format = "tar.gz"
 file = "xz-{version}.{format}"
 mirrors = [ "https://github.com/tukaani-project/xz/archive/refs/tags/v{version}.{format}",]
