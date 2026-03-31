@@ -25,36 +25,23 @@ COPY --from=stagex/core-boost . /
 COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-zlib . /
+COPY --from=stagex/user-rocm-llvm . /
 COPY --from=fetch rocm-cmake.tar.gz /
+COPY --from=fetch therock.tar.gz /
 COPY --from=fetch half.tar.gz /
 COPY --from=fetch hipify.tar.gz /
-COPY --from=stagex/user-rocm-llvm . /
-COPY --from=fetch llvm-project.tar.gz /
-COPY --from=fetch rocm-libraries.tar.gz /
-COPY --from=fetch rocm-systems.tar.gz /
 COPY --from=fetch spirv-llvm-translator.tar.gz /
 COPY --from=fetch mesa-fork.tar.gz /
 COPY --from=fetch iree.tar.gz /
 COPY --from=fetch fusilli.tar.gz /
 COPY --from=fetch libhipcxx.tar.gz /
 COPY --from=fetch rocgdb.tar.gz /
-COPY --from=fetch therock.tar.gz /
 COPY patches /src/patches
-WORKDIR /src
+WORKDIR /TheRock-main
 RUN --network=none <<-EOF
     set -e
     
-    # List current directory
-    ls -la /
-    
-    # Extract rocm-cmake first
-    tar -xzf /rocm-cmake.tar.gz
-    
-    # Extract main TheRock source
-    tar -xzf /therock.tar.gz -C / TheRock-main/
-    
     # Apply patches
-    cd /TheRock-main
     patch -p1 < /src/patches/01-stagex-version.patch
     patch -p1 < /src/patches/02-use-system-boost.patch
     patch -p1 < /src/patches/02b-use-system-eigen.patch
@@ -178,7 +165,7 @@ set_target_properties(Catch2::Catch2 PROPERTIES
 )
 CATCH2_EOF
 
-    # Add CMAKE_MODULE_PATH to find these configs
+    # Add CMAKE_PREFIX_PATH to find these configs
     export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
     
     # Replace S3 URLs with system packages using sed for all remaining files
@@ -196,44 +183,27 @@ CATCH2_EOF
       fi
     done
     
-    # Extract submodules to /tmp first, then move to expected paths
-    # Remove existing submodule directories from TheRock first
-    rm -rf /TheRock-main/base/half
-    rm -rf /TheRock-main/base/rocm-cmake
-    rm -rf /TheRock-main/compiler/hipify
-    rm -rf /TheRock-main/compiler/amd-llvm
-    rm -rf /TheRock-main/rocm-libraries
-    rm -rf /TheRock-main/rocm-systems
-    rm -rf /TheRock-main/compiler/spirv-llvm-translator
-    rm -rf /TheRock-main/third-party/sysdeps/linux/amd-mesa/mesa-fork
-    rm -rf /TheRock-main/iree-libs/iree
-    rm -rf /TheRock-main/iree-libs/fusilli
-    rm -rf /TheRock-main/math-libs/libhipcxx
-    rm -rf /TheRock-main/debug-tools/rocgdb/source
-    
-    # rocm-cmake -> base/rocm-cmake
+    # Extract rocm-cmake
     tar -xzf /rocm-cmake.tar.gz -C /tmp/
     mv /tmp/rocm-cmake-master /TheRock-main/base/rocm-cmake
     
-    # half -> base/half
+    # Extract half
     tar -xzf /half.tar.gz -C /tmp/
     mv /tmp/half-rocm /TheRock-main/base/half
     
-    # HIPIFY -> compiler/hipify
+    # Extract HIPIFY
     tar -xzf /hipify.tar.gz -C /tmp/
     mv /tmp/HIPIFY-amd-mainline /TheRock-main/compiler/hipify
     
-    # llvm-project -> compiler/amd-llvm (use pre-built from rocm-llvm)
-    
-    # rocm-libraries -> rocm-libraries
+    # Extract rocm-libraries
     tar -xzf /rocm-libraries.tar.gz -C /tmp/
     mv /tmp/rocm-libraries-develop /TheRock-main/rocm-libraries
     
-    # rocm-systems -> rocm-systems
+    # Extract rocm-systems
     tar -xzf /rocm-systems.tar.gz -C /tmp/
     mv /tmp/rocm-systems-develop /TheRock-main/rocm-systems
     
-    # Move spirv-llvm-translator first so we can patch it
+    # Move spirv-llvm-translator
     tar -xzf /spirv-llvm-translator.tar.gz -C /tmp/
     mv /tmp/SPIRV-LLVM-Translator-amd-mainline /TheRock-main/compiler/spirv-llvm-translator
     
@@ -241,27 +211,25 @@ CATCH2_EOF
     sed -i '/FetchContent_Declare.*spirv-headers/,/FetchContent_MakeAvailable/d' /TheRock-main/compiler/spirv-llvm-translator/CMakeLists.txt
     sed -i '1i # Use system SPIRV-Headers\nfind_package(SPIRV-Headers QUIET)' /TheRock-main/compiler/spirv-llvm-translator/CMakeLists.txt
     
-    # Continue extracting other submodules
+    # Extract mesa-fork
     tar -xzf /mesa-fork.tar.gz -C /tmp/
     mv /tmp/mesa-fork-amd-decode-only /TheRock-main/third-party/sysdeps/linux/amd-mesa/mesa-fork
     
-    # iree -> iree-libs/iree
+    # Extract iree
     tar -xzf /iree.tar.gz -C /tmp/
     mv /tmp/iree-main /TheRock-main/iree-libs/iree
     
-    # fusilli -> iree-libs/fusilli
+    # Extract fusilli
     tar -xzf /fusilli.tar.gz -C /tmp/
     mv /tmp/fusilli-main /TheRock-main/iree-libs/fusilli
     
-    # libhipcxx -> math-libs/libhipcxx
+    # Extract libhipcxx
     tar -xzf /libhipcxx.tar.gz -C /tmp/
     mv /tmp/libhipcxx-amd-develop /TheRock-main/math-libs/libhipcxx
     
-    # rocgdb -> debug-tools/rocgdb/source
+    # Extract rocgdb
     tar -xzf /rocgdb.tar.gz -C /tmp/
     mv /tmp/ROCgdb-amd-staging-rocgdb-16 /TheRock-main/debug-tools/rocgdb/source
-
-    
     
     # Build TheRock - will build all ROCm components
     mkdir -p /TheRock-main/build
@@ -277,7 +245,7 @@ CATCH2_EOF
         -DTHEROCK_AMDGPU_FAMILIES=gfx1100 \
         -DTHEROCK_USE_SYSTEM_PACKAGES=ON \
         /TheRock-main
-    cmake --build /TheRock-main/build -j "$(nproc)"
+    cmake --build /TheRock-main/build
     DESTDIR=/rootfs cmake --install /TheRock-main/build
 EOF
 FROM stagex/core-filesystem AS package
