@@ -1,0 +1,30 @@
+From: Stagex Build System
+Date: 2026-03-30
+Subject: Use system fmt instead of downloading
+
+--- a/third-party/fmt/CMakeLists.txt
++++ b/third-party/fmt/CMakeLists.txt
+@@ -1,16 +1,12 @@
+ # Copyright Advanced Micro Devices, Inc.
+ # SPDX-License-Identifier: MIT
+ 
+-therock_subproject_fetch(therock-fmt-sources
+-  CMAKE_PROJECT
+-  # Originally mirrored from: https://github.com/fmtlib/fmt/archive/refs/tags/11.1.3.tar.gz
+-  URL https://rocm-third-party-deps.s3.us-east-2.amazonaws.com/fmt-11.1.3.zip
+-  URL_HASH SHA256=5d948a39469f6880776d7887548573809223ca03b43c934b5d830d7fa5e1b6c1
+-)
++# Use system fmt
++find_package(fmt REQUIRED)
+ 
+ therock_cmake_subproject_declare(therock-fmt
+-  USE_DIST_AMDGPU_TARGETS
+-  BACKGROUND_BUILD
+-  EXCLUDE_FROM_ALL
+-  NO_MERGE_COMPILE_COMMANDS
+-  OUTPUT_ON_FAILURE
+-  EXTERNAL_SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/source"
++  USE_DIST_AMDGPU_TARGETS
+   CMAKE_ARGS
+     -DFMT_BUILD_TESTS=OFF
+     -DFMT_BUILD_DOCS=OFF

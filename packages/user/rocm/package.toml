@@ -5,6 +5,18 @@ description = "ROCm build system with TheRock"
 license = "MIT"
 website = "https://rocm.docs.amd.com"
 
+[patches]
+01-stagex-version = "patches/01-stagex-version.patch"
+02-use-system-boost = "patches/02-use-system-deps.patch"
+02b-use-system-eigen = "patches/02b-use-system-eigen.patch"
+02c-use-system-fftw3 = "patches/02c-use-system-fftw3.patch"
+02d-use-system-flatbuffers = "patches/02d-use-system-flatbuffers.patch"
+02e-use-system-fmt = "patches/02e-use-system-fmt.patch"
+02f-use-system-googletest = "patches/02f-use-system-googletest.patch"
+02g-use-system-grpc = "patches/02g-use-system-grpc.patch"
+02i-use-system-final-deps = "patches/02i-use-system-final-deps.patch"
+04-spirv-headers-optional = "patches/04-spirv-headers-optional.patch"
+
 [sources.rocm-cmake]
 hash = "3d9c1797595f92d74b7ffa9ab50a97e0c893507b557c7fe0e364cf3940d6538c"
 format = "tar.gz"
@@ -92,6 +104,7 @@ build = [
     "protobuf",
     "eigen",
     "fftw3",
+    "openblas",
     "flatbuffers",
     "yaml-cpp",
     "spdlog",
@@ -109,4 +122,6 @@ build = [
     "openssl",
     "zlib",
     "patchelf",
+    "git",
+    "rocm-llvm",
 ]

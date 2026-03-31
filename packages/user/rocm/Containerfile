@@ -8,6 +8,7 @@ COPY --from=stagex/core-python . /
 COPY --from=stagex/user-protobuf . /
 COPY --from=stagex/user-eigen . /
 COPY --from=stagex/user-fftw3 . /
+COPY --from=stagex/user-openblas . /
 COPY --from=stagex/user-flatbuffers . /
 COPY --from=stagex/user-yaml-cpp . /
 COPY --from=stagex/user-spdlog . /
@@ -24,29 +25,176 @@ COPY --from=stagex/core-boost . /
 COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-zlib . /
-COPY fetch/rocm-cmake.tar.gz /src/
-COPY fetch/half.tar.gz /src/
-COPY fetch/hipify.tar.gz /src/
-COPY fetch/llvm-project.tar.gz /src/
-COPY fetch/rocm-libraries.tar.gz /src/
-COPY fetch/rocm-systems.tar.gz /src/
-COPY fetch/spirv-llvm-translator.tar.gz /src/
-COPY fetch/mesa-fork.tar.gz /src/
-COPY fetch/iree.tar.gz /src/
-COPY fetch/fusilli.tar.gz /src/
-COPY fetch/libhipcxx.tar.gz /src/
-COPY fetch/rocgdb.tar.gz /src/
-COPY fetch/therock.tar.gz /src/
+COPY --from=fetch rocm-cmake.tar.gz /
+COPY --from=fetch half.tar.gz /
+COPY --from=fetch hipify.tar.gz /
+COPY --from=stagex/user-rocm-llvm . /
+COPY --from=fetch llvm-project.tar.gz /
+COPY --from=fetch rocm-libraries.tar.gz /
+COPY --from=fetch rocm-systems.tar.gz /
+COPY --from=fetch spirv-llvm-translator.tar.gz /
+COPY --from=fetch mesa-fork.tar.gz /
+COPY --from=fetch iree.tar.gz /
+COPY --from=fetch fusilli.tar.gz /
+COPY --from=fetch libhipcxx.tar.gz /
+COPY --from=fetch rocgdb.tar.gz /
+COPY --from=fetch therock.tar.gz /
+COPY patches /src/patches
 WORKDIR /src
 RUN --network=none <<-EOF
     set -e
     
-    # Extract rocm-cmake first
-    tar -xzf ./rocm-cmake.tar.gz
+    # List current directory
+    ls -la /
     
+    # Extract rocm-cmake first
+    tar -xzf /rocm-cmake.tar.gz
     
     # Extract main TheRock source
-    tar -xzf ./therock.tar.gz -C / TheRock-main/
+    tar -xzf /therock.tar.gz -C / TheRock-main/
+    
+    # Apply patches
+    cd /TheRock-main
+    patch -p1 < /src/patches/01-stagex-version.patch
+    patch -p1 < /src/patches/02-use-system-boost.patch
+    patch -p1 < /src/patches/02b-use-system-eigen.patch
+    patch -p1 < /src/patches/02c-use-system-fftw3.patch
+    patch -p1 < /src/patches/02d-use-system-flatbuffers.patch
+    patch -p1 < /src/patches/02e-use-system-fmt.patch
+    patch -p1 < /src/patches/02f-use-system-googletest.patch
+    patch -p1 < /src/patches/02g-use-system-grpc.patch
+    
+    # Create CMake config files for system packages
+    mkdir -p /usr/lib/cmake
+    cd /usr/lib/cmake
+    
+    # Create nlohmann_json config
+    mkdir -p nlohmann_json
+    cat > nlohmann_json/nlohmann_json-config.cmake << 'NLOHMANN_EOF'
+# nlohmann_json config for system package
+set(nlohmann_json_VERSION 3.11.3)
+add_library(nlohmann_json::nlohmann_json INTERFACE IMPORTED)
+set_target_properties(nlohmann_json::nlohmann_json PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "/usr/include"
+)
+NLOHMANN_EOF
+    
+    # Create spdlog config
+    mkdir -p spdlog
+    cat > spdlog/spdlog-config.cmake << 'SPDLOG_EOF'
+# spdlog config for system package
+set(spdlog_VERSION 1.15.0)
+add_library(spdlog::spdlog INTERFACE IMPORTED)
+set_target_properties(spdlog::spdlog PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "/usr/include"
+    INTERFACE_LINK_LIBRARIES "spdlog"
+)
+find_library(SPDLOG_LIB spdlog HINTS /usr/lib /usr/lib64)
+set_target_properties(spdlog::spdlog PROPERTIES INTERFACE_LINK_LIBRARIES "${SPDLOG_LIB}")
+SPDLOG_EOF
+
+    # Create yaml-cpp config
+    mkdir -p yaml-cpp
+    cat > yaml-cpp/yaml-cpp-config.cmake << 'YAML_EOF'
+# yaml-cpp config for system package
+set(yaml-cpp_VERSION 0.8.0)
+add_library(yaml-cpp::yaml-cpp INTERFACE IMPORTED)
+find_library(YAML_CPP_LIB yaml-cpp HINTS /usr/lib /usr/lib64)
+set_target_properties(yaml-cpp::yaml-cpp PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "/usr/include"
+    INTERFACE_LINK_LIBRARIES "${YAML_CPP_LIB}"
+)
+YAML_EOF
+
+    # Create msgpack-cxx config
+    mkdir -p msgpack-cxx
+    cat > msgpack-cxx/msgpack-cxx-config.cmake << 'MSGPACK_EOF'
+# msgpack-cxx config for system package
+set(msgpack-cxx_VERSION 6.1.0)
+add_library(msgpack-cxx::msgpack-cxx INTERFACE IMPORTED)
+find_library(MSGPACK_LIB msgpack-cxx HINTS /usr/lib /usr/lib64)
+set_target_properties(msgpack-cxx::msgpack-cxx PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "/usr/include"
+    INTERFACE_LINK_LIBRARIES "${MSGPACK_LIB}"
+)
+MSGPACK_EOF
+
+    # Create openblas config
+    mkdir -p openblas
+    cat > openblas/openblas-config.cmake << 'OPENBLAS_EOF'
+# openblas config for system package
+set(openblas_VERSION 0.3.27)
+add_library(openblas::openblas UNKNOWN IMPORTED)
+find_library(OPENBLAS_LIB openblas HINTS /usr/lib /usr/lib64)
+set_target_properties(openblas::openblas PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "/usr/include"
+    IMPORTED_LOCATION "${OPENBLAS_LIB}"
+)
+OPENBLAS_EOF
+
+    # Create simde config (header-only)
+    mkdir -p simde
+    cat > simde/simde-config.cmake << 'SIMDE_EOF'
+# simde config for system package
+set(simde_VERSION 0.7.0)
+add_library(simde::simde INTERFACE IMPORTED)
+set_target_properties(simde::simde PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "/usr/include"
+)
+SIMDE_EOF
+
+    # Create libdivide config (header-only)
+    mkdir -p libdivide
+    cat > libdivide/libdivide-config.cmake << 'LIBDIVIDE_EOF'
+# libdivide config for system package
+set(libdivide_VERSION 5.2.0)
+add_library(libdivide::libdivide INTERFACE IMPORTED)
+set_target_properties(libdivide::libdivide PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "/usr/include"
+)
+LIBDIVIDE_EOF
+
+    # Create FunctionalPlus config (header-only)
+    mkdir -p FunctionalPlus
+    cat > FunctionalPlus/FunctionalPlus-config.cmake << 'FUNCPLUS_EOF'
+# FunctionalPlus config for system package
+set(FunctionalPlus_VERSION 0.2.25)
+add_library(FunctionalPlus::FunctionalPlus INTERFACE IMPORTED)
+set_target_properties(FunctionalPlus::FunctionalPlus PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "/usr/include"
+)
+FUNCPLUS_EOF
+
+    # Create Catch2 config
+    mkdir -p Catch2
+    cat > Catch2/Catch2-config.cmake << 'CATCH2_EOF'
+# Catch2 config for system package
+set(Catch2_VERSION 3.5.0)
+add_library(Catch2::Catch2 INTERFACE IMPORTED)
+find_library(CATCH2_LIB Catch2 HINTS /usr/lib /usr/lib64)
+set_target_properties(Catch2::Catch2 PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "/usr/include"
+    INTERFACE_LINK_LIBRARIES "${CATCH2_LIB}"
+)
+CATCH2_EOF
+
+    # Add CMAKE_MODULE_PATH to find these configs
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    
+    # Replace S3 URLs with system packages using sed for all remaining files
+    for f in spdlog msgpack-cxx yaml-cpp nlohmann-json simde libdivide FunctionalPlus Catch2; do
+      if [ -f "third-party/$f/CMakeLists.txt" ]; then
+        # Remove the therock_subproject_fetch block
+        sed -i '/therock_subproject_fetch/,/^)/d' third-party/$f/CMakeLists.txt
+        # Get CMake package name based on the package
+        case "$f" in
+          nlohmann-json) cmake_name="nlohmann_json" ;;
+          *) cmake_name="$f" ;;  # Use original name for others
+        esac
+        # Add find_package at the beginning
+        sed -i "1i # Use system $f\nfind_package($cmake_name REQUIRED)" third-party/$f/CMakeLists.txt
+      fi
+    done
     
     # Extract submodules to /tmp first, then move to expected paths
     # Remove existing submodule directories from TheRock first
@@ -64,51 +212,53 @@ RUN --network=none <<-EOF
     rm -rf /TheRock-main/debug-tools/rocgdb/source
     
     # rocm-cmake -> base/rocm-cmake
-    tar -xzf ./rocm-cmake.tar.gz -C /tmp/
+    tar -xzf /rocm-cmake.tar.gz -C /tmp/
     mv /tmp/rocm-cmake-master /TheRock-main/base/rocm-cmake
     
     # half -> base/half
-    tar -xzf ./half.tar.gz -C /tmp/
+    tar -xzf /half.tar.gz -C /tmp/
     mv /tmp/half-rocm /TheRock-main/base/half
     
     # HIPIFY -> compiler/hipify
-    tar -xzf ./hipify.tar.gz -C /tmp/
+    tar -xzf /hipify.tar.gz -C /tmp/
     mv /tmp/HIPIFY-amd-mainline /TheRock-main/compiler/hipify
     
-    # llvm-project -> compiler/amd-llvm (full project, llvm CMakeLists.txt is at llvm/CMakeLists.txt)
-    tar -xzf ./llvm-project.tar.gz -C /tmp/
-    mv /tmp/llvm-project-amd-mainline /TheRock-main/compiler/amd-llvm
+    # llvm-project -> compiler/amd-llvm (use pre-built from rocm-llvm)
     
     # rocm-libraries -> rocm-libraries
-    tar -xzf ./rocm-libraries.tar.gz -C /tmp/
+    tar -xzf /rocm-libraries.tar.gz -C /tmp/
     mv /tmp/rocm-libraries-develop /TheRock-main/rocm-libraries
     
     # rocm-systems -> rocm-systems
-    tar -xzf ./rocm-systems.tar.gz -C /tmp/
+    tar -xzf /rocm-systems.tar.gz -C /tmp/
     mv /tmp/rocm-systems-develop /TheRock-main/rocm-systems
     
-    # SPIRV-LLVM-Translator -> compiler/spirv-llvm-translator
-    tar -xzf ./spirv-llvm-translator.tar.gz -C /tmp/
+    # Move spirv-llvm-translator first so we can patch it
+    tar -xzf /spirv-llvm-translator.tar.gz -C /tmp/
     mv /tmp/SPIRV-LLVM-Translator-amd-mainline /TheRock-main/compiler/spirv-llvm-translator
     
-    # mesa-fork -> third-party/sysdeps/linux/amd-mesa/mesa-fork
-    tar -xzf ./mesa-fork.tar.gz -C /tmp/
+    # Make SPIRV-Headers optional for spirv-llvm-translator
+    sed -i '/FetchContent_Declare.*spirv-headers/,/FetchContent_MakeAvailable/d' /TheRock-main/compiler/spirv-llvm-translator/CMakeLists.txt
+    sed -i '1i # Use system SPIRV-Headers\nfind_package(SPIRV-Headers QUIET)' /TheRock-main/compiler/spirv-llvm-translator/CMakeLists.txt
+    
+    # Continue extracting other submodules
+    tar -xzf /mesa-fork.tar.gz -C /tmp/
     mv /tmp/mesa-fork-amd-decode-only /TheRock-main/third-party/sysdeps/linux/amd-mesa/mesa-fork
     
     # iree -> iree-libs/iree
-    tar -xzf ./iree.tar.gz -C /tmp/
+    tar -xzf /iree.tar.gz -C /tmp/
     mv /tmp/iree-main /TheRock-main/iree-libs/iree
     
     # fusilli -> iree-libs/fusilli
-    tar -xzf ./fusilli.tar.gz -C /tmp/
+    tar -xzf /fusilli.tar.gz -C /tmp/
     mv /tmp/fusilli-main /TheRock-main/iree-libs/fusilli
     
     # libhipcxx -> math-libs/libhipcxx
-    tar -xzf ./libhipcxx.tar.gz -C /tmp/
+    tar -xzf /libhipcxx.tar.gz -C /tmp/
     mv /tmp/libhipcxx-amd-develop /TheRock-main/math-libs/libhipcxx
     
     # rocgdb -> debug-tools/rocgdb/source
-    tar -xzf ./rocgdb.tar.gz -C /tmp/
+    tar -xzf /rocgdb.tar.gz -C /tmp/
     mv /tmp/ROCgdb-amd-staging-rocgdb-16 /TheRock-main/debug-tools/rocgdb/source
 
     
@@ -125,6 +275,7 @@ RUN --network=none <<-EOF
         -DTHEROCK_ENABLE_ROCGDB=OFF \
         -DTHEROCK_ENABLE_LIBHIPCXX=OFF \
         -DTHEROCK_AMDGPU_FAMILIES=gfx1100 \
+        -DTHEROCK_USE_SYSTEM_PACKAGES=ON \
         /TheRock-main
     cmake --build /TheRock-main/build -j "$(nproc)"
     DESTDIR=/rootfs cmake --install /TheRock-main/build

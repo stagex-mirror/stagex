@@ -1,0 +1,144 @@
+From: Stagex Build System
+Date: 2026-03-30
+Subject: Use system nlohmann-json, libdivide, functionalplus, catch2 instead of downloading
+
+--- a/third-party/nlohmann-json/CMakeLists.txt
++++ b/third-party/nlohmann-json/CMakeLists.txt
+@@ -3,17 +3,13 @@
+ # Copyright Advanced Micro Devices, Inc.
+ # SPDX-License-Identifier: MIT
+ 
+-set(_source_dir "${CMAKE_CURRENT_BINARY_DIR}/source")
+-set(_download_stamp "${_source_dir}/download.stamp")
+-
+-therock_subproject_fetch(nlohmann-json-sources
+-  SOURCE_DIR "${_source_dir}"
+-  # Originally mirrored from: "https://github.com/nlohmann/json/archive/refs/tags/v3.12.0.tar.gz"
+-  URL "https://rocm-third-party-deps.s3.us-east-2.amazonaws.com/json-3.12.0.tar.gz"
+-  URL_HASH "SHA256=7a02b359a95a4080c0f317c13759cea6cb8b70e3c8e4c0e0e0e0e0e0e0e0e0e0"
+-  TOUCH "${_download_stamp}"
+-)
++# Use system nlohmann-json
++find_package(nlohmann_json REQUIRED)
+ 
+-therock_cmake_subproject_declare(therock-nlohmann-json
+-  EXTERNAL_SOURCE_DIR "nlohmann-json"
+-  USE_DIST_AMDGPU_TARGETS
+-  NO_MERGE_COMPILE_COMMANDS
+-  BACKGROUND_BUILD
+-  OUTPUT_ON_FAILURE
+-  EXTRA_DEPENDS "${_download_stamp}"
+-)
++# Provide package for downstream dependencies
++set(nlohmann_json_SOURCE_DIR "/usr")
++
++therock_cmake_subproject_declare(therock-nlohmann-json
++  EXTERNAL_SOURCE_DIR "${nlohmann_json_SOURCE_DIR}"
++  USE_DIST_AMDGPU_TARGETS
++  NO_MERGE_COMPILE_COMMANDS
++)
+--- a/third-party/libdivide/CMakeLists.txt
++++ b/third-party/libdivide/CMakeLists.txt
+@@ -3,17 +3,13 @@
+ # Copyright Advanced Micro Devices, Inc.
+ # SPDX-License-Identifier: MIT
+ 
+-set(_source_dir "${CMAKE_CURRENT_BINARY_DIR}/source")
+-set(_download_stamp "${_source_dir}/download.stamp")
+-
+-therock_subproject_fetch(libdivide-sources
+-  SOURCE_DIR "${_source_dir}"
+-  # Originally mirrored from: "https://github.com/lemire/libdivide/archive/refs/tags/v5.2.0.tar.gz"
+-  URL "https://rocm-third-party-deps.s3.us-east-2.amazonaws.com/libdivide-5.2.0.tar.gz"
+-  URL_HASH "SHA256=7a02b359a95a4080c0f317c13759cea6cb8b70e3c8e4c0e0e0e0e0e0e0e0e0e0"
+-  TOUCH "${_download_stamp}"
+-)
++# Use system libdivide
++find_package(libdivide REQUIRED)
+ 
+-therock_cmake_subproject_declare(therock-libdivide
+-  EXTERNAL_SOURCE_DIR "libdivide"
+-  USE_DIST_AMDGPU_TARGETS
+-  NO_MERGE_COMPILE_COMMANDS
+-  BACKGROUND_BUILD
+-  OUTPUT_ON_FAILURE
+-  EXTRA_DEPENDS "${_download_stamp}"
+-)
++# Provide package for downstream dependencies
++set(libdivide_SOURCE_DIR "/usr")
++
++therock_cmake_subproject_declare(therock-libdivide
++  EXTERNAL_SOURCE_DIR "${libdivide_SOURCE_DIR}"
++  USE_DIST_AMDGPU_TARGETS
++  NO_MERGE_COMPILE_COMMANDS
++)
+--- a/third-party/FunctionalPlus/CMakeLists.txt
++++ b/third-party/FunctionalPlus/CMakeLists.txt
+@@ -3,17 +3,13 @@
+ # Copyright Advanced Micro Devices, Inc.
+ # SPDX-License-Identifier: MIT
+ 
+-set(_source_dir "${CMAKE_CURRENT_BINARY_DIR}/source")
+-set(_download_stamp "${_source_dir}/download.stamp")
+-
+-therock_subproject_fetch(FunctionalPlus-sources
+-  SOURCE_DIR "${_source_dir}"
+-  # Originally mirrored from: "https://github.com/Dobiasd/FunctionalPlus/archive/refs/tags/v0.2.25.tar.gz"
+-  URL "https://rocm-third-party-deps.s3.us-east-2.amazonaws.com/FunctionalPlus-0.2.25.tar.gz"
+-  URL_HASH "SHA256=7a02b359a95a4080c0f317c13759cea6cb8b70e3c8e4c0e0e0e0e0e0e0e0e0e0"
+-  TOUCH "${_download_stamp}"
+-)
++# Use system functionalplus
++find_package(FunctionalPlus REQUIRED)
+ 
+-therock_cmake_subproject_declare(therock-FunctionalPlus
+-  EXTERNAL_SOURCE_DIR "FunctionalPlus"
+-  USE_DIST_AMDGPU_TARGETS
+-  NO_MERGE_COMPILE_COMMANDS
+-  BACKGROUND_BUILD
+-  OUTPUT_ON_FAILURE
+-  EXTRA_DEPENDS "${_download_stamp}"
+-)
++# Provide package for downstream dependencies
++set(FunctionalPlus_SOURCE_DIR "/usr")
++
++therock_cmake_subproject_declare(therock-FunctionalPlus
++  EXTERNAL_SOURCE_DIR "${FunctionalPlus_SOURCE_DIR}"
++  USE_DIST_AMDGPU_TARGETS
++  NO_MERGE_COMPILE_COMMANDS
++)
+--- a/third-party/Catch2/CMakeLists.txt
++++ b/third-party/Catch2/CMakeLists.txt
+@@ -3,17 +3,13 @@
+ # Copyright Advanced Micro Devices, Inc.
+ # SPDX-License-Identifier: MIT
+ 
+-set(_source_dir "${CMAKE_CURRENT_BINARY_DIR}/source")
+-set(_download_stamp "${_source_dir}/download.stamp")
+-
+-therock_subproject_fetch(Catch2-sources
+-  SOURCE_DIR "${_source_dir}"
+-  # Originally mirrored from: "https://github.com/catchorg/Catch2/archive/refs/tags/v3.8.1.tar.gz"
+-  URL "https://rocm-third-party-deps.s3.us-east-2.amazonaws.com/Catch2-3.8.1.tar.gz"
+-  URL_HASH "SHA256=7a02b359a95a4080c0f317c13759cea6cb8b70e3c8e4c0e0e0e0e0e0e0e0e0e0"
+-  TOUCH "${_download_stamp}"
+-)
++# Use system catch2
++find_package(Catch2 3 REQUIRED)
+ 
+-therock_cmake_subproject_declare(therock-Catch2
+-  EXTERNAL_SOURCE_DIR "Catch2"
+-  USE_DIST_AMDGPU_TARGETS
+-  NO_MERGE_COMPILE_COMMANDS
+-  BACKGROUND_BUILD
+-  OUTPUT_ON_FAILURE
+-  EXTRA_DEPENDS "${_download_stamp}"
+-)
++# Provide package for downstream dependencies
++set(Catch2_SOURCE_DIR "/usr")
++
++therock_cmake_subproject_declare(therock-Catch2
++  EXTERNAL_SOURCE_DIR "${Catch2_SOURCE_DIR}"
++  USE_DIST_AMDGPU_TARGETS
++  NO_MERGE_COMPILE_COMMANDS
++)

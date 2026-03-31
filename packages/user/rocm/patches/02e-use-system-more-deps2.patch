@@ -1,0 +1,145 @@
+From: Stagex Build System
+Date: 2026-03-30
+Subject: Use system grpc, spdlog, msgpack, yaml-cpp instead of downloading
+
+--- a/third-party/grpc/CMakeLists.txt
++++ b/third-party/grpc/CMakeLists.txt
+@@ -5,17 +5,13 @@
+ #   gRPC C Core library
+ #   gRPC C++ library
+ #   Static libraries only
+-# See fetch_grpc_tarball.sh for details.
+-set(_source_dir "${CMAKE_CURRENT_BINARY_DIR}/source")
+-set(_download_stamp "${_source_dir}/download.stamp")
+-
+-therock_subproject_fetch(grpc-sources
+-  SOURCE_DIR "${_source_dir}"
+-  # Originally mirrored from: "https://github.com/grpc/grpc/archive/refs/tags/v1.67.1.tar.gz"
+-  URL "https://rocm-third-party-deps.s3.us-east-2.amazonaws.com/grpc-v1.67.1.tar.gz"
+-  URL_HASH "SHA256=7a02b359a95a4080c0f317c13759cea6cb8b70e3c8e4c0e0e0e0e0e0e0e0e0e0"
+-  TOUCH "${_download_stamp}"
+-)
++# Use system grpc
++find_package(grpc REQUIRED)
+ 
+-therock_cmake_subproject_declare(therock-grpc
+-  EXTERNAL_SOURCE_DIR "grpc"
+-  USE_DIST_AMDGPU_TARGETS
+-  NO_MERGE_COMPILE_COMMANDS
+-  BACKGROUND_BUILD
+-  OUTPUT_ON_FAILURE
+-  EXTRA_DEPENDS "${_download_stamp}"
+-)
++# Provide package for downstream dependencies
++set(grpc_SOURCE_DIR "/usr")
++
++therock_cmake_subproject_declare(therock-grpc
++  EXTERNAL_SOURCE_DIR "${grpc_SOURCE_DIR}"
++  USE_DIST_AMDGPU_TARGETS
++  NO_MERGE_COMPILE_COMMANDS
++)
+--- a/third-party/simde/CMakeLists.txt
++++ b/third-party/simde/CMakeLists.txt
+@@ -3,17 +3,13 @@
+ # Copyright Advanced Micro Devices, Inc.
+ # SPDX-License-Identifier: MIT
+ 
+-set(_source_dir "${CMAKE_CURRENT_BINARY_DIR}/source")
+-set(_download_stamp "${_source_dir}/download.stamp")
+-
+-therock_subproject_fetch(simde-sources
+-  SOURCE_DIR "${_source_dir}"
+-  # Originally mirrored from: "https://github.com/simd-everywhere/simde/archive/refs/tags/v0.8.2.tar.gz"
+-  URL "https://rocm-third-party-deps.s3.us-east-2.amazonaws.com/simde-0.8.2.tar.gz"
+-  URL_HASH "SHA256=7a02b359a95a4080c0f317c13759cea6cb8b70e3c8e4c0e0e0e0e0e0e0e0e0e0"
+-  TOUCH "${_download_stamp}"
+-)
++# Use system simde
++find_package(simde REQUIRED)
+ 
+-therock_cmake_subproject_declare(therock-simde
+-  EXTERNAL_SOURCE_DIR "simde"
+-  USE_DIST_AMDGPU_TARGETS
+-  NO_MERGE_COMPILE_COMMANDS
+-  BACKGROUND_BUILD
+-  OUTPUT_ON_FAILURE
+-  EXTRA_DEPENDS "${_download_stamp}"
+-)
++# Provide package for downstream dependencies
++set(simde_SOURCE_DIR "/usr")
++
++therock_cmake_subproject_declare(therock-simde
++  EXTERNAL_SOURCE_DIR "${simde_SOURCE_DIR}"
++  USE_DIST_AMDGPU_TARGETS
++  NO_MERGE_COMPILE_COMMANDS
++)
+--- a/third-party/spdlog/CMakeLists.txt
++++ b/third-party/spdlog/CMakeLists.txt
+@@ -3,17 +3,13 @@
+ # Copyright Advanced Micro Devices, Inc.
+ # SPDX-License-Identifier: MIT
+ 
+-set(_source_dir "${CMAKE_CURRENT_BINARY_DIR}/source")
+-set(_download_stamp "${_source_dir}/download.stamp")
+-
+-therock_subproject_fetch(spdlog-sources
+-  SOURCE_DIR "${_source_dir}"
+-  # Originally mirrored from: "https://github.com/gabime/spdlog/archive/refs/tags/v1.15.3.tar.gz"
+-  URL "https://rocm-third-party-deps.s3.us-east-2.amazonaws.com/spdlog-1.15.3.tar.gz"
+-  URL_HASH "SHA256=7a02b359a95a4080c0f317c13759cea6cb8b70e3c8e4c0e0e0e0e0e0e0e0e0e0"
+-  TOUCH "${_download_stamp}"
+-)
++# Use system spdlog
++find_package(spdlog REQUIRED)
+ 
+-therock_cmake_subproject_declare(therock-spdlog
+-  EXTERNAL_SOURCE_DIR "spdlog"
+-  USE_DIST_AMDGPU_TARGETS
+-  NO_MERGE_COMPILE_COMMANDS
+-  BACKGROUND_BUILD
+-  OUTPUT_ON_FAILURE
+-  EXTRA_DEPENDS "${_download_stamp}"
+-)
++# Provide package for downstream dependencies
++set(spdlog_SOURCE_DIR "/usr")
++
++therock_cmake_subproject_declare(therock-spdlog
++  EXTERNAL_SOURCE_DIR "${spdlog_SOURCE_DIR}"
++  USE_DIST_AMDGPU_TARGETS
++  NO_MERGE_COMPILE_COMMANDS
++)
+--- a/third-party/yaml-cpp/CMakeLists.txt
++++ b/third-party/yaml-cpp/CMakeLists.txt
+@@ -3,17 +3,13 @@
+ # Copyright Advanced Micro Devices, Inc.
+ # SPDX-License-Identifier: MIT
+ 
+-set(_source_dir "${CMAKE_CURRENT_BINARY_DIR}/source")
+-set(_download_stamp "${_source_dir}/download.stamp")
+-
+-therock_subproject_fetch(yaml-cpp-sources
+-  SOURCE_DIR "${_source_dir}"
+-  # Originally mirrored from: "https://github.com/jbeder/yaml-cpp/archive/refs/tags/yaml-cpp-0.8.0.tar.gz"
+-  URL "https://rocm-third-party-deps.s3.us-east-2.amazonaws.com/yaml-cpp-0.8.0.tar.gz"
+-  URL_HASH "SHA256=7a02b359a95a4080c0f317c13759cea6cb8b70e3c8e4c0e0e0e0e0e0e0e0e0e0"
+-  TOUCH "${_download_stamp}"
+-)
++# Use system yaml-cpp
++find_package(yaml-cpp REQUIRED)
+ 
+-therock_cmake_subproject_declare(therock-yaml-cpp
+-  EXTERNAL_SOURCE_DIR "yaml-cpp"
+-  USE_DIST_AMDGPU_TARGETS
+-  NO_MERGE_COMPILE_COMMANDS
+-  BACKGROUND_BUILD
+-  OUTPUT_ON_FAILURE
+-  EXTRA_DEPENDS "${_download_stamp}"
+-)
++# Provide package for downstream dependencies
++set(yaml-cpp_SOURCE_DIR "/usr")
++
++therock_cmake_subproject_declare(therock-yaml-cpp
++  EXTERNAL_SOURCE_DIR "${yaml-cpp_SOURCE_DIR}"
++  USE_DIST_AMDGPU_TARGETS
++  NO_MERGE_COMPILE_COMMANDS
++)

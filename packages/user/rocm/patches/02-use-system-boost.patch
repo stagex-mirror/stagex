@@ -1,0 +1,50 @@
+From: Stagex Build System
+Date: 2026-03-30
+Subject: Use system boost instead of downloading
+
+--- a/third-party/boost/CMakeLists.txt
++++ b/third-party/boost/CMakeLists.txt
+@@ -1,26 +1,14 @@
+ # Copyright Advanced Micro Devices, Inc.
+ # SPDX-License-Identifier: MIT
+ 
+-# Installs a limited subset of boost sufficient to build ROCM subprojects.
+-# Currently, this includes:
+-#   atomic
+-#   filesystem
+-#   multi_index
+-#   system
+-#   Static libraries only
+-#   Release build
+-#   Multithreaded
+-# See cmake_project/CMakeLists.txt for details.
+-set(_source_dir "${CMAKE_CURRENT_BINARY_DIR}/source")
+-set(_download_stamp "${_source_dir}/download.stamp")
+-
+-therock_subproject_fetch(boost-sources
+-  SOURCE_DIR "${_source_dir}"
+-  # Originally mirrored from: "https://archives.boost.io/release/1.87.0/source/boost_1_87_0.tar.bz2"
+-  # with `libs\wave\test\testwave\testfiles\utf8-test*` removed.
+-  URL "https://rocm-third-party-deps.s3.us-east-2.amazonaws.com/boost_1_87_0-1.tar.bz2"
+-  URL_HASH "SHA256=0ba4085a0beb3b9c57fa617d09110c79e977a9944750cd93fb17d82807a8c64c"
+-  TOUCH "${_download_stamp}"
+-)
++# Use system boost
++find_package(Boost 1.87.0 REQUIRED COMPONENTS atomic filesystem multi_index system)
+ 
+ therock_cmake_subproject_declare(therock-boost
+-  EXTERNAL_SOURCE_DIR "cmake_project"
++  EXTERNAL_SOURCE_DIR "/usr"
+   USE_DIST_AMDGPU_TARGETS
+-  EXCLUDE_FROM_ALL
+-  NO_MERGE_COMPILE_COMMANDS
+-  BACKGROUND_BUILD
+-  OUTPUT_ON_FAILURE
+-  CMAKE_ARGS
+-    "-DBOOST_SOURCE_DIR=${_source_dir}"
+-    "-DTHEROCK_BOOST_LIBRARIES=atomic,filesystem,multi_index,system"
+-  EXTRA_DEPENDS
+-    "${_download_stamp}"
+ )
+ # Important: Version number here must match the version downloaded above.
+ # Check the install directory if in doubt (i.e. run `ninja therock-boost` and

@@ -1,0 +1,20 @@
+From: Stagex Build System
+Date: 2026-03-30
+Subject: Make git optional in rocprofiler-register
+
+This patch makes git optional in rocprofiler-register so builds work without git.
+
+--- a/rocm-systems/projects/rocprofiler-register/cmake/rocprofiler_register_utilities.cmake
++++ b/rocm-systems/projects/rocprofiler-register/cmake/rocprofiler_register_utilities.cmake
+@@ -235,7 +235,10 @@ function(rocprofiler_register_checkout_git_submodule SUBMODULE_NAME SUBMODULE_
+     set(GIT_SUBMODULE_PATH "${ROCPROFILER_REGISTER_SOURCE_DIR}/.git/modules/${SUBMODULE_NAME}")
+ 
+     # Check if git is available
+-    find_package(Git REQUIRED)
++    find_package(Git)
++    if(NOT Git_FOUND)
++      message(STATUS "Git not found, using pre-extracted submodule")
++    endif()
+ 
+     # Check if the submodule path exists
+     if(NOT EXISTS "${SUBMODULE_PATH}")
