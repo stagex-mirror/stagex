@@ -1,12 +1,12 @@
 [package]
 name = "docker-cli-buildx"
-version = "0.32.1"
+version = "0.33.0"
 description = "Docker CLI plugin for extended build capabilities with BuildKit"
 license = "Apache-2.0"
 website = "https://github.com/docker/buildx"
 
 [sources.docker-cli-buildx]
-hash = "fc4b82f21f766a704fb26239550d37dfed3936b6e76580cddb00407f13f48f6d"
+hash = "00b5d5093f6b6cb75fd687988fb395253d10a5ca4d7e4c6b26af3914c219d2d7"
 format = "tar.gz"
 file = "docker-cli-buildx-{version}.{format}"
 mirrors = [ "https://github.com/docker/buildx/archive/v{version}.{format}",]
