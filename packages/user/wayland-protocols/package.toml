@@ -1,12 +1,12 @@
 [package]
 name = "wayland-protocols"
-version = "1.42"
+version = "1.48"
 description = "Protocols and protocol extensions complementing the Wayland core protocol"
 license = "MIT"
 website = "https://wayland.freedesktop.org"
 
 [sources.wayland-protocols]
-hash = "23ba80d410d1200a86fe29592c19766eae8f1c350b67289999e9e7ea12d9f7aa"
+hash = "398036ac0eb6484982ddbde7ff86848d753231f9cdeeae983f06b52946625aa1"
 format = "tar.xz"
 file = "wayland-protocols-{version}.{format}"
-mirrors = [ "https://gitlab.freedesktop.org/wayland/wayland-protocols/-/releases/{version}/downloads/{file}", ]
+mirrors = [ "https://gitlab.freedesktop.org/wayland/wayland-protocols/-/releases/{version}/downloads/{file}",]
