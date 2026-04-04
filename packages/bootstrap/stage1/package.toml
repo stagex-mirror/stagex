@@ -815,16 +815,6 @@ mirrors = [
   "https://mirrors.kernel.org/gnu/autogen/rel5.18.16/{file}",
 ]
 
-[sources.autogen_51816gz]
-hash = "0c04ab2f7ce13c4a1c06c4abc7dfe75312aad89b8b0a1068e5e563787eb56632"
-file = "autogen-5.18.16.tar.gz"
-mirrors = [
-  "https://gitweb.git.savannah.gnu.org/gitweb/?p=autogen.git;a=snapshot;h=5d22bdb4bafe5ec3f21dcbfc64b61e48ea63c5a5;sf=tgz",
-  "https://cgit.git.savannah.gnu.org/cgit/autogen.git/snapshot/{file}",
-  "https://archive.org/download/live-bootstrap-sources/{file}",
-  "https://files.bootstrapping.world/{file}",
-]
-
 [sources.gnulib_8f4538a5]
 hash = "e207c0bb72093c3a72dde302fcfaa1dbda12a62172d47b73565883a92209ebab"
 version = "8f4538a5"
