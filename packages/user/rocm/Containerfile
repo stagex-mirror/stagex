@@ -74,8 +74,8 @@ RUN --network=none <<-EOF
     ninja -j"$(nproc)"
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -118,8 +118,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -138,8 +138,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -158,8 +158,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -182,8 +182,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -200,8 +200,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -219,8 +219,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -247,8 +247,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -266,8 +266,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -285,16 +285,16 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
     mkdir -p /rocm-systems/projects/rocr-debug-agent/build && cd /rocm-systems/projects/rocr-debug-agent/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -312,16 +312,16 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
     mkdir -p /rocm-systems/projects/amdsmi/build && cd /rocm-systems/projects/amdsmi/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -340,8 +340,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -359,8 +359,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -378,8 +378,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -397,8 +397,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -416,8 +416,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -435,8 +435,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -454,8 +454,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -473,8 +473,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -492,8 +492,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -511,8 +511,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -530,8 +530,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -549,8 +549,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -568,8 +568,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -587,8 +587,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -606,8 +606,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -625,8 +625,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -644,8 +644,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -663,8 +663,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -682,8 +682,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -701,8 +701,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
@@ -720,8 +720,8 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     # Copy installed files to /usr for subsequent stages
-    # Create target directories first since they may not exist
-    mkdir -p /usr/lib64 /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
+    # Create target directories first (skip lib64 as it's a symlink in base image)
+    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
     cp -a /rootfs/usr/* /usr/
 EOF
 
