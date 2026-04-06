@@ -1,4 +1,4 @@
-FROM stagex/pallet-gcc-cmake-busybox AS build
+FROM stagex/pallet-clang-cmake-busybox AS build
 ARG VERSION
 COPY --from=stagex/user-ninja . /
 COPY --from=stagex/core-make . /
@@ -25,9 +25,13 @@ COPY --from=stagex/core-boost . /
 COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-zlib . /
-COPY --from=stagex/user-rocm-llvm . /
+COPY --from=stagex/core-git . /
+COPY --from=stagex/user-glog . /
+COPY --from=stagex/user-fmt . /
+COPY --from=stagex/user-fmt . /
+
+# Copy all source tarballs
 COPY --from=fetch rocm-cmake.tar.gz /
-COPY --from=fetch therock.tar.gz /
 COPY --from=fetch half.tar.gz /
 COPY --from=fetch hipify.tar.gz /
 COPY --from=fetch spirv-llvm-translator.tar.gz /
@@ -36,217 +40,557 @@ COPY --from=fetch iree.tar.gz /
 COPY --from=fetch fusilli.tar.gz /
 COPY --from=fetch libhipcxx.tar.gz /
 COPY --from=fetch rocgdb.tar.gz /
-COPY patches /src/patches
-WORKDIR /TheRock-main
+COPY --from=fetch llvm-project.tar.gz /
+COPY --from=fetch rocm-libraries.tar.gz /
+COPY --from=fetch rocm-systems.tar.gz /
+
+# ============================================================================
+# Stage: Build LLVM
+# ============================================================================
+
+FROM build AS llvm-build
+WORKDIR /
+RUN tar -xzf llvm-project.tar.gz && mv llvm-project-amd-mainline llvm-project
 RUN --network=none <<-EOF
     set -e
-    
-    # Apply patches
-    patch -p1 < /src/patches/01-stagex-version.patch
-    patch -p1 < /src/patches/02-use-system-boost.patch
-    patch -p1 < /src/patches/02b-use-system-eigen.patch
-    patch -p1 < /src/patches/02c-use-system-fftw3.patch
-    patch -p1 < /src/patches/02d-use-system-flatbuffers.patch
-    patch -p1 < /src/patches/02e-use-system-fmt.patch
-    patch -p1 < /src/patches/02f-use-system-googletest.patch
-    patch -p1 < /src/patches/02g-use-system-grpc.patch
-    
-    # Create CMake config files for system packages
-    mkdir -p /usr/lib/cmake
-    cd /usr/lib/cmake
-    
-    # Create nlohmann_json config
-    mkdir -p nlohmann_json
-    cat > nlohmann_json/nlohmann_json-config.cmake << 'NLOHMANN_EOF'
-# nlohmann_json config for system package
-set(nlohmann_json_VERSION 3.11.3)
-add_library(nlohmann_json::nlohmann_json INTERFACE IMPORTED)
-set_target_properties(nlohmann_json::nlohmann_json PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "/usr/include"
-)
-NLOHMANN_EOF
-    
-    # Create spdlog config
-    mkdir -p spdlog
-    cat > spdlog/spdlog-config.cmake << 'SPDLOG_EOF'
-# spdlog config for system package
-set(spdlog_VERSION 1.15.0)
-add_library(spdlog::spdlog INTERFACE IMPORTED)
-set_target_properties(spdlog::spdlog PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "/usr/include"
-    INTERFACE_LINK_LIBRARIES "spdlog"
-)
-find_library(SPDLOG_LIB spdlog HINTS /usr/lib /usr/lib64)
-set_target_properties(spdlog::spdlog PROPERTIES INTERFACE_LINK_LIBRARIES "${SPDLOG_LIB}")
-SPDLOG_EOF
+    mkdir -p /llvm-project/llvm/build
+    cd /llvm-project/llvm/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DLLVM_BUILD_LLVM_DYLIB=ON \
+        -DLLVM_LINK_LLVM_DYLIB=ON \
+        -DLLVM_ENABLE_PROJECTS="clang" \
+        -DLLVM_TARGETS_TO_BUILD="X86;AMDGPU" \
+        -DLLVM_AMDGPU_TGT_GFX1030=ON \
+        -DLLVM_AMDGPU_TGT_GFX1100=ON \
+        ..
+    ninja -j"$(nproc)"
+    DESTDIR=/rootfs ninja install
+EOF
 
-    # Create yaml-cpp config
-    mkdir -p yaml-cpp
-    cat > yaml-cpp/yaml-cpp-config.cmake << 'YAML_EOF'
-# yaml-cpp config for system package
-set(yaml-cpp_VERSION 0.8.0)
-add_library(yaml-cpp::yaml-cpp INTERFACE IMPORTED)
-find_library(YAML_CPP_LIB yaml-cpp HINTS /usr/lib /usr/lib64)
-set_target_properties(yaml-cpp::yaml-cpp PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "/usr/include"
-    INTERFACE_LINK_LIBRARIES "${YAML_CPP_LIB}"
-)
-YAML_EOF
+# ============================================================================
+# Stage: Build AMD ComGR (part of LLVM monorepo)
+# ============================================================================
 
-    # Create msgpack-cxx config
-    mkdir -p msgpack-cxx
-    cat > msgpack-cxx/msgpack-cxx-config.cmake << 'MSGPACK_EOF'
-# msgpack-cxx config for system package
-set(msgpack-cxx_VERSION 6.1.0)
-add_library(msgpack-cxx::msgpack-cxx INTERFACE IMPORTED)
-find_library(MSGPACK_LIB msgpack-cxx HINTS /usr/lib /usr/lib64)
-set_target_properties(msgpack-cxx::msgpack-cxx PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "/usr/include"
-    INTERFACE_LINK_LIBRARIES "${MSGPACK_LIB}"
-)
-MSGPACK_EOF
+FROM llvm-build AS amd_comgr-build
+WORKDIR /
+RUN --network=none <<-EOF
+    set -e
+    mkdir -p /llvm-project/amd/comgr/build
+    cd /llvm-project/amd/comgr/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCOMGR_STATIC_LLVM=OFF \
+        ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
 
-    # Create openblas config
-    mkdir -p openblas
-    cat > openblas/openblas-config.cmake << 'OPENBLAS_EOF'
-# openblas config for system package
-set(openblas_VERSION 0.3.27)
-add_library(openblas::openblas UNKNOWN IMPORTED)
-find_library(OPENBLAS_LIB openblas HINTS /usr/lib /usr/lib64)
-set_target_properties(openblas::openblas PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "/usr/include"
-    IMPORTED_LOCATION "${OPENBLAS_LIB}"
-)
-OPENBLAS_EOF
+# ============================================================================
+# Stage: Build ROCm Base Infrastructure
+# ============================================================================
 
-    # Create simde config (header-only)
-    mkdir -p simde
-    cat > simde/simde-config.cmake << 'SIMDE_EOF'
-# simde config for system package
-set(simde_VERSION 0.7.0)
-add_library(simde::simde INTERFACE IMPORTED)
-set_target_properties(simde::simde PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "/usr/include"
-)
-SIMDE_EOF
+FROM amd_comgr-build AS rocm-base
+WORKDIR /
+RUN tar -xzf rocm-cmake.tar.gz && mv rocm-cmake-master rocm-cmake
+RUN --network=none <<-EOF
+    set -e
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
+    mkdir -p /rocm-cmake/build && cd /rocm-cmake/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
 
-    # Create libdivide config (header-only)
-    mkdir -p libdivide
-    cat > libdivide/libdivide-config.cmake << 'LIBDIVIDE_EOF'
-# libdivide config for system package
-set(libdivide_VERSION 5.2.0)
-add_library(libdivide::libdivide INTERFACE IMPORTED)
-set_target_properties(libdivide::libdivide PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "/usr/include"
-)
-LIBDIVIDE_EOF
+# ============================================================================
+# Stage: Build rocm-core
 
-    # Create FunctionalPlus config (header-only)
-    mkdir -p FunctionalPlus
-    cat > FunctionalPlus/FunctionalPlus-config.cmake << 'FUNCPLUS_EOF'
-# FunctionalPlus config for system package
-set(FunctionalPlus_VERSION 0.2.25)
-add_library(FunctionalPlus::FunctionalPlus INTERFACE IMPORTED)
-set_target_properties(FunctionalPlus::FunctionalPlus PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "/usr/include"
-)
-FUNCPLUS_EOF
-
-    # Create Catch2 config
-    mkdir -p Catch2
-    cat > Catch2/Catch2-config.cmake << 'CATCH2_EOF'
-# Catch2 config for system package
-set(Catch2_VERSION 3.5.0)
-add_library(Catch2::Catch2 INTERFACE IMPORTED)
-find_library(CATCH2_LIB Catch2 HINTS /usr/lib /usr/lib64)
-set_target_properties(Catch2::Catch2 PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "/usr/include"
-    INTERFACE_LINK_LIBRARIES "${CATCH2_LIB}"
-)
-CATCH2_EOF
-
-    # Add CMAKE_PREFIX_PATH to find these configs
+FROM rocm-base AS rocm-core-build
+WORKDIR /
+COPY --from=rocm-base /rootfs/ /
+RUN tar -xzf rocm-systems.tar.gz && mv rocm-systems-develop rocm-systems
+RUN --network=none <<-EOF
+    set -e
     export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
-    
-    # Replace S3 URLs with system packages using sed for all remaining files
-    for f in spdlog msgpack-cxx yaml-cpp nlohmann-json simde libdivide FunctionalPlus Catch2; do
-      if [ -f "third-party/$f/CMakeLists.txt" ]; then
-        # Remove the therock_subproject_fetch block
-        sed -i '/therock_subproject_fetch/,/^)/d' third-party/$f/CMakeLists.txt
-        # Get CMake package name based on the package
-        case "$f" in
-          nlohmann-json) cmake_name="nlohmann_json" ;;
-          *) cmake_name="$f" ;;  # Use original name for others
-        esac
-        # Add find_package at the beginning
-        sed -i "1i # Use system $f\nfind_package($cmake_name REQUIRED)" third-party/$f/CMakeLists.txt
-      fi
-    done
-    
-    # Extract rocm-cmake
-    tar -xzf /rocm-cmake.tar.gz -C /tmp/
-    mv /tmp/rocm-cmake-master /TheRock-main/base/rocm-cmake
-    
-    # Extract half
-    tar -xzf /half.tar.gz -C /tmp/
-    mv /tmp/half-rocm /TheRock-main/base/half
-    
-    # Extract HIPIFY
-    tar -xzf /hipify.tar.gz -C /tmp/
-    mv /tmp/HIPIFY-amd-mainline /TheRock-main/compiler/hipify
-    
-    # Extract rocm-libraries
-    tar -xzf /rocm-libraries.tar.gz -C /tmp/
-    mv /tmp/rocm-libraries-develop /TheRock-main/rocm-libraries
-    
-    # Extract rocm-systems
-    tar -xzf /rocm-systems.tar.gz -C /tmp/
-    mv /tmp/rocm-systems-develop /TheRock-main/rocm-systems
-    
-    # Move spirv-llvm-translator
-    tar -xzf /spirv-llvm-translator.tar.gz -C /tmp/
-    mv /tmp/SPIRV-LLVM-Translator-amd-mainline /TheRock-main/compiler/spirv-llvm-translator
-    
-    # Make SPIRV-Headers optional for spirv-llvm-translator
-    sed -i '/FetchContent_Declare.*spirv-headers/,/FetchContent_MakeAvailable/d' /TheRock-main/compiler/spirv-llvm-translator/CMakeLists.txt
-    sed -i '1i # Use system SPIRV-Headers\nfind_package(SPIRV-Headers QUIET)' /TheRock-main/compiler/spirv-llvm-translator/CMakeLists.txt
-    
-    # Extract mesa-fork
-    tar -xzf /mesa-fork.tar.gz -C /tmp/
-    mv /tmp/mesa-fork-amd-decode-only /TheRock-main/third-party/sysdeps/linux/amd-mesa/mesa-fork
-    
-    # Extract iree
-    tar -xzf /iree.tar.gz -C /tmp/
-    mv /tmp/iree-main /TheRock-main/iree-libs/iree
-    
-    # Extract fusilli
-    tar -xzf /fusilli.tar.gz -C /tmp/
-    mv /tmp/fusilli-main /TheRock-main/iree-libs/fusilli
-    
-    # Extract libhipcxx
-    tar -xzf /libhipcxx.tar.gz -C /tmp/
-    mv /tmp/libhipcxx-amd-develop /TheRock-main/math-libs/libhipcxx
-    
-    # Extract rocgdb
-    tar -xzf /rocgdb.tar.gz -C /tmp/
-    mv /tmp/ROCgdb-amd-staging-rocgdb-16 /TheRock-main/debug-tools/rocgdb/source
-    
-    # Build TheRock - will build all ROCm components
-    mkdir -p /TheRock-main/build
-    cmake -B /TheRock-main/build -GNinja \
+    rm -rf /rocm-systems/projects/rocm-core/build
+    mkdir -p /rocm-systems/projects/rocm-core/build && cd /rocm-systems/projects/rocm-core/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# ============================================================================
+# Stage: Build rocr-runtime (HSA Runtime)
+
+
+# ============================================================================
+# Stage: Build rocprofiler-register (before rocr-runtime)
+
+FROM rocm-core-build AS rocprofiler-register-build
+WORKDIR /
+COPY --from=rocm-core-build /rootfs/ /
+RUN tar -xzf rocm-systems.tar.gz && mv rocm-systems-develop rocm-systems
+RUN --network=none <<-EOF
+    set -e
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    mkdir -p /rocm-systems/projects/rocprofiler-register/build && cd /rocm-systems/projects/rocprofiler-register/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 -DROCPROFILER_REGISTER_BUILD_GLOG=OFF -DROCPROFILER_REGISTER_BUILD_FMT=OFF ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# ============================================================================
+FROM rocprofiler-register-build AS rocr-runtime-build
+WORKDIR /
+COPY --from=rocm-core-build /rootfs/ /
+RUN --network=none <<-EOF
+    set -e
+    export PATH="/usr/bin:/usr/lib/llvm-22/bin:${PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    mkdir -p /rocm-systems/projects/rocr-runtime/build && cd /rocm-systems/projects/rocr-runtime/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 -DBUILD_SHARED_LIBS=ON -DBUILD_ROCR_PROFILER=OFF ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# ============================================================================
+# Stage: Build roctracer
+
+FROM rocr-runtime-build AS rocminfo-build
+WORKDIR /
+COPY --from=rocr-runtime-build /rootfs/ /
+RUN --network=none <<-EOF
+    set -e
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    mkdir -p /rocm-systems/projects/rocminfo/build && cd /rocm-systems/projects/rocminfo/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# ============================================================================
+# Stage: Build clr (ROCm Common Runtime Layer) with HIP
+
+FROM rocr-runtime-build AS clr-build
+WORKDIR /
+COPY --from=rocr-runtime-build /rootfs/ /
+RUN tar -xzf hipify.tar.gz && mv HIPIFY-amd-mainline hipify
+RUN --network=none <<-EOF
+    set -e
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    mkdir -p /rocm-systems/projects/clr/build && cd /rocm-systems/projects/clr/build
+    cmake -GNinja \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=/usr \
-        -DPython3_EXECUTABLE=/usr/bin/python3 \
-        -DTHEROCK_BUILD_SHARED_LIBS=ON \
-        -DTHEROCK_BUNDLE_SYSDEPS=OFF \
-        -DTHEROCK_ENABLE_TESTS=OFF \
-        -DTHEROCK_ENABLE_ROCGDB=OFF \
-        -DTHEROCK_ENABLE_LIBHIPCXX=OFF \
-        -DTHEROCK_AMDGPU_FAMILIES=gfx1100 \
-        -DTHEROCK_USE_SYSTEM_PACKAGES=ON \
-        /TheRock-main
-    cmake --build /TheRock-main/build
-    DESTDIR=/rootfs cmake --install /TheRock-main/build
+        -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm \
+        -DCLR_BUILD_HIP=ON \
+        -DHIP_COMMON_DIR=/hipify \
+        -DHIPCC_BIN_DIR=/usr/bin \
+        -DHIP_PLATFORM=amd \
+        ..
+    ninja
+    DESTDIR=/rootfs ninja install
 EOF
+
+# ============================================================================
+# Stage: Build rocr-runtime (HSA Runtime)
+
+FROM rocr-runtime-build AS roctracer-build
+WORKDIR /
+COPY --from=rocr-runtime-build /rootfs/ /
+RUN --network=none <<-EOF
+    set -e
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    mkdir -p /rocm-systems/projects/roctracer/build && cd /rocm-systems/projects/roctracer/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+
+# Stage: Build rocdbgapi and rocr-debug-agent
+
+FROM rocprofiler-register-build AS debug-build
+WORKDIR /
+COPY --from=rocprofiler-register-build /rootfs/ /
+RUN --network=none <<-EOF
+    set -e
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    mkdir -p /rocm-systems/projects/rocdbgapi/build && cd /rocm-systems/projects/rocdbgapi/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
+    ninja
+    DESTDIR=/rootfs ninja install
+    mkdir -p /rocm-systems/projects/rocr-debug-agent/build && cd /rocm-systems/projects/rocr-debug-agent/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# ============================================================================
+# Stage: Build amdsmi and rocm-smi-lib
+
+FROM debug-build AS smi-build
+WORKDIR /
+COPY --from=debug-build /rootfs/ /
+RUN --network=none <<-EOF
+    set -e
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    mkdir -p /rocm-systems/projects/rocm-smi-lib/build && cd /rocm-systems/projects/rocm-smi-lib/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
+    ninja
+    DESTDIR=/rootfs ninja install
+    mkdir -p /rocm-systems/projects/amdsmi/build && cd /rocm-systems/projects/amdsmi/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# ============================================================================
+# Stage: Build rocm-libraries - half
+
+FROM smi-build AS rocm-libraries-build
+WORKDIR /
+COPY --from=smi-build /rootfs/ /
+RUN tar -xzf rocm-libraries.tar.gz && mv rocm-libraries-develop rocm-libraries && tar -xzf half.tar.gz && mv half-rocm half
+RUN --network=none <<-EOF
+    set -e
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    mkdir -p /half/build && cd /half/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# ============================================================================
+# Stage: Build rocPRIM
+
+FROM rocm-libraries-build AS rocprim-build
+WORKDIR /
+COPY --from=rocm-libraries-build /rootfs/ /
+RUN --network=none <<-EOF
+    set -e
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    mkdir -p /rocm-libraries/projects/rocprim/build && cd /rocm-libraries/projects/rocprim/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# ============================================================================
+# Stage: Build rocthrust
+
+FROM rocprim-build AS rocthrust-build
+WORKDIR /
+COPY --from=rocprim-build /rootfs/ /
+RUN --network=none <<-EOF
+    set -e
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    mkdir -p /rocm-libraries/projects/rocthrust/build && cd /rocm-libraries/projects/rocthrust/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# ============================================================================
+# Stage: Build hipCUB
+
+FROM rocthrust-build AS hipcub-build
+WORKDIR /
+COPY --from=rocthrust-build /rootfs/ /
+RUN --network=none <<-EOF
+    set -e
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    mkdir -p /rocm-libraries/projects/hipcub/build && cd /rocm-libraries/projects/hipcub/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# ============================================================================
+# Stage: Build rocFFT
+
+FROM hipcub-build AS rocfft-build
+WORKDIR /
+COPY --from=hipcub-build /rootfs/ /
+RUN --network=none <<-EOF
+    set -e
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    mkdir -p /rocm-libraries/projects/rocfft/build && cd /rocm-libraries/projects/rocfft/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# ============================================================================
+# Stage: Build rocRAND
+
+FROM rocfft-build AS rocrand-build
+WORKDIR /
+COPY --from=rocfft-build /rootfs/ /
+RUN --network=none <<-EOF
+    set -e
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    mkdir -p /rocm-libraries/projects/rocrand/build && cd /rocm-libraries/projects/rocrand/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# ============================================================================
+# Stage: Build rocSOLVER
+
+FROM rocrand-build AS rocsolver-build
+WORKDIR /
+COPY --from=rocrand-build /rootfs/ /
+RUN --network=none <<-EOF
+    set -e
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    mkdir -p /rocm-libraries/projects/rocsolver/build && cd /rocm-libraries/projects/rocsolver/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# ============================================================================
+# Stage: Build rocBLAS
+
+FROM rocsolver-build AS rocblas-build
+WORKDIR /
+COPY --from=rocsolver-build /rootfs/ /
+RUN --network=none <<-EOF
+    set -e
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    mkdir -p /rocm-libraries/projects/rocblas/build && cd /rocm-libraries/projects/rocblas/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# ============================================================================
+# Stage: Build rocSPARSE
+
+FROM rocblas-build AS rocsparse-build
+WORKDIR /
+COPY --from=rocblas-build /rootfs/ /
+RUN --network=none <<-EOF
+    set -e
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    mkdir -p /rocm-libraries/projects/rocsparse/build && cd /rocm-libraries/projects/rocsparse/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# ============================================================================
+# Stage: Build hipBLAS-common
+
+FROM rocsparse-build AS hipblas-common-build
+WORKDIR /
+COPY --from=rocsparse-build /rootfs/ /
+RUN --network=none <<-EOF
+    set -e
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    mkdir -p /rocm-libraries/projects/hipblas-common/build && cd /rocm-libraries/projects/hipblas-common/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# ============================================================================
+# Stage: Build hipBLAS
+
+FROM hipblas-common-build AS hipblas-build
+WORKDIR /
+COPY --from=hipblas-common-build /rootfs/ /
+RUN --network=none <<-EOF
+    set -e
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    mkdir -p /rocm-libraries/projects/hipblas/build && cd /rocm-libraries/projects/hipblas/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# ============================================================================
+# Stage: Build hipBLASLt
+
+FROM hipblas-build AS hipblaslt-build
+WORKDIR /
+COPY --from=hipblas-build /rootfs/ /
+RUN --network=none <<-EOF
+    set -e
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    mkdir -p /rocm-libraries/projects/hipblaslt/build && cd /rocm-libraries/projects/hipblaslt/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# ============================================================================
+# Stage: Build hipFFT
+
+FROM hipblaslt-build AS hipfft-build
+WORKDIR /
+COPY --from=hipblaslt-build /rootfs/ /
+RUN --network=none <<-EOF
+    set -e
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    mkdir -p /rocm-libraries/projects/hipfft/build && cd /rocm-libraries/projects/hipfft/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# ============================================================================
+# Stage: Build hipRAND
+
+FROM hipfft-build AS hiprand-build
+WORKDIR /
+COPY --from=hipfft-build /rootfs/ /
+RUN --network=none <<-EOF
+    set -e
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    mkdir -p /rocm-libraries/projects/hiprand/build && cd /rocm-libraries/projects/hiprand/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# ============================================================================
+# Stage: Build hipSOLVER
+
+FROM hiprand-build AS hipsolver-build
+WORKDIR /
+COPY --from=hiprand-build /rootfs/ /
+RUN --network=none <<-EOF
+    set -e
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    mkdir -p /rocm-libraries/projects/hipsolver/build && cd /rocm-libraries/projects/hipsolver/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# ============================================================================
+# Stage: Build hipSPARSE
+
+FROM hipsolver-build AS hipsparse-build
+WORKDIR /
+COPY --from=hipsolver-build /rootfs/ /
+RUN --network=none <<-EOF
+    set -e
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    mkdir -p /rocm-libraries/projects/hipsparse/build && cd /rocm-libraries/projects/hipsparse/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# ============================================================================
+# Stage: Build hipTensor
+
+FROM hipsparse-build AS hiptensor-build
+WORKDIR /
+COPY --from=hipsparse-build /rootfs/ /
+RUN --network=none <<-EOF
+    set -e
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    mkdir -p /rocm-libraries/projects/hiptensor/build && cd /rocm-libraries/projects/hiptensor/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# ============================================================================
+# Stage: Build hipSPARSELt
+
+FROM hiptensor-build AS hipsparselt-build
+WORKDIR /
+COPY --from=hiptensor-build /rootfs/ /
+RUN --network=none <<-EOF
+    set -e
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    mkdir -p /rocm-libraries/projects/hipsparselt/build && cd /rocm-libraries/projects/hipsparselt/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# ============================================================================
+# Stage: Build MIOpen
+
+FROM hipsparselt-build AS miopen-build
+WORKDIR /
+COPY --from=hipsparselt-build /rootfs/ /
+RUN --network=none <<-EOF
+    set -e
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    mkdir -p /rocm-libraries/projects/miopen/build && cd /rocm-libraries/projects/miopen/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# ============================================================================
+# Stage: Build ComposableKernel
+
+FROM miopen-build AS composablekernel-build
+WORKDIR /
+COPY --from=miopen-build /rootfs/ /
+RUN --network=none <<-EOF
+    set -e
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    mkdir -p /rocm-libraries/projects/composablekernel/build && cd /rocm-libraries/projects/composablekernel/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# ============================================================================
+# Stage: Build RCCL
+
+FROM composablekernel-build AS rccl-build
+WORKDIR /
+COPY --from=composablekernel-build /rootfs/ /
+RUN --network=none <<-EOF
+    set -e
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    mkdir -p /rocm-systems/projects/rccl/build && cd /rocm-systems/projects/rccl/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# ============================================================================
+# Final package stage
+# ============================================================================
+
 FROM stagex/core-filesystem AS package
-COPY --from=build /rootfs/ /
+COPY --from=rocm-core-build /rootfs/ /
+COPY --from=rocminfo-build /rootfs/ /
+COPY --from=clr-build /rootfs/ /
+COPY --from=rocr-runtime-build /rootfs/ /
+COPY --from=roctracer-build /rootfs/ /
+COPY --from=rocprofiler-register-build /rootfs/ /
+COPY --from=debug-build /rootfs/ /
+COPY --from=smi-build /rootfs/ /
+COPY --from=rocprim-build /rootfs/ /
+COPY --from=rocthrust-build /rootfs/ /
+COPY --from=hipcub-build /rootfs/ /
+COPY --from=rocfft-build /rootfs/ /
+COPY --from=rocrand-build /rootfs/ /
+COPY --from=rocsolver-build /rootfs/ /
+COPY --from=rocblas-build /rootfs/ /
+COPY --from=rocsparse-build /rootfs/ /
+COPY --from=hipblas-common-build /rootfs/ /
+COPY --from=hipblas-build /rootfs/ /
+COPY --from=hipblaslt-build /rootfs/ /
+COPY --from=hipfft-build /rootfs/ /
+COPY --from=hiprand-build /rootfs/ /
+COPY --from=hipsolver-build /rootfs/ /
+COPY --from=hipsparse-build /rootfs/ /
+COPY --from=hiptensor-build /rootfs/ /
+COPY --from=hipsparselt-build /rootfs/ /
+COPY --from=miopen-build /rootfs/ /
+COPY --from=composablekernel-build /rootfs/ /
+COPY --from=rccl-build /rootfs/ /

@@ -1,21 +1,9 @@
 [package]
 name = "rocm"
 version = "7.11"
-description = "ROCm build system with TheRock"
+description = "ROCm - Direct build without TheRock"
 license = "MIT"
 website = "https://rocm.docs.amd.com"
-
-[patches]
-01-stagex-version = "patches/01-stagex-version.patch"
-02-use-system-boost = "patches/02-use-system-deps.patch"
-02b-use-system-eigen = "patches/02b-use-system-eigen.patch"
-02c-use-system-fftw3 = "patches/02c-use-system-fftw3.patch"
-02d-use-system-flatbuffers = "patches/02d-use-system-flatbuffers.patch"
-02e-use-system-fmt = "patches/02e-use-system-fmt.patch"
-02f-use-system-googletest = "patches/02f-use-system-googletest.patch"
-02g-use-system-grpc = "patches/02g-use-system-grpc.patch"
-02i-use-system-final-deps = "patches/02i-use-system-final-deps.patch"
-04-spirv-headers-optional = "patches/04-spirv-headers-optional.patch"
 
 [sources.rocm-cmake]
 hash = "3d9c1797595f92d74b7ffa9ab50a97e0c893507b557c7fe0e364cf3940d6538c"
@@ -28,12 +16,6 @@ hash = "3324ac8749f0c9c1fc024c92dd07b67601a87e061abcd5f6542e2cb52d9700c7"
 format = "tar.gz"
 file = "half.tar.gz"
 mirrors = [ "https://github.com/ROCm/half/archive/refs/heads/rocm.tar.gz", ]
-
-[sources.therock]
-hash = "b2680f378f6ca7aed3e83bd277b804dcc898dc0669b980600593ab86958cc6bc"
-format = "tar.gz"
-file = "therock.tar.gz"
-mirrors = [ "https://github.com/ROCm/TheRock/archive/refs/heads/main.tar.gz", ]
 
 [sources.hipify]
 hash = "218c2ba4a0641fdd67e9f41b0aaa65f7b75f125e95bbfa0245fd20dca652ee8b"
@@ -48,13 +30,13 @@ file = "llvm-project.tar.gz"
 mirrors = [ "https://github.com/ROCm/llvm-project/archive/refs/heads/amd-mainline.tar.gz", ]
 
 [sources.rocm-libraries]
-hash = "9a4f227eb27f7f7b97cab413b8176150a40fb85843c6bcdc4eb12c463ca8a5fd"
+hash = "c88001d318cdeb6b588d41a6e02b2f9469b489e12d04d2a769736a8cee40e89e"
 format = "tar.gz"
 file = "rocm-libraries.tar.gz"
 mirrors = [ "https://github.com/ROCm/rocm-libraries/archive/refs/heads/develop.tar.gz", ]
 
 [sources.rocm-systems]
-hash = "63a31c2b00a53c4f78a8f68da95e632baf7d27f6c43a02094d21b05d8ca73c23"
+hash = "dcba6454d82bd20ecb0f7840c325ed191191377c97cf1b122411167d67a82313"
 format = "tar.gz"
 file = "rocm-systems.tar.gz"
 mirrors = [ "https://github.com/ROCm/rocm-systems/archive/refs/heads/develop.tar.gz", ]
@@ -72,13 +54,13 @@ file = "mesa-fork.tar.gz"
 mirrors = [ "https://github.com/ROCm/mesa-fork/archive/refs/heads/amd-decode-only.tar.gz", ]
 
 [sources.iree]
-hash = "cdc723679091fe68bd5acf086445e944dd5f2fdb9bfa9306a07e54ca8917b1c7"
+hash = "9c75bf66d1207d246a3f1b46e9d4e9e77a15ca3bf3c09cb7791c36eaa4622585"
 format = "tar.gz"
 file = "iree.tar.gz"
 mirrors = [ "https://github.com/iree-org/iree/archive/refs/heads/main.tar.gz", ]
 
 [sources.fusilli]
-hash = "d785b660f05a62892a68da49d87ba858dfa87f377cce83d06f1997936e82d2f2"
+hash = "f3b0e7278782f4ae7d87f486225c44721f8b631aec283e928a0c94bcd7148a08"
 format = "tar.gz"
 file = "fusilli.tar.gz"
 mirrors = [ "https://github.com/iree-org/fusilli/archive/refs/heads/main.tar.gz", ]
@@ -90,7 +72,7 @@ file = "libhipcxx.tar.gz"
 mirrors = [ "https://github.com/ROCm/libhipcxx/archive/refs/heads/amd-develop.tar.gz", ]
 
 [sources.rocgdb]
-hash = "a54ee392b98fa6416c2ed7d6616448eb0c545458d28992fcdef3fc6c33594126"
+hash = "9aaafbe0f2ec8cc03be8d598fe9bbcec5d32fa36982ea8d2612ac17a13ca4757"
 format = "tar.gz"
 file = "rocgdb.tar.gz"
 mirrors = [ "https://github.com/ROCm/rocgdb/archive/refs/heads/amd-staging-rocgdb-16.tar.gz", ]
@@ -123,5 +105,6 @@ build = [
     "zlib",
     "patchelf",
     "git",
-    "rocm-llvm",
+    "user-glog",
+    "user-fmt",
 ]
