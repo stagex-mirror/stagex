@@ -136,7 +136,7 @@ EOF
 
 FROM rocm-base AS rocm-core-build
 WORKDIR /
-COPY --from=rocm-base /rootfs/ /
+COPY --from=rocm-base /usr/ /usr/
 RUN tar -xzf rocm-systems.tar.gz && mv rocm-systems-develop rocm-systems
 RUN --network=none <<-EOF
     set -e
