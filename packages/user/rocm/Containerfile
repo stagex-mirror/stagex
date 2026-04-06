@@ -107,24 +107,6 @@ RUN --network=none <<-EOF
 EOF
 
 # ============================================================================
-# Stage: Build AMD ComGR (part of LLVM monorepo)
-# ============================================================================
-
-FROM llvm-build AS amd_comgr-build
-WORKDIR /
-RUN --network=none <<-EOF
-    set -e
-    mkdir -p /llvm-project/amd/comgr/build
-    cd /llvm-project/amd/comgr/build
-    cmake -GNinja -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_PREFIX=/usr \
-        -DCOMGR_STATIC_LLVM=OFF \
-        ..
-    ninja
-    DESTDIR=/rootfs ninja install
-EOF
-
-# ============================================================================
 # Stage: Build ROCm Base Infrastructure
 # ============================================================================
 
