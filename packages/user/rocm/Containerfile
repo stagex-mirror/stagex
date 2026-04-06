@@ -119,7 +119,7 @@ EOF
 # Stage: Build ROCm Base Infrastructure
 # ============================================================================
 
-FROM amd_comgr-build AS rocm-base
+FROM llvm-build AS rocm-base
 WORKDIR /
 RUN tar -xzf rocm-cmake.tar.gz && mv rocm-cmake-master rocm-cmake
 RUN --network=none <<-EOF
