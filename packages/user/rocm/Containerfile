@@ -93,8 +93,9 @@ WORKDIR /
 # Copy AMDDeviceLibs cmake config, bitcode from llvm-build
 RUN --network=none <<-EOF
     set -e
-    mkdir -p /usr/lib64/cmake/AMDDeviceLibs
-    cp /usr/lib64/cmake/AMDDeviceLibs/AMDDeviceLibsConfig.cmake /usr/lib64/cmake/AMDDeviceLibs/
+    # AMDDeviceLibs cmake config is in /usr/lib (lib64 is symlink to lib)
+    mkdir -p /usr/lib/cmake/AMDDeviceLibs
+    cp /usr/lib/cmake/AMDDeviceLibs/AMDDeviceLibsConfig.cmake /usr/lib/cmake/AMDDeviceLibs/
     mkdir -p /usr/amdgcn/bitcode
     cp -r /usr/amdgcn/bitcode/* /usr/amdgcn/bitcode/
     # Copy clang headers from source
