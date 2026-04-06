@@ -74,6 +74,13 @@ RUN --network=none <<-EOF
     ninja -j"$(nproc)"
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -119,6 +126,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -140,6 +154,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -161,6 +182,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -186,6 +214,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -205,6 +240,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -225,6 +267,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -254,6 +303,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -274,6 +330,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -294,6 +357,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -303,6 +373,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -323,6 +400,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -332,6 +416,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -353,6 +444,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -373,6 +471,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -393,6 +498,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -413,6 +525,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -433,6 +552,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -453,6 +579,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -473,6 +606,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -493,6 +633,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -513,6 +660,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -533,6 +687,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -553,6 +714,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -573,6 +741,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -593,6 +768,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -613,6 +795,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -633,6 +822,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -653,6 +849,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -673,6 +876,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -693,6 +903,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -713,6 +930,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -733,6 +957,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
@@ -753,6 +984,13 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
+    # Create all target directories first
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        basename=$(basename "$dir")
+        mkdir -p "/usr/$basename"
+    done
+    # Then copy contents
     for dir in /rootfs/usr/*; do
         [ -e "$dir" ] || continue
         cp -r "$dir"/* /usr/
