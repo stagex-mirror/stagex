@@ -147,7 +147,7 @@ COPY --from=rocm-core-build /usr/ /usr/usr/
 RUN tar -xzf rocm-systems.tar.gz && mv rocm-systems-develop rocm-systems
 RUN --network=none <<-EOF
     set -e
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /rocm-systems/projects/rocprofiler-register/build && cd /rocm-systems/projects/rocprofiler-register/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 -DROCPROFILER_REGISTER_BUILD_GLOG=OFF -DROCPROFILER_REGISTER_BUILD_FMT=OFF ..
     ninja
@@ -170,7 +170,7 @@ COPY --from=rocm-core-build /usr/ /usr/
 RUN --network=none <<-EOF
     set -e
     export PATH="/usr/bin:/usr/lib/llvm-22/bin:${PATH}"
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /rocm-systems/projects/rocr-runtime/build && cd /rocm-systems/projects/rocr-runtime/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 -DBUILD_SHARED_LIBS=ON -DBUILD_ROCR_PROFILER=OFF ..
     ninja
@@ -194,7 +194,7 @@ WORKDIR /
 COPY --from=rocr-runtime-build /usr/ /usr/
 RUN --network=none <<-EOF
     set -e
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /rocm-systems/projects/rocminfo/build && cd /rocm-systems/projects/rocminfo/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
@@ -219,7 +219,7 @@ COPY --from=rocr-runtime-build /usr/ /usr/
 RUN tar -xzf hipify.tar.gz && mv HIPIFY-amd-mainline hipify
 RUN --network=none <<-EOF
     set -e
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /rocm-systems/projects/clr/build && cd /rocm-systems/projects/clr/build
     cmake -GNinja \
         -DCMAKE_BUILD_TYPE=Release \
@@ -251,7 +251,7 @@ WORKDIR /
 COPY --from=rocr-runtime-build /usr/ /usr/
 RUN --network=none <<-EOF
     set -e
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /rocm-systems/projects/roctracer/build && cd /rocm-systems/projects/roctracer/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
@@ -275,7 +275,7 @@ WORKDIR /
 COPY --from=rocprofiler-register-build /usr/ /usr/
 RUN --network=none <<-EOF
     set -e
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /rocm-systems/projects/rocdbgapi/build && cd /rocm-systems/projects/rocdbgapi/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
@@ -312,7 +312,7 @@ WORKDIR /
 COPY --from=debug-build /usr/ /usr/
 RUN --network=none <<-EOF
     set -e
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /rocm-systems/projects/rocm-smi-lib/build && cd /rocm-systems/projects/rocm-smi-lib/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
@@ -350,7 +350,7 @@ COPY --from=smi-build /usr/ /usr/
 RUN tar -xzf rocm-libraries.tar.gz && mv rocm-libraries-develop rocm-libraries && tar -xzf half.tar.gz && mv half-rocm half
 RUN --network=none <<-EOF
     set -e
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /half/build && cd /half/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ..
     ninja
@@ -374,7 +374,7 @@ WORKDIR /
 COPY --from=rocm-libraries-build /usr/ /usr/
 RUN --network=none <<-EOF
     set -e
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /rocm-libraries/projects/rocprim/build && cd /rocm-libraries/projects/rocprim/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
@@ -398,7 +398,7 @@ WORKDIR /
 COPY --from=rocprim-build /usr/ /usr/
 RUN --network=none <<-EOF
     set -e
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /rocm-libraries/projects/rocthrust/build && cd /rocm-libraries/projects/rocthrust/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
@@ -422,7 +422,7 @@ WORKDIR /
 COPY --from=rocthrust-build /usr/ /usr/
 RUN --network=none <<-EOF
     set -e
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /rocm-libraries/projects/hipcub/build && cd /rocm-libraries/projects/hipcub/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
@@ -446,7 +446,7 @@ WORKDIR /
 COPY --from=hipcub-build /usr/ /usr/
 RUN --network=none <<-EOF
     set -e
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /rocm-libraries/projects/rocfft/build && cd /rocm-libraries/projects/rocfft/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
@@ -470,7 +470,7 @@ WORKDIR /
 COPY --from=rocfft-build /usr/ /usr/
 RUN --network=none <<-EOF
     set -e
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /rocm-libraries/projects/rocrand/build && cd /rocm-libraries/projects/rocrand/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
@@ -494,7 +494,7 @@ WORKDIR /
 COPY --from=rocrand-build /usr/ /usr/
 RUN --network=none <<-EOF
     set -e
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /rocm-libraries/projects/rocsolver/build && cd /rocm-libraries/projects/rocsolver/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
@@ -518,7 +518,7 @@ WORKDIR /
 COPY --from=rocsolver-build /usr/ /usr/
 RUN --network=none <<-EOF
     set -e
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /rocm-libraries/projects/rocblas/build && cd /rocm-libraries/projects/rocblas/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
@@ -542,7 +542,7 @@ WORKDIR /
 COPY --from=rocblas-build /usr/ /usr/
 RUN --network=none <<-EOF
     set -e
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /rocm-libraries/projects/rocsparse/build && cd /rocm-libraries/projects/rocsparse/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
@@ -566,7 +566,7 @@ WORKDIR /
 COPY --from=rocsparse-build /usr/ /usr/
 RUN --network=none <<-EOF
     set -e
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /rocm-libraries/projects/hipblas-common/build && cd /rocm-libraries/projects/hipblas-common/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
@@ -590,7 +590,7 @@ WORKDIR /
 COPY --from=hipblas-common-build /usr/ /usr/
 RUN --network=none <<-EOF
     set -e
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /rocm-libraries/projects/hipblas/build && cd /rocm-libraries/projects/hipblas/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
@@ -614,7 +614,7 @@ WORKDIR /
 COPY --from=hipblas-build /usr/ /usr/
 RUN --network=none <<-EOF
     set -e
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /rocm-libraries/projects/hipblaslt/build && cd /rocm-libraries/projects/hipblaslt/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
@@ -638,7 +638,7 @@ WORKDIR /
 COPY --from=hipblaslt-build /usr/ /usr/
 RUN --network=none <<-EOF
     set -e
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /rocm-libraries/projects/hipfft/build && cd /rocm-libraries/projects/hipfft/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
@@ -662,7 +662,7 @@ WORKDIR /
 COPY --from=hipfft-build /usr/ /usr/
 RUN --network=none <<-EOF
     set -e
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /rocm-libraries/projects/hiprand/build && cd /rocm-libraries/projects/hiprand/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
@@ -686,7 +686,7 @@ WORKDIR /
 COPY --from=hiprand-build /usr/ /usr/
 RUN --network=none <<-EOF
     set -e
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /rocm-libraries/projects/hipsolver/build && cd /rocm-libraries/projects/hipsolver/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
@@ -710,7 +710,7 @@ WORKDIR /
 COPY --from=hipsolver-build /usr/ /usr/
 RUN --network=none <<-EOF
     set -e
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /rocm-libraries/projects/hipsparse/build && cd /rocm-libraries/projects/hipsparse/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
@@ -734,7 +734,7 @@ WORKDIR /
 COPY --from=hipsparse-build /usr/ /usr/
 RUN --network=none <<-EOF
     set -e
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /rocm-libraries/projects/hiptensor/build && cd /rocm-libraries/projects/hiptensor/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
@@ -758,7 +758,7 @@ WORKDIR /
 COPY --from=hiptensor-build /usr/ /usr/
 RUN --network=none <<-EOF
     set -e
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /rocm-libraries/projects/hipsparselt/build && cd /rocm-libraries/projects/hipsparselt/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
@@ -782,7 +782,7 @@ WORKDIR /
 COPY --from=hipsparselt-build /usr/ /usr/
 RUN --network=none <<-EOF
     set -e
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /rocm-libraries/projects/miopen/build && cd /rocm-libraries/projects/miopen/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
@@ -806,7 +806,7 @@ WORKDIR /
 COPY --from=miopen-build /usr/ /usr/
 RUN --network=none <<-EOF
     set -e
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /rocm-libraries/projects/composablekernel/build && cd /rocm-libraries/projects/composablekernel/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
@@ -830,7 +830,7 @@ WORKDIR /
 COPY --from=composablekernel-build /usr/ /usr/
 RUN --network=none <<-EOF
     set -e
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /rocm-systems/projects/rccl/build && cd /rocm-systems/projects/rccl/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
