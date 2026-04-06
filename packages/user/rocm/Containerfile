@@ -157,7 +157,7 @@ EOF
 
 FROM rocm-core-build AS rocprofiler-register-build
 WORKDIR /
-COPY --from=rocm-core-build /rootfs/ /
+COPY --from=rocm-core-build /usr/ /usr/
 RUN tar -xzf rocm-systems.tar.gz && mv rocm-systems-develop rocm-systems
 RUN --network=none <<-EOF
     set -e
@@ -171,7 +171,7 @@ EOF
 # ============================================================================
 FROM rocprofiler-register-build AS rocr-runtime-build
 WORKDIR /
-COPY --from=rocm-core-build /rootfs/ /
+COPY --from=rocm-core-build /usr/ /
 RUN --network=none <<-EOF
     set -e
     export PATH="/usr/bin:/usr/lib/llvm-22/bin:${PATH}"
@@ -187,7 +187,7 @@ EOF
 
 FROM rocr-runtime-build AS rocminfo-build
 WORKDIR /
-COPY --from=rocr-runtime-build /rootfs/ /
+COPY --from=rocr-runtime-build /usr/ /
 RUN --network=none <<-EOF
     set -e
     export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
@@ -202,7 +202,7 @@ EOF
 
 FROM rocr-runtime-build AS clr-build
 WORKDIR /
-COPY --from=rocr-runtime-build /rootfs/ /
+COPY --from=rocr-runtime-build /usr/ /
 RUN tar -xzf hipify.tar.gz && mv HIPIFY-amd-mainline hipify
 RUN --network=none <<-EOF
     set -e
@@ -226,7 +226,7 @@ EOF
 
 FROM rocr-runtime-build AS roctracer-build
 WORKDIR /
-COPY --from=rocr-runtime-build /rootfs/ /
+COPY --from=rocr-runtime-build /usr/ /
 RUN --network=none <<-EOF
     set -e
     export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
@@ -241,7 +241,7 @@ EOF
 
 FROM rocprofiler-register-build AS debug-build
 WORKDIR /
-COPY --from=rocprofiler-register-build /rootfs/ /
+COPY --from=rocprofiler-register-build /usr/ /
 RUN --network=none <<-EOF
     set -e
     export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
@@ -260,7 +260,7 @@ EOF
 
 FROM debug-build AS smi-build
 WORKDIR /
-COPY --from=debug-build /rootfs/ /
+COPY --from=debug-build /usr/ /
 RUN --network=none <<-EOF
     set -e
     export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
@@ -279,7 +279,7 @@ EOF
 
 FROM smi-build AS rocm-libraries-build
 WORKDIR /
-COPY --from=smi-build /rootfs/ /
+COPY --from=smi-build /usr/ /
 RUN tar -xzf rocm-libraries.tar.gz && mv rocm-libraries-develop rocm-libraries && tar -xzf half.tar.gz && mv half-rocm half
 RUN --network=none <<-EOF
     set -e
@@ -295,7 +295,7 @@ EOF
 
 FROM rocm-libraries-build AS rocprim-build
 WORKDIR /
-COPY --from=rocm-libraries-build /rootfs/ /
+COPY --from=rocm-libraries-build /usr/ /
 RUN --network=none <<-EOF
     set -e
     export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
@@ -310,7 +310,7 @@ EOF
 
 FROM rocprim-build AS rocthrust-build
 WORKDIR /
-COPY --from=rocprim-build /rootfs/ /
+COPY --from=rocprim-build /usr/ /
 RUN --network=none <<-EOF
     set -e
     export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
@@ -325,7 +325,7 @@ EOF
 
 FROM rocthrust-build AS hipcub-build
 WORKDIR /
-COPY --from=rocthrust-build /rootfs/ /
+COPY --from=rocthrust-build /usr/ /
 RUN --network=none <<-EOF
     set -e
     export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
@@ -340,7 +340,7 @@ EOF
 
 FROM hipcub-build AS rocfft-build
 WORKDIR /
-COPY --from=hipcub-build /rootfs/ /
+COPY --from=hipcub-build /usr/ /
 RUN --network=none <<-EOF
     set -e
     export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
@@ -355,7 +355,7 @@ EOF
 
 FROM rocfft-build AS rocrand-build
 WORKDIR /
-COPY --from=rocfft-build /rootfs/ /
+COPY --from=rocfft-build /usr/ /
 RUN --network=none <<-EOF
     set -e
     export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
@@ -370,7 +370,7 @@ EOF
 
 FROM rocrand-build AS rocsolver-build
 WORKDIR /
-COPY --from=rocrand-build /rootfs/ /
+COPY --from=rocrand-build /usr/ /
 RUN --network=none <<-EOF
     set -e
     export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
@@ -385,7 +385,7 @@ EOF
 
 FROM rocsolver-build AS rocblas-build
 WORKDIR /
-COPY --from=rocsolver-build /rootfs/ /
+COPY --from=rocsolver-build /usr/ /
 RUN --network=none <<-EOF
     set -e
     export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
@@ -400,7 +400,7 @@ EOF
 
 FROM rocblas-build AS rocsparse-build
 WORKDIR /
-COPY --from=rocblas-build /rootfs/ /
+COPY --from=rocblas-build /usr/ /
 RUN --network=none <<-EOF
     set -e
     export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
@@ -415,7 +415,7 @@ EOF
 
 FROM rocsparse-build AS hipblas-common-build
 WORKDIR /
-COPY --from=rocsparse-build /rootfs/ /
+COPY --from=rocsparse-build /usr/ /
 RUN --network=none <<-EOF
     set -e
     export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
@@ -430,7 +430,7 @@ EOF
 
 FROM hipblas-common-build AS hipblas-build
 WORKDIR /
-COPY --from=hipblas-common-build /rootfs/ /
+COPY --from=hipblas-common-build /usr/ /
 RUN --network=none <<-EOF
     set -e
     export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
@@ -445,7 +445,7 @@ EOF
 
 FROM hipblas-build AS hipblaslt-build
 WORKDIR /
-COPY --from=hipblas-build /rootfs/ /
+COPY --from=hipblas-build /usr/ /
 RUN --network=none <<-EOF
     set -e
     export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
@@ -460,7 +460,7 @@ EOF
 
 FROM hipblaslt-build AS hipfft-build
 WORKDIR /
-COPY --from=hipblaslt-build /rootfs/ /
+COPY --from=hipblaslt-build /usr/ /
 RUN --network=none <<-EOF
     set -e
     export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
@@ -475,7 +475,7 @@ EOF
 
 FROM hipfft-build AS hiprand-build
 WORKDIR /
-COPY --from=hipfft-build /rootfs/ /
+COPY --from=hipfft-build /usr/ /
 RUN --network=none <<-EOF
     set -e
     export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
@@ -490,7 +490,7 @@ EOF
 
 FROM hiprand-build AS hipsolver-build
 WORKDIR /
-COPY --from=hiprand-build /rootfs/ /
+COPY --from=hiprand-build /usr/ /
 RUN --network=none <<-EOF
     set -e
     export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
@@ -505,7 +505,7 @@ EOF
 
 FROM hipsolver-build AS hipsparse-build
 WORKDIR /
-COPY --from=hipsolver-build /rootfs/ /
+COPY --from=hipsolver-build /usr/ /
 RUN --network=none <<-EOF
     set -e
     export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
@@ -520,7 +520,7 @@ EOF
 
 FROM hipsparse-build AS hiptensor-build
 WORKDIR /
-COPY --from=hipsparse-build /rootfs/ /
+COPY --from=hipsparse-build /usr/ /
 RUN --network=none <<-EOF
     set -e
     export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
@@ -535,7 +535,7 @@ EOF
 
 FROM hiptensor-build AS hipsparselt-build
 WORKDIR /
-COPY --from=hiptensor-build /rootfs/ /
+COPY --from=hiptensor-build /usr/ /
 RUN --network=none <<-EOF
     set -e
     export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
@@ -550,7 +550,7 @@ EOF
 
 FROM hipsparselt-build AS miopen-build
 WORKDIR /
-COPY --from=hipsparselt-build /rootfs/ /
+COPY --from=hipsparselt-build /usr/ /
 RUN --network=none <<-EOF
     set -e
     export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
@@ -565,7 +565,7 @@ EOF
 
 FROM miopen-build AS composablekernel-build
 WORKDIR /
-COPY --from=miopen-build /rootfs/ /
+COPY --from=miopen-build /usr/ /
 RUN --network=none <<-EOF
     set -e
     export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
@@ -580,7 +580,7 @@ EOF
 
 FROM composablekernel-build AS rccl-build
 WORKDIR /
-COPY --from=composablekernel-build /rootfs/ /
+COPY --from=composablekernel-build /usr/ /
 RUN --network=none <<-EOF
     set -e
     export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
@@ -595,31 +595,31 @@ EOF
 # ============================================================================
 
 FROM stagex/core-filesystem AS package
-COPY --from=rocm-core-build /rootfs/ /
-COPY --from=rocminfo-build /rootfs/ /
-COPY --from=clr-build /rootfs/ /
-COPY --from=rocr-runtime-build /rootfs/ /
-COPY --from=roctracer-build /rootfs/ /
-COPY --from=rocprofiler-register-build /rootfs/ /
-COPY --from=debug-build /rootfs/ /
-COPY --from=smi-build /rootfs/ /
-COPY --from=rocprim-build /rootfs/ /
-COPY --from=rocthrust-build /rootfs/ /
-COPY --from=hipcub-build /rootfs/ /
-COPY --from=rocfft-build /rootfs/ /
-COPY --from=rocrand-build /rootfs/ /
-COPY --from=rocsolver-build /rootfs/ /
-COPY --from=rocblas-build /rootfs/ /
-COPY --from=rocsparse-build /rootfs/ /
-COPY --from=hipblas-common-build /rootfs/ /
-COPY --from=hipblas-build /rootfs/ /
-COPY --from=hipblaslt-build /rootfs/ /
-COPY --from=hipfft-build /rootfs/ /
-COPY --from=hiprand-build /rootfs/ /
-COPY --from=hipsolver-build /rootfs/ /
-COPY --from=hipsparse-build /rootfs/ /
-COPY --from=hiptensor-build /rootfs/ /
-COPY --from=hipsparselt-build /rootfs/ /
-COPY --from=miopen-build /rootfs/ /
-COPY --from=composablekernel-build /rootfs/ /
-COPY --from=rccl-build /rootfs/ /
+COPY --from=rocm-core-build /usr/ /
+COPY --from=rocminfo-build /usr/ /
+COPY --from=clr-build /usr/ /
+COPY --from=rocr-runtime-build /usr/ /
+COPY --from=roctracer-build /usr/ /
+COPY --from=rocprofiler-register-build /usr/ /
+COPY --from=debug-build /usr/ /
+COPY --from=smi-build /usr/ /
+COPY --from=rocprim-build /usr/ /
+COPY --from=rocthrust-build /usr/ /
+COPY --from=hipcub-build /usr/ /
+COPY --from=rocfft-build /usr/ /
+COPY --from=rocrand-build /usr/ /
+COPY --from=rocsolver-build /usr/ /
+COPY --from=rocblas-build /usr/ /
+COPY --from=rocsparse-build /usr/ /
+COPY --from=hipblas-common-build /usr/ /
+COPY --from=hipblas-build /usr/ /
+COPY --from=hipblaslt-build /usr/ /
+COPY --from=hipfft-build /usr/ /
+COPY --from=hiprand-build /usr/ /
+COPY --from=hipsolver-build /usr/ /
+COPY --from=hipsparse-build /usr/ /
+COPY --from=hiptensor-build /usr/ /
+COPY --from=hipsparselt-build /usr/ /
+COPY --from=miopen-build /usr/ /
+COPY --from=composablekernel-build /usr/ /
+COPY --from=rccl-build /usr/ /
