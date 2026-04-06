@@ -87,7 +87,7 @@ RUN --network=none <<-EOF
         -DLLVM_DIR=/usr/lib/cmake/llvm \
         -DCLANG_DIR=/usr/lib/cmake/clang \
         -DLLD_DIR=/usr/lib/cmake/lld \
-        -DAMDDeviceLibs_DIR=/usr/lib/cmake/AMDDeviceLibs \
+        -DAMDDeviceLibs_DIR=/usr/lib64/cmake/AMDDeviceLibs \
         -DCMAKE_PREFIX_PATH="/usr/lib/cmake" \
         ..
     ninja
