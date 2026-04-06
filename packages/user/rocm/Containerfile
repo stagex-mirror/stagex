@@ -100,6 +100,7 @@ RUN --network=none <<-EOF
         -DAMDDeviceLibs_DIR=/usr/lib64/cmake/AMDDeviceLibs \
         -DCMAKE_PREFIX_PATH="/usr/lib64/cmake:/usr/lib/cmake" \
         -DCOMGR_BUILD_TESTS=OFF \
+        -DBUILD_TESTING=OFF \
         ..
     ninja
     DESTDIR=/rootfs ninja install
