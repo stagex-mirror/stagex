@@ -66,7 +66,7 @@ RUN --network=none <<-EOF
         -DLLVM_INSTALL_TOOLCHAIN_ONLY=OFF \
         -DLLVM_ENABLE_TERMINFO=OFF \
         ..
-    ninja -j"$(nproc)" llvm clang lld
+    ninja -j"$(nproc)"
     DESTDIR=/rootfs ninja install
 EOF
 
