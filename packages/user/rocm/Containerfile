@@ -79,6 +79,12 @@ EOF
 
 FROM llvm-build AS amd_comgr-build
 WORKDIR /
+# Copy AMDDeviceLibs cmake config from llvm-build's rootfs to /usr
+RUN --network=none <<-EOF
+    set -e
+    mkdir -p /usr/lib64/cmake/AMDDeviceLibs
+    cp /rootfs/usr/lib64/cmake/AMDDeviceLibs/AMDDeviceLibsConfig.cmake /usr/lib64/cmake/AMDDeviceLibs/
+EOF
 RUN --network=none <<-EOF
     set -e
     mkdir -p /llvm-project/amd/comgr/build
