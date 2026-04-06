@@ -76,7 +76,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -120,7 +125,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -140,7 +150,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -160,7 +175,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -184,7 +204,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -202,7 +227,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -221,7 +251,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -249,7 +284,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -268,7 +308,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 
@@ -287,7 +332,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
     mkdir -p /rocm-systems/projects/rocr-debug-agent/build && cd /rocm-systems/projects/rocr-debug-agent/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
@@ -295,7 +345,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -314,7 +369,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
     mkdir -p /rocm-systems/projects/amdsmi/build && cd /rocm-systems/projects/amdsmi/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
@@ -322,7 +382,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -342,7 +407,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -361,7 +431,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -380,7 +455,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -399,7 +479,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -418,7 +503,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -437,7 +527,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -456,7 +551,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -475,7 +575,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -494,7 +599,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -513,7 +623,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -532,7 +647,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -551,7 +671,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -570,7 +695,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -589,7 +719,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -608,7 +743,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -627,7 +767,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -646,7 +791,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -665,7 +815,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -684,7 +839,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -703,7 +863,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -722,7 +887,12 @@ RUN --network=none <<-EOF
     # Copy installed files to /usr for subsequent stages
     # Create target directories first (skip lib64 as it's a symlink in base image)
     mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    cp -a /rootfs/usr/* /usr/
+    # Copy each subdirectory individually to handle symlinks properly
+    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+        basename=$(basename "$dir")
+        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+        cp -a "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
