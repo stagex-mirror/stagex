@@ -140,7 +140,7 @@ COPY --from=rocm-base /usr/ /usr/
 RUN tar -xzf rocm-systems.tar.gz && mv rocm-systems-develop rocm-systems
 RUN --network=none <<-EOF
     set -e
-    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     rm -rf /rocm-systems/projects/rocm-core/build
     mkdir -p /rocm-systems/projects/rocm-core/build && cd /rocm-systems/projects/rocm-core/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
