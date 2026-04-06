@@ -74,7 +74,10 @@ RUN --network=none <<-EOF
     ninja -j"$(nproc)"
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -116,7 +119,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -134,7 +140,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -152,7 +161,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -174,7 +186,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -190,7 +205,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -207,7 +225,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -233,7 +254,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -250,7 +274,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 
@@ -267,13 +294,19 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
     mkdir -p /rocm-systems/projects/rocr-debug-agent/build && cd /rocm-systems/projects/rocr-debug-agent/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -290,13 +323,19 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
     mkdir -p /rocm-systems/projects/amdsmi/build && cd /rocm-systems/projects/amdsmi/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -314,7 +353,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -331,7 +373,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -348,7 +393,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -365,7 +413,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -382,7 +433,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -399,7 +453,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -416,7 +473,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -433,7 +493,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -450,7 +513,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -467,7 +533,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -484,7 +553,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -501,7 +573,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -518,7 +593,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -535,7 +613,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -552,7 +633,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -569,7 +653,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -586,7 +673,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -603,7 +693,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -620,7 +713,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -637,7 +733,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
@@ -654,7 +753,10 @@ RUN --network=none <<-EOF
     ninja
     DESTDIR=/rootfs ninja install
     mkdir -p /usr/lib64
-    cp -r /rootfs/usr/* /usr/
+    for dir in /rootfs/usr/*; do
+        [ -e "$dir" ] || continue
+        cp -r "$dir"/* /usr/
+    done
 EOF
 
 # ============================================================================
