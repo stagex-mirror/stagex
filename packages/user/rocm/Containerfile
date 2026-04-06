@@ -80,7 +80,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -129,7 +129,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -154,7 +154,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -179,7 +179,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -208,7 +208,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -231,7 +231,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -255,7 +255,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -288,7 +288,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -312,7 +312,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -336,7 +336,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
     mkdir -p /rocm-systems/projects/rocr-debug-agent/build && cd /rocm-systems/projects/rocr-debug-agent/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
@@ -349,7 +349,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -373,7 +373,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
     mkdir -p /rocm-systems/projects/amdsmi/build && cd /rocm-systems/projects/amdsmi/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
@@ -386,7 +386,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -411,7 +411,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -435,7 +435,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -459,7 +459,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -483,7 +483,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -507,7 +507,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -531,7 +531,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -555,7 +555,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -579,7 +579,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -603,7 +603,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -627,7 +627,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -651,7 +651,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -675,7 +675,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -699,7 +699,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -723,7 +723,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -747,7 +747,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -771,7 +771,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -795,7 +795,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -819,7 +819,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -843,7 +843,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -867,7 +867,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
@@ -891,7 +891,7 @@ RUN --network=none <<-EOF
     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
         basename=$(basename "$dir")
         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -a "$dir"/* /usr/
+        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
     done
 EOF
 
