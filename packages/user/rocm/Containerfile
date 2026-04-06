@@ -73,18 +73,9 @@ RUN --network=none <<-EOF
         ..
     ninja -j"$(nproc)"
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -125,18 +116,9 @@ RUN --network=none <<-EOF
         ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -153,18 +135,9 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -181,18 +154,9 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -213,18 +177,9 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 -DROCPROFILER_REGISTER_BUILD_GLOG=OFF -DROCPROFILER_REGISTER_BUILD_FMT=OFF ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -239,18 +194,9 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 -DBUILD_SHARED_LIBS=ON -DBUILD_ROCR_PROFILER=OFF ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -266,18 +212,9 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -302,18 +239,9 @@ RUN --network=none <<-EOF
         ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -329,18 +257,9 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 
@@ -356,34 +275,16 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
     mkdir -p /rocm-systems/projects/rocr-debug-agent/build && cd /rocm-systems/projects/rocr-debug-agent/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -399,34 +300,16 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
     mkdir -p /rocm-systems/projects/amdsmi/build && cd /rocm-systems/projects/amdsmi/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -443,18 +326,9 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -470,18 +344,9 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -497,18 +362,9 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -524,18 +380,9 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -551,18 +398,9 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -578,18 +416,9 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -605,18 +434,9 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -632,18 +452,9 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -659,18 +470,9 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -686,18 +488,9 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -713,18 +506,9 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -740,18 +524,9 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -767,18 +542,9 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -794,18 +560,9 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -821,18 +578,9 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -848,18 +596,9 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -875,18 +614,9 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -902,18 +632,9 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -929,18 +650,9 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -956,18 +668,9 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -983,18 +686,9 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
-    mkdir -p /usr/lib64
-    # Create all target directories first
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        basename=$(basename "$dir")
-        mkdir -p "/usr/$basename"
-    done
-    # Then copy contents
-    for dir in /rootfs/usr/*; do
-        [ -e "$dir" ] || continue
-        cp -r "$dir"/* /usr/
-    done
+    # Copy installed files to /usr for subsequent stages
+    # Use cp -a to preserve structure and copy all contents
+    cp -a /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
