@@ -88,50 +88,6 @@ EOF
 # Stage: Build AMD ComGR (part of LLVM monorepo)
 # ============================================================================
 
-FROM llvm-build AS amd_comgr-build
-WORKDIR /
-# Copy headers from llvm-build
-RUN --network=none <<-EOF
-    set -e
-    # Copy clang headers from source
-    cp -r /llvm-project/clang/include/clang /usr/include/
-    # Copy llvm headers from source
-    cp -r /llvm-project/llvm/include/llvm /usr/include/
-    # Copy generated include files from LLVM build
-    if [ -d /llvm-project/llvm/build/include ]; then cp -r /llvm-project/llvm/build/include/* /usr/include/ 2>/dev/null || true; fi
-    if [ -d /llvm-project/clang/build/include ]; then cp -r /llvm-project/clang/build/include/* /usr/include/ 2>/dev/null || true; fi
-EOF
-RUN --network=none <<-EOF
-    set -e
-    mkdir -p /llvm-project/amd/comgr/build
-    cd /llvm-project/amd/comgr/build
-    cmake -GNinja -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_PREFIX=/usr \
-        -DLLVM_DIR=/usr/lib/cmake/llvm \
-        -DCLANG_DIR=/usr/lib/cmake/clang \
-        -DLLD_DIR=/usr/lib/cmake/lld \
-        -DCMAKE_PREFIX_PATH="/usr/lib/cmake" \
-        -DCOMGR_BUILD_TESTS=OFF \
-        -DBUILD_TESTING=OFF \
-        -DCMAKE_CXX_FLAGS="-I/llvm-project/clang/include -I/llvm-project/llvm/include" \
-        ..
-    ninja
-    DESTDIR=/rootfs ninja install
-    # Copy installed files to /usr for subsequent stages
-    # Create target directories first (skip lib64 as it's a symlink in base image)
-    mkdir -p /usr/bin /usr/include /usr/lib /usr/libexec /usr/share /usr/amdgcn
-    # Copy each subdirectory individually to handle symlinks properly
-    find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
-        basename=$(basename "$dir")
-        [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
-        cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
-    done
-EOF
-
-# ============================================================================
-# Stage: Build ROCm Base Infrastructure
-# ============================================================================
-
 FROM llvm-build AS rocm-base
 WORKDIR /
 RUN tar -xzf rocm-cmake.tar.gz && mv rocm-cmake-master rocm-cmake
@@ -896,7 +852,6 @@ EOF
 
 FROM stagex/core-filesystem AS package
 COPY --from=rocm-core-build /usr/ /
-COPY --from=amd_comgr-build /usr/ /
 COPY --from=rocminfo-build /usr/ /
 COPY --from=clr-build /usr/ /
 COPY --from=rocr-runtime-build /usr/ /
