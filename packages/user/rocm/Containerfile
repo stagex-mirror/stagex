@@ -66,9 +66,16 @@ RUN --network=none <<-EOF
         -DLLVM_INSTALL_TOOLCHAIN_ONLY=OFF \
         -DLLVM_ENABLE_TERMINFO=OFF \
         ..
-    ninja -j"$(nproc)"
+    ninja -j"$(nproc)" llvm clang lld
     DESTDIR=/rootfs ninja install
 EOF
+
+# ============================================================================
+# Stage: Build AMD ComGR (part of LLVM monorepo)
+# ============================================================================
+
+FROM llvm-build AS amd_comgr-build
+WORKDIR /
 RUN --network=none <<-EOF
     set -e
     mkdir -p /llvm-project/amd/device-libs/build
@@ -77,6 +84,23 @@ RUN --network=none <<-EOF
         -DCMAKE_INSTALL_PREFIX=/usr \
         -DLLVM_DIR=/usr/lib/cmake/llvm \
         -DCLANG_DIR=/usr/lib/cmake/clang \
+        -DCMAKE_MODULE_PATH="/usr/lib/cmake/llvm" \
+        -DROCM_DEVICELIB_STANDALONE_BUILD=ON \
+        ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+RUN --network=none <<-EOF
+    set -e
+    mkdir -p /llvm-project/amd/comgr/build
+    cd /llvm-project/amd/comgr/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DLLVM_DIR=/usr/lib/cmake/llvm \
+        -DCLANG_DIR=/usr/lib/cmake/clang \
+        -DLLD_DIR=/usr/lib/cmake/lld \
+        -DAMDDeviceLibs_DIR=/usr/lib/cmake/AMDDeviceLibs \
+        -DCMAKE_PREFIX_PATH="/usr/lib/cmake" \
         ..
     ninja
     DESTDIR=/rootfs ninja install
