@@ -91,6 +91,8 @@ RUN --network=none <<-EOF
     cp -r /llvm-project/clang/include/clang /usr/include/
     # Copy llvm headers from source
     cp -r /llvm-project/llvm/include/llvm /usr/include/
+    # Copy generated include files from build
+    cp -r /llvm-project/clang/build/include/clang /usr/include/ 2>/dev/null || true
 EOF
 RUN --network=none <<-EOF
     set -e
