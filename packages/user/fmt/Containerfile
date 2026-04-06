@@ -1,0 +1,28 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+ARG VERSION
+COPY --from=stagex/user-ninja . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-gcc . /
+
+# Copy fmt tarball
+COPY --from=fetch fmt.tar.gz /
+
+# Build fmt with shared library for compatibility
+RUN tar -xzf fmt.tar.gz && mv fmt-10.2.1 fmt
+RUN --network=none <<-EOF
+    set -e
+    mkdir -p /fmt/build && cd /fmt/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_LIBDIR=lib \
+        -DFMT_TEST=OFF \
+        -DFMT_SHARED=ON \
+        -DFMT_HEADER_ONLY=OFF \
+        ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# Package stage
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
