@@ -80,7 +80,7 @@ EOF
 
 FROM llvm-build AS amd_comgr-build
 WORKDIR /
-# Copy AMDDeviceLibs cmake config, bitcode, and clang headers from llvm-build's rootfs to /usr
+# Copy AMDDeviceLibs cmake config, bitcode, and headers from llvm-build's rootfs to /usr
 RUN --network=none <<-EOF
     set -e
     mkdir -p /usr/lib64/cmake/AMDDeviceLibs
@@ -89,6 +89,8 @@ RUN --network=none <<-EOF
     cp -r /rootfs/usr/amdgcn/bitcode/* /usr/amdgcn/bitcode/
     # Copy clang headers from source
     cp -r /llvm-project/clang/include/clang /usr/include/
+    # Copy llvm headers from source
+    cp -r /llvm-project/llvm/include/llvm /usr/include/
 EOF
 RUN --network=none <<-EOF
     set -e
