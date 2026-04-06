@@ -108,6 +108,7 @@ RUN --network=none <<-EOF
         -DCMAKE_PREFIX_PATH="/usr/lib64/cmake:/usr/lib/cmake" \
         -DCOMGR_BUILD_TESTS=OFF \
         -DBUILD_TESTING=OFF \
+        -DCMAKE_CXX_FLAGS="-I/llvm-project/clang/include -I/llvm-project/llvm/include" \
         ..
     ninja
     DESTDIR=/rootfs ninja install
