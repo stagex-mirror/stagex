@@ -73,6 +73,7 @@ RUN --network=none <<-EOF
         ..
     ninja -j"$(nproc)"
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -81,13 +82,13 @@ EOF
 
 FROM llvm-build AS amd_comgr-build
 WORKDIR /
-# Copy AMDDeviceLibs cmake config, bitcode, and headers from llvm-build to /usr
+# Copy AMDDeviceLibs cmake config, bitcode from llvm-build
 RUN --network=none <<-EOF
     set -e
     mkdir -p /usr/lib64/cmake/AMDDeviceLibs
-    cp /rootfs/usr/lib64/cmake/AMDDeviceLibs/AMDDeviceLibsConfig.cmake /usr/lib64/cmake/AMDDeviceLibs/
+    cp /usr/lib64/cmake/AMDDeviceLibs/AMDDeviceLibsConfig.cmake /usr/lib64/cmake/AMDDeviceLibs/
     mkdir -p /usr/amdgcn/bitcode
-    cp -r /rootfs/usr/amdgcn/bitcode/* /usr/amdgcn/bitcode/
+    cp -r /usr/amdgcn/bitcode/* /usr/amdgcn/bitcode/
     # Copy clang headers from source
     cp -r /llvm-project/clang/include/clang /usr/include/
     # Copy llvm headers from source
@@ -113,6 +114,7 @@ RUN --network=none <<-EOF
         ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -129,6 +131,7 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -136,7 +139,6 @@ EOF
 
 FROM rocm-base AS rocm-core-build
 WORKDIR /
-COPY --from=rocm-base /usr/ /usr/
 RUN tar -xzf rocm-systems.tar.gz && mv rocm-systems-develop rocm-systems
 RUN --network=none <<-EOF
     set -e
@@ -146,6 +148,7 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -166,6 +169,7 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 -DROCPROFILER_REGISTER_BUILD_GLOG=OFF -DROCPROFILER_REGISTER_BUILD_FMT=OFF ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -180,6 +184,7 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 -DBUILD_SHARED_LIBS=ON -DBUILD_ROCR_PROFILER=OFF ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -195,6 +200,7 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -219,6 +225,7 @@ RUN --network=none <<-EOF
         ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -234,6 +241,7 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 
@@ -249,10 +257,12 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
     mkdir -p /rocm-systems/projects/rocr-debug-agent/build && cd /rocm-systems/projects/rocr-debug-agent/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -268,10 +278,12 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
     mkdir -p /rocm-systems/projects/amdsmi/build && cd /rocm-systems/projects/amdsmi/build
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -288,6 +300,7 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -303,6 +316,7 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -318,6 +332,7 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -333,6 +348,7 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -348,6 +364,7 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -363,6 +380,7 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -378,6 +396,7 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -393,6 +412,7 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -408,6 +428,7 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -423,6 +444,7 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -438,6 +460,7 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -453,6 +476,7 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -468,6 +492,7 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -483,6 +508,7 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -498,6 +524,7 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -513,6 +540,7 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -528,6 +556,7 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -543,6 +572,7 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -558,6 +588,7 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -573,6 +604,7 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -588,6 +620,7 @@ RUN --network=none <<-EOF
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DROCM_CMAKE_DIR=/usr/lib/cmake/rocm -DROCM_VERSION=7.11.0 ..
     ninja
     DESTDIR=/rootfs ninja install
+    cp -r /rootfs/usr/* /usr/
 EOF
 
 # ============================================================================
@@ -596,6 +629,7 @@ EOF
 
 FROM stagex/core-filesystem AS package
 COPY --from=rocm-core-build /usr/ /
+COPY --from=amd_comgr-build /usr/ /
 COPY --from=rocminfo-build /usr/ /
 COPY --from=clr-build /usr/ /
 COPY --from=rocr-runtime-build /usr/ /
