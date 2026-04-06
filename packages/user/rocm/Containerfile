@@ -72,6 +72,19 @@ RUN --network=none <<-EOF
     ninja -j"$(nproc)"
     DESTDIR=/rootfs ninja install
 EOF
+# Build and install AMD device-libs
+RUN --network=none <<-EOF
+    set -e
+    mkdir -p /llvm-project/amd/device-libs/build
+    cd /llvm-project/amd/device-libs/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DLLVM_DIR=/usr/lib/cmake/llvm \
+        -DCLANG_DIR=/usr/lib/cmake/clang \
+        ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
 
 # ============================================================================
 # Stage: Build AMD ComGR (part of LLVM monorepo)
