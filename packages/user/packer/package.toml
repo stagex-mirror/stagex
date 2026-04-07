@@ -1,0 +1,14 @@
+[package]
+name        = "packer"
+version     = "1.15.1"
+description = "Tool for building machine images for multiple platforms from a single source configuration."
+license     = "BSL-1.1"
+website     = "https://github.com/hashicorp/packer"
+
+[sources.packer]
+hash = "4123971690a5ca44ad0c4e9989aa5e332a4050dc7b102525452ae2c26622911d"
+format = "tar.gz"
+file = "packer-{version}.{format}"
+mirrors = [
+  "https://github.com/hashicorp/packer/archive/refs/tags/v{version}.{format}",
+]
