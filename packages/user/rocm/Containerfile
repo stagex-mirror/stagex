@@ -143,7 +143,7 @@ EOF
 
 FROM rocm-core-build AS rocprofiler-register-build
 WORKDIR /
-COPY --from=rocm-core-build /usr/ /usr/usr/
+COPY --from=rocm-core-build /usr/ /usr/
 RUN tar -xzf rocm-systems.tar.gz && mv rocm-systems-develop rocm-systems
 RUN --network=none <<-EOF
     set -e
@@ -170,9 +170,7 @@ COPY --from=rocm-core-build /usr/ /usr/
 RUN --network=none <<-EOF
     set -e
     export PATH="/usr/bin:/usr/lib/llvm-22/bin:${PATH}";
-    export CC="clang";
-    export CXX="clang++";
-    export CLANG_PATH="/usr/lib/llvm-22/bin/clang";
+    export LLVM_DIR="/usr/lib/cmake/llvm";
     export LLVM_DIR="/usr/lib/cmake/llvm"
     export CMAKE_PREFIX_PATH="/usr/lib/cmake:${CMAKE_PREFIX_PATH:-}"
     mkdir -p /rocm-systems/projects/rocr-runtime/build && cd /rocm-systems/projects/rocr-runtime/build
