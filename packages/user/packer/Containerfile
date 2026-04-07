@@ -1,0 +1,24 @@
+FROM stagex/pallet-go AS build
+COPY --from=stagex/pallet-clang . /
+ARG VERSION
+ADD fetch/packer-${VERSION}.tar.gz .
+WORKDIR /packer-${VERSION}
+RUN go mod download
+RUN --network=none <<-EOF
+        set -eux
+        export CGO_ENABLED=0
+        go build \
+                -trimpath \
+                -buildvcs=false \
+                -tags netcgo \
+                -o /tmp/packer-bin \
+                -ldflags="-s -w -X github.com/hashicorp/packer/version.Version=${VERSION} -X github.com/hashicorp/packer/version.VersionPrerelease=" \
+                .
+        ls -la /tmp/packer-bin
+        mkdir -p /rootfs/usr/bin/
+        install -vDm755 /tmp/packer-bin /rootfs/usr/bin/packer
+        install -vDm644 -t /rootfs/usr/share/licenses/packer LICENSE
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs /
