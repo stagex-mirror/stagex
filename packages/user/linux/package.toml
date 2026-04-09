@@ -1,13 +1,13 @@
 [package]
 name = "linux"
-version = "7.0.0-rc5"
+version = "7.0-rc7"
 description = "The Linux Kernel"
 website = "https://kernel.org"
 license = "GPL-2.0-only"
 subpackages = ["linux-generic","linux-airgap","linux-server","linux-guest","linux-guest-net","linux-nitro","gen_initramfs"]
 
 [sources.linux]
-hash = "04dc8bd1b8703641f64582f0cc565b7be0a9b2cfe5d31d5cdef7516543e3f303"
+hash = "16c8d4c9aa996e963ba6ee71380a36659044a5bfd389091597006ed05dbe5d23"
 format = "tar.gz"
 file = "linux-{version}.{format}"
-mirrors = [ "https://git.kernel.org/torvalds/t/linux-{version}.{format}"]
+mirrors = [ "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/snapshot/linux-{version}.{format}" ]
