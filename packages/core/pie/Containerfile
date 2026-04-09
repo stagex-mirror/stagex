@@ -25,6 +25,7 @@ COPY --from=stagex/core-php-sodium . /
 COPY --from=stagex/core-php-mbstring . /
 COPY --from=stagex/core-php-tokenizer . /
 COPY --from=stagex/core-composer . /
+COPY --from=stagex/core-libxml2 . /
 
 ADD fetch/pie-${VERSION}.tar.gz /
 WORKDIR /pie-${VERSION}
