@@ -1,0 +1,193 @@
+FROM scratch AS build
+ARG VERSION
+ARG APORTS_VERSION
+ARG TARGETARCH
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-onetbb . /
+COPY --from=stagex/core-mold . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-flex . /
+COPY --from=stagex/core-bison . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-texinfo . /
+COPY --from=stagex/core-gawk . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-gmp . /
+COPY --from=stagex/core-isl . /
+COPY --from=stagex/core-mpc . /
+COPY --from=stagex/core-mpfr . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-sed . /
+COPY --from=stagex/core-grep . /
+COPY --from=stagex/core-findutils . /
+COPY --from=stagex/core-diffutils . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-coreutils . /
+COPY --from=stagex/core-tar . /
+COPY --from=stagex/core-bzip2 . /
+COPY --from=stagex/core-xz . /
+COPY --from=stagex/core-bash . /
+COPY --from=stagex/core-m4 . /
+COPY --from=stagex/core-libffi . /
+COPY --from=stagex/core-jamvm . /
+ADD fetch/gcc-${VERSION}.tar.xz .
+ADD fetch/aports-${APORTS_VERSION}.tar.gz .
+ADD fetch/ecj-4.9.jar .
+COPY setup-gcj-compat.sh /tmp/setup-gcj-compat.sh
+COPY fix-boehm-gc-musl.sh /tmp/fix-boehm-gc-musl.sh
+ENV SOURCE_DATE_EPOCH=1
+
+# ============================================================
+# Build GCC 6.4.0 with Java (gcj/gij/libgcj)
+# ============================================================
+RUN --network=none <<-EOF
+	set -eux
+	cd /gcc-${VERSION}
+
+	# Place ECJ jar where GCC expects it
+	cp /ecj-4.9.jar ecj.jar
+
+	# Apply Alpine gcc6 patches from aports
+	PATCHDIR=/aports-${APORTS_VERSION}/community/gcc6
+	for p in \
+		0001-cilkrts.patch \
+		0002-hardened.patch \
+		0003-hardened-ssp-default.patch \
+		0004-hardened-relro.patch \
+		0005-hardened-format-default.patch \
+		0006-hardened-as-needed.patch \
+		0007-build-args.patch \
+		0008-static-pie.patch \
+		gcc-4.9-musl-fortify.patch \
+		gcc-6.1-musl-libssp.patch \
+		boehm-gc-musl.patch \
+		gcc-pure64.patch \
+		fix-gcj-stdgnu14-link.patch \
+		fix-gcj-musl.patch \
+		fix-gcj-iconv-musl.patch \
+		320-libffi-gnulinux.patch \
+		fix-linux-header-use-in-libgcc.patch \
+		musl-1.2.3.patch \
+		isl-0.22.patch \
+		; do
+		if [ -f "$PATCHDIR/$p" ]; then
+			echo "Applying $p"
+			patch -p1 -F10 < "$PATCHDIR/$p" || echo "WARNING: $p failed, continuing"
+		else
+			echo "SKIP: $p not found"
+		fi
+	done
+
+	# Fix: bool error_p = NULL → bool error_p = 0 (musl-1.2.3 compat)
+	sed -i 's/bool error_p = NULL/bool error_p = 0/' gcc/config/i386/i386.c
+
+	# === Boehm GC musl fixes (boehm-gc-musl.patch) ===
+	# 1. os_dep.c: skip glibc-specific sigcontext.h
+	sed -i '1i#define _ASM_X86_SIGCONTEXT_H 1' boehm-gc/os_dep.c
+	# The _ASM_X86_SIGCONTEXT_H guard above handles the sigcontext issue
+	# 2-3. Boehm GC: fix __GLIBC__ checks via external script
+	chmod +x /tmp/fix-boehm-gc-musl.sh
+	/tmp/fix-boehm-gc-musl.sh /gcc-${VERSION}
+
+	# === GCJ musl fixes (fix-gcj-musl.patch) ===
+	# posix-threads.cc: ensure minimum 1MB stack for Java threads
+	# musl default is 80KB which causes segfaults
+	sed -i '/pthread_attr_init.*\&attr/a\  { size_t _ss; pthread_attr_getstacksize(\&attr, \&_ss); if(_ss < 1048576) pthread_attr_setstacksize(\&attr, 1048576); }' libjava/posix-threads.cc
+	# natSystemProperties.cc: tighten locale check for musl
+	sed -i "s/strlen (locale) >= 2)/strlen(locale) >= 2 \&\& (locale[2] == '\\\\0' || locale[2] == '_'))/" libjava/gnu/classpath/natSystemProperties.cc 2>/dev/null || true
+
+	# === GCJ iconv musl fix (fix-gcj-iconv-musl.patch) ===
+	# natIconv.cc: use explicit UCS-2BE/UCS-2LE instead of "UCS-2"
+	# musl's iconv doesn't auto-detect byte order for UCS-2
+	sed -i '/#include <iconv.h>/a\#include <endian.h>\n#if __BYTE_ORDER == __BIG_ENDIAN\n#define UCS2_CHARSET "UCS-2BE"\n#else\n#define UCS2_CHARSET "UCS-2LE"\n#endif' libjava/gnu/gcj/convert/natIconv.cc
+	sed -i 's/"UCS-2"/UCS2_CHARSET/g' libjava/gnu/gcj/convert/natIconv.cc
+	# Gut the iconv_init function to just return false
+	sed -i '/^iconv_init/,/^}$/c\iconv_init (void)\n{\n  return false;\n}' libjava/gnu/gcj/convert/natIconv.cc 2>/dev/null || true
+
+	# SJLJ exceptions enabled via --enable-sjlj-exceptions in configure
+	# This uses setjmp/longjmp instead of DWARF unwinding, avoiding
+	# the musl unwinder crash when throwing NullPointerException
+
+	# Set version
+	echo "${VERSION}" > gcc/BASE-VER
+
+	# Determine target triple
+	case "${TARGETARCH}" in
+		amd64) ARCH=x86_64 ;;
+		arm64) ARCH=aarch64 ;;
+		*) echo "Unsupported arch: ${TARGETARCH}"; exit 1 ;;
+	esac
+	TARGET="${ARCH}-linux-musl"
+
+	# Ensure host compiler works
+	export CC=gcc
+	export CXX=g++
+
+	# Build out-of-tree
+	mkdir -p /gcc-build
+	cd /gcc-build
+
+	/gcc-${VERSION}/configure \
+		--build=${TARGET} \
+		--host=${TARGET} \
+		--target=${TARGET} \
+		--prefix=/usr \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--libdir=/usr/lib \
+		--program-suffix=-6 \
+		--enable-languages=c,c++,java \
+		--enable-shared \
+		--enable-threads=posix \
+		--enable-tls \
+		--enable-__cxa_atexit \
+		--disable-default-pie \
+		--enable-checking=release \
+		--enable-sjlj-exceptions \
+		--enable-java-gc=boehm \
+		--with-jvm-root=/usr/lib/jvm/java-1.5-gcj \
+		--with-system-zlib \
+		--without-isl \
+		--with-gmp=/usr \
+		--with-mpc=/usr \
+		--with-mpfr=/usr \
+		--with-linker-hash-style=gnu \
+		--disable-bootstrap \
+		--disable-fixed-point \
+		--disable-libatomic \
+		--disable-libgomp \
+		--disable-libitm \
+		--disable-libmpx \
+		--disable-libmudflap \
+		--disable-libquadmath \
+		--disable-libsanitizer \
+		--disable-libssp \
+		--disable-libstdcxx-pch \
+		--disable-multilib \
+		--disable-nls \
+		--disable-symvers \
+		--disable-target-libiberty \
+		--disable-vtable-verify \
+		--disable-werror \
+		libat_cv_have_ifunc=no
+
+	make -j "$(nproc)"
+	make install
+EOF
+
+RUN --network=none <<-EOF
+	set -eux
+	# Create java-gcj-compat JDK layout + native ECJ
+	chmod +x /tmp/setup-gcj-compat.sh
+	case "${TARGETARCH}" in
+		amd64) /tmp/setup-gcj-compat.sh amd64 ;;
+		arm64) /tmp/setup-gcj-compat.sh aarch64 ;;
+	esac
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

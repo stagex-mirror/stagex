@@ -1,0 +1,41 @@
+[package]
+name = "jamvm"
+version = "2.0.0"
+description = "JamVM - minimal Java virtual machine with ECJ compiler"
+license = "GPL-2.0-or-later"
+website = "https://jamvm.sourceforge.net/"
+
+[sources.jamvm_1_5_1]
+hash = "663895bd69caf3a1fda6af5eea8263d90a5fd35ca8f4c32e2210ac410788901a"
+format = "tar.gz"
+version = "1.5.1"
+file = "jamvm-{version}.{format}"
+mirrors = ["https://downloads.sourceforge.net/project/jamvm/jamvm/JamVM%20{version}/{file}"]
+
+[sources.jamvm_2_0_0]
+hash = "76428e96df0ae9dd964c7a7c74c1e9a837e2f312c39e9a357fa8178f7eff80da"
+format = "tar.gz"
+version = "2.0.0"
+file = "jamvm-{version}.{format}"
+mirrors = ["https://downloads.sourceforge.net/project/jamvm/jamvm/JamVM%20{version}/{file}"]
+
+[sources.classpath_0_99]
+hash = "f929297f8ae9b613a1a167e231566861893260651d913ad9b6c11933895fecc8"
+format = "tar.gz"
+version = "0.99"
+file = "classpath-{version}.{format}"
+mirrors = ["https://ftp.gnu.org/gnu/classpath/{file}"]
+
+[sources.ecjsrc]
+hash = "070cd425f5324349073c8ea9a3a0d43166429264584da9e9537888d6a7401216"
+format = "zip"
+version = "3.2.2"
+file = "ecjsrc.{format}"
+mirrors = ["https://archive.eclipse.org/eclipse/downloads/drops/R-3.2.2-200702121330/{file}"]
+
+[sources.fastjar]
+hash = "f156abc5de8658f22ee8f08d7a72c88f9409ebd8c7933e9466b0842afeb2f145"
+format = "tar.gz"
+version = "0.98"
+file = "fastjar-{version}.{format}"
+mirrors = ["https://download.savannah.gnu.org/releases/fastjar/{file}"]

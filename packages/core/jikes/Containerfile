@@ -1,0 +1,26 @@
+FROM scratch AS build
+ARG VERSION
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-mold . /
+COPY --from=stagex/core-onetbb . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-zlib . /
+ADD fetch/jikes-${VERSION}.tar.bz2 .
+WORKDIR /jikes-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
+ENV CC=clang
+ENV CXX=clang++
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--prefix=/usr \
+		CXXFLAGS="-std=c++14"
+	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

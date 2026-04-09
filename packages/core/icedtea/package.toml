@@ -1,0 +1,72 @@
+[package]
+name = "icedtea"
+version = "2.6.28"
+description = "IcedTea - OpenJDK 7 build harness for bootstrapping Java"
+license = "GPL-2.0-only WITH Classpath-exception-2.0"
+website = "https://icedtea.classpath.org/"
+
+[sources.icedtea]
+hash = "951188e6c0e3599de22f5cb2d95b5da9bf480763b5c8c600dae9fec88cff1735"
+format = "tar.xz"
+file = "icedtea-{version}.{format}"
+mirrors = ["https://icedtea.classpath.org/download/source/{file}"]
+
+[sources.openjdk]
+hash = "78e5e89fc510280401e227d980abe30d49ea508c3eec537035481fd21a3b2c32"
+file = "openjdk.tar.bz2"
+mirrors = ["https://icedtea.classpath.org/download/drops/icedtea7/2.6.28/{file}"]
+
+[sources.corba]
+hash = "b002240621be404783ed0117fe052552b4ef86adade4f2c8561ccee60ecba845"
+file = "corba.tar.bz2"
+mirrors = ["https://icedtea.classpath.org/download/drops/icedtea7/2.6.28/{file}"]
+
+[sources.hotspot]
+hash = "b6897cd5dd70af201e6ca107b2759217f92ca207643c5128dcca9e0a33b34cfc"
+file = "hotspot.tar.bz2"
+mirrors = ["https://icedtea.classpath.org/download/drops/icedtea7/2.6.28/{file}"]
+
+[sources.jaxp]
+hash = "fd93e65a4692593c2100963be2c75d697a32ba51ee2c02c7e7dccc524dfb1788"
+file = "jaxp.tar.bz2"
+mirrors = ["https://icedtea.classpath.org/download/drops/icedtea7/2.6.28/{file}"]
+
+[sources.jaxws]
+hash = "23b2c621752608f03f8b61753e19b21246dd5850648bcdfa49f2c6b8cd930a2f"
+file = "jaxws.tar.bz2"
+mirrors = ["https://icedtea.classpath.org/download/drops/icedtea7/2.6.28/{file}"]
+
+[sources.jdk]
+hash = "0812269b1f8a3884d2c2659d944e20fcfb054d916a5712e405d7a54fab2b5167"
+file = "jdk.tar.bz2"
+mirrors = ["https://icedtea.classpath.org/download/drops/icedtea7/2.6.28/{file}"]
+
+[sources.langtools]
+hash = "24799d5ebebfb1e316f9434db1db5a360ac7c86e5783ce58693536f978a0aa47"
+file = "langtools.tar.bz2"
+mirrors = ["https://icedtea.classpath.org/download/drops/icedtea7/2.6.28/{file}"]
+
+[sources.freetype]
+hash = "12991c4e55c506dd7f9b765933e62fd2be2e06d421505d7950a132e4f1bb484d"
+file = "freetype-2.13.2.tar.xz"
+mirrors = ["https://download.savannah.gnu.org/releases/freetype/{file}"]
+
+[sources.alsa_lib]
+hash = "4868cd908627279da5a634f468701625be8cc251d84262c7e5b6a218391ad0d2"
+file = "alsa-lib-1.2.12.tar.bz2"
+mirrors = ["https://www.alsa-project.org/files/pub/lib/{file}"]
+
+[sources.xorgproto]
+hash = "372225fd40815b8423547f5d890c5debc72e88b91088fbfb13158c20495ccb59"
+file = "xorgproto-2024.1.tar.xz"
+mirrors = ["https://xorg.freedesktop.org/archive/individual/proto/{file}"]
+
+[sources.ant]
+hash = "5de65f7ba3f67e436ffffcdc0a73f591d1006e9fb41af8632c1f1f84d4a3e0b1"
+file = "apache-ant-1.8.4-src.tar.bz2"
+mirrors = ["https://archive.apache.org/dist/ant/source/{file}"]
+
+[sources.patch]
+hash = "ac610bda97abe0d9f6b7c963255a11dcb196c25e337c61f94e4778d632f1d8fd"
+file = "patch-2.7.6.tar.xz"
+mirrors = ["https://ftpmirror.gnu.org/patch/{file}"]

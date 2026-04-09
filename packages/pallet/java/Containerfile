@@ -1,0 +1,11 @@
+FROM stagex/core-profile
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-openjdk . /
+COPY --from=stagex/core-ca-certificates . /
+ENV SOURCE_DATE_EPOCH=1
+ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk
+ENV PATH=${JAVA_HOME}/bin:${PATH}
+ENTRYPOINT ["/usr/bin/java"]

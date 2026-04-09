@@ -1,0 +1,32 @@
+[package]
+name = "classpath"
+version = "0.99"
+description = "GNU Classpath - Free core class libraries for Java"
+license = "GPL-2.0-only WITH Classpath-exception-2.0"
+website = "https://www.gnu.org/software/classpath/"
+
+[sources.fastjar]
+hash = "f156abc5de8658f22ee8f08d7a72c88f9409ebd8c7933e9466b0842afeb2f145"
+format = "tar.gz"
+version = "0.98"
+file = "fastjar-{version}.{format}"
+mirrors = ["https://download.savannah.gnu.org/releases/fastjar/{file}"]
+
+[sources.classpath_0_93]
+hash = "df2d093612abd23fe67e9409d89bb2a8e79b1664fe2b2da40e1c8ed693e32945"
+format = "tar.gz"
+version = "0.93"
+file = "classpath-{version}.{format}"
+mirrors = [
+	"https://ftp.gnu.org/gnu/classpath/{file}",
+	"https://mirrors.kernel.org/gnu/classpath/{file}",
+]
+
+[sources.classpath_0_99]
+hash = "f929297f8ae9b613a1a167e231566861893260651d913ad9b6c11933895fecc8"
+format = "tar.gz"
+file = "classpath-{version}.{format}"
+mirrors = [
+	"https://ftp.gnu.org/gnu/classpath/{file}",
+	"https://mirrors.kernel.org/gnu/classpath/{file}",
+]

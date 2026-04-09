@@ -1,0 +1,50 @@
+--- a/org/eclipse/jdt/internal/compiler/parser/Parser.java
++++ b/org/eclipse/jdt/internal/compiler/parser/Parser.java
+@@ -685,7 +685,13 @@
+
+ 	//files are located at Parser.class directory
+
+-	InputStream stream = Parser.class.getResourceAsStream(filename);
++	InputStream stream = null;
++	java.io.File rscFile = new java.io.File(
++		System.getProperty("ecj.rsc.dir", "/usr/share/ecj"), filename);
++	if (rscFile.exists()) {
++		stream = new FileInputStream(rscFile);
++	} else {
++		stream = Parser.class.getResourceAsStream(filename);
++	}
+ 	if (stream == null) {
+ 		throw new java.io.IOException(Messages.bind(Messages.parser_missingFile, filename));
+ 	}
+@@ -746,7 +752,13 @@
+
+ 	//files are located at Parser.class directory
+
+-	InputStream stream = Parser.class.getResourceAsStream(filename);
++	InputStream stream = null;
++	java.io.File rscFile = new java.io.File(
++		System.getProperty("ecj.rsc.dir", "/usr/share/ecj"), filename);
++	if (rscFile.exists()) {
++		stream = new FileInputStream(rscFile);
++	} else {
++		stream = Parser.class.getResourceAsStream(filename);
++	}
+ 	if (stream == null) {
+ 		throw new java.io.IOException(Messages.bind(Messages.parser_missingFile, filename));
+ 	}
+@@ -783,7 +795,13 @@
+
+ 	//files are located at Parser.class directory
+
+-	InputStream stream = Parser.class.getResourceAsStream(filename);
++	InputStream stream = null;
++	java.io.File rscFile = new java.io.File(
++		System.getProperty("ecj.rsc.dir", "/usr/share/ecj"), filename);
++	if (rscFile.exists()) {
++		stream = new FileInputStream(rscFile);
++	} else {
++		stream = Parser.class.getResourceAsStream(filename);
++	}
+ 	if (stream == null) {
+ 		throw new java.io.IOException(Messages.bind(Messages.parser_missingFile, filename));
+ 	}

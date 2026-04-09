@@ -1,0 +1,40 @@
+[package]
+name = "openjdk"
+version = "8u482"
+description = "OpenJDK 8 - Open-source Java Development Kit (via IcedTea 3)"
+license = "GPL-2.0-only WITH Classpath-exception-2.0"
+website = "https://openjdk.org"
+
+[sources.icedtea3]
+hash = "83c38767fb0ef319414b35aa9c426782b546a05989838fd0e9f0245d738cf496"
+format = "tar.xz"
+version = "3.38.0"
+file = "icedtea-{version}.{format}"
+mirrors = ["https://icedtea.classpath.org/download/source/icedtea-{version}.tar.xz"]
+
+[sources.xorgproto]
+hash = "372225fd40815b8423547f5d890c5debc72e88b91088fbfb13158c20495ccb59"
+format = "tar.xz"
+version = "2024.1"
+file = "xorgproto-{version}.{format}"
+mirrors = ["https://xorg.freedesktop.org/archive/individual/proto/xorgproto-{version}.tar.xz"]
+
+[sources.gnupatch]
+hash = "ac610bda97abe0d9f6b7c963255a11dcb196c25e337c61f94e4778d632f1d8fd"
+format = "tar.xz"
+version = "2.7.6"
+file = "patch-{version}.{format}"
+mirrors = ["https://ftp.gnu.org/gnu/patch/patch-{version}.tar.xz"]
+
+[sources.ecj]
+hash = "9506e75b862f782213df61af67338eb7a23c35ff425d328affc65585477d34cd"
+format = "jar"
+version = "4.9"
+file = "ecj-{version}.{format}"
+mirrors = ["https://sourceware.org/pub/java/ecj-{version}.jar"]
+
+[sources.openjdk8]
+hash = "c6ce70c55f970cd09134653c9281adf454fe788e053d8e30c04dea77dfcbe996"
+format = "tar.xz"
+file = "openjdk8-git.{format}"
+mirrors = ["https://icedtea.classpath.org/download/drops/icedtea8/3.38.0/openjdk-git.tar.xz"]

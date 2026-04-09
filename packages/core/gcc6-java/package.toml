@@ -1,0 +1,24 @@
+[package]
+name = "gcc6-java"
+version = "6.4.0"
+description = "GCC 6 Java frontend (gcj/gij/libgcj) for Java bootstrap"
+license="GPL-2.0-or-later AND LGPL-2.1-or-later"
+website="https://gcc.gnu.org"
+
+[sources.gcc]
+hash = "850bf21eafdfe5cd5f6827148184c08c4a0852a37ccf36ce69855334d2c914d4"
+format = "tar.xz"
+file = "gcc-{version}.{format}"
+mirrors = [ "https://mirrors.kernel.org/gnu/gcc/gcc-{version}/{file}",]
+
+[sources.ecj]
+hash = "9506e75b862f782213df61af67338eb7a23c35ff425d328affc65585477d34cd"
+format = "jar"
+file = "ecj-4.9.{format}"
+mirrors = [ "https://sourceware.org/pub/java/ecj-4.9.jar",]
+
+[sources.aports]
+hash = "dc2cabf6a18c42c0d3c429baaa57a0ac46e6fa88191e0426e10480bb8ce45640"
+file = "aports-{version}.tar.gz"
+version = "48aba47e0531d88d94d7bb0334c3614f1574599b"
+mirrors = [ "https://gitlab.alpinelinux.org/alpine/aports/-/archive/{version}/aports-{version}.tar.gz" ]

@@ -1,0 +1,254 @@
+FROM scratch AS build
+ARG VERSION
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-mold . /
+COPY --from=stagex/core-onetbb . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-libffi . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-jikes . /
+COPY --from=stagex/core-classpath . /
+ENV SOURCE_DATE_EPOCH=1
+ENV CC=clang
+ENV CXX=clang++
+
+# Provide musl-compatible fpu_control.h stub
+RUN --network=none <<-EOF
+	set -eux
+	cat > /usr/include/fpu_control.h <<'STUB'
+	#ifndef _FPU_CONTROL_H
+	#define _FPU_CONTROL_H
+	#define _FPU_EXTENDED 0x0300
+	#define _FPU_DOUBLE   0x0200
+	#define _FPU_DEFAULT  0x037f
+	#define _FPU_GETCW(cw) __asm__ __volatile__ ("fnstcw %0" : "=m" (cw))
+	#define _FPU_SETCW(cw) __asm__ __volatile__ ("fldcw %0" : : "m" (cw))
+	typedef unsigned int fpu_control_t;
+	#endif
+	STUB
+EOF
+
+# ============================================================
+# Stage 1: Bootstrap JamVM 1.5.1 + ECJ 3.2.2 (using Jikes + Classpath 0.93)
+# ============================================================
+
+# Build JamVM 1.5.1 with Classpath 0.93 — install to build root
+ADD fetch/jamvm-1.5.1.tar.gz .
+RUN --network=none <<-EOF
+	set -eux
+	cd /jamvm-1.5.1
+	./configure \
+		--prefix=/usr \
+		--with-classpath-install-dir=/usr \
+		--disable-int-caching \
+		--enable-runtime-reloc-checks \
+		--enable-ffi \
+		CFLAGS="-g -O2 -Wno-error=implicit-function-declaration -Wno-error=incompatible-pointer-types"
+	make -j "$(nproc)"
+	make install
+EOF
+
+# Build fastjar (needed for zip/jar operations)
+ADD fetch/fastjar-0.98.tar.gz .
+RUN --network=none <<-EOF
+	set -eux
+	cd /fastjar-0.98
+	./configure --prefix=/usr
+	make -j "$(nproc)"
+	make install
+EOF
+
+# Build ECJ 3.2.2 (Eclipse Compiler for Java) from source
+ADD fetch/ecjsrc.zip /ecj-src/ecjsrc.zip
+RUN --network=none <<-EOF
+	set -eux
+	cd /ecj-src
+	fastjar xf ecjsrc.zip
+
+	# Patch Main.java: load batch messages.properties from filesystem
+	# ResourceBundle.getBundle() fails on JamVM+Classpath 0.93
+	MAIN=org/eclipse/jdt/internal/compiler/batch/Main.java
+	sed -i '/this.bundle = ResourceBundle.getBundle(Main.bundleName, locale);/c\
+		try { this.bundle = new java.util.PropertyResourceBundle(new java.io.FileInputStream("/usr/share/ecj/" + Main.bundleName.replace('\''.'\'', '\''/'\'')+".properties")); } catch (Exception _e) { this.bundle = ResourceBundle.getBundle(Main.bundleName, locale); }' "$MAIN"
+
+	# Patch CompilationUnitScope: don't skip types that collide with package names
+	# Classpath 0.99 has classes (e.g. node, list) whose names collide with packages.
+	# ECJ skips compilation entirely for these, preventing class file generation.
+	SCOPE=org/eclipse/jdt/internal/compiler/lookup/CompilationUnitScope.java
+	sed -i '/typeCollidesWithPackage/{n;s/continue nextType;//}' "$SCOPE"
+	grep -A2 'typeCollidesWithPackage' "$SCOPE"
+
+	# Patch FileSystem.getClasspath(): check file extension before isDirectory()
+	# Classpath 0.93's isDirectory() returns true for ALL files on musl,
+	# causing glibj.zip to be treated as a ClasspathDirectory instead of ClasspathJar
+	FILESYSTEM=org/eclipse/jdt/internal/compiler/batch/FileSystem.java
+	sed -i 's|if (file.isDirectory())|if (file.isDirectory() \&\& !classpathName.toLowerCase().endsWith(".jar") \&\& !classpathName.toLowerCase().endsWith(".zip"))|' "$FILESYSTEM"
+
+	# Patch Parser.java: replace getResourceAsStream with filesystem fallback
+	# Classpath 0.93's getResourceAsStream is broken for non-class resources
+	PARSER=org/eclipse/jdt/internal/compiler/parser/Parser.java
+	sed -i 's|InputStream stream = Parser.class.getResourceAsStream(filename);|InputStream stream = null; try { stream = new FileInputStream("/usr/share/ecj/org/eclipse/jdt/internal/compiler/parser/" + filename); } catch (Exception _e) { stream = Parser.class.getResourceAsStream(filename); }|g' "$PARSER"
+
+	# Patch ScannerHelper.java: same getResourceAsStream fix for .rsc files
+	SCANNER=org/eclipse/jdt/internal/compiler/parser/ScannerHelper.java
+	sed -i 's|import java.io.DataInputStream;|import java.io.DataInputStream;\nimport java.io.FileInputStream;|' "$SCANNER"
+	sed -i 's|ScannerHelper.class.getResourceAsStream("\([^"]*\)")|new FileInputStream("/usr/share/ecj/org/eclipse/jdt/internal/compiler/parser/\1")|g' "$SCANNER"
+
+	# Patch Messages.java: use FileInputStream for .properties loading
+	MESSAGES=org/eclipse/jdt/internal/compiler/util/Messages.java
+	sed -i '/input = ClassLoader.getSystemResourceAsStream(variants\[i\]);/c\
+				{ java.io.File _f = new java.io.File("/usr/share/ecj", variants[i]); if (_f.isFile()) { try { input = new java.io.FileInputStream(_f); } catch (java.io.IOException _e) { input = ClassLoader.getSystemResourceAsStream(variants[i]); } } else { input = ClassLoader.getSystemResourceAsStream(variants[i]); } }' "$MESSAGES"
+	sed -i '/input = loader.getResourceAsStream(variants\[i\]);/c\
+				{ java.io.File _f = new java.io.File("/usr/share/ecj", variants[i]); if (_f.isFile()) { try { input = new java.io.FileInputStream(_f); } catch (java.io.IOException _e) { input = loader.getResourceAsStream(variants[i]); } } else { input = loader.getResourceAsStream(variants[i]); } }' "$MESSAGES"
+
+	# Compile ECJ with Jikes
+	find . -name '*.java' \
+		-not -path '*/antadapter/*' \
+		-not -name 'JDTCompilerAdapter.java' \
+		> /tmp/ecj-sources.txt
+	/usr/bin/jikes +P \
+		-bootclasspath /usr/share/classpath/glibj.zip \
+		-extdirs "" \
+		-source 1.4 \
+		-target 1.4 \
+		@/tmp/ecj-sources.txt
+
+	# Install ECJ jar and resources to build root
+	mkdir -p /usr/share/java
+	fastjar cf /usr/share/java/ecj.jar $(find . -name '*.class')
+
+	mkdir -p /usr/share/ecj
+	find . \( -name '*.rsc' -o -name '*.properties' \) | while read f; do
+		dir="/usr/share/ecj/$(dirname "$f")"
+		mkdir -p "$dir"
+		cp "$f" "$dir/"
+	done
+
+	# Create ecj wrapper script
+	# Only add default -bootclasspath if not already specified by caller
+	mkdir -p /usr/bin
+	cat > /usr/bin/ecj <<'WRAPPER'
+	#!/bin/sh
+	HAS_BCP=
+	PROCEED=
+	for a in "$@"; do
+		case "$a" in
+			-bootclasspath) HAS_BCP=1 ;;
+			-proceedOnError) PROCEED=1 ;;
+		esac
+	done
+	if [ -z "$HAS_BCP" ]; then
+		set -- -bootclasspath /usr/share/classpath/glibj.zip "$@"
+	fi
+	jamvm -Xmx768m \
+		-Xbootclasspath/a:/usr/share/java/ecj.jar:/usr/share/ecj \
+		org.eclipse.jdt.internal.compiler.batch.Main \
+		"$@"
+	rc=$?
+	if [ -n "$PROCEED" ]; then exit 0; fi
+	exit $rc
+	WRAPPER
+	chmod +x /usr/bin/ecj
+EOF
+
+# ============================================================
+# Stage 2: Build Classpath 0.99 using ECJ
+# ============================================================
+
+ADD fetch/classpath-0.99.tar.gz .
+RUN --network=none <<-EOF
+	set -eux
+	cd /classpath-0.99
+
+	# Same musl fix as 0.93: isDirectory() returns true for all files
+	sed -i '153,167d' gnu/java/nio/FileChannelImpl.java
+
+	./configure \
+		--prefix=/usr \
+		JAVAC="/usr/bin/ecj -nowarn -proceedOnError" \
+		CFLAGS="-g -O2 -Wno-error=implicit-function-declaration" \
+		--disable-Werror \
+		--disable-examples \
+		--disable-gmp \
+		--disable-gtk-peer \
+		--disable-gconf-peer \
+		--disable-plugin \
+		--disable-dssi \
+		--disable-alsa \
+		--disable-gjdoc
+
+	# Workaround: File.exists() always returns true on Classpath 0.93 + musl,
+	# which breaks File.mkdirs() — it thinks parents already exist.
+	# Pre-create all output package directories that ECJ will need.
+	# classes.1 format: <package_path> <srcdir> <relative_file>
+	cd lib
+	make genclasses
+	awk '{print $1}' classes.1 | sort -u | while read pkg; do
+		mkdir -p "$pkg"
+	done
+	cd ..
+
+	make -j "$(nproc)"
+	make install
+EOF
+
+# ============================================================
+# Stage 3: Build JamVM 2.0.0 with Classpath 0.99
+# ============================================================
+
+ADD fetch/jamvm-2.0.0.tar.gz .
+RUN --network=none <<-EOF
+	set -eux
+	cd /jamvm-2.0.0
+	./configure \
+		--prefix=/usr \
+		--with-classpath-install-dir=/usr \
+		--enable-ffi \
+		--disable-int-threading \
+		--disable-int-direct \
+		--disable-int-caching \
+		--disable-int-prefetch \
+		--disable-int-inlining \
+		CFLAGS="-g -O2 -Wno-error=implicit-function-declaration -Wno-error=incompatible-pointer-types"
+	make -j "$(nproc)"
+	make install
+EOF
+
+# ============================================================
+# Package: JamVM 2.0 + ECJ + Classpath 0.99
+# ============================================================
+
+RUN --network=none <<-EOF
+	set -eux
+	mkdir -p /rootfs/usr/bin /rootfs/usr/lib /rootfs/usr/share
+
+	# JamVM 2.0
+	cp /usr/bin/jamvm /rootfs/usr/bin/
+	cp -a /usr/share/jamvm /rootfs/usr/share/
+
+	# Classpath 0.99
+	cp -a /usr/share/classpath /rootfs/usr/share/
+	cp -a /usr/lib/classpath /rootfs/usr/lib/
+
+	# ECJ
+	cp /usr/bin/ecj /rootfs/usr/bin/
+	cp -a /usr/share/java /rootfs/usr/share/
+	cp -a /usr/share/ecj /rootfs/usr/share/
+
+	# fastjar (useful for downstream builds)
+	cp /usr/bin/fastjar /rootfs/usr/bin/
+
+	# Classpath tools (needed by IcedTea/OpenJDK bootstrap)
+	for tool in gjavah grmic gnative2ascii gjar gorbd gserialver \
+		gkeytool gtnameserv grmiregistry; do
+		[ -f "/usr/bin/$tool" ] && cp "/usr/bin/$tool" /rootfs/usr/bin/
+	done
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

@@ -1,0 +1,54 @@
+FROM scratch AS build
+ARG VERSION
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-mold . /
+COPY --from=stagex/core-onetbb . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-libffi . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-jikes . /
+COPY --from=stagex/core-linux-headers . /
+ADD fetch/classpath-0.93.tar.gz .
+ENV SOURCE_DATE_EPOCH=1
+ENV CC=clang
+ENV CXX=clang++
+ADD fetch/fastjar-0.98.tar.gz .
+RUN --network=none <<-EOF
+	set -eux
+	cd /fastjar-0.98
+	./configure --prefix=/usr
+	make -j "$(nproc)"
+	make install
+EOF
+RUN --network=none <<-EOF
+	set -eux
+	cd /classpath-0.93
+
+	# Fix FileChannelImpl: isDirectory() is broken on musl (always returns true)
+	# This check prevents ALL FileInputStream operations from working
+	# Delete lines 153-167 (the isDirectory check block)
+	sed -i '153,167d' gnu/java/nio/FileChannelImpl.java
+
+	./configure \
+		--prefix=/usr \
+		JAVAC="/usr/bin/jikes +P" \
+		--with-fastjar=/usr/bin/fastjar \
+		CFLAGS="-g -O2 -Wno-error=implicit-function-declaration" \
+		--disable-Werror \
+		--disable-examples \
+		--disable-gmp \
+		--disable-gtk-peer \
+		--disable-gconf-peer \
+		--disable-plugin \
+		--disable-dssi \
+		--disable-alsa \
+		--disable-gjdoc
+	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

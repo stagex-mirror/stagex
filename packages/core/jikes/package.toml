@@ -1,0 +1,12 @@
+[package]
+name = "jikes"
+version = "1.22"
+description = "IBM Jikes Java compiler"
+license = "IPL-1.0"
+website = "https://jikes.sourceforge.net/"
+
+[sources.jikes]
+hash = "0cb02c763bc441349f6d38cacd52adf762302cce3a08e269f1f75f726e6e14e3"
+format = "tar.bz2"
+file = "jikes-{version}.{format}"
+mirrors = ["https://downloads.sourceforge.net/project/jikes/Jikes/{version}/{file}"]
