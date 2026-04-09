@@ -1,12 +1,12 @@
 [package]
 name        = "opentofu"
-version     = "1.11.5"
+version     = "1.11.6"
 description = "Declarative management of cloud infrastructure"
 license     = "MPL-2.0"
 website     = "https://github.com/opentofu/opentofu"
 
 [sources.opentofu]
-hash = "450f962f262d9f484ad1fb73454650740cdce0d83a854ad8b6c183cc5822eb09"
+hash = "4c16aaac1c8db7386488abb13226f93fed4141698d0ebc02711029e6d6676a82"
 format = "tar.gz"
 file = "opentofu-{version}.{format}"
 mirrors = [
