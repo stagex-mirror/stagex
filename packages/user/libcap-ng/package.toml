@@ -6,7 +6,8 @@ license = "LGPL-2.1-or-later"
 website = "https://github.com/stevegrubb/libcap-ng"
 
 [sources.libcap-ng]
-hash = "3ba5294d1cbdfa98afaacfbc00b6af9ed2b83e8a21817185dfd844cc8c7ac6ff"
+hash = "fe11ebbb55904763b3532f19069f13ec319042634620180a03bd4653d301563e"
 format = "tar.gz"
 file = "libcap-ng-{version}.{format}"
-mirrors = [ "https://people.redhat.com/sgrubb/libcap-ng/{file}",]
+mirrors = [ "https://github.com/stevegrubb/libcap-ng/archive/refs/tags/v{version}.{format}" ]
+
