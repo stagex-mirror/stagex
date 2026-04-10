@@ -1,12 +1,12 @@
 [package]
 name = "py-bcrypt"
-version = "4.3.0"
+version = "5.0.0"
 description = "Modern password hashing for your software and your servers"
 license = "Apache-2.0"
 website = "https://github.com/pyca/bcrypt"
 
 [sources.py-bcrypt]
-hash = "5cf3964765a9e2ed592ceb721948592f6227abcf22dd7314c897363ddd49ac3e"
+hash = "00426239c15a99c6b3f61a43d5c825fb53ee64921ceb0bdf95d22d581bdba67e"
 format = "tar.gz"
 file = "py-bcrypt-{version}.{format}"
 mirrors = [ "https://github.com/pyca/bcrypt/archive/refs/tags/{version}.{format}",]

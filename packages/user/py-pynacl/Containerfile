@@ -13,8 +13,8 @@ RUN --network=none <<-EOF
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 	python -m installer -d /rootfs .dist/*.whl
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
-	#python -m build --wheel --no-isolation
-	#python -m installer --destdir=/rootfs dist/*.whl
+	#gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+	#python -m installer --destdir=/rootfs .dist/*.whl
 	install -Dm0644 -t /rootfs/usr/share/licenses/py-pynacl/ LICENSE
 	#find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF

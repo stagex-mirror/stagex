@@ -4,8 +4,8 @@ COPY --from=stagex/user-py-six . /
 ADD fetch/py-pam-${VERSION}.tar.gz .
 WORKDIR /python-pam-${VERSION}/
 RUN --network=none <<-EOF
-  python -m build --wheel --no-isolation
-  python -m installer --destdir=/rootfs dist/*.whl
+  gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+  python -m installer --destdir=/rootfs .dist/*.whl
   install -Dm644 LICENSE /rootfs/usr/share/licenses/py-pam/LICENSE
   find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
