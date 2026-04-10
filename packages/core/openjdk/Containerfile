@@ -140,29 +140,31 @@ RUN --network=none <<-'EOF'
 	done
 
 	# === Disable JFR ===
-	find openjdk-boot openjdk -name 'top.make' -path '*/hotspot/*' \
+	find openjdk-boot -name 'top.make' -path '*/hotspot/*' \
 		-exec sed -i 's/jfr_stuff//' {} + 2>/dev/null || true
-	find openjdk-boot openjdk -name 'generated-configure.sh' \
+	find openjdk-boot -name 'generated-configure.sh' \
 		-exec sed -i 's/INCLUDE_JFR=true/INCLUDE_JFR=false/g' {} + 2>/dev/null || true
-	find openjdk-boot openjdk -path '*/hotspot/*/jfr/*.cpp' \
+	find openjdk-boot -path '*/hotspot/*/jfr/*.cpp' \
 		-exec sh -c 'echo "// JFR disabled" > "$1"' _ {} \; 2>/dev/null || true
-	find openjdk-boot openjdk -name 'jfrFlush.hpp' -path '*/hotspot/*' \
+	find openjdk-boot -name 'jfrFlush.hpp' -path '*/hotspot/*' \
 		-exec sh -c 'echo "// JFR disabled" > "$1"' _ {} \; 2>/dev/null || true
 	for stub in /tmp/jfr-stubs/*.cpp; do
 		name=$(basename "$stub")
-		find openjdk-boot openjdk -name "$name" -path '*/hotspot/*' \
+		find openjdk-boot -name "$name" -path '*/hotspot/*' \
 			-exec cp "$stub" {} \; 2>/dev/null || true
 	done
 
 	# === Disable Serviceability Agent ===
-	find openjdk-boot openjdk -path '*/hotspot/agent/src/os/linux/*.c' \
+	find openjdk-boot -path '*/hotspot/agent/src/os/linux/*.c' \
 		-exec sh -c 'echo "// SA disabled" > "$1"' _ {} \; 2>/dev/null || true
-	find openjdk-boot openjdk -path '*/hotspot/agent/src/share/native/*.c' \
+	find openjdk-boot -path '*/hotspot/agent/src/share/native/*.c' \
 		-exec sh -c 'echo "// SA disabled" > "$1"' _ {} \; 2>/dev/null || true
-	find openjdk-boot openjdk -name 'top.make' -path '*/hotspot/*' \
+	find openjdk-boot -name 'top.make' -path '*/hotspot/*' \
 		-exec sed -i 's/sa_stuff//' {} + 2>/dev/null || true
-	find openjdk-boot openjdk -name 'sa.make' -path '*/hotspot/*' \
-		-exec sh -c 'printf "all:\n\t@true\n.DEFAULT:\n\t@true\n" > "$1"' _ {} \; 2>/dev/null || true
+	for sa in sa.make saproc.make; do
+		find openjdk-boot -name "$sa" -path '*/hotspot/*' \
+			-exec sh -c 'printf "all:\n\t@true\n.DEFAULT:\n\t@true\n" > "$1"' _ {} \; 2>/dev/null || true
+	done
 
 	# === Replace stub source files ===
 	find openjdk-boot -name 'jvmtiGen.java' -path '*/hotspot/*' \
@@ -171,31 +173,31 @@ RUN --network=none <<-'EOF'
 		-exec cp /tmp/GenStubs-noop.java {} \;
 
 	# === musl compatibility fixes ===
-	find openjdk-boot openjdk -name 'autoconf-config.sub' -exec \
+	find openjdk-boot -name 'autoconf-config.sub' -exec \
 		sed -i 's/linux-uclibc\*/linux-musl* | linux-uclibc*/' {} \;
-	find openjdk-boot openjdk -name 'autoconf-config.sub' -exec \
+	find openjdk-boot -name 'autoconf-config.sub' -exec \
 		sed -i 's/-linux-uclibc\*/-linux-musl* | -linux-uclibc*/' {} \;
-	find openjdk-boot openjdk -name 'generated-configure.sh' -exec \
+	find openjdk-boot -name 'generated-configure.sh' -exec \
 		sed -i 's/as_fn_error.*A .* compiler is required/echo "gcc check bypassed" #/' {} \;
 	# XML encoding fix (GNU Classpath parser)
-	find openjdk-boot openjdk \( -name '*.xml' -o -name '*.xsd' -o -name '*.xsl' \) \
+	find openjdk-boot \( -name '*.xml' -o -name '*.xsd' -o -name '*.xsl' \) \
 		-exec sed -i 's/encoding="utf-8"/encoding="UTF-8"/g' {} + 2>/dev/null || true
 	# left-shift-of-negative (clang error in constant expressions)
-	find openjdk-boot openjdk \( -name '*.hpp' -o -name '*.cpp' -o -name '*.h' \) -path '*/hotspot/*' -exec \
+	find openjdk-boot \( -name '*.hpp' -o -name '*.cpp' -o -name '*.h' \) -path '*/hotspot/*' -exec \
 		sed -i -e 's/(\(-1\)) *<</(~(uintptr_t)0) <</g' \
 			-e 's/(\(-1\))<</(~(uintptr_t)0)<</g' \
 			-e 's/~(\(-1\))/~(~(uintptr_t)0)/g' {} + 2>/dev/null || true
 	# __SIGRTMAX -> _NSIG, SIGCLD -> SIGCHLD in JDK native code
-	find openjdk-boot openjdk \( -name '*.c' -o -name '*.h' \) -path '*/jdk/src/*' \
+	find openjdk-boot \( -name '*.c' -o -name '*.h' \) -path '*/jdk/src/*' \
 		-exec sed -i 's/__SIGRTMAX/_NSIG/g; s/SIGCLD/SIGCHLD/g' {} + 2>/dev/null || true
 	# *64 functions -> standard (musl is 64-bit native)
-	find openjdk-boot openjdk \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' \) -path '*/hotspot/*' \
+	find openjdk-boot \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' \) -path '*/hotspot/*' \
 		-exec sed -i 's/::lseek64/::lseek/g; s/::ftruncate64/::ftruncate/g; s/stat64/stat/g; s/fstat64/fstat/g; s/mmap64/mmap/g; s/off64_t/off_t/g; s/open64/open/g' {} + 2>/dev/null || true
-	find openjdk-boot openjdk -path '*/jdk/src/*' \( -name '*.c' -o -name '*.h' \) \
+	find openjdk-boot -path '*/jdk/src/*' \( -name '*.c' -o -name '*.h' \) \
 		-exec sed -i 's/stat64/stat/g; s/lseek64/lseek/g; s/ftruncate64/ftruncate/g; s/mmap64/mmap/g; s/open64/open/g; s/off64_t/off_t/g; s/dirent64/dirent/g; s/readdir64/readdir/g' {} + 2>/dev/null || true
 
 	# === Forward declarations for clang (content-dependent, not patchable) ===
-	find openjdk-boot openjdk -path '*/jdk/src/*' -name '*.c' -exec sh -c '
+	find openjdk-boot -path '*/jdk/src/*' -name '*.c' -exec sh -c '
 		DECLS=$(awk "/^JNIEXPORT/{buf=\$0; while(buf !~ /\\{/) {getline; buf=buf \" \" \$0} sub(/\\{.*/, \";\", buf); print buf}" "$1" 2>/dev/null)
 		if [ -n "$DECLS" ]; then
 			LASTINC=$(grep -n "^#include" "$1" 2>/dev/null | tail -1 | cut -d: -f1)
@@ -207,29 +209,29 @@ RUN --network=none <<-'EOF'
 
 	# === Build system relaxation ===
 	for gmk in GensrcIcons.gmk GensrcCLDR.gmk GensrcSwing.gmk GensrcX11Wrappers.gmk GensrcNimbus.gmk; do
-		find openjdk-boot openjdk -name "$gmk" -path '*/jdk/*' \
+		find openjdk-boot -name "$gmk" -path '*/jdk/*' \
 			-exec sh -c 'printf "all:\n\t@true\n.DEFAULT:\n\t@true\n" > "$1"' _ {} \; 2>/dev/null || true
 	done
 	for gmk in ServiceabilityLibraries.gmk Awt2dLibraries.gmk SoundLibraries.gmk; do
-		find openjdk-boot openjdk -name "$gmk" -path '*/jdk/*' \
+		find openjdk-boot -name "$gmk" -path '*/jdk/*' \
 			-exec sh -c 'printf "all:\n\t@true\n.DEFAULT:\n\t@true\n" > "$1"' _ {} \; 2>/dev/null || true
 	done
-	find openjdk-boot openjdk -name 'BuildJdk.gmk' -exec \
+	find openjdk-boot -name 'BuildJdk.gmk' -exec \
 		sed -i 's/gendata-only//g; s/genclasses-only//g' {} + 2>/dev/null || true
-	find openjdk-boot openjdk -name 'CreateJars.gmk' -path '*/jdk/*' \
+	find openjdk-boot -name 'CreateJars.gmk' -path '*/jdk/*' \
 		-exec sed -i 's/exit 1/exit 0/g; s/&& exit/|| true \&\& exit/g' {} + 2>/dev/null || true
-	find openjdk-boot openjdk -name 'SetupJavaCompilation.gmk' -o -name 'MakeBase.gmk' -path '*/make/*' 2>/dev/null | \
+	find openjdk-boot -name 'SetupJavaCompilation.gmk' -o -name 'MakeBase.gmk' -path '*/make/*' 2>/dev/null | \
 		xargs sed -i 's/exit 1/exit 0/g' 2>/dev/null || true
-	find openjdk-boot openjdk -name 'Main.gmk' -path '*/make/*' -exec \
+	find openjdk-boot -name 'Main.gmk' -path '*/make/*' -exec \
 		sed -i 's/nashorn-only//g; s/jaxws-only//g' {} + 2>/dev/null || true
 	for gmk in BuildNashorn.gmk BuildCorba.gmk BuildJaxws.gmk; do
-		find openjdk-boot openjdk -name "$gmk" \
+		find openjdk-boot -name "$gmk" \
 			-exec sh -c 'printf "all:\n\t@true\n.DEFAULT:\n\t@true\n" > "$1"' _ {} \; 2>/dev/null || true
 	done
-	find openjdk-boot openjdk -name 'Import.gmk' -path '*/jdk/*' -exec \
+	find openjdk-boot -name 'Import.gmk' -path '*/jdk/*' -exec \
 		sed -i '/JAXWS.*import/d; /jaxws.*classes/d' {} + 2>/dev/null || true
 	# EquivMapsGenerator (fails on JamVM)
-	find openjdk-boot openjdk -name 'GensrcLocaleDataMetaInfo.gmk' \
+	find openjdk-boot -name 'GensrcLocaleDataMetaInfo.gmk' \
 		-exec sed -i '/LocaleEquivalentMaps/,/^$/d' {} + 2>/dev/null || true
 
 	# === Apply patches ===
@@ -262,7 +264,7 @@ RUN --network=none <<-'EOF'
 	cd /icedtea-3.38.0
 	export JAVA_HOME=/usr/lib/jvm/java-bootstrap
 	export PATH=${JAVA_HOME}/bin:${PATH}
-	find openjdk-boot openjdk -name 'generated-configure.sh' -exec sed -i \
+	find openjdk-boot -name 'generated-configure.sh' -exec sed -i \
 		-e 's/as_fn_error.*diamond operator.*/echo "bypassed" #/' \
 		-e 's/as_fn_error.*Compiler failed.*/echo "bypassed" #/' \
 		-e 's/as_fn_error.*VM failed.*/echo "bypassed" #/' \

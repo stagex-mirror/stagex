@@ -4,6 +4,14 @@ set -eu
 cd /icedtea-3.38.0
 export JAVA_HOME=/usr/lib/jvm/java-bootstrap
 export PATH=${JAVA_HOME}/bin:${PATH}
+# Compilers: GCC 15 for HotSpot (clang miscompiles synchronizer.cpp on musl,
+# GCC 15 C2 codegen breaks at -O>0). Clang for everything else.
+HOTSPOT_CC=/usr/bin/real-gcc
+HOTSPOT_CXX=/usr/bin/real-g++
+# Thin wrappers that strip GCC-only flags baked into spec.gmk by configure
+JDK_CC=/tmp/bin/clang-wrapper.sh
+JDK_CXX=/tmp/bin/clang++-wrapper.sh
+# Keep wrapper as default CC for pre-build prep (CORBA compile etc.)
 export CC=/usr/bin/gcc CXX=/usr/bin/g++
 
 # Create stub JFR generated headers (must be after configure)
@@ -279,18 +287,61 @@ if [ -d "$BOOTBIN" ]; then
   done
 fi
 
-# Run make twice: first to build dependencies, then again to retry classes
-# after we manually import JAXP classes that the make's import-only misses
-make icedtea-boot SHELL=/bin/bash JOBS=1 > /tmp/make.log 2>/tmp/err-full.log || RC=$?
+# === Tier 2 compiler split: build HotSpot with GCC, everything else with clang ===
+# HotSpot needs GCC 15 at -O0 (clang miscompiles synchronizer.cpp on musl;
+# GCC C2 codegen breaks at -O>0). JDK native libs build fine with clang.
+# We drive OpenJDK's make directly instead of IcedTea's monolithic 'make icedtea-boot'.
+BUILD_DIR=openjdk.build-boot
+
+# Create stub libsaproc.so before hotspot build (SA disabled, but export step expects the file)
+SAPROC_DIR=$BUILD_DIR/hotspot/dist/jre/lib/amd64
+mkdir -p $SAPROC_DIR
+echo 'void __saproc_stub(void) {}' | $HOTSPOT_CC -shared -x c - -o $SAPROC_DIR/libsaproc.so 2>/dev/null || true
+
+echo "=== Building HotSpot with GCC ==="
+make -C $BUILD_DIR hotspot-only \
+  CC=$HOTSPOT_CC CXX=$HOTSPOT_CXX \
+  EXTRA_LDFLAGS="-Wl,--undefined-version -L/usr/lib/gcc15 -Wl,-rpath,/usr/lib/gcc15" \
+  SHELL=/bin/bash JOBS=1 \
+  > /tmp/make-hotspot.log 2>/tmp/err-hotspot.log || {
+    echo "=== HotSpot build FAILED ==="
+    tail -30 /tmp/err-hotspot.log
+    exit 1
+  }
+echo "=== HotSpot build complete ==="
+ls -la $(find $BUILD_DIR -name 'libjvm.so' -type f 2>/dev/null | head -1) 2>/dev/null || echo "WARNING: libjvm.so not found"
+
+echo "=== Building langtools with clang ==="
+make -C $BUILD_DIR langtools-only \
+  CC=$JDK_CC CXX=$JDK_CXX \
+  SHELL=/bin/bash JOBS=1 \
+  > /tmp/make-langtools.log 2>/tmp/err-langtools.log || {
+    echo "=== Langtools build FAILED ==="
+    tail -30 /tmp/err-langtools.log
+    exit 1
+  }
+
+echo "=== Building corba/jaxp/jaxws stubs with clang ==="
+for target in corba-only jaxp-only jaxws-only; do
+  make -C $BUILD_DIR $target \
+    CC=$JDK_CC CXX=$JDK_CXX \
+    SHELL=/bin/bash JOBS=1 \
+    > /tmp/make-$target.log 2>&1 || true
+done
+
+echo "=== Building JDK with clang ==="
+make -C $BUILD_DIR jdk-only \
+  CC=$JDK_CC CXX=$JDK_CXX \
+  SHELL=/bin/bash JOBS=1 \
+  > /tmp/make.log 2>/tmp/err-full.log || RC=$?
 
 # If classes-only failed because JAXP wasn't imported, copy JAXP classes manually
 if [ "$RC" != 0 ]; then
   if grep -q 'classes-only.*Error' /tmp/err-full.log 2>/dev/null; then
     echo "=== Manually importing JAXP classes into jdk/classes ==="
-    JAXPCLS=openjdk.build-boot/jaxp/classes
-    JDKCLS=openjdk.build-boot/jdk/classes
+    JAXPCLS=$BUILD_DIR/jaxp/classes
+    JDKCLS=$BUILD_DIR/jdk/classes
     if [ -d "$JAXPCLS" ] && [ -d "$JDKCLS" ]; then
-      # Copy class trees: javax.xml, org.xml, org.w3c, com.sun.org.apache.x*
       for pkg in javax/xml org/xml org/w3c com/sun/org/apache/xerces \
                  com/sun/org/apache/xalan com/sun/org/apache/xml \
                  com/sun/org/apache/xpath com/sun/xml; do
@@ -300,9 +351,11 @@ if [ "$RC" != 0 ]; then
         fi
       done
       echo "Imported $(find $JDKCLS/javax/xml $JDKCLS/org/xml $JDKCLS/org/w3c -name '*.class' 2>/dev/null | wc -l) JAXP classes"
-      # Retry make
       RC=0
-      make icedtea-boot SHELL=/bin/bash JOBS=1 > /tmp/make2.log 2>/tmp/err-full.log || RC=$?
+      make -C $BUILD_DIR jdk-only \
+        CC=$JDK_CC CXX=$JDK_CXX \
+        SHELL=/bin/bash JOBS=1 \
+        > /tmp/make2.log 2>/tmp/err-full.log || RC=$?
     fi
   fi
 fi

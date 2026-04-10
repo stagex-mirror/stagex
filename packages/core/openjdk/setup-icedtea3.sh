@@ -22,10 +22,9 @@ install -m755 /tmp/bin/getconf-stub.sh /usr/bin/getconf
 install -m755 /tmp/bin/zip-wrapper.py  /usr/bin/zip
 install -m755 /tmp/bin/file-stub.sh    /usr/bin/file
 
-# Path-aware gcc/g++ wrappers:
-#  - HotSpot files (*/hotspot/*) → GCC 15 -O0 (avoids clang's inflate() UB
-#    AND GCC 15's C2 codegen bug at -O>0)
-#  - Everything else → clang
+# Configure-time GCC shims. Fake version info so OpenJDK's configure passes,
+# route test compilations to clang. At build time, CC/CXX are overridden
+# explicitly: real-gcc for hotspot, clang wrappers for JDK (see build-icedtea3.sh).
 cat > /usr/bin/gcc <<'GCCW'
 #!/bin/sh
 for arg in "$@"; do
@@ -35,46 +34,9 @@ for arg in "$@"; do
     -dumpmachine) echo "x86_64-unknown-linux-musl"; exit 0 ;;
   esac
 done
-# Detect HotSpot compilation by file path or CWD → use GCC
-IS_HOTSPOT=0
-for arg in "$@"; do
-  case "$arg" in
-    */hotspot/*.c|*/hotspot/*.cpp|*/hotspot/*.o|*/hotspot/*.s|*hotspot*adfiles*|*hotspot*tmp*)
-      IS_HOTSPOT=1; break;;
-  esac
-done
-case "$PWD" in *hotspot*) IS_HOTSPOT=1;; esac
-if [ "$IS_HOTSPOT" = 1 ]; then
-  first=1; LINKING=1
-  for arg in "$@"; do
-    case "$arg" in
-      -ferror-limit=*) continue ;;
-      -O[123s]) arg=-O0 ;;
-      -c|-E|-S) LINKING= ;;
-    esac
-    if [ "$first" = 1 ]; then set -- "$arg"; first=0; else set -- "$@" "$arg"; fi
-  done
-  [ -n "$LINKING" ] && set -- "$@" -Wl,--undefined-version
-  exec /usr/bin/real-gcc -L/usr/lib/gcc15 -Wl,-rpath,/usr/lib/gcc15 "$@"
-fi
-LINKING=1; first=1
-for arg in "$@"; do
-  case "$arg" in -fno-lifetime-dse|-fpch-deps|-fno-devirtualize|-std=gnu++*|-std=c++*|-std=gnu*|-std=c*|-Werror) continue ;; -c|-E|-S) LINKING= ;; esac
-  if [ "$first" = 1 ]; then set -- "$arg"; first=0; else set -- "$@" "$arg"; fi
-done
-CFLAGS="-std=gnu89 -Wno-shift-negative-value -Wno-error -Wno-implicit-function-declaration -Wno-int-conversion -Wno-incompatible-pointer-types"
-[ "$first" = 1 ] && exec clang $CFLAGS
-if [ -n "$LINKING" ]; then
-  set -- "$@" -Wl,--undefined-version -Wl,--allow-multiple-definition
-  for d in /icedtea-3.38.0/openjdk.build-boot/hotspot/linux_amd64_compiler2/product \
-           /icedtea-3.38.0/openjdk.build-boot/hotspot/dist/jre/lib/amd64/server; do
-    [ -d "$d" ] && set -- "$@" -L"$d"
-  done
-fi
-exec clang $CFLAGS "$@"
+exec /tmp/bin/clang-wrapper.sh "$@"
 GCCW
 chmod +x /usr/bin/gcc
-
 cat > /usr/bin/g++ <<'GPPW'
 #!/bin/sh
 for arg in "$@"; do
@@ -84,57 +46,7 @@ for arg in "$@"; do
     -dumpmachine) echo "x86_64-unknown-linux-musl"; exit 0 ;;
   esac
 done
-# Detect HotSpot compilation → use GCC 15 -O0
-IS_HOTSPOT=0
-for arg in "$@"; do
-  case "$arg" in
-    */hotspot/*.cpp|*/hotspot/*.o|*hotspot*adfiles*|*hotspot*tmp*)
-      IS_HOTSPOT=1; break;;
-  esac
-done
-case "$PWD" in *hotspot*) IS_HOTSPOT=1;; esac
-if [ "$IS_HOTSPOT" = 1 ]; then
-  first=1; LINKING=1
-  for arg in "$@"; do
-    case "$arg" in
-      -ferror-limit=*) continue ;;
-      -O[123s]) arg=-O0 ;;
-      -c|-E|-S) LINKING= ;;
-    esac
-    if [ "$first" = 1 ]; then set -- "$arg"; first=0; else set -- "$@" "$arg"; fi
-  done
-  [ -n "$LINKING" ] && set -- "$@" -Wl,--undefined-version
-  exec /usr/bin/real-g++ -L/usr/lib/gcc15 -Wl,-rpath,/usr/lib/gcc15 "$@"
-fi
-LINKING=1; first=1
-for arg in "$@"; do
-  case "$arg" in -fno-lifetime-dse|-fpch-deps|-fno-devirtualize) continue ;; -c|-E|-S) LINKING= ;; esac
-  if [ "$first" = 1 ]; then set -- "$arg"; first=0; else set -- "$@" "$arg"; fi
-done
-WFLAGS="-Wno-shift-negative-value -Wno-error -Wno-implicit-function-declaration -Wno-int-conversion -Wno-incompatible-pointer-types"
-[ "$first" = 1 ] && exec clang++ $WFLAGS
-if [ -n "$LINKING" ]; then
-  set -- "$@" -Wl,--undefined-version -Wl,--allow-multiple-definition
-  for d in /icedtea-3.38.0/openjdk.build-boot/hotspot/linux_amd64_compiler2/product \
-           /icedtea-3.38.0/openjdk.build-boot/hotspot/dist/jre/lib/amd64/server; do
-    [ -d "$d" ] && set -- "$@" -L"$d"
-  done
-fi
-# Detect -x c (C mode)
-XC=0; PREV=""
-for a in "$@"; do
-  [ "$PREV" = "-x" ] && [ "$a" = "c" ] && XC=1
-  PREV="$a"
-done
-if [ "$XC" = 1 ]; then
-  first=1
-  for a in "$@"; do
-    case "$a" in -std=gnu++*|-std=c++*) continue ;; esac
-    if [ "$first" = 1 ]; then set -- "$a"; first=0; else set -- "$@" "$a"; fi
-  done
-  exec clang++ -std=gnu11 $WFLAGS "$@"
-fi
-exec clang++ $WFLAGS -DINCLUDE_JFR=0 "$@"
+exec /tmp/bin/clang++-wrapper.sh "$@"
 GPPW
 chmod +x /usr/bin/g++
 
