@@ -1,0 +1,12 @@
+[package]
+name = "mongo-c"
+version = "2.2.3"
+description = "The Official MongoDB driver for C language"
+website = "https://www.mongodb.com/docs/drivers/c/"
+license = "Apache-2.0"
+
+[sources.mongo-c]
+hash = "031b23793a0e0b5eacce0004d9de03c084f6d258f596d374c7a005726dc0206b"
+format = "tar.gz"
+file = "mongo-c-driver-{version}.{format}"
+mirrors = [ "https://github.com/mongodb/mongo-c-driver/releases/download/{version}/{file}",]
