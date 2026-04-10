@@ -185,29 +185,14 @@ RUN --network=none <<-'EOF'
 		sed -i -e 's/(\(-1\)) *<</(~(uintptr_t)0) <</g' \
 			-e 's/(\(-1\))<</(~(uintptr_t)0)<</g' \
 			-e 's/~(\(-1\))/~(~(uintptr_t)0)/g' {} + 2>/dev/null || true
-	# SIGCLD -> SIGCHLD, __SIGRTMAX -> _NSIG
-	find openjdk-boot openjdk -name 'jvm_linux.cpp' -path '*/hotspot/*' \
-		-exec sed -i 's/SIGCLD/SIGCHLD/g' {} + 2>/dev/null || true
+	# __SIGRTMAX -> _NSIG, SIGCLD -> SIGCHLD in JDK native code
 	find openjdk-boot openjdk \( -name '*.c' -o -name '*.h' \) -path '*/jdk/src/*' \
 		-exec sed -i 's/__SIGRTMAX/_NSIG/g; s/SIGCLD/SIGCHLD/g' {} + 2>/dev/null || true
-	find openjdk-boot openjdk -name 'jvm_linux.cpp' -path '*/hotspot/*' \
-		-exec sed -i '/sizeof(siglabel)/s/sizeof(siglabel)/sizeof(siglabel[0]) * 40/' {} + 2>/dev/null || true
-	# isnanf -> isnan
-	find openjdk-boot openjdk -name 'globalDefinitions_gcc.hpp' -path '*/hotspot/*' \
-		-exec sed -i 's/isnanf/isnan/g' {} + 2>/dev/null || true
-	find openjdk-boot openjdk -name 'jdk_util_md.h' \
-		-exec sed -i 's/isnanf/isnan/g' {} + 2>/dev/null || true
 	# *64 functions -> standard (musl is 64-bit native)
 	find openjdk-boot openjdk \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' \) -path '*/hotspot/*' \
 		-exec sed -i 's/::lseek64/::lseek/g; s/::ftruncate64/::ftruncate/g; s/stat64/stat/g; s/fstat64/fstat/g; s/mmap64/mmap/g; s/off64_t/off_t/g; s/open64/open/g' {} + 2>/dev/null || true
 	find openjdk-boot openjdk -path '*/jdk/src/*' \( -name '*.c' -o -name '*.h' \) \
 		-exec sed -i 's/stat64/stat/g; s/lseek64/lseek/g; s/ftruncate64/ftruncate/g; s/mmap64/mmap/g; s/open64/open/g; s/off64_t/off_t/g; s/dirent64/dirent/g; s/readdir64/readdir/g' {} + 2>/dev/null || true
-	# dlvsym -> dlsym (musl doesn't have dlvsym)
-	find openjdk-boot openjdk -name 'os_linux.cpp' -path '*/hotspot/*' \
-		-exec sed -i '1i #define dlvsym(h,s,v) dlsym(h,s)' {} + 2>/dev/null || true
-	# clang miscompilation of ObjectSynchronizer::inflate
-	find openjdk-boot openjdk -name 'synchronizer.cpp' -path '*/hotspot/*' \
-		-exec sed -i '1i #pragma clang optimize off' {} + 2>/dev/null || true
 
 	# === Forward declarations for clang (content-dependent, not patchable) ===
 	find openjdk-boot openjdk -path '*/jdk/src/*' -name '*.c' -exec sh -c '

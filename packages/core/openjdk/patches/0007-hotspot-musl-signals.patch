@@ -1,0 +1,13 @@
+musl does not define SIGCLD (glibc alias for SIGCHLD). Use SIGCHLD directly.
+
+--- a/hotspot/src/os/linux/vm/jvm_linux.cpp
++++ b/hotspot/src/os/linux/vm/jvm_linux.cpp
+@@ -154,7 +154,7 @@
+ #ifdef SIGSTKFLT
+   "STKFLT",     SIGSTKFLT,      /* Stack fault.  */
+ #endif
+-  "CLD",        SIGCLD,         /* Same as SIGCHLD (System V).  */
++  "CLD",        SIGCHLD,         /* Same as SIGCHLD (System V).  */
+   "CHLD",       SIGCHLD,        /* Child status has changed (POSIX).  */
+   "CONT",       SIGCONT,        /* Continue (POSIX).  */
+   "STOP",       SIGSTOP,        /* Stop, unblockable (POSIX).  */
