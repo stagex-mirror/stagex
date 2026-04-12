@@ -1,0 +1,426 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+ARG VERSION
+ARG CPORTS_VERSION
+ARG TARGETARCH
+ADD fetch/llvm-${VERSION}.tar.xz .
+ADD fetch/cports-${CPORTS_VERSION}.tar.gz .
+WORKDIR /llvm-project-${VERSION}.src
+
+RUN --network=none <<-EOF
+	# Set architecture variables
+	[[ "$TARGETARCH" == "amd64" ]] \
+		&& ARCH="x86_64" \
+		&& LLVM_TARGET_ARCH="X86"
+	[[ "$TARGETARCH" == "arm64" ]] \
+		&& ARCH="aarch64" \
+		&& LLVM_TARGET_ARCH="AArch64"
+	export ARCH
+	export LLVM_TARGET_ARCH
+
+	# CMake configuration arguments applicable to both of the following builds
+
+	CMAKE_ARGS=""
+	cmake_cache_set() {
+	  CMAKE_ARGS="$CMAKE_ARGS -D$1=$2"
+	}
+	# The runtimes are built with nested `cmake` invocations which aren't proxied the variables
+	# declared here. They need to have their variables set with a prefix of `RUNTIMES_${TARGET}_`.
+	# This is hardcoded to a target of the host as it's the only target the runtimes are built for.
+	cmake_runtime_cache_set() {
+	  CMAKE_ARGS="$CMAKE_ARGS -DRUNTIMES_${ARCH}-linux-musl_$1=$2"
+	}
+
+	# Configure the build itself
+	cmake_cache_set CMAKE_BUILD_TYPE Release
+	cmake_cache_set CMAKE_INSTALL_PREFIX /usr/lib/llvm-amd/
+	# If the following is set, LLVM should automatically set `CMAKE_INSTALL_LIBDIR`
+	cmake_cache_set LLVM_LIBDIR_SUFFIX ""
+	# We explicitly set this to match CMAKE_INSTALL_PREFIX
+	cmake_cache_set CMAKE_INSTALL_LIBDIR /usr/lib/llvm-amd/lib
+	cmake_cache_set CMAKE_INSTALL_RPATH /usr/lib/llvm-amd/lib
+	cmake_cache_set LLVM_INSTALL_UTILS ON
+	cmake_cache_set LLVM_INSTALL_BINUTILS_SYMLINKS ON
+	cmake_cache_set CLANG_CONFIG_FILE_SYSTEM_DIR /etc/clang
+
+	# Configure for `musl`
+	cmake_cache_set LLVM_HOST_TRIPLE "${ARCH}-linux-musl"
+	cmake_cache_set LLVM_TARGET_ARCH "$LLVM_TARGET_ARCH"
+	cmake_cache_set LLVM_RUNTIME_TARGETS "${ARCH}-linux-musl"
+	cmake_cache_set LLVM_BUILTIN_TARGETS "${ARCH}-linux-musl"
+	cmake_runtime_cache_set LIBCXX_HAS_MUSL_LIBC ON
+	cmake_runtime_cache_set COMPILER_RT_DEFAULT_TARGET_ONLY ON
+
+	# Configure which parts of LLVM are built
+	# Enable AMDGPU target for ROCm support, plus SPIRV for Vulkan/HIP
+	cmake_cache_set LLVM_ENABLE_PROJECTS "clang;lld"
+	cmake_cache_set LLVM_ENABLE_RUNTIMES "compiler-rt;libunwind;libcxx;libcxxabi"
+
+	# Configure compiler-rt
+	cmake_runtime_cache_set COMPILER_RT_BUILD_BUILTINS ON
+	cmake_runtime_cache_set COMPILER_RT_USE_BUILTINS_LIBRARY ON
+	cmake_runtime_cache_set COMPILER_RT_USE_LLVM_UNWINDER ON
+	# This does not work out-of-the-box with a `musl` host
+	cmake_runtime_cache_set COMPILER_RT_BUILD_GWP_ASAN OFF
+	cmake_cache_set CLANG_DEFAULT_RTLIB compiler-rt
+
+	# Configure libcxx(abi) (and libunwind)
+	cmake_cache_set LLVM_ENABLE_LIBCXX ON
+	cmake_runtime_cache_set LIBCXX_CXX_ABI libcxxabi
+	cmake_runtime_cache_set LIBCXX_HARDENING_MODE fast
+	cmake_runtime_cache_set LIBCXX_USE_COMPILER_RT ON
+	cmake_runtime_cache_set LIBCXXABI_USE_COMPILER_RT ON
+	cmake_runtime_cache_set LIBCXXABI_USE_LLVM_UNWINDER ON
+	cmake_runtime_cache_set LIBCXXABI_USE_LLVM_UNWINDER ON
+	cmake_runtime_cache_set LIBUNWIND_USE_COMPILER_RT ON
+
+	cmake_cache_set CLANG_DEFAULT_CXX_STDLIB libc++
+	cmake_cache_set CLANG_DEFAULT_UNWINDLIB libunwind
+
+	# Disable a variety of unused/uninstantiated features
+	cmake_cache_set LLVM_ENABLE_LIBXML2 OFF
+	cmake_cache_set LLVM_ENABLE_LIBEDIT OFF
+	cmake_cache_set LLVM_ENABLE_LIBPFM OFF
+	cmake_cache_set LLVM_ENABLE_ICU OFF
+	cmake_cache_set LLVM_ENABLE_ICONV OFF
+
+	cmake_runtime_cache_set COMPILER_RT_SCUDO_STANDALONE_BUILD_SHARED OFF
+
+	echo "$CMAKE_ARGS" > ./cmake_args
+EOF
+
+# ============================================================================
+# Stage: LLVM Bootstrap Build (using Clang from pallet)
+# ============================================================================
+
+FROM build AS llvm-bootstrap
+WORKDIR /llvm-project-${VERSION}.src
+RUN --network=none <<-EOF
+	# Set architecture variables (inherited from build stage)
+	[[ "$TARGETARCH" == "amd64" ]] \
+		&& ARCH="x86_64" \
+		&& LLVM_TARGET_ARCH="X86"
+	[[ "$TARGETARCH" == "arm64" ]] \
+		&& ARCH="aarch64" \
+		&& LLVM_TARGET_ARCH="AArch64"
+	export ARCH
+	export LLVM_TARGET_ARCH
+
+
+	# Targets for bootstrap build (with AMDGPU for ROCm support)
+	export LLVM_TARGETS_TO_BUILD="X86;AMDGPU"
+	# We first build LLVM with Clang from the pallet, before we will build LLVM with LLVM itself
+
+	# As this build only has to compile LLVM itself, we disable a variety of unnecessary components
+	CMAKE_ARGS="$(cat ./cmake_args)"
+	cmake_cache_set() {
+	  CMAKE_ARGS="$CMAKE_ARGS -D$1=$2"
+	}
+	cmake_runtime_cache_set() {
+	  CMAKE_ARGS="$CMAKE_ARGS -DRUNTIMES_${ARCH}-linux-musl_$1=$2"
+	}
+
+	cmake_runtime_cache_set COMPILER_RT_ENABLE_PEDANTIC OFF
+	cmake_runtime_cache_set COMPILER_RT_ENABLE_STATIC_UNWINDER OFF
+	cmake_runtime_cache_set COMPILER_RT_BUILD_SANITIZERS OFF
+	cmake_runtime_cache_set COMPILER_RT_BUILD_XRAY OFF
+	cmake_runtime_cache_set COMPILER_RT_BUILD_LIBFUZZER OFF
+	cmake_runtime_cache_set COMPILER_RT_BUILD_PROFILE OFF
+	cmake_runtime_cache_set COMPILER_RT_BUILD_CTX_PROFILE OFF
+	cmake_runtime_cache_set COMPILER_RT_BUILD_MEMPROF OFF
+	cmake_runtime_cache_set COMPILER_RT_BUILD_ORC OFF
+	cmake_runtime_cache_set COMPILER_RT_HWASAN_WITH_INTERCEPTORS OFF
+	cmake_runtime_cache_set LIBCXX_ENABLE_PEDANTIC OFF
+	cmake_runtime_cache_set LIBCXX_ENABLE_STATIC OFF
+	cmake_runtime_cache_set LIBCXX_ENABLE_STATIC_ABI_LIBRARY OFF
+	cmake_runtime_cache_set LIBCXXABI_ENABLE_PEDANTIC OFF
+	cmake_runtime_cache_set LIBCXXABI_ENABLE_STATIC_UNWINDER OFF
+	cmake_runtime_cache_set LIBUNWIND_ENABLE_PEDANTIC OFF
+	cmake_runtime_cache_set LIBUNWIND_ENABLE_STATIC OFF
+
+	# Set the compiler paths (using Clang from pallet)
+	cmake_cache_set CMAKE_C_COMPILER /usr/bin/clang
+	cmake_cache_set CMAKE_CXX_COMPILER /usr/bin/clang++
+	cmake_cache_set CMAKE_BUILD_TYPE Release
+	cmake_cache_set CMAKE_MAKE_PROGRAM /usr/bin/ninja
+
+	cmake -G Ninja \
+		-B build \
+		-S llvm \
+		-Wno-dev \
+		-DLLVM_TARGETS_TO_BUILD="$LLVM_TARGETS_TO_BUILD" \
+		-DLLVM_BUILD_LLVM_DYLIB=OFF \
+		-DLLVM_ENABLE_BACKTRACES=OFF \
+		-DLLVM_ENABLE_BINDINGS=OFF \
+		-DLLVM_ENABLE_PEDANTIC=OFF \
+		-DLLVM_ENABLE_PLUGINS=OFF \
+		-DLLVM_ENABLE_TELEMETRY=OFF \
+		-DLLVM_ENABLE_ZSTD=OFF \
+		-DCLANG_ENABLE_STATIC_ANALYZER=OFF \
+		$CMAKE_ARGS
+	cmake --build build -v --parallel $(nproc)
+
+	# Install the LLVM toolchain we just built
+	cmake --install build
+
+	# Remove build directory after install
+	rm -rf build
+
+	# Create symlinks so that Clang can find its runtime libraries
+	# The install puts them in /usr/lib/llvm-amd/lib/clang/21/lib/
+	# but Clang expects them in /usr/lib/clang/21/lib/
+	# Only create symlinks for directories that don't already exist
+	# (to avoid conflicts with core-llvm)
+	mkdir -p /usr/lib/clang/21/lib
+	for dir in /usr/lib/llvm-amd/lib/clang/21/lib/*/; do
+		[ -d "$dir" ] || continue
+		linkname=$(basename "$dir")
+		if [ ! -e "/usr/lib/clang/21/lib/$linkname" ]; then
+			ln -sf "$dir" "/usr/lib/clang/21/lib/$linkname"
+		fi
+	done
+
+	# Note: Do NOT create /usr/lib/llvm symlink - that is reserved for core-llvm
+	# user-rocm-llvm uses /usr/lib/llvm-amd as its installation path
+
+	rm -rf build
+EOF
+
+# ============================================================================
+# Stage: LLVM Full Build (using self-hosted LLVM)
+# ============================================================================
+
+FROM llvm-bootstrap AS llvm-build
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/user-ninja . /
+RUN --network=none <<-EOF
+	# Set architecture variables
+	[[ "$TARGETARCH" == "amd64" ]] \
+		&& ARCH="x86_64" \
+		&& LLVM_TARGET_ARCH="X86"
+	[[ "$TARGETARCH" == "arm64" ]] \
+		&& ARCH="aarch64" \
+		&& LLVM_TARGET_ARCH="AArch64"
+	export ARCH
+	export LLVM_TARGET_ARCH
+	export TARGET=${ARCH}-unknown-linux-musl
+
+	export LIBCC="/usr/lib/clang/21/lib/${TARGET}/libclang_rt.builtins.a"
+
+	# Build LLVM's `atomic.c` into `libatomic.so`
+	mkdir build-libatomic
+	cd build-libatomic
+	clang -std=c99 -fPIC -O2 -c -o atomic.o ../compiler-rt/lib/builtins/atomic.c
+	rm -rf /usr/lib/libatomic*
+	ar rcs /usr/lib/libatomic.a atomic.o
+	ld.lld --shared -o /usr/lib/libatomic.so atomic.o
+	cd ..
+
+	export CFLAGS="-fPIC"
+	export CXXFLAGS="$CFLAGS"
+
+	# Build LLVM with all targets including AMDGPU for ROCm support
+	export LLVM_TARGETS_TO_BUILD="AArch64;AMDGPU;ARM;AVR;BPF;Hexagon;Lanai;LoongArch;Mips;MSP430;NVPTX;PowerPC;RISCV;Sparc;SPIRV;SystemZ;VE;WebAssembly;X86;XCore"
+
+	CMAKE_ARGS="$(cat ./cmake_args)"
+	cmake_cache_set() {
+		CMAKE_ARGS="$CMAKE_ARGS -D$1=$2"
+	}
+	cmake_runtime_cache_set() {
+		CMAKE_ARGS="$CMAKE_ARGS -DRUNTIMES_${ARCH}-linux-musl_$1=$2"
+	}
+
+	cmake_cache_set CMAKE_C_COMPILER /usr/bin/clang
+	cmake_cache_set CMAKE_CXX_COMPILER /usr/bin/clang++
+	cmake_cache_set CMAKE_AR /usr/bin/llvm-ar
+	cmake_cache_set CMAKE_NM /usr/bin/llvm-nm
+	cmake_cache_set CMAKE_RANLIB /usr/bin/llvm-ranlib
+	cmake_cache_set CMAKE_MAKE_PROGRAM /usr/bin/ninja
+	cmake_cache_set LLVM_NATIVE_TOOL_DIR /usr/bin/
+	cmake_cache_set LLVM_USE_LINKER lld
+	cmake_cache_set LLVM_HEADERS_TABLEGEN /usr/bin/llvm-tblgen
+	cmake_cache_set CLANG_TABLEGEN /usr/bin/clang-tblgen
+	cmake_cache_set LLVM_TARGETS_TO_BUILD "$LLVM_TARGETS_TO_BUILD"
+	cmake_cache_set LLVM_ENABLE_PER_TARGET_RUNTIME_DIR ON
+	cmake_cache_set LLVM_BUILD_LLVM_DYLIB ON
+	cmake_cache_set LLVM_LINK_LLVM_DYLIB ON
+
+	echo "$CMAKE_ARGS" > ./cmake_args
+
+	# We disable the sanitizers from this build because they kept hitting a race condition
+	# https://codeberg.org/stagex/stagex/issues/778
+	cmake_runtime_cache_set COMPILER_RT_BUILD_SANITIZERS OFF
+
+	cmake \
+		-B build \
+		-S llvm \
+		-G Ninja \
+		-Wno-dev \
+		$CMAKE_ARGS
+	cmake --build build -v
+EOF
+
+RUN --network=none <<-EOF
+	export LIBCC="/usr/lib/clang/21/lib/${TARGET}/libclang_rt.builtins.a"
+
+	export CFLAGS="-fPIC"
+	export CXXFLAGS="$CFLAGS"
+
+	CMAKE_ARGS="$(cat ./cmake_args)"
+	cmake_cache_set() {
+		CMAKE_ARGS="$CMAKE_ARGS -D$1=$2"
+	}
+	cmake_runtime_cache_set() {
+		CMAKE_ARGS="$CMAKE_ARGS -DRUNTIMES_${ARCH}-linux-musl_$1=$2"
+	}
+
+	# Now that we've already built everything else, we additionally build the sanitizers
+	cmake_runtime_cache_set COMPILER_RT_BUILD_SANITIZERS ON
+
+	cmake \
+		-B build \
+		-S llvm \
+		-Wno-dev \
+		$CMAKE_ARGS
+	cmake --build build -v
+	DESTDIR="/rootfs" cmake --install build
+
+	# NSan, for whatever reason, is not being reproducibly built. It's removed here as it
+	# _should_ be unpopular and not a blocker, but ideally this would be solved (TODO).
+	rm -f /rootfs/usr/lib/clang/21/lib/${TARGET}/libclang_rt.nsan*
+EOF
+
+RUN --network=none <<-EOF
+	# Create rootfs directory structure
+	mkdir -p /rootfs/usr/bin /rootfs/usr/lib
+
+	ln -sf /usr/bin/clang++ /rootfs/usr/bin/c++
+	ln -sf /usr/bin/clang /rootfs/usr/bin/cc
+	ln -sf /usr/bin/ld.lld /rootfs/usr/bin/ld
+	ln -sf /usr/lib/clang/21/lib/${TARGET}/libclang_rt.builtins.a /rootfs/usr/lib/libclang_rt.builtins.a
+	cp /usr/lib/libatomic.* /rootfs/usr/lib/
+	strip /rootfs/usr/lib/llvm-amd/lib/libLLVM.so.21.1
+EOF
+
+# ============================================================================
+# Stage: Build LLVM libgcc
+# ============================================================================
+
+FROM llvm-build AS build-llvm-libgcc
+RUN --network=none <<-EOF
+	# The following is allowed to directly use `-DCOMPILER_RT` as it's not building via `llvm`
+	cmake \
+		-B build-libgcc \
+		-S runtimes \
+		-Wno-dev \
+		-DCMAKE_C_COMPILER=/usr/bin/clang \
+		-DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
+		-DCMAKE_AR=/usr/bin/llvm-ar \
+		-DCMAKE_NM=/usr/bin/llvm-nm \
+		-DCMAKE_RANLIB=/usr/bin/llvm-ranlib \
+		-DCMAKE_C_COMPILER_TARGET="${TARGET}" \
+		-DCMAKE_CXX_COMPILER_TARGET="${TARGET}" \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
+		-DLLVM_USE_LINKER=lld \
+		$(cat ./cmake_args) \
+		-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=OFF \
+		-DLLVM_ENABLE_RUNTIMES="llvm-libgcc" \
+		-DLLVM_LIBGCC_EXPLICIT_OPT_IN=Yes \
+		-DCOMPILER_RT_ENABLE_PEDANTIC=OFF \
+		-DCOMPILER_RT_ENABLE_STATIC_UNWINDER=OFF \
+		-DCOMPILER_RT_BUILD_SANITIZERS=OFF \
+		-DCOMPILER_RT_BUILD_XRAY=OFF \
+		-DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
+		-DCOMPILER_RT_BUILD_PROFILE=OFF \
+		-DCOMPILER_RT_BUILD_CTX_PROFILE=OFF \
+		-DCOMPILER_RT_BUILD_MEMPROF=OFF \
+		-DCOMPILER_RT_BUILD_ORC=OFF \
+		-DCOMPILER_RT_HWASAN_WITH_INTERCEPTORS=OFF
+	cmake --build build-libgcc -v
+
+	# Install the libraries to a temporary location
+	mkdir libgcc-libs
+	DESTDIR="libgcc-libs" cmake --install build-libgcc
+
+	# Before installing _solely_ `libgcc*`, not the just-built copies of any other libraries
+	rm -rf /rootfs
+	mkdir -p /rootfs/usr/lib
+	for libgcc in $(find libgcc-libs ! -type d -name "libgcc*"); do
+		cp -P $libgcc /rootfs/usr/lib/
+	done
+	# Also copy the expected `linux` subdirectory which symbolic links point to
+	# This is justified as this subdirectory isn't built by default and is specific to the `libgcc` build
+	cp -r libgcc-libs/usr/lib/linux /rootfs/usr/lib
+EOF
+
+# ============================================================================
+# Stage: Package
+# ============================================================================
+
+FROM stagex/core-filesystem AS package-rocm-llvm
+COPY --from=llvm-build /rootfs/ /
+
+FROM stagex/core-filesystem AS package-rocm-llvm-libgcc
+COPY --from=build-llvm-libgcc /rootfs/ /
+
+FROM stagex/core-filesystem AS package-rocm-clang
+COPY --from=llvm-build /rootfs/usr/bin/*clang* /usr/bin/
+COPY --from=llvm-build /rootfs/usr/bin/*-cc /usr/bin/
+COPY --from=llvm-build /rootfs/usr/bin/*-c++ /usr/bin/
+COPY --from=llvm-build /rootfs/usr/bin/c-index-test /usr/bin/
+COPY --from=llvm-build /rootfs/usr/bin/cc /usr/bin/
+COPY --from=llvm-build /rootfs/usr/bin/c++ /usr/bin/
+COPY --from=llvm-build /rootfs/usr/lib/cmake/clang /usr/lib/cmake/
+COPY --from=llvm-build /rootfs/usr/share/clang /usr/share/
+
+FROM stagex/core-filesystem AS package-rocm-clang-rt-devel
+COPY --from=llvm-build /rootfs/usr/lib/clang/. /usr/lib/clang/
+
+FROM stagex/core-filesystem AS package-rocm-clang-devel-static
+COPY --from=llvm-build /rootfs/usr/lib/libclang*.a /usr/lib/
+
+FROM stagex/core-filesystem AS package-rocm-clang-devel
+COPY --from=llvm-build /rootfs/usr/include/clang /usr/include/
+COPY --from=llvm-build /rootfs/usr/include/clang-c /usr/include/
+COPY --from=llvm-build /rootfs/usr/lib/libclang*.so /usr/lib/
+
+FROM stagex/core-filesystem AS package-rocm-clang-libs
+COPY --from=llvm-build /rootfs/usr/lib/libclang.so.* /usr/lib/
+
+FROM stagex/core-filesystem AS package-rocm-clang-cpp-libs
+COPY --from=llvm-build /rootfs/usr/lib/libclang-cpp.so.* /usr/lib/
+
+FROM stagex/core-filesystem AS package-rocm-lld
+COPY --from=llvm-build /rootfs/usr/bin/*-ld* /usr/bin/
+COPY --from=llvm-build /rootfs/usr/bin/ld /usr/bin/
+COPY --from=llvm-build /rootfs/usr/bin/lld* /usr/bin/
+COPY --from=llvm-build /rootfs/usr/bin/ld.lld* /usr/bin/
+COPY --from=llvm-build /rootfs/usr/bin/ld64.lld* /usr/bin/
+
+FROM stagex/core-filesystem AS package-rocm-lld-devel
+COPY --from=llvm-build /rootfs/usr/include/lld /usr/include/
+COPY --from=llvm-build /rootfs/usr/lib/cmake/lld /usr/lib/cmake/
+
+FROM stagex/core-filesystem AS package-rocm-llvm-libs
+COPY --from=llvm-build /rootfs/usr/lib/libLLVM.so.* /usr/lib/
+COPY --from=llvm-build /rootfs/usr/lib/libLLVM-*.so.* /usr/lib/
+
+FROM stagex/core-filesystem AS package-rocm-llvm-devel
+COPY --from=llvm-build /rootfs/usr/include/ /usr/include/
+COPY --from=llvm-build /rootfs/usr/lib/*.so /usr/lib/
+COPY --from=llvm-build /rootfs/usr/lib/libRemarks.so.* /usr/lib/
+COPY --from=llvm-build /rootfs/usr/lib/cmake /usr/lib/cmake/
+
+FROM stagex/core-filesystem AS package-rocm-llvm-devel-static
+COPY --from=llvm-build /rootfs/usr/lib/*.a /usr/lib/
+
+FROM stagex/core-filesystem AS package-rocm-llvm-tools
+COPY --from=llvm-build /rootfs/usr/bin/FileCheck /usr/bin/
+COPY --from=llvm-build /rootfs/usr/bin/count /usr/bin/
+COPY --from=llvm-build /rootfs/usr/bin/not /usr/bin/
+COPY --from=llvm-build /rootfs/usr/bin/split-file /usr/bin/
+COPY --from=llvm-build /rootfs/usr/bin/yaml-bench /usr/bin/
+COPY --from=llvm-build /rootfs/usr/share/opt-viewer /usr/share/
+
+FROM stagex/core-filesystem AS package-rocm-llvm-runtime
+COPY --from=llvm-build /rootfs/usr/bin/lli /usr/bin/

@@ -1,0 +1,26 @@
+[package]
+name = "rocm-llvm"
+version = "21.1.8"
+description = "LLVM with AMDGPU support for ROCm - built with Clang on busybox base"
+license = "Apache-2.0 WITH LLVM-exception"
+website = "https://llvm.org"
+subpackages = ["rocm-llvm", "rocm-llvm-libgcc", "rocm-clang", "rocm-clang-rt-devel", "rocm-clang-devel-static", "rocm-clang-devel", "rocm-clang-libs", "rocm-clang-cpp-libs", "rocm-lld", "rocm-lld-devel", "rocm-llvm-libs", "rocm-llvm-devel", "rocm-llvm-devel-static", "rocm-llvm-tools", "rocm-llvm-runtime"]
+
+[sources.llvm]
+hash = "4633a23617fa31a3ea51242586ea7fb1da7140e426bd62fc164261fe036aa142"
+file = "llvm-{version}.tar.xz"
+mirrors = [ "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/llvm-project-{version}.src.tar.xz",]
+
+[sources.cports]
+hash = "478cad379e6c88ecf68c4f5be708d00c070f3b4c1adfd243726c6967cec5e3d7"
+file = "cports-{version}.tar.gz"
+version = "ae38ab55f1f9317f96af2cc75bc488f81729e16e"
+mirrors = [ "https://github.com/chimera-linux/cports/archive/{version}.tar.gz"]
+
+[dependencies]
+build = [
+    "ninja",
+    "cmake",
+    "pkgconf",
+    "python",
+]

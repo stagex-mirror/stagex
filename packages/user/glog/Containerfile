@@ -1,0 +1,26 @@
+FROM stagex/pallet-gcc-cmake-busybox AS build
+ARG VERSION
+COPY --from=stagex/user-ninja . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/user-fmt . /
+
+# Copy glog tarball
+COPY --from=fetch glog.tar.gz /
+
+# Build glog
+RUN tar -xzf glog.tar.gz && mv glog-0.7.1 glog
+RUN --network=none <<-EOF
+    set -e
+    mkdir -p /glog/build && cd /glog/build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_LIBDIR=lib \
+        ..
+    ninja
+    DESTDIR=/rootfs ninja install
+EOF
+
+# Package stage
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

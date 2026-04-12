@@ -1,0 +1,18 @@
+--- a/packages/user/rocm/Containerfile
++++ b/packages/user/rocm/Containerfile
+@@ -78,6 +78,14 @@ RUN --network=none <<-EOF
+     find /rootfs/usr -mindepth 1 -maxdepth 1 -type d -o -type l | while read dir; do
+         basename=$(basename "$dir")
+         [ "$basename" = "lib64" ] && continue  # Skip lib64 (symlink in base)
+         cp -an "$dir"/* /usr/  # -n: don't overwrite existing files
+     done
++    # Create minimal amd_comgr cmake config if it doesn't exist
++    if [ ! -d "/usr/lib/cmake/amd_comgr" ]; then
++        mkdir -p /usr/lib/cmake/amd_comgr
++        cat > /usr/lib/cmake/amd_comgr/amd_comgrConfig.cmake << 'COMGR'
++# Minimal amd_comgr cmake config
++set(amd_comgr_DIR "/usr/lib/cmake/amd_comgr")
++COMGR
++    fi
+ EOF
+ 
