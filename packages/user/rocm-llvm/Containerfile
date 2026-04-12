@@ -2,11 +2,20 @@ FROM stagex/pallet-clang-cmake-busybox AS build
 ARG VERSION
 ARG CPORTS_VERSION
 ARG TARGETARCH
+WORKDIR /
 ADD fetch/llvm-${VERSION}.tar.xz .
 ADD fetch/cports-${CPORTS_VERSION}.tar.gz .
+ADD fetch/llvm-project.tar.gz .
 WORKDIR /llvm-project-${VERSION}.src
 
 RUN --network=none <<-EOF
+	# Copy AMD device libraries from llvm-project
+	cd /
+	mv llvm-project-amd-mainline amd
+	mkdir -p /llvm-project-${VERSION}.src/amd
+	cp -r amd /llvm-project-${VERSION}.src/
+	cd /llvm-project-${VERSION}.src
+
 	# Set architecture variables
 	[[ "$TARGETARCH" == "amd64" ]] \
 		&& ARCH="x86_64" \
@@ -82,6 +91,9 @@ RUN --network=none <<-EOF
 	cmake_cache_set LLVM_ENABLE_LIBPFM OFF
 	cmake_cache_set LLVM_ENABLE_ICU OFF
 	cmake_cache_set LLVM_ENABLE_ICONV OFF
+
+	# Enable AMDGPU device libraries for ROCm
+	cmake_cache_set LLVM_ENABLE_DEVICE_LIBS ON
 
 	cmake_runtime_cache_set COMPILER_RT_SCUDO_STANDALONE_BUILD_SHARED OFF
 

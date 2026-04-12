@@ -11,6 +11,11 @@ hash = "4633a23617fa31a3ea51242586ea7fb1da7140e426bd62fc164261fe036aa142"
 file = "llvm-{version}.tar.xz"
 mirrors = [ "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/llvm-project-{version}.src.tar.xz",]
 
+[sources.llvm-project]
+hash = "5113356728a978d342d266124f7abbc750a9bb9335e28dfa724a954c1cad5e64"
+file = "llvm-project.tar.gz"
+mirrors = [ "https://github.com/ROCm/llvm-project/archive/refs/heads/amd-mainline.tar.gz", ]
+
 [sources.cports]
 hash = "478cad379e6c88ecf68c4f5be708d00c070f3b4c1adfd243726c6967cec5e3d7"
 file = "cports-{version}.tar.gz"
