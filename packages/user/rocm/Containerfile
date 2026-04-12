@@ -95,6 +95,10 @@ EOF
 # Stage: Build rocprofiler-register
 # ============================================================================
 
+# ============================================================================
+# Stage: Build rocprofiler-register
+# ============================================================================
+
 FROM rocm-core-build AS rocprofiler-register-build
 WORKDIR /
 RUN --network=none <<-'EOF'
@@ -329,19 +333,20 @@ EOF
 # Stage: Build clr (HIP)
 # ============================================================================
 
+# clr/HIP requires amd_comgr which requires AMDDeviceLibs from LLVM build
+# Building the full HIP stack would require significant infrastructure changes
+# For now, skip this to maintain a working build
+
 FROM rocr-runtime-build AS clr-build
 WORKDIR /
 COPY --from=rocr-runtime-build /usr/ /usr/
-RUN echo "Skipping clr/HIP build - not needed for core ROCm functionality"
+RUN echo "Skipping clr/HIP build - requires full LLVM AMDGPU infrastructure"
 
 # ============================================================================
-# Stage: Build roctracer (Skip - requires HIP which we don't build)
+# Stage: Build roctracer
 # ============================================================================
 
-# roctracer requires HIP tracing support which requires building clr/HIP
-# Since we're not building HIP, we skip roctracer
-# The final stage will just copy from rocr-runtime-build instead
-
+# roctracer requires HIP tracing support
 FROM rocr-runtime-build AS roctracer-build
 WORKDIR /
 COPY --from=rocr-runtime-build /usr/ /usr/
