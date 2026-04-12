@@ -81,7 +81,6 @@ mirrors = [ "https://github.com/ROCm/rocgdb/archive/refs/heads/amd-staging-rocgd
 build = [
     "ninja",
     "cmake",
-    "gcc",
     "python",
     "protobuf",
     "eigen",
@@ -107,4 +106,5 @@ build = [
     "git",
     "user-glog",
     "user-fmt",
+    "user-rocm-llvm",
 ]
