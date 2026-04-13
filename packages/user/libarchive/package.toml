@@ -1,12 +1,12 @@
 [package]
 name = "libarchive"
-version = "3.7.4"
+version = "3.8.7"
 description = "Multi-format archive and compression library"
 license = "BSD-2-Clause"
 website = "https://www.libarchive.org"
 
 [sources.libarchive]
-hash = "f887755c434a736a609cbd28d87ddbfbe9d6a3bb5b703c22c02f6af80a802735"
+hash = "d3a8ba457ae25c27c84fd2830a2efdcc5b1d40bf585d4eb0d35f47e99e5d4774"
 format = "tar.xz"
 file = "libarchive-{version}.{format}"
 mirrors = [ "https://libarchive.org/downloads/{file}",]
