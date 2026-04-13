@@ -1192,7 +1192,7 @@ mirrors = ["https://www.unicode.org/Public/11.0.0/ucd/{file}"]
 [sources.file_544]
 hash = "3751c7fba8dbc831cb8d7cc8aff21035459b8ce5155ef8b0880a27d028475f3b"
 file = "file-5.44.tar.gz"
-mirrors = ["http://ftp.astron.com/pub/file/{file}"]
+mirrors = ["http://ftp.astron.com/pub/file/{file}", "http://sources.openwrt.org/{file}", "https://download.iopsys.eu/iopsys/mirror/{file}"]
 
 [sources.bc_1071]
 hash = "95396f88fc719a1bf8bd463809119526fef44a42ab9eb708335c2cb79bc801c6"
