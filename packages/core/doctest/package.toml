@@ -1,11 +1,11 @@
 [package]
 name = "doctest"
-version = "2.4.12"
+version = "2.5.2"
 description = "Fast header-only C++ unit testing"
 license = "MIT"
 website = "https://github.com/doctest/doctest"
 
 [sources.doctest]
-hash = "73381c7aa4dee704bd935609668cf41880ea7f19fa0504a200e13b74999c2d70"
+hash = "9189960c2bbbc4f3382ce0773b2bb5f13e3afd8fed47f55f193e11e85a4f9854"
 file = "doctest-{version}.tar.gz"
-mirrors = [ "https://github.com/doctest/doctest/archive/refs/tags/v{version}.tar.gz"]
+mirrors = [ "https://github.com/doctest/doctest/archive/refs/tags/v{version}.tar.gz",]
