@@ -1,0 +1,151 @@
+#!/bin/bash
+#
+# update - Update kernel config to current version
+#
+# Usage: ./update [--config] [config_file]
+#   --config: Launch menuconfig after migration (default: just migrate)
+#   config_file: One of airgap.config, guest.config, guest-net.config, 
+#                nitro.config, or server.config (default: server.config)
+#   No args: Migrate all configs
+#
+
+set -e
+
+# Add StageX binaries and libraries to PATH/LD_LIBRARY_PATH
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
+# Get package version from package.toml
+VERSION=$(grep -E "^version = " package.toml | sed 's/version = "\(.*\)"/\1/')
+FORMAT=$(grep -E "^format = " package.toml | sed 's/format = "\(.*\)"/\1/')
+TARBALL="linux-${VERSION}.${FORMAT}"
+# Kernel tarballs may extract to slightly different directory names
+KERNEL_DIR="$SCRIPT_DIR/linux-${VERSION}"
+if [[ ! -d "$KERNEL_DIR" ]]; then
+    # Try alternate directory names
+    for d in "$SCRIPT_DIR"/linux-*; do
+        if [[ -d "$d" ]]; then
+            KERNEL_DIR="$d"
+            break
+        fi
+    done
+fi
+
+# Parse arguments
+LAUNCH_CONFIG=false
+CONFIG_FILE=""
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --config)
+            LAUNCH_CONFIG=true
+            shift
+            ;;
+        *)
+            CONFIG_FILE="$1"
+            shift
+            ;;
+    esac
+done
+
+# If no config specified, migrate all .config files
+if [[ -z "$CONFIG_FILE" ]]; then
+    echo "=== StageX Linux Kernel Update ==="
+    echo "Version: $VERSION"
+    echo "Config:  ALL (all *.config files)"
+    echo ""
+    
+    CONFIGS=$(ls *.config 2>/dev/null)
+    for cfg in $CONFIGS; do
+        echo "----------------------------------------"
+        echo "Processing: $cfg"
+        ./update "$cfg" 2>&1
+        echo ""
+    done
+    
+    echo "========================================"
+    echo "All configs migrated to Linux $VERSION"
+    exit 0
+fi
+
+CONFIG_PATH="$SCRIPT_DIR/$CONFIG_FILE"
+
+if [[ ! -f "$CONFIG_PATH" ]]; then
+    echo "Error: Config file '$CONFIG_PATH' not found"
+    echo "Available configs: $(ls *.config 2>/dev/null | tr '\n' ' ')"
+    exit 1
+fi
+
+echo "=== StageX Linux Kernel Update ==="
+echo "Version: $VERSION"
+echo "Config:  $CONFIG_FILE"
+echo ""
+
+# Check for existing extracted kernel
+if [[ ! -d "$KERNEL_DIR" ]]; then
+    echo "Downloading Linux $VERSION..."
+    
+    # Check if tarball exists in fetch directory
+    if [[ -f "fetch/$TARBALL" ]]; then
+        echo "  Extracting from fetch/$TARBALL..."
+        tar -C "$SCRIPT_DIR" -xzf "fetch/$TARBALL"
+    else
+        # Try to download tarball
+        echo "  Fetching from kernel.org..."
+        if curl -L -o "fetch/$TARBALL" "https://git.kernel.org/torvalds/t/${TARBALL}" 2>&1 | grep -q "404"; then
+            echo "  Error: Tarball not found"
+            exit 1
+        fi
+        tar -C "$SCRIPT_DIR" -xzf "fetch/$TARBALL"
+    fi
+    
+    # Find the extracted directory
+    for d in "$SCRIPT_DIR"/linux-*; do
+        if [[ -d "$d" ]]; then
+            KERNEL_DIR="$d"
+            break
+        fi
+    done
+fi
+
+cd "$KERNEL_DIR"
+
+echo "Installing config from $CONFIG_FILE..."
+cp "$CONFIG_PATH" .config
+
+echo "Running olddefconfig to resolve dependencies..."
+make -s olddefconfig
+
+echo ""
+echo "Migrated config to Linux $VERSION"
+
+if [[ "$LAUNCH_CONFIG" == true ]]; then
+    echo ""
+    echo "Launching menuconfig..."
+    echo "After exiting, the updated config will be saved back to $CONFIG_FILE"
+    echo ""
+    
+    make menuconfig
+    
+    echo ""
+    echo "Saving updated config..."
+    make -s savedefconfig
+    cp defconfig "$CONFIG_PATH"
+    
+    echo "Done! Updated config saved to $CONFIG_PATH"
+else
+    echo ""
+    echo "Saving migrated config..."
+    make -s savedefconfig
+    cp defconfig "$CONFIG_PATH"
+    echo "Done! Config saved to $CONFIG_PATH"
+    echo "Use --config flag to launch menuconfig for interactive editing"
+fi
+
+# Clean up kernel build artifacts and .config to prevent carryover
+echo ""
+echo "Cleaning up kernel tree..."
+make -s mrproper
+rm -f .config .config.old
+echo "Cleanup complete. .config removed from $KERNEL_DIR"
