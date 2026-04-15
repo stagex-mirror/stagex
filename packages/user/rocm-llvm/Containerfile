@@ -3,18 +3,17 @@ ARG VERSION
 ARG CPORTS_VERSION
 ARG TARGETARCH
 WORKDIR /
-ADD fetch/llvm-${VERSION}.tar.xz .
-ADD fetch/cports-${CPORTS_VERSION}.tar.gz .
-ADD fetch/llvm-project.tar.gz .
-WORKDIR /llvm-project-${VERSION}.src
+COPY fetch/llvm-project.tar.gz .
+COPY fetch/cports-${CPORTS_VERSION}.tar.gz .
+# Keep a copy of the tarball for AMDDeviceLibs build
+RUN cp llvm-project.tar.gz /tmp/ && tar -xzf llvm-project.tar.gz && mv llvm-project-therock-7.12 /llvm-project-21.1.8.src
+WORKDIR /llvm-project-21.1.8.src
+
+# Apply HwMode Features field fix to resolve TableGen error
+RUN sed -i '/^class HwMode<list<Predicate> Ps> {/,/^}$/ s/list<Predicate> Predicates = Ps;/list<Predicate> Predicates = Ps;\n  string Features = "";/' llvm/include/llvm/Target/Target.td
 
 RUN --network=none <<-EOF
-	# Copy AMD device libraries from llvm-project
-	cd /
-	mv llvm-project-amd-mainline amd
-	mkdir -p /llvm-project-${VERSION}.src/amd
-	cp -r amd /llvm-project-${VERSION}.src/
-	cd /llvm-project-${VERSION}.src
+	# Set up directory structure
 
 	# Set architecture variables
 	[[ "$TARGETARCH" == "amd64" ]] \
@@ -105,7 +104,7 @@ EOF
 # ============================================================================
 
 FROM build AS llvm-bootstrap
-WORKDIR /llvm-project-${VERSION}.src
+WORKDIR /llvm-project-21.1.8.src
 RUN --network=none <<-EOF
 	# Set architecture variables (inherited from build stage)
 	[[ "$TARGETARCH" == "amd64" ]] \
@@ -169,7 +168,7 @@ RUN --network=none <<-EOF
 		-DLLVM_ENABLE_ZSTD=OFF \
 		-DCLANG_ENABLE_STATIC_ANALYZER=OFF \
 		$CMAKE_ARGS
-	cmake --build build -v --parallel $(nproc)
+	cmake --build build -j8
 
 	# Install the LLVM toolchain we just built
 	cmake --install build
@@ -202,8 +201,8 @@ EOF
 # ============================================================================
 
 FROM llvm-bootstrap AS llvm-build
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/user-ninja . /
+COPY --from=stagex/core-musl /usr/ /usr/
+COPY --from=stagex/user-ninja /usr/bin/ninja /usr/bin/ninja
 RUN --network=none <<-EOF
 	# Set architecture variables
 	[[ "$TARGETARCH" == "amd64" ]] \
@@ -230,8 +229,10 @@ RUN --network=none <<-EOF
 	export CFLAGS="-fPIC"
 	export CXXFLAGS="$CFLAGS"
 
-	# Build LLVM with all targets including AMDGPU for ROCm support
-	export LLVM_TARGETS_TO_BUILD="AArch64;AMDGPU;ARM;AVR;BPF;Hexagon;Lanai;LoongArch;Mips;MSP430;NVPTX;PowerPC;RISCV;Sparc;SPIRV;SystemZ;VE;WebAssembly;X86;XCore"
+	# Build LLVM with AMDGPU target for ROCm support
+	# Applied hwmode-features-field.patch to fix TableGen error in HwMode class
+	# Build with minimal targets: AMDGPU for ROCm, X86 for host
+	export LLVM_TARGETS_TO_BUILD="AMDGPU;X86"
 
 	CMAKE_ARGS="$(cat ./cmake_args)"
 	cmake_cache_set() {
@@ -268,7 +269,7 @@ RUN --network=none <<-EOF
 		-G Ninja \
 		-Wno-dev \
 		$CMAKE_ARGS
-	cmake --build build -v
+	cmake --build build -j4
 EOF
 
 RUN --network=none <<-EOF
@@ -293,7 +294,7 @@ RUN --network=none <<-EOF
 		-S llvm \
 		-Wno-dev \
 		$CMAKE_ARGS
-	cmake --build build -v
+	cmake --build build -j4
 	DESTDIR="/rootfs" cmake --install build
 
 	# NSan, for whatever reason, is not being reproducibly built. It's removed here as it
@@ -366,11 +367,42 @@ RUN --network=none <<-EOF
 EOF
 
 # ============================================================================
+# Stage: Build AMDDeviceLibs
+# ============================================================================
+
+FROM llvm-build AS build-amd-devicelibs
+COPY --from=build /tmp/llvm-project.tar.gz /
+WORKDIR /
+RUN --network=none <<-EOF
+	# Extract the AMD device-libs from llvm-project
+	mkdir -p /amd-device-libs
+	cd /amd-device-libs
+	tar -xzf /llvm-project.tar.gz
+	mv llvm-project-therock-7.12/amd/device-libs .
+
+	# Build AMD Device Libraries as external LLVM project
+	mkdir -p build && cd build
+	cmake -GNinja \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr/lib/llvm-amd \
+		-DLLVM_DIR=/usr/lib/llvm-amd/lib/cmake/llvm \
+		-DLLVM_AMDGPU_BUILDTIME_LIBS=ON \
+		..
+	cmake --build . -j4
+	DESTDIR=/rootfs cmake --install .
+
+	# Copy device libs to /usr
+	mkdir -p /usr/lib/llvm-amd
+	cp -r /rootfs/usr/* /usr/ 2>/dev/null || true
+EOF
+
+# ============================================================================
 # Stage: Package
 # ============================================================================
 
 FROM stagex/core-filesystem AS package-rocm-llvm
 COPY --from=llvm-build /rootfs/ /
+COPY --from=build-amd-devicelibs /usr/ /
 
 FROM stagex/core-filesystem AS package-rocm-llvm-libgcc
 COPY --from=build-llvm-libgcc /rootfs/ /

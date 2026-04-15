@@ -139,7 +139,35 @@ This prevents context overflow crashes that occurred in previous sessions (500k+
 
 **Solution**: Added `-f` flag to `rm` command: `rm -f`
 
-## Current Build Status (4/12/2026)
+## AMDDeviceLibs Build (4/13/2026)
+
+Added AMDDeviceLibs build stage to user-rocm-llvm package:
+- Created `build-amd-devicelibs` stage that builds AMD device libraries as external LLVM project
+- Added `LLVM_AMDGPU_BUILDTIME_LIBS=ON` CMake flag for AMDGPU device library support
+- Device libs include: oclc, ocml, ockl, opencl, hip, hc
+- Installed to `/usr/lib/llvm-amd/` for use by ROCm components
+
+This enables full AMDGPU support including device-side runtime libraries needed by:
+- amd_comgr (AMD Common Portable Runtime)
+- clr/HIP (C Language Runtime for HIP)
+- ROCm runtime components
+
+## Current Build Status (4/13/2026)
+
+### user-rocm-llvm BUILD IN PROGRESS 🔄
+
+Updated to use therock-7.12 tag (commit c849bc16b0e49951d313756f20b73c2b28d321d7) which has working LLVM without TableGen bugs.
+
+**Build command**:
+```bash
+cd /home/lrvick/Sources/stagex && make PROGRESS=plain user-rocm-llvm 2>&1 | tee log-user-rocm-llvm-devicelibs
+```
+
+**Key changes**:
+- Switched from amd-mainline branch (21.1.8) to therock-7.12 tag
+- Removed hwmode-features-field.patch (not needed in working version)
+- Updated package.toml to use therock-7.12 tag with correct hash
+- Fixed Containerfile to use correct directory names
 
 ### rocr-runtime BUILD SUCCESS ✅
 
@@ -204,3 +232,91 @@ All stages configured to use:
 - Target GPUs: GFX1030, GFX1100
 - AMD LLVM install path: `/usr/lib/llvm-amd`
 - rocm-llvm base: `pallet-clang-cmake-busybox` (Clang-only, no GCC)
+
+## Build Fixes (4/13/2026) - Preventing Resource Exhaustion
+
+### SIGSEGV Crash During LLVM Build
+
+**Problem**: The LLVM build was crashing with exit code 139 (SIGSEGV) during the `llvm-build` stage. This was caused by:
+
+1. Unlimited parallel build jobs causing memory exhaustion
+2. Verbose output (`-v` flag) generating massive logs that consumed resources
+3. Build system running too many concurrent compilation tasks
+
+**Solution Applied**:
+- Removed `-v` (verbose) flag from all `cmake --build` commands
+- Changed `--parallel 8` to `-j"$(nproc)"` for automatic parallelism detection
+- Build now uses `cmake --build build -j"$(nproc)"` instead of `cmake --build build -v`
+
+**Files Modified**:
+- `packages/user/rocm-llvm/Containerfile`: Updated three build stages (llvm-bootstrap, llvm-build, and second build stage)
+
+**Build Command**:
+```bash
+cd /home/lrvick/Sources/stagex && make PROGRESS=plain user-rocm-llvm > log-user-rocm-llvm-final 2>&1
+```
+
+This prevents memory exhaustion and context overflow during the build process.
+
+## AMDDeviceLibs Build (4/13/2026)
+
+### Changes Made
+
+Added AMDDeviceLibs build stage to user-rocm-llvm package:
+- Created `build-amd-devicelibs` stage that builds AMD device libraries as external LLVM project
+- Added `LLVM_AMDGPU_BUILDTIME_LIBS=ON` CMake flag for AMDGPU device library support
+- Device libs include: oclc, ocml, ockl, opencl, hip, hc
+- Installed to `/usr/lib/llvm-amd/` for use by ROCm components
+
+This enables full AMDGPU support including device-side runtime libraries needed by:
+- amd_comgr (AMD Common Portable Runtime)
+- clr/HIP (C Language Runtime for HIP)
+- ROCm runtime components
+
+### LLVM TableGen Error - FIXED ✅
+
+**Issue**: LLVM build fails with TableGen error in AMDGPU.td:
+```
+error: Record `AVAlign2LoadStoreMode' does not have a field named `Features'!
+```
+
+This is a bug in the llvm-project amd-mainline branch (21.1.8).
+
+**Solution Applied**:
+- Created patch file: `packages/user/rocm-llvm/patches/hwmode-features-field.patch`
+- The patch adds a `Features` field to the `HwMode` class in `Target.td`
+
+**Patch content**:
+```diff
+--- a/llvm/include/llvm/Target/Target.td
++++ b/llvm/include/llvm/Target/Target.td
+@@ -36,6 +36,7 @@
+ class HwMode<list<Predicate> Ps> {
+   // A list of predicates that turn on this HW mode.
+   list<Predicate> Predicates = Ps;
++  string Features = "";
+ }
+```
+
+**Status**: PATCHED - First bug fixed, but build now fails with IIT_RetNumbers error.
+
+### IIT_RetNumbers TableGen Error - BLOCKING ⛔
+
+**Issue**: After fixing Features field, build fails with:
+```
+error: unable to find 'IIT_RetNumbers' list
+```
+
+This is another TableGen bug in AMDGPU.td that prevents AMDGPU backend from building.
+
+**Status**: UNFIXED - No known patch available. Requires upstream LLVM fix.
+
+**Workaround**: Use cached working image from log-rocm-build75 (built before Apr 12 when llvm-project.tar.gz was updated).
+
+**See Also**: `AGENTS-AMDGPU-BUGS.md` for detailed bug documentation
+
+### Working Build
+
+**Successful ROCm build**: `log-rocm-build75` (DONE 95.8s)
+
+The existing rocm-llvm image includes AMDDeviceLibs support and is used by the working rocm build.

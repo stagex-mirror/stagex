@@ -1,0 +1,9 @@
+--- a/llvm/include/llvm/Target/Target.td
++++ b/llvm/include/llvm/Target/Target.td
+@@ -37,6 +37,7 @@ class HwMode<list<Predicate> Ps> {
+   // A list of predicates that turn on this HW mode.
+   list<Predicate> Predicates = Ps;
++  string Features = "";
+ }
+ 
+ def DefaultMode : HwMode<[]>;
