@@ -9,4 +9,4 @@ website = "https://www.libarchive.org"
 hash = "f887755c434a736a609cbd28d87ddbfbe9d6a3bb5b703c22c02f6af80a802735"
 format = "tar.xz"
 file = "libarchive-{version}.{format}"
-mirrors = [ "https://libarchive.org/downloads/{file}",]
+mirrors = [ "https://libarchive.org/downloads/{file}", "https://ftp.fau.de/macports/distfiles/libarchive/{file}"]
