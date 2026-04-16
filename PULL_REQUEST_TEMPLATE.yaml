@@ -18,7 +18,7 @@ body:
   id: digests
   attributes:
     label: Package digests
-    description: Please copy and paste the digests 
+    description: Please copy and paste the digests
     placeholder: "$ make digests | xclip -sel c"
     render: shell
 - type: checkboxes
@@ -29,3 +29,14 @@ body:
     options:
     - label: I have built this package twice and confirmed it reproduces.
       required: false
+- type: checkboxes
+  id: tracking
+  attributes:
+    label: Package Tracking
+    description: |
+      If this PR introduces a new package, it must be tracked on [release-monitoring.org](https://release-monitoring.org/) (Anitya) to ensure automated update notifications.
+    options:
+      - label: This PR does not add a new package.
+        required: false
+      - label: The new package is already mapped on Anitya / I will map it immediately after the merge.
+        required: false
