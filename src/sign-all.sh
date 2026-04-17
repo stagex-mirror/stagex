@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -ux
+set -u
 
 GPG=${STAGEX_GPG:-gpg}
 GPG_SIGN=${STAGEX_GPG_SIGN:-${GPG}}
@@ -31,20 +31,7 @@ if test "${2:-0}" = "0"; then
 	RELEASE=$("$SCRIPT_DIR"/gen-version.sh)
 fi
 
-SIGNATURES="https://codeberg.org/stagex/signatures.git"
-SIGNATURES_SSH="git@codeberg.org:stagex/signatures.git"
-REGISTRY=${1:-stagex}
-
-if [ ! -d "signatures/$REGISTRY" ]; then
-  git clone "$SIGNATURES" "signatures" # Clone repo to make signatures
-  check_command "Failed to clone the repository"
-
-  git -C signatures remote set-url --push origin "${SIGNATURES_SSH}"
-  check_command "Failed to set SSH upstream"
-else
-  git -C signatures fetch
-  check_command "Failed fetch latest repo content"
-fi
+"${SCRIPT_DIR}/ensure-signatures-folder.sh"
 
 BRANCH_NAME="release/$RELEASE"
 
@@ -84,7 +71,7 @@ fi
 
 SIGNER=$(git config user.name) || { echo "Failed to find user for signing"; exit 1; }
 SIGNING_KEY="$(git config user.signingkey)"
-if [[ -z "${SIGNING_KEY// }" ]]; then 
+if [[ -z "${SIGNING_KEY// }" ]]; then
   echo -e "${RED}Please configure your signingkey in git"
   echo -e "${NC} you can run: 'git config --global user.signingkey <your fingerprint>'"
   exit 1
