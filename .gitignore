@@ -1,6 +1,7 @@
 out
 fetch
 packages/*/*/fetch/*
+/signatures
 build.log
 graph.svg
 *.TXT

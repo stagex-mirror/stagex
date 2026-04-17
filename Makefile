@@ -18,8 +18,16 @@ all: $(STAGES) ## Build entire tree (default)
 check: ## Run syntax checking and linting across tree
 	@$(MAKE) CHECK=1 all
 
-verify: ## Verify local build against committed digests
-	@$(call verify)
+.PHONY: signatures
+signatures:
+	./src/ensure-signatures-folder.sh
+	git -C $@ checkout main
+
+verify: signatures ## Verify local build against committed digests
+	@$(call verify, bootstrap)
+	@$(call verify, core)
+	@$(call verify, pallet)
+	@$(call verify, user)
 
 digests: all ## Generate new digests from full tree
 	@./src/digests.py
