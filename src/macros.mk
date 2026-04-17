@@ -1,7 +1,7 @@
 # Verify a set of OCI Digests for a given category against local build
 define verify
 	$(eval CATEGORY := $(1))
-	cat packages/$(CATEGORY)/digests.txt \
+	cat digests/$(CATEGORY).txt \
 	| sed 's/\([a-z0-9]\+\) \(.*\)/signatures\/stagex\/\2@sha256=\1/g' \
 	| while IFS= read -r sigdir; do \
 	    echo $$sigdir; \
