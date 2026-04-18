@@ -1,0 +1,12 @@
+[package]
+name = "cups"
+version = "2.4.11"
+description = "CUPS printing system (headers for build dependencies)"
+license = "Apache-2.0"
+website = "https://openprinting.github.io/cups"
+
+[sources.cups]
+hash = "9a88fe1da3a29a917c3fc67ce6eb3178399d68e1a548c6d86c70d9b13651fd71"
+format = "tar.gz"
+file = "cups-{version}-source.{format}"
+mirrors = ["https://github.com/OpenPrinting/cups/releases/download/v{version}/{file}"]

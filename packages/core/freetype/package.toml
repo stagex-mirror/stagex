@@ -1,0 +1,12 @@
+[package]
+name = "freetype"
+version = "2.13.2"
+description = "A free, high-quality, and portable font engine"
+license = "FTL OR GPL-2.0-or-later"
+website = "https://www.freetype.org"
+
+[sources.freetype]
+hash = "12991c4e55c506dd7f9b765933e62fd2be2e06d421505d7950a132e4f1bb484d"
+format = "tar.xz"
+file = "freetype-{version}.{format}"
+mirrors = ["https://download.savannah.gnu.org/releases/freetype/{file}"]
