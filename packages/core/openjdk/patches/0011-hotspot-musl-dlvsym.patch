@@ -1,9 +1,0 @@
-musl does not provide dlvsym (versioned dlsym). Replace with dlsym.
-
---- a/hotspot/src/os/linux/vm/os_linux.cpp
-+++ b/hotspot/src/os/linux/vm/os_linux.cpp
-@@ -1,3 +1,4 @@
-+#define dlvsym(h,s,v) dlsym(h,s)
- /*
-  * Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
-  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.

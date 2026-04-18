@@ -33,6 +33,12 @@ version = "4.9"
 file = "ecj-{version}.{format}"
 mirrors = ["https://sourceware.org/pub/java/ecj-{version}.jar"]
 
+[sources.aports]
+hash = "88be6de7f50d4ea1fe4be1430e55385b843575ce430fe990b1d3383a71934bf0"
+file = "aports-{version}.tar.gz"
+version = "69e804a810ff3858663847569ea90d9364853f7b"
+mirrors = ["https://gitlab.alpinelinux.org/alpine/aports/-/archive/{version}/aports-{version}.tar.gz"]
+
 [sources.openjdk8]
 hash = "c6ce70c55f970cd09134653c9281adf454fe788e053d8e30c04dea77dfcbe996"
 format = "tar.xz"
