@@ -1,11 +1,11 @@
 FROM stagex/pallet-clang-gnu-busybox AS build
 COPY --from=stagex/user-xorgproto . /
-COPY --from=stagex/user-libx11 . /
+COPY --from=stagex/core-libx11 . /
 COPY --from=stagex/user-libxcb . /
 COPY --from=stagex/user-libxdmcp . /
 COPY --from=stagex/user-libxau . /
-COPY --from=stagex/user-libxext . /
-COPY --from=stagex/user-libxrender . /
+COPY --from=stagex/core-libxext . /
+COPY --from=stagex/core-libxrender . /
 ARG VERSION
 ADD fetch/libXxf86vm-${VERSION}.tar.xz .
 WORKDIR /libXxf86vm-${VERSION}

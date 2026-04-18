@@ -1,6 +1,6 @@
 FROM stagex/pallet-clang-meson-busybox AS build
 ARG VERSION
-COPY --from=stagex/user-libx11 . /
+COPY --from=stagex/core-libx11 . /
 COPY --from=stagex/user-xorgproto . /
 COPY --from=stagex/user-libxcb . /
 COPY --from=stagex/user-libxdmcp . /
@@ -8,7 +8,7 @@ COPY --from=stagex/user-libxau . /
 COPY --from=stagex/core-libxml2 . /
 COPY --from=stagex/core-expat . /
 COPY --from=stagex/user-libxfixes . /
-COPY --from=stagex/user-libxext . /
+COPY --from=stagex/core-libxext . /
 COPY --from=stagex/user-libdrm . /
 COPY --from=stagex/user-wayland . /
 ADD fetch/${VERSION}.tar.gz .
