@@ -1,0 +1,15 @@
+musl libc is natively 64-bit; lseek64 does not exist.
+Use lseek instead of lseek64 on Linux with musl.
+
+--- a/jdk/src/share/bin/jli_util.h
++++ b/jdk/src/share/bin/jli_util.h
+@@ -84,8 +84,7 @@
+ #define JLI_Lseek                       llseek
+ #endif
+ #ifdef __linux__
+-#define _LARGFILE64_SOURCE
+-#define JLI_Lseek                       lseek64
++#define JLI_Lseek                       lseek
+ #endif
+ #ifdef MACOSX
+ #define JLI_Lseek                       lseek
