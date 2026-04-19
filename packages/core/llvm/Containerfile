@@ -3,6 +3,7 @@ COPY --from=stagex/bootstrap-stage3 . /
 
 ARG VERSION
 ARG CPORTS_VERSION
+ARG LINUX_HEADERS_VERSION
 ARG TARGETARCH
 COPY <<-'EOF' /etc/profile
 	set -eux
@@ -21,6 +22,8 @@ SHELL ["/bin/sh","-l","-c"]
 
 ADD fetch/llvm-${VERSION}.tar.xz .
 ADD fetch/cports-${CPORTS_VERSION}.tar.gz .
+ADD fetch/linux-${LINUX_HEADERS_VERSION}.tar.xz .
+COPY fetch/musl-1.2.5.tar.gz .
 WORKDIR /llvm-project-${VERSION}.src
 ADD patches/*.patch .
 
@@ -135,7 +138,7 @@ RUN --network=none <<-EOF
 		-B build \
 		-S llvm \
 		-Wno-dev \
-		-DLLVM_TARGETS_TO_BUILD="$LLVM_TARGET_ARCH" \
+		-DLLVM_TARGETS_TO_BUILD="AArch64;ARM;BPF;Hexagon;LoongArch;Mips;NVPTX;PowerPC;RISCV;Sparc;SystemZ;WebAssembly;X86" \
 		-DLLVM_BUILD_LLVM_DYLIB=OFF \
 		-DLLVM_ENABLE_BACKTRACES=OFF \
 		-DLLVM_ENABLE_BINDINGS=OFF \
@@ -496,3 +499,178 @@ COPY --from=build /rootfs/usr/share/opt-viewer /usr/share/
 
 FROM stagex/core-filesystem AS package-llvm-runtime
 COPY --from=build /rootfs/usr/bin/lli /usr/bin/
+
+# Build clang-rt-crt-cross for cross-compilation targets
+# This builds compiler-rt builtins and CRT libraries for cross targets
+FROM build AS build-clang-rt-crt-cross
+RUN --network=none <<-EOF
+	set -eux
+
+	# Target architectures to build for (excluding host)
+	# Host is determined by TARGETARCH from the main build
+	export HOST_ARCH="${ARCH}"
+	
+	# List of all supported architectures (excluding ppc64 which has long double issues
+	# and riscv64 which has kernel headers issues)
+	TARGETS="aarch64 armhf armv7 ppc64le ppc64 x86_64 loongarch64"
+	
+	# Remove host architecture from targets
+	CROSS_TARGETS=""
+	for target in $TARGETS; do
+		if [ "$target" != "$HOST_ARCH" ]; then
+			CROSS_TARGETS="$CROSS_TARGETS $target"
+		fi
+	done
+	
+	echo "Building for cross targets:$CROSS_TARGETS"
+	
+	# First, build musl headers for each cross target to create sysroots
+	echo "Building musl headers for cross targets..."
+	for target in $CROSS_TARGETS; do
+		echo "Building musl headers for $target..."
+		
+		# Determine triplet based on architecture
+		case $target in
+			aarch64) TRIPLET="aarch64-unknown-linux-musl" ;;
+			armhf) TRIPLET="armv7l-unknown-linux-musleabihf" ;;
+			armv7) TRIPLET="armv7l-unknown-linux-musleabihf" ;;
+			ppc64le) TRIPLET="powerpc64le-unknown-linux-musl" ;;
+			ppc64) TRIPLET="powerpc64-unknown-linux-musl" ;;
+			ppc) TRIPLET="powerpc-unknown-linux-musl" ;;
+			x86_64) TRIPLET="x86_64-unknown-linux-musl" ;;
+			riscv64) TRIPLET="riscv64-unknown-linux-musl" ;;
+			loongarch64) TRIPLET="loongarch64-unknown-linux-musl" ;;
+		esac
+		
+		# Create build directory for musl
+		mkdir -p "/tmp/musl-build-${target}"
+		
+		# Extract musl
+		cd /
+		tar -xzf /musl-1.2.5.tar.gz -C "/tmp/musl-build-${target}" --strip-components=1
+		cd "/tmp/musl-build-${target}"
+		
+		# Configure musl for cross-compilation
+		./configure \
+			--prefix=/usr \
+			--host="${TRIPLET}" \
+			CC="clang -target ${TRIPLET}"
+		
+		# Install headers to sysroot location using DESTDIR
+		mkdir -p "/tmp/musl-sysroot-${target}"
+		make -j$(nproc) DESTDIR="/tmp/musl-sysroot-${target}" install-headers
+		
+		# Install Linux kernel headers for the target
+		mkdir -p "/tmp/musl-sysroot-${target}/usr/include"
+		cd /
+		if [ -f /linux-${LINUX_HEADERS_VERSION}.tar.xz ]; then
+			# Build kernel headers - chimera does this with make headers
+			mkdir -p "/tmp/linux-build-${target}"
+			tar -xJf /linux-${LINUX_HEADERS_VERSION}.tar.xz -C "/tmp/linux-build-${target}" --strip-components=1
+			
+			cd "/tmp/linux-build-${target}"
+			# Build just the headers for this target
+			case $target in
+				aarch64) _ARCH="arm64" ;;
+				armhf|armv7) _ARCH="arm" ;;
+				ppc64le) _ARCH="powerpc" ;;
+				ppc64) _ARCH="powerpc" ;;
+				ppc) _ARCH="powerpc" ;;
+				x86_64) _ARCH="x86" ;;
+				riscv64) _ARCH="riscv" ;;
+				loongarch64) _ARCH="loongarch" ;;
+			esac
+			
+			make ARCH="${_ARCH}" CC="clang" HOSTCC="clang" mrproper || true
+			make ARCH="${_ARCH}" CC="clang" HOSTCC="clang" headers_install INSTALL_HDR_PATH="/tmp/musl-sysroot-${target}/usr"
+			
+			cd /
+			rm -rf "/tmp/linux-build-${target}"
+		fi
+		
+		# Copy libunwind headers for ARM EH ABI support (needed for gcc_personality_v0.c)
+		# This ensures the compiler-rt build finds these headers instead of host's builtin unwind.h
+		mkdir -p "/tmp/musl-sysroot-${target}/usr/lib/clang/21/include"
+		cp /llvm-project-${VERSION}.src/libunwind/include/unwind.h "/tmp/musl-sysroot-${target}/usr/lib/clang/21/include/" 2>/dev/null || true
+		cp /llvm-project-${VERSION}.src/libunwind/include/unwind_arm_ehabi.h "/tmp/musl-sysroot-${target}/usr/lib/clang/21/include/" 2>/dev/null || true
+		
+		# Clean up build directory
+		cd /
+		rm -rf "/tmp/musl-build-${target}"
+		
+		echo "Musl headers built for $target"
+	done
+	
+	# For each target, we build compiler-rt builtins and CRT
+	for target in $CROSS_TARGETS; do
+		echo "Building compiler-rt for $target..."
+		
+		# Determine triplet based on architecture
+		case $target in
+			aarch64) TRIPLET="aarch64-unknown-linux-musl" ;;
+			armhf) TRIPLET="armv7l-unknown-linux-musleabihf" ;;
+			armv7) TRIPLET="armv7l-unknown-linux-musleabihf" ;;
+			ppc64le) TRIPLET="powerpc64le-unknown-linux-musl" ;;
+			ppc64) TRIPLET="powerpc64-unknown-linux-musl" ;;
+			ppc) TRIPLET="powerpc-unknown-linux-musl" ;;
+			x86_64) TRIPLET="x86_64-unknown-linux-musl" ;;
+			riscv64) TRIPLET="riscv64-unknown-linux-musl" ;;
+			loongarch64) TRIPLET="loongarch64-unknown-linux-musl" ;;
+		esac
+		
+		# Create build directory for compiler-rt
+		mkdir -p "/tmp/build-rt-${target}"
+		cd "/tmp/build-rt-${target}"
+		
+		# Configure compiler-rt for this target with musl sysroot
+		# Match chimera build approach exactly
+		cmake \
+			-S /llvm-project-${VERSION}.src/compiler-rt \
+			-B . \
+			-DCMAKE_BUILD_TYPE=Release \
+			-DCMAKE_INSTALL_PREFIX=/usr/lib/clang/21 \
+			-DCMAKE_C_COMPILER=/usr/bin/clang \
+			-DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
+			-DCMAKE_AR=/usr/bin/llvm-ar \
+			-DCMAKE_NM=/usr/bin/llvm-nm \
+			-DCMAKE_RANLIB=/usr/bin/llvm-ranlib \
+			-DCMAKE_C_COMPILER_TARGET="${TRIPLET}" \
+			-DCMAKE_CXX_COMPILER_TARGET="${TRIPLET}" \
+			-DCMAKE_ASM_COMPILER_TARGET="${TRIPLET}" \
+			-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
+			-DCMAKE_C_FLAGS="-fPIC --sysroot=/tmp/musl-sysroot-${target} -isystem/llvm-project-${VERSION}.src/libunwind/include" \
+			-DCMAKE_EXE_LINKER_FLAGS="-nostdlib" \
+			-DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
+			-DCOMPILER_RT_BUILD_BUILTINS=ON \
+			-DCOMPILER_RT_BUILD_CRT=ON \
+			-DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
+			-DCOMPILER_RT_BUILD_MEMPROF=OFF \
+			-DCOMPILER_RT_BUILD_PROFILE=OFF \
+			-DCOMPILER_RT_BUILD_SANITIZERS=OFF \
+			-DCOMPILER_RT_BUILD_XRAY=OFF \
+			-DCOMPILER_RT_BUILD_ORC=OFF \
+			-DCOMPILER_RT_BUILD_CTX_PROFILE=OFF \
+			-DCOMPILER_RT_BUILD_BUILTINS_DIR=ON \
+			-DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
+			-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON \
+			-DLLVM_CONFIG_PATH=/usr/bin/llvm-config
+		
+		# Build
+		cmake --build . -v --parallel $(nproc)
+		
+		# Install to rootfs
+		DESTDIR="/rootfs" cmake --install . --prefix "/usr/lib/clang/21"
+		
+		# Clean up build directories
+		cd /
+		rm -rf "/tmp/build-rt-${target}"
+		rm -rf "/tmp/musl-sysroot-${target}"
+	done
+	
+	# Copy LICENSE.TXT
+	mkdir -p /rootfs/usr/share/licenses/llvm
+	cp /llvm-project-${VERSION}.src/compiler-rt/LICENSE.TXT /rootfs/usr/share/licenses/llvm/
+EOF
+
+FROM stagex/core-filesystem AS package-clang-rt-crt-cross
+COPY --from=build-clang-rt-crt-cross /rootfs/ /
