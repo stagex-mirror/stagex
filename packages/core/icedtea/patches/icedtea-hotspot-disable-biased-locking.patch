@@ -1,0 +1,24 @@
+Disable biased locking by default to prevent infinite recursion during
+class initialization when HotSpot is compiled with clang at -O0.
+
+At -O0, BiasedLocking::revoke_and_rebias() takes a code path that
+re-triggers java.lang.Object initialization before _init_state has been
+set to being_initialized in instanceKlass::initialize_impl(). Since the
+reentrant check depends on _init_state, the recursion is unbounded.
+
+OpenJDK 8 fixed this properly with a separate init_lock (JDK-8028073).
+For JDK 7, disabling biased locking is safe and sufficient — it was
+removed entirely in JDK 15 (JEP 374) as a net negative on modern
+hardware, and the ZERO interpreter already disables it unconditionally.
+
+--- openjdk.orig/hotspot/src/share/vm/runtime/globals.hpp
++++ openjdk/hotspot/src/share/vm/runtime/globals.hpp
+@@ -1224,7 +1224,7 @@
+   notproduct(bool, PrintCompactFieldsSavings, false,                        \
+           "Print how many words were saved with CompactFields")             \
+                                                                            \
+-  product(bool, UseBiasedLocking, true,                                     \
++  product(bool, UseBiasedLocking, false,                                    \
+           "Enable biased locking in JVM")                                   \
+                                                                            \
+   product(intx, BiasedLockingStartupDelay, 4000,                            \

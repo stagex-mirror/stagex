@@ -1,0 +1,14 @@
+FROM stagex/core-profile
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-llvm /usr/lib/libc++.so.1 /usr/lib/
+COPY --from=stagex/core-llvm /usr/lib/libc++abi.so.1 /usr/lib/
+COPY --from=stagex/core-llvm /usr/lib/libunwind.so.1 /usr/lib/
+COPY --from=stagex/core-openjdk8 . /
+COPY --from=stagex/core-ca-certificates . /
+ENV SOURCE_DATE_EPOCH=1
+ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk
+ENV PATH=${JAVA_HOME}/bin:${PATH}
+ENTRYPOINT ["/usr/bin/java"]

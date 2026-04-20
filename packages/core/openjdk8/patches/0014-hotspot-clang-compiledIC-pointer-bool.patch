@@ -1,0 +1,16 @@
+Fix pointer-to-bool comparison in compiledIC.cpp for clang.
+
+clang rejects `entry == false` where entry is `address` (unsigned char*).
+GCC silently accepts this, treating false as NULL.
+
+--- a/hotspot/src/share/vm/code/compiledIC.cpp
++++ b/hotspot/src/share/vm/code/compiledIC.cpp
+@@ -222,7 +222,7 @@
+     assert(bytecode == Bytecodes::_invokeinterface, "");
+     int itable_index = call_info->itable_index();
+     entry = VtableStubs::find_itable_stub(itable_index);
+-    if (entry == false) {
++    if (entry == NULL) {
+       return false;
+     }
+ #ifdef ASSERT
