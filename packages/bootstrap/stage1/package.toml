@@ -848,7 +848,7 @@ mirrors = [
 [sources.libarchive_352]
 hash = "f0b19ff39c3c9a5898a219497ababbadab99d8178acc980155c7e1271089b5a0"
 file = "libarchive-3.5.2.tar.xz"
-mirrors = ["http://libarchive.org/downloads/{file}"]
+mirrors = [ "https://libarchive.org/downloads/{file}", "https://slackware.cs.utah.edu/pub/slackware/slackware/source/l/libarchive/{file}"] 
 
 [sources.tcc_0926]
 hash = "6b8cbd0a5fed0636d4f0f763a603247bc1935e206e1cc5bda6a2818bab6e819f"
