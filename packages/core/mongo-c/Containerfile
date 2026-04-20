@@ -12,8 +12,10 @@ COPY --from=stagex/core-llvm . /
 
 ADD fetch/mongo-c-driver-${VERSION}.tar.gz .
 WORKDIR /mongo-c-driver-${VERSION}
+COPY *.patch .
 RUN --network=none <<-EOF
 	set -ex
+	patch -p1 file-order.patch
 	cmake -B build -G Ninja \
 		-DCMAKE_BUILD_TYPE=None \
 		-DCMAKE_INSTALL_PREFIX=/usr \

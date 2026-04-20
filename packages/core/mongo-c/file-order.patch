@@ -1,0 +1,12 @@
+diff --git a/build/cmake/GenerateUninstaller.cmake b/build/cmake/GenerateUninstaller.cmake
+index ef2d993bb5..f2dba1be51 100644
+--- a/build/cmake/GenerateUninstaller.cmake
++++ b/build/cmake/GenerateUninstaller.cmake
+@@ -238,6 +238,7 @@ endfunction()
+ 
+ set(script_self "${install_prefix}/${UNINSTALL_SCRIPT_SELF}")
+ set(dirs_to_remove)
++list(SORT CMAKE_INSTALL_MANIFEST_FILES)
+ foreach(installed IN LISTS CMAKE_INSTALL_MANIFEST_FILES script_self)
+     # Get the relative path from the prefix (the uninstaller will fix it up later)
+     file(RELATIVE_PATH relpath "${install_prefix}" "${installed}")
