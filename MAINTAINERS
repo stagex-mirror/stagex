@@ -238,7 +238,7 @@ runtime = "Docker"
 [machines.panekj.main]
 type = "metal"
 arch = "x86_64"
-location = "PL-24"
+location = ""
 brand = "AuthenticAMD"
 model = "1"
 ghz = 2.2
