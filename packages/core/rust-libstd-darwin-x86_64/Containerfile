@@ -1,0 +1,103 @@
+FROM stagex/pallet-clang AS build
+COPY --from=stagex/core-rust . /
+COPY --from=stagex/core-macos-minimal-sdk . /
+COPY --from=stagex/core-git . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-ca-certificates . /
+COPY --from=stagex/core-curl . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-make . /
+
+ENV RUSTC_BOOTSTRAP=1
+ENV RUSTFLAGS="--target x86_64-apple-darwin -Clinker=ld64.lld"
+ENV CARGO_TARGET_X86_64_APPLE_DARWIN_LINKER="ld64.lld"
+ENV CARGO_TARGET_X86_64_APPLE_DARWIN_SYSROOT="/sysroot-macos-x86_64"
+ENV RUST_SRC_PATH="/rustc-1.94.0-src/library"
+ENV PATH="/rust-1.94.0/usr/bin:/usr/bin:$PATH"
+ENV LLVM_ROOT="/usr/lib/llvm21"
+
+# Extract rust source
+ADD fetch/rustc-1.94.0-src.tar.gz .
+WORKDIR /rustc-1.94.0-src
+
+# Build std for darwin target using cargo -Zbuild-std
+# This approach uses the already-built rustc to cross-compile libstd
+# The output will be in the cargo target directory
+RUN <<-EOF
+	set -eux
+	
+	# Unset RUSTFLAGS to avoid duplicate --target flags
+	unset RUSTFLAGS
+	
+	# Create a minimal cargo workspace to trigger build-std
+	mkdir -p /tmp/build-std-workspace
+	cd /tmp/build-std-workspace
+	
+	# Create a minimal Cargo.toml - build as a library to avoid linking
+	cat > Cargo.toml << 'CARGO_EOF'
+[package]
+name = "build-std-helper"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+path = "lib.rs"
+CARGO_EOF
+	
+	# Create a minimal lib.rs
+	mkdir -p src
+	cat > lib.rs << 'RUST_EOF'
+// This dummy library triggers build-std to compile all std dependencies
+pub fn dummy() {}
+RUST_EOF
+	
+	# Build with -Zbuild-std for the darwin target
+	# Building as a library avoids the final link step that requires SDK
+	cargo build -Zbuild-std=std --target x86_64-apple-darwin --release
+	
+	# Copy the built std libraries to the proper location
+	# Find the .rlib files in the target directory
+	mkdir -p /usr/lib/rustlib/x86_64-apple-darwin/lib
+	
+	# Copy all the std-related rlib files
+	cp target/x86_64-apple-darwin/release/deps/libstd-*.rlib /usr/lib/rustlib/x86_64-apple-darwin/lib/ 2>/dev/null || true
+	cp target/x86_64-apple-darwin/release/deps/libcore-*.rlib /usr/lib/rustlib/x86_64-apple-darwin/lib/ 2>/dev/null || true
+	cp target/x86_64-apple-darwin/release/deps/liballoc-*.rlib /usr/lib/rustlib/x86_64-apple-darwin/lib/ 2>/dev/null || true
+	cp target/x86_64-apple-darwin/release/deps/libproc_macro-*.rlib /usr/lib/rustlib/x86_64-apple-darwin/lib/ 2>/dev/null || true
+	
+	# Also copy any dependency rlibs that might be needed
+	cp target/x86_64-apple-darwin/release/deps/libcompiler_builtins-*.rlib /usr/lib/rustlib/x86_64-apple-darwin/lib/ 2>/dev/null || true
+	cp target/x86_64-apple-darwin/release/deps/liblibc-*.rlib /usr/lib/rustlib/x86_64-apple-darwin/lib/ 2>/dev/null || true
+	cp target/x86_64-apple-darwin/release/deps/libgimli-*.rlib /usr/lib/rustlib/x86_64-apple-darwin/lib/ 2>/dev/null || true
+	cp target/x86_64-apple-darwin/release/deps/libaddr2line-*.rlib /usr/lib/rustlib/x86_64-apple-darwin/lib/ 2>/dev/null || true
+	cp target/x86_64-apple-darwin/release/deps/libobject-*.rlib /usr/lib/rustlib/x86_64-apple-darwin/lib/ 2>/dev/null || true
+	cp target/x86_64-apple-darwin/release/deps/libmemchr-*.rlib /usr/lib/rustlib/x86_64-apple-darwin/lib/ 2>/dev/null || true
+	cp target/x86_64-apple-darwin/release/deps/libcfg_if-*.rlib /usr/lib/rustlib/x86_64-apple-darwin/lib/ 2>/dev/null || true
+	cp target/x86_64-apple-darwin/release/deps/librustc_demangle-*.rlib /usr/lib/rustlib/x86_64-apple-darwin/lib/ 2>/dev/null || true
+	cp target/x86_64-apple-darwin/release/deps/librustc_std_workspace_*-*.rlib /usr/lib/rustlib/x86_64-apple-darwin/lib/ 2>/dev/null || true
+	cp target/x86_64-apple-darwin/release/deps/libunwind-*.rlib /usr/lib/rustlib/x86_64-apple-darwin/lib/ 2>/dev/null || true
+	cp target/x86_64-apple-darwin/release/deps/libpanic_abort-*.rlib /usr/lib/rustlib/x86_64-apple-darwin/lib/ 2>/dev/null || true
+	cp target/x86_64-apple-darwin/release/deps/libpanic_unwind-*.rlib /usr/lib/rustlib/x86_64-apple-darwin/lib/ 2>/dev/null || true
+	cp target/x86_64-apple-darwin/release/deps/libstd_detect-*.rlib /usr/lib/rustlib/x86_64-apple-darwin/lib/ 2>/dev/null || true
+	cp target/x86_64-apple-darwin/release/deps/libminiz_oxide-*.rlib /usr/lib/rustlib/x86_64-apple-darwin/lib/ 2>/dev/null || true
+	cp target/x86_64-apple-darwin/release/deps/libhashbrown-*.rlib /usr/lib/rustlib/x86_64-apple-darwin/lib/ 2>/dev/null || true
+	cp target/x86_64-apple-darwin/release/deps/libfoldhash-*.rlib /usr/lib/rustlib/x86_64-apple-darwin/lib/ 2>/dev/null || true
+	cp target/x86_64-apple-darwin/release/deps/libadler2-*.rlib /usr/lib/rustlib/x86_64-apple-darwin/lib/ 2>/dev/null || true
+	
+	# Copy the std library source files for rust-analyzer and other tools
+	mkdir -p /usr/lib/rustlib/x86_64-apple-darwin/src
+	cp -r /rustc-1.94.0-src/library/std /usr/lib/rustlib/x86_64-apple-darwin/src/ 2>/dev/null || true
+	cp -r /rustc-1.94.0-src/library/core /usr/lib/rustlib/x86_64-apple-darwin/src/ 2>/dev/null || true
+	cp -r /rustc-1.94.0-src/library/alloc /usr/lib/rustlib/x86_64-apple-darwin/src/ 2>/dev/null || true
+	cp -r /rustc-1.94.0-src/library/proc_macro /usr/lib/rustlib/x86_64-apple-darwin/src/ 2>/dev/null || true
+	cp -r /rustc-1.94.0-src/library/compiler-builtins /usr/lib/rustlib/x86_64-apple-darwin/src/ 2>/dev/null || true
+	cp -r /rustc-1.94.0-src/library/rustc-std-workspace-* /usr/lib/rustlib/x86_64-apple-darwin/src/ 2>/dev/null || true
+	
+EOF
+
+FROM scratch AS package
+COPY --from=build /usr/lib/rustlib/x86_64-apple-darwin/ /usr/lib/rustlib/x86_64-apple-darwin/

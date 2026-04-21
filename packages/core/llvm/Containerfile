@@ -656,7 +656,7 @@ RUN --network=none <<-EOF
 			-DLLVM_CONFIG_PATH=/usr/bin/llvm-config
 		
 		# Build
-		cmake --build . -v --parallel $(nproc)
+		cmake --build . -v -j$(nproc)
 		
 		# Install to rootfs
 		DESTDIR="/rootfs" cmake --install . --prefix "/usr/lib/clang/21"
@@ -674,3 +674,165 @@ EOF
 
 FROM stagex/core-filesystem AS package-clang-rt-crt-cross
 COPY --from=build-clang-rt-crt-cross /rootfs/ /
+
+# Build llvm-runtimes-cross (libunwind, libcxxabi, libcxx) for cross-compilation targets
+# This matches Chimera Linux's llvm-runtimes-cross package approach
+FROM build AS build-llvm-runtimes-cross
+WORKDIR /
+# Add tarballs from build context (same as build stage)
+# Use COPY to prevent auto-extraction of tar.xz files
+ADD fetch/musl-1.2.5.tar.gz .
+COPY fetch/linux-${LINUX_HEADERS_VERSION}.tar.xz .
+# Run script from root
+RUN --network=none <<-EOF
+	set -eux
+	# Debug: list files in root
+	ls -la / | grep -E "musl|linux" || echo "Tarballs not found in /"
+	
+	VERSION="${VERSION}"
+	MUSL_VERSION="1.2.5"
+	LINUX_VERSION="${LINUX_HEADERS_VERSION}"
+	
+	# Host architecture
+	HOST_ARCH="${ARCH}"
+	
+	# All targets to support (matching chimera, excluding riscv64 due to kernel headers issues)
+	ALL_TARGETS="aarch64 armhf armv7 ppc64le ppc64 x86_64 loongarch64"
+	
+	# Remove host architecture from cross targets
+	CROSS_TARGETS=""
+	for target in $ALL_TARGETS; do
+		if [ "$target" != "$HOST_ARCH" ]; then
+			CROSS_TARGETS="$CROSS_TARGETS $target"
+		fi
+	done
+	
+	echo "Building LLVM runtimes for:$CROSS_TARGETS"
+	
+	for target in $CROSS_TARGETS; do
+		echo "Building runtimes for $target..."
+		
+		# Determine triplet
+		case $target in
+			aarch64) TRIPLET="aarch64-unknown-linux-musl" ;;
+			armhf) TRIPLET="armv7l-unknown-linux-musleabihf" ;;
+			armv7) TRIPLET="armv7l-unknown-linux-musleabihf" ;;
+			ppc64le) TRIPLET="powerpc64le-unknown-linux-musl" ;;
+			ppc64) TRIPLET="powerpc64-unknown-linux-musl" ;;
+			x86_64) TRIPLET="x86_64-unknown-linux-musl" ;;
+			loongarch64) TRIPLET="loongarch64-unknown-linux-musl" ;;
+		esac
+		
+		echo "  Triplet:$TRIPLET"
+		
+		# Step 1: Build musl sysroot for this target
+		mkdir -p "/tmp/musl-build-${target}"
+		cd "/tmp/musl-build-${target}"
+		tar -xzf /musl-${MUSL_VERSION}.tar.gz --strip-components=1
+		
+		./configure \
+			--prefix=/usr \
+			--host="${TRIPLET}" \
+			CC="clang -target ${TRIPLET}"
+		
+		mkdir -p "/tmp/sysroot-${target}/usr/include"
+		make -j$(nproc) DESTDIR="/tmp/sysroot-${target}" install-headers || true
+		
+		# Step 2: Build kernel headers
+		cd /
+		mkdir -p "/tmp/linux-build-${target}"
+		tar -xJf /linux-${LINUX_VERSION}.tar.xz -C "/tmp/linux-build-${target}" --strip-components=1
+		cd "/tmp/linux-build-${target}"
+		
+		case $target in
+			aarch64) KARCH="arm64" ;;
+			armhf|armv7) KARCH="arm" ;;
+			ppc64le) KARCH="powerpc" ;;
+			ppc64) KARCH="powerpc" ;;
+			x86_64) KARCH="x86" ;;
+			loongarch64) KARCH="loongarch" ;;
+		esac
+		
+		make ARCH="${KARCH}" CC="clang" HOSTCC="clang" mrproper || true
+		# Try to use rsync if available, otherwise fall back to cp
+		if command -v rsync >/dev/null 2>&1; then
+			make ARCH="${KARCH}" CC="clang" HOSTCC="clang" headers_install \
+				INSTALL_HDR_PATH="/tmp/sysroot-${target}/usr"
+		else
+			# Fallback: manually copy headers
+			mkdir -p "/tmp/sysroot-${target}/usr/include"
+			cp -r include/* "/tmp/sysroot-${target}/usr/include/" 2>/dev/null || true
+			cp -r arch/${KARCH}/include/* "/tmp/sysroot-${target}/usr/include/" 2>/dev/null || true
+		fi
+		
+		# Step 3: Build LLVM runtimes (libunwind, libcxxabi, libcxx)
+		mkdir -p "/tmp/build-runtimes-${target}"
+		cd "/tmp/build-runtimes-${target}"
+		
+		SYSROOT="/tmp/sysroot-${target}"
+		
+		cmake \
+			-S /llvm-project-${VERSION}.src/runtimes \
+			-B . \
+			'-DCMAKE_BUILD_TYPE=Release' \
+			'-DCMAKE_C_COMPILER=/usr/bin/clang' \
+			'-DCMAKE_CXX_COMPILER=/usr/bin/clang++' \
+			'-DCMAKE_AR=/usr/bin/llvm-ar' \
+			'-DCMAKE_NM=/usr/bin/llvm-nm' \
+			'-DCMAKE_RANLIB=/usr/bin/llvm-ranlib' \
+			'-DCMAKE_C_COMPILER_TARGET=${TRIPLET}' \
+			'-DCMAKE_CXX_COMPILER_TARGET=${TRIPLET}' \
+			'-DCMAKE_ASM_COMPILER_TARGET=${TRIPLET}' \
+			'-DCMAKE_SYSROOT=${SYSROOT}' \
+			'-DCMAKE_C_FLAGS=-fPIC --sysroot=${SYSROOT}' \
+			'-DCMAKE_CXX_FLAGS=-fPIC --sysroot=${SYSROOT}' \
+			'-DCMAKE_INSTALL_PREFIX=/usr' \
+			'-DLLVM_CONFIG_PATH=/usr/bin/llvm-config' \
+			'-DCMAKE_C_COMPILER_WORKS=ON' \
+			'-DCMAKE_CXX_COMPILER_WORKS=ON' \
+			'-DCMAKE_ASM_COMPILER_WORKS=ON' \
+			'-DLIBUNWIND_USE_COMPILER_RT=ON' \
+			'-DLIBUNWIND_ENABLE_ASSERTIONS=OFF' \
+			'-DLIBUNWIND_ENABLE_EXCEPTIONS=OFF' \
+			'-DLIBUNWIND_ENABLE_DSO=OFF' \
+			'-DLIBCXXABI_ENABLE_STATIC_UNWINDER=OFF' \
+			'-DLIBCXXABI_USE_LLVM_UNWINDER=ON' \
+			'-DLIBCXXABI_USE_COMPILER_RT=ON' \
+			'-DLIBCXX_CXX_ABI=libcxxabi' \
+			'-DLIBCXX_USE_COMPILER_RT=ON' \
+			'-DLIBCXX_HAS_MUSL_LIBC=ON' \
+			'-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=OFF' \
+			'-DLIBCXX_HARDENING_MODE=fast' \
+			'-DLLVM_ENABLE_RUNTIMES=libunwind;libcxxabi;libcxx' \
+			'-DCOMPILER_RT_BUILD_BUILTINS=OFF' \
+			'-DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON' \
+			'-DCOMPILER_RT_BUILD_SANITIZERS=OFF' \
+			'-DCOMPILER_RT_BUILD_XRAY=OFF' \
+			'-DCOMPILER_RT_BUILD_LIBFUZZER=OFF' \
+			'-DLIBCXX_ENABLE_EXCEPTIONS=ON' \
+			'-DLIBCXX_ENABLE_RTTI=ON'
+		
+		cmake --build . -v --parallel $(nproc)
+		
+		# Install directly to rootfs in target triplet directory
+		DESTDIR="/rootfs/usr/${TRIPLET}" cmake --install .
+		
+		# Clean up all temp directories
+		cd /
+		rm -rf "/tmp/musl-build-${target}"
+		rm -rf "/tmp/linux-build-${target}"
+		rm -rf "/tmp/sysroot-${target}"
+		rm -rf "/tmp/build-runtimes-${target}"
+		
+		echo "  Done $target"
+	done
+	
+	echo "All LLVM runtimes built"
+	
+	# Copy LICENSE.TXT
+	mkdir -p /rootfs/usr/share/doc/llvm-runtimes-cross
+	cp /llvm-project-${VERSION}.src/LICENSE.TXT /rootfs/usr/share/doc/llvm-runtimes-cross/
+EOF
+
+FROM stagex/core-filesystem AS package-llvm-runtimes-cross
+COPY --from=build-llvm-runtimes-cross /rootfs/ /

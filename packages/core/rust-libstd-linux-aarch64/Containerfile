@@ -1,0 +1,96 @@
+FROM stagex/pallet-clang AS build
+COPY --from=stagex/core-rust . /
+COPY --from=stagex/core-musl-linux-aarch64 . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-curl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-ca-certificates . /
+
+ENV RUSTC_BOOTSTRAP=1
+ENV PATH="/rust-1.94.0/usr/bin:/usr/bin:$PATH"
+ENV LLVM_ROOT="/usr/lib/llvm21"
+ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER="aarch64-linux-musl-gcc"
+ENV PATH="/usr/aarch64-unknown-linux-musl/bin:$PATH"
+
+# Extract rust source
+ADD fetch/rustc-1.94.0-src.tar.gz .
+WORKDIR /rustc-1.94.0-src
+
+# Build std for linux aarch64 target using cargo -Zbuild-std
+# Build as a library to avoid the final link step
+RUN <<-EOF
+	set -eux
+	
+	# Unset RUSTFLAGS to avoid duplicate --target flags
+	unset RUSTFLAGS
+	
+	# Create a minimal cargo workspace to trigger build-std
+	mkdir -p /tmp/build-std-workspace
+	cd /tmp/build-std-workspace
+	
+	# Create a minimal Cargo.toml - build as a library to avoid linking
+	cat > Cargo.toml << 'CARGO_EOF'
+[package]
+name = "build-std-helper"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+path = "lib.rs"
+CARGO_EOF
+	
+	# Create a minimal lib.rs
+	mkdir -p src
+	cat > lib.rs << 'RUST_EOF'
+// This dummy library triggers build-std to compile all std dependencies
+pub fn dummy() {}
+RUST_EOF
+	
+	# Build with -Zbuild-std for the linux aarch64 musl target
+	# Building as a library avoids the final link step
+	CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER="aarch64-linux-musl-gcc" \
+	cargo build -Zbuild-std=std --target aarch64-unknown-linux-musl --release
+	
+	# Copy the built std libraries to the proper location
+	mkdir -p /usr/lib/rustlib/aarch64-unknown-linux-musl/lib
+	
+	# Copy all the std-related rlib files
+	cp target/aarch64-unknown-linux-musl/release/deps/libstd-*.rlib /usr/lib/rustlib/aarch64-unknown-linux-musl/lib/ 2>/dev/null || true
+	cp target/aarch64-unknown-linux-musl/release/deps/libcore-*.rlib /usr/lib/rustlib/aarch64-unknown-linux-musl/lib/ 2>/dev/null || true
+	cp target/aarch64-unknown-linux-musl/release/deps/liballoc-*.rlib /usr/lib/rustlib/aarch64-unknown-linux-musl/lib/ 2>/dev/null || true
+	cp target/aarch64-unknown-linux-musl/release/deps/libproc_macro-*.rlib /usr/lib/rustlib/aarch64-unknown-linux-musl/lib/ 2>/dev/null || true
+	
+	# Copy dependency rlibs
+	cp target/aarch64-unknown-linux-musl/release/deps/libcompiler_builtins-*.rlib /usr/lib/rustlib/aarch64-unknown-linux-musl/lib/ 2>/dev/null || true
+	cp target/aarch64-unknown-linux-musl/release/deps/liblibc-*.rlib /usr/lib/rustlib/aarch64-unknown-linux-musl/lib/ 2>/dev/null || true
+	cp target/aarch64-unknown-linux-musl/release/deps/libgimli-*.rlib /usr/lib/rustlib/aarch64-unknown-linux-musl/lib/ 2>/dev/null || true
+	cp target/aarch64-unknown-linux-musl/release/deps/libaddr2line-*.rlib /usr/lib/rustlib/aarch64-unknown-linux-musl/lib/ 2>/dev/null || true
+	cp target/aarch64-unknown-linux-musl/release/deps/libobject-*.rlib /usr/lib/rustlib/aarch64-unknown-linux-musl/lib/ 2>/dev/null || true
+	cp target/aarch64-unknown-linux-musl/release/deps/libmemchr-*.rlib /usr/lib/rustlib/aarch64-unknown-linux-musl/lib/ 2>/dev/null || true
+	cp target/aarch64-unknown-linux-musl/release/deps/libcfg_if-*.rlib /usr/lib/rustlib/aarch64-unknown-linux-musl/lib/ 2>/dev/null || true
+	cp target/aarch64-unknown-linux-musl/release/deps/librustc_demangle-*.rlib /usr/lib/rustlib/aarch64-unknown-linux-musl/lib/ 2>/dev/null || true
+	cp target/aarch64-unknown-linux-musl/release/deps/librustc_std_workspace_*-*.rlib /usr/lib/rustlib/aarch64-unknown-linux-musl/lib/ 2>/dev/null || true
+	cp target/aarch64-unknown-linux-musl/release/deps/libunwind-*.rlib /usr/lib/rustlib/aarch64-unknown-linux-musl/lib/ 2>/dev/null || true
+	cp target/aarch64-unknown-linux-musl/release/deps/libpanic_abort-*.rlib /usr/lib/rustlib/aarch64-unknown-linux-musl/lib/ 2>/dev/null || true
+	cp target/aarch64-unknown-linux-musl/release/deps/libpanic_unwind-*.rlib /usr/lib/rustlib/aarch64-unknown-linux-musl/lib/ 2>/dev/null || true
+	cp target/aarch64-unknown-linux-musl/release/deps/libstd_detect-*.rlib /usr/lib/rustlib/aarch64-unknown-linux-musl/lib/ 2>/dev/null || true
+	cp target/aarch64-unknown-linux-musl/release/deps/libminiz_oxide-*.rlib /usr/lib/rustlib/aarch64-unknown-linux-musl/lib/ 2>/dev/null || true
+	cp target/aarch64-unknown-linux-musl/release/deps/libhashbrown-*.rlib /usr/lib/rustlib/aarch64-unknown-linux-musl/lib/ 2>/dev/null || true
+	cp target/aarch64-unknown-linux-musl/release/deps/libfoldhash-*.rlib /usr/lib/rustlib/aarch64-unknown-linux-musl/lib/ 2>/dev/null || true
+	cp target/aarch64-unknown-linux-musl/release/deps/libadler2-*.rlib /usr/lib/rustlib/aarch64-unknown-linux-musl/lib/ 2>/dev/null || true
+	
+	# Copy the std library source files for rust-analyzer
+	mkdir -p /usr/lib/rustlib/aarch64-unknown-linux-musl/src
+	cp -r /rustc-1.94.0-src/library/std /usr/lib/rustlib/aarch64-unknown-linux-musl/src/ 2>/dev/null || true
+	cp -r /rustc-1.94.0-src/library/core /usr/lib/rustlib/aarch64-unknown-linux-musl/src/ 2>/dev/null || true
+	cp -r /rustc-1.94.0-src/library/alloc /usr/lib/rustlib/aarch64-unknown-linux-musl/src/ 2>/dev/null || true
+	cp -r /rustc-1.94.0-src/library/proc_macro /usr/lib/rustlib/aarch64-unknown-linux-musl/src/ 2>/dev/null || true
+	cp -r /rustc-1.94.0-src/library/compiler-builtins /usr/lib/rustlib/aarch64-unknown-linux-musl/src/ 2>/dev/null || true
+	cp -r /rustc-1.94.0-src/library/rustc-std-workspace-* /usr/lib/rustlib/aarch64-unknown-linux-musl/src/ 2>/dev/null || true
+	
+EOF
+
+FROM scratch AS package
+COPY --from=build /usr/lib/rustlib/aarch64-unknown-linux-musl/ /usr/lib/rustlib/aarch64-unknown-linux-musl/

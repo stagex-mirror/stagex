@@ -1,0 +1,27 @@
+FROM stagex/pallet-clang
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-musl-linux-aarch64 . /
+COPY --from=stagex/core-mimalloc-linux-aarch64 . /
+
+# Create clang target configuration
+RUN mkdir -p /etc/clang && cat > /etc/clang/aarch64-unknown-linux-musl.cfg << 'EOF'
+--target=aarch64-unknown-linux-musl
+--sysroot=/usr/aarch64-unknown-linux-musl
+-L/usr/aarch64-unknown-linux-musl/lib
+-L/usr/lib/clang/21/lib/aarch64-unknown-linux-musl
+-B/usr/aarch64-unknown-linux-musl/bin
+EOF
+
+# Set default cross-compilation environment
+ENV CC="clang -target aarch64-unknown-linux-musl"
+ENV CXX="clang++ -target aarch64-unknown-linux-musl"
+ENV AR=llvm-ar
+ENV RANLIB=llvm-ranlib
+ENV NM=llvm-nm
+ENV OBJCOPY=llvm-objcopy
+ENV CFLAGS="-target aarch64-unknown-linux-musl --sysroot=/usr/aarch64-unknown-linux-musl"
+ENV CXXFLAGS="$CFLAGS"
+ENV LDFLAGS="-L/usr/aarch64-unknown-linux-musl/lib"
+ENV TARGET=aarch64-unknown-linux-musl
+
+ENTRYPOINT ["/usr/bin/clang"]

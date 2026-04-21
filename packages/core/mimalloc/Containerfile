@@ -47,3 +47,53 @@ EOF
 
 FROM stagex/core-filesystem AS package-mimalloc
 COPY --from=build /rootfs /
+
+# AArch64 cross-compiled mimalloc subpackage
+FROM stagex/bootstrap-stage3 AS build-mimalloc-linux-aarch64
+COPY --from=stagex/pallet-clang /usr /usr
+COPY --from=stagex/core-musl / /
+COPY --from=stagex/core-llvm-compiler-rt-aarch64 . /
+SHELL ["/bin/sh", "-c"]
+ARG VERSION
+ADD fetch/mimalloc-${VERSION}.tar.gz .
+WORKDIR /mimalloc-${VERSION}
+
+RUN --network=none <<-EOF
+	set -eux
+
+	rm -rf .git bin
+	export SOURCE_DATE_EPOCH=1
+	
+	# Cross-compile flags for aarch64
+	export CFLAGS="-Wformat -Werror=format-security -O2 -fPIC -fstack-protector-strong -fstack-clash-protection -DMI_TLS_PTHREAD=1 -DMI_USE_BUILTIN_THREAD_POINTER=1"
+	export CFLAGS="$CFLAGS --target=aarch64-unknown-linux-musl"
+	
+	mkdir out
+	cd out
+	
+	cmake \
+		-DCMAKE_SYSTEM_NAME=Linux \
+		-DCMAKE_SYSTEM_PROCESSOR=aarch64 \
+		-DCMAKE_C_COMPILER=clang \
+		-DCMAKE_INSTALL_INCLUDEDIR=/usr/aarch64-unknown-linux-musl/include/mimalloc \
+		-DCMAKE_INSTALL_LIBDIR=/usr/aarch64-unknown-linux-musl/lib/mimalloc \
+		-DMI_INSTALL_TOPLEVEL=ON \
+		-DMI_NO_OPT_ARCH=ON \
+		-DMI_LIBC_MUSL=ON \
+		-DMI_SECURE=ON \
+		-DMI_XMALLOC=ON \
+		-DMI_BUILD_TESTS=OFF \
+		-DMI_BUILD_SHARED=OFF \
+		-DMI_BUILD_STATIC=ON \
+		-DMI_BUILD_OBJECT=ON \
+		..
+	
+	make -j $(nproc)
+	
+	# Install to aarch64 sysroot
+	mkdir -p /rootfs/usr/aarch64-unknown-linux-musl
+	cp -r out/lib/* /rootfs/usr/aarch64-unknown-linux-musl/lib/
+EOF
+
+FROM scratch AS package-mimalloc-linux-aarch64
+COPY --from=build-mimalloc-linux-aarch64 /rootfs/ /

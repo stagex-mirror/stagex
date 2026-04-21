@@ -4,9 +4,16 @@ version = "1.2.5"
 description = "musl is an implementation of the C standard library"
 website = "http://musl.libc.org"
 license = "MIT"
+subpackages = ["musl","musl-cross"]
 
 [sources.musl]
 hash = "a9a118bbe84d8764da0ea0d28b3ab3fae8477fc7e4085d90102b8596fc7c75e4"
 format = "tar.gz"
 file = "musl-{version}.{format}"
 mirrors = [ "http://musl.libc.org/releases/{file}",]
+
+[sources.mimalloc]
+hash = "0eed39319f139afde8515010ff59baf24de9e47ea316a315398e8027d198202d"
+format = "tar.gz"
+file = "mimalloc-2.1.7.tar.gz"
+mirrors = [ "https://github.com/microsoft/mimalloc/archive/refs/tags/v2.1.7.tar.gz",]

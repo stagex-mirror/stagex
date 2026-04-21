@@ -1,0 +1,6 @@
+[package]
+name = "rust-darwin"
+version_from = "core-rust"
+description = "Rust toolchain for cross-compiling to macOS (aarch64-apple-darwin and x86_64-apple-darwin)"
+website = "https://www.rust-lang.org"
+license = "MIT/Apache-2.0"

@@ -1,0 +1,42 @@
+FROM stagex/pallet-clang
+COPY --from=stagex/core-rust . /
+COPY --from=stagex/core-rust-libstd-darwin-aarch64 . /
+COPY --from=stagex/core-rust-libstd-darwin-x86_64 . /
+COPY --from=stagex/core-macos-minimal-sdk . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-git . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-ca-certificates . /
+COPY --from=stagex/core-curl . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-pkgconf . /
+
+# Configure linker to use ld64.lld for darwin targets
+ENV CARGO_TARGET_AARCH64_APPLE_DARWIN_LINKER="ld64.lld"
+ENV CARGO_TARGET_X86_64_APPLE_DARWIN_LINKER="ld64.lld"
+
+# Default sysroot paths for darwin targets
+ENV CARGO_TARGET_AARCH64_APPLE_DARWIN_SYSROOT="/sysroot-macos-arm64"
+ENV CARGO_TARGET_X86_64_APPLE_DARWIN_SYSROOT="/sysroot-macos-x86_64"
+
+# Default to aarch64-apple-darwin target
+ENV RUSTFLAGS="--target aarch64-apple-darwin"
+
+ENV RUST_TARGET_PATH=/usr/lib/rustlib
+
+# Setup Rust's self-contained toolchain's linker for darwin targets
+RUN mkdir -p /usr/lib/rustlib/aarch64-apple-darwin/bin/gcc-ld && \
+	mkdir -p /usr/lib/rustlib/x86_64-apple-darwin/bin/gcc-ld && \
+	ln -sf /bin/ld64.lld /usr/lib/rustlib/aarch64-apple-darwin/bin/rust-lld && \
+	ln -sf /bin/ld64.lld /usr/lib/rustlib/x86_64-apple-darwin/bin/rust-lld && \
+	for bin in ld.lld lld-link wasm-ld; do ln -sf /bin/$bin /usr/lib/rustlib/aarch64-apple-darwin/bin/gcc-ld/$bin; done && \
+	for bin in ld.lld lld-link wasm-ld; do ln -sf /bin/$bin /usr/lib/rustlib/x86_64-apple-darwin/bin/gcc-ld/$bin; done && \
+	ln -sf /bin/llvm-objcopy /usr/lib/rustlib/aarch64-apple-darwin/bin/rust-objcopy && \
+	ln -sf /bin/llvm-objcopy /usr/lib/rustlib/x86_64-apple-darwin/bin/rust-objcopy && \
+	ln -sf /bin/llvm-nm /usr/lib/rustlib/aarch64-apple-darwin/bin/rust-nm && \
+	ln -sf /bin/llvm-nm /usr/lib/rustlib/x86_64-apple-darwin/bin/rust-nm && \
+	ln -sf /bin/llvm-strip /usr/lib/rustlib/aarch64-apple-darwin/bin/rust-strip && \
+	ln -sf /bin/llvm-strip /usr/lib/rustlib/x86_64-apple-darwin/bin/rust-strip
+
+ENTRYPOINT ["/usr/bin/cargo"]

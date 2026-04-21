@@ -1,0 +1,10 @@
+[package]
+name = "rust-libstd-darwin-x86_64"
+version_from = "core-rust"
+description = "Rust standard library for x86_64-apple-darwin (built from source)"
+website = "https://www.rust-lang.org"
+license = "Apache-2.0 OR MIT"
+
+[sources.rust1_94_0]
+hash = "b83f921cd3f321ff614f9c06a8b870d89299fc02888b48a5549683a36823474c"
+mirrors = [ "https://static.rust-lang.org/dist/rustc-1.94.0-src.tar.gz",]

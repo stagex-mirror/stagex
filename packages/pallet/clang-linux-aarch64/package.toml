@@ -1,0 +1,7 @@
+[package]
+name = "clang-linux-aarch64"
+version_from = "core-llvm"
+description = "Clang toolchain for cross-compiling to aarch64-unknown-linux-musl"
+website = "https://llvm.org"
+license = "Apache-2.0 WITH LLVM-exception"
+

@@ -1,0 +1,29 @@
+FROM stagex/core-profile AS build
+ARG VERSION
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-mold . /
+COPY --from=stagex/core-onetbb . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-ncurses . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-autoconf . /
+COPY --from=stagex/core-m4 . /
+COPY --from=stagex/core-perl . /
+
+ADD fetch/macos-minimal-sdk-${VERSION}.tar.gz .
+
+WORKDIR /macos-minimal-sdk-main
+
+RUN --network=none <<-EOF
+	set -eux
+	# Build both x86_64 and arm64 sysroots using the system's clang
+	# The Makefile uses clang to create stub libSystem.dylib files
+	/usr/bin/make CLANG=/usr/bin/clang
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /macos-minimal-sdk-main/sysroot-macos-x86_64/ /
+COPY --from=build /macos-minimal-sdk-main/sysroot-macos-arm64/ /

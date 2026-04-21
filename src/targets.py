@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import sys
 from common import CommonUtils
 from common import PackageInfo
 from typing import Any
@@ -130,6 +131,10 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
 
     for stage, stage_packages in self.packages.items():
       for name, package in stage_packages.items():
+        # DEBUG
+        if name == "musl-linux-aarch64":
+          print(f"DEBUG2: {name} deps={package.deps}, origin={package.origin}", file=sys.stderr)
+        
         platform = "$(PLATFORM)"
         # Force platform(s) for bootstrap packages which are only available for certain architectures
         # and later cross-compile subsequent stages for the user's desired platform
@@ -162,6 +167,9 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
         if file_name == "Containerfile":
           container_file_path = os.path.join(base_dir, file_name)
           _, stage, name, _ = container_file_path.split(os.path.sep)
+          # DEBUG
+          if 'musl' in name:
+            print(f"DEBUG3: Processing {stage}/{name}", file=sys.stderr)
           package_data: MutableMapping[str, Any] | None = None
           if stage not in self.packages:
             self.packages[stage] = dict[str, PackageInfo]()
@@ -171,29 +179,70 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
           except FileNotFoundError:
             continue
 
-          deps: List[str] = list()
+          # Parse dependencies per build stage to support subpackages with different deps
+          stage_deps: dict[str, list[str]] = {}
+          current_stage: str | None = None
+          
           with open(container_file_path, "r") as file:
             for line in file:
-              if line.startswith("COPY"):
-                first_arg = line.split(" ")[1]
-                if first_arg.startswith("--from"):
-                  _, dep = first_arg.split("=")
-                  if dep.startswith("stagex/"):
-                    deps.append(dep.split("/")[1])
-              if line.startswith("FROM stagex/"):
-                deps.append(line.split(" ")[1].split("/")[1].strip())
-              if line.startswith("FROM --platform=linux/386 stagex/"):
-                deps.append(line.split(" ")[2].split("/")[1].strip())
+              line_stripped = line.strip()
+              
+              # Track current build stage
+              if line_stripped.startswith("FROM "):
+                if " AS " in line_stripped:
+                  current_stage = line_stripped.split(" AS ")[-1].strip()
+                  stage_deps[current_stage] = []
+                elif " AS " not in line_stripped:
+                  # Default stage (no name)
+                  current_stage = "default"
+                  if current_stage not in stage_deps:
+                    stage_deps[current_stage] = []
+              
+              # Extract dependencies for current stage
+              if current_stage:
+                if line_stripped.startswith("COPY"):
+                  first_arg = line_stripped.split(" ")[1] if " " in line_stripped else ""
+                  if first_arg.startswith("--from"):
+                    _, dep = first_arg.split("=")
+                    if dep.startswith("stagex/"):
+                      stage_deps[current_stage].append(dep.split("/")[1])
+                elif line_stripped.startswith("FROM stagex/"):
+                  dep = line_stripped.split(" ")[1].split("/")[1].strip()
+                  stage_deps[current_stage].append(dep)
+                elif line_stripped.startswith("FROM --platform=linux/386 stagex/"):
+                  dep = line_stripped.split(" ")[2].split("/")[1].strip()
+                  stage_deps[current_stage].append(dep)
 
           package_info = CommonUtils.parse_package_toml_no_deps(package_data)
-          package_info.deps = deps
+          
           if len(package_info.subpackages):
+            # For packages with subpackages, each subpackage gets its own stage dependencies
             for subpackage in package_info.subpackages:
-              self.packages[stage][subpackage] = replace(package_info)
-              self.packages[stage][subpackage].origin = package_info.name
-              self.packages[stage][subpackage].name = subpackage
-              self.packages[stage][subpackage].subpackages = []
+              # If subpackage name matches package name, use default stage deps
+              if subpackage == package_info.name:
+                subpackage_deps = stage_deps.get("default", [])
+              else:
+                # Try build stage first, then package stage
+                subpackage_deps = stage_deps.get(f"build-{subpackage}", [])
+                if not subpackage_deps:
+                  subpackage_deps = stage_deps.get(f"package-{subpackage}", [])
+              subpackage_info = replace(package_info)
+              subpackage_info.deps = subpackage_deps
+              subpackage_info.origin = package_info.name
+              subpackage_info.name = subpackage
+              subpackage_info.subpackages = []
+              self.packages[stage][subpackage] = subpackage_info
+              # DEBUG
+              if subpackage == "musl-linux-aarch64":
+                print(f"DEBUG: Added {subpackage} with deps={subpackage_deps}", file=sys.stderr)
+              # Also check after each subpackage if musl-linux-aarch64 got overwritten
+              if 'musl-linux-aarch64' in self.packages[stage]:
+                current = self.packages[stage]['musl-linux-aarch64']
+                if subpackage == 'musl' and current.deps == []:
+                  print(f"DEBUG4: WARNING: After adding {subpackage}, musl-linux-aarch64 has empty deps!", file=sys.stderr)
           else:
+            # For packages without subpackages, use all deps from default stage
+            package_info.deps = stage_deps.get("default", [])
             self.packages[stage][name] = package_info
     self.resolve_versions()
 
