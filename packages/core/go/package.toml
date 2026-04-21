@@ -42,3 +42,7 @@ mirrors = ["https://go.dev/dl/go{version}.linux-amd64.tar.gz"]
 [sources.go-linux-arm64]
 hash = "ef758ae7c6cf9267c9c0ef080b8965f453d89ab2d25d9eb22de4405925238768"
 mirrors = ["https://go.dev/dl/go{version}.linux-arm64.tar.gz"]
+
+[sources.go-linux-riscv64]
+hash = "2b9ba137baaa3031fd74330cb36ab54c5abe380867ca9fbab7c552f3db740555"
+mirrors = ["https://go.dev/dl/go{version}.linux-riscv64.tar.gz"]

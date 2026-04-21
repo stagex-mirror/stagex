@@ -31,6 +31,8 @@ RUN --network=none <<-EOF
 		&& ARCH="x86_64"
 	[[ "$TARGETARCH" == "arm64" ]] \
 		&& ARCH="aarch64"
+	[[ "$TARGETARCH" == "riscv64" ]] \
+		&& ARCH="riscv64"
 	TARGET=$ARCH-unknown-linux-musl
 	# Find the latest clang runtime.
 	CLANG_VER="$(ls -d /lib/clang/*/ | sort -V | tail -1 | xargs basename)"

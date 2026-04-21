@@ -36,6 +36,9 @@ COPY <<-'EOF' /etc/profile
 	if [ "$TARGETARCH" = "arm64" ]; then
 		export ARCH="aarch64"
 	fi
+	if [ "$TARGETARCH" = "riscv64" ]; then
+		export ARCH="riscv64"
+	fi
 	export TARGET=${ARCH}-unknown-linux-musl
 	export MAKEFLAGS="-j$(nproc)"
 	export LLVM_ROOT="/usr/lib/llvm${LLVM_VERSION}"

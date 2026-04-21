@@ -14,6 +14,9 @@ COPY <<-'EOF' /etc/profile
 	[[ "$TARGETARCH" == "arm64" ]] \
 		&& ARCH="aarch64" \
 		&& LLVM_TARGET_ARCH="AArch64"
+	[[ "$TARGETARCH" == "riscv64" ]] \
+		&& ARCH="riscv64" \
+		&& LLVM_TARGET_ARCH="RISCV"
 	export ARCH
 	export MAKEFLAGS="-j$(nproc)"
 	export BUILD=${ARCH}-unknown-linux-musl
