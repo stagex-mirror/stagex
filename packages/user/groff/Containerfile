@@ -8,7 +8,8 @@ RUN --network=none <<-EOF
 	./configure \
 		--prefix=/usr \
 		--without-x \
-		--disable-rpath
+		--disable-rpath \
+		--with-default-page-size=A4
 	make
 	make DESTDIR=/rootfs install
 EOF
