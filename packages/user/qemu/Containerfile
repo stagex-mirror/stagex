@@ -152,5 +152,24 @@ RUN --network=none <<-EOF
 	install -vDm 644 pc-bios/optionrom/*.img -t /rootfs/usr/share/qemu
 EOF
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-curl . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-ncurses . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/user-alsa-lib . /
+COPY --from=stagex/user-canokey-qemu . /
+COPY --from=stagex/user-dtc . /
+COPY --from=stagex/user-glib . /
+COPY --from=stagex/user-libaio . /
+COPY --from=stagex/user-libcap-ng . /
+COPY --from=stagex/user-libseccomp . /
+COPY --from=stagex/user-libslirp . /
+COPY --from=stagex/user-libusb . /
+COPY --from=stagex/user-lzo . /
+COPY --from=stagex/user-numactl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

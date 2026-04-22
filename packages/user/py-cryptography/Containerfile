@@ -15,5 +15,12 @@ RUN --network=none <<-EOF
     install -Dm0644 -t /rootfs/usr/share/licenses/py-cryptography/ LICENSE LICENSE.APACHE LICENSE.BSD
     find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$|/RECORD$)" | xargs rm -rf
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-python . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

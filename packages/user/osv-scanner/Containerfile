@@ -22,5 +22,9 @@ RUN --network=none <<-EOF
 	install -Dm755 out/osv-scanner -t /rootfs/usr/bin/
 	install -Dm755 out/osv-reporter -t /rootfs/usr/bin/
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

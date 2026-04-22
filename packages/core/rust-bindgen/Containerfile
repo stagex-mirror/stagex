@@ -30,5 +30,10 @@ RUN --network=none <<-EOF
 	cp target/${ARCH}-unknown-linux-musl/release/bindgen /rootfs/usr/bin/bindgen
 EOF
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-musl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

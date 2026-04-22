@@ -305,8 +305,30 @@ RUN --network=none <<-EOF
 	cp -r libgcc-libs/usr/lib/linux /rootfs/usr/lib
 EOF
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+
 FROM stagex/core-filesystem AS package-llvm
 COPY --from=build /rootfs/ /
+
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
 
 FROM stagex/core-filesystem AS package-llvm-libgcc
 COPY --from=build-llvm-libgcc /rootfs/ /
@@ -330,6 +352,17 @@ COPY --from=build-llvm-libgcc /rootfs/ /
 #COPY --from=build /rootfs/usr/lib/libclangApplyReplacements* /usr/lib/
 #COPY --from=build /rootfs/usr/lib/libclangQuery* /usr/lib/
 #COPY --from=build /rootfs/usr/lib/libclangTidy* /usr/lib/
+
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
 
 FROM stagex/core-filesystem AS package-llvm-binutils
 COPY --from=build /rootfs/usr/bin/addr2line /usr/bin/
@@ -366,6 +399,17 @@ COPY --from=build /rootfs/usr/bin/strings /usr/bin/
 COPY --from=build /rootfs/usr/bin/strip /usr/bin/
 COPY --from=build /rootfs/usr/bin/windres /usr/bin/
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+
 FROM stagex/core-filesystem AS package-clang
 COPY --from=build /rootfs/usr/bin/*clang* /usr/bin/
 COPY --from=build /rootfs/usr/bin/*-cc /usr/bin/
@@ -379,16 +423,60 @@ COPY --from=build /rootfs/usr/lib/cmake/clang /usr/lib/cmake/
 COPY --from=build /rootfs/usr/share/clang /usr/share/
 #COPY --from=build /rootfs/usr/share/clang-docs /usr/share/
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+
 FROM stagex/core-filesystem AS package-clang-rt-devel
 COPY --from=build /rootfs/usr/lib/clang/. /usr/lib/clang/
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+
 FROM stagex/core-filesystem AS package-clang-devel-static
 COPY --from=build /rootfs/usr/lib/libclang*.a /usr/lib/
+
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
 
 FROM stagex/core-filesystem AS package-clang-devel
 COPY --from=build /rootfs/usr/include/clang /usr/include/
 COPY --from=build /rootfs/usr/include/clang-c /usr/include/
 COPY --from=build /rootfs/usr/lib/libclang*.so /usr/lib/
+
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
 
 FROM stagex/core-filesystem AS package-clang-analyzer
 COPY --from=build /rootfs/usr/bin/analyze-build /usr/bin/
@@ -402,18 +490,73 @@ COPY --from=build /rootfs/usr/libexec/intercept-* /usr/libexec/
 COPY --from=build /rootfs/usr/share/scan-* /usr/share/
 COPY --from=build /rootfs/usr/share/man/man1/scan-build.1 /usr/share/man/man1/
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+
 FROM stagex/core-filesystem AS package-clang-libs
 COPY --from=build /rootfs/usr/lib/libclang.so.* /usr/lib/
+
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
 
 FROM stagex/core-filesystem AS package-clang-cpp-libs
 COPY --from=build /rootfs/usr/lib/libclang-cpp.so.* /usr/lib/
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+
 FROM stagex/core-filesystem AS package-mlir
 COPY --from=build /rootfs/usr/bin/mlir* /usr/bin/
+
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
 
 FROM stagex/core-filesystem AS package-mlir-libs
 COPY --from=build /rootfs/usr/lib/libMLIR*.so /usr/lib/
 COPY --from=build /rootfs/usr/lib/libmlir*.so /usr/lib/
+
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
 
 FROM stagex/core-filesystem AS package-mlir-devel
 COPY --from=build /rootfs/usr/include/mlir* /usr/include/
@@ -421,22 +564,88 @@ COPY --from=build /rootfs/usr/lib/libMLIR*.so /usr/lib/
 COPY --from=build /rootfs/usr/lib/libmlir*.so /usr/lib/
 #COPY --from=build /rootfs/usr/lib/cmake/mlir /usr/lib/cmake/
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+
 FROM stagex/core-filesystem AS package-mlir-devel-static
 COPY --from=build /rootfs/usr/lib/libMLIR*.a /usr/lib/
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+
 FROM stagex/core-filesystem AS package-libunwind
 COPY --from=build /rootfs/usr/lib/libunwind.so.* /usr/lib/
+
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
 
 FROM stagex/core-filesystem AS package-libunwind-devel
 COPY --from=build /rootfs/usr/lib/libunwind.so /usr/lib/
 COPY --from=build /rootfs/usr/include/*unwind* /usr/include/
 COPY --from=build /rootfs/usr/include/mach-o /usr/include/
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+
 FROM stagex/core-filesystem AS package-libunwind-devel-static
 COPY --from=build /rootfs/usr/lib/libunwind.a /usr/lib/
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+
 FROM stagex/core-filesystem AS package-libcxx
 COPY --from=build /rootfs/usr/lib/libc++.so.* /usr/lib/
+
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
 
 FROM stagex/core-filesystem AS package-libcxx-devel
 COPY --from=build /rootfs/usr/lib/libc++.modules.json /usr/lib/
@@ -445,23 +654,89 @@ COPY --from=build /rootfs/usr/lib/libc++experimental.a /usr/lib/
 COPY --from=build /rootfs/usr/include/c++ /usr/include/
 COPY --from=build /rootfs/usr/share/libc++ /usr/share/
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+
 FROM stagex/core-filesystem AS package-libcxx-devel-static
 COPY --from=build /rootfs/usr/lib/libc++.a /usr/lib/
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+
 FROM stagex/core-filesystem AS package-libcxxabi
 COPY --from=build /rootfs/usr/lib/libc++abi.so.* /usr/lib/
+
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
 
 FROM stagex/core-filesystem AS package-libcxxabi-devel
 COPY --from=build /rootfs/usr/lib/libc++abi.so /usr/lib/
 COPY --from=build /rootfs/usr/include/c++/v1/cxxabi.h /usr/include/c++/v1/
 COPY --from=build /rootfs/usr/include/c++/v1/__cxxabi_config.h /usr/include/c++/v1/
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+
 FROM stagex/core-filesystem AS package-libcxxabi-devel-static
 COPY --from=build /rootfs/usr/lib/libc++abi.a /usr/lib/
+
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
 
 FROM stagex/core-filesystem AS package-llvm-libs
 COPY --from=build /rootfs/usr/lib/libLLVM.so.* /usr/lib/
 COPY --from=build /rootfs/usr/lib/libLLVM-*.so.* /usr/lib/
+
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
 
 FROM stagex/core-filesystem AS package-lld
 COPY --from=build /rootfs/usr/bin/*-ld* /usr/bin/
@@ -470,12 +745,45 @@ COPY --from=build /rootfs/usr/bin/lld* /usr/bin/
 COPY --from=build /rootfs/usr/bin/ld.lld* /usr/bin/
 COPY --from=build /rootfs/usr/bin/ld64.lld* /usr/bin/
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+
 FROM stagex/core-filesystem AS package-lld-devel
 COPY --from=build /rootfs/usr/include/lld /usr/include/
 COPY --from=build /rootfs/usr/lib/cmake/lld /usr/lib/cmake/
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+
 FROM stagex/core-filesystem AS package-llvm-linker-tools
 COPY --from=build /rootfs/usr/lib/libLTO.so.* /usr/lib/
+
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
 
 FROM stagex/core-filesystem AS package-llvm-devel
 COPY --from=build /rootfs/usr/include/ /usr/include/
@@ -483,8 +791,30 @@ COPY --from=build /rootfs/usr/lib/*.so /usr/lib/
 COPY --from=build /rootfs/usr/lib/libRemarks.so.* /usr/lib/
 COPY --from=build /rootfs/usr/lib/cmake /usr/lib/
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+
 FROM stagex/core-filesystem AS package-llvm-devel-static
 COPY --from=build /rootfs/usr/lib/*.a /usr/lib/
+
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
 
 FROM stagex/core-filesystem AS package-llvm-tools
 COPY --from=build /rootfs/usr/bin/FileCheck /usr/bin/
@@ -493,6 +823,17 @@ COPY --from=build /rootfs/usr/bin/not /usr/bin/
 COPY --from=build /rootfs/usr/bin/split-file /usr/bin/
 COPY --from=build /rootfs/usr/bin/yaml-bench /usr/bin/
 COPY --from=build /rootfs/usr/share/opt-viewer /usr/share/
+
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-clang-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
 
 FROM stagex/core-filesystem AS package-llvm-runtime
 COPY --from=build /rootfs/usr/bin/lli /usr/bin/

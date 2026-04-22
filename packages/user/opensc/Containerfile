@@ -27,5 +27,12 @@ RUN --network=none <<-EOF
 		make DESTDIR=/rootfs install
 		install -D -m644 etc/opensc.conf /rootfs/etc/opensc.conf
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-readline . /
+COPY --from=stagex/core-zlib . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

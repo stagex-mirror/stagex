@@ -31,5 +31,9 @@ RUN --network=none <<-EOF
 	DESTDIR=/rootfs cmake --install build-cmake
 	rm -rf /rootfs/usr/lib64
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-cross-x86_64-gnu-gcc . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

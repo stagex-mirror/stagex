@@ -15,5 +15,10 @@ RUN --network=none <<-EOF
   install -Dm644 LICENSE /rootfs/usr/share/licenses/py-bcrypt/LICENSE
 EOF
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-musl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs /

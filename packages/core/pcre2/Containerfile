@@ -37,5 +37,11 @@ RUN --network=none <<-EOF
 	make -j "$(nproc)"
 	make DESTDIR=/rootfs install
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-libedit . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

@@ -20,5 +20,10 @@ RUN --network=none <<-EOF
 	make DESTDIR=/rootfs install
 	mv /rootfs/usr/lib/libverto-libevent.so.* /rootfs/usr/lib/
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/user-libevent . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

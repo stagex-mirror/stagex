@@ -24,8 +24,26 @@ RUN --network=none <<-EOF
 		install -Dm0644 LICENSE.txt -t /rootfs-completions/usr/share/licenses/sequoia-sq/
 EOF
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-gmp . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-sqlite3 . /
+COPY --from=stagex/user-nettle . /
+
 FROM stagex/core-filesystem AS package-sequoia-sq-completions
 COPY --from=build /rootfs-completions/ /
+
+
+FROM scratch AS package-run
+COPY --from=stagex/core-gmp . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-sqlite3 . /
+COPY --from=stagex/user-nettle . /
 
 FROM stagex/core-filesystem AS package-sequoia-sq
 COPY --from=build /rootfs/ /

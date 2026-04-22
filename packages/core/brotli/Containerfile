@@ -31,5 +31,9 @@ RUN --network=none <<-EOF
 	done
 	mv /rootfs/usr/lib64 /rootfs/usr/lib
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

@@ -37,5 +37,9 @@ RUN --network=none <<-EOF
 	make DESTDIR=/rootfs install
 	install -D -m644 -t /rootfs/usr/share/licenses/openssl/ LICENSE.txt 
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

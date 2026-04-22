@@ -1,3 +1,12 @@
+
+FROM scratch AS package-run
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/user-argon2 . /
+COPY --from=stagex/user-libiconv . /
+
 FROM stagex/core-profile AS package-php
 COPY --from=stagex/core-musl /usr/lib/*.so* /usr/lib/
 COPY --from=stagex/user-libiconv /usr/lib/libiconv.so* /usr/lib/
@@ -8,15 +17,42 @@ COPY --from=stagex/core-ca-certificates . /
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-php . /
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/user-argon2 . /
+COPY --from=stagex/user-libiconv . /
+
 FROM stagex/core-filesystem AS package-php-openssl
 COPY --from=stagex/core-php-openssl . /
 COPY --from=stagex/core-musl /usr/lib/*.so* /usr/lib/
 COPY --from=stagex/core-openssl /usr/lib/libssl.so* /usr/lib/
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/user-argon2 . /
+COPY --from=stagex/user-libiconv . /
+
 FROM stagex/core-filesystem AS package-php-zlib
 COPY --from=stagex/core-php-zlib . /
 COPY --from=stagex/core-musl /usr/lib/*.so* /usr/lib/
 COPY --from=stagex/core-zlib /lib/libz.so* /lib/
+
+
+FROM scratch AS package-run
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/user-argon2 . /
+COPY --from=stagex/user-libiconv . /
 
 FROM stagex/core-filesystem AS package-php-zip
 COPY --from=stagex/core-php-zip . /
@@ -27,6 +63,15 @@ COPY --from=stagex/core-xz /usr/lib/liblzma.so* /usr/lib/
 COPY --from=stagex/core-libzstd /usr/lib/libzstd.so* /usr/lib/
 COPY --from=stagex/core-zlib /usr/lib/libz.so* /usr/lib/
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/user-argon2 . /
+COPY --from=stagex/user-libiconv . /
+
 FROM stagex/core-filesystem AS package-php-curl
 COPY --from=stagex/core-php-curl . /
 COPY --from=stagex/core-musl /usr/lib/*.so* /usr/lib/
@@ -36,13 +81,40 @@ COPY --from=stagex/core-openssl /usr/lib/libcrypto.so* /usr/lib/
 COPY --from=stagex/core-libzstd /lib/libzstd.so* /lib/
 COPY --from=stagex/core-zlib /usr/lib/libz.so* /usr/lib/
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/user-argon2 . /
+COPY --from=stagex/user-libiconv . /
+
 FROM stagex/core-filesystem AS package-php-filter
 COPY --from=stagex/core-php-filter . /
 COPY --from=stagex/core-musl /usr/lib/*.so* /usr/lib/
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/user-argon2 . /
+COPY --from=stagex/user-libiconv . /
+
 FROM stagex/core-filesystem AS package-php-phar
 COPY --from=stagex/core-php-phar . /
 COPY --from=stagex/core-musl /usr/lib/*.so* /usr/lib/
+
+
+FROM scratch AS package-run
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/user-argon2 . /
+COPY --from=stagex/user-libiconv . /
 
 FROM stagex/core-filesystem AS package-php-mongodb
 COPY --from=stagex/user-php-mongodb . /

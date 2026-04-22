@@ -37,5 +37,14 @@ RUN --network=none <<-EOF
 	cmake --build build
 	DESTDIR="/rootfs" cmake --install build
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-onetbb . /
+COPY --from=stagex/core-zlib . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

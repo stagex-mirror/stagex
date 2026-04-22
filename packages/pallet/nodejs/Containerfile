@@ -1,3 +1,7 @@
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+
 FROM scratch AS package
 COPY --from=stagex/core-profile . /
 COPY --from=stagex/core-brotli . /

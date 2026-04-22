@@ -11,5 +11,9 @@ RUN --network=none <<-EOF
   install -D -m 0755 cbfs /rootfs/usr/bin/
   install -D -m 0755 uefi /rootfs/usr/bin/
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs// /

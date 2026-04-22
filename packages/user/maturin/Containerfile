@@ -16,5 +16,11 @@ RUN --network=none <<-EOF
 	install -vDm 644 license-mit /rootfs/usr/share/licenses/maturin/LICENSE
 EOF
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-xz . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

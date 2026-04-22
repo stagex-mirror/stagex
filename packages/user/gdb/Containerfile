@@ -37,5 +37,20 @@ RUN --network=none <<-EOF
 	strip /rootfs/usr/bin/gdbserver
 EOF
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-gmp . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-mpfr . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-ncurses . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-readline . /
+COPY --from=stagex/core-xz . /
+COPY --from=stagex/core-zlib . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

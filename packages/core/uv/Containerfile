@@ -37,5 +37,10 @@ RUN --network=none <<-EOF
 	install -Dm644 -t /rootfs/usr/share/licenses/uv/ LICENSE-MIT
 	install -Dm644 -t /rootfs/usr/share/licenses/uv/ LICENSE-APACHE
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-musl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

@@ -20,5 +20,15 @@ RUN <<-EOF
 	cmake --build build --target all
 	DESTDIR="/rootfs" cmake --install build
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-clang-cpp-libs . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-xz . /
+COPY --from=stagex/core-zlib . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

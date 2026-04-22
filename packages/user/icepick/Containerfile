@@ -26,5 +26,14 @@ RUN --network=none <<-EOF
 		-executable \
 		-exec cp -rvfp {} /rootfs/usr/bin \;
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-gmp . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/user-nettle . /
+COPY --from=stagex/user-pcsc-lite . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

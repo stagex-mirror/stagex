@@ -16,5 +16,12 @@ RUN --network=none <<-EOF
     make DESTDIR=/rootfs install
     rm -rf /rootfs/var/run
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-curl . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/user-tpm2-tss . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

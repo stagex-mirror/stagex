@@ -28,6 +28,10 @@ RUN --network=none <<-EOF
 	PREFIX=/rootfs/usr/bin scripts/install.sh
 EOF
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs /
 ENTRYPOINT ["/bin/sh"]

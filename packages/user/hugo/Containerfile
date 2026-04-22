@@ -25,11 +25,23 @@ RUN --network=none <<-EOF
 	unset rootfs
 EOF
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+
 FROM stagex/core-filesystem AS package-hugo
 COPY --from=build /rootfs/ /
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+
 FROM stagex/core-filesystem AS package-hugo-extended
 COPY --from=build /rootfs-extended/ /
+
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
 
 FROM stagex/core-filesystem AS package-hugo-extended-with-deploy
 COPY --from=build /rootfs-extended-with-deploy/ /

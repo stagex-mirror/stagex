@@ -28,5 +28,10 @@ RUN --network=none <<-EOF
 	ln -s ../ssl/certs /rootfs/etc/ssl1.1/
 	ln -s ../ssl/cert.pem /rootfs/etc/ssl1.1/
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-openssl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

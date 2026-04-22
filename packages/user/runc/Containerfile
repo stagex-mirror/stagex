@@ -14,5 +14,10 @@ RUN <<-EOF
 	make EXTRA_LDFLAGS="-w -s -buildid=" COMMIT=${VERSION} -j "$(nproc)"
 	install -Dsm755 runc /rootfs/usr/bin/runc
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/user-libseccomp . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

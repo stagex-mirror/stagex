@@ -19,5 +19,10 @@ RUN --network=none <<-EOF
 	meson compile -C output
 	DESTDIR=/rootfs meson install --no-rebuild -C output
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/user-glib . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

@@ -13,5 +13,10 @@ RUN --network=none <<-EOF
 	make
 	make install DESTDIR=/rootfs
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/user-libmnl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

@@ -20,5 +20,12 @@ RUN --network=none <<-EOF
 	mkdir -p "/rootfs/etc/php/conf.d"
 	echo "extension=mongodb.so" > "/rootfs/etc/php/conf.d/10-mongodb.ini"
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-zlib . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

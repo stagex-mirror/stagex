@@ -65,17 +65,42 @@ RUN --network=none <<-EOF
 
 EOF
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-ncurses . /
+
 FROM stagex/core-filesystem AS package-vim
 COPY --from=build /rootfs/ /
+
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-ncurses . /
 
 FROM stagex/core-filesystem AS package-vim-common
 COPY --from=build /rootfs-vim-common/ /
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-ncurses . /
+
 FROM stagex/core-filesystem AS package-vimdiff
 COPY --from=build /rootfs-vimdiff/ /
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-ncurses . /
+
 FROM stagex/core-filesystem AS package-vim-tutor
 COPY --from=build /rootfs-vim-tutor/ /
+
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-ncurses . /
 
 FROM stagex/core-filesystem AS package-xxd
 COPY --from=build /rootfs-xxd/ /

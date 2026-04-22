@@ -20,5 +20,13 @@ RUN <<-EOF
 	cmake --build build
 	DESTDIR="/rootfs" cmake --install build
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/user-abseil-cpp . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

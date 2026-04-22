@@ -21,5 +21,10 @@ RUN --network=none <<-EOF
         make DESTDIR="/rootfs" install
         install -vDm644 -t /rootfs/usr/share/licenses/libpng LICENSE
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

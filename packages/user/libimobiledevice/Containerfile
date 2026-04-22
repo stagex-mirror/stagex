@@ -17,5 +17,12 @@ RUN --network=none <<-EOF
 	make
 	DESTDIR=/rootfs make install
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/user-libplist . /
+COPY --from=stagex/user-libusbmuxd . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

@@ -28,5 +28,12 @@ RUN --network=none <<-EOF
 	install -D -m644 /icu4c-${VERSION_UNDER}-data-bin-b.zip /rootfs/usr/share/icu/${VERSION}/
 	install -D -m644 /icu4c-${VERSION_UNDER}-data-bin-l.zip /rootfs/usr/share/icu/${VERSION}/
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-musl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs /

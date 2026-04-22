@@ -23,5 +23,10 @@ RUN --network=none <<-EOF
 		LIBDIR=/usr/lib \
 		install
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/user-util-linux . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

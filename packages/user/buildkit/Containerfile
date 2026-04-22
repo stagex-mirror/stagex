@@ -22,5 +22,9 @@ RUN <<-EOF
 	mkdir -p /rootfs
 	install -Dm755 ./out/* -t /rootfs/usr/bin/
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

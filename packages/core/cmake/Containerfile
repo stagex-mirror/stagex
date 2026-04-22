@@ -25,5 +25,13 @@ RUN --network=none <<-EOF
 	ninja
 	DESTDIR=/rootfs bin/cmake -P cmake_install.cmake
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-openssl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

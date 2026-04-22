@@ -17,5 +17,9 @@ RUN --network=none <<-EOF
     install -Dm644 completions.bash /rootfs/usr/share/bash-completion/completions/caddy
 EOF
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

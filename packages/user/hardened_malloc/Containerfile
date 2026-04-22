@@ -12,5 +12,10 @@ RUN --network=none <<-EOF
 	install -vDm644 -t "/rootfs/usr/share/licenses/hardened_malloc" LICENSE
 EOF
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-cross-x86_64-gnu-gcc . /
+COPY --from=stagex/core-musl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

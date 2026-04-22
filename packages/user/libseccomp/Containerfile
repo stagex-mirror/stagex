@@ -16,5 +16,9 @@ RUN --network=none <<-EOF
 	make DESTDIR=/rootfs install
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$|install_files.txt)" | xargs rm -rf
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

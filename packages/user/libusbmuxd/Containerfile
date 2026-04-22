@@ -12,5 +12,11 @@ RUN --network=none <<-EOF
 	make
 	DESTDIR=/rootfs make install
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/user-libimobiledevice-glue . /
+COPY --from=stagex/user-libplist . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

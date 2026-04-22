@@ -14,5 +14,9 @@ RUN --network=none <<-EOF
         make ARCH="$(uname -m)" -j "$(nproc)"
         make DESTDIR=/rootfs install
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

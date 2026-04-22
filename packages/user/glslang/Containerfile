@@ -27,5 +27,11 @@ RUN --network=none <<-EOF
 	DESTDIR=/rootfs cmake --install build-static
 EOF
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-musl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

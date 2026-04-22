@@ -10,5 +10,9 @@ RUN --network=none <<-EOF
 	ninja -C build
 	DESTDIR=/rootfs ninja -C build install
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

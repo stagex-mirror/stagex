@@ -26,5 +26,9 @@ RUN <<-EOF
 		| sed "s|/opt/cni/bin|/usr/libexec/cni|g" \
 		> /rootfs/etc/containerd/config.toml
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

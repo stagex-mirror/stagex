@@ -6,5 +6,9 @@ RUN --network=none <<-EOF
 	make OPTTARGET=none ARGON2_VERSION=${VERSION}
 	make OPTTARGET=none LIBRARY_REL=lib DESTDIR=/rootfs install
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

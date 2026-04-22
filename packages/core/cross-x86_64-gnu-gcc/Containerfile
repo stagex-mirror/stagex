@@ -148,5 +148,10 @@ RUN --network=none <<-EOF
 		ln -s /opt/cross/bin/${bin_name} /rootfs/usr/bin/${bin_name}
 	done
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-musl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

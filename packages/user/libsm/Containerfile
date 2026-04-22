@@ -22,5 +22,11 @@ RUN --network=none <<-EOF
 	make
 	make install DESTDIR=/rootfs
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/user-libice . /
+COPY --from=stagex/user-util-linux . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

@@ -18,8 +18,16 @@ RUN --network=none <<-EOF
 	install -Dm644 -t /rootfs-cli/usr/share/licenses/tree-sitter/ LICENSE
 EOF
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+
 FROM stagex/core-filesystem AS package-tree-sitter
 COPY --from=build /rootfs /
+
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
 
 FROM stagex/core-filesystem AS package-tree-sitter-cli
 COPY --from=build /rootfs-cli /

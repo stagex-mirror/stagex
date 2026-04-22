@@ -10,5 +10,11 @@ RUN --network=none <<-EOF
 	make install_pgbouncer DESTDIR=/rootfs
 	install -vDm644 -t "/rootfs/usr/share/licenses/pgbouncer" COPYRIGHT
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/user-libevent . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

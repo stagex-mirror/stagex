@@ -114,5 +114,15 @@ RUN make -j "$(nproc)" all-target-libgcc
 RUN make DESTDIR=/rootfs install-strip install-target-libgcc
 RUN [ ! -d /rootfs/usr/lib64 ] || ( mv /rootfs/usr/lib64/* /rootfs/usr/lib/ && rm -rf /rootfs/usr/lib64 )
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-gmp . /
+COPY --from=stagex/core-isl . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-mpc . /
+COPY --from=stagex/core-mpfr . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

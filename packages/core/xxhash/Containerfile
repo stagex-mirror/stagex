@@ -18,5 +18,9 @@ RUN --network=none <<EOF
 	make -j "$(nproc)" DISPATCH="$DISPATCH"
 	make DESTDIR=/rootfs PREFIX=/usr install
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

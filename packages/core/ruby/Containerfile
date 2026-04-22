@@ -57,5 +57,12 @@ RUN --network=none <<-EOF
         make DESTDIR=/rootfs install
 	install -Dm644 -t /rootfs/usr/share/licenses/ruby BSDL
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-gmp . /
+COPY --from=stagex/core-libucontext . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

@@ -16,5 +16,9 @@ RUN --network=none <<-EOF
 	make DESTDIR=/rootfs install
 	ln -s pkgconf /rootfs/usr/bin/pkg-config
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

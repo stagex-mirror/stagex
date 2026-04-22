@@ -33,5 +33,13 @@ RUN --network=none <<-EOF
 EOF
 
 # FROM stagex/core-filesystem AS package
+
+FROM scratch AS package-run
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/user-libsodium . /
+
 FROM scratch AS package
 COPY --from=build /rootfs/ /

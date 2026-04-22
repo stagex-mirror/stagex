@@ -24,5 +24,10 @@ RUN <<-EOF
 	make -j "$(nproc)"
 	make DESTDIR=/rootfs install
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-musl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

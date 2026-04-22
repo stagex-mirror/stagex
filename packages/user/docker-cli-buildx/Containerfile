@@ -16,5 +16,9 @@ RUN <<-EOF
 		./cmd/buildx
 	install -Dm755 docker-buildx -t /rootfs/usr/libexec/docker/cli-plugins/
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

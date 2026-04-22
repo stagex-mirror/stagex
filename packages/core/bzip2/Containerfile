@@ -17,5 +17,9 @@ RUN --network=none <<-EOF
 	make -j "$(nproc)" all
 	make PREFIX="/rootfs/usr" install
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

@@ -11,5 +11,11 @@ RUN --network=none <<-EOF
 	make install PREFIX="/rootfs" INSTALL_BIN="/rootfs/usr/bin"
 	install -vDm644 -t /rootfs/usr/share/licenses/redis LICENSE.txt
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-openssl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

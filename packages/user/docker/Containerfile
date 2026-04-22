@@ -83,5 +83,9 @@ RUN <<-EOF
 	# symlink externally provided tini-static binary
 	ln -sf /sbin/tini-static /rootfs/usr/bin/docker-init
 EOF
+
+FROM scratch AS package-run
+COPY --from=stagex/core-musl . /
+
 FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/ /

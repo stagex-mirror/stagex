@@ -45,5 +45,9 @@ RUN --network=none <<-EOF
   cp ../LICENSE /rootfs/usr/share/licenses/mimalloc
 EOF
 
+
+FROM scratch AS package-run
+COPY --from=stagex/core-cross-x86_64-gnu-gcc . /
+
 FROM stagex/core-filesystem AS package-mimalloc
 COPY --from=build /rootfs /
