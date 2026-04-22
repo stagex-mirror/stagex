@@ -10,7 +10,7 @@ RUN --network=none <<-EOF
 		--without-x \
 		--disable-rpath \
 		--with-default-page-size=A4
-	make
+	make PAGE=A4
 	make DESTDIR=/rootfs install
 EOF
 FROM stagex/core-filesystem AS package
