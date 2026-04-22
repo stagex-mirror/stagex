@@ -16,7 +16,7 @@ RUN --network=none <<-EOF
 	install -Dm644 -t /rootfs/usr/share/licenses/tmux COPYING
 EOF
 
-FROM build AS package-run
+FROM scratch AS package-run
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-ncurses . /
 COPY --from=stagex/user-libevent . /

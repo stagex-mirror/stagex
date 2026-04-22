@@ -15,7 +15,7 @@ RUN --network=none <<-EOF
 	cp bin/ssh-tpm-agent /rootfs/usr/bin/
 EOF
 
-FROM build AS package-run
+FROM scratch AS package-run
 COPY --from=stagex/core-musl . /
 
 FROM stagex/core-filesystem AS package

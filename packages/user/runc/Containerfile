@@ -15,7 +15,7 @@ RUN <<-EOF
 	install -Dsm755 runc /rootfs/usr/bin/runc
 EOF
 
-FROM build AS package-run
+FROM scratch AS package-run
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/user-libseccomp . /
 

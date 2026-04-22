@@ -27,7 +27,7 @@ RUN <<-EOF
 		> /rootfs/etc/containerd/config.toml
 EOF
 
-FROM build AS package-run
+FROM scratch AS package-run
 COPY --from=stagex/core-musl . /
 
 FROM stagex/core-filesystem AS package

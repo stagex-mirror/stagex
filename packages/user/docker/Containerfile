@@ -84,7 +84,7 @@ RUN <<-EOF
 	ln -sf /sbin/tini-static /rootfs/usr/bin/docker-init
 EOF
 
-FROM build AS package-run
+FROM scratch AS package-run
 COPY --from=stagex/core-musl . /
 
 FROM stagex/core-filesystem AS package

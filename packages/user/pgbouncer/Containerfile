@@ -11,7 +11,7 @@ RUN --network=none <<-EOF
 	install -vDm644 -t "/rootfs/usr/share/licenses/pgbouncer" COPYRIGHT
 EOF
 
-FROM build AS package-run
+FROM scratch AS package-run
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/user-libevent . /

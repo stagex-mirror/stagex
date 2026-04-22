@@ -23,7 +23,7 @@ RUN --network=none <<-EOF
        install -Dm644 -t /rootfs/usr/share/licenses/arti/ LICENSE-MIT
 EOF
 
-FROM build AS package-run
+FROM scratch AS package-run
 COPY --from=stagex/core-libunwind . /
 COPY --from=stagex/core-musl . /
 

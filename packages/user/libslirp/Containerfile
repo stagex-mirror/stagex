@@ -15,7 +15,7 @@ RUN --network=none <<-EOF
 	DESTDIR=/rootfs meson install --no-rebuild -C output
 EOF
 
-FROM build AS package-run
+FROM scratch AS package-run
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/user-glib . /
 

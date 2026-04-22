@@ -351,14 +351,6 @@ def generate_package_run_blocks(package_deps: Dict[str, Set[str]]):
         lines = content.splitlines()
         new_lines = []
         
-        # Find the build stage name (usually "build" but could be different)
-        build_stage = "build"
-        for line in lines:
-            match = re.match(r'^FROM\s+\S+\s+AS\s+(build)', line)
-            if match:
-                build_stage = match.group(1)
-                break
-        
         for line in lines:
             # Check if this is a "FROM ... AS package-*" line
             match = re.match(r'^(FROM\s+(\S+)\s+AS\s+(package(?:-\S+)?))', line)
@@ -366,10 +358,10 @@ def generate_package_run_blocks(package_deps: Dict[str, Set[str]]):
                 from_stage = match.group(2)
                 package_stage = match.group(3)
                 
-                # Add package-run block that FROM the build stage
+                # Add package-run block that FROMs scratch for minimal runtime image
                 if deps:
                     new_lines.append(f"")
-                    new_lines.append(f"FROM {build_stage} AS {package_stage}-run")
+                    new_lines.append(f"FROM scratch AS {package_stage}-run")
                     
                     for dep in sorted(deps):
                         new_lines.append(f"COPY --from=stagex/{dep} . /")

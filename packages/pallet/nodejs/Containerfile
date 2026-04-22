@@ -1,5 +1,5 @@
 
-FROM build AS package-run
+FROM scratch AS package-run
 COPY --from=stagex/core-musl . /
 
 FROM scratch AS package

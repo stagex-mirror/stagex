@@ -18,7 +18,7 @@ RUN --network=none <<-EOF
 	DESTDIR=/rootfs make install
 EOF
 
-FROM build AS package-run
+FROM scratch AS package-run
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/user-libplist . /

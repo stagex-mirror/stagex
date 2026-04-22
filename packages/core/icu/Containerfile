@@ -29,7 +29,7 @@ RUN --network=none <<-EOF
 	install -D -m644 /icu4c-${VERSION_UNDER}-data-bin-l.zip /rootfs/usr/share/icu/${VERSION}/
 EOF
 
-FROM build AS package-run
+FROM scratch AS package-run
 COPY --from=stagex/core-libcxx . /
 COPY --from=stagex/core-libcxxabi . /
 COPY --from=stagex/core-libunwind . /

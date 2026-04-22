@@ -19,14 +19,14 @@ RUN --network=none <<-EOF
 EOF
 
 
-FROM build AS package-tree-sitter-run
+FROM scratch AS package-tree-sitter-run
 COPY --from=stagex/core-musl . /
 
 FROM stagex/core-filesystem AS package-tree-sitter
 COPY --from=build /rootfs /
 
 
-FROM build AS package-tree-sitter-cli-run
+FROM scratch AS package-tree-sitter-cli-run
 COPY --from=stagex/core-musl . /
 
 FROM stagex/core-filesystem AS package-tree-sitter-cli

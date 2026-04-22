@@ -43,7 +43,7 @@ RUN --network=none <<-EOF
 	ln -s ${TRIPLE}/libc.so /rootfs/usr/lib/ld-gnu-${ARCH}.so.1
 EOF
 
-FROM build AS package-run
+FROM scratch AS package-run
 COPY --from=stagex/core-cross-x86_64-gnu-gcc . /
 
 FROM stagex/core-filesystem AS package

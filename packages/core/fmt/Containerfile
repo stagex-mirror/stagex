@@ -30,7 +30,7 @@ RUN --network=none <<-EOF
 	install -Dm644 -t /rootfs/usr/share/licenses/fmt/ LICENSE
 EOF
 
-FROM build AS package-run
+FROM scratch AS package-run
 COPY --from=stagex/core-libcxx . /
 COPY --from=stagex/core-libcxxabi . /
 COPY --from=stagex/core-libunwind . /

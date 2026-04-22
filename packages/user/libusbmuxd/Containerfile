@@ -13,7 +13,7 @@ RUN --network=none <<-EOF
 	DESTDIR=/rootfs make install
 EOF
 
-FROM build AS package-run
+FROM scratch AS package-run
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/user-libimobiledevice-glue . /
 COPY --from=stagex/user-libplist . /

@@ -52,7 +52,7 @@ RUN --network=none <<-EOF
 		install
 EOF
 
-FROM build AS package-run
+FROM scratch AS package-run
 COPY --from=stagex/core-musl . /
 
 FROM stagex/core-filesystem AS package

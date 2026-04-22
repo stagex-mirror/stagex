@@ -15,7 +15,7 @@ RUN --network=none <<-EOF
 	DESTDIR="/rootfs" cmake --install build
 EOF
 
-FROM build AS package-run
+FROM scratch AS package-run
 COPY --from=stagex/core-icu . /
 COPY --from=stagex/core-libcxx . /
 COPY --from=stagex/core-libcxxabi . /

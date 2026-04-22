@@ -17,7 +17,7 @@ RUN --network=none <<-EOF
 	install -Dm755 build/tini-static /rootfs/usr/sbin/tini-static
 EOF
 
-FROM build AS package-run
+FROM scratch AS package-run
 COPY --from=stagex/core-musl . /
 
 FROM stagex/core-filesystem AS package

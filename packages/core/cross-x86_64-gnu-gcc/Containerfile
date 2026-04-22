@@ -149,7 +149,7 @@ RUN --network=none <<-EOF
 	done
 EOF
 
-FROM build AS package-run
+FROM scratch AS package-run
 COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-musl . /
 

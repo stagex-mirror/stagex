@@ -28,7 +28,7 @@ RUN --network=none <<-EOF
 		install -D -m644 etc/opensc.conf /rootfs/etc/opensc.conf
 EOF
 
-FROM build AS package-run
+FROM scratch AS package-run
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-readline . /

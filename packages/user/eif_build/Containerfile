@@ -14,7 +14,7 @@ RUN --network=none <<-EOF
 	install -D -t /rootfs/usr/bin /eif_build/target/${ARCH}-unknown-linux-musl/release/eif_build
 EOF
 
-FROM build AS package-run
+FROM scratch AS package-run
 COPY --from=stagex/core-libunwind . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-openssl . /

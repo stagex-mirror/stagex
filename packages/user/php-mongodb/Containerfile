@@ -21,7 +21,7 @@ RUN --network=none <<-EOF
 	echo "extension=mongodb.so" > "/rootfs/etc/php/conf.d/10-mongodb.ini"
 EOF
 
-FROM build AS package-run
+FROM scratch AS package-run
 COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-openssl . /

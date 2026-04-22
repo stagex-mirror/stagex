@@ -10,7 +10,7 @@ RUN --network=none <<-EOF
 	make lib=lib prefix=/usr GOLANG=no DESTDIR=/rootfs install
 EOF
 
-FROM build AS package-run
+FROM scratch AS package-run
 COPY --from=stagex/core-musl . /
 
 FROM stagex/core-filesystem AS package

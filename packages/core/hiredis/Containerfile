@@ -17,7 +17,7 @@ RUN --network=none <<-EOF
 	make USE_SSL=1 PREFIX=/rootfs/usr install
 EOF
 
-FROM build AS package-run
+FROM scratch AS package-run
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-openssl . /
 

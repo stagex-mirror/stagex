@@ -17,7 +17,7 @@ RUN --network=none <<-EOF
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$|install_files.txt)" | xargs rm -rf
 EOF
 
-FROM build AS package-run
+FROM scratch AS package-run
 COPY --from=stagex/core-musl . /
 
 FROM stagex/core-filesystem AS package
