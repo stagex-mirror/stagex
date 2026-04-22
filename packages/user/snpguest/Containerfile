@@ -19,7 +19,7 @@ RUN --network=none <<-EOF
        install -Dm644 -t /rootfs/usr/share/licenses/snpguest/ LICENSE
 EOF
 
-FROM scratch AS package-run
+FROM build AS package-run
 COPY --from=stagex/core-libunwind . /
 COPY --from=stagex/core-musl . /
 

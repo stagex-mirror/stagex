@@ -25,7 +25,7 @@ RUN --network=none <<-EOF
 	make DESTDIR=/rootfs install
 EOF
 
-FROM scratch AS package-run
+FROM build AS package-run
 COPY --from=stagex/core-libcxx . /
 COPY --from=stagex/core-libcxxabi . /
 COPY --from=stagex/core-libunwind . /

@@ -32,7 +32,7 @@ RUN --network=none <<-EOF
 	rm -rf /rootfs/usr/lib64
 EOF
 
-FROM scratch AS package-run
+FROM build AS package-run
 COPY --from=stagex/core-cross-x86_64-gnu-gcc . /
 
 FROM stagex/core-filesystem AS package

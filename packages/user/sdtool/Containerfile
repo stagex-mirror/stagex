@@ -8,7 +8,7 @@ RUN --network=none <<-EOF
 	install -D -m644 sdtool /rootfs/usr/bin/sdtool
 EOF
 
-FROM scratch AS package-run
+FROM build AS package-run
 COPY --from=stagex/core-musl . /
 
 FROM stagex/core-filesystem AS package

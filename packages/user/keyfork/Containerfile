@@ -24,7 +24,7 @@ RUN --network=none <<-EOF
 	cp target/${ARCH}-unknown-linux-musl/release/keyfork /rootfs/usr/bin/keyfork
 EOF
 
-FROM scratch AS package-run
+FROM build AS package-run
 COPY --from=stagex/core-gmp . /
 COPY --from=stagex/core-libunwind . /
 COPY --from=stagex/core-musl . /

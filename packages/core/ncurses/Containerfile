@@ -48,7 +48,7 @@ RUN --network=none <<-EOF
 	echo 'INPUT(-lncursesw)' > usr/lib/libcursesw.so
 EOF
 
-FROM scratch AS package-run
+FROM build AS package-run
 COPY --from=stagex/core-libcxx . /
 COPY --from=stagex/core-libcxxabi . /
 COPY --from=stagex/core-libunwind . /

@@ -24,7 +24,7 @@ RUN --network=none <<-EOF
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
 
-FROM scratch AS package-run
+FROM build AS package-run
 COPY --from=stagex/core-libffi . /
 COPY --from=stagex/core-musl . /
 

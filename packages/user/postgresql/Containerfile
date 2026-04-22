@@ -28,7 +28,7 @@ RUN --network=none <<-EOF
 	install -Dm 644 COPYRIGHT /rootfs/usr/share/licenses/postgresql
 EOF
 
-FROM scratch AS package-run
+FROM build AS package-run
 COPY --from=stagex/core-icu . /
 COPY --from=stagex/core-libxml2 . /
 COPY --from=stagex/core-musl . /

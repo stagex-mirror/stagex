@@ -21,7 +21,7 @@ RUN --network=none <<-EOF
 	make -j1 DESTDIR="/rootfs" install
 EOF
 
-FROM scratch AS package-run
+FROM build AS package-run
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/user-unixodbc . /

@@ -12,7 +12,7 @@ RUN --network=none <<-EOF
 	install -D -m644 lib/libnetlink.a /rootfs/usr/lib/libnetlink.a
 EOF
 
-FROM scratch AS package-run
+FROM build AS package-run
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/user-elfutils . /
 

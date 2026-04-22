@@ -17,7 +17,7 @@ RUN --network=none <<-EOF
 EOF
 
 
-FROM scratch AS package-run
+FROM build AS package-run
 COPY --from=stagex/core-libunwind . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-xz . /

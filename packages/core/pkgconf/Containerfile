@@ -17,7 +17,7 @@ RUN --network=none <<-EOF
 	ln -s pkgconf /rootfs/usr/bin/pkg-config
 EOF
 
-FROM scratch AS package-run
+FROM build AS package-run
 COPY --from=stagex/core-musl . /
 
 FROM stagex/core-filesystem AS package

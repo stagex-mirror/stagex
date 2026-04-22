@@ -10,7 +10,7 @@ RUN --network=none <<-EOF
   make DESTDIR=/rootfs PREFIX=/usr install
 EOF
 
-FROM scratch AS package-run
+FROM build AS package-run
 COPY --from=stagex/core-musl . /
 
 FROM stagex/core-filesystem AS package

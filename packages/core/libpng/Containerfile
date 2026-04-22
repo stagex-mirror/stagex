@@ -22,7 +22,7 @@ RUN --network=none <<-EOF
         install -vDm644 -t /rootfs/usr/share/licenses/libpng LICENSE
 EOF
 
-FROM scratch AS package-run
+FROM build AS package-run
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-zlib . /
 

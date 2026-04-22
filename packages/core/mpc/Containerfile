@@ -25,7 +25,7 @@ RUN --network=none <<-EOF
 EOF
 
 
-FROM scratch AS package-run
+FROM build AS package-run
 COPY --from=stagex/core-gmp . /
 COPY --from=stagex/core-mpfr . /
 COPY --from=stagex/core-musl . /

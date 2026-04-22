@@ -347,22 +347,34 @@ def generate_package_run_blocks(package_deps: Dict[str, Set[str]]):
             print(f"  ⏭ {cf_path.relative_to(STAGEX_ROOT)} (no deps)")
             continue
         
-        # Generate package-run block content
-        block_lines = ["", "FROM scratch AS package-run"]
-        
-        for dep in sorted(deps):
-            block_lines.append(f"COPY --from=stagex/{dep} . /")
-        
-        block = "\n".join(block_lines) + "\n"
-        
         # Insert package-run block BEFORE each "FROM ... AS package-" line
         lines = content.splitlines()
         new_lines = []
         
+        # Find the build stage name (usually "build" but could be different)
+        build_stage = "build"
+        for line in lines:
+            match = re.match(r'^FROM\s+\S+\s+AS\s+(build)', line)
+            if match:
+                build_stage = match.group(1)
+                break
+        
         for line in lines:
             # Check if this is a "FROM ... AS package-*" line
-            if re.match(r'^FROM\s+\S+\s+AS\s+package', line):
-                new_lines.append(block)
+            match = re.match(r'^(FROM\s+(\S+)\s+AS\s+(package(?:-\S+)?))', line)
+            if match:
+                from_stage = match.group(2)
+                package_stage = match.group(3)
+                
+                # Add package-run block that FROM the build stage
+                if deps:
+                    new_lines.append(f"")
+                    new_lines.append(f"FROM {build_stage} AS {package_stage}-run")
+                    
+                    for dep in sorted(deps):
+                        new_lines.append(f"COPY --from=stagex/{dep} . /")
+                    
+                    new_lines.append(f"")
             
             new_lines.append(line)
         

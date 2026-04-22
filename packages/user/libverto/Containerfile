@@ -21,7 +21,7 @@ RUN --network=none <<-EOF
 	mv /rootfs/usr/lib/libverto-libevent.so.* /rootfs/usr/lib/
 EOF
 
-FROM scratch AS package-run
+FROM build AS package-run
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/user-libevent . /
 

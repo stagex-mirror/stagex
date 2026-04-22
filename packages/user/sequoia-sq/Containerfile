@@ -25,7 +25,7 @@ RUN --network=none <<-EOF
 EOF
 
 
-FROM scratch AS package-run
+FROM build AS package-sequoia-sq-completions-run
 COPY --from=stagex/core-gmp . /
 COPY --from=stagex/core-libunwind . /
 COPY --from=stagex/core-musl . /
@@ -37,7 +37,7 @@ FROM stagex/core-filesystem AS package-sequoia-sq-completions
 COPY --from=build /rootfs-completions/ /
 
 
-FROM scratch AS package-run
+FROM build AS package-sequoia-sq-run
 COPY --from=stagex/core-gmp . /
 COPY --from=stagex/core-libunwind . /
 COPY --from=stagex/core-musl . /

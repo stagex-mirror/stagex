@@ -15,7 +15,7 @@ RUN <<-EOF
 EOF
 
 
-FROM scratch AS package-run
+FROM build AS package-run
 COPY --from=stagex/core-musl . /
 
 FROM stagex/core-filesystem AS package

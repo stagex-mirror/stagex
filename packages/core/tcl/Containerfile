@@ -23,7 +23,7 @@ RUN --network=none <<-EOF
 	make DESTDIR=/rootfs install install-private-headers
 EOF
 
-FROM scratch AS package-run
+FROM build AS package-run
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-zlib . /
 

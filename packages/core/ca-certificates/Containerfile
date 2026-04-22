@@ -29,7 +29,7 @@ RUN --network=none <<-EOF
 	ln -s ../ssl/cert.pem /rootfs/etc/ssl1.1/
 EOF
 
-FROM scratch AS package-run
+FROM build AS package-run
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-openssl . /
 

@@ -44,7 +44,7 @@ RUN --network=none <<-EOF
 	make DESTDIR=/rootfs install-strip
 EOF
 
-FROM scratch AS package-run
+FROM build AS package-run
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-xz . /
 

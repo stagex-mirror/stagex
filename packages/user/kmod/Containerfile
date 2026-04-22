@@ -17,7 +17,7 @@ RUN --network=none <<-EOF
 EOF
 
 
-FROM scratch AS package-run
+FROM build AS package-run
 COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-openssl . /
