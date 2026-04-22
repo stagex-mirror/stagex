@@ -2,7 +2,6 @@ FROM stagex/pallet-cgo AS base
 COPY --from=stagex/user-libseccomp . /
 ARG VERSION
 ENV CGO_ENABLED=1
-ENV GO11MODULE=on
 
 FROM base AS build-dockerd
 ADD fetch/docker-${VERSION}.tar.gz .
