@@ -4,12 +4,10 @@ ADD fetch/groff-${VERSION}.tar.gz .
 WORKDIR /groff-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
-	PAGE=A4
 	./configure \
 		--prefix=/usr \
 		--without-x \
-		--disable-rpath \
-		--with-default-page-size=A4
+		--disable-rpath
 	make PAGE=A4
 	make DESTDIR=/rootfs install
 EOF
