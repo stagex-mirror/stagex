@@ -31,7 +31,7 @@ RUN --network=none <<-EOF
 EOF
 
 
-FROM scratch AS package-run
+FROM stagex/core-filesystem AS package-run
 COPY --from=stagex/core-libunwind . /
 COPY --from=stagex/core-musl . /
 

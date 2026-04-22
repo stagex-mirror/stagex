@@ -1,5 +1,5 @@
 
-FROM scratch AS package-php-run
+FROM stagex/core-profile AS package-php-run
 COPY --from=stagex/core-libxml2 . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-openssl . /
@@ -18,7 +18,7 @@ COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-php . /
 
 
-FROM scratch AS package-php-openssl-run
+FROM stagex/core-filesystem AS package-php-openssl-run
 COPY --from=stagex/core-libxml2 . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-openssl . /
@@ -32,7 +32,7 @@ COPY --from=stagex/core-musl /usr/lib/*.so* /usr/lib/
 COPY --from=stagex/core-openssl /usr/lib/libssl.so* /usr/lib/
 
 
-FROM scratch AS package-php-zlib-run
+FROM stagex/core-filesystem AS package-php-zlib-run
 COPY --from=stagex/core-libxml2 . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-openssl . /
@@ -46,7 +46,7 @@ COPY --from=stagex/core-musl /usr/lib/*.so* /usr/lib/
 COPY --from=stagex/core-zlib /lib/libz.so* /lib/
 
 
-FROM scratch AS package-php-zip-run
+FROM stagex/core-filesystem AS package-php-zip-run
 COPY --from=stagex/core-libxml2 . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-openssl . /
@@ -64,7 +64,7 @@ COPY --from=stagex/core-libzstd /usr/lib/libzstd.so* /usr/lib/
 COPY --from=stagex/core-zlib /usr/lib/libz.so* /usr/lib/
 
 
-FROM scratch AS package-php-curl-run
+FROM stagex/core-filesystem AS package-php-curl-run
 COPY --from=stagex/core-libxml2 . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-openssl . /
@@ -82,7 +82,7 @@ COPY --from=stagex/core-libzstd /lib/libzstd.so* /lib/
 COPY --from=stagex/core-zlib /usr/lib/libz.so* /usr/lib/
 
 
-FROM scratch AS package-php-filter-run
+FROM stagex/core-filesystem AS package-php-filter-run
 COPY --from=stagex/core-libxml2 . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-openssl . /
@@ -95,7 +95,7 @@ COPY --from=stagex/core-php-filter . /
 COPY --from=stagex/core-musl /usr/lib/*.so* /usr/lib/
 
 
-FROM scratch AS package-php-phar-run
+FROM stagex/core-filesystem AS package-php-phar-run
 COPY --from=stagex/core-libxml2 . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-openssl . /
@@ -108,7 +108,7 @@ COPY --from=stagex/core-php-phar . /
 COPY --from=stagex/core-musl /usr/lib/*.so* /usr/lib/
 
 
-FROM scratch AS package-php-mongodb-run
+FROM stagex/core-filesystem AS package-php-mongodb-run
 COPY --from=stagex/core-libxml2 . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-openssl . /

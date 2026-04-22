@@ -31,7 +31,7 @@ RUN --network=none <<-EOF
 	ln -s /usr/bin/python3 /rootfs/usr/bin/python
 EOF
 
-FROM scratch AS package-run
+FROM stagex/core-filesystem AS package-run
 COPY --from=stagex/core-musl . /
 
 FROM stagex/core-filesystem AS package

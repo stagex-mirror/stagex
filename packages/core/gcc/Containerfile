@@ -115,7 +115,7 @@ RUN make DESTDIR=/rootfs install-strip install-target-libgcc
 RUN [ ! -d /rootfs/usr/lib64 ] || ( mv /rootfs/usr/lib64/* /rootfs/usr/lib/ && rm -rf /rootfs/usr/lib64 )
 
 
-FROM scratch AS package-run
+FROM stagex/core-filesystem AS package-run
 COPY --from=stagex/core-gmp . /
 COPY --from=stagex/core-isl . /
 COPY --from=stagex/core-libzstd . /

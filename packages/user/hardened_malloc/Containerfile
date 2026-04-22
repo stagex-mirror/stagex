@@ -13,7 +13,7 @@ RUN --network=none <<-EOF
 EOF
 
 
-FROM scratch AS package-run
+FROM stagex/core-filesystem AS package-run
 COPY --from=stagex/core-cross-x86_64-gnu-gcc . /
 COPY --from=stagex/core-musl . /
 

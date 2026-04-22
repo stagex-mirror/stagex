@@ -16,7 +16,7 @@ RUN --network=none <<-EOF
     find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$|/RECORD$)" | xargs rm -rf
 EOF
 
-FROM scratch AS package-run
+FROM stagex/core-filesystem AS package-run
 COPY --from=stagex/core-libunwind . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-openssl . /

@@ -22,7 +22,7 @@ RUN --network=none <<-EOF
 	make DESTDIR="/rootfs" install
 EOF
 
-FROM scratch AS package-run
+FROM stagex/core-filesystem AS package-run
 COPY --from=stagex/core-musl . /
 
 FROM stagex/core-filesystem AS package

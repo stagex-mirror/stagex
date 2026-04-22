@@ -30,7 +30,7 @@ RUN --network=none <<-EOF
 	DESTDIR=/rootfs meson install --no-rebuild -C output
 EOF
 
-FROM scratch AS package-run
+FROM stagex/core-filesystem AS package-run
 COPY --from=stagex/core-libffi . /
 COPY --from=stagex/core-musl . /
 

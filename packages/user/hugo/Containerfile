@@ -26,21 +26,21 @@ RUN --network=none <<-EOF
 EOF
 
 
-FROM scratch AS package-hugo-run
+FROM stagex/core-filesystem AS package-hugo-run
 COPY --from=stagex/core-musl . /
 
 FROM stagex/core-filesystem AS package-hugo
 COPY --from=build /rootfs/ /
 
 
-FROM scratch AS package-hugo-extended-run
+FROM stagex/core-filesystem AS package-hugo-extended-run
 COPY --from=stagex/core-musl . /
 
 FROM stagex/core-filesystem AS package-hugo-extended
 COPY --from=build /rootfs-extended/ /
 
 
-FROM scratch AS package-hugo-extended-with-deploy-run
+FROM stagex/core-filesystem AS package-hugo-extended-with-deploy-run
 COPY --from=stagex/core-musl . /
 
 FROM stagex/core-filesystem AS package-hugo-extended-with-deploy

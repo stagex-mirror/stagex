@@ -38,7 +38,7 @@ RUN --network=none <<-EOF
 	install -D -m644 -t /rootfs/usr/share/licenses/openssl/ LICENSE.txt 
 EOF
 
-FROM scratch AS package-run
+FROM stagex/core-filesystem AS package-run
 COPY --from=stagex/core-musl . /
 
 FROM stagex/core-filesystem AS package

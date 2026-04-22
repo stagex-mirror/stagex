@@ -34,7 +34,7 @@ RUN --network=none <<-EOF
 	install -vDm644 -t /rootfs/usr/share/licenses/mongo-c COPYING
 EOF
 
-FROM scratch AS package-run
+FROM stagex/core-filesystem AS package-run
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-openssl . /
 

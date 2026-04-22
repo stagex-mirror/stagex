@@ -16,7 +16,7 @@ RUN --network=none <<-EOF
   DESTDIR=/rootfs make -f unix/Makefile prefix=/rootfs/usr MANDIR=rootfs/usr/share/man/man1 install
 EOF
 
-FROM scratch AS package-run
+FROM stagex/core-filesystem AS package-run
 COPY --from=stagex/core-musl . /
 
 FROM stagex/core-filesystem AS package

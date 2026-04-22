@@ -23,7 +23,7 @@ RUN <<-EOF
 	install -Dm755 ./out/* -t /rootfs/usr/bin/
 EOF
 
-FROM scratch AS package-run
+FROM stagex/core-filesystem AS package-run
 COPY --from=stagex/core-musl . /
 
 FROM stagex/core-filesystem AS package

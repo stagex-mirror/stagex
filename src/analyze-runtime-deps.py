@@ -358,10 +358,10 @@ def generate_package_run_blocks(package_deps: Dict[str, Set[str]]):
                 from_stage = match.group(2)
                 package_stage = match.group(3)
                 
-                # Add package-run block that FROMs scratch for minimal runtime image
+                # Add package-run block that FROMs the package stage for full runtime image
                 if deps:
                     new_lines.append(f"")
-                    new_lines.append(f"FROM scratch AS {package_stage}-run")
+                    new_lines.append(f"FROM {from_stage} AS {package_stage}-run")
                     
                     for dep in sorted(deps):
                         new_lines.append(f"COPY --from=stagex/{dep} . /")

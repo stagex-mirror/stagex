@@ -15,7 +15,7 @@ RUN --network=none <<-EOF
 	install -Dm644 -t /rootfs/usr/share/licenses/patch COPYING
 EOF
 
-FROM scratch AS package-run
+FROM stagex/core-filesystem AS package-run
 COPY --from=stagex/core-musl . /
 
 FROM stagex/core-filesystem AS package

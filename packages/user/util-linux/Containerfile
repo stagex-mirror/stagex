@@ -78,7 +78,7 @@ RUN --network=none <<-EOF
 EOF
 
 
-FROM scratch AS package-run
+FROM stagex/core-filesystem AS package-run
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-ncurses . /
 COPY --from=stagex/user-libcap-ng . /

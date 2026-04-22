@@ -365,7 +365,7 @@ RUN --network=none <<-EOF
 EOF
 
 
-FROM scratch AS package-rust-run
+FROM stagex/core-filesystem AS package-rust-run
 COPY --from=stagex/core-libcxx . /
 COPY --from=stagex/core-libcxxabi . /
 COPY --from=stagex/core-libunwind . /

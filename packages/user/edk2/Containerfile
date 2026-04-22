@@ -69,7 +69,7 @@ RUN --network=none <<-EOF
   install BaseTools/Scripts/GccBase.lds /rootfs/usr/share/edk2/Scripts
 EOF
 
-FROM scratch AS package-run
+FROM stagex/core-filesystem AS package-run
 COPY --from=stagex/core-libcxx . /
 COPY --from=stagex/core-libcxxabi . /
 COPY --from=stagex/core-libunwind . /

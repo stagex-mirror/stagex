@@ -17,7 +17,7 @@ RUN --network=none <<-EOF
     rm -rf /rootfs/var/run
 EOF
 
-FROM scratch AS package-run
+FROM stagex/core-filesystem AS package-run
 COPY --from=stagex/core-curl . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-openssl . /

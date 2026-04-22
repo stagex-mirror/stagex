@@ -29,7 +29,7 @@ RUN --network=none <<-EOF
 EOF
 RUN --network=none make DESTDIR=/rootfs install
 
-FROM scratch AS package-run
+FROM stagex/core-filesystem AS package-run
 COPY --from=stagex/core-musl . /
 
 FROM stagex/core-filesystem AS package

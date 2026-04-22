@@ -31,7 +31,7 @@ RUN --network=none <<-EOF
         install -vDm644 -t /rootfs/usr/share/licenses/libzip LICENSE
 EOF
 
-FROM scratch AS package-run
+FROM stagex/core-filesystem AS package-run
 COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-openssl . /
