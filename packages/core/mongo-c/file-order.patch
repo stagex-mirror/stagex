@@ -6,6 +6,8 @@ index ef2d993bb5..f2dba1be51 100644
  
  set(script_self "${install_prefix}/${UNINSTALL_SCRIPT_SELF}")
  set(dirs_to_remove)
++list(APPEND CMAKE_INSTALL_MANIFEST_FILES "${script_self}")
++list(REMOVE_DUPLICATES CMAKE_INSTALL_MANIFEST_FILES)
 +list(SORT CMAKE_INSTALL_MANIFEST_FILES)
  foreach(installed IN LISTS CMAKE_INSTALL_MANIFEST_FILES script_self)
      # Get the relative path from the prefix (the uninstaller will fix it up later)

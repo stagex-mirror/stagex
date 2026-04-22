@@ -12,6 +12,7 @@ COPY --from=stagex/core-llvm . /
 
 ADD fetch/mongo-c-driver-${VERSION}.tar.gz .
 WORKDIR /mongo-c-driver-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
 COPY *.patch .
 RUN --network=none <<-EOF
 	set -ex
