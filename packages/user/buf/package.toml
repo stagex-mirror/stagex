@@ -1,12 +1,12 @@
 [package]
 name = "buf"
-version = "1.30.1"
+version = "1.68.4"
 description = "CLI tool for working with Protocol Buffers"
 license = "Apache-2.0"
 website = "https://buf.build"
 
 [sources.buf]
-hash = "56da0c31b11bd15b99049af8b364c7bf4e11106152ab27d5ccb98d28123ab785"
+hash = "85d4c64ae5a444b2c9022790d8bb2675c5ae653b547f9e75dc1a404480bd669c"
 format = "tar.gz"
 file = "buf-{version}.{format}"
 mirrors = [ "https://github.com/bufbuild/buf/archive/refs/tags/v{version}.{format}",]
