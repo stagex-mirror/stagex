@@ -1,11 +1,11 @@
 [package]
 name = "onetbb"
-version = "2022.2.0"
+version = "2022.3.0"
 description = "OneAPI Threaded Building Blocks"
 website = "https://oneapi-src.github.io/oneTBB"
 license = "GPL-2.0-only"
 
 [sources.onetbb]
-hash = "f0f78001c8c8edb4bddc3d4c5ee7428d56ae313254158ad1eec49eced57f6a5b"
+hash = "01598a46c1162c27253a0de0236f520fd8ee8166e9ebb84a4243574f88e6e50a"
 file = "onetbb-{version}.tar.gz"
-mirrors = [ "https://github.com/oneapi-src/oneTBB/archive/refs/tags/v{version}.tar.gz" ]
+mirrors = [ "https://github.com/oneapi-src/oneTBB/archive/refs/tags/v{version}.tar.gz",]
