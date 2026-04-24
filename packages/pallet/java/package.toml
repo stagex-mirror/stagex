@@ -1,6 +1,0 @@
-[package]
-name = "java"
-version_from = "core-openjdk"
-description = "Java development environment with shell"
-license = "GPL-2.0-only WITH Classpath-exception-2.0"
-website = "https://openjdk.org"

@@ -2,8 +2,8 @@ Disable clang optimization for synchronizer.cpp to prevent miscompilation
 of ObjectSynchronizer::inflate on musl. Clang merges the neutral/locked
 CAS paths incorrectly, causing SIGSEGV.
 
---- a/hotspot/src/share/vm/runtime/synchronizer.cpp
-+++ b/hotspot/src/share/vm/runtime/synchronizer.cpp
+--- openjdk.orig/hotspot/src/share/vm/runtime/synchronizer.cpp
++++ openjdk/hotspot/src/share/vm/runtime/synchronizer.cpp
 @@ -1,3 +1,4 @@
 +#pragma clang optimize off
  /*

@@ -4,8 +4,8 @@ elf_head.e_ident[] is unsigned char but arch_t.elf_class and
 arch_t.endianess are char. clang C++11 rejects this narrowing in
 initializer lists. Add explicit casts.
 
---- a/hotspot/src/os/linux/vm/os_linux.cpp
-+++ b/hotspot/src/os/linux/vm/os_linux.cpp
+--- openjdk.orig/hotspot/src/os/linux/vm/os_linux.cpp
++++ openjdk/hotspot/src/os/linux/vm/os_linux.cpp
 @@ -2088,7 +2088,7 @@
    // Identify compatability class for VM's architecture and library's architecture
    // Obtain string descriptions for architectures

@@ -4,8 +4,8 @@ clang rejects `(int32_t) NULL` because NULL is a pointer on 64-bit and
 truncating it to 32-bit loses information. Use 0 directly since the
 intent is to compare against zero.
 
---- a/hotspot/src/cpu/x86/vm/interp_masm_x86_64.cpp
-+++ b/hotspot/src/cpu/x86/vm/interp_masm_x86_64.cpp
+--- openjdk.orig/hotspot/src/cpu/x86/vm/interp_masm_x86_64.cpp
++++ openjdk/hotspot/src/cpu/x86/vm/interp_masm_x86_64.cpp
 @@ -628,7 +628,7 @@
 
      bind(loop);
@@ -15,8 +15,8 @@ intent is to compare against zero.
      jcc(Assembler::notEqual, exception);
 
      addptr(c_rarg1, entry_size); // otherwise advance to next entry
---- a/hotspot/src/cpu/x86/vm/stubGenerator_x86_64.cpp
-+++ b/hotspot/src/cpu/x86/vm/stubGenerator_x86_64.cpp
+--- openjdk.orig/hotspot/src/cpu/x86/vm/stubGenerator_x86_64.cpp
++++ openjdk/hotspot/src/cpu/x86/vm/stubGenerator_x86_64.cpp
 @@ -500,7 +500,7 @@
      // make sure this code is only executed if there is a pending exception
      {

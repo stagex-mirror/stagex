@@ -1,5 +1,5 @@
 [package]
-name = "openjdk"
+name = "openjdk8"
 version = "8u482"
 description = "OpenJDK 8 - Open-source Java Development Kit (via IcedTea 3)"
 license = "GPL-2.0-only WITH Classpath-exception-2.0"
