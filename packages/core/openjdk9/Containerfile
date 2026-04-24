@@ -1,0 +1,199 @@
+# ============================================================
+# OpenJDK 9 bootstrap (built with OpenJDK 8 as boot JDK)
+# ============================================================
+
+FROM scratch AS build
+ARG VERSION
+ARG OPENJDK9_VERSION
+ARG TARGETARCH
+COPY --from=stagex/core-filesystem . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-bash . /
+COPY --from=stagex/core-ncurses . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-mold . /
+COPY --from=stagex/core-onetbb . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-openjdk8 . /
+COPY --from=stagex/core-autoconf . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-sed . /
+COPY --from=stagex/core-gawk . /
+COPY --from=stagex/core-libffi . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-libxslt . /
+COPY --from=stagex/core-freetype . /
+COPY --from=stagex/core-cups . /
+COPY --from=stagex/core-alsa-lib . /
+COPY --from=stagex/core-libx11 . /
+COPY --from=stagex/core-libxext . /
+COPY --from=stagex/core-libxrender . /
+COPY --from=stagex/core-libxt . /
+# libc++ runtime (needed by openjdk8's libjvm.so) is provided by core-llvm
+ENV SOURCE_DATE_EPOCH=1
+COPY --chmod=755 <<-'FILESTUB' /usr/bin/file
+	#!/bin/sh
+	for arg in "$@"; do
+	  case "$arg" in -*) continue ;; esac
+	  if head -c4 "$arg" 2>/dev/null | grep -q ELF; then echo "$arg: ELF 64-bit LSB"
+	  else echo "$arg: data"; fi
+	done
+FILESTUB
+COPY --chmod=755 <<-'GCCSHIM' /usr/bin/gcc
+	#!/bin/sh
+	for arg in "$@"; do
+	  case "$arg" in
+	    --version) printf "gcc (StageX) 4.9.0\nCopyright (C) 2024 Free Software Foundation, Inc.\n"; exit 0 ;;
+	    -dumpspecs) echo ""; exit 0 ;;
+	    -dumpversion) echo "4.9.0"; exit 0 ;;
+	    -dumpmachine) echo "x86_64-unknown-linux-musl"; exit 0 ;;
+	  esac
+	done
+	exec clang "$@"
+GCCSHIM
+COPY --chmod=755 <<-'GPPSHIM' /usr/bin/g++
+	#!/bin/sh
+	for arg in "$@"; do
+	  case "$arg" in
+	    --version) printf "g++ (StageX) 4.9.0\nCopyright (C) 2024 Free Software Foundation, Inc.\n"; exit 0 ;;
+	    -dumpspecs) echo ""; exit 0 ;;
+	    -dumpversion) echo "4.9.0"; exit 0 ;;
+	    -dumpmachine) echo "x86_64-unknown-linux-musl"; exit 0 ;;
+	  esac
+	done
+	exec clang++ "$@"
+GPPSHIM
+COPY --chmod=755 <<-'ZIPSTUB' /usr/bin/zip
+	#!/usr/bin/env python3
+	import sys, zipfile, os
+	args = [a for a in sys.argv[1:] if not a.startswith('-')]
+	if len(args) < 2: sys.exit(1)
+	zf, files = args[0], args[1:]
+	mode = 'a' if os.path.exists(zf) else 'w'
+	with zipfile.ZipFile(zf, mode) as z:
+	    for f in files:
+	        if os.path.isfile(f): z.write(f)
+	        elif os.path.isdir(f):
+	            for r, _, fns in os.walk(f):
+	                for fn in fns: z.write(os.path.join(r, fn))
+ZIPSTUB
+ADD fetch/make-4.3.tar.gz /tmp/
+ADD fetch/jdk-${OPENJDK9_VERSION}.tar.gz /tmp/
+RUN --network=none <<-'EOF'
+	set -eu
+
+	ln -sf /usr/bin/gcc /usr/bin/cc
+	ln -sf /usr/bin/g++ /usr/bin/c++
+
+	# Boot JDK tool stubs — openjdk8 only ships java+javac, JDK 9 configure needs more
+	BOOTBIN=/usr/lib/jvm/java-8-openjdk/bin
+	for tool in javah jarsigner native2ascii rmic; do
+		printf '#!/bin/sh\nexit 0\n' > "$BOOTBIN/$tool"
+		chmod +x "$BOOTBIN/$tool"
+	done
+
+	# Stub headers for headless build
+	mkdir -p /usr/include/fontconfig
+	printf '#ifndef _FC_H\n#define _FC_H\ntypedef int FcBool;\n#endif\n' > /usr/include/fontconfig/fontconfig.h
+
+	# Stub X11 headers needed by configure (shape.h, Xrender.h, XTest.h)
+	mkdir -p /usr/include/X11/extensions
+	[ -f /usr/include/X11/extensions/shape.h ] || printf '#ifndef _SHAPE_H\n#define _SHAPE_H\n#endif\n' > /usr/include/X11/extensions/shape.h
+	[ -f /usr/include/X11/extensions/Xrender.h ] || printf '#ifndef _XRENDER_H\n#define _XRENDER_H\n#endif\n' > /usr/include/X11/extensions/Xrender.h
+	[ -f /usr/include/X11/extensions/XTest.h ] || printf '#ifndef _XTEST_H\n#define _XTEST_H\n#endif\n' > /usr/include/X11/extensions/XTest.h
+	[ -f /usr/include/X11/extensions/Xrandr.h ] || printf '#ifndef _XRANDR_H\n#define _XRANDR_H\n#endif\n' > /usr/include/X11/extensions/Xrandr.h
+	[ -f /usr/include/X11/Intrinsic.h ] || printf '#ifndef _INTRINSIC_H\n#define _INTRINSIC_H\ntypedef void* Widget;\ntypedef void* XtAppContext;\n#endif\n' > /usr/include/X11/Intrinsic.h
+
+	# Stub libraries for X11 deps we don't have full packages for
+	for lib in Xtst Xi Xrandr; do
+		[ -f /usr/lib/lib${lib}.so ] || echo "void __${lib}_stub(void) {}" | clang -shared -x c - -o /usr/lib/lib${lib}.so 2>/dev/null || true
+	done
+	mkdir -p /usr/lib/pkgconfig
+	for xlib in xtst xi xrandr; do
+		[ -f /usr/lib/pkgconfig/$xlib.pc ] || cat > /usr/lib/pkgconfig/$xlib.pc <<XEOF
+prefix=/usr
+libdir=\${prefix}/lib
+includedir=\${prefix}/include
+Name: $xlib
+Version: 1.0.0
+Cflags: -I\${includedir}
+Libs: -L\${libdir} -l${xlib}
+XEOF
+	done
+
+	# Build Make 4.3 (JDK 9's build system is incompatible with Make 4.4+)
+	cd /tmp/make-4.3
+	./configure --prefix=/usr CC=clang > /dev/null 2>&1
+	/usr/bin/make -j$(nproc) > /dev/null 2>&1
+	cp make /usr/bin/make
+	cd /tmp
+
+	SRCDIR=$(ls -d /tmp/jdk9u-* | head -1)
+	cd "$SRCDIR"
+
+	export JAVA_HOME=/usr/lib/jvm/java-8-openjdk
+	export PATH=${JAVA_HOME}/bin:${PATH}
+
+	# Bypass X11 header check and X11 library check (headless build)
+	find . -name 'generated-configure.sh' -exec \
+		sed -i -e 's/as_fn_error.*Could not find all X11 headers.*/: # X11 headers bypassed/' \
+		       -e 's/as_fn_error.*Could not find X11 libraries.*/: # X11 libs bypassed/' {} + 2>/dev/null || true
+
+	# Verify boot JDK works
+	echo "=== Testing boot JDK ==="
+	java -version 2>&1 || { echo "BOOT JDK FAILED"; ls -la $JAVA_HOME/bin/; exit 1; }
+
+	bash configure \
+		--with-boot-jdk=/usr/lib/jvm/java-8-openjdk \
+		--disable-warnings-as-errors \
+		--disable-precompiled-headers \
+		--enable-dtrace=no \
+		--with-native-debug-symbols=none \
+		--with-debug-level=release \
+		--with-jvm-variants=server \
+		--with-zlib=system \
+		--with-libjpeg=bundled \
+		--with-giflib=bundled \
+		--with-libpng=bundled \
+		--with-lcms=bundled \
+		--with-freetype-include=/usr/include/freetype2 \
+		--with-freetype-lib=/usr/lib \
+		--with-extra-cflags="-fPIC -Wno-error" \
+		--with-extra-cxxflags="-fPIC -Wno-error -stdlib=libc++" \
+		--with-extra-ldflags="-Wl,--undefined-version" \
+		--enable-headless-only
+
+	# Make's $(file >...) creates .vardeps during $(eval) but submakes can't find them.
+	# Add a catch-all pattern rule so Make can "build" .vardeps files on demand.
+	# Insert pattern rule for .vardeps BEFORE the endif guard
+	sed -i '/^endif # _MAKEBASE_GMK/i\
+%.vardeps:\
+\t@/usr/bin/mkdir -p $(@D) \&\& touch $@' make/common/MakeBase.gmk
+
+	# Set locale to C to avoid collation data initialization errors in XSLT transforms
+	export LC_ALL=C LANG=C
+
+	make images JOBS=$(nproc) 2>&1 || {
+		echo "=== BUILD LOG ==="
+		cat build/linux-x86_64-normal-server-release/build.log | tail -100
+		echo "=== GENSRC LOG ==="
+		find build -name '*.log' -path '*gensrc*' -exec cat {} \; 2>/dev/null | tail -50
+		exit 1
+	}
+
+	mkdir -p /rootfs/usr/lib/jvm/java-9-openjdk
+	cp -a build/linux-x86_64-normal-server-release/images/jdk/* \
+		/rootfs/usr/lib/jvm/java-9-openjdk/
+	mkdir -p /rootfs/usr/bin
+	ln -sf /usr/lib/jvm/java-9-openjdk/bin/java /rootfs/usr/bin/java
+	ln -sf /usr/lib/jvm/java-9-openjdk/bin/javac /rootfs/usr/bin/javac
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

@@ -1,0 +1,19 @@
+[package]
+name = "openjdk9"
+version = "9.0.181"
+description = "OpenJDK 9 (bootstrap stepping stone)"
+license = "GPL-2.0-only WITH Classpath-exception-2.0"
+website = "https://openjdk.org"
+
+[sources.make43]
+hash = "e05fdde47c5f7ca45cb697e973894ff4f5d79e13b750ed57d7b66d8defc78e19"
+format = "tar.gz"
+version = "4.3"
+file = "make-{version}.{format}"
+mirrors = ["https://ftp.gnu.org/gnu/make/make-{version}.tar.gz"]
+
+[sources.openjdk9]
+hash = "a80c59433d394b241ebcd36968ec6ff017fab3fdf3700a459a5b59e978dab396"
+file = "jdk-{version}.tar.gz"
+version = "jdk-9+181"
+mirrors = ["https://github.com/openjdk/jdk9u/archive/{version}.tar.gz"]
