@@ -1,0 +1,12 @@
+[package]
+name = "unibilium"
+version = "2.1.2"
+description = "UniBi Terminal Info Library"
+license = "LGPL-2.1-or-later"
+website = "https://github.com/martanne/unibilium"
+
+[sources.unibilium]
+hash = "370ecb07fbbc20d91d1b350c55f1c806b06bf86797e164081ccc977fc9b3af7a"
+format = "tar.gz"
+file = "v{version}.{format}"
+mirrors = ["https://github.com/neovim/unibilium/archive/refs/tags/{file}"]

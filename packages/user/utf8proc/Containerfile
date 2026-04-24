@@ -1,0 +1,17 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+COPY --from=stagex/core-make / /
+ARG VERSION
+ADD fetch/v${VERSION}.tar.gz .
+RUN mkdir -p /utf8proc-${VERSION}/build && \
+    cd /utf8proc-${VERSION}/build && \
+    cmake \
+	-B . \
+	-G Ninja \
+	-Wno-dev \
+	-DCMAKE_INSTALL_PREFIX=/usr \
+	-DCMAKE_INSTALL_LIBDIR=lib /utf8proc-${VERSION} && \
+    cmake --build . -j "$(nproc)" && \
+    DESTDIR="/rootfs" cmake --install . && \
+    install -Dm644 /utf8proc-${VERSION}/LICENSE.md /rootfs/usr/share/licenses/utf8proc/LICENSE
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

@@ -1,0 +1,12 @@
+[package]
+name = "msgpack"
+version = "6.0.0"
+description = "MessagePack serialization library"
+license = "MIT"
+website = "https://msgpack.org"
+
+[sources.msgpack]
+hash = "af6f3cf25edb220aa2140b09bb5bdd73ddf00938194bd94ebe5c92090cccb466"
+format = "tar.gz"
+file = "msgpack-c-{version}.{format}"
+mirrors = [ "https://github.com/msgpack/msgpack-c/archive/refs/tags/c-{version}.{format}",]
