@@ -914,13 +914,38 @@ RUN --network=none <<-'EOF'
 		ls "$CLASSESDIR/jdk/xml/internal/" 2>/dev/null || echo "jdk.xml.internal NOT compiled"
 	fi
 
-	# rt.jar
+	# Generate BreakIterator bootstrap data with Python (chicken-and-egg fix:
+	# Java gendata tools need ICU data that they're supposed to generate)
+	python3 << 'BIGEN'
+import struct, zlib, os
+def gen_bi():
+    body = bytearray()
+    body += struct.pack('>7i', 2, 2, 2, 2, 1, 0, 0)
+    co = len(body); body += struct.pack('>q', 0)
+    for s in [1,0]: body += struct.pack('>h', s)
+    for s in [1,0]: body += struct.pack('>h', s)
+    body += bytes([0,1,0,0])
+    for _ in range(512): body += struct.pack('>h', 0)
+    body += bytes([0])
+    struct.pack_into('>q', body, co, zlib.crc32(body[36:]) & 0xFFFFFFFF)
+    return bytearray(b'BIdata\x00\x01') + struct.pack('>i', len(body)) + body
+data = bytes(gen_bi())
+base = 'openjdk.build-boot/jdk/classes/sun/text/resources'
+for d in [base, base + '/th']:
+    os.makedirs(d, exist_ok=True)
+    for n in ['CharacterBreakIteratorData','WordBreakIteratorData',
+              'LineBreakIteratorData','SentenceBreakIteratorData']:
+        with open(d+'/'+n, 'wb') as f: f.write(data)
+print('Generated BreakIterator bootstrap data')
+BIGEN
+
+	# rt.jar (now includes BreakIterator data from above)
 	if [ -d "$CLASSESDIR" ]; then
 		mkdir -p $JDKDIR/jre/lib
 		cd "$CLASSESDIR"
 		fastjar cf $JDKDIR/jre/lib/rt.jar META-INF/ 2>/dev/null || \
 			fastjar cf $JDKDIR/jre/lib/rt.jar . 2>/dev/null || true
-		find . -name '*.class' -o -name '*.properties' -o -name '*.dat' 2>/dev/null | \
+		find . \( -name '*.class' -o -name '*.properties' -o -name '*.dat' -o -name '*BreakIteratorData*' \) 2>/dev/null | \
 			xargs -n 500 fastjar uf $JDKDIR/jre/lib/rt.jar 2>/dev/null || true
 		cd /icedtea-3.38.0
 	fi
@@ -1033,6 +1058,37 @@ JCBIN
 
 	# JRE symlink (some tools expect $JAVA_HOME/jre to be the JRE root)
 	ln -sf . $JDKDIR/jre/jre 2>/dev/null || true
+
+	# BreakIterator data was generated into CLASSESDIR above (before rt.jar)
+
+	# Compile and run gendata tools with the JDK 8 runtime
+	BUILDTOOLDIR=/tmp/buildtools; mkdir -p $BUILDTOOLDIR
+	BTSRC=openjdk-boot/jdk/make/src/classes
+	JDK8JAVAC="LD_LIBRARY_PATH=$JDKDIR/jre/lib/amd64/server:$JDKDIR/jre/lib/amd64 $JDKDIR/bin/java -cp $JDKDIR/lib/tools.jar com.sun.tools.javac.Main -source 1.8 -target 1.8 -bootclasspath $JDKDIR/jre/lib/rt.jar"
+	JDK8RUN="LD_LIBRARY_PATH=$JDKDIR/jre/lib/amd64/server:$JDKDIR/jre/lib/amd64 $JDKDIR/bin/java"
+	# Compile only the tools we need (not all — some have deps we don't have)
+	eval $JDK8JAVAC -d $BUILDTOOLDIR \
+		$BTSRC/build/tools/tzdb/*.java 2>/dev/null || true
+	eval $JDK8JAVAC -d $BUILDTOOLDIR \
+		$BTSRC/build/tools/generatecurrencydata/*.java 2>/dev/null || true
+	echo "Build tools: $(find $BUILDTOOLDIR -name '*.class' 2>/dev/null | wc -l) classes"
+	TOOLSCP="$BUILDTOOLDIR"
+
+	# Generate tzdb.dat
+	TZDATA=openjdk-boot/jdk/make/data/tzdata
+	[ -d "$TZDATA" ] && eval $JDK8RUN -cp "$TOOLSCP" build.tools.tzdb.TzdbZoneRulesCompiler \
+		-srcdir "$TZDATA" -dstfile $JDKDIR/jre/lib/tzdb.dat 2>/dev/null && \
+		echo "Generated tzdb.dat" || echo "tzdb.dat generation failed"
+
+	# Generate currency.data
+	CURRSRC=$(find openjdk-boot/jdk/src -name 'CurrencyData.properties' -path '*/util/*' 2>/dev/null | head -1)
+	if [ -n "$CURRSRC" ]; then
+		eval $JDK8RUN -cp "$TOOLSCP" build.tools.generatecurrencydata.GenerateCurrencyData \
+			< "$CURRSRC" > /tmp/currency.data.new 2>/dev/null && \
+			[ -s /tmp/currency.data.new ] && \
+			cp /tmp/currency.data.new $JDKDIR/jre/lib/currency.data && \
+			echo "Generated currency.data" || echo "currency.data: using Python stub"
+	fi
 
 	mkdir -p /rootfs/usr/bin
 	for bin in java javac jar; do
