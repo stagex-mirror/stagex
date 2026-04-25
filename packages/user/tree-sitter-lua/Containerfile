@@ -2,16 +2,17 @@ FROM stagex/pallet-clang-cmake-busybox AS build
 COPY --from=stagex/core-make / /
 ARG VERSION
 ADD fetch/tree-sitter-lua-${VERSION}.tar.gz .
-RUN cd /tree-sitter-lua-${VERSION} && \
-    mkdir -p build && \
-    cd build && \
-    clang -shared -fPIC -O2 -I../src -o libtree-sitter-lua.so ../src/parser.c && \
-    install -Dm755 libtree-sitter-lua.so /rootfs/usr/lib/libtree-sitter-lua.so && \
-    install -Dm644 ../LICENSE.md /rootfs/usr/share/licenses/tree-sitter-lua/LICENSE && \
-    mkdir -p /rootfs/usr/include/tree_sitter && \
-    install -Dm644 ../bindings/c/tree_sitter/tree-sitter-lua.h /rootfs/usr/include/tree_sitter/ 2>/dev/null || true && \
-    install -Dm644 ../src/tree_sitter/*.h /rootfs/usr/include/tree_sitter/ 2>/dev/null || true && \
-    mkdir -p /rootfs/usr/lib/pkgconfig && \
-    printf 'prefix=/usr\nlibdir=${prefix}/lib\nincludedir=${prefix}/include\n\nName: tree-sitter-lua\nDescription: Lua grammar for tree-sitter\nVersion: 0.5.0\nLibs: -L${libdir} -ltree-sitter-lua\nCflags: -I${includedir}\n' > /rootfs/usr/lib/pkgconfig/tree-sitter-lua.pc
+WORKDIR /tree-sitter-lua-${VERSION}
+RUN <<-EOF
+	mkdir -p build && cd build
+	clang -shared -fPIC -O2 -I../src -o libtree-sitter-lua.so ../src/parser.c
+	install -Dm755 libtree-sitter-lua.so /rootfs/usr/lib/libtree-sitter-lua.so
+	install -Dm644 ../LICENSE.md /rootfs/usr/share/licenses/tree-sitter-lua/LICENSE
+	mkdir -p /rootfs/usr/include/tree_sitter
+	install -Dm644 ../bindings/c/tree_sitter/tree-sitter-lua.h /rootfs/usr/include/tree_sitter/ 2>/dev/null || true
+	install -Dm644 ../src/tree_sitter/*.h /rootfs/usr/include/tree_sitter/ 2>/dev/null || true
+	mkdir -p /rootfs/usr/lib/pkgconfig
+	printf 'prefix=/usr\nlibdir=${prefix}/lib\nincludedir=${prefix}/include\n\nName: tree-sitter-lua\nDescription: Lua grammar for tree-sitter\nVersion: 0.5.0\nLibs: -L${libdir} -ltree-sitter-lua\nCflags: -I${includedir}\n' > /rootfs/usr/lib/pkgconfig/tree-sitter-lua.pc
+EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
