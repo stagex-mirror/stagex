@@ -1056,6 +1056,27 @@ JCBIN
 	# Jar — use fastjar (C implementation, no JVM needed, no tzdb.dat requirement)
 	cp /usr/bin/fastjar $JDKDIR/bin/jar
 
+	# Build zipfs.jar (NIO ZipFileSystem provider — needed by JDK 9+ javac)
+	ZIPFSSRC=openjdk-boot/jdk/src/share/demo/nio/zipfs/src
+	if [ -d "$ZIPFSSRC" ]; then
+		mkdir -p /tmp/zipfs-classes
+		find $ZIPFSSRC -name '*.java' > /tmp/zipfs-srcs.txt
+		LD_LIBRARY_PATH=$JDKDIR/jre/lib/amd64/server:$JDKDIR/jre/lib/amd64 \
+			$JDKDIR/bin/java -cp $JDKDIR/lib/tools.jar com.sun.tools.javac.Main \
+			-source 1.8 -target 1.8 -bootclasspath $JDKDIR/jre/lib/rt.jar \
+			-d /tmp/zipfs-classes @/tmp/zipfs-srcs.txt 2>/dev/null || true
+		if [ -d /tmp/zipfs-classes/com ]; then
+			mkdir -p /tmp/zipfs-classes/META-INF/services
+			cp $ZIPFSSRC/META-INF/services/java.nio.file.spi.FileSystemProvider \
+				/tmp/zipfs-classes/META-INF/services/
+			mkdir -p $JDKDIR/jre/lib/ext
+			cd /tmp/zipfs-classes
+			fastjar cf $JDKDIR/jre/lib/ext/zipfs.jar . 2>/dev/null
+			cd /icedtea-3.38.0
+			echo "Built zipfs.jar"
+		fi
+	fi
+
 	# JRE symlink (some tools expect $JAVA_HOME/jre to be the JRE root)
 	ln -sf . $JDKDIR/jre/jre 2>/dev/null || true
 

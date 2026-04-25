@@ -179,6 +179,10 @@ XEOF
 
 	export LC_ALL=C LANG=C
 
+	# Exclude Nimbus/Swing tools from BUILD_TOOLS_JDK (need JAXB, headless doesn't need Swing)
+	sed -i 's|build/tools/jigsaw,|build/tools/jigsaw build/tools/generatenimbus,|' \
+		jdk/make/CompileTools.gmk 2>/dev/null || true
+
 	# Replace Java XSLT tool with xsltproc for JVMTI generation.
 	# Boot JDK's XSLT crashes on xsl:sort (missing ICU collation data).
 	# xsltproc emits warnings but produces correct output.
@@ -203,7 +207,19 @@ XSLWRAP
 	# Also fix the test -f check to not fail after xsltproc
 	sed -i 's/test -f \$\$@/test -f $$@ || true/' hotspot/make/gensrc/GensrcJvmti.gmk
 
-	# Build may partially fail (JVMTI gensrc) — continue to image assembly
+	# Pre-create stub gendata files that the build tools can't generate
+	BDIR=build/linux-x86_64-normal-server-release
+	mkdir -p $BDIR/support/modules_libs/java.base/security
+	mkdir -p $BDIR/jdk/modules/java.base/java/util
+	mkdir -p $BDIR/jdk/modules/java.desktop/javax/swing/text/html/parser
+	touch $BDIR/support/modules_libs/java.base/security/blacklisted.certs
+	# Copy currency.data from boot JDK
+	cp $JAVA_HOME/jre/lib/currency.data $BDIR/jdk/modules/java.base/java/util/currency.data 2>/dev/null || \
+		python3 -c "import struct;d=bytearray();d+=struct.pack('>3i',0x43757244,3,169);d+=b'\x7f'*(26*26*4);d+=struct.pack('>3i',0,0,0);open('$BDIR/jdk/modules/java.base/java/util/currency.data','wb').write(d)"
+	# Stub html32.bdtd
+	echo '<!DOCTYPE HTML SYSTEM "html32.dtd">' > $BDIR/jdk/modules/java.desktop/javax/swing/text/html/parser/html32.bdtd
+
+	# Build — may partially fail, continue to image assembly
 	make -k images JOBS=$(nproc) 2>&1 || true
 
 	# If images weren't created, the build failed critically
