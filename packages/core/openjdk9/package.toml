@@ -12,6 +12,13 @@ version = "4.3"
 file = "make-{version}.{format}"
 mirrors = ["https://ftp.gnu.org/gnu/make/make-{version}.tar.gz"]
 
+[sources.xorgproto]
+hash = "372225fd40815b8423547f5d890c5debc72e88b91088fbfb13158c20495ccb59"
+format = "tar.xz"
+version = "2024.1"
+file = "xorgproto-{version}.{format}"
+mirrors = ["https://xorg.freedesktop.org/archive/individual/proto/xorgproto-{version}.tar.xz"]
+
 [sources.openjdk9]
 hash = "a80c59433d394b241ebcd36968ec6ff017fab3fdf3700a459a5b59e978dab396"
 file = "jdk-{version}.tar.gz"
