@@ -190,7 +190,7 @@ XEOF
 	printf 'default: all\nall:\n\t@true\n' > jdk/make/CompileInterimRmic.gmk
 	# No-op all desktop gensrc/gendata + rmic targets for headless stepping stone
 	NOOP='printf "all:\n\t@true\n.DEFAULT:\n\t@true\n"'
-	for gmk in GensrcIcons.gmk GensrcX11Wrappers.gmk GensrcSwing.gmk GendataHtml32dtd.gmk; do
+	for gmk in GensrcIcons.gmk GensrcSwing.gmk GendataHtml32dtd.gmk; do
 		find . -name "$gmk" -exec sh -c "$NOOP > \"\$1\"" _ {} \; 2>/dev/null || true
 	done
 	find . -name 'Rmic-*.gmk' -exec sh -c "$NOOP > \"\$1\"" _ {} \; 2>/dev/null || true
@@ -209,8 +209,9 @@ XEOF
 	# Stub html32.bdtd
 	echo '<!DOCTYPE HTML SYSTEM "html32.dtd">' > $BDIR/jdk/modules/java.desktop/javax/swing/text/html/parser/html32.bdtd
 
-	# Remove java.desktop module entirely (headless stepping stone, X11 wrappers chicken-and-egg)
-	rm -rf jdk/src/java.desktop 2>/dev/null || true
+	# GensrcX11Wrappers reads pre-existing sizes.64 file to generate Java wrappers.
+	# Skip sizer compilation (needs X11 headers to compile a C binary) by pre-creating the output.
+	sed -i '/sizer.*exe/d' jdk/make/GensrcX11Wrappers.gmk 2>/dev/null || true
 
 	make -k images JOBS=$(nproc) 2>&1 || true
 
