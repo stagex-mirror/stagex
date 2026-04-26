@@ -1,12 +1,12 @@
 [package]
 name = "py-certifi"
-version = "2024.2.2"
+version = "2026.2.25"
 description = "Python package for providing Mozilla CA bundle"
 license = "MPL-2.0"
 website = "https://github.com/certifi/python-certifi"
 
 [sources.py-certifi]
-hash = "0569859f95fc761b18b45ef421b1290a0f65f147e92a1e5eb3e635f9a5e4e66f"
+hash = "e887ab5cee78ea814d3472169153c2d12cd43b14bd03329a39a9c6e2e80bfba7"
 format = "tar.gz"
 file = "py-certifi-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/c/certifi/certifi-{version}.{format}",]

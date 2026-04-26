@@ -9,10 +9,10 @@ RUN cargo fetch --locked
 WORKDIR /bcrypt-${VERSION}
 RUN --network=none <<-EOF
   set -eu
-  python -m build --wheel --no-isolation
-  python -m installer -d /rootfs dist/*.whl
-  find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
-	install -Dm644 LICENSE /rootfs/usr/share/licenses/py-bcrypt/LICENSE
+  gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+  python -m installer -d /rootfs .dist/*.whl
+  find /rootfs | grep -E "(/**pycache**$|.pyc$|.pyo$)" | xargs rm -rf
+  install -Dm644 LICENSE /rootfs/usr/share/licenses/py-bcrypt/LICENSE
 EOF
 
 FROM stagex/core-filesystem AS package

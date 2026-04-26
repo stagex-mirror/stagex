@@ -6,8 +6,8 @@ ENV SETUPTOOLS_SCM_PRETEND_VERSION=${VERSION}
 WORKDIR /sphinx-issues-${VERSION}
 RUN --network=none <<-EOF
 	set -eu
-	python -m build --wheel --skip-dependency-check --no-isolation
-	python -m installer --destdir=/rootfs dist/*.whl
+	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+	python -m installer --destdir=/rootfs .dist/*.whl
 	install -Dm0644 -t /rootfs/usr/share/licenses/py-sphinx-issues/ LICENSE
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF

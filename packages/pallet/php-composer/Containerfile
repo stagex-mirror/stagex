@@ -2,8 +2,8 @@ FROM stagex/pallet-php
 
 COPY --from=stagex/core-composer . /
 COPY --from=stagex/core-git . /
-COPY --from=stagex/core-php-ext-phar . /
-COPY --from=stagex/core-php-ext-filter . /
+COPY --from=stagex/core-php-phar . /
+COPY --from=stagex/core-php-filter . /
 COPY --from=stagex/pallet-php-openssl . /
 COPY --from=stagex/pallet-php-zlib . /
 COPY --from=stagex/pallet-php-zip . /

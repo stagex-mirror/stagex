@@ -1,12 +1,12 @@
 [package]
 name = "py-ruamel.yaml"
-version = "0.17.28"
+version = "0.19.1"
 description = "YAML 1.2 loader and dumper for Python"
 license = "MIT"
 website = "https://yaml.readthedocs.io"
 
 [sources.py-ruamel-yaml]
-hash = "3bf6df1c481d2463a633be6ee86e8aece941bb3298a9a0cd6d0865f47b1ddce6"
+hash = "53eb66cd27849eff968ebf8f0bf61f46cdac2da1d1f3576dd4ccee9b25c31993"
 format = "tar.gz"
 file = "py-ruamel-yaml-{version}.{format}"
-mirrors = [ "https://files.pythonhosted.org/packages/source/r/ruamel.yaml/ruamel.yaml-{version}.tar.gz",]
+mirrors = [ "https://files.pythonhosted.org/packages/c7/3b/ebda527b56beb90cb7652cb1c7e4f91f48649fbcd8d2eb2fb6e77cd3329b/ruamel_yaml-0.19.1.tar.gz",]

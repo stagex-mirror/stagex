@@ -4,8 +4,8 @@ ADD fetch/py-defusedxml-${VERSION}.tar.gz .
 WORKDIR /defusedxml-${VERSION}/
 RUN --network=none <<-EOF
   set -eu
-  python -m build --wheel --skip-dependency-check --no-isolation
-  python -m installer -d /rootfs dist/*.whl
+  gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+  python -m installer -d /rootfs .dist/*.whl
   install -D -m0644 LICENSE /rootfs/usr/share/license/py-defusedxml/LICENSE
   find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF

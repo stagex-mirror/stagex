@@ -4,7 +4,6 @@ COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-python . /
 COPY --from=stagex/core-py-wheel . /
-COPY --from=stagex/core-py-pep517 . /
 COPY --from=stagex/core-py-build . /
 COPY --from=stagex/core-py-toml . /
 COPY --from=stagex/core-py-flit . /
@@ -14,8 +13,10 @@ ADD fetch/py-installer-${VERSION}.tar.gz .
 WORKDIR /installer-${VERSION}
 RUN --network=none <<-EOF
 	set -eu
-	python -m build -wn --skip-dependency-check
-	PYTHONPATH=src python -m installer --destdir=/rootfs dist/*.whl
+	SITEDIR=$(python3 -c 'import site; print(site.getsitepackages()[0])')
+	mkdir -p "/rootfs${SITEDIR}"
+	cp -R src/installer "/rootfs${SITEDIR}/"
+	python3 -m compileall "/rootfs${SITEDIR}/installer"
 	rm /rootfs/usr/lib/python*/site-packages/installer/_scripts/*.exe
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
