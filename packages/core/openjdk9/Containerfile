@@ -209,7 +209,9 @@ XEOF
 	# Stub html32.bdtd
 	echo '<!DOCTYPE HTML SYSTEM "html32.dtd">' > $BDIR/jdk/modules/java.desktop/javax/swing/text/html/parser/html32.bdtd
 
-	# Build — may partially fail, continue to image assembly
+	# Remove java.desktop module entirely (headless stepping stone, X11 wrappers chicken-and-egg)
+	rm -rf jdk/src/java.desktop 2>/dev/null || true
+
 	make -k images JOBS=$(nproc) 2>&1 || true
 
 	# If images weren't created, the build failed critically
