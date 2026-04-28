@@ -1,12 +1,12 @@
 [package]
 name = "py-trove-classifiers"
-version = "2024.5.17"
+version = "2026.4.28.13"
 description = "Canonical source for classifiers on PyPI"
 license = "Apache-2.0"
 website = "https://github.com/pypa/trove-classifiers"
 
 [sources.py-trove-classifiers]
-hash = "5d0a143e5977e5c32a34265f803fcdbf064c57940ce95492fe6c559622f7497c"
+hash = "aed0cb5c0a0e6616d369eb1407ba235c971f4cd28bc9e58bb8a6b75e1da4734d"
 format = "tar.gz"
 file = "py-trove-classifiers-{version}.{format}"
 mirrors = [ "https://github.com/pypa/trove-classifiers/archive/{version}/py3-trove-classifiers-{version}.{format}",]
