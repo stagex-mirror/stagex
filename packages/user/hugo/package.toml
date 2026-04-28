@@ -1,16 +1,12 @@
 [package]
 name = "hugo"
-version = "0.152.2"
+version = "0.161.0"
 description = "Fast and Flexible Static Site Generator in Go"
 website = "https://gohugo.io"
 license = "Apache-2.0"
-subpackages = [
-  "hugo",
-  "hugo-extended",
-  "hugo-extended-with-deploy"
-]
+subpackages = [ "hugo", "hugo-extended", "hugo-extended-with-deploy",]
 
 [sources.hugo]
-hash = "45ffd018ad8a15d91f8689e76a3b2cb8ce73e82b3a7ae2ce632212c36e77665d"
+hash = "96c2470685888398c650a5b90da1c2d55c4425fc0e436d93be0fa3b4e05c52dc"
 file = "hugo-{version}.tar.gz"
 mirrors = [ "https://github.com/gohugoio/hugo/archive/v{version}.tar.gz",]
