@@ -2,7 +2,7 @@ FROM stagex/pallet-clang-gnu-busybox AS build
 COPY --from=stagex/pallet-python . /
 COPY --from=stagex/core-readline . /
 COPY --from=stagex/core-icu . /
-COPY --from=stagex/core-tcl8 . /
+COPY --from=stagex/core-tcl . /
 COPY --from=stagex/core-readline . /
 COPY --from=stagex/core-libxml2 . /
 ARG VERSION
@@ -10,6 +10,7 @@ ADD fetch/postgresql-${VERSION}.tar.gz .
 WORKDIR /postgresql-${VERSION}
 RUN --network=none <<-EOF
 	./configure \
+		TCLSH=/usr/bin/tclsh9.0 \
 		LDFLAGS_EX_BE="-Wl,--export-dynamic" \
 		--prefix=/usr \
 		--mandir=/usr/share/man \
@@ -21,7 +22,8 @@ RUN --network=none <<-EOF
 		--with-python \
 		--with-icu \
 		--with-tcl \
-		--with-readline
+		--with-readline \
+		--with-tclconfig=/usr/lib
 	make src config contrib all 
 	make DESTDIR=/rootfs install
 	make -C contrib DESTDIR=/rootfs install
