@@ -8,7 +8,6 @@ ENV GOSUMDB=sum.golang.org
 ENV CGO_ENABLED=0
 ENV GOHOSTOS=linux
 ENV GOHOSTARCH=amd64
-ENV GO11MODULE=on
 ADD fetch/helm-${VERSION}.tar.gz .
 WORKDIR /helm-${VERSION}
 RUN go get ./...

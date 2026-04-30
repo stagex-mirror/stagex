@@ -10,7 +10,6 @@ ENV GOSUMDB=sum.golang.org
 ENV CGO_ENABLED=0
 ENV GOHOSTOS=linux
 ENV GOHOSTARCH=amd64
-ENV GO11MODULE=on
 RUN go get ./...
 RUN --network=none <<-EOF
 	go build -o out/tflint -v -trimpath
