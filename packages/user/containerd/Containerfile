@@ -4,7 +4,6 @@ COPY --from=stagex/user-libseccomp . /
 COPY --from=stagex/user-go-md2man . /
 ADD fetch/containerd-${VERSION}.tar.gz .
 WORKDIR /containerd-${VERSION}
-ENV GO11MODULE=on
 RUN <<-EOF
 	make \
 		SHIM_CGO_ENABLED=1 \
