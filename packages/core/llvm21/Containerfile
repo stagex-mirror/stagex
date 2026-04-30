@@ -1,0 +1,181 @@
+FROM scratch AS build
+
+ARG VERSION
+ARG CPORTS_VERSION
+ARG TARGETARCH
+
+COPY --from=stagex/core-busybox / /
+COPY --from=stagex/core-llvm / /
+COPY --from=stagex/core-musl / /
+COPY --from=stagex/core-linux-headers / /
+COPY --from=stagex/core-mold / /
+COPY --from=stagex/core-make / /
+COPY --from=stagex/core-cmake / /
+COPY --from=stagex/core-python / /
+COPY --from=stagex/core-zlib / /
+COPY --from=stagex/core-libzstd / /
+COPY --from=stagex/core-onetbb / /
+COPY --from=stagex/core-openssl / /
+
+ADD fetch/llvm-${VERSION}.tar.xz .
+ADD fetch/cports-${CPORTS_VERSION}.tar.gz .
+WORKDIR /llvm-project-${VERSION}.src
+
+ADD patches/*.patch .
+RUN --network=none <<-'EOF'
+	cp /cports-${CPORTS_VERSION}/main/llvm/patches/*.patch .
+	for file in $(find . -maxdepth 1 -name "*.patch" | sort); do
+		patch -p1 < "$file"
+	done
+EOF
+
+SHELL ["/bin/sh","-l","-c"]
+
+COPY <<-'EOF' /etc/profile
+	set -eux
+
+	export MAJOR_VERSION=$(echo "$VERSION" | cut -d'.' -f1)
+
+	[[ "$TARGETARCH" == "amd64" ]] \
+		&& ARCH="x86_64" \
+		&& LLVM_TARGET_ARCH="X86"
+	[[ "$TARGETARCH" == "arm64" ]] \
+		&& ARCH="aarch64" \
+		&& LLVM_TARGET_ARCH="AArch64"
+	export ARCH
+	export MAKEFLAGS="-j$(nproc)"
+	export BUILD=${ARCH}-unknown-linux-musl
+	export TARGET=${ARCH}-unknown-linux-musl
+
+	export CMAKE_ARGS=""
+	cmake_cache_set() {
+	  CMAKE_ARGS="$CMAKE_ARGS -D$1=$2"
+	}
+
+	cmake_cache_set CMAKE_C_COMPILER /usr/bin/clang
+	cmake_cache_set CMAKE_CXX_COMPILER /usr/bin/clang++
+	cmake_cache_set CMAKE_AR /usr/bin/llvm-ar
+	cmake_cache_set CMAKE_NM /usr/bin/llvm-nm
+	cmake_cache_set CMAKE_RANLIB /usr/bin/llvm-ranlib
+	cmake_cache_set LLVM_USE_LINKER mold
+
+	export CFLAGS="-fPIC -fuse-ld=mold"
+	export CXXFLAGS="$CFLAGS"
+
+	# Configure the build itself
+	cmake_cache_set CMAKE_BUILD_TYPE Release
+	cmake_cache_set CMAKE_INSTALL_PREFIX /usr/lib/llvm$MAJOR_VERSION
+	# If the following is set, LLVM should automatically set `CMAKE_INSTALL_LIBDIR`
+	cmake_cache_set LLVM_LIBDIR_SUFFIX ""
+	# We explicitly set this as there's discussions to standardize around it
+	cmake_cache_set CMAKE_INSTALL_LIBDIR /usr/lib/llvm$MAJOR_VERSION/lib
+	cmake_cache_set CMAKE_INSTALL_RPATH /usr/lib/llvm$MAJOR_VERSION/lib
+	cmake_cache_set LLVM_INSTALL_UTILS ON
+	cmake_cache_set CLANG_CONFIG_FILE_SYSTEM_DIR /etc/clang
+
+	# "all" except for AMDGPU which does not build deterministically
+	# TODO(never): "all"
+	cmake_cache_set LLVM_TARGETS_TO_BUILD "AArch64;ARM;AVR;BPF;Hexagon;Lanai;LoongArch;Mips;MSP430;NVPTX;PowerPC;RISCV;Sparc;SPIRV;SystemZ;VE;WebAssembly;X86;XCore"
+	cmake_cache_set LLVM_ENABLE_PER_TARGET_RUNTIME_DIR ON
+
+	# Configure for `musl`
+	cmake_cache_set LLVM_HOST_TRIPLE "${ARCH}-linux-musl"
+	cmake_cache_set LLVM_TARGET_ARCH "$LLVM_TARGET_ARCH"
+	cmake_cache_set LLVM_RUNTIME_TARGETS "${ARCH}-linux-musl"
+	cmake_cache_set LLVM_BUILTIN_TARGETS "${ARCH}-linux-musl"
+	cmake_cache_set LIBCXX_HAS_MUSL_LIBC ON
+
+	# Configure compiler-rt
+	cmake_cache_set COMPILER_RT_BUILD_BUILTINS ON
+	cmake_cache_set COMPILER_RT_USE_BUILTINS_LIBRARY ON
+	cmake_cache_set COMPILER_RT_USE_LLVM_UNWINDER ON
+	# This does not work out-of-the-box with a `musl` host
+	cmake_cache_set COMPILER_RT_BUILD_GWP_ASAN OFF
+	cmake_cache_set CLANG_DEFAULT_RTLIB compiler-rt
+	cmake_cache_set LIBUNWIND_USE_COMPILER_RT ON
+
+	cmake_cache_set CLANG_DEFAULT_CXX_STDLIB libc++
+	cmake_cache_set CLANG_DEFAULT_UNWINDLIB libunwind
+
+	# Disable a variety of unused/uninstantiated features
+	cmake_cache_set LLVM_ENABLE_LIBXML2 OFF
+	cmake_cache_set LLVM_ENABLE_LIBEDIT OFF
+	cmake_cache_set LLVM_ENABLE_LIBPFM OFF
+	cmake_cache_set LLVM_ENABLE_ICU OFF
+	cmake_cache_set LLVM_ENABLE_ICONV OFF
+
+	cmake_cache_set COMPILER_RT_SCUDO_STANDALONE_BUILD_SHARED OFF
+EOF
+
+RUN --network=none <<-'EOF'
+	cmake_cache_set() {
+		CMAKE_ARGS="$CMAKE_ARGS -D$1=$2"
+	}
+
+	# Don't error on C2Y extensions, a tightening only done with LLVM 22
+	export CCC_OVERRIDE_OPTIONS="+-Wno-c2y-extensions"
+
+	cmake \
+		-B build \
+		-S llvm \
+		-DLLVM_ENABLE_PROJECTS="clang;lld" \
+		-DLLVM_ENABLE_RUNTIMES="" \
+		-Wno-dev \
+		$CMAKE_ARGS
+	cmake --build build -v
+EOF
+
+RUN --network=none <<-'EOF'
+	cmake_cache_set() {
+		CMAKE_ARGS="$CMAKE_ARGS -D$1=$2"
+	}
+
+	# Build the builtins
+	# We do not use the LLVM unwinder for this `compiler-rt` as we will rebuild it in a moment
+	cmake \
+		-B build-builtins \
+		-S compiler-rt \
+		-Wno-dev \
+		$CMAKE_ARGS \
+		-DCOMPILER_RT_USE_LLVM_UNWINDER=OFF
+	cmake --build build-builtins -v
+	cmake --install build-builtins
+
+	# Patch the host triple guesser to output the actual host triple
+	echo "echo $TARGET" > llvm/cmake/config.guess
+
+	# Enable the runtimes we want
+	cmake_cache_set LLVM_ENABLE_RUNTIMES "compiler-rt;libunwind"
+
+	# We disable the sanitizers from the first build because they kept hitting a race condition
+	# https://codeberg.org/stagex/stagex/issues/778
+	cmake_cache_set COMPILER_RT_BUILD_SANITIZERS OFF
+
+	cmake \
+		-B build-runtimes \
+		-S runtimes \
+		-Wno-dev \
+		$CMAKE_ARGS
+	cmake --build build-runtimes -v
+
+	# Now that we've already built everything else, we additionally build the sanitizers
+	cmake_cache_set -DCOMPILER_RT_BUILD_SANITIZERS ON
+
+	cmake \
+		-B build-runtimes \
+		-S runtimes \
+		-Wno-dev \
+		$CMAKE_ARGS
+	cmake --build build-runtimes -v
+EOF
+
+RUN --network=none <<-'EOF'
+	DESTDIR="/rootfs" cmake --install build
+	DESTDIR="/rootfs" cmake --install build-runtimes
+	# NSan, for whatever reason, is not being reproducibly built. It's removed here as it
+	# _should_ be unpopular and not a blocker, but ideally this would be solved (TODO).
+	find /rootfs -type f -name "libclang_rt.nsan*" -delete
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
