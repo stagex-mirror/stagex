@@ -1,3 +1,4 @@
+release_monitoring_id = 374704
 [package]
 name = "py-waitress"
 version = "3.0.2"

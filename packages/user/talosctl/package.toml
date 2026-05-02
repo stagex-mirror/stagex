@@ -1,13 +1,14 @@
+release_monitoring_id = 389694
 [package]
 name = "talosctl"
-version = "1.12.6"
+version = "1.13.0"
 description = "CLI for Talos - A modern OS for Kubernetes"
 website = "https://www.talos.dev/"
 license = "MPL-2.0"
 subpackages = [ "talosctl", "talosctl-completions",]
 
 [sources.talosctl]
-hash = "bfae01fe1db88cadde1502c552f5bae673524f4dc3512fd99e001c85a86b4515"
+hash = "358874864900c61384a80e779e156550e0f44a502eefbfd1326a12786a8d3b4d"
 format = "tar.gz"
 file = "talosctl-{version}.{format}"
 mirrors = [ "https://github.com/siderolabs/talos/archive/refs/tags/v{version}.{format}",]

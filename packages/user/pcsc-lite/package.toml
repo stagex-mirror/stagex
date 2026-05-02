@@ -1,3 +1,4 @@
+release_monitoring_id = 374755
 [package]
 name = "pcsc-lite"
 version = "2.3.1"

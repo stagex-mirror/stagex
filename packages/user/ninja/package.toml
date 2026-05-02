@@ -1,3 +1,4 @@
+release_monitoring_id = 374770
 [package]
 name = "ninja"
 version = "1.13.1"

@@ -1,3 +1,4 @@
+release_monitoring_id = 1028
 [package]
 name = "solidity"
 version_from = "core-solidity"

@@ -1,3 +1,4 @@
+release_monitoring_id = 374760
 [package]
 name = "protoc-gen-grpc-gateway"
 version = "2.22.0"

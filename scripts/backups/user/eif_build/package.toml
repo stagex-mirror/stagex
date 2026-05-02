@@ -1,0 +1,13 @@
+[package]
+name = "eif_build"
+version = "0.2.2"
+description = "AWS Nitro Enclave Image Format builder"
+license = "Apache-2.0"
+website = "https://github.com/nickoala/eif_build"
+
+release_monitoring_id = 374292
+[sources.eif_build]
+hash = "525514cd5b28a315564e2c4b4425189b567b71bf13584804cf266ba6dee71a0e"
+format = "tgz"
+file = "eif_build-{version}.{format}"
+mirrors = [ "https://codeload.github.com/tkhq/eif_build/legacy.tar.gz/{version}",]

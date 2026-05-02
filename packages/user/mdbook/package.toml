@@ -1,3 +1,4 @@
+release_monitoring_id = 374747
 [package]
 name = "mdbook"
 version = "0.5.2"

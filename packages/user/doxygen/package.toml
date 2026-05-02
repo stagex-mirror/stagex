@@ -1,3 +1,4 @@
+release_monitoring_id = 1686
 [package]
 name = "doxygen"
 version = "1.17.0"

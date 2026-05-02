@@ -1,3 +1,4 @@
+release_monitoring_id = 374748
 [package]
 name = "mockgen"
 version = "1.7.0-rc.1"

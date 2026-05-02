@@ -1,3 +1,4 @@
+release_monitoring_id = 374689
 [package]
 name = "py-semantic-version"
 version = "2.10.0"

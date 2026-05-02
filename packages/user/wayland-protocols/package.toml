@@ -1,3 +1,4 @@
+release_monitoring_id = 374639
 [package]
 name = "wayland-protocols"
 version = "1.48"

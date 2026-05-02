@@ -1,3 +1,4 @@
+release_monitoring_id = 374656
 [package]
 name = "py-fluidity"
 version = "0.2.1"

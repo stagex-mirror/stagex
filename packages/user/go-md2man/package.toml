@@ -5,6 +5,7 @@ description = "Converts markdown to roff man pages"
 license = "MIT"
 website = "https://github.com/cpuguy83/go-md2man"
 
+release_monitoring_id = 14461
 [sources.go-md2man]
 hash = "6bb799e8fff06d82ca4617190157338d336e2361aa6c5b1786f763a684ffc3f2"
 format = "tar.gz"

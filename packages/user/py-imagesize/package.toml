@@ -1,3 +1,4 @@
+release_monitoring_id = 374661
 [package]
 name = "py-imagesize"
 version = "1.4.1"

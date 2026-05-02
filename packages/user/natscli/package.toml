@@ -5,6 +5,7 @@ description = "A command line utility to interact with and manage NATS."
 license = "Apache-2.0"
 website = "https://nats.io/"
 
+release_monitoring_id = 389685
 [sources.natscli]
 hash = "6dc9056aa439f90de2a705983005363ae05f1f9985b81881cbfffa867a344ef6"
 format = "tar.gz"

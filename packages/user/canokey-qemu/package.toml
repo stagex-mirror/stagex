@@ -1,3 +1,4 @@
+release_monitoring_id = 374784
 [package]                                                                                    
 name = "canokey-qemu"
 version = "151568c34f5e92b086b7a3a62a11c43dd39f628b"

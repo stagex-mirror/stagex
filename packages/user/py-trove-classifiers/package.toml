@@ -1,3 +1,4 @@
+release_monitoring_id = 374701
 [package]
 name = "py-trove-classifiers"
 version = "2024.5.17"

@@ -1,0 +1,58 @@
+[2026-05-01 21:56:24] [INFO] ================================================================================
+[2026-05-01 21:56:24] [INFO] StageX Package Update Automation - Resume Mode
+[2026-05-01 21:56:24] [INFO] Branch: wip-pkg-updates-20260501001457
+[2026-05-01 21:56:24] [INFO] PR: #1557
+[2026-05-01 21:56:24] [INFO] ================================================================================
+[2026-05-01 21:56:24] [INFO] 1. Discovering API token...
+[2026-05-01 21:56:24] [INFO]   Token found (masked): 4bab3f3e...
+[2026-05-01 21:56:24] [INFO] 
+2. Fetching stagex-bot PRs for stagex/stagex...
+[2026-05-01 21:56:28] [INFO]   Fetched page 1 (30 PRs), total so far: 30
+[2026-05-01 21:56:32] [INFO]   Fetched page 2 (30 PRs), total so far: 60
+[2026-05-01 21:56:36] [INFO]   Fetched page 3 (30 PRs), total so far: 90
+[2026-05-01 21:56:40] [INFO]   Fetched page 4 (30 PRs), total so far: 120
+[2026-05-01 21:56:47] [INFO]   Fetched page 5 (30 PRs), total so far: 150
+[2026-05-01 21:56:51] [INFO]   Fetched page 6 (30 PRs), total so far: 180
+[2026-05-01 21:56:54] [INFO]   Fetched page 7 (30 PRs), total so far: 210
+[2026-05-01 21:56:58] [INFO]   Fetched page 8 (30 PRs), total so far: 240
+[2026-05-01 21:57:03] [INFO]   Fetched page 9 (30 PRs), total so far: 270
+[2026-05-01 21:57:07] [INFO]   Fetched page 10 (30 PRs), total so far: 300
+[2026-05-01 21:57:08] [INFO]   Fetched page 11 (6 PRs), total so far: 306
+[2026-05-01 21:57:08] [INFO]   Found 306 open PRs by stagex-bot
+[2026-05-01 21:57:08] [INFO]   Filtered to 234 unique WIP update PRs (one per package)
+[2026-05-01 21:57:10] [INFO]   Found 422 packages in build order
+[2026-05-01 21:57:10] [INFO] 
+4. Checking out branch wip-pkg-updates-20260501001457...
+[2026-05-01 21:57:10] [INFO]   Checked out branch wip-pkg-updates-20260501001457
+[2026-05-01 21:57:10] [INFO] 
+5. Updating PR description...
+[2026-05-01 21:57:12] [INFO]   Updated PR #1557 description
+[2026-05-01 21:57:12] [INFO] 
+6. Processing packages in build order...
+[2026-05-01 21:57:12] [INFO] 
+================================================================================
+[2026-05-01 21:57:12] [INFO] Processing: expat (target: 2.7.5)
+[2026-05-01 21:57:12] [INFO] ================================================================================
+[2026-05-01 21:57:12] [WARNING]   No package.toml found in PR changes
+[2026-05-01 21:57:12] [INFO] 
+================================================================================
+[2026-05-01 21:57:12] [INFO] Processing: lzip (target: 1.26)
+[2026-05-01 21:57:12] [INFO] ================================================================================
+[2026-05-01 21:57:13] [INFO]   Applied package.toml changes
+[2026-05-01 21:57:13] [INFO]   Building core-lzip...
+[2026-05-01 21:57:13] [INFO] Running: cd /home/lrvick/Sources/stagex && make clean-core-lzip
+[2026-05-01 21:57:15] [INFO] Clean exit code: 2
+[2026-05-01 21:57:15] [INFO] Running: cd /home/lrvick/Sources/stagex && make core-lzip
+[2026-05-01 21:57:20] [INFO] Build exit code: 0
+[2026-05-01 21:57:20] [INFO]   Build successful!
+[2026-05-01 21:57:20] [INFO]   Commit created: Update lzip to 1.26
+[2026-05-01 21:57:21] [ERROR]   Push error: To https://codeberg.org/lrvick/stagex.git
+ ! [rejected]            wip-pkg-updates-20260501001457 -> wip-pkg-updates-20260501001457 (non-fast-forward)
+error: failed to push some refs to 'https://codeberg.org/lrvick/stagex.git'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. If you want to integrate the remote changes,
+hint: use 'git pull' before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+
+[2026-05-01 21:57:21] [INFO] 
+  Updating PR #1557 description...

@@ -1,3 +1,4 @@
+release_monitoring_id = 374669
 [package]
 name = "py-magic"
 version = "0.4.27"

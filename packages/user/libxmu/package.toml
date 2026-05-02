@@ -1,3 +1,4 @@
+release_monitoring_id = 374740
 [package]
 name = "libxmu"
 version = "1.2.1"

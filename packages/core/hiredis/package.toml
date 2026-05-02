@@ -1,3 +1,4 @@
+release_monitoring_id = 724
 [package]
 name = "hiredis"
 version = "1.2.0"

@@ -1,3 +1,4 @@
+release_monitoring_id = 25671
 [package]
 name = "docbook-xsl"
 version = "1.79.2"

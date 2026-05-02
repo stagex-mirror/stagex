@@ -1,3 +1,4 @@
+release_monitoring_id = 374703
 [package]
 name = "py-vobject"
 version = "0.9.9"

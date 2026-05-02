@@ -1,3 +1,4 @@
+release_monitoring_id = 1856
 [package]
 name = "luarocks"
 version_from = "core-luarocks"

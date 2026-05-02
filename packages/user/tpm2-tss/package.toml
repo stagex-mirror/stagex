@@ -1,3 +1,4 @@
+release_monitoring_id = 374609
 [package]
 name = "tpm2-tss"
 version = "4.1.3"

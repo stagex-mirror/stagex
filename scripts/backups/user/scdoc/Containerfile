@@ -1,0 +1,11 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+ARG VERSION
+ADD fetch/scdoc-${VERSION}.tar.gz .
+WORKDIR /scdoc-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
+RUN --network=none <<-EOF
+	make PREFIX="/usr"
+	make DESTDIR=/rootfs install
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

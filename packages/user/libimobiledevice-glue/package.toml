@@ -5,6 +5,7 @@ description = "Common code used by libimobiledevice project libraries"
 license = "LGPL-2.1-or-later"
 website = "https://libimobiledevice.org"
 
+release_monitoring_id = 342550
 [sources.libimobiledevice-glue]
 hash = "6e2849f221e6ab970566a115d42f3c20f8848e4d40c2ed61ac20dc85f40fa54f"
 file = "libimobiledevice-glue-{version}.tar.bz2"

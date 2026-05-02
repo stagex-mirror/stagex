@@ -1,3 +1,4 @@
+release_monitoring_id = 374643
 [package]
 name = "py-attrs"
 version = "25.3.0"

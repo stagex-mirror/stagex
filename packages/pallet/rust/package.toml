@@ -1,3 +1,4 @@
+release_monitoring_id = 2502
 [package]
 name = "rust"
 version_from = "core-rust"

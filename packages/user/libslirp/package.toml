@@ -1,3 +1,4 @@
+release_monitoring_id = 374728
 [package]
 name = "libslirp"
 version = "4.8.0"

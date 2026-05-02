@@ -1,3 +1,4 @@
+release_monitoring_id = 374658
 [package]
 name = "py-hatch-vcs"
 version = "0.5.0"

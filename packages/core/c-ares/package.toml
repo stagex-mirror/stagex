@@ -5,6 +5,7 @@ description = "C library for asynchronous DNS requests"
 license = "MIT"
 website = "https://c-ares.org/"
 
+release_monitoring_id = 5840
 [sources.c-ares]
 hash = "35410aa625cc9ee95b66475f54aea7c81c673fb63d75fad5eee267711503b72a"
 format = "tar.gz"

@@ -1,12 +1,13 @@
+release_monitoring_id = 374665
 [package]
 name = "py-jsonschema"
-version = "4.2.1"
+version = "4.26.0"
 description = "An implementation of JSON Schema validation for Python"
 website = "https://github.com/Julian/jsonschema"
 license = "MIT"
 
 [sources.py-jsonschema]
-hash = "390713469ae64b8a58698bb3cbc3859abe6925b565a973f87323ef21b09a27a8"
+hash = "0c26707e2efad8aa1bfc5b7ce170f3fccc2e4918ff85989ba9ffa9facb2be326"
 format = "tar.gz"
 file = "py-jsonschema-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/j/jsonschema/jsonschema-{version}.{format}",]

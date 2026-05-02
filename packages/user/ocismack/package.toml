@@ -5,6 +5,7 @@ description = "OCI image flattening tool"
 license = "ISC"
 website = "https://codeberg.org/stagex/ocismack"
 
+release_monitoring_id = 389735
 [sources.ocismack]
 hash = "dc9ae7ce78e46351f4f0a8b5ffbb5ff5fdc90bffab9b55cea3c2b3f9ea20123d"
 format = "tar.gz"

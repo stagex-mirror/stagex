@@ -5,6 +5,7 @@ description = "General-purpose C libraries for skarnet.org software"
 license = "ISC"
 website = "https://skarnet.org/software/skalibs/"
 
+release_monitoring_id = 5486
 [sources.skalibs]
 hash = "b6b79b816f4ba0b6801676b0ed4179b59c8c7809eeffe26db672e404636befc3"
 format = "tar.gz"

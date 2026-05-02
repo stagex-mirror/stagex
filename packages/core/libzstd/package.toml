@@ -1,3 +1,4 @@
+release_monitoring_id = 242689
 [package]
 name = "libzstd"
 version = "1.5.5"

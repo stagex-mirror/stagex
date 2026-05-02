@@ -5,6 +5,7 @@ description = "Utilities for rescue and embedded systems"
 license = "GPL-2.0-only"
 website = "https://www.busybox.ne"
 
+release_monitoring_id = 230
 [sources.busybox]
 hash = "3311dff32e746499f4df0d5df04d7eb396382d7e108bb9250e7b519b837043a4"
 format = "tar.bz2"

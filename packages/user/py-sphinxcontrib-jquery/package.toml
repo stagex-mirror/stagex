@@ -1,3 +1,4 @@
+release_monitoring_id = 374699
 [package]
 name = "py-sphinxcontrib-jquery"
 version = "4.1"

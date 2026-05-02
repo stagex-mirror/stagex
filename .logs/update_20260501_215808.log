@@ -1,0 +1,202 @@
+[2026-05-01 21:58:08] [INFO] ================================================================================
+[2026-05-01 21:58:08] [INFO] StageX Package Update Automation - Resume Mode
+[2026-05-01 21:58:08] [INFO] Branch: wip-pkg-updates-20260501001457
+[2026-05-01 21:58:08] [INFO] PR: #1557
+[2026-05-01 21:58:08] [INFO] ================================================================================
+[2026-05-01 21:58:08] [INFO] 1. Discovering API token...
+[2026-05-01 21:58:08] [INFO]   Token found (masked): 4bab3f3e...
+[2026-05-01 21:58:08] [INFO] 
+2. Fetching stagex-bot PRs for stagex/stagex...
+[2026-05-01 21:58:12] [INFO]   Fetched page 1 (30 PRs), total so far: 30
+[2026-05-01 21:58:15] [INFO]   Fetched page 2 (30 PRs), total so far: 60
+[2026-05-01 21:58:20] [INFO]   Fetched page 3 (30 PRs), total so far: 90
+[2026-05-01 21:58:24] [INFO]   Fetched page 4 (30 PRs), total so far: 120
+[2026-05-01 21:58:30] [INFO]   Fetched page 5 (30 PRs), total so far: 150
+[2026-05-01 21:58:34] [INFO]   Fetched page 6 (30 PRs), total so far: 180
+[2026-05-01 21:58:38] [INFO]   Fetched page 7 (30 PRs), total so far: 210
+[2026-05-01 21:58:43] [INFO]   Fetched page 8 (30 PRs), total so far: 240
+[2026-05-01 21:58:49] [INFO]   Fetched page 9 (30 PRs), total so far: 270
+[2026-05-01 21:58:54] [INFO]   Fetched page 10 (30 PRs), total so far: 300
+[2026-05-01 21:58:55] [INFO]   Fetched page 11 (6 PRs), total so far: 306
+[2026-05-01 21:58:55] [INFO]   Found 306 open PRs by stagex-bot
+[2026-05-01 21:58:55] [INFO]   Filtered to 234 unique WIP update PRs (one per package)
+[2026-05-01 21:58:59] [INFO]   Found 421 packages in build order
+[2026-05-01 21:58:59] [INFO] 
+4. Checking out branch wip-pkg-updates-20260501001457...
+[2026-05-01 21:58:59] [INFO]   Checked out branch wip-pkg-updates-20260501001457
+[2026-05-01 21:58:59] [INFO] 
+5. Updating PR description...
+[2026-05-01 21:59:02] [INFO]   Updated PR #1557 description
+[2026-05-01 21:59:02] [INFO] 
+6. Processing packages in build order...
+[2026-05-01 21:59:02] [INFO] 
+================================================================================
+[2026-05-01 21:59:02] [INFO] Processing: expat (target: 2.7.5)
+[2026-05-01 21:59:02] [INFO] ================================================================================
+[2026-05-01 21:59:02] [WARNING]   No package.toml found in PR changes
+[2026-05-01 21:59:02] [INFO] 
+================================================================================
+[2026-05-01 21:59:02] [INFO] Processing: meson (target: 1.11.1)
+[2026-05-01 21:59:02] [INFO] ================================================================================
+[2026-05-01 21:59:03] [INFO]   Applied package.toml changes
+[2026-05-01 21:59:03] [INFO]   Building core-meson...
+[2026-05-01 21:59:03] [INFO] Running: cd /home/lrvick/Sources/stagex && make clean-core-meson
+[2026-05-01 21:59:05] [INFO] Clean exit code: 2
+[2026-05-01 21:59:06] [INFO] Running: cd /home/lrvick/Sources/stagex && make core-meson
+[2026-05-01 22:00:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:01:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:02:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:03:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:04:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:05:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:06:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:07:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:08:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:09:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:10:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:11:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:12:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:13:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:14:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:15:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:16:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:17:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:18:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:19:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:20:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:21:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:22:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:23:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:24:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:25:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:26:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:27:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:28:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:29:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:30:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:31:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:32:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:33:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:34:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:35:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:36:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:37:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:38:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:39:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:40:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:41:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:42:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:43:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:44:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:45:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:46:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:47:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:48:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:49:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:50:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:51:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:52:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:53:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:54:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:55:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:56:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:57:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:58:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 22:59:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:00:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:01:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:02:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:03:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:04:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:05:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:06:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:07:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:08:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:09:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:10:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:11:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:12:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:13:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:14:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:15:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:16:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:17:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:18:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:19:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:20:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:21:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:22:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:23:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:24:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:25:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:26:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:27:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:28:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:29:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:30:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:31:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:32:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:33:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:34:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:35:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:36:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:37:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:38:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:39:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:40:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:41:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:42:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:43:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:44:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:45:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:46:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:47:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:48:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:49:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:50:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:51:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:52:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:53:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:54:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:55:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:56:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:57:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:58:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 23:59:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:00:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:01:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:02:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:03:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:04:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:05:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:06:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:07:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:08:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:09:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:10:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:11:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:12:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:13:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:14:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:15:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:16:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:17:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:18:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:19:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:20:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:21:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:22:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:23:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:24:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:25:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:26:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:27:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:28:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:29:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:30:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:31:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:32:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:33:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:34:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:35:06] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-02 00:36:06] [PROGRESS] Build still running... (1 minutes elapsed)

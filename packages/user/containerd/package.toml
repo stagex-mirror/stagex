@@ -1,12 +1,13 @@
+release_monitoring_id = 389705
 [package]
 name = "containerd"
-version = "1.7.22"
+version = "2.3.0"
 description = "Open and reliable container runtime"
 license = "Apache-2.0"
 website = "https://containerd.io"
 
 [sources.containerd]
-hash = "8c5edde741b7596af63c021429a1212bd616350ed65a7b741eeffc47e27ee9a9"
+hash = "915ef1d9fab5fbd8e3726bfb80c901fd87aa25e938bed5194df132853036ed58"
 format = "tar.gz"
 file = "containerd-{version}.{format}"
 mirrors = [ "https://github.com/containerd/containerd/archive/v{version}.{format}",]

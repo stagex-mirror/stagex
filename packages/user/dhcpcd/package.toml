@@ -5,6 +5,7 @@ description = "DHCP and DHCPv6 client with IPv4LL and IPv6RS support"
 license = "BSD-2-Clause"
 website = "https://github.com/NetworkConfiguration/dhcpcd"
 
+release_monitoring_id = 11429
 [sources.dhcpcd]
 hash = "b6aa46932074906a9badef1bfe142b8aff9d041c2689e1ef8b74c12e9fd942bd"
 format = "tar.xz"

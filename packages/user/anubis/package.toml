@@ -1,3 +1,4 @@
+release_monitoring_id = 374775
 [package]
 name = "anubis"
 version = "1.25.0"

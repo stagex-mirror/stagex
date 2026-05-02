@@ -1,12 +1,13 @@
+release_monitoring_id = 1692
 [package]
 name = "meson"
-version = "1.7.0"
+version = "1.11.1"
 description = "Fast and user friendly build system"
 license = "Apache-2.0"
 website = "https://mesonbuild.com/"
 
 [sources.meson]
-hash = "08efbe84803eed07f863b05092d653a9d348f7038761d900412fddf56deb0284"
+hash = "6788ae299979643f8d841bcaf64352558436cae45a0355148a3aeeccf7913866"
 format = "tar.gz"
 file = "meson-{version}.{format}"
 mirrors = [ "https://github.com/mesonbuild/meson/releases/download/{version}/{file}",]

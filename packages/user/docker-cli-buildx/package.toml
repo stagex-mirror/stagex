@@ -1,3 +1,4 @@
+release_monitoring_id = 374788
 [package]
 name = "docker-cli-buildx"
 version = "0.32.1"

@@ -1,3 +1,4 @@
+release_monitoring_id = 304
 [package]
 name = "gcc"
 version_from = "core-gcc"

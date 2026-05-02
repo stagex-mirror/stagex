@@ -1,3 +1,4 @@
+release_monitoring_id = 374621
 [package]
 name = "py-installer"
 version = "1.0.0"

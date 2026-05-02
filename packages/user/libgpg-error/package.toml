@@ -5,6 +5,7 @@ description = "Common error values for GnuPG components"
 license = "LGPL-2.1-or-later"
 website = "https://gnupg.org/software/libgpg-error/"
 
+release_monitoring_id = 1628
 [sources.libgpg-error]
 hash = "a19bc5087fd97026d93cb4b45d51638d1a25202a5e1fbc3905799f424cfa6134"
 format = "tar.bz2"

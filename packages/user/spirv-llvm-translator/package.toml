@@ -5,6 +5,7 @@ description = "Library for bi-directional translation between SPIR-V and LLVM IR
 website = "https://github.com/KhronosGroup/SPIRV-LLVM-Translator"
 license = "NCSA"
 
+release_monitoring_id = 227273
 [sources.spirv-llvm-translator]
 hash = "cdff3e1f5a09172f899d3f64934fb422e4772851703b0f397da4befe5afb868a"
 file = "llvm-translator-{version}.tar.gz"

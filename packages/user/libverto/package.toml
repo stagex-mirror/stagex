@@ -5,6 +5,7 @@ description = "Main loop abstraction library"
 license = "MIT"
 website = "https://github.com/latchset/libverto"
 
+release_monitoring_id = 15737
 [sources.libverto]
 hash = "8d1756fd704f147549f606cd987050fb94b0b1ff621ea6aa4d6bf0b74450468a"
 format = "tar.gz"

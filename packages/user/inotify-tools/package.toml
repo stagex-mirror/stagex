@@ -5,6 +5,7 @@ description = "inotify-tools is a C library and a set of command-line programs f
 license = "GPL-2.0-only"
 website = "https://github.com/inotify-tools/inotify-tools"
 
+release_monitoring_id = 8864
 [sources.inotify-tools]
 hash = "1dfa33f80b6797ce2f6c01f454fd486d30be4dca1b0c5c2ea9ba3c30a5c39855"
 format = "tar.gz"

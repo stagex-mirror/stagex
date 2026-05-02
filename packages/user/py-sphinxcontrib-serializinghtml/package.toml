@@ -1,3 +1,4 @@
+release_monitoring_id = 374765
 [package]
 name = "py-sphinxcontrib-serializinghtml"
 version = "1.1.9"

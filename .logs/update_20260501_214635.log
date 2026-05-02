@@ -1,0 +1,47 @@
+[2026-05-01 21:46:35] [INFO] ================================================================================
+[2026-05-01 21:46:35] [INFO] StageX Package Update Automation - Resume Mode
+[2026-05-01 21:46:35] [INFO] Branch: wip-pkg-updates-20260501001457
+[2026-05-01 21:46:35] [INFO] PR: #1557
+[2026-05-01 21:46:35] [INFO] ================================================================================
+[2026-05-01 21:46:35] [INFO] 1. Discovering API token...
+[2026-05-01 21:46:35] [INFO]   Token found (masked): 4bab3f3e...
+[2026-05-01 21:46:35] [INFO] 
+2. Fetching stagex-bot PRs for stagex/stagex...
+[2026-05-01 21:46:39] [INFO]   Fetched page 1 (30 PRs), total so far: 30
+[2026-05-01 21:46:43] [INFO]   Fetched page 2 (30 PRs), total so far: 60
+[2026-05-01 21:46:47] [INFO]   Fetched page 3 (30 PRs), total so far: 90
+[2026-05-01 21:46:51] [INFO]   Fetched page 4 (30 PRs), total so far: 120
+[2026-05-01 21:46:58] [INFO]   Fetched page 5 (30 PRs), total so far: 150
+[2026-05-01 21:47:03] [INFO]   Fetched page 6 (30 PRs), total so far: 180
+[2026-05-01 21:47:07] [INFO]   Fetched page 7 (30 PRs), total so far: 210
+[2026-05-01 21:47:11] [INFO]   Fetched page 8 (30 PRs), total so far: 240
+[2026-05-01 21:47:16] [INFO]   Fetched page 9 (30 PRs), total so far: 270
+[2026-05-01 21:47:21] [INFO]   Fetched page 10 (30 PRs), total so far: 300
+[2026-05-01 21:47:22] [INFO]   Fetched page 11 (6 PRs), total so far: 306
+[2026-05-01 21:47:22] [INFO]   Found 306 open PRs by stagex-bot
+[2026-05-01 21:47:22] [INFO]   Filtered to 234 unique WIP update PRs (one per package)
+[2026-05-01 21:47:26] [INFO]   Found 417 packages in build order
+[2026-05-01 21:47:26] [INFO] 
+4. Checking out branch wip-pkg-updates-20260501001457...
+[2026-05-01 21:47:27] [INFO]   Checked out branch wip-pkg-updates-20260501001457
+[2026-05-01 21:47:27] [INFO] 
+5. Updating PR description...
+[2026-05-01 21:47:28] [INFO]   Updated PR #1557 description
+[2026-05-01 21:47:28] [INFO] 
+6. Processing packages in build order...
+[2026-05-01 21:47:28] [INFO] 
+================================================================================
+[2026-05-01 21:47:28] [INFO] Processing: vim (target: 9.2.0428)
+[2026-05-01 21:47:28] [INFO] ================================================================================
+[2026-05-01 21:47:29] [INFO]   Applied package.toml changes
+[2026-05-01 21:47:29] [INFO]   Building user-vim...
+[2026-05-01 21:47:29] [INFO] Running: cd /home/lrvick/Sources/stagex && make clean-user-vim
+[2026-05-01 21:47:32] [INFO] Clean exit code: 2
+[2026-05-01 21:47:32] [INFO] Running: cd /home/lrvick/Sources/stagex && make user-vim
+[2026-05-01 21:48:32] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 21:49:32] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 21:50:32] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 21:51:32] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 21:52:32] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 21:53:32] [PROGRESS] Build still running... (1 minutes elapsed)
+[2026-05-01 21:54:32] [PROGRESS] Build still running... (1 minutes elapsed)

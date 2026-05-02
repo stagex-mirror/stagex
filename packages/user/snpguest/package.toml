@@ -5,6 +5,7 @@ description = "CLI utility for managing an AMD SEV-SNP enabled guest"
 license = "Apache-2.0"
 website = "https://github.com/virtee/snpguest"
 
+release_monitoring_id = 376758
 [sources.snpguest]
 hash = "5f4452fc92c365d9e41098ec9e7ebeb46bdf0a7150dc81a6bb2e022ff295789e"
 format = "tar.gz"

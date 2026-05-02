@@ -1,3 +1,4 @@
+release_monitoring_id = 374700
 [package]
 name = "py-sphinxcontrib-qthelp"
 version = "1.0.6"

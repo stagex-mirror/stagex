@@ -1,3 +1,4 @@
+release_monitoring_id = 1275
 [package]
 name = "unixodbc"
 version = "2.3.12"

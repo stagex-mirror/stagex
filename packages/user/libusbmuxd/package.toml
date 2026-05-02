@@ -1,3 +1,4 @@
+release_monitoring_id = 374732
 [package]
 name = "libusbmuxd"
 version = "2.1.0"

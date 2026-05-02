@@ -5,6 +5,7 @@ description = "core components of ansible: A configuration-management, deploymen
 website = "https:/ansible.com"
 license = "GPL-3.0-or-later"
 
+release_monitoring_id = 165410
 [sources.ansible-core]
 hash = "799717d1b57aadeb8955ab21dfb266e14fff8abb13f707e5a736d3edc3f19e78"
 format = "tar.gz"

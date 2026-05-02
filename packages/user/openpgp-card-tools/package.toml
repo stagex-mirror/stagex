@@ -5,6 +5,7 @@ description = "Tools for OpenPGP card devices"
 license = "Apache-2.0 OR MIT"
 website = "https://codeberg.org/openpgp-card/openpgp-card-tools"
 
+release_monitoring_id = 389737
 [sources.openpgp-card-tools]
 hash = "fb8cd1c95c558f1e16a749746dadc6040deca54f4e3aa7735ffa5f082cdfcc01"
 format = "tar.gz"

@@ -1,3 +1,4 @@
+release_monitoring_id = 389691
 [package]
 name = "typst"
 version = "0.14.0"

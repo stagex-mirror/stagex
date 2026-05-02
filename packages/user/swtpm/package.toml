@@ -1,3 +1,4 @@
+release_monitoring_id = 374608
 [package]
 name = "swtpm"
 version = "0.10.1"

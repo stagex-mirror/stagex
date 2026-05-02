@@ -1,3 +1,4 @@
+release_monitoring_id = 374772
 [package]
 name = "acpica"
 version = "20260408"

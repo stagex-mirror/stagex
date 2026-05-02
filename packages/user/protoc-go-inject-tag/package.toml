@@ -1,3 +1,4 @@
+release_monitoring_id = 374762
 [package]
 name = "protoc-go-inject-tag"
 version = "1.4.0"

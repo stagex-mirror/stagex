@@ -5,6 +5,7 @@ description = "Implementation of obstack(3) for musl libc"
 license = "LGPL-2.1-or-later"
 website = "https://github.com/void-linux/musl-obstack"
 
+release_monitoring_id = 146206
 [sources.musl-obstack]
 hash = "9ffb3479b15df0170eba4480e51723c3961dbe0b461ec289744622db03a69395"
 format = "tar.gz"

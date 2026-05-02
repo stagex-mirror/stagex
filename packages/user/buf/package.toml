@@ -1,3 +1,4 @@
+release_monitoring_id = 389703
 [package]
 name = "buf"
 version = "1.69.0"
