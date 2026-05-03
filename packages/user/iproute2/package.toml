@@ -6,7 +6,6 @@ description = "IP routing utilities"
 license = "GPL-2.0-or-later"
 website = "https://wiki.linuxfoundation.org/networking/iproute2"
 
-release_monitoring_id = 1392
 [sources.iproute2]
 hash = "cf9cf8b9892e54566a3fa50e70445546e6b3e202da7ea626cc724eec2856bbfc"
 format = "tar.xz"

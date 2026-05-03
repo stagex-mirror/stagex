@@ -1,4 +1,3 @@
-release_monitoring_id = 389702
 [package]
 name        = "opentofu"
 version     = "1.11.6"

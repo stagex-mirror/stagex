@@ -1,4 +1,3 @@
-release_monitoring_id = 374751
 [package]
 name = "npth"
 version = "1.8"

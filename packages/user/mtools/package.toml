@@ -1,4 +1,3 @@
-release_monitoring_id = 374749
 [package]
 name = "mtools"
 version = "4.0.45"

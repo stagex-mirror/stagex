@@ -6,7 +6,6 @@ description = "ASN.1 structure parser library"
 license = "LGPL-2.1-or-later"
 website = "https://www.gnu.org/software/libtasn1/"
 
-release_monitoring_id = 1734
 [sources.libtasn1]
 hash = "1d8a444a223cc5464240777346e125de51d8e6abf0b8bac742ac84609167dc87"
 format = "tar.gz"

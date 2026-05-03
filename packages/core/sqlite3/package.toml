@@ -1,4 +1,3 @@
-release_monitoring_id = 185
 [package]
 name = "sqlite3"
 version = "3.50.1"

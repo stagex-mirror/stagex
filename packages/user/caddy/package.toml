@@ -1,4 +1,3 @@
-release_monitoring_id = 374783
 [package]
 name = "caddy"
 version = "2.11.2"

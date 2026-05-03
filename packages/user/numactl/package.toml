@@ -6,7 +6,6 @@ description = "NUMA memory policy support for Linux"
 license = "LGPL-2.1-only"
 website = "https://github.com/numactl/numactl"
 
-release_monitoring_id = 2507
 [sources.numactl]
 hash = "f2672a0381cb59196e9c246bf8bcc43d5568bc457700a697f1a1df762b9af884"
 format = "tar.gz"

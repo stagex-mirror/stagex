@@ -1,4 +1,3 @@
-release_monitoring_id = 1281
 [package]
 name = "iptables"
 version = "1.8.10"

@@ -1,4 +1,3 @@
-release_monitoring_id = 374789
 [package]
 name = "edk2"
 version = "202602"

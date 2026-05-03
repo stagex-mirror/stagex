@@ -1,4 +1,3 @@
-release_monitoring_id = 374756
 [package]
 name = "pgbouncer"
 version = "1.25.1"

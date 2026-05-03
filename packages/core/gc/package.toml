@@ -1,4 +1,3 @@
-release_monitoring_id = 132
 [package]
 name = "gc"
 version = "8.2.12"

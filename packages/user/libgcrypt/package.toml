@@ -6,7 +6,6 @@ description = "General purpose cryptographic library based on GnuPG"
 license = "LGPL-2.1-or-later"
 website = "https://gnupg.org/software/libgcrypt/"
 
-release_monitoring_id = 1623
 [sources.libgcrypt]
 hash = "d7ee3b90330ab71c39ffea4274a356089d375f716f9893ef5ecabc73d3e1551d"
 format = "tar.bz2"

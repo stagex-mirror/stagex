@@ -6,7 +6,6 @@ description = "Command line utility for managing the AMD SEV platform"
 license = "Apache-2.0"
 website = "https://github.com/virtee/sevctl"
 
-release_monitoring_id = 188189
 [sources.sevctl]
 hash = "e368417ed7170820951fe6d085745131fb009b3f5d326031998bc8796a19e7ae"
 format = "tar.gz"

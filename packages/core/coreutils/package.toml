@@ -1,4 +1,3 @@
-release_monitoring_id = 174
 [package]
 name = "coreutils"
 version = "9.7"

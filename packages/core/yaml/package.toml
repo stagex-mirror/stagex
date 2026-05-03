@@ -1,4 +1,3 @@
-release_monitoring_id = 374631
 [package]
 name = "yaml"
 version = "0.2.5"

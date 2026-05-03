@@ -1,4 +1,3 @@
-release_monitoring_id = 374731
 [package]
 name = "libusb"
 version = "1.0.27"

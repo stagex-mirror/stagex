@@ -6,7 +6,6 @@ description = "Kubernetes CLI To Manage Your Clusters In Style!"
 license = "Apache-2.0"
 website = "https://github.com/derailed/k9s"
 
-release_monitoring_id = 242947
 [sources.k9s]
 hash = "4a438b4bc480c05ba6f78a1573ee7e1dad7956ef3e30912ae22c744cea031f96"
 format = "tar.gz"

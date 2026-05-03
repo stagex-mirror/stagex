@@ -1,4 +1,3 @@
-release_monitoring_id = 374641
 [package]
 name = "xmlto"
 version = "0.0.29"

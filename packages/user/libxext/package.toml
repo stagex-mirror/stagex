@@ -1,4 +1,3 @@
-release_monitoring_id = 374738
 [package]
 name = "libxext"
 version = "1.3.6"

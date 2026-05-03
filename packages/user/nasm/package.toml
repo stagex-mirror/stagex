@@ -1,4 +1,3 @@
-release_monitoring_id = 374750
 [package]
 name = "nasm"
 version = "3.01"

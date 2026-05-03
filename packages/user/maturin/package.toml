@@ -1,4 +1,3 @@
-release_monitoring_id = 374746
 [package]
 name = "maturin"
 version = "1.13.1"

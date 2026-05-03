@@ -1,4 +1,3 @@
-release_monitoring_id = 374637
 [package]
 name = "tflint"
 version = "0.62.0"

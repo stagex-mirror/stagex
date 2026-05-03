@@ -1,4 +1,3 @@
-release_monitoring_id = 374790
 [package]
 name = "elfutils"
 version = "0.193"

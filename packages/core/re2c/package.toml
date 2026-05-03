@@ -6,7 +6,6 @@ description = "Lexer generator for C, C++, and Go"
 license = "Unlicense"
 website = "https://re2c.org"
 
-release_monitoring_id = 7664
 [sources.re2c]
 hash = "d89c5d795e67423282fd1c8245eb37047eafabf78231a63d4c1c13aefcee9a2b"
 format = "tar.gz"

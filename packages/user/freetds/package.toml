@@ -6,7 +6,6 @@ description = "Free implementation of the TDS protocol for Sybase and Microsoft 
 license = "LGPL-2.0-or-later"
 website = "https://www.freetds.org"
 
-release_monitoring_id = 8198
 [sources.freetds]
 hash = "8d154ce458d1825a8625b0ef1c3288afecfc32b3a09015a5ece4fbdf8aafd144"
 format = "tar.bz2"

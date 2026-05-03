@@ -1,4 +1,3 @@
-release_monitoring_id = 165
 [package]
 name = "libtool"
 version = "2.5.4"

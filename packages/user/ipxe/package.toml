@@ -6,7 +6,6 @@ description = "Open source network boot firmware"
 license = "GPL-2.0-or-later"
 website = "https://ipxe.org"
 
-release_monitoring_id = 10507
 [sources.ipxe]
 hash = "ff429558f9a303f4bd6952c6fffb5e530ad15efa853dda4d1a8662fe8eafee58"
 format = "tar.gz"

@@ -1,4 +1,3 @@
-release_monitoring_id = 3904
 [package]
 name = "fmt"
 version = "12.1.0"

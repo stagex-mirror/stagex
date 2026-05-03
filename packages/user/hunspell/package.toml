@@ -1,4 +1,3 @@
-release_monitoring_id = 374716
 [package]
 name = "hunspell"
 version = "1.7.2"

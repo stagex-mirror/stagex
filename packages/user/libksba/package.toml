@@ -6,7 +6,6 @@ description = "CMS and X.509 access library for GnuPG"
 license = "LGPL-2.1-or-later AND GPL-2.0-or-later"
 website = "https://gnupg.org/software/libksba/"
 
-release_monitoring_id = 1649
 [sources.libksba]
 hash = "0f4510f1c7a679c3545990a31479f391ad45d84e039176309d42f80cf41743f5"
 format = "tar.bz2"

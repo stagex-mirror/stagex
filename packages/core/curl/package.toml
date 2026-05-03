@@ -1,4 +1,3 @@
-release_monitoring_id = 285
 [package]
 name = "curl"
 version = "8.9.1"

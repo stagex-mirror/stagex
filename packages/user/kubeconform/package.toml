@@ -6,7 +6,6 @@ description = "FAST Kubernetes manifests validator, with support for Custom Reso
 website = "https://github.com/yannh/kubeconform"
 license = "Apache-2.0"
 
-release_monitoring_id = 374708
 [sources.kubeconform]
 hash = "9cb00e6385346c9de21e8fe318a4ec9854a8c7165d08b10b20ed32e28faef9a8"
 format = "tar.gz"

@@ -1,4 +1,3 @@
-release_monitoring_id = 1692
 [package]
 name = "meson"
 version = "1.11.1"

@@ -1,4 +1,3 @@
-release_monitoring_id = 242690
 [package]
 name = "libarchive"
 version = "3.8.7"

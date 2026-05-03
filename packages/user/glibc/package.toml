@@ -6,7 +6,6 @@ description = "GNU C Library"
 license = "GPL-2.0-or-later AND LGPL-2.1-or-later"
 website = "https://www.gnu.org/software/libc/"
 
-release_monitoring_id = 5401
 [sources.glibc]
 hash = "e1e622cbd635019090fa23260e5d9ec219b12f97ae7ae02f033d4ae42cf2c004"
 file = "glibc-{version}.tar.gz"

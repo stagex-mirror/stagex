@@ -1,4 +1,3 @@
-release_monitoring_id = 2807
 [package]
 name = "postgresql"
 version = "18.3"

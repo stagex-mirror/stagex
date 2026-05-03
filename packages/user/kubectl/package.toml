@@ -1,4 +1,3 @@
-release_monitoring_id = 389700
 [package]
 name = "kubectl"
 version = "1.34.1"

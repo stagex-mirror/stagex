@@ -1,4 +1,3 @@
-release_monitoring_id = 140
 [package]
 name = "gmp"
 version = "6.3.0"

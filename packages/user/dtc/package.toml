@@ -1,4 +1,3 @@
-release_monitoring_id = 2810
 [package]
 name = "dtc"
 version = "1.7.2"

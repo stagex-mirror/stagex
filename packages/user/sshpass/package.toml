@@ -6,7 +6,6 @@ description = "Fool ssh into accepting an interactive password non-interactively
 license = "GPL-2.0-or-later"
 website = "https://sourceforge.net/projects/sshpass/"
 
-release_monitoring_id = 12961
 [sources.openssh]
 hash = "ad1106c203cbb56185ca3bad8c6ccafca3b4064696194da879f81c8d7bdfeeda"
 format = "tar.gz"

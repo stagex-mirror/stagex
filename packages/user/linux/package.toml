@@ -1,4 +1,3 @@
-release_monitoring_id = 4695
 [package]
 name = "linux"
 version = "7.0"

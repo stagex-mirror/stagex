@@ -6,7 +6,6 @@ description = "Command-line tool for interacting with gRPC servers"
 license = "MIT"
 website = "https://github.com/fullstorydev/grpcurl"
 
-release_monitoring_id = 242687
 [sources.grpcurl]
 hash = "bb555087f279af156159c86d4d3d5dd3f2991129e4cd6b09114e6851a679340d"
 format = "tar.gz"

@@ -6,7 +6,6 @@ description = "Streaming replication for SQLite"
 license = "Apache-2.0"
 website = "https://litestream.io"
 
-release_monitoring_id = 389733
 [sources.litestream]
 hash = "31ddd0a970bcf252192e8f02e11be1b6b7f4c5cc97522526884acb4ee489bf7c"
 format = "tar.gz"

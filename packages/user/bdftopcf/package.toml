@@ -6,7 +6,6 @@ description = "X.Org font utility"
 license = "MIT"
 website = "https://xorg.freedesktop.org"
 
-release_monitoring_id = 15054
 [sources.bdftopcf]
 hash = "bc60be5904330faaa3ddd2aed7874bee2f29e4387c245d6787552f067eb0523a"
 format = "tar.xz"

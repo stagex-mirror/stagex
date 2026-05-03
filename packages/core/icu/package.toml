@@ -1,4 +1,3 @@
-release_monitoring_id = 1530
 [package]
 name = "icu"
 version = "74.2"

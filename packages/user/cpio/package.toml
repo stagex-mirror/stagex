@@ -1,4 +1,3 @@
-release_monitoring_id = 2809
 [package]
 name = "cpio"
 version = "2.15"

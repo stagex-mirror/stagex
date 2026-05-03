@@ -1,4 +1,3 @@
-release_monitoring_id = 374717
 [package]
 name = "hwdata"
 version = "0.406"

@@ -1,4 +1,3 @@
-release_monitoring_id = 374752
 [package]
 name = "nuspell"
 version = "5.1.7"

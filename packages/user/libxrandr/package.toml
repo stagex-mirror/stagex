@@ -1,4 +1,3 @@
-release_monitoring_id = 374741
 [package]
 name = "libxrandr"
 version = "1.5.4"

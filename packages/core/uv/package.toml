@@ -1,4 +1,3 @@
-release_monitoring_id = 389693
 [package]
 name = "uv"
 version = "0.9.25"

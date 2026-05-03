@@ -1,0 +1,525 @@
+2026-05-03 23:22:09,180 - INFO - Determining build order from make -n...
+2026-05-03 23:22:09,968 - INFO - Found 0 packages in build order
+2026-05-03 23:22:09,976 - WARNING - Failed to load stage2: 'version'
+2026-05-03 23:22:09,976 - WARNING - Failed to load stage0: 'version'
+2026-05-03 23:22:09,977 - WARNING - Failed to load stage3: 'version'
+2026-05-03 23:22:09,977 - WARNING - Failed to load chrpath: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:09,978 - WARNING - Failed to load libassuan: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:09,980 - WARNING - Failed to load grpcurl: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:09,980 - WARNING - Failed to load numactl: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:09,981 - WARNING - Failed to load libxshmfence: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:09,981 - WARNING - Failed to load libtpms: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:09,983 - WARNING - Failed to load snphost: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:09,983 - WARNING - Failed to load dhcpcd: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:09,984 - WARNING - Failed to load libmnl: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:09,984 - WARNING - Failed to load libgcrypt: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:09,985 - WARNING - Failed to load kubeconform: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:09,988 - WARNING - Failed to load litestream: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:09,989 - WARNING - Failed to load hardened_malloc: Cannot overwrite a value (at line 7, column 31)
+2026-05-03 23:22:09,990 - WARNING - Failed to load freetds: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:09,990 - WARNING - Failed to load libqrencode: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:09,991 - WARNING - Failed to load ocismack: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:09,992 - WARNING - Failed to load natscli: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:09,992 - WARNING - Failed to load skalibs: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:09,992 - WARNING - Failed to load libksba: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:09,992 - WARNING - Failed to load libpciaccess: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:09,993 - WARNING - Failed to load libtasn1: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:09,993 - WARNING - Failed to load sxctl: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:09,993 - WARNING - Failed to load sshpass: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:09,994 - WARNING - Failed to load sevctl: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:09,994 - WARNING - Failed to load xorgproto: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:09,995 - WARNING - Failed to load ipxe: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:09,995 - WARNING - Failed to load groff: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:09,995 - WARNING - Failed to load dosfstools: Cannot overwrite a value (at line 9, column 28)
+2026-05-03 23:22:09,999 - WARNING - Failed to load libbsd: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:09,999 - WARNING - Failed to load seabios: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:09,999 - WARNING - Failed to load libnftnl: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:10,000 - WARNING - Failed to load guestctl: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:10,000 - WARNING - Failed to load glibc: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:10,002 - WARNING - Failed to load snpguest: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:10,003 - WARNING - Failed to load libxcb: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:10,003 - WARNING - Failed to load eif_build: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:10,003 - WARNING - Failed to load libevent: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:10,003 - WARNING - Failed to load libverto: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:10,004 - WARNING - Failed to load bdftopcf: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:10,004 - WARNING - Failed to load eudev: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:10,008 - WARNING - Failed to load e2fsprogs: Cannot overwrite a value (at line 9, column 28)
+2026-05-03 23:22:10,008 - WARNING - Failed to load k9s: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:10,008 - WARNING - Failed to load utmps: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:10,009 - WARNING - Failed to load iproute2: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:10,009 - WARNING - Failed to load scdoc: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:10,013 - WARNING - Failed to load clang-meson-busybox: 'version'
+2026-05-03 23:22:10,013 - WARNING - Failed to load clang-gnu-busybox: 'version'
+2026-05-03 23:22:10,014 - WARNING - Failed to load gcc-gnu-busybox: 'version'
+2026-05-03 23:22:10,014 - WARNING - Failed to load solidity: 'version'
+2026-05-03 23:22:10,014 - WARNING - Failed to load clang-cmake-busybox: 'version'
+2026-05-03 23:22:10,014 - WARNING - Failed to load gcc-gnu-gnu: 'version'
+2026-05-03 23:22:10,014 - WARNING - Failed to load luarocks: 'version'
+2026-05-03 23:22:10,014 - WARNING - Failed to load rust: 'version'
+2026-05-03 23:22:10,014 - WARNING - Failed to load gcc: 'version'
+2026-05-03 23:22:10,014 - WARNING - Failed to load php: 'version'
+2026-05-03 23:22:10,014 - WARNING - Failed to load python: 'version'
+2026-05-03 23:22:10,014 - WARNING - Failed to load clang: 'version'
+2026-05-03 23:22:10,015 - WARNING - Failed to load nodejs: 'version'
+2026-05-03 23:22:10,015 - WARNING - Failed to load cython: 'version'
+2026-05-03 23:22:10,015 - WARNING - Failed to load gcc-cmake-busybox: 'version'
+2026-05-03 23:22:10,015 - WARNING - Failed to load php-composer: 'version'
+2026-05-03 23:22:10,015 - WARNING - Failed to load go: 'version'
+2026-05-03 23:22:10,015 - WARNING - Failed to load lua: 'version'
+2026-05-03 23:22:10,015 - WARNING - Failed to load cgo: 'version'
+2026-05-03 23:22:10,015 - WARNING - Failed to load gcc-meson-busybox: 'version'
+2026-05-03 23:22:10,017 - WARNING - Failed to load libatomic_ops: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:10,020 - WARNING - Failed to load cross-x86_64-gnu-gcc: 'version'
+2026-05-03 23:22:10,025 - WARNING - Failed to load filesystem: 'version'
+2026-05-03 23:22:10,026 - WARNING - Failed to load profile: 'version'
+2026-05-03 23:22:10,030 - WARNING - Failed to load re2c: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:10,033 - INFO - Loaded 369 packages
+2026-05-03 23:22:10,033 - INFO - Updated 0 packages
+2026-05-03 23:22:18,935 - INFO - Determining build order from make -n...
+2026-05-03 23:22:19,710 - INFO - Found 0 packages in build order
+2026-05-03 23:22:19,718 - WARNING - Failed to load stage2: 'version'
+2026-05-03 23:22:19,718 - WARNING - Failed to load stage0: 'version'
+2026-05-03 23:22:19,719 - WARNING - Failed to load stage3: 'version'
+2026-05-03 23:22:19,719 - WARNING - Failed to load chrpath: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:19,720 - WARNING - Failed to load libassuan: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:19,722 - WARNING - Failed to load grpcurl: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:19,722 - WARNING - Failed to load numactl: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:19,723 - WARNING - Failed to load libxshmfence: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:19,723 - WARNING - Failed to load libtpms: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:19,725 - WARNING - Failed to load snphost: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:19,725 - WARNING - Failed to load dhcpcd: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:19,726 - WARNING - Failed to load libmnl: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:19,726 - WARNING - Failed to load libgcrypt: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:19,727 - WARNING - Failed to load kubeconform: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:19,730 - WARNING - Failed to load litestream: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:19,731 - WARNING - Failed to load hardened_malloc: Cannot overwrite a value (at line 7, column 31)
+2026-05-03 23:22:19,732 - WARNING - Failed to load freetds: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:19,732 - WARNING - Failed to load libqrencode: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:19,733 - WARNING - Failed to load ocismack: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:19,733 - WARNING - Failed to load natscli: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:19,734 - WARNING - Failed to load skalibs: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:19,734 - WARNING - Failed to load libksba: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:19,734 - WARNING - Failed to load libpciaccess: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:19,735 - WARNING - Failed to load libtasn1: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:19,735 - WARNING - Failed to load sxctl: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:19,735 - WARNING - Failed to load sshpass: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:19,736 - WARNING - Failed to load sevctl: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:19,736 - WARNING - Failed to load xorgproto: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:19,737 - WARNING - Failed to load ipxe: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:19,737 - WARNING - Failed to load groff: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:19,737 - WARNING - Failed to load dosfstools: Cannot overwrite a value (at line 9, column 28)
+2026-05-03 23:22:19,740 - WARNING - Failed to load libbsd: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:19,741 - WARNING - Failed to load seabios: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:19,741 - WARNING - Failed to load libnftnl: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:19,742 - WARNING - Failed to load guestctl: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:19,742 - WARNING - Failed to load glibc: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:19,744 - WARNING - Failed to load snpguest: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:19,744 - WARNING - Failed to load libxcb: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:19,745 - WARNING - Failed to load eif_build: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:19,745 - WARNING - Failed to load libevent: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:19,745 - WARNING - Failed to load libverto: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:19,745 - WARNING - Failed to load bdftopcf: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:19,746 - WARNING - Failed to load eudev: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:19,749 - WARNING - Failed to load e2fsprogs: Cannot overwrite a value (at line 9, column 28)
+2026-05-03 23:22:19,750 - WARNING - Failed to load k9s: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:19,750 - WARNING - Failed to load utmps: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:19,750 - WARNING - Failed to load iproute2: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:19,750 - WARNING - Failed to load scdoc: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:19,755 - WARNING - Failed to load clang-meson-busybox: 'version'
+2026-05-03 23:22:19,755 - WARNING - Failed to load clang-gnu-busybox: 'version'
+2026-05-03 23:22:19,755 - WARNING - Failed to load gcc-gnu-busybox: 'version'
+2026-05-03 23:22:19,755 - WARNING - Failed to load solidity: 'version'
+2026-05-03 23:22:19,755 - WARNING - Failed to load clang-cmake-busybox: 'version'
+2026-05-03 23:22:19,755 - WARNING - Failed to load gcc-gnu-gnu: 'version'
+2026-05-03 23:22:19,755 - WARNING - Failed to load luarocks: 'version'
+2026-05-03 23:22:19,756 - WARNING - Failed to load rust: 'version'
+2026-05-03 23:22:19,756 - WARNING - Failed to load gcc: 'version'
+2026-05-03 23:22:19,756 - WARNING - Failed to load php: 'version'
+2026-05-03 23:22:19,756 - WARNING - Failed to load python: 'version'
+2026-05-03 23:22:19,756 - WARNING - Failed to load clang: 'version'
+2026-05-03 23:22:19,756 - WARNING - Failed to load nodejs: 'version'
+2026-05-03 23:22:19,756 - WARNING - Failed to load cython: 'version'
+2026-05-03 23:22:19,756 - WARNING - Failed to load gcc-cmake-busybox: 'version'
+2026-05-03 23:22:19,756 - WARNING - Failed to load php-composer: 'version'
+2026-05-03 23:22:19,756 - WARNING - Failed to load go: 'version'
+2026-05-03 23:22:19,757 - WARNING - Failed to load lua: 'version'
+2026-05-03 23:22:19,757 - WARNING - Failed to load cgo: 'version'
+2026-05-03 23:22:19,757 - WARNING - Failed to load gcc-meson-busybox: 'version'
+2026-05-03 23:22:19,758 - WARNING - Failed to load libatomic_ops: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:19,762 - WARNING - Failed to load cross-x86_64-gnu-gcc: 'version'
+2026-05-03 23:22:19,766 - WARNING - Failed to load filesystem: 'version'
+2026-05-03 23:22:19,768 - WARNING - Failed to load profile: 'version'
+2026-05-03 23:22:19,771 - WARNING - Failed to load re2c: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:19,774 - INFO - Loaded 369 packages
+2026-05-03 23:22:19,774 - INFO - Updated 0 packages
+2026-05-03 23:22:56,815 - INFO - Determining build order from make -n...
+2026-05-03 23:22:57,604 - INFO - Found 0 packages in build order
+2026-05-03 23:22:57,612 - WARNING - Failed to load stage2: 'version'
+2026-05-03 23:22:57,612 - WARNING - Failed to load stage0: 'version'
+2026-05-03 23:22:57,612 - WARNING - Failed to load stage3: 'version'
+2026-05-03 23:22:57,613 - WARNING - Failed to load chrpath: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:57,613 - WARNING - Failed to load libassuan: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:57,616 - WARNING - Failed to load grpcurl: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:57,616 - WARNING - Failed to load numactl: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:57,617 - WARNING - Failed to load libxshmfence: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:57,617 - WARNING - Failed to load libtpms: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:57,619 - WARNING - Failed to load snphost: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:57,619 - WARNING - Failed to load dhcpcd: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:57,620 - WARNING - Failed to load libmnl: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:57,620 - WARNING - Failed to load libgcrypt: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:57,621 - WARNING - Failed to load kubeconform: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:57,624 - WARNING - Failed to load litestream: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:57,625 - WARNING - Failed to load hardened_malloc: Cannot overwrite a value (at line 7, column 31)
+2026-05-03 23:22:57,625 - WARNING - Failed to load freetds: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:57,626 - WARNING - Failed to load libqrencode: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:57,626 - WARNING - Failed to load ocismack: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:57,627 - WARNING - Failed to load natscli: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:57,627 - WARNING - Failed to load skalibs: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:57,627 - WARNING - Failed to load libksba: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:57,628 - WARNING - Failed to load libpciaccess: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:57,628 - WARNING - Failed to load libtasn1: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:57,629 - WARNING - Failed to load sxctl: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:57,629 - WARNING - Failed to load sshpass: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:57,629 - WARNING - Failed to load sevctl: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:57,629 - WARNING - Failed to load xorgproto: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:57,630 - WARNING - Failed to load ipxe: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:57,630 - WARNING - Failed to load groff: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:57,631 - WARNING - Failed to load dosfstools: Cannot overwrite a value (at line 9, column 28)
+2026-05-03 23:22:57,634 - WARNING - Failed to load libbsd: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:57,635 - WARNING - Failed to load seabios: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:57,635 - WARNING - Failed to load libnftnl: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:57,635 - WARNING - Failed to load guestctl: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:57,636 - WARNING - Failed to load glibc: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:57,637 - WARNING - Failed to load snpguest: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:57,638 - WARNING - Failed to load libxcb: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:57,638 - WARNING - Failed to load eif_build: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:57,638 - WARNING - Failed to load libevent: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:57,639 - WARNING - Failed to load libverto: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:57,639 - WARNING - Failed to load bdftopcf: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:57,640 - WARNING - Failed to load eudev: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:57,643 - WARNING - Failed to load e2fsprogs: Cannot overwrite a value (at line 9, column 28)
+2026-05-03 23:22:57,643 - WARNING - Failed to load k9s: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:57,644 - WARNING - Failed to load utmps: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:22:57,644 - WARNING - Failed to load iproute2: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:57,644 - WARNING - Failed to load scdoc: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:22:57,649 - WARNING - Failed to load clang-meson-busybox: 'version'
+2026-05-03 23:22:57,649 - WARNING - Failed to load clang-gnu-busybox: 'version'
+2026-05-03 23:22:57,649 - WARNING - Failed to load gcc-gnu-busybox: 'version'
+2026-05-03 23:22:57,649 - WARNING - Failed to load solidity: 'version'
+2026-05-03 23:22:57,649 - WARNING - Failed to load clang-cmake-busybox: 'version'
+2026-05-03 23:22:57,649 - WARNING - Failed to load gcc-gnu-gnu: 'version'
+2026-05-03 23:22:57,649 - WARNING - Failed to load luarocks: 'version'
+2026-05-03 23:22:57,649 - WARNING - Failed to load rust: 'version'
+2026-05-03 23:22:57,649 - WARNING - Failed to load gcc: 'version'
+2026-05-03 23:22:57,649 - WARNING - Failed to load php: 'version'
+2026-05-03 23:22:57,650 - WARNING - Failed to load python: 'version'
+2026-05-03 23:22:57,650 - WARNING - Failed to load clang: 'version'
+2026-05-03 23:22:57,650 - WARNING - Failed to load nodejs: 'version'
+2026-05-03 23:22:57,650 - WARNING - Failed to load cython: 'version'
+2026-05-03 23:22:57,650 - WARNING - Failed to load gcc-cmake-busybox: 'version'
+2026-05-03 23:22:57,650 - WARNING - Failed to load php-composer: 'version'
+2026-05-03 23:22:57,650 - WARNING - Failed to load go: 'version'
+2026-05-03 23:22:57,650 - WARNING - Failed to load lua: 'version'
+2026-05-03 23:22:57,650 - WARNING - Failed to load cgo: 'version'
+2026-05-03 23:22:57,650 - WARNING - Failed to load gcc-meson-busybox: 'version'
+2026-05-03 23:22:57,652 - WARNING - Failed to load libatomic_ops: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:57,655 - WARNING - Failed to load cross-x86_64-gnu-gcc: 'version'
+2026-05-03 23:22:57,660 - WARNING - Failed to load filesystem: 'version'
+2026-05-03 23:22:57,661 - WARNING - Failed to load profile: 'version'
+2026-05-03 23:22:57,665 - WARNING - Failed to load re2c: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:22:57,668 - INFO - Loaded 369 packages
+2026-05-03 23:22:57,668 - INFO - Updated 0 packages
+2026-05-03 23:23:09,756 - INFO - Determining build order from make -n...
+2026-05-03 23:23:10,540 - INFO - Found 0 packages in build order
+2026-05-03 23:23:10,548 - WARNING - Failed to load stage2: 'version'
+2026-05-03 23:23:10,550 - WARNING - Failed to load stage0: 'version'
+2026-05-03 23:23:10,550 - WARNING - Failed to load stage3: 'version'
+2026-05-03 23:23:10,551 - WARNING - Failed to load chrpath: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:23:10,551 - WARNING - Failed to load libassuan: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:23:10,554 - WARNING - Failed to load grpcurl: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:23:10,554 - WARNING - Failed to load numactl: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:23:10,555 - WARNING - Failed to load libxshmfence: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:23:10,555 - WARNING - Failed to load libtpms: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:23:10,557 - WARNING - Failed to load snphost: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:23:10,557 - WARNING - Failed to load dhcpcd: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:23:10,558 - WARNING - Failed to load libmnl: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:23:10,558 - WARNING - Failed to load libgcrypt: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:23:10,559 - WARNING - Failed to load kubeconform: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:23:10,562 - WARNING - Failed to load litestream: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:23:10,563 - WARNING - Failed to load hardened_malloc: Cannot overwrite a value (at line 7, column 31)
+2026-05-03 23:23:10,563 - WARNING - Failed to load freetds: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:23:10,564 - WARNING - Failed to load libqrencode: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:23:10,564 - WARNING - Failed to load ocismack: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:23:10,565 - WARNING - Failed to load natscli: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:23:10,565 - WARNING - Failed to load skalibs: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:23:10,566 - WARNING - Failed to load libksba: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:23:10,566 - WARNING - Failed to load libpciaccess: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:23:10,566 - WARNING - Failed to load libtasn1: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:23:10,567 - WARNING - Failed to load sxctl: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:23:10,567 - WARNING - Failed to load sshpass: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:23:10,567 - WARNING - Failed to load sevctl: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:23:10,567 - WARNING - Failed to load xorgproto: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:23:10,568 - WARNING - Failed to load ipxe: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:23:10,569 - WARNING - Failed to load groff: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:23:10,569 - WARNING - Failed to load dosfstools: Cannot overwrite a value (at line 9, column 28)
+2026-05-03 23:23:10,572 - WARNING - Failed to load libbsd: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:23:10,573 - WARNING - Failed to load seabios: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:23:10,573 - WARNING - Failed to load libnftnl: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:23:10,574 - WARNING - Failed to load guestctl: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:23:10,574 - WARNING - Failed to load glibc: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:23:10,576 - WARNING - Failed to load snpguest: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:23:10,576 - WARNING - Failed to load libxcb: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:23:10,576 - WARNING - Failed to load eif_build: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:23:10,577 - WARNING - Failed to load libevent: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:23:10,577 - WARNING - Failed to load libverto: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:23:10,577 - WARNING - Failed to load bdftopcf: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:23:10,578 - WARNING - Failed to load eudev: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:23:10,581 - WARNING - Failed to load e2fsprogs: Cannot overwrite a value (at line 9, column 28)
+2026-05-03 23:23:10,581 - WARNING - Failed to load k9s: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:23:10,582 - WARNING - Failed to load utmps: Cannot overwrite a value (at line 9, column 31)
+2026-05-03 23:23:10,582 - WARNING - Failed to load iproute2: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:23:10,582 - WARNING - Failed to load scdoc: Cannot overwrite a value (at line 9, column 30)
+2026-05-03 23:23:10,587 - WARNING - Failed to load clang-meson-busybox: 'version'
+2026-05-03 23:23:10,587 - WARNING - Failed to load clang-gnu-busybox: 'version'
+2026-05-03 23:23:10,587 - WARNING - Failed to load gcc-gnu-busybox: 'version'
+2026-05-03 23:23:10,587 - WARNING - Failed to load solidity: 'version'
+2026-05-03 23:23:10,587 - WARNING - Failed to load clang-cmake-busybox: 'version'
+2026-05-03 23:23:10,587 - WARNING - Failed to load gcc-gnu-gnu: 'version'
+2026-05-03 23:23:10,587 - WARNING - Failed to load luarocks: 'version'
+2026-05-03 23:23:10,587 - WARNING - Failed to load rust: 'version'
+2026-05-03 23:23:10,588 - WARNING - Failed to load gcc: 'version'
+2026-05-03 23:23:10,588 - WARNING - Failed to load php: 'version'
+2026-05-03 23:23:10,588 - WARNING - Failed to load python: 'version'
+2026-05-03 23:23:10,588 - WARNING - Failed to load clang: 'version'
+2026-05-03 23:23:10,588 - WARNING - Failed to load nodejs: 'version'
+2026-05-03 23:23:10,588 - WARNING - Failed to load cython: 'version'
+2026-05-03 23:23:10,588 - WARNING - Failed to load gcc-cmake-busybox: 'version'
+2026-05-03 23:23:10,588 - WARNING - Failed to load php-composer: 'version'
+2026-05-03 23:23:10,588 - WARNING - Failed to load go: 'version'
+2026-05-03 23:23:10,588 - WARNING - Failed to load lua: 'version'
+2026-05-03 23:23:10,589 - WARNING - Failed to load cgo: 'version'
+2026-05-03 23:23:10,589 - WARNING - Failed to load gcc-meson-busybox: 'version'
+2026-05-03 23:23:10,590 - WARNING - Failed to load libatomic_ops: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:23:10,594 - WARNING - Failed to load cross-x86_64-gnu-gcc: 'version'
+2026-05-03 23:23:10,599 - WARNING - Failed to load filesystem: 'version'
+2026-05-03 23:23:10,600 - WARNING - Failed to load profile: 'version'
+2026-05-03 23:23:10,603 - WARNING - Failed to load re2c: Cannot overwrite a value (at line 9, column 29)
+2026-05-03 23:23:10,606 - INFO - Loaded 369 packages
+2026-05-03 23:23:10,606 - INFO - Updated 0 packages
+2026-05-03 23:29:28,204 - INFO - Determining build order from make -n...
+2026-05-03 23:29:29,062 - INFO - Found 330 packages in build order
+2026-05-03 23:29:29,070 - WARNING - Failed to load stage2: 'version'
+2026-05-03 23:29:29,070 - WARNING - Failed to load stage0: 'version'
+2026-05-03 23:29:29,071 - WARNING - Failed to load stage3: 'version'
+2026-05-03 23:29:29,107 - WARNING - Failed to load clang-meson-busybox: 'version'
+2026-05-03 23:29:29,107 - WARNING - Failed to load clang-gnu-busybox: 'version'
+2026-05-03 23:29:29,107 - WARNING - Failed to load gcc-gnu-busybox: 'version'
+2026-05-03 23:29:29,107 - WARNING - Failed to load solidity: 'version'
+2026-05-03 23:29:29,107 - WARNING - Failed to load clang-cmake-busybox: 'version'
+2026-05-03 23:29:29,107 - WARNING - Failed to load gcc-gnu-gnu: 'version'
+2026-05-03 23:29:29,107 - WARNING - Failed to load luarocks: 'version'
+2026-05-03 23:29:29,107 - WARNING - Failed to load rust: 'version'
+2026-05-03 23:29:29,107 - WARNING - Failed to load gcc: 'version'
+2026-05-03 23:29:29,108 - WARNING - Failed to load php: 'version'
+2026-05-03 23:29:29,108 - WARNING - Failed to load python: 'version'
+2026-05-03 23:29:29,108 - WARNING - Failed to load clang: 'version'
+2026-05-03 23:29:29,108 - WARNING - Failed to load nodejs: 'version'
+2026-05-03 23:29:29,108 - WARNING - Failed to load cython: 'version'
+2026-05-03 23:29:29,108 - WARNING - Failed to load gcc-cmake-busybox: 'version'
+2026-05-03 23:29:29,108 - WARNING - Failed to load php-composer: 'version'
+2026-05-03 23:29:29,108 - WARNING - Failed to load go: 'version'
+2026-05-03 23:29:29,108 - WARNING - Failed to load lua: 'version'
+2026-05-03 23:29:29,108 - WARNING - Failed to load cgo: 'version'
+2026-05-03 23:29:29,108 - WARNING - Failed to load gcc-meson-busybox: 'version'
+2026-05-03 23:29:29,113 - WARNING - Failed to load cross-x86_64-gnu-gcc: 'version'
+2026-05-03 23:29:29,118 - WARNING - Failed to load filesystem: 'version'
+2026-05-03 23:29:29,119 - WARNING - Failed to load profile: 'version'
+2026-05-03 23:29:29,125 - INFO - Loaded 416 packages
+2026-05-03 23:29:29,125 - INFO - Processing busybox...
+2026-05-03 23:29:29,132 - WARNING - Failed to load stage2: 'version'
+2026-05-03 23:29:29,133 - WARNING - Failed to load stage0: 'version'
+2026-05-03 23:29:29,133 - WARNING - Failed to load stage3: 'version'
+2026-05-03 23:29:29,168 - WARNING - Failed to load clang-meson-busybox: 'version'
+2026-05-03 23:29:29,168 - WARNING - Failed to load clang-gnu-busybox: 'version'
+2026-05-03 23:29:29,168 - WARNING - Failed to load gcc-gnu-busybox: 'version'
+2026-05-03 23:29:29,168 - WARNING - Failed to load solidity: 'version'
+2026-05-03 23:29:29,168 - WARNING - Failed to load clang-cmake-busybox: 'version'
+2026-05-03 23:29:29,168 - WARNING - Failed to load gcc-gnu-gnu: 'version'
+2026-05-03 23:29:29,168 - WARNING - Failed to load luarocks: 'version'
+2026-05-03 23:29:29,168 - WARNING - Failed to load rust: 'version'
+2026-05-03 23:29:29,168 - WARNING - Failed to load gcc: 'version'
+2026-05-03 23:29:29,169 - WARNING - Failed to load php: 'version'
+2026-05-03 23:29:29,169 - WARNING - Failed to load python: 'version'
+2026-05-03 23:29:29,169 - WARNING - Failed to load clang: 'version'
+2026-05-03 23:29:29,169 - WARNING - Failed to load nodejs: 'version'
+2026-05-03 23:29:29,169 - WARNING - Failed to load cython: 'version'
+2026-05-03 23:29:29,169 - WARNING - Failed to load gcc-cmake-busybox: 'version'
+2026-05-03 23:29:29,169 - WARNING - Failed to load php-composer: 'version'
+2026-05-03 23:29:29,169 - WARNING - Failed to load go: 'version'
+2026-05-03 23:29:29,169 - WARNING - Failed to load lua: 'version'
+2026-05-03 23:29:29,170 - WARNING - Failed to load cgo: 'version'
+2026-05-03 23:29:29,170 - WARNING - Failed to load gcc-meson-busybox: 'version'
+2026-05-03 23:29:29,175 - WARNING - Failed to load cross-x86_64-gnu-gcc: 'version'
+2026-05-03 23:29:29,179 - WARNING - Failed to load filesystem: 'version'
+2026-05-03 23:29:29,180 - WARNING - Failed to load profile: 'version'
+2026-05-03 23:29:29,186 - INFO - Loaded 416 packages
+2026-05-03 23:29:30,457 - INFO - Current: 1.37.0, Latest: 1.37.0
+2026-05-03 23:29:30,457 - INFO - busybox is up to date
+2026-05-03 23:29:30,457 - INFO - Processing mimalloc...
+2026-05-03 23:29:30,464 - WARNING - Failed to load stage2: 'version'
+2026-05-03 23:29:30,465 - WARNING - Failed to load stage0: 'version'
+2026-05-03 23:29:30,465 - WARNING - Failed to load stage3: 'version'
+2026-05-03 23:29:30,499 - WARNING - Failed to load clang-meson-busybox: 'version'
+2026-05-03 23:29:30,499 - WARNING - Failed to load clang-gnu-busybox: 'version'
+2026-05-03 23:29:30,500 - WARNING - Failed to load gcc-gnu-busybox: 'version'
+2026-05-03 23:29:30,500 - WARNING - Failed to load solidity: 'version'
+2026-05-03 23:29:30,500 - WARNING - Failed to load clang-cmake-busybox: 'version'
+2026-05-03 23:29:30,500 - WARNING - Failed to load gcc-gnu-gnu: 'version'
+2026-05-03 23:29:30,500 - WARNING - Failed to load luarocks: 'version'
+2026-05-03 23:29:30,500 - WARNING - Failed to load rust: 'version'
+2026-05-03 23:29:30,500 - WARNING - Failed to load gcc: 'version'
+2026-05-03 23:29:30,500 - WARNING - Failed to load php: 'version'
+2026-05-03 23:29:30,500 - WARNING - Failed to load python: 'version'
+2026-05-03 23:29:30,500 - WARNING - Failed to load clang: 'version'
+2026-05-03 23:29:30,500 - WARNING - Failed to load nodejs: 'version'
+2026-05-03 23:29:30,501 - WARNING - Failed to load cython: 'version'
+2026-05-03 23:29:30,501 - WARNING - Failed to load gcc-cmake-busybox: 'version'
+2026-05-03 23:29:30,501 - WARNING - Failed to load php-composer: 'version'
+2026-05-03 23:29:30,501 - WARNING - Failed to load go: 'version'
+2026-05-03 23:29:30,501 - WARNING - Failed to load lua: 'version'
+2026-05-03 23:29:30,501 - WARNING - Failed to load cgo: 'version'
+2026-05-03 23:29:30,501 - WARNING - Failed to load gcc-meson-busybox: 'version'
+2026-05-03 23:29:30,506 - WARNING - Failed to load cross-x86_64-gnu-gcc: 'version'
+2026-05-03 23:29:30,510 - WARNING - Failed to load filesystem: 'version'
+2026-05-03 23:29:30,512 - WARNING - Failed to load profile: 'version'
+2026-05-03 23:29:30,517 - INFO - Loaded 416 packages
+2026-05-03 23:29:31,106 - WARNING - Project ID mismatch for mimalloc, using first result
+2026-05-03 23:29:31,106 - INFO - Current: 2.2.7, Latest: 0.1.50
+2026-05-03 23:29:31,106 - INFO - Updating mimalloc to 0.1.50
+2026-05-03 23:29:31,107 - INFO - Backed up mimalloc to /home/lrvick/Sources/stagex/scripts/backups/core/mimalloc
+2026-05-03 23:29:31,564 - ERROR - No working download URL found for version 0.1.50
+2026-05-03 23:29:31,565 - ERROR - Failed to download source for mimalloc
+2026-05-03 23:29:31,565 - INFO - Processing musl...
+2026-05-03 23:29:31,572 - WARNING - Failed to load stage2: 'version'
+2026-05-03 23:29:31,572 - WARNING - Failed to load stage0: 'version'
+2026-05-03 23:29:31,573 - WARNING - Failed to load stage3: 'version'
+2026-05-03 23:29:31,607 - WARNING - Failed to load clang-meson-busybox: 'version'
+2026-05-03 23:29:31,607 - WARNING - Failed to load clang-gnu-busybox: 'version'
+2026-05-03 23:29:31,607 - WARNING - Failed to load gcc-gnu-busybox: 'version'
+2026-05-03 23:29:31,607 - WARNING - Failed to load solidity: 'version'
+2026-05-03 23:29:31,607 - WARNING - Failed to load clang-cmake-busybox: 'version'
+2026-05-03 23:29:31,607 - WARNING - Failed to load gcc-gnu-gnu: 'version'
+2026-05-03 23:29:31,608 - WARNING - Failed to load luarocks: 'version'
+2026-05-03 23:29:31,608 - WARNING - Failed to load rust: 'version'
+2026-05-03 23:29:31,608 - WARNING - Failed to load gcc: 'version'
+2026-05-03 23:29:31,608 - WARNING - Failed to load php: 'version'
+2026-05-03 23:29:31,608 - WARNING - Failed to load python: 'version'
+2026-05-03 23:29:31,608 - WARNING - Failed to load clang: 'version'
+2026-05-03 23:29:31,608 - WARNING - Failed to load nodejs: 'version'
+2026-05-03 23:29:31,608 - WARNING - Failed to load cython: 'version'
+2026-05-03 23:29:31,608 - WARNING - Failed to load gcc-cmake-busybox: 'version'
+2026-05-03 23:29:31,608 - WARNING - Failed to load php-composer: 'version'
+2026-05-03 23:29:31,609 - WARNING - Failed to load go: 'version'
+2026-05-03 23:29:31,609 - WARNING - Failed to load lua: 'version'
+2026-05-03 23:29:31,609 - WARNING - Failed to load cgo: 'version'
+2026-05-03 23:29:31,609 - WARNING - Failed to load gcc-meson-busybox: 'version'
+2026-05-03 23:29:31,614 - WARNING - Failed to load cross-x86_64-gnu-gcc: 'version'
+2026-05-03 23:29:31,618 - WARNING - Failed to load filesystem: 'version'
+2026-05-03 23:29:31,619 - WARNING - Failed to load profile: 'version'
+2026-05-03 23:29:31,625 - INFO - Loaded 416 packages
+2026-05-03 23:29:31,625 - INFO - Skipping musl - handled by staging
+2026-05-03 23:29:31,625 - INFO - Processing libzstd...
+2026-05-03 23:29:31,633 - WARNING - Failed to load stage2: 'version'
+2026-05-03 23:29:31,633 - WARNING - Failed to load stage0: 'version'
+2026-05-03 23:29:31,634 - WARNING - Failed to load stage3: 'version'
+2026-05-03 23:29:31,668 - WARNING - Failed to load clang-meson-busybox: 'version'
+2026-05-03 23:29:31,668 - WARNING - Failed to load clang-gnu-busybox: 'version'
+2026-05-03 23:29:31,668 - WARNING - Failed to load gcc-gnu-busybox: 'version'
+2026-05-03 23:29:31,668 - WARNING - Failed to load solidity: 'version'
+2026-05-03 23:29:31,668 - WARNING - Failed to load clang-cmake-busybox: 'version'
+2026-05-03 23:29:31,668 - WARNING - Failed to load gcc-gnu-gnu: 'version'
+2026-05-03 23:29:31,669 - WARNING - Failed to load luarocks: 'version'
+2026-05-03 23:29:31,669 - WARNING - Failed to load rust: 'version'
+2026-05-03 23:29:31,669 - WARNING - Failed to load gcc: 'version'
+2026-05-03 23:29:31,669 - WARNING - Failed to load php: 'version'
+2026-05-03 23:29:31,669 - WARNING - Failed to load python: 'version'
+2026-05-03 23:29:31,669 - WARNING - Failed to load clang: 'version'
+2026-05-03 23:29:31,669 - WARNING - Failed to load nodejs: 'version'
+2026-05-03 23:29:31,669 - WARNING - Failed to load cython: 'version'
+2026-05-03 23:29:31,669 - WARNING - Failed to load gcc-cmake-busybox: 'version'
+2026-05-03 23:29:31,669 - WARNING - Failed to load php-composer: 'version'
+2026-05-03 23:29:31,670 - WARNING - Failed to load go: 'version'
+2026-05-03 23:29:31,670 - WARNING - Failed to load lua: 'version'
+2026-05-03 23:29:31,670 - WARNING - Failed to load cgo: 'version'
+2026-05-03 23:29:31,670 - WARNING - Failed to load gcc-meson-busybox: 'version'
+2026-05-03 23:29:31,675 - WARNING - Failed to load cross-x86_64-gnu-gcc: 'version'
+2026-05-03 23:29:31,679 - WARNING - Failed to load filesystem: 'version'
+2026-05-03 23:29:31,680 - WARNING - Failed to load profile: 'version'
+2026-05-03 23:29:31,686 - INFO - Loaded 416 packages
+2026-05-03 23:29:32,272 - WARNING - Project libzstd not found in release-monitoring.org
+2026-05-03 23:29:32,272 - WARNING - Could not determine latest version for libzstd
+2026-05-03 23:29:32,272 - INFO - Processing llvm...
+2026-05-03 23:29:32,279 - WARNING - Failed to load stage2: 'version'
+2026-05-03 23:29:32,280 - WARNING - Failed to load stage0: 'version'
+2026-05-03 23:29:32,280 - WARNING - Failed to load stage3: 'version'
+2026-05-03 23:29:32,314 - WARNING - Failed to load clang-meson-busybox: 'version'
+2026-05-03 23:29:32,314 - WARNING - Failed to load clang-gnu-busybox: 'version'
+2026-05-03 23:29:32,314 - WARNING - Failed to load gcc-gnu-busybox: 'version'
+2026-05-03 23:29:32,315 - WARNING - Failed to load solidity: 'version'
+2026-05-03 23:29:32,315 - WARNING - Failed to load clang-cmake-busybox: 'version'
+2026-05-03 23:29:32,315 - WARNING - Failed to load gcc-gnu-gnu: 'version'
+2026-05-03 23:29:32,315 - WARNING - Failed to load luarocks: 'version'
+2026-05-03 23:29:32,315 - WARNING - Failed to load rust: 'version'
+2026-05-03 23:29:32,315 - WARNING - Failed to load gcc: 'version'
+2026-05-03 23:29:32,315 - WARNING - Failed to load php: 'version'
+2026-05-03 23:29:32,315 - WARNING - Failed to load python: 'version'
+2026-05-03 23:29:32,315 - WARNING - Failed to load clang: 'version'
+2026-05-03 23:29:32,315 - WARNING - Failed to load nodejs: 'version'
+2026-05-03 23:29:32,316 - WARNING - Failed to load cython: 'version'
+2026-05-03 23:29:32,316 - WARNING - Failed to load gcc-cmake-busybox: 'version'
+2026-05-03 23:29:32,316 - WARNING - Failed to load php-composer: 'version'
+2026-05-03 23:29:32,316 - WARNING - Failed to load go: 'version'
+2026-05-03 23:29:32,316 - WARNING - Failed to load lua: 'version'
+2026-05-03 23:29:32,316 - WARNING - Failed to load cgo: 'version'
+2026-05-03 23:29:32,316 - WARNING - Failed to load gcc-meson-busybox: 'version'
+2026-05-03 23:29:32,321 - WARNING - Failed to load cross-x86_64-gnu-gcc: 'version'
+2026-05-03 23:29:32,325 - WARNING - Failed to load filesystem: 'version'
+2026-05-03 23:29:32,327 - WARNING - Failed to load profile: 'version'
+2026-05-03 23:29:32,332 - INFO - Loaded 416 packages
+2026-05-03 23:29:32,332 - INFO - Skipping llvm - handled by staging
+2026-05-03 23:29:32,333 - INFO - Processing make...
+2026-05-03 23:29:32,339 - WARNING - Failed to load stage2: 'version'
+2026-05-03 23:29:32,340 - WARNING - Failed to load stage0: 'version'
+2026-05-03 23:29:32,340 - WARNING - Failed to load stage3: 'version'
+2026-05-03 23:29:32,374 - WARNING - Failed to load clang-meson-busybox: 'version'
+2026-05-03 23:29:32,374 - WARNING - Failed to load clang-gnu-busybox: 'version'
+2026-05-03 23:29:32,374 - WARNING - Failed to load gcc-gnu-busybox: 'version'
+2026-05-03 23:29:32,374 - WARNING - Failed to load solidity: 'version'
+2026-05-03 23:29:32,374 - WARNING - Failed to load clang-cmake-busybox: 'version'
+2026-05-03 23:29:32,375 - WARNING - Failed to load gcc-gnu-gnu: 'version'
+2026-05-03 23:29:32,375 - WARNING - Failed to load luarocks: 'version'
+2026-05-03 23:29:32,375 - WARNING - Failed to load rust: 'version'
+2026-05-03 23:29:32,375 - WARNING - Failed to load gcc: 'version'
+2026-05-03 23:29:32,375 - WARNING - Failed to load php: 'version'
+2026-05-03 23:29:32,375 - WARNING - Failed to load python: 'version'
+2026-05-03 23:29:32,375 - WARNING - Failed to load clang: 'version'
+2026-05-03 23:29:32,375 - WARNING - Failed to load nodejs: 'version'
+2026-05-03 23:29:32,375 - WARNING - Failed to load cython: 'version'
+2026-05-03 23:29:32,375 - WARNING - Failed to load gcc-cmake-busybox: 'version'
+2026-05-03 23:29:32,376 - WARNING - Failed to load php-composer: 'version'
+2026-05-03 23:29:32,376 - WARNING - Failed to load go: 'version'
+2026-05-03 23:29:32,376 - WARNING - Failed to load lua: 'version'
+2026-05-03 23:29:32,376 - WARNING - Failed to load cgo: 'version'
+2026-05-03 23:29:32,376 - WARNING - Failed to load gcc-meson-busybox: 'version'
+2026-05-03 23:29:32,381 - WARNING - Failed to load cross-x86_64-gnu-gcc: 'version'
+2026-05-03 23:29:32,385 - WARNING - Failed to load filesystem: 'version'
+2026-05-03 23:29:32,386 - WARNING - Failed to load profile: 'version'
+2026-05-03 23:29:32,392 - INFO - Loaded 416 packages
+2026-05-03 23:29:32,959 - WARNING - Project ID mismatch for make, using first result
+2026-05-03 23:29:32,959 - INFO - Current: 4.4, Latest: 4.4.1
+2026-05-03 23:29:32,959 - INFO - Updating make to 4.4.1
+2026-05-03 23:29:32,969 - INFO - Backed up make to /home/lrvick/Sources/stagex/scripts/backups/core/make
+2026-05-03 23:29:35,674 - INFO - Downloading from https://mirrors.ibiblio.org/gnu/make/make-4.4.1.tar.gz
+2026-05-03 23:29:36,412 - INFO - Downloaded source-4.4.1.tar.gz (SHA256: dd16fb1d67bfab79a72f5e8390735c49e3e8e70b4945a15ab1f81ddb78658fb3)
+2026-05-03 23:29:36,413 - INFO - Updated make to 4.4.1
+2026-05-03 23:29:39,328 - INFO - Build succeeded for make

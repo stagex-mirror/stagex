@@ -6,7 +6,6 @@ description = "X11 shared memory fences"
 license = "MIT"
 website = "https://xorg.freedesktop.org"
 
-release_monitoring_id = 1792
 [sources.libxshmfence]
 hash = "d4a4df096aba96fea02c029ee3a44e11a47eb7f7213c1a729be83e85ec3fde10"
 format = "tar.xz"

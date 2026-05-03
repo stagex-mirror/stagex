@@ -6,7 +6,6 @@ description = "StageX command-line management tool"
 license = "ISC"
 website = "https://codeberg.org/stagex/sxctl"
 
-release_monitoring_id = 389690
 [sources.sxctl]
 hash = "26f0dd95e72b632036c598d055ef6b78cec88c497dd67ede30d1498bb8229412"
 format = "tar.gz"

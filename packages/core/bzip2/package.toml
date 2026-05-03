@@ -1,4 +1,3 @@
-release_monitoring_id = 102
 [package]
 name = "bzip2"
 version = "1.0.8"

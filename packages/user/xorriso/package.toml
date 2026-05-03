@@ -1,4 +1,3 @@
-release_monitoring_id = 1279
 [package]
 name = "xorriso"
 version = "1.5.8.pl01"

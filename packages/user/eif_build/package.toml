@@ -6,7 +6,6 @@ description = "AWS Nitro Enclave Image Format builder"
 license = "Apache-2.0"
 website = "https://github.com/nickoala/eif_build"
 
-release_monitoring_id = 374292
 [sources.eif_build]
 hash = "da5421a705cdba20f9a01b38abfdfb0e31b6e4de50a61450bc9566b1205b25d1"
 format = "tgz"

@@ -205,14 +205,110 @@ def query_rm_org(pid: int, pname: str) -> tuple:
         return None, {}
 
 
-def get_download_url(version: str, mirrors: list) -> Optional[str]:
+def lookup_release_monitoring_id(package_name: str) -> tuple:
+    """
+    Look up release_monitoring_id for a package name using Anitya API.
+    
+    Returns (project_id, latest_version, project_data) or (None, None, {}).
+    """
+    logger = logging.getLogger(__name__)
+    
+    api_url = f'https://release-monitoring.org/api/v2/projects/?name={quote(package_name)}'
+    
+    try:
+        req = urllib.request.Request(
+            api_url,
+            headers={
+                'User-Agent': 'stagex-updater/1.0',
+                'Accept': 'application/json',
+            }
+        )
+        
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            data = json.loads(resp.read().decode('utf-8'))
+            
+        if not data.get('items'):
+            logger.debug(f"Project {package_name} not found in release-monitoring.org")
+            return None, None, {}
+            
+        project = data['items'][0]
+        project_id = project.get('id')
+        latest_version = project.get('version')
+        
+        logger.info(f"Found project ID {project_id} for {package_name}")
+        return project_id, latest_version, project
+        
+    except urllib.error.HTTPError as e:
+        logger.warning(f"HTTP {e.code} looking up ID for {package_name}: {e.reason}")
+        return None, None, {}
+    except Exception as e:
+        logger.warning(f"Failed to look up ID for {package_name}: {e}")
+        return None, None, {}
+
+
+def lookup_github_releases(github_repo: str, current_version: str) -> tuple:
+    """
+    Look up latest version from GitHub releases API.
+    
+    Returns (latest_version, tag_name) or (None, None).
+    """
+    logger = logging.getLogger(__name__)
+    
+    api_url = f'https://api.github.com/repos/{github_repo}/releases/latest'
+    
+    try:
+        req = urllib.request.Request(
+            api_url,
+            headers={
+                'User-Agent': 'stagex-updater/1.0',
+                'Accept': 'application/vnd.github.v3+json',
+            }
+        )
+        
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            data = json.loads(resp.read().decode('utf-8'))
+            
+        tag_name = data.get('tag_name', '')
+        # Strip 'v' prefix if present
+        version = tag_name.lstrip('v')
+        
+        logger.info(f"Found latest GitHub release {tag_name} (version {version}) for {github_repo}")
+        return version, tag_name
+        
+    except urllib.error.HTTPError as e:
+        logger.warning(f"HTTP {e.code} looking up GitHub releases for {github_repo}: {e.reason}")
+        return None, None
+    except Exception as e:
+        logger.warning(f"Failed to look up GitHub releases for {github_repo}: {e}")
+        return None, None
+
+
+def get_download_url(version: str, mirrors: list, pkg_name: str = None) -> Optional[str]:
     """
     Get download URL from mirrors list.
     
     Returns the first working URL or None.
     """
+    logger = logging.getLogger(__name__)
+    
     for mirror in mirrors:
+        # Interpolate version variables
         url = mirror.replace('{version}', version)
+        # Convert version 2.8.0 to 2_8_0 for GitHub release tags
+        version_under = version.replace('.', '_')
+        url = url.replace('{version_under}', version_under)
+        url = url.replace('{version_dash}', version.replace('.', '-'))
+        url = url.replace('{version_major_minor}', '.'.join(version.split('.')[:2]))
+        
+        # Interpolate file variable
+        if '{file}' in url:
+            # Try to construct filename from version
+            filename = f"{pkg_name}-{version}.tar.gz" if pkg_name else f"source-{version}.tar.gz"
+            url = url.replace('{file}', filename)
+        
+        # Interpolate format variable
+        url = url.replace('{format}', 'tar.gz')
+        
         try:
             req = urllib.request.Request(url, headers={'User-Agent': 'stagex-updater/1.0'})
             resp = urllib.request.urlopen(req, timeout=15)
@@ -272,7 +368,7 @@ def load_packages() -> dict:
     return packages
 
 
-def download_source(version: str, mirrors: list, dest_dir: Path) -> tuple:
+def download_source(version: str, mirrors: list, pkg_name: str, dest_dir: Path) -> tuple:
     """
     Download source tarball and calculate hash.
     
@@ -281,7 +377,7 @@ def download_source(version: str, mirrors: list, dest_dir: Path) -> tuple:
     logger = logging.getLogger(__name__)
     
     # Get download URL
-    url = get_download_url(version, mirrors)
+    url = get_download_url(version, mirrors, pkg_name)
     if not url:
         logger.error(f"No working download URL found for version {version}")
         return False, None, None
@@ -471,11 +567,10 @@ def update_single_package(pkg_name: str, dry_run: bool = False) -> bool:
     
     pkg = packages[pkg_name]
     
+    latest_version = None
+    
+    # If no release_monitoring_id, try to look it up
     if not pkg.release_monitoring_id:
-<<<<<<< HEAD
-        logger.warning(f"{pkg_name} has no RM.org ID, skipping")
-        return False
-=======
         logger.info(f"{pkg_name} has no RM.org ID, attempting to look it up...")
         project_id, version_from_rm, project_data = lookup_release_monitoring_id(pkg_name)
         
@@ -533,10 +628,10 @@ def update_single_package(pkg_name: str, dry_run: bool = False) -> bool:
             if github_repo:
                 logger.info(f"Checking GitHub releases for {github_repo}")
                 latest_version, _ = lookup_github_releases(github_repo, pkg.current_version)
->>>>>>> 59f0aec7b (Update 50 packages and add release_monitoring_id to 235 packages)
     
-    # Query RM.org
-    latest_version, _ = query_rm_org(pkg.release_monitoring_id, pkg.name)
+    # If we have release_monitoring_id, query RM.org
+    if pkg.release_monitoring_id and not latest_version:
+        latest_version, _ = query_rm_org(pkg.release_monitoring_id, pkg.name)
     
     if not latest_version:
         logger.warning(f"Could not determine latest version for {pkg_name}")
@@ -575,7 +670,7 @@ def update_single_package(pkg_name: str, dry_run: bool = False) -> bool:
     mirrors = sources[source_name].get('mirrors', []) if source_name in sources else []
     
     # Download source
-    success, new_hash, dest_file = download_source(latest_version, mirrors, STAGEX_ROOT / 'fetch')
+    success, new_hash, dest_file = download_source(latest_version, mirrors, pkg.name, STAGEX_ROOT / 'fetch')
     
     if not success:
         logger.error(f"Failed to download source for {pkg_name}")

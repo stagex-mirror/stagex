@@ -1,4 +1,3 @@
-release_monitoring_id = 1922
 [package]
 name = "protobuf"
 version = "26.1"

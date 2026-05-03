@@ -6,7 +6,6 @@ description = "CLI utility designed for administrators managing AMD SEV-SNP enab
 license = "Apache-2.0"
 website = "https://github.com/virtee/snphost"
 
-release_monitoring_id = 370440
 [sources.snphost]
 hash = "9ddbb6f2a7a0aadc9bb951292ecfeda88c07b4d6339e1ff31b3ec609ef080159"
 format = "tar.gz"

@@ -6,7 +6,6 @@ description = "Implementation of the utmpx.h family of functions"
 license = "ISC"
 website = "https://skarnet.org/software/utmps/"
 
-release_monitoring_id = 369396
 [sources.utmps]
 hash = "b114d56aecac89c05cb4c0ed33c6388a02114b09de9cce384ab9b8a934698668"
 format = "tar.gz"

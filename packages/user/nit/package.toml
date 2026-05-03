@@ -1,4 +1,3 @@
-release_monitoring_id = 374798
 [package]
 name = "nit"
 version = "00b5957d6e4849d397d1c398e8ebd7f2c29572db"

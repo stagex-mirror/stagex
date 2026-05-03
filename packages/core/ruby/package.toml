@@ -1,4 +1,3 @@
-release_monitoring_id = 1025
 [package]
 name = "ruby"
 version = "4.0.3"

@@ -6,7 +6,6 @@ description = "Semi-portable access to hardware provided atomic memory operation
 website = "https://github.com/bdwgc/libatomic_ops"
 license = "GPL-2.0-or-later AND MIT AND Boehm-GC"
 
-release_monitoring_id = 1561
 [sources.libatomicops]
 hash = "96443e58a6bb6c0ada61660ccb547254aaa97e44bceb10a340937f6ba3ba8243"
 file = "libatomic_ops-{version}.tar.gz"

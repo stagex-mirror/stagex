@@ -1,4 +1,3 @@
-release_monitoring_id = 374730
 [package]
 name = "libsodium"
 version = "1.0.20"

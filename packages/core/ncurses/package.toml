@@ -1,4 +1,3 @@
-release_monitoring_id = 176
 [package]
 name = "ncurses"
 version = "6.5"

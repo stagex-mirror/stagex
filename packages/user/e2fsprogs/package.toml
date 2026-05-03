@@ -6,7 +6,6 @@ description = "Ext2/3/4 filesystem utilities"
 license = "GPL-2.0-only"
 website = "https://e2fsprogs.sourceforge.net"
 
-release_monitoring_id = 646
 [sources.e2fsprogs]
 hash = "9f82eaa7002673291629077b80ee005cadfcd49854907a22007fed70b0ef596e"
 format = "tar.gz"

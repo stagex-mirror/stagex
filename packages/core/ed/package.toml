@@ -1,4 +1,3 @@
-release_monitoring_id = 393
 [package]
 name = "ed"
 version = "1.20"

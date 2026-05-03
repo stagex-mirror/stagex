@@ -1,4 +1,3 @@
-release_monitoring_id = 374721
 [package]
 name = "libclc"
 version = "19.1.7"

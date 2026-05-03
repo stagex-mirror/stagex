@@ -1,4 +1,3 @@
-release_monitoring_id = 1272
 [package]
 name = "swig"
 version = "4.4.1"

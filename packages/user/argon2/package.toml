@@ -1,4 +1,3 @@
-release_monitoring_id = 374778
 [package]
 name = "argon2"
 version = "20190702"
