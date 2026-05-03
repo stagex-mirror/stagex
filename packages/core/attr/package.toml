@@ -2,6 +2,7 @@ release_monitoring_id = 1095
 [package]
 name = "attr"
 version = "2.5.2"
+release_monitoring_id = 137
 description = "Commands for manipulating extended attributes on filesystems"
 license = "GPL-2.0-or-later AND LGPL-2.1-or-later"
 website = "https://savannah.nongnu.org/projects/attr"

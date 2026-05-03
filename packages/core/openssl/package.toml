@@ -2,6 +2,7 @@ release_monitoring_id = 543
 [package]
 name = "openssl"
 version = "3.5.2"
+release_monitoring_id = 15451
 description = "The Open Source toolkit for Secure Sockets Layer and Transport Layer Security"
 license = "Apache-2.0"
 website = "https://www.openssl.org"

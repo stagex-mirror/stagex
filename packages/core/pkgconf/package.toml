@@ -1,13 +1,14 @@
 release_monitoring_id = 374769
 [package]
 name = "pkgconf"
-version = "1.6.3"
+version = "2.5.1"
+release_monitoring_id = 12753
 description = "Package compiler and linker metadata toolkit"
 license = "ISC"
 website = "http://pkgconf.org/"
 
 [sources.pkgconf]
-hash = "61f0b31b0d5ea0e862b454a80c170f57bad47879c0c42bd8de89200ff62ea210"
+hash = "ab89d59810d9cad5dfcd508f25efab8ea0b1c8e7bad91c2b6351f13e6a5940d8"
 format = "tar.xz"
 file = "pkgconf-{version}.{format}"
 mirrors = [ "https://distfiles.ariadne.space/pkgconf/{file}",]

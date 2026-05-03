@@ -1,0 +1,20 @@
+[package]
+name = "vim"
+version = "9.2.0433"
+release_monitoring_id = 5092
+description = "Improved vi-style text editor"
+license = "Vim"
+website = "https://www.vim.org/"
+subpackages = [
+  "vim",
+  "vimdiff",
+  "vim-tutor",
+  "vim-common",
+  "xxd",
+]
+
+[sources.vim]
+hash = "7ebf411c07ed62f7a31f5e71d33cdfebf70e2f357f84019bb8eb3e1fca6c5b1a"
+format = "tar.gz"
+file = "vim-{version}.{format}"
+mirrors = [ "https://github.com/vim/vim/archive/refs/tags/v{version}.{format}",]
