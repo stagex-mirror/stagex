@@ -2,6 +2,7 @@ release_monitoring_id = 1647
 [package]
 name = "libcap"
 version = "2.70"
+release_monitoring_id = 1569
 description = "POSIX capabilities library"
 license = "GPL-2.0-only OR BSD-3-Clause"
 website = "https://sites.google.com/site/fullycapable/"

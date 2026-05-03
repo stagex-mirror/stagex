@@ -2,6 +2,7 @@ release_monitoring_id = 389703
 [package]
 name = "buf"
 version = "1.69.0"
+release_monitoring_id = 328143
 description = "CLI tool for working with Protocol Buffers"
 license = "Apache-2.0"
 website = "https://buf.build"

@@ -2,6 +2,7 @@ release_monitoring_id = 2503
 [package]
 name = "kmod"
 version = "34.2"
+release_monitoring_id = 1517
 description = "Linux kernel module handling tools and library"
 license = "GPL-2.0-or-later AND LGPL-2.1-or-later"
 website = "https://github.com/kmod-project/kmod"

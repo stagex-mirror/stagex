@@ -2,6 +2,7 @@ release_monitoring_id = 381
 [package]
 name = "php"
 version = "8.5.5"
+release_monitoring_id = 3627
 description = "A popular general-purpose scripting language that is especially suited to web development."
 license = "PHP-3.0.1"
 website = "https://www.php.net/"

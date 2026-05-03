@@ -1,6 +1,7 @@
 [package]
 name = "snphost"
 version = "0.7.0"
+release_monitoring_id = 370440
 description = "CLI utility designed for administrators managing AMD SEV-SNP enabled host systems"
 license = "Apache-2.0"
 website = "https://github.com/virtee/snphost"

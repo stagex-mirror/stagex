@@ -1,6 +1,7 @@
 [package]
 name = "libmnl"
 version = "1.0.5"
+release_monitoring_id = 1663
 description = "Minimalistic Netlink communication library"
 license = "LGPL-2.1-or-later"
 website = "https://www.netfilter.org/projects/libmnl/"

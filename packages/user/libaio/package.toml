@@ -2,6 +2,7 @@ release_monitoring_id = 374720
 [package]
 name = "libaio"
 version = "0.3.113"
+release_monitoring_id = 1557
 description = "Linux-native asynchronous I/O access library"
 license = "LGPL-2.1-or-later"
 website = "https://pagure.io/libaio"

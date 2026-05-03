@@ -2,6 +2,7 @@ release_monitoring_id = 1271
 [package]
 name = "sudo"
 version = "1.9.17p2"
+release_monitoring_id = 370631
 description = "Give certain users the ability to run some commands as root"
 license = "LicenseRef-Sudo"
 website = "https://www.sudo.ws/sudo/"

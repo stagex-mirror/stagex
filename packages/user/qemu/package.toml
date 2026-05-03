@@ -2,6 +2,7 @@ release_monitoring_id = 389695
 [package]
 name = "qemu"
 version = "10.1.1"
+release_monitoring_id = 13607
 description = "Generic and open source machine emulator and virtualizer"
 license = "GPL-2.0-only"
 website = "https://www.qemu.org"

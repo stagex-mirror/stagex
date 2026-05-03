@@ -2,6 +2,7 @@ release_monitoring_id = 374787
 [package]
 name = "docker"
 version = "27.1.2"
+release_monitoring_id = 11719
 description = "Container platform for building, shipping, and running applications"
 license = "Apache-2.0"
 website = "https://www.docker.com"

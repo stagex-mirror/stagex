@@ -2,6 +2,7 @@ release_monitoring_id = 2301
 [package]
 name = "hugo"
 version = "0.161.1"
+release_monitoring_id = 12959
 description = "Fast and Flexible Static Site Generator in Go"
 website = "https://gohugo.io"
 license = "Apache-2.0"

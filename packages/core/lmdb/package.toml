@@ -2,6 +2,7 @@ release_monitoring_id = 374617
 [package]
 name = "lmdb"
 version = "0.8.0"
+release_monitoring_id = 20266
 description = "Lightning Memory-Mapped Database"
 license = "OLDAP-2.8"
 website = "https://www.symas.com/lmdb"

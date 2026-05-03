@@ -2,6 +2,7 @@ release_monitoring_id = 374727
 [package]
 name = "libseccomp"
 version = "2.5.5"
+release_monitoring_id = 371934
 description = "High-level interface to the Linux seccomp filter"
 license = "LGPL-2.1-only"
 website = "https://github.com/seccomp/libseccomp"

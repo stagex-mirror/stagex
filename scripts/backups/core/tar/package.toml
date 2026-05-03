@@ -2,6 +2,7 @@ release_monitoring_id = 267
 [package]
 name = "tar"
 version = "1.35"
+release_monitoring_id = 16809
 description = "GNU tape archiver"
 license = "GPL-3.0-or-later"
 website = "https://www.gnu.org/software/tar/"

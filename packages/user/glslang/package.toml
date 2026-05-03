@@ -2,6 +2,7 @@ release_monitoring_id = 374794
 [package]
 name = "glslang"
 version = "1.4.304.0"
+release_monitoring_id = 205796
 description = "Khronos reference front-end for GLSL, ESSL, and sample SPIR-V generator"
 license = "BSD-3-Clause AND Apache-2.0 AND MIT"
 website = "https://github.com/KhronosGroup/glslang"

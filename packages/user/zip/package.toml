@@ -2,6 +2,7 @@ release_monitoring_id = 2802
 [package]
 name = "zip"
 version = "30"
+release_monitoring_id = 100361
 description = "Compression and file packaging utility"
 license = "BSD-3-Clause"
 website = "https://infozip.sourceforge.net"

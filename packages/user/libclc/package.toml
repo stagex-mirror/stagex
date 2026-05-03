@@ -2,6 +2,7 @@ release_monitoring_id = 374721
 [package]
 name = "libclc"
 version = "19.1.7"
+release_monitoring_id = 376264
 description = "Open source implementation of the library requirements of the OpenCL C programming language"
 license = "Apache-2.0 WITH LLVM-exception"
 website = "https://libclc.llvm.org"

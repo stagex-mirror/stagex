@@ -2,6 +2,7 @@ release_monitoring_id = 1686
 [package]
 name = "doxygen"
 version = "1.17.0"
+release_monitoring_id = 457
 description = "Documentation system for C++, C, Java, and other languages"
 license = "GPL-2.0-only"
 website = "https://www.doxygen.nl"

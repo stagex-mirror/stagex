@@ -2,6 +2,7 @@ release_monitoring_id = 706
 [package]
 name = "acl"
 version = "2.3.2"
+release_monitoring_id = 16
 description = "Commands for manipulating POSIX access control lists"
 license = "GPL-2.0-or-later AND LGPL-2.1-or-later"
 website = "https://savannah.nongnu.org/projects/acl"

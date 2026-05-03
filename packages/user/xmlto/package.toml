@@ -2,6 +2,7 @@ release_monitoring_id = 374641
 [package]
 name = "xmlto"
 version = "0.0.29"
+release_monitoring_id = 13307
 description = "Tool for converting XML files to various formats"
 license = "GPL-2.0-or-later"
 website = "https://pagure.io/xmlto"

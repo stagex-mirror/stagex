@@ -2,6 +2,7 @@ release_monitoring_id = 140
 [package]
 name = "gmp"
 version = "6.3.0"
+release_monitoring_id = 18582
 description = "GNU multiple precision arithmetic library"
 license = "GPL-2.0-or-later AND LGPL-3.0-or-later"
 website = "https://gmplib.org"

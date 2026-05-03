@@ -2,6 +2,7 @@ release_monitoring_id = 1280
 [package]
 name = "openssh"
 version = "10.3p1"
+release_monitoring_id = 2565
 description = "OpenSSH connectivity tools for remote login with the SSH protocol"
 license = "ISC AND BSD-2-Clause AND MIT"
 website = "https://www.openssh.com"

@@ -2,6 +2,7 @@ release_monitoring_id = 1270
 [package]
 name = "strace"
 version = "6.18"
+release_monitoring_id = 4897
 description = "Diagnostic, debugging and instructional userspace tracer for Linux"
 license = "LGPL-2.1-or-later"
 website = "https://strace.io"

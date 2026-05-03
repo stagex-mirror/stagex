@@ -1,6 +1,7 @@
 [package]
 name = "dhcpcd"
 version = "10.3.2"
+release_monitoring_id = 11429
 description = "DHCP and DHCPv6 client with IPv4LL and IPv6RS support"
 license = "BSD-2-Clause"
 website = "https://github.com/NetworkConfiguration/dhcpcd"

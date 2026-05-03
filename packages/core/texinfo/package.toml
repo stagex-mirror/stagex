@@ -1,13 +1,13 @@
 [package]
 name = "texinfo"
-version = "7.1"
+version = "7.3"
+release_monitoring_id = 4958
 description = "GNU documentation system for producing online and printed manuals"
 license = "GPL-3.0-or-later"
 website = "https://www.gnu.org/software/texinfo/"
 
-release_monitoring_id = 4958
 [sources.texinfo]
-hash = "deeec9f19f159e046fdf8ad22231981806dac332cc372f1c763504ad82b30953"
+hash = "4fc30d71e00416f0b4884994f1db9db2901f03603f8e69d92dd46fa018d998d7"
 format = "tar.xz"
 file = "texinfo-{version}.{format}"
 mirrors = [ "https://ftpmirror.gnu.org/gnu/texinfo/{file}", "https://mirrors.kernel.org/gnu/texinfo/{file}"] 

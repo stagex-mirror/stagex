@@ -2,6 +2,7 @@ release_monitoring_id = 374775
 [package]
 name = "anubis"
 version = "1.25.0"
+release_monitoring_id = 377999
 description = "Weighs the souls of incoming HTTP requests using Proof-of-Work"
 license = "MIT"
 website = "https://anubis.techaro.lol"

@@ -1,6 +1,7 @@
 [package]
 name = "dosfstools"
 version = "4.2"
+release_monitoring_id = 455
 description = "Utilities for creating and checking FAT and VFAT file systems"
 license = "GPL-3.0-or-later"
 website = "https://github.com/dosfstools/dosfstools"

@@ -1,13 +1,14 @@
 release_monitoring_id = 389740
 [package]
 name = "uutils"
-version = "0.7.0"
+version = "0.0.3"
+release_monitoring_id = 91845
 description = "GNU-compatible utilities for basic file, shell, and text manipulation"
 license = "MIT"
 website = "https://uutils.github.io"
 
 [sources.uutils]
-hash = "dc56a3c4632742357d170d60a7dcecb9693de710daeaafa3ad925750b1905522"
+hash = "aeab9dcd0320f0da0a16b745f4656f51c67f3cdbb7cc03fb674b8615c1fb0116"
 format = "tar.gz"
 file = "uutils-{version}.{format}"
 mirrors = [ "https://github.com/uutils/coreutils/archive/refs/tags/{version}.{format}"]

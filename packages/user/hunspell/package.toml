@@ -2,6 +2,7 @@ release_monitoring_id = 374716
 [package]
 name = "hunspell"
 version = "1.7.2"
+release_monitoring_id = 1343
 description = "Spell checker and morphological analyzer"
 license = "MPL-1.1 OR LGPL-2.1-or-later OR GPL-2.0-or-later"
 website = "https://hunspell.github.io"

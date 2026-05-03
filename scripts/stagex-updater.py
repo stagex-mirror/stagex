@@ -463,11 +463,77 @@ def update_single_package(pkg_name: str, dry_run: bool = False) -> bool:
         logger.error(f"Package {pkg_name} not found")
         return False
     
+    # Skip packages that should not be updated (already handled by staging)
+    SKIP_PACKAGES = ['musl', 'mold', 'llvm', 'rust']
+    if pkg_name in SKIP_PACKAGES:
+        logger.info(f"Skipping {pkg_name} - handled by staging")
+        return True
+    
     pkg = packages[pkg_name]
     
     if not pkg.release_monitoring_id:
+<<<<<<< HEAD
         logger.warning(f"{pkg_name} has no RM.org ID, skipping")
         return False
+=======
+        logger.info(f"{pkg_name} has no RM.org ID, attempting to look it up...")
+        project_id, version_from_rm, project_data = lookup_release_monitoring_id(pkg_name)
+        
+        if project_id:
+            # Update pkg with the found ID
+            pkg.release_monitoring_id = project_id
+            latest_version = version_from_rm
+            logger.info(f"Found project ID {project_id} for {pkg_name}")
+            
+            # Save the ID to package.toml
+            try:
+                with pkg.toml_path.open('r') as f:
+                    content = f.read()
+                
+                # Check if release_monitoring_id already exists
+                if 'release_monitoring_id' not in content:
+                    # Add it after the version line
+                    new_content = re.sub(
+                        r'^(version\s*=\s*"[^"]*")',
+                        lambda m: m.group(0) + f'\nrelease_monitoring_id = {project_id}',
+                        content,
+                        count=1,
+                        flags=re.MULTILINE
+                    )
+                    
+                    pkg.toml_path.write_text(new_content)
+                    logger.info(f"Added release_monitoring_id={project_id} to {pkg_name}")
+            
+            except Exception as e:
+                logger.warning(f"Failed to save release_monitoring_id to {pkg_name}: {e}")
+        
+        # If still no version from RM, try GitHub releases
+        if not latest_version:
+            # Try to extract GitHub repo from description or website
+            with pkg.toml_path.open('rb') as f:
+                toml_data = tomllib.load(f)
+            
+            github_repo = None
+            if 'description' in toml_data.get('package', {}):
+                desc = toml_data['package']['description'].lower()
+                if 'github.com' in desc:
+                    # Extract github.com/user/repo from description
+                    match = re.search(r'github\.com[/ ]([^/]+/[^/]+)', desc)
+                    if match:
+                        github_repo = match.group(1)
+            
+            if not github_repo and 'website' in toml_data.get('package', {}):
+                website = toml_data['package']['website']
+                if 'github.com' in website:
+                    # Extract github.com/user/repo from website
+                    match = re.search(r'github\.com[/ ]([^/]+/[^/]+)', website)
+                    if match:
+                        github_repo = match.group(1)
+            
+            if github_repo:
+                logger.info(f"Checking GitHub releases for {github_repo}")
+                latest_version, _ = lookup_github_releases(github_repo, pkg.current_version)
+>>>>>>> 59f0aec7b (Update 50 packages and add release_monitoring_id to 235 packages)
     
     # Query RM.org
     latest_version, _ = query_rm_org(pkg.release_monitoring_id, pkg.name)
@@ -499,9 +565,14 @@ def update_single_package(pkg_name: str, dry_run: bool = False) -> bool:
     sources = data.get('sources', {})
     source_name = pkg.name  # Usually matches package name
     if source_name not in sources:
-        source_name = list(sources.keys())[0]
+        # Try to find any source name
+        source_name = list(sources.keys())[0] if sources else None
     
-    mirrors = sources[source_name].get('mirrors', [])
+    if not source_name:
+        logger.error(f"No sources found in {pkg.toml_path}")
+        return False
+    
+    mirrors = sources[source_name].get('mirrors', []) if source_name in sources else []
     
     # Download source
     success, new_hash, dest_file = download_source(latest_version, mirrors, STAGEX_ROOT / 'fetch')

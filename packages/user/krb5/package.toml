@@ -2,6 +2,7 @@ release_monitoring_id = 1749
 [package]
 name = "krb5"
 version = "1.21.2"
+release_monitoring_id = 13287
 description = "MIT Kerberos network authentication protocol implementation"
 license = "MIT"
 website = "https://web.mit.edu/kerberos/"

@@ -2,6 +2,7 @@ release_monitoring_id = 344
 [package]
 name = "lzip"
 version = "1.26"
+release_monitoring_id = 1866
 description = "Lossless data compressor based on the LZMA algorithm"
 license = "GPL-2.0-or-later"
 website = "https://www.nongnu.org/lzip/"

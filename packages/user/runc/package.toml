@@ -1,13 +1,14 @@
 release_monitoring_id = 2795
 [package]
 name = "runc"
-version = "1.1.13"
+version = "1.5.0-rc.1"
+release_monitoring_id = 7462
 description = "CLI tool for spawning and running containers according to the OCI specification"
 license = "Apache-2.0"
 website = "https://github.com/opencontainers/runc"
 
 [sources.runc]
-hash = "789d5749a08ef1fbe5d1999b67883206a68a4e58e6ca0151c411d678f3480b25"
+hash = "ab1615f8462f2e12a34e627430010eceef2d83b3387408197bdbec3b937d8b96"
 format = "tar.gz"
 file = "runc-{version}.{format}"
 mirrors = [ "https://github.com/opencontainers/runc/archive/v{version}/runc-v{version}.{format}",]

@@ -1,13 +1,14 @@
 release_monitoring_id = 1279
 [package]
 name = "xorriso"
-version = "1.5.6"
+version = "1.5.8.pl01"
+release_monitoring_id = 13270
 description = "Tool for creating, loading, and manipulating ISO 9660 filesystem images"
 license = "GPL-2.0-or-later"
 website = "https://www.gnu.org/software/xorriso/"
 
 [sources.xorriso]
-hash = "786f9f5df9865cc5b0c1fecee3d2c0f5e04cab8c9a859bd1c9c7ccd4964fdae1"
+hash = "0381798b7bb4f162578b4f31fe30bfe53608b5077075967f8df2facfab4c90f9"
 format = "pl02.tar.gz"
 file = "xorriso-{version}.{format}"
 mirrors = [ "https://ftpmirror.gnu.org/gnu/xorriso/{file}", "https://mirrors.kernel.org/gnu/xorriso/{file}"]

@@ -1,6 +1,7 @@
 [package]
 name = "libevent"
 version = "2.1.12"
+release_monitoring_id = 1606
 description = "Event notification library"
 license = "BSD-3-Clause"
 website = "https://libevent.org"

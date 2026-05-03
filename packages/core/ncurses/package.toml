@@ -2,6 +2,7 @@ release_monitoring_id = 176
 [package]
 name = "ncurses"
 version = "6.5"
+release_monitoring_id = 200313
 description = "Library for terminal-independent handling of character screens"
 license = "MIT"
 website = "https://invisible-island.net/ncurses/"

@@ -1,13 +1,13 @@
-release_monitoring_id = 92
 [package]
 name = "git"
-version = "2.50.1"
+version = "2.54.0"
+release_monitoring_id = 5350
 description = "Distributed version control system"
 license = "GPL-2.0-only"
 website = "https://git-scm.com"
 
 [sources.git]
-hash = "7e3e6c36decbd8f1eedd14d42db6674be03671c2204864befa2a41756c5c8fc4"
+hash = "45e8107643a44e3ce46f5665beb35af3932fb0d70017687905ab5d4e3aafa8eb"
 format = "tar.xz"
 file = "git-{version}.{format}"
 mirrors = [ "http://mirrors.edge.kernel.org/pub/software/scm/git/{file}",]

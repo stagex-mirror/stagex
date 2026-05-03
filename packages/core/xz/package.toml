@@ -2,6 +2,7 @@ release_monitoring_id = 1286
 [package]
 name = "xz"
 version = "5.6.2"
+release_monitoring_id = 19473
 description = "XZ Utils data compression software"
 license = "0BSD AND LGPL-2.1-or-later AND GPL-2.0-or-later"
 website = "https://tukaani.org/xz/"

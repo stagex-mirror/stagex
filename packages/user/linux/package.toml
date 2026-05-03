@@ -2,6 +2,7 @@ release_monitoring_id = 4695
 [package]
 name = "linux"
 version = "7.0"
+release_monitoring_id = 358810
 description = "The Linux Kernel"
 website = "https://kernel.org"
 license = "GPL-2.0-only"

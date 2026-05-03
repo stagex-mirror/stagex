@@ -1,7 +1,8 @@
 release_monitoring_id = 113
 [package]
 name = "file"
-version = "5.46"
+version = "5.47"
+release_monitoring_id = 807
 description = "File type identification utility"
 license = "BSD-2-Clause"
 website = "https://www.darwinsys.com/file/"

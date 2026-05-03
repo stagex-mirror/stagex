@@ -2,6 +2,7 @@ release_monitoring_id = 114
 [package]
 name = "findutils"
 version = "4.9.0"
+release_monitoring_id = 812
 description = "GNU utilities for finding files"
 license = "GPL-3.0-or-later"
 website = "https://www.gnu.org/software/findutils/"

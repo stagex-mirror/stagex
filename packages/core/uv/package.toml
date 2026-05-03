@@ -2,6 +2,7 @@ release_monitoring_id = 389693
 [package]
 name = "uv"
 version = "0.9.25"
+release_monitoring_id = 372636
 description = "Python package manager written in Rust"
 license = "Apache-2.0 OR MIT"
 website = "https://github.com/astral-sh/uv"

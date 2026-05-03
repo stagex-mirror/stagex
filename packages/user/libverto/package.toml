@@ -1,6 +1,7 @@
 [package]
 name = "libverto"
 version = "0.3.2"
+release_monitoring_id = 15737
 description = "Main loop abstraction library"
 license = "MIT"
 website = "https://github.com/latchset/libverto"

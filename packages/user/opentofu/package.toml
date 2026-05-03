@@ -2,6 +2,7 @@ release_monitoring_id = 389702
 [package]
 name        = "opentofu"
 version     = "1.11.6"
+release_monitoring_id = 371292
 description = "Declarative management of cloud infrastructure"
 license     = "MPL-2.0"
 website     = "https://github.com/opentofu/opentofu"

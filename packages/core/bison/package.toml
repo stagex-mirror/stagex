@@ -2,6 +2,7 @@ release_monitoring_id = 88
 [package]
 name = "bison"
 version = "3.8.2"
+release_monitoring_id = 193
 description = "The GNU general-purpose parser generator"
 website = "https://www.gnu.org/software/bison/bison.html"
 license = "GPL-3.0-or-later"

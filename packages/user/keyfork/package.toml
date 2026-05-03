@@ -2,6 +2,7 @@ release_monitoring_id = 389699
 [package]
 name = "keyfork"
 version = "0.3.6"
+release_monitoring_id = 389682
 description = "An opinionated and modular toolchain for generating and managing cryptographic keys"
 license = "AGPL-3.0-only"
 website = "https://git.distrust.co/public/keyfork"

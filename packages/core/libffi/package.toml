@@ -2,6 +2,7 @@ release_monitoring_id = 1650
 [package]
 name = "libffi"
 version = "3.4.6"
+release_monitoring_id = 1093
 description = "Portable foreign function interface library"
 license = "MIT"
 website = "https://sourceware.org/libffi/"

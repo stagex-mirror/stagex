@@ -1,6 +1,7 @@
 [package]
 name = "libtpms"
 version = "0.10.2"
+release_monitoring_id = 116460
 description = "library providing software emulation of a Trusted Platform Module (TPM 1.2 and TPM 2.0)"
 license = "BSD-3-Clause"
 website = "https://github.com/stefanberger/libtpms"

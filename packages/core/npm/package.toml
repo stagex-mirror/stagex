@@ -2,6 +2,7 @@ release_monitoring_id = 1732
 [package]
 name = "npm"
 version = "11.6.0"
+release_monitoring_id = 190206
 description = "the package manager for JavaScript"
 license = "Artistic-2.0"
 website = "https://www.npmjs.com/"

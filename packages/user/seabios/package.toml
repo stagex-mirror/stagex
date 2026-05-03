@@ -1,6 +1,7 @@
 [package]
 name = "seabios"
 version = "1.17.0"
+release_monitoring_id = 16347
 description = "Open source implementation of a 16bit x86 BIOS"
 license = "LGPL-3.0-or-later"
 website = "https://www.seabios.org"

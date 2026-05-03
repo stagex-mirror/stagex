@@ -2,6 +2,7 @@ release_monitoring_id = 374797
 [package]
 name = "lldb"
 version = "21.1.8"
+release_monitoring_id = 15635
 description = "A next generation, high-performance debugger built on LLVM."
 license = "Apache-2.0 WITH LLVM-exception"
 website = "https://lldb.llvm.org"

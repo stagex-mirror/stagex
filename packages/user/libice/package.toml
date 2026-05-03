@@ -2,6 +2,7 @@ release_monitoring_id = 374723
 [package]
 name = "libice"
 version = "1.1.2"
+release_monitoring_id = 1638
 description = "X11 Inter-Client Exchange library"
 license = "MIT"
 website = "https://xorg.freedesktop.org"

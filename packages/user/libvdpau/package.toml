@@ -2,6 +2,7 @@ release_monitoring_id = 374733
 [package]
 name = "libvdpau"
 version = "1.5"
+release_monitoring_id = 1755
 description = "Hardware-accelerated video playback library"
 license = "MIT"
 website = "https://freedesktop.org/wiki/Software/VDPAU/"

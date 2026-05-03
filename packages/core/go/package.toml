@@ -2,6 +2,7 @@ release_monitoring_id = 1851
 [package]
 name = "go"
 version = "1.26.0"
+release_monitoring_id = 10396
 description = "The Go programming language"
 website = "https://go.dev"
 license = "BSD-3-Clause"

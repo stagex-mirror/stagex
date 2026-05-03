@@ -1,6 +1,7 @@
 [package]
 name = "ipxe"
 version = "c8f088d4e11a1dedda4829c4be1bb1b14e9da016"
+release_monitoring_id = 10507
 description = "Open source network boot firmware"
 license = "GPL-2.0-or-later"
 website = "https://ipxe.org"

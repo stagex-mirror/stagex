@@ -2,6 +2,7 @@ release_monitoring_id = 374732
 [package]
 name = "libusbmuxd"
 version = "2.1.0"
+release_monitoring_id = 107017
 description = "Client library for USB multiplexing daemon for iOS devices"
 license = "LGPL-2.1-or-later"
 website = "https://libimobiledevice.org"

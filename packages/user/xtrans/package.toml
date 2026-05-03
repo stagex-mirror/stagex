@@ -1,13 +1,14 @@
 release_monitoring_id = 374640
 [package]
 name = "xtrans"
-version = "1.5.2"
+version = "1.6.0"
+release_monitoring_id = 13440
 description = "X transport library"
 license = "MIT"
 website = "https://xorg.freedesktop.org"
 
 [sources.xtrans]
-hash = "5c5cbfe34764a9131d048f03c31c19e57fb4c682d67713eab6a65541b4dff86c"
+hash = "936b74c60b19c317c3f3cb1b114575032528dbdaf428740483200ea874c2ca0a"
 format = "tar.xz"
 file = "xtrans-{version}.{format}"
 mirrors = [ "https://www.x.org/releases/individual/lib/{file}" ]

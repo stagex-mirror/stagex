@@ -1,0 +1,13 @@
+[package]
+name = "redis"
+version = "8.0.3"
+release_monitoring_id = 373306
+description = "Cache, data structure server, document and vector query engine"
+license = "AGPL-3.0-only"
+website = "https://redis.io"
+
+[sources.redis]
+hash = "33f37290b00b14e9a884dd4dcba335febd63ea16c51609d34fa41e031ad587df"
+format = "tar.gz"
+file = "redis-{version}.{format}"
+mirrors = [ "https://download.redis.io/releases/{file}"]

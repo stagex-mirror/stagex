@@ -1,6 +1,7 @@
 [package]
 name = "chrpath"
 version = "0.16"
+release_monitoring_id = 13891
 description = "Tool to edit the rpath in ELF binaries"
 license = "GPL-2.0-or-later"
 website = "https://codeberg.org/pere/chrpath"

@@ -2,6 +2,7 @@ release_monitoring_id = 1277
 [package]
 name = "valgrind"
 version = "3.26.0"
+release_monitoring_id = 306802
 description = "Instrumentation framework for building dynamic analysis tools"
 license = "GPL-2.0-or-later"
 website = "https://valgrind.org"

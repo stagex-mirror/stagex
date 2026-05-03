@@ -2,6 +2,7 @@ release_monitoring_id = 1922
 [package]
 name = "protobuf"
 version = "26.1"
+release_monitoring_id = 20598
 description = "Protocol Buffers data interchange format"
 license = "BSD-3-Clause"
 website = "https://protobuf.dev"

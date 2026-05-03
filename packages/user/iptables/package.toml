@@ -2,6 +2,7 @@ release_monitoring_id = 1281
 [package]
 name = "iptables"
 version = "1.8.10"
+release_monitoring_id = 243298
 description = "Administration tools for packet filtering and NAT"
 license = "GPL-2.0-or-later"
 website = "https://www.netfilter.org/projects/iptables/"

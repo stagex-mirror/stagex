@@ -2,6 +2,7 @@ release_monitoring_id = 389704
 [package]
 name = "ansible"
 version = "11.9.0"
+release_monitoring_id = 6097
 description = "Official assortment of Ansible collections"
 website = "https://pypi.org/project/ansible/"
 license = "GPL-3.0-or-later"

@@ -1,13 +1,13 @@
-release_monitoring_id = 2806
 [package]
 name = "nettle"
-version = "3.9.1_release_20230601"
+version = "7.5.0"
+release_monitoring_id = 191610
 description = "Low-level cryptographic library"
 license = "LGPL-3.0-or-later AND GPL-2.0-or-later"
 website = "https://www.lysator.liu.se/~nisse/nettle/"
 
 [sources.nettle]
-hash = "7278dd8fb89cae88552e1dc4a6294f1c62a8a9548a18f635515242f389797fed"
+hash = "6ffdb2b20a1b2f0fa3771ae2cb2a82e141048625e7d5474465c238f62fbd2a56"
 format = "tar.gz"
 file = "nettle-{version}.{format}"
 mirrors = [ "https://git.lysator.liu.se/nettle/nettle/-/archive/nettle_{version}/nettle-nettle_{version}.{format}",]

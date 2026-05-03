@@ -1,6 +1,7 @@
 [package]
 name = "eif_build"
 version = "0.2.1"
+release_monitoring_id = 374292
 description = "AWS Nitro Enclave Image Format builder"
 license = "Apache-2.0"
 website = "https://github.com/nickoala/eif_build"

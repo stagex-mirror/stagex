@@ -1,6 +1,7 @@
 [package]
 name = "k9s"
 version = "0.50.18"
+release_monitoring_id = 242947
 description = "Kubernetes CLI To Manage Your Clusters In Style!"
 license = "Apache-2.0"
 website = "https://github.com/derailed/k9s"

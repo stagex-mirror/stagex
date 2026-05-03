@@ -2,6 +2,7 @@ release_monitoring_id = 138
 [package]
 name = "gettext"
 version = "0.23.2"
+release_monitoring_id = 373907
 description = "GNU internationalization and localization utilities"
 license = "GPL-3.0-or-later"
 website = "https://www.gnu.org/software/gettext/"

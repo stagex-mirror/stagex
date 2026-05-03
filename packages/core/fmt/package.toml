@@ -2,6 +2,7 @@ release_monitoring_id = 3904
 [package]
 name = "fmt"
 version = "12.1.0"
+release_monitoring_id = 63826
 description = "Open-source formatting library for C++"
 license = "MIT"
 website = "https://fmt.dev"

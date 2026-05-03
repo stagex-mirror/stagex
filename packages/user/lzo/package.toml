@@ -2,6 +2,7 @@ release_monitoring_id = 2805
 [package]
 name = "lzo"
 version = "2.10"
+release_monitoring_id = 1868
 description = "Portable lossless data compression library"
 license = "GPL-2.0-or-later"
 website = "https://www.oberhumer.com/opensource/lzo/"

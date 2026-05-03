@@ -2,6 +2,7 @@ release_monitoring_id = 374729
 [package]
 name = "libsm"
 version = "1.2.5"
+release_monitoring_id = 90185
 description = "X11 Session Management library"
 license = "MIT"
 website = "https://xorg.freedesktop.org"

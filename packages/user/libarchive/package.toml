@@ -1,13 +1,14 @@
 release_monitoring_id = 242690
 [package]
 name = "libarchive"
-version = "3.7.4"
+version = "3.8.7"
+release_monitoring_id = 1558
 description = "Multi-format archive and compression library"
 license = "BSD-2-Clause"
 website = "https://www.libarchive.org"
 
 [sources.libarchive]
-hash = "f887755c434a736a609cbd28d87ddbfbe9d6a3bb5b703c22c02f6af80a802735"
+hash = "4b787cca6697a95c7725e45293c973c208cbdc71ae2279f30ef09f52472b9166"
 format = "tar.xz"
 file = "libarchive-{version}.{format}"
 mirrors = [ "https://libarchive.org/downloads/{file}", "https://ftp.fau.de/macports/distfiles/libarchive/{file}"]

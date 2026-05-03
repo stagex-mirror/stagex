@@ -2,6 +2,7 @@ release_monitoring_id = 389700
 [package]
 name = "kubectl"
 version = "1.34.1"
+release_monitoring_id = 205667
 description = "A command line tool for communicating with a Kubernetes API server"
 license = "Apache-2.0"
 website = "https://kubernetes.io/"

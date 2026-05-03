@@ -1,6 +1,7 @@
 [package]
 name = "libnftnl"
 version = "1.2.8"
+release_monitoring_id = 1681
 description = "Low-level netlink interface to nf_tables"
 license = "GPL-2.0-or-later"
 website = "https://www.netfilter.org/projects/libnftnl/"

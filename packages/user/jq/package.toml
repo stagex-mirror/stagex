@@ -2,6 +2,7 @@ release_monitoring_id = 2420
 [package]
 name = "jq"
 version = "1.8.1"
+release_monitoring_id = 13252
 description = "Lightweight and flexible command-line JSON processor"
 license = "MIT"
 website = "https://jqlang.github.io/jq/"

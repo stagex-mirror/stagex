@@ -2,6 +2,7 @@ release_monitoring_id = 131
 [package]
 name = "binutils"
 version = "2.46.0"
+release_monitoring_id = 7981
 description = "GNU collection of binary tools including linker and assembler"
 license = "GPL-3.0-or-later"
 website = "https://www.gnu.org/software/binutils/"

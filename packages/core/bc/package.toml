@@ -2,6 +2,7 @@ release_monitoring_id = 83
 [package]
 name = "bc"
 version = "1.08.2"
+release_monitoring_id = 170
 description = "GNU arbitrary precision numeric processing language"
 license = "GPL-2.0-or-later"
 website = "https://www.gnu.org/software/bc/"

@@ -2,6 +2,7 @@ release_monitoring_id = 1273
 [package]
 name = "syslinux"
 version = "6.04-pre1"
+release_monitoring_id = 4929
 description = "Lightweight bootloader for Linux"
 license = "GPL-2.0-or-later"
 website = "https://wiki.syslinux.org"

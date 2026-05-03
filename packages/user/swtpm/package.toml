@@ -2,6 +2,7 @@ release_monitoring_id = 374608
 [package]
 name = "swtpm"
 version = "0.10.1"
+release_monitoring_id = 116461
 description = "Libtpms-based TPM emulator with socket, character device, and Linux CUSE interface"
 website = "https://github.com/stefanberger/swtpm"
 license = "BSD-3-Clause"

@@ -1,6 +1,7 @@
 [package]
 name = "eudev"
 version = "3.2.14"
+release_monitoring_id = 13466
 description = "Standalone dynamic device management daemon"
 license = "GPL-2.0-or-later"
 website = "https://github.com/eudev-project/eudev"

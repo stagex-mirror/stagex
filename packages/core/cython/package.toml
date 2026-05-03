@@ -2,6 +2,7 @@ release_monitoring_id = 164
 [package]
 name = "cython"
 version = "3.2.4"
+release_monitoring_id = 36699
 description = "Optimising static compiler for Python and the Cython programming language"
 license = "Apache-2.0"
 website = "https://cython.org/"

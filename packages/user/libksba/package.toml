@@ -1,6 +1,7 @@
 [package]
 name = "libksba"
 version = "1.6.8"
+release_monitoring_id = 1649
 description = "CMS and X.509 access library for GnuPG"
 license = "LGPL-2.1-or-later AND GPL-2.0-or-later"
 website = "https://gnupg.org/software/libksba/"

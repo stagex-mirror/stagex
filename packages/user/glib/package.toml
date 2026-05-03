@@ -2,6 +2,7 @@ release_monitoring_id = 2812
 [package]
 name = "glib"
 version = "2.82.1"
+release_monitoring_id = 16715
 description = "Low-level core library for GNOME projects"
 license = "LGPL-2.1-or-later"
 website = "https://docs.gtk.org/glib/"

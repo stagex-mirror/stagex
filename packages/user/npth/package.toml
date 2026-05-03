@@ -2,6 +2,7 @@ release_monitoring_id = 374751
 [package]
 name = "npth"
 version = "1.8"
+release_monitoring_id = 2505
 description = "New portable threads library"
 license = "LGPL-2.1-or-later"
 website = "https://gnupg.org/software/npth/"

@@ -1,13 +1,13 @@
-release_monitoring_id = 304
 [package]
 name = "gcc"
-version = "15.2.0"
+version = "16.1.0"
+release_monitoring_id = 6502
 description = "The GNU Compiler Collection"
 license="GPL-2.0-or-later AND LGPL-2.1-or-later"
 website="https://gcc.gnu.org"
 
 [sources.gcc]
-hash = "438fd996826b0c82485a29da03a72d71d6e3541a83ec702df4271f6fe025d24e"
+hash = "48be131b8c719db967cf0265a0ccb0cab2a3b224d5bb42f84904f0c1744213e6"
 format = "tar.xz"
 file = "gcc-{version}.{format}"
 mirrors = [ "https://mirrors.kernel.org/gnu/gcc/gcc-{version}/{file}",]

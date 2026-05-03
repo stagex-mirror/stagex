@@ -2,6 +2,7 @@ release_monitoring_id = 1028
 [package]
 name = "solidity"
 version = "0.8.30"
+release_monitoring_id = 15988
 description = "Statically-typed programming language for developing smart contracts for the Ethereum Virtual Machine."
 license = "GPL-3.0-only"
 website = "https://soliditylang.org"

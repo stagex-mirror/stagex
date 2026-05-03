@@ -1,13 +1,13 @@
-release_monitoring_id = 263
 [package]
 name = "sed"
-version = "4.9"
+version = "4.10"
+release_monitoring_id = 4789
 description = "GNU stream editor"
 license = "GPL-3.0-or-later"
 website = "https://www.gnu.org/software/sed/"
 
 [sources.sed]
-hash = "6e226b732e1cd739464ad6862bd1a1aba42d7982922da7a53519631d24975181"
+hash = "4d179ffaf92ec4dcec541f7c032be1c3b9a1856f4970adb95a505221702f5277"
 format = "tar.xz"
 file = "sed-{version}.{format}"
 mirrors = [ "https://ftpmirror.gnu.org/gnu/sed/{file}", "https://mirrors.kernel.org/gnu/sed/{file}"] 

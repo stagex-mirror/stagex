@@ -2,6 +2,7 @@ release_monitoring_id = 374747
 [package]
 name = "mdbook"
 version = "0.5.2"
+release_monitoring_id = 241825
 description = "Create books from Markdown files"
 license = "MPL-2.0"
 website = "https://rust-lang.github.io/mdBook/"

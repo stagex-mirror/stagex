@@ -2,6 +2,7 @@ release_monitoring_id = 2809
 [package]
 name = "cpio"
 version = "2.15"
+release_monitoring_id = 57938
 description = "GNU cpio copies files into or out of a cpio or tar archive"
 license = "GPL-3.0-or-later"
 website = "https://www.gnu.org/software/cpio/"

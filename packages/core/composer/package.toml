@@ -1,13 +1,13 @@
-release_monitoring_id = 374599
 [package]
 name = "composer"
-version = "2.9.5"
+version = "2.10.0-RC1"
+release_monitoring_id = 9710
 description = "A Dependency Manager for PHP"
 license = "MIT"
 website = "https://getcomposer.org"
 
 [sources.composer]
-hash = "3fac7a83935223c6381542c03c6002439b7842a01897be5fbd957b105768ade5"
+hash = "53e0f703e0ad03a72e9724f87cdead6665c3f90ed2b5597dc6bb6ee2081e1399"
 format = "tar.gz"
 file = "composer-{version}.{format}"
 mirrors = [ "https://github.com/composer/composer/archive/refs/tags/{version}.{format}" ]

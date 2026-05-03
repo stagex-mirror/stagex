@@ -1,6 +1,7 @@
 [package]
 name = "libqrencode"
 version = "4.1.1"
+release_monitoring_id = 12834
 description = "QR Code encoding library"
 license = "LGPL-2.1-or-later"
 website = "https://fukuchi.org/works/qrencode/"

@@ -2,6 +2,7 @@ release_monitoring_id = 132
 [package]
 name = "gc"
 version = "8.2.12"
+release_monitoring_id = 336648
 description = "Garbage collector for C and C++"
 license = "Boehm-GC"
 website = "https://hboehm.info/gc/"

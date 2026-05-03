@@ -2,6 +2,7 @@ release_monitoring_id = 2163
 [package]
 name = "xxhash"
 version = "0.8.2"
+release_monitoring_id = 19490
 description = "Extremely fast non-cryptographic hash algorithm"
 license = "BSD-2-Clause"
 website = "https://xxhash.com"

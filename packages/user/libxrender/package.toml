@@ -2,6 +2,7 @@ release_monitoring_id = 374742
 [package]
 name = "libxrender"
 version = "0.9.12"
+release_monitoring_id = 1789
 description = "X Rendering Extension client library"
 license = "MIT"
 website = "https://xorg.freedesktop.org"

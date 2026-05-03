@@ -2,6 +2,7 @@ release_monitoring_id = 249
 [package]
 name = "readline"
 version = "8.2"
+release_monitoring_id = 913
 description = "GNU readline library for command-line editing"
 license = "GPL-3.0-or-later"
 website = "https://tiswww.case.edu/php/chet/readline/rltop.html"

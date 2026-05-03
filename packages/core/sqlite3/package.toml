@@ -2,6 +2,7 @@ release_monitoring_id = 185
 [package]
 name = "sqlite3"
 version = "3.50.1"
+release_monitoring_id = 2141
 description = "SQLite is a C-language library that implements a small, fast, self-contained, high-reliability, full-featured, SQL database engine."
 license = "blessing"
 website = "https://www.sqlite.org"

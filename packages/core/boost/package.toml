@@ -2,6 +2,7 @@ release_monitoring_id = 135
 [package]
 name = "boost"
 version = "1.88.0"
+release_monitoring_id = 6845
 description = "Free peer-reviewed portable C++ source libraries"
 license = "BSL-1.0"
 website = "https://www.boost.org"

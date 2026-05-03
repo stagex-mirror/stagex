@@ -2,6 +2,7 @@ release_monitoring_id = 374735
 [package]
 name = "libxau"
 version = "1.0.12"
+release_monitoring_id = 1765
 description = "X11 authorisation library"
 license = "MIT"
 website = "https://xorg.freedesktop.org"

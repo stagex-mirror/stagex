@@ -2,6 +2,7 @@ release_monitoring_id = 374725
 [package]
 name = "libmd"
 version = "1.1.0"
+release_monitoring_id = 15525
 description = "Message Digest functions from BSD systems"
 license = "ISC AND BSD-3-Clause AND BSD-2-Clause"
 website = "https://www.hadrons.org/software/libmd/"

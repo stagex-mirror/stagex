@@ -2,6 +2,7 @@ release_monitoring_id = 304
 [package]
 name = "python"
 version = "3.14.4"
+release_monitoring_id = 13254
 description = "The Python programming language"
 license = "PSF-2.0"
 website = "https://python.org/"

@@ -1,6 +1,7 @@
 [package]
 name = "ocismack"
 version = "0.1.0"
+release_monitoring_id = 389735
 description = "OCI image flattening tool"
 license = "ISC"
 website = "https://codeberg.org/stagex/ocismack"

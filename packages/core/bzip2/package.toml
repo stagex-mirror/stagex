@@ -2,6 +2,7 @@ release_monitoring_id = 102
 [package]
 name = "bzip2"
 version = "1.0.8"
+release_monitoring_id = 109557
 description = "Freely available high-quality data compressor"
 license = "bzip2-1.0.6"
 website = "https://sourceware.org/bzip2/"

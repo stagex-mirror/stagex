@@ -1,6 +1,7 @@
 [package]
 name = "sxctl"
 version = "0.0.5"
+release_monitoring_id = 389690
 description = "StageX command-line management tool"
 license = "ISC"
 website = "https://codeberg.org/stagex/sxctl"

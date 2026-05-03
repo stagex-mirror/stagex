@@ -2,6 +2,7 @@ release_monitoring_id = 393
 [package]
 name = "ed"
 version = "1.20"
+release_monitoring_id = 659
 description = "GNU line-oriented text editor"
 license = "GPL-2.0-or-later"
 website = "https://www.gnu.org/software/ed/"

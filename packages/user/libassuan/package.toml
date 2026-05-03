@@ -1,6 +1,7 @@
 [package]
 name = "libassuan"
 version = "3.0.2"
+release_monitoring_id = 1559
 description = "IPC library used by GnuPG components"
 license = "LGPL-2.1-or-later"
 website = "https://gnupg.org/software/libassuan/"

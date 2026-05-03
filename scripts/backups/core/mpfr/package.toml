@@ -2,6 +2,7 @@ release_monitoring_id = 192
 [package]
 name = "mpfr"
 version = "4.1.0"
+release_monitoring_id = 2019
 description = "multiple-precision floating-point library"
 website = "https://www.mpfr.org/"
 license = "LGPL-3.0-or-later"

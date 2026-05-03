@@ -2,6 +2,7 @@ release_monitoring_id = 161
 [package]
 name = "perl"
 version = "5.38.0"
+release_monitoring_id = 13599
 description = "Practical Extraction and Report Language"
 license = "Artistic-1.0-Perl OR GPL-1.0-or-later"
 website = "https://www.perl.org/"

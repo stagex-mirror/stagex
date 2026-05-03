@@ -1,13 +1,13 @@
-release_monitoring_id = 389692
 [package]
 name = "wayland"
-version = "1.24.0"
+version = "1.25.0"
+release_monitoring_id = 10061
 description = "A computer display server protocol"
 license = "MIT"
 website = "https://wayland.freedesktop.org"
 
 [sources.wayland]
-hash = "82eab21b355ba2b0b5c2b7e6bfa7335ef9eaf52e874d4e4884e5ba18423b0d3b"
+hash = "bbe2942caea0e335b541118c307959c27a1c73406857fdc5a4bdc6449588f0ba"
 
 format = "tar.gz"
 file = "wayland-{version}.{format}"

@@ -1,6 +1,7 @@
 [package]
 name = "sshpass"
 version = "1.10"
+release_monitoring_id = 12961
 description = "Fool ssh into accepting an interactive password non-interactively"
 license = "GPL-2.0-or-later"
 website = "https://sourceforge.net/projects/sshpass/"

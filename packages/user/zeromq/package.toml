@@ -2,6 +2,7 @@ release_monitoring_id = 2801
 [package]
 name = "zeromq"
 version = "4.3.5"
+release_monitoring_id = 16245
 description = "The ZeroMQ messaging library and tools"
 license = "MPL-2.0"
 website = "https://zeromq.org"

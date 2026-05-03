@@ -2,6 +2,7 @@ release_monitoring_id = 374616
 [package]
 name = "doctest"
 version = "2.5.2"
+release_monitoring_id = 288147
 description = "Fast header-only C++ unit testing"
 license = "MIT"
 website = "https://github.com/doctest/doctest"

@@ -1,13 +1,14 @@
 release_monitoring_id = 374770
 [package]
 name = "ninja"
-version = "1.13.1"
+version = "1.13.0"
+release_monitoring_id = 132832
 description = "A small build system with a focus on speed"
 license = "Apache-2.0"
 website = "https://ninja-build.org"
 
 [sources.ninja]
-hash = "f0055ad0369bf2e372955ba55128d000cfcc21777057806015b45e4accbebf23"
+hash = "f08641d00099a9e40d44ec0146f841c472ae58b7e6dd517bee3945cfd923cedf"
 format = "tar.gz"
 file = "ninja-{version}.{format}"
 mirrors = [ "https://github.com/ninja-build/ninja/archive/v{version}.{format}",]

@@ -2,6 +2,7 @@ release_monitoring_id = 174
 [package]
 name = "coreutils"
 version = "9.7"
+release_monitoring_id = 372575
 description = "GNU core utilities for basic file, shell, and text manipulation"
 license = "GPL-3.0-or-later"
 website = "https://www.gnu.org/software/coreutils/"

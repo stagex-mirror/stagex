@@ -1,6 +1,7 @@
 [package]
 name = "guestctl"
 version = "0.1.0"
+release_monitoring_id = 389719
 description = "Guest Virtual Machine Controller"
 license = "Apache-2.0"
 website = "https://codeberg.org/stagex/stagex"

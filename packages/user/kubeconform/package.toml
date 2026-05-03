@@ -1,6 +1,7 @@
 [package]
 name = "kubeconform"
 version = "0.7.0"
+release_monitoring_id = 374708
 description = "FAST Kubernetes manifests validator, with support for Custom Resources!"
 website = "https://github.com/yannh/kubeconform"
 license = "Apache-2.0"

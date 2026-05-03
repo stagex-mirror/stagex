@@ -2,6 +2,7 @@ release_monitoring_id = 374796
 [package]
 name = "kustomize"
 version = "5.8.1"
+release_monitoring_id = 21003
 description = "Template-free customization of Kubernetes YAML manifests"
 website = "https://kustomize.io/"
 license = "Apache-2.0"

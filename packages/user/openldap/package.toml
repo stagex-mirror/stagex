@@ -2,6 +2,7 @@ release_monitoring_id = 374753
 [package]
 name = "openldap"
 version = "2.6.8"
+release_monitoring_id = 2551
 description = "Open source LDAP suite of applications and development tools"
 license = "OLDAP-2.8"
 website = "https://www.openldap.org"

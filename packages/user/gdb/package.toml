@@ -2,6 +2,7 @@ release_monitoring_id = 2811
 [package]
 name = "gdb"
 version = "17.1"
+release_monitoring_id = 11798
 description = "The GNU Debugger"
 license = "GPL-3.0-or-later"
 website = "https://www.gnu.org/software/gdb"

@@ -2,6 +2,7 @@ release_monitoring_id = 285
 [package]
 name = "curl"
 version = "8.9.1"
+release_monitoring_id = 16813
 description = "Command line tool and library for transferring data with URLs"
 license = "curl"
 website = "https://curl.se/"

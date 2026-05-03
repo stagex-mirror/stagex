@@ -1,6 +1,7 @@
 [package]
 name = "snpguest"
 version = "0.10.0"
+release_monitoring_id = 376758
 description = "CLI utility for managing an AMD SEV-SNP enabled guest"
 license = "Apache-2.0"
 website = "https://github.com/virtee/snpguest"

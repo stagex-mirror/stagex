@@ -2,6 +2,7 @@ release_monitoring_id = 1530
 [package]
 name = "icu"
 version = "74.2"
+release_monitoring_id = 379847
 description = "International Components for Unicode"
 license = "ICU"
 website = "https://icu.unicode.org"
