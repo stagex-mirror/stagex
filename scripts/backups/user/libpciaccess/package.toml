@@ -1,0 +1,13 @@
+[package]
+name = "libpciaccess"
+version = "0.18.1"
+release_monitoring_id = 1703
+description = "X11 PCI access library"
+license = "MIT"
+website = "https://xorg.freedesktop.org"
+
+[sources.libpciaccess]
+hash = "4af43444b38adb5545d0ed1c2ce46d9608cc47b31c2387fc5181656765a6fa76"
+format = "tar.xz"
+file = "libpciaccess-{version}.{format}"
+mirrors = [ "https://www.x.org/releases/individual/lib/{file}",]

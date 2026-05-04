@@ -1,0 +1,13 @@
+[package]
+name = "tar"
+version = "1.35"
+release_monitoring_id = 16809
+description = "GNU tape archiver"
+license = "GPL-3.0-or-later"
+website = "https://www.gnu.org/software/tar/"
+
+[sources.tar]
+hash = "4d62ff37342ec7aed748535323930c7cf94acf71c3591882b26a7ea50f3edc16"
+format = "tar.xz"
+file = "tar-{version}.{format}"
+mirrors = [ "https://ftpmirror.gnu.org/gnu/tar/{file}", "https://mirrors.kernel.org/gnu/tar/{file}"] 

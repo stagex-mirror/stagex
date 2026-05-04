@@ -149,7 +149,7 @@ def get_build_order() -> list:
 # Release Monitoring.org API
 # ────────────────────────────────────────────────────────────────────
 
-def query_rm_org(pid: int, pname: str) -> tuple:
+def query_rm_org(pid: int, pname: str, website: str = None) -> tuple:
     """
     Query release-monitoring.org for latest version info using Anitya API v2.
     
@@ -186,8 +186,18 @@ def query_rm_org(pid: int, pname: str) -> tuple:
                 logger.info(f"Selected GitHub entry for {pname}")
                 break
         
+        # If no GitHub entry, prefer entries matching the package website
+        if not project and website:
+            for p in data['items']:
+                homepage = p.get('homepage', '')
+                ecosystem = p.get('ecosystem', '')
+                if website.replace('https://', '').replace('http://', '').split('/')[0] in homepage or website.replace('https://', '').replace('http://', '').split('/')[0] in ecosystem:
+                    project = p
+                    logger.info(f"Selected entry matching website for {pname}")
+                    break
+        
         if not project:
-            # If no GitHub entry, use the first result
+            # If no matching entry, use the first result
             project = data['items'][0]
         
         # Extract latest version
@@ -779,7 +789,13 @@ def update_single_package(pkg_name: str, dry_run: bool = False) -> bool:
     
     # If we have release_monitoring_id, query RM.org
     if pkg.release_monitoring_id and not latest_version:
-        latest_version, _ = query_rm_org(pkg.release_monitoring_id, pkg.name)
+        # Get website from package.toml
+        website = None
+        with pkg.toml_path.open('rb') as f:
+            toml_data = tomllib.load(f)
+            website = toml_data.get('package', {}).get('website')
+        
+        latest_version, _ = query_rm_org(pkg.release_monitoring_id, pkg.name, website)
     
     # If still no version from RM, check the packages list
     if not latest_version and pkg_name in rm_packages:

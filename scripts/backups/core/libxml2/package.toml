@@ -1,0 +1,13 @@
+[package]
+name = "libxml2"
+version = "2.15.1"
+release_monitoring_id = 1783
+description = "GNOME XML parser library"
+license = "MIT"
+website = "https://gitlab.gnome.org/GNOME/libxml2"
+
+[sources.libxml2]
+hash = "c008bac08fd5c7b4a87f7b8a71f283fa581d80d80ff8d2efd3b26224c39bc54c"
+format = "tar.xz"
+file = "libxml2-{version}.{format}"
+mirrors = [ "https://download.gnome.org/sources/libxml2/{version_major_minor}/{file}",]
