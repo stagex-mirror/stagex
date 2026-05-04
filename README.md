@@ -37,9 +37,9 @@ looking for.
 * [Resources](#resources)
 * [References](#references)
 * [Sponsors](#sponsors)
-* [Code of Conduct](CODE_OF_CONDUCT.md)
+* [Code of Conduct](docs/CODE_OF_CONDUCT.md)
 * [Contributing](CONTRIBUTING.md)
-* [Maintainer Guidelines](MAINTENANCE.md)
+* [Maintainer Guidelines](docs/MAINTENANCE.md)
 * [LICENSE](LICENSE)
 
 
