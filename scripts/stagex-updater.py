@@ -175,18 +175,19 @@ def query_rm_org(pid: int, pname: str) -> tuple:
         if not data.get('items'):
             logger.warning(f"Project {pname} not found in release-monitoring.org")
             return None, {}
-            
-        # Find the matching project by ID
+        
+        # Prefer GitHub entries over package manager entries
         project = None
         for p in data['items']:
-            if p.get('id') == pid:
+            ecosystem = p.get('ecosystem', '')
+            if 'github.com' in ecosystem:
                 project = p
+                logger.info(f"Selected GitHub entry for {pname}")
                 break
         
         if not project:
-            # If ID doesn't match, use the first result (likely the right project)
+            # If no GitHub entry, use the first result
             project = data['items'][0]
-            logger.warning(f"Project ID mismatch for {pname}, using first result")
         
         # Extract latest version
         latest_version = project.get('version')
@@ -203,6 +204,89 @@ def query_rm_org(pid: int, pname: str) -> tuple:
     except Exception as e:
         logger.warning(f"API query failed for {pname}: {e}")
         return None, {}
+
+
+
+def validate_release_monitoring_id(pid: int) -> bool:
+    """
+    Validate that a release_monitoring_id exists and is active.
+    
+    Returns True if valid, False if not found.
+    """
+    logger = logging.getLogger(__name__)
+    
+    try:
+        api_url = f'https://release-monitoring.org/api/v2/projects/{pid}/'
+        req = urllib.request.Request(
+            api_url,
+            headers={
+                'User-Agent': 'stagex-updater/1.0',
+                'Accept': 'application/json',
+            }
+        )
+        
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode('utf-8'))
+            
+            # Check if project exists
+            if data.get('id'):
+                return True
+                
+        return False
+        
+    except urllib.error.HTTPError as e:
+        logger.debug(f"HTTP {e.code} validating project {pid}")
+        return False
+    except Exception as e:
+        logger.debug(f"Failed to validate project {pid}: {e}")
+        return False
+
+
+def lookup_git_commit_version(git_url: str, current_version: str) -> tuple:
+    """
+    For packages using git commit hashes as versions, check the upstream repository.
+    
+    Returns (latest_commit, None) or (None, None).
+    """
+    logger = logging.getLogger(__name__)
+    
+    # Extract repo from URL
+    if 'github.com' in git_url:
+        repo = git_url.rstrip('/').split('github.com')[1].lstrip('/')
+        api_url = f'https://api.github.com/repos/{repo}'
+    elif 'codeberg.org' in git_url:
+        # Codeberg doesn't have a public API, skip
+        return None, None
+    else:
+        return None, None
+    
+    try:
+        req = urllib.request.Request(
+            api_url,
+            headers={
+                'User-Agent': 'stagex-updater/1.0',
+                'Accept': 'application/vnd.github.v3+json',
+            }
+        )
+        
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            data = json.loads(resp.read().decode('utf-8'))
+            
+        # Get latest commit
+        latest_commit = data.get('commit', {}).get('sha')
+        
+        if latest_commit:
+            logger.info(f"Found latest commit {latest_commit} for {repo}")
+            return latest_commit, None
+        else:
+            return None, None
+            
+    except urllib.error.HTTPError as e:
+        logger.warning(f"HTTP {e.code} looking up commit for {git_url}: {e.reason}")
+        return None, None
+    except Exception as e:
+        logger.warning(f"Failed to look up commit for {git_url}: {e}")
+        return None, None
 
 
 def lookup_release_monitoring_id(package_name: str) -> tuple:
@@ -281,6 +365,62 @@ def lookup_github_releases(github_repo: str, current_version: str) -> tuple:
     except Exception as e:
         logger.warning(f"Failed to look up GitHub releases for {github_repo}: {e}")
         return None, None
+
+
+
+def get_all_stagex_packages() -> dict:
+    """
+    Get all StageX packages from release-monitoring.org.
+    
+    Returns a dict mapping package names to their stable versions.
+    """
+    logger = logging.getLogger(__name__)
+    
+    api_url = 'https://release-monitoring.org/api/v2/packages/?distribution=stagex'
+    packages = {}
+    
+    try:
+        page = 1
+        items_per_page = 100
+        
+        while True:
+            url = f"{api_url}&items_per_page={items_per_page}&page={page}"
+            req = urllib.request.Request(
+                url,
+                headers={
+                    'User-Agent': 'stagex-updater/1.0',
+                    'Accept': 'application/json',
+                }
+            )
+            
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                data = json.loads(resp.read().decode('utf-8'))
+            
+            if not data.get('items'):
+                break
+                
+            for item in data['items']:
+                pkg_name = item.get('name', '').lower()
+                stable_version = item.get('stable_version')
+                if pkg_name and stable_version:
+                    packages[pkg_name] = stable_version
+            
+            # Check if there are more pages
+            if len(data['items']) < items_per_page:
+                break
+            
+            page += 1
+            time.sleep(1)  # Be nice to the API
+        
+        logger.info(f"Found {len(packages)} packages in release-monitoring.org")
+        return packages
+        
+    except urllib.error.HTTPError as e:
+        logger.warning(f"HTTP {e.code} fetching packages: {e.reason}")
+        return {}
+    except Exception as e:
+        logger.warning(f"Failed to fetch packages: {e}")
+        return {}
 
 
 def get_download_url(version: str, mirrors: list, pkg_name: str = None) -> Optional[str]:
@@ -555,6 +695,9 @@ def update_single_package(pkg_name: str, dry_run: bool = False) -> bool:
     logger = logging.getLogger(__name__)
     packages = load_packages()
     
+    # Get all packages from release-monitoring.org for comparison
+    rm_packages = get_all_stagex_packages()
+    
     if pkg_name not in packages:
         logger.error(f"Package {pkg_name} not found")
         return False
@@ -575,32 +718,36 @@ def update_single_package(pkg_name: str, dry_run: bool = False) -> bool:
         project_id, version_from_rm, project_data = lookup_release_monitoring_id(pkg_name)
         
         if project_id:
-            # Update pkg with the found ID
-            pkg.release_monitoring_id = project_id
-            latest_version = version_from_rm
-            logger.info(f"Found project ID {project_id} for {pkg_name}")
-            
-            # Save the ID to package.toml
-            try:
-                with pkg.toml_path.open('r') as f:
-                    content = f.read()
+            # Validate the ID before using it
+            if validate_release_monitoring_id(project_id):
+                # Update pkg with the found ID
+                pkg.release_monitoring_id = project_id
+                latest_version = version_from_rm
+                logger.info(f"Found project ID {project_id} for {pkg_name}")
                 
-                # Check if release_monitoring_id already exists
-                if 'release_monitoring_id' not in content:
-                    # Add it after the version line
-                    new_content = re.sub(
-                        r'^(version\s*=\s*"[^"]*")',
-                        lambda m: m.group(0) + f'\nrelease_monitoring_id = {project_id}',
-                        content,
-                        count=1,
-                        flags=re.MULTILINE
-                    )
+                # Save the ID to package.toml
+                try:
+                    with pkg.toml_path.open('r') as f:
+                        toml_content = f.read()
                     
-                    pkg.toml_path.write_text(new_content)
-                    logger.info(f"Added release_monitoring_id={project_id} to {pkg_name}")
-            
-            except Exception as e:
-                logger.warning(f"Failed to save release_monitoring_id to {pkg_name}: {e}")
+                    # Check if release_monitoring_id already exists
+                    if 'release_monitoring_id' not in toml_content:
+                        # Add it after the version line
+                        new_content = re.sub(
+                            r'^(version\s*=\s*"[^"]*")',
+                            lambda m: m.group(0) + f'\nrelease_monitoring_id = {project_id}',
+                            toml_content,
+                            count=1,
+                            flags=re.MULTILINE
+                        )
+                        
+                        pkg.toml_path.write_text(new_content)
+                        logger.info(f"Added release_monitoring_id={project_id} to {pkg_name}")
+                
+                except Exception as e:
+                    logger.warning(f"Failed to save release_monitoring_id to {pkg_name}: {e}")
+            else:
+                logger.warning(f"Invalid release_monitoring_id {project_id} for {pkg_name}")
         
         # If still no version from RM, try GitHub releases
         if not latest_version:
@@ -632,6 +779,25 @@ def update_single_package(pkg_name: str, dry_run: bool = False) -> bool:
     # If we have release_monitoring_id, query RM.org
     if pkg.release_monitoring_id and not latest_version:
         latest_version, _ = query_rm_org(pkg.release_monitoring_id, pkg.name)
+    
+    # If still no version from RM, check the packages list
+    if not latest_version and pkg_name in rm_packages:
+        latest_version = rm_packages[pkg_name]
+    
+    # Special case: git commit hash versions
+    if latest_version and len(latest_version) == 40 and all(c in '0123456789abcdef' for c in latest_version):
+        # This looks like a git commit hash, check upstream
+        with pkg.toml_path.open('rb') as f:
+            toml_data = tomllib.load(f)
+        
+        mirrors = toml_data.get('sources', {}).get(pkg.name, {}).get('mirrors', [])
+        for mirror in mirrors:
+            if 'github.com' in mirror:
+                latest_commit, _ = lookup_git_commit_version(mirror, latest_version)
+                if latest_commit:
+                    latest_version = latest_commit
+                    logger.info(f"Updated {pkg_name} to latest commit {latest_commit}")
+                break
     
     if not latest_version:
         logger.warning(f"Could not determine latest version for {pkg_name}")
@@ -690,7 +856,6 @@ def update_single_package(pkg_name: str, dry_run: bool = False) -> bool:
             return False
     
     return False
-
 
 def update_all_packages(dry_run: bool = False, branch: str = BRANCH_NAME) -> int:
     """
