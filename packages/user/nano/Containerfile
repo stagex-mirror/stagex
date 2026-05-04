@@ -1,0 +1,13 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+COPY --from=stagex/core-ncurses . /
+ARG VERSION
+ADD fetch/nano-${VERSION}.tar.gz .
+WORKDIR /nano-${VERSION}
+RUN --network=none <<-EOF
+	set -ex
+	./configure --prefix=/usr
+	make
+	make DESTDIR="/rootfs" install
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
