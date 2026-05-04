@@ -1,0 +1,35 @@
+FROM stagex/bootstrap-stage3 AS build
+ARG TARGETARCH
+ARG VERSION
+ADD fetch/libzstd-${VERSION}.tar.gz .
+WORKDIR /zstd-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	cmake \
+		-B build-cmake \
+		-S build/cmake \
+		-DCMAKE_INSTALL_PREFIX=/usr/ \
+		-Dbacktrace=disabled \
+		-Db_lto=false \
+		-Db_staticpic=true \
+		-Db_pie=true \
+		-Dpython.bytecompile=0 \
+		-Dwerror=false \
+		-Db_ndebug=true \
+		-Dbin_tests=false \
+		-Dbin_contrib=false \
+		-Dbin_programs=true \
+		-Dbacktrace=disabled \
+		-Dmulti_thread=enabled \
+		-Dlz4=disabled \
+		-Dlzma=disabled \
+		-Dzlib=disabled
+	cmake --build build-cmake -v --parallel $(nproc)
+	#Force usrmerge layout since package insists on populating lib64
+	mkdir -p /rootfs/usr/lib
+	ln -s lib /rootfs/usr/lib64
+	DESTDIR=/rootfs cmake --install build-cmake
+	rm -rf /rootfs/usr/lib64
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

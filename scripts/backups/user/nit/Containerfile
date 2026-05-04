@@ -1,0 +1,17 @@
+FROM stagex/pallet-rust AS build
+ARG VERSION
+ADD fetch/nit-${VERSION}.tar.gz .
+WORKDIR /nit
+ENV RUSTFLAGS='-C codegen-units=1 -C target-feature=+crt-static'
+RUN cargo fetch
+RUN --network=none <<-EOF
+  set -eux
+	ARCH=$(uname -m)
+  cargo build \
+    --frozen \
+    --release \
+    --target "${ARCH}-unknown-linux-musl"
+		install -Dm755 "target/${ARCH}-unknown-linux-musl/release/nit" /rootfs/usr/bin/init
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

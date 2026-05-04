@@ -1,0 +1,13 @@
+[package]
+name = "brotli"
+version = "1.1.0"
+release_monitoring_id = 56524
+description = "Generic-purpose lossless compression algorithm"
+license = "MIT"
+website = "https://github.com/google/brotli"
+
+[sources.brotli]
+hash = "e720a6ca29428b803f4ad165371771f5398faba397edf6778837a18599ea13ff"
+format = "tar.gz"
+file = "brotli-{version}.{format}"
+mirrors = [ "https://github.com/google/brotli/archive/refs/tags/v{version}.{format}",]

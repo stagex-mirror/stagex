@@ -14,10 +14,11 @@ This script automates version updates for packages in the Stagex distribution:
 Usage:
     python3 scripts/stagex-updater.py --help
     python3 scripts/stagex-updater.py --dry-run
-    python3 scripts/stagex-updater.py --single gcc
     python3 scripts/stagex-updater.py --all
+import time
 """
 
+import time
 import argparse
 import csv
 import hashlib
