@@ -177,24 +177,40 @@ def query_rm_org(pid: int, pname: str, website: str = None) -> tuple:
             logger.warning(f"Project {pname} not found in release-monitoring.org")
             return None, {}
         
-        # Prefer GitHub entries over package manager entries
+        # Prefer GitHub entries over package manager entries, but only if they match the package website
         project = None
         for p in data['items']:
             ecosystem = p.get('ecosystem', '')
+            homepage = p.get('homepage', '')
             if 'github.com' in ecosystem:
-                project = p
-                logger.info(f"Selected GitHub entry for {pname}")
-                break
+                # Only select GitHub entry if the homepage matches the package website
+                if not website or website.replace('https://', '').replace('http://', '').split('/')[0] in homepage:
+                    project = p
+                    logger.info(f"Selected GitHub entry for {pname}")
+                    break
         
         # If no GitHub entry, prefer entries matching the package website
         if not project and website:
+            website_domain = website.replace('https://', '').replace('http://', '').split('/')[0]
             for p in data['items']:
                 homepage = p.get('homepage', '')
                 ecosystem = p.get('ecosystem', '')
-                if website.replace('https://', '').replace('http://', '').split('/')[0] in homepage or website.replace('https://', '').replace('http://', '').split('/')[0] in ecosystem:
+                # Check if homepage or ecosystem matches the package website
+                if website_domain in homepage or website_domain in ecosystem:
                     project = p
                     logger.info(f"Selected entry matching website for {pname}")
                     break
+                # Also check if the ecosystem is the official website (not a package manager)
+                if 'crates.io' not in ecosystem and 'pypi' not in ecosystem and 'rubygems' not in ecosystem and 'npm' not in ecosystem:
+                    if website_domain in p.get('ecosystem', ''):
+                        project = p
+                        logger.info(f"Selected entry matching ecosystem for {pname}")
+                        break
+                    # Special case: openssl-library.org should match www.openssl.org
+                    if 'openssl' in website_domain and 'openssl-library' in ecosystem:
+                        project = p
+                        logger.info(f"Selected entry matching ecosystem for {pname}")
+                        break
         
         if not project:
             # If no matching entry, use the first result
@@ -206,7 +222,19 @@ def query_rm_org(pid: int, pname: str, website: str = None) -> tuple:
         if not latest_version:
             logger.warning(f"No version found for {pname}")
             return None, {}
-            
+        
+        # For sqlite3, prefer the SQLite.org entry over npm/rubygems
+        if pname == 'sqlite3' and website and 'sqlite.org' in website:
+            # Check if the version looks like a valid SQLite version (starts with 3.)
+            if not latest_version.startswith('3.'):
+                # Try to get the SQLite entry instead
+                for p in data['items']:
+                    if 'sqlite.org' in p.get('ecosystem', '') or 'sqlite.org' in p.get('homepage', ''):
+                        latest_version = p.get('version')
+                        project = p
+                        logger.info(f"Selected SQLite.org entry for {pname}")
+                        break
+        
         return latest_version, project
         
     except urllib.error.HTTPError as e:
@@ -795,7 +823,15 @@ def update_single_package(pkg_name: str, dry_run: bool = False) -> bool:
             toml_data = tomllib.load(f)
             website = toml_data.get('package', {}).get('website')
         
+        # Try original name first, then try variations
         latest_version, _ = query_rm_org(pkg.release_monitoring_id, pkg.name, website)
+        if not latest_version and pkg.name == 'sqlite3':
+            # Try "SQLite" instead of "sqlite3"
+            latest_version, _ = query_rm_org(pkg.release_monitoring_id, 'SQLite', website)
+        # For sqlite3, prefer the SQLite.org entry over npm/rubygems
+        if pkg.name == 'sqlite3' and website and 'sqlite.org' in website:
+            # Try "SQLite" instead of "sqlite3" to get the correct entry
+            latest_version, _ = query_rm_org(pkg.release_monitoring_id, 'SQLite', website)
     
     # If still no version from RM, check the packages list
     if not latest_version and pkg_name in rm_packages:
