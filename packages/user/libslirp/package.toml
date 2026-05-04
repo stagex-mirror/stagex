@@ -1,13 +1,13 @@
 [package]
 name = "libslirp"
-version = "4.3.2"
+version = "4.9.1"
 release_monitoring_id = 98335
 description = "General purpose TCP-IP emulator"
 license = "BSD-3-Clause"
 website = "https://gitlab.freedesktop.org/slirp/libslirp"
 
 [sources.libslirp]
-hash = "6aeb47de59fd0af9b182d1cd976341e0d8ba4cde2cce146fa4e056ce4906b9fc"
+hash = "9aef0c439abb5126f935ffec56be7da45a3dec7b8ba4a163d7ede74749f97d56"
 format = "tar.gz"
 file = "libslirp-{version}.{format}"
 mirrors = [ "https://gitlab.freedesktop.org/slirp/libslirp/-/archive/v{version}/{file}",]

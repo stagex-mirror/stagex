@@ -1,0 +1,14 @@
+[package]
+name = "boost"
+version = "1.91.0"
+release_monitoring_id = 6845
+description = "Free peer-reviewed portable C++ source libraries"
+license = "BSL-1.0"
+website = "https://www.boost.org"
+
+[sources.boost]
+hash = "PLACEHOLDER_HASH"
+format = "tar.gz"
+file = "boost-{version}.tar.gz"
+mirrors = [ "https://github.com/boostorg/boost/releases/download/boost-{version}/boost-{version}-b2-nodocs.tar.gz", ]
+

@@ -1,0 +1,13 @@
+[package]
+name = "jq"
+version = "1.8.1"
+release_monitoring_id = 13252
+description = "Lightweight and flexible command-line JSON processor"
+license = "MIT"
+website = "https://jqlang.github.io/jq/"
+
+[sources.jq]
+hash = "2be64e7129cecb11d5906290eba10af694fb9e3e7f9fc208a311dc33ca837eb0"
+format = "tar.gz"
+file = "jq-{version}.{format}"
+mirrors = [ "https://github.com/jqlang/jq/releases/download/jq-{version}/{file}",]

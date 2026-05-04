@@ -1,0 +1,13 @@
+[package]
+name = "ed"
+version = "1.20"
+release_monitoring_id = 659
+description = "GNU line-oriented text editor"
+license = "GPL-2.0-or-later"
+website = "https://www.gnu.org/software/ed/"
+
+[sources.ed]
+hash = "c6030defe6ae172f1687906d7354054c75a6a9130af319d4e73c50a91959c5a6"
+format = "tar.lz"
+file = "ed-{version}.{format}"
+mirrors = [ "https://ftpmirror.gnu.org/gnu/ed/{file}", "https://mirrors.kernel.org/gnu/ed/{file}"] 
