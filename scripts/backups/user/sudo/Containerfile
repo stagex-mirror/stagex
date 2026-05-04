@@ -1,0 +1,39 @@
+FROM stagex/pallet-gcc-gnu-busybox AS build
+ARG VERSION
+ADD fetch/sudo-${VERSION}.tar.gz .
+WORKDIR /sudo-${VERSION}
+RUN --network=none <<-EOF
+  set -eu
+	./configure \
+		--prefix=/usr \
+		--libexecdir=/usr/lib \
+		--with-rundir=/run/sudo \
+		--with-vardir=/var/lib/sudo \
+		--disable-nls \
+		--disable-shared \
+		--disable-log-server \
+		--disable-log-client \
+		--without-pam \
+		--without-ldap \
+		--without-skey \
+		--without-opie \
+		--without-SecurID \
+		--without-kerb5 \
+		--without-sendmail \
+		--with-passprompt="[sudo] password for %p: "
+
+	# Build libraries in dependency order
+	cd lib/util && make && cd ../..
+	cd lib/eventlog && make && cd ../..
+	cd lib/iolog && make && cd ../..
+
+	# Now build everything else
+	make -j1
+	install -dm0755 /rootfs/var /rootfs/var/db
+	make -j1 DESTDIR=/rootfs install
+	rm -v /rootfs/etc/sudoers.dist
+	install -Dm0644 -t /rootfs/usr/share/licenses/sudo/ LICENSE.md
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

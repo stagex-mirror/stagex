@@ -1,0 +1,12 @@
+[package]
+name = "valgrind"
+version = "3.26.0"
+release_monitoring_id = 306802
+description = "Instrumentation framework for building dynamic analysis tools"
+license = "GPL-2.0-or-later"
+website = "https://valgrind.org"
+
+[sources.valgrind]
+hash = "8d54c717029106f1644aadaf802ab9692e53d93dd015cbd19e74190eba616bd7"
+file = "valgrind-{version}.tar.bz2"
+mirrors = [ "https://sourceware.org/pub/valgrind/{file}",]

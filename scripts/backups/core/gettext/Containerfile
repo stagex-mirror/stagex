@@ -1,0 +1,28 @@
+FROM scratch AS build
+ARG VERSION
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-mold . /
+COPY --from=stagex/core-onetbb . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-musl . /
+ADD fetch/gettext-${VERSION}.tar.xz .
+WORKDIR /gettext-${VERSION}
+RUN <<-EOF
+	set -eux
+	./configure \
+		--prefix=/usr \
+		--enable-threads=posix \
+		--disable-libasprintf \
+		--disable-java \
+		--enable-static \
+		--with-included-libxml=no \
+		gl_cv_func_getcwd_path_max="no, but it is partly working"
+	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
