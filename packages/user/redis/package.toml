@@ -1,12 +1,12 @@
 [package]
 name = "redis"
-version = "8.0.3"
+version = "8.6.3"
 description = "Cache, data structure server, document and vector query engine"
 license = "AGPL-3.0-only"
 website = "https://redis.io"
 
 [sources.redis]
-hash = "33f37290b00b14e9a884dd4dcba335febd63ea16c51609d34fa41e031ad587df"
+hash = "9f54d4458c52be5472cdd1347d737f1d488b520fc3d0911cba47302de8d836e2"
 format = "tar.gz"
 file = "redis-{version}.{format}"
-mirrors = [ "https://download.redis.io/releases/{file}"]
+mirrors = [ "https://download.redis.io/releases/{file}",]
