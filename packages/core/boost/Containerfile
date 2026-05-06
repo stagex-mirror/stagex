@@ -41,7 +41,7 @@ RUN --network=none <<-EOF
 	[[ "$TARGETARCH" == "arm64" ]] \
 		&& ARCH="aarch64" \
 		&& BOOST_ARCH="$TARGETARCH"
-	ln -s "/lib/clang/21/lib/$ARCH-unknown-linux-musl" "/lib/clang/21/lib/$BOOST_ARCH-pc-linux"
+	ln -s "/lib/clang/22/lib/$ARCH-unknown-linux-musl" "/lib/clang/22/lib/$BOOST_ARCH-pc-linux"
 	ln -sf /usr/bin/ld.mold /usr/bin/ld
 
 	(

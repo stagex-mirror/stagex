@@ -21,9 +21,14 @@ COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-libzstd . /
 ADD fetch/v${VERSION}.tar.gz .
 WORKDIR /solidity-${VERSION}
-RUN <<-EOF
+RUN --network=none <<-EOF
 	set -eux
 	mkdir /include
+	sed -i '/bool operator!=(YulArity const\& _other) const { return !(\*this == _other); }/a\
+\tbool operator<(YulArity const\& _other) const { return in < _other.in || (in == _other.in && out < _other.out); }\
+\tbool operator>(YulArity const\& _other) const { return _other < *this; }\
+\tbool operator<=(YulArity const\& _other) const { return !(_other < *this); }' \
+		libsolidity/codegen/ir/Common.h
 	sed -i -e 's/-Werror/-Wno-error/' cmake/EthCompilerSettings.cmake
 	export CFLAGS="-Wno-error -Wno-deprecated"
 	echo $SOLIDITY_GIT_SHA > commit_hash.txt
