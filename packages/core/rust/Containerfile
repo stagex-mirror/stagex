@@ -76,6 +76,9 @@ ENV OPENSSL_NO_VENDOR=1
 COPY --from=stagex/core-llvm21 . /
 ENV LLVM_VERSION="21"
 
+# mrustc expects libatomic.
+COPY --from=stagex/core-libatomic-stub . /
+
 ADD fetch/bstr-${BSTR_VERSION}.tar.gz .
 RUN --network=none <<-'EOF'
 	mkdir /bstr
