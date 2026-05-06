@@ -1,0 +1,5 @@
+[package]
+name = "libatomic-stub"
+version = "0.0.1"
+description = "Stub libatomic library; atomic builtins are provided by compiler-rt"
+license = "ISC"
