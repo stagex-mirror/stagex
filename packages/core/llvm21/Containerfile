@@ -87,6 +87,8 @@ COPY <<-'EOF' /etc/profile
 
 	# Configure compiler-rt
 	cmake_cache_set COMPILER_RT_BUILD_BUILTINS ON
+	# Provide all atomic builtins as part of compiler-rt.
+	cmake_cache_set COMPILER_RT_EXCLUDE_ATOMIC_BUILTIN OFF
 	cmake_cache_set COMPILER_RT_USE_BUILTINS_LIBRARY ON
 	cmake_cache_set COMPILER_RT_USE_LLVM_UNWINDER ON
 	# This does not work out-of-the-box with a `musl` host
