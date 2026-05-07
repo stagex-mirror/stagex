@@ -1,0 +1,26 @@
+From a2da6b1b561d0c3623c83bdc06246941ab20fc93 Mon Sep 17 00:00:00 2001
+From: vad <vad.sol@proton.me>
+Date: Thu, 7 May 2026 18:39:06 +0200
+Subject: [PATCH] Fix build with LLVM/clang 22
+
+---
+ libsolidity/codegen/ir/Common.h | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/libsolidity/codegen/ir/Common.h b/libsolidity/codegen/ir/Common.h
+index cf5bc69c7..7f4ae8ea5 100644
+--- a/libsolidity/codegen/ir/Common.h
++++ b/libsolidity/codegen/ir/Common.h
+@@ -42,6 +42,9 @@ struct YulArity
+ 
+ 	bool operator==(YulArity const& _other) const { return in == _other.in && out == _other.out; }
+ 	bool operator!=(YulArity const& _other) const { return !(*this == _other); }
++	bool operator<(YulArity const& _other) const { return in < _other.in || (in == _other.in && out < _other.out); }
++	bool operator>(YulArity const& _other) const { return _other < *this; }
++	bool operator<=(YulArity const& _other) const { return !(_other < *this); }
+ 
+ 	size_t in;  /// Number of input parameters
+ 	size_t out; /// Number of output parameters
+-- 
+2.52.0
+
