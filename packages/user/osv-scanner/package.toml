@@ -1,12 +1,12 @@
 [package]
 name = "osv-scanner"
-version = "2.2.3"
+version = "2.3.7"
 description = "Vulnerability scanner written in Go which uses the data provided by https://osv.dev"
 license = "Apache-2.0"
 website = "https://github.com/google/osv-scanner"
 
 [sources.osv-scanner]
-hash = "f6e6f6265dfbd4df87121c9d3feda8bd6d47ff0de98eaa773999df0bc8873f2a"
+hash = "1434f62c3a87caec878ec0af1ddcce3ca00a7f08cbbc06baf2c29227dee5ae06"
 format = "tar.gz"
 file = "osv-scanner-{version}.{format}"
 mirrors = [ "https://github.com/google/osv-scanner/archive/refs/tags/v{version}.tar.gz",]
