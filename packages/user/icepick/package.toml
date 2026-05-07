@@ -1,11 +1,11 @@
 [package]
 name = "icepick"
-version = "1b5d16864723dda22ce12fc31a253c03b6698499"
+version = "0.1.0"
 description = "Cryptography-oriented workflow utility."
 license = "ISC"
 website = "https://codeberg.org/stagex/icepick"
 
 [sources.icepick]
-hash = "29669409108b0c7fd97412c080fad55b2375cac52ad200a67e16da4d87e81e2f"
+hash = "a6c842f14d8ff356251f7257468a991fbbafa52382e7df49e93692a5a84966ec"
 file = "icepick-{version}.tar.gz"
-mirrors = [ "https://git.distrust.co/public/icepick/archive/{version}.tar.gz",]
+mirrors = [ "https://git.distrust.co/public/icepick/archive/v{version}.tar.gz",]
