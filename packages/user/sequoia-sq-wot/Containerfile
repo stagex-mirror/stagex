@@ -6,7 +6,11 @@ COPY --from=stagex/user-nettle . /
 COPY --from=fetch . .
 RUN tar xf sequoia-wot-${VERSION}.tar.gz
 WORKDIR /sequoia-wot-v${VERSION}
-RUN cargo fetch
+ADD patches/*.patch .
+RUN <<-EOF
+	patch -p1 < 0001-Update-nettle-sys-to-fix-compilation-issue-with-LLVM.patch
+	cargo fetch
+EOF
 ENV RUST_BACKTRACE=1
 ENV NETTLE_STATIC=yes
 ENV RUSTFLAGS='-C codegen-units=1 -C target-feature=+crt-static'
