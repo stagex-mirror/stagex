@@ -1,12 +1,12 @@
 [package]
 name = "pgbouncer"
-version = "1.25.1"
+version = "1.25.2"
 description = "Lightweight connection pooler for PostgreSQL"
 license = "ISC"
 website = "https://www.pgbouncer.org"
 
 [sources.pgbouncer]
-hash = "6e566ae92fe3ef7f6a1b9e26d6049f7d7ca39c40e29e7b38f6d5500ae15d8465"
+hash = "924ad35113fd0a71c8e2dbe85b5d03445532e2b7b37a9f8a48983beea238b332"
 format = "tar.gz"
 file = "pgbouncer-{version}.{format}"
 mirrors = [ "https://www.pgbouncer.org/downloads/files/{version}/{file}",]
