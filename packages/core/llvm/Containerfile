@@ -71,6 +71,8 @@ RUN --network=none <<-EOF
 
 	# Configure compiler-rt
 	cmake_runtime_cache_set COMPILER_RT_BUILD_BUILTINS ON
+	# Provide all atomic builtins as part of compiler-rt.
+	cmake_runtime_cache_set COMPILER_RT_EXCLUDE_ATOMIC_BUILTIN OFF
 	cmake_runtime_cache_set COMPILER_RT_USE_BUILTINS_LIBRARY ON
 	cmake_runtime_cache_set COMPILER_RT_USE_LLVM_UNWINDER ON
 	# This does not work out-of-the-box with a `musl` host
@@ -81,6 +83,8 @@ RUN --network=none <<-EOF
 	cmake_cache_set LLVM_ENABLE_LIBCXX ON
 	cmake_runtime_cache_set LIBCXX_CXX_ABI libcxxabi
 	cmake_runtime_cache_set LIBCXX_HARDENING_MODE fast
+	# Make sure libc++ does not link to GCC's libatomic.
+	cmake_runtime_cache_set LIBCXX_HAS_ATOMIC_LIB OFF
 	cmake_runtime_cache_set LIBCXX_USE_COMPILER_RT ON
 	cmake_runtime_cache_set LIBCXXABI_USE_COMPILER_RT ON
 	cmake_runtime_cache_set LIBCXXABI_USE_LLVM_UNWINDER ON
@@ -166,16 +170,6 @@ COPY --from=stagex/core-musl . /
 RUN --network=none <<-EOF
 	export LIBCC="/usr/lib/clang/$MAJOR_VERSION/lib/${TARGET}/libclang_rt.builtins.a"
 
-	# Build LLVM's `atomic.c` into `libatomic.so`
-	mkdir build-libatomic
-	cd build-libatomic
-	clang -std=c99 -fPIC -O2 -c -o atomic.o ../compiler-rt/lib/builtins/atomic.c
-	rm -rf /usr/lib/libatomic*
-	ar rcs /usr/lib/libatomic.a atomic.o
-	ld.lld --shared -o /usr/lib/libatomic.so atomic.o
-	ln -s /usr/lib/libatomic.so /usr/lib/libatomic.so.1
-	cd ..
-
 	export CFLAGS="-fPIC"
 	export CXXFLAGS="$CFLAGS"
 
@@ -234,6 +228,8 @@ RUN --network=none <<-EOF
 	}
 
 	# Now that we've already built everything else, we additionally build the sanitizers
+	# and lldb.
+	cmake_cache_set LLVM_ENABLE_PROJECTS "clang;lld;lldb"
 	cmake_runtime_cache_set COMPILER_RT_BUILD_SANITIZERS ON
 
 	cmake \
@@ -254,7 +250,6 @@ RUN --network=none <<-EOF
 	ln -sf /usr/bin/clang /rootfs/usr/bin/cc
 	ln -sf /usr/bin/ld.lld /rootfs/usr/bin/ld
 	ln -sf /usr/lib/clang/$MAJOR_VERSION/lib/${TARGET}/libclang_rt.builtins.a /rootfs/usr/lib/libclang_rt.builtins.a
-	cp /usr/lib/libatomic.* /rootfs/usr/lib/
 	strip /rootfs/usr/lib/libLLVM.so.$MAJOR_VERSION.1
 EOF
 
@@ -480,12 +475,12 @@ COPY --from=build /rootfs/usr/lib/libLTO.so.* /usr/lib/
 
 FROM stagex/core-filesystem AS package-llvm-devel
 COPY --from=build /rootfs/usr/include/ /usr/include/
-COPY --from=build /rootfs/usr/lib/*.so /usr/lib/
+COPY --from=build /rootfs/usr/lib/libLLVM*.so* /usr/lib/
 COPY --from=build /rootfs/usr/lib/libRemarks.so.* /usr/lib/
 COPY --from=build /rootfs/usr/lib/cmake /usr/lib/
 
 FROM stagex/core-filesystem AS package-llvm-devel-static
-COPY --from=build /rootfs/usr/lib/*.a /usr/lib/
+COPY --from=build /rootfs/usr/lib/libLLVM*.a /usr/lib/
 
 FROM stagex/core-filesystem AS package-llvm-tools
 COPY --from=build /rootfs/usr/bin/FileCheck /usr/bin/
@@ -497,3 +492,13 @@ COPY --from=build /rootfs/usr/share/opt-viewer /usr/share/
 
 FROM stagex/core-filesystem AS package-llvm-runtime
 COPY --from=build /rootfs/usr/bin/lli /usr/bin/
+
+FROM stagex/core-filesystem AS package-lldb
+COPY --from=build /rootfs/usr/bin/*lldb* /usr/bin/
+
+FROM stagex/core-filesystem AS package-lldb-devel
+COPY --from=build /rootfs/usr/include/lldb /usr/include/
+COPY --from=build /rootfs/usr/lib/liblldb*.so* /usr/lib/
+
+FROM stagex/core-filesystem AS package-lldb-devel-static
+COPY --from=build /rootfs/usr/lib/liblldb*.a /usr/lib/

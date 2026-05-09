@@ -21,8 +21,10 @@ COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-libzstd . /
 ADD fetch/v${VERSION}.tar.gz .
 WORKDIR /solidity-${VERSION}
-RUN <<-EOF
-	set -eux
+ADD patches/*.patch .
+RUN --network=none <<-EOF
+	set -eux	
+	patch -p1 < llvm22-compatibility.patch
 	mkdir /include
 	sed -i -e 's/-Werror/-Wno-error/' cmake/EthCompilerSettings.cmake
 	export CFLAGS="-Wno-error -Wno-deprecated"
