@@ -1,0 +1,12 @@
+[package]
+name = "php-opentelemetry"
+version = "1.2.1"
+description = "OpenTelemetry auto-instrumentation support extension"
+website = "https://opentelemetry.io/"
+license = "Apache-2.0"
+
+[sources.php-opentelemetry]
+hash = "de8315ed3299536f327360a37f03618ab8684c02fbf8dfd8f489c025d88a6498"
+format = "tgz"
+file = "opentelemetry-{version}.{format}"
+mirrors = [ "https://pecl.php.net/get/{file}",]
