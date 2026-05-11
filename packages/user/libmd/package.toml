@@ -1,12 +1,12 @@
 [package]
 name = "libmd"
-version = "1.1.0"
+version = "1.2.0"
 description = "Message Digest functions from BSD systems"
 license = "ISC AND BSD-3-Clause AND BSD-2-Clause"
 website = "https://www.hadrons.org/software/libmd/"
 
 [sources.libmd]
-hash = "1bd6aa42275313af3141c7cf2e5b964e8b1fd488025caf2f971f43b00776b332"
+hash = "ac15ffb8430502fbaccdec66c5a82ee0eab0b0f36220df56710feadfeb13d0a0"
 format = "tar.xz"
 file = "libmd-{version}.{format}"
-mirrors = [ "https://archive.hadrons.org/software/libmd/{file}" ]
+mirrors = [ "https://archive.hadrons.org/software/libmd/{file}",]
