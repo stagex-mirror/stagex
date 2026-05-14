@@ -1,12 +1,12 @@
 [package]
 name = "py-twisted"
 version = "26.4.0"
-description = "//files.pythonhosted.org/packages/source/t/twisted/Twisted-26.4.0.tar.gz:An asynchronous networking framework"
+description = "An asynchronous networking framework written in Python"
 license = "MIT"
 website = "https://pypi.org/project/twisted/"
 
 [sources.py-twisted]
 hash = "dbfd0fe1ee409d0243fdd7a6a6ff14f4948cec1fd78e0376291f805e1501fae9"
 format = "tar.gz"
-file = "py-twisted-26.4.0.{format}"
-mirrors = ["https"]
+file = "py-twisted-{version}.{format}"
+mirrors = ["https://files.pythonhosted.org/packages/source/T/Twisted/Twisted-{version}.{format}",]

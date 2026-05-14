@@ -8,5 +8,5 @@ website = "https://pypi.org/project/unidecode/"
 [sources.py-unidecode]
 hash = "ce35985008338b676573023acc382d62c264f307c8f7963733405add37ea2b23"
 format = "tar.gz"
-file = "py-unidecode-1.4.0.{format}"
-mirrors = ["https"]
+file = "py-unidecode-{version}.{format}"
+mirrors = ["https://files.pythonhosted.org/packages/source/U/Unidecode/Unidecode-{version}.{format}",]

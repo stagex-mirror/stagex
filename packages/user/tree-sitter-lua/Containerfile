@@ -1,7 +1,7 @@
 FROM stagex/pallet-clang-cmake-busybox AS build
 COPY --from=stagex/core-make / /
 ARG VERSION
-ADD fetch/tree-sitter-lua-${VERSION}.tar.gz .
+COPY fetch/tree-sitter-lua-${VERSION}.tar.gz .
 WORKDIR /tree-sitter-lua-${VERSION}
 RUN <<-EOF
 	mkdir -p build && cd build

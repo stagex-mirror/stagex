@@ -63,5 +63,3 @@ RUN <<-EOF
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/usr /usr
-ENTRYPOINT ["/usr/bin/nvim"]
-CMD ["--version"]

@@ -1,7 +1,7 @@
 FROM stagex/pallet-clang-cmake-busybox AS build
 COPY --from=stagex/core-make / /
 ARG VERSION
-ADD fetch/tree-sitter-vimdoc-${VERSION}.tar.gz .
+COPY fetch/tree-sitter-vimdoc-${VERSION}.tar.gz .
 WORKDIR /tree-sitter-vimdoc-${VERSION}
 RUN <<-EOF
 	mkdir -p build && cd build
@@ -11,7 +11,17 @@ RUN <<-EOF
 	mkdir -p /rootfs/usr/include/tree_sitter
 	install -Dm644 ../src/tree_sitter/*.h /rootfs/usr/include/tree_sitter/ 2>/dev/null || true
 	mkdir -p /rootfs/usr/lib/pkgconfig
-	printf 'prefix=/usr\nlibdir=${prefix}/lib\nincludedir=${prefix}/include\n\nName: tree-sitter-vimdoc\nDescription: Vimdoc grammar for tree-sitter\nVersion: 4.1.0\nLibs: -L${libdir} -ltree-sitter-vimdoc\nCflags: -I${includedir}\n' > /rootfs/usr/lib/pkgconfig/tree-sitter-vimdoc.pc
+	cat > /rootfs/usr/lib/pkgconfig/tree-sitter-vimdoc.pc << INNEREOF
+prefix=/usr
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: tree-sitter-vimdoc
+Description: Vimdoc grammar for tree-sitter
+Version: ${VERSION}
+Libs: -L${libdir} -ltree-sitter-vimdoc
+Cflags: -I${includedir}
+INNEREOF
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

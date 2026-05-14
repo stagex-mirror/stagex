@@ -8,5 +8,5 @@ website = "https://pypi.org/project/txtorcon/"
 [sources.py-txtorcon]
 hash = "befe19138d9c8c5307b6ee6d4fe446d0c201ffd1cc404aeb265ed90309978ad0"
 format = "tar.gz"
-file = "py-txtorcon-24.8.0.{format}"
-mirrors = ["https"]
+file = "py-txtorcon-{version}.{format}"
+mirrors = ["https://files.pythonhosted.org/packages/source/t/txtorcon/txtorcon-{version}.{format}",]

@@ -1,12 +1,12 @@
 [package]
 name = "py-click"
 version = "8.3.3"
-description = "//files.pythonhosted.org/packages/source/c/click/click-8.3.3.tar.gz:Composable command line interface toolkit"
+description = "Composable command line interface toolkit"
 license = "MIT"
 website = "https://pypi.org/project/click/"
 
 [sources.py-click]
 hash = "398329ad4837b2ff7cbe1dd166a4c0f8900c3ca3a218de04466f38f6497f18a2"
 format = "tar.gz"
-file = "py-click-8.3.3.{format}"
-mirrors = ["https"]
+file = "py-click-{version}.{format}"
+mirrors = ["https://files.pythonhosted.org/packages/source/c/click/click-{version}.{format}",]

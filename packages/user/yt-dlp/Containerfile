@@ -11,5 +11,3 @@ RUN --network=none <<-EOF
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
-ENTRYPOINT ["/usr/bin/yt-dlp"]
-CMD ["--version"]
