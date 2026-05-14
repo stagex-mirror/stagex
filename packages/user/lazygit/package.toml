@@ -1,0 +1,12 @@
+[package]
+name = "lazygit"
+version = "0.61.1"
+description = "Simple terminal UI for git commands"
+license = "MIT"
+website = "https://github.com/jesseduffield/lazygit"
+
+[sources.lazygit]
+hash = "2a550c9b609c5eb0e1c2640e8114ac05b94c671803f77e08a9dcdbd66372e2c4"
+format = "tar.gz"
+file = "lazygit-{version}.{format}"
+mirrors = ["https://github.com/jesseduffield/lazygit/archive/refs/tags/v{version}.{format}"]
