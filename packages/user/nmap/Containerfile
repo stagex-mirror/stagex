@@ -3,19 +3,18 @@ ARG VERSION
 COPY --from=stagex/core-openssl / /
 ADD fetch/nmap-${VERSION}.tar.bz2 .
 WORKDIR /nmap-${VERSION}
-RUN ./configure \
+RUN sed -i 's/ac_cv_dnet_linux_pf_packet=no/ac_cv_dnet_linux_pf_packet=yes/' libdnet-stripped/configure && \
+    ./configure \
 	--prefix=/usr \
 	--sysconfdir=/etc \
 	--disable-ipv6 \
 	--with-openssl \
 	--without-libssh2 \
-	--without-libpcap \
 	--without-nmap-update \
 	--without-zenmap \
 	--without-ndiff \
 	--without-ncat \
-	--with-version="${VERSION}" \
-	--with-libdnet=no
+	--with-version="${VERSION}"
 RUN make -j "$(nproc)"
 RUN make install DESTDIR="/rootfs"
 RUN install -Dm644 LICENSE /rootfs/usr/share/licenses/nmap/LICENSE
