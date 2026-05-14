@@ -1,12 +1,12 @@
 [package]
 name = "py-requests"
-version = "2.33.1"
+version = "2.34.1"
 description = "HTTP library for Python"
 license = "Apache-2.0"
 website = "https://requests.readthedocs.io"
 
 [sources.py-requests]
-hash = "18817f8c57c6263968bc123d237e3b8b08ac046f5456bd1e307ee8f4250d3517"
+hash = "0fc5669f2b69704449fe1552360bd2a73a54512dfd03e65529157f1513322beb"
 format = "tar.gz"
 file = "py-requests-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/r/requests/requests-{version}.{format}",]
