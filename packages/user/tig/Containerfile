@@ -1,0 +1,12 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-ncurses / /
+ADD fetch/tig-${VERSION}.tar.gz .
+WORKDIR /tig-tig-${VERSION}
+RUN sh autogen.sh
+RUN ./configure --prefix=/usr --without-doc
+RUN make -j "$(nproc)"
+RUN make install DESTDIR="/rootfs"
+RUN install -Dm644 COPYING /rootfs/usr/share/licenses/tig/LICENSE
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
