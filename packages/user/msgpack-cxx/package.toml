@@ -1,0 +1,12 @@
+[package]
+name = "msgpack-cxx"
+version = "3.3.0"
+description = "MessagePack C++ library"
+license = "BSL-1.0"
+website = "https://github.com/msgpack/msgpack-c"
+
+[sources.msgpack-cxx]
+hash = "754c3ace499a63e45b77ef4bcab4ee602c2c414f58403bce826b76ffc2f77d0b"
+format = "tar.gz"
+file = "msgpack-cxx-{version}.{format}"
+mirrors = ["https://github.com/msgpack/msgpack-c/archive/refs/tags/cpp-{version}.{format}"]

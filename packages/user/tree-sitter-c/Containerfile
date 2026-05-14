@@ -1,0 +1,18 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+COPY --from=stagex/core-make / /
+ARG VERSION
+ADD fetch/tree-sitter-c-${VERSION}.tar.gz .
+WORKDIR /tree-sitter-c-${VERSION}
+RUN <<-EOF
+	mkdir -p build && cd build
+	clang -shared -fPIC -O2 -I../src -o libtree-sitter.so ../src/parser.c
+	install -Dm755 libtree-sitter.so /rootfs/usr/lib/libtree-sitter.so
+	install -Dm644 ../LICENSE /rootfs/usr/share/licenses/tree-sitter-c/LICENSE
+	mkdir -p /rootfs/usr/include/tree_sitter
+	install -Dm644 ../bindings/c/tree_sitter/tree-sitter-c.h /rootfs/usr/include/tree_sitter/
+	install -Dm644 ../src/tree_sitter/*.h /rootfs/usr/include/tree_sitter/
+	mkdir -p /rootfs/usr/lib/pkgconfig
+	printf 'prefix=/usr\nlibdir=${prefix}/lib\nincludedir=${prefix}/include\n\nName: tree-sitter-c\nDescription: C grammar for tree-sitter\nVersion: 0.24.2\nLibs: -L${libdir} -ltree-sitter\nCflags: -I${includedir}\n' > /rootfs/usr/lib/pkgconfig/tree-sitter-c.pc
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

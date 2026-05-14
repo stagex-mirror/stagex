@@ -1,0 +1,18 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+COPY --from=stagex/core-make / /
+ARG VERSION
+ADD fetch/tree-sitter-query-${VERSION}.tar.gz .
+WORKDIR /tree-sitter-query-${VERSION}
+RUN <<-EOF
+	mkdir -p build && cd build
+	clang -shared -fPIC -O2 -I../src -o libtree-sitter-query.so ../src/parser.c
+	install -Dm755 libtree-sitter-query.so /rootfs/usr/lib/libtree-sitter-query.so
+	install -Dm644 ../LICENSE /rootfs/usr/share/licenses/tree-sitter-query/LICENSE
+	mkdir -p /rootfs/usr/include/tree_sitter
+	install -Dm644 ../bindings/c/tree_sitter/tree-sitter-query.h /rootfs/usr/include/tree_sitter/ 2>/dev/null || true
+	install -Dm644 ../src/tree_sitter/*.h /rootfs/usr/include/tree_sitter/ 2>/dev/null || true
+	mkdir -p /rootfs/usr/lib/pkgconfig
+	printf 'prefix=/usr\nlibdir=${prefix}/lib\nincludedir=${prefix}/include\n\nName: tree-sitter-query\nDescription: Query grammar for tree-sitter\nVersion: 0.8.0\nLibs: -L${libdir} -ltree-sitter-query\nCflags: -I${includedir}\n' > /rootfs/usr/lib/pkgconfig/tree-sitter-query.pc
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

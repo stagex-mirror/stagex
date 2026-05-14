@@ -1,0 +1,18 @@
+FROM stagex/pallet-gcc-meson-busybox AS build
+ARG VERSION
+ADD fetch/libuv-${VERSION}.tar.gz .
+WORKDIR /libuv-${VERSION}
+RUN <<-EOF
+	cmake \
+		-B build \
+		-G Ninja \
+		-Wno-dev \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+	-DCMAKE_INSTALL_LIBDIR=lib
+		-DBUILD_SHARED_LIBS=ON
+	cmake --build build
+	DESTDIR="/rootfs" cmake --install build
+	install -Dm644 -t /rootfs/usr/share/licenses/libuv/ LICENSE
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
