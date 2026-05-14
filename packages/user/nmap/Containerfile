@@ -1,0 +1,23 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-openssl / /
+ADD fetch/nmap-${VERSION}.tar.bz2 .
+WORKDIR /nmap-${VERSION}
+RUN ./configure \
+	--prefix=/usr \
+	--sysconfdir=/etc \
+	--disable-ipv6 \
+	--with-openssl \
+	--without-libssh2 \
+	--without-libpcap \
+	--without-nmap-update \
+	--without-zenmap \
+	--without-ndiff \
+	--without-ncat \
+	--with-version="${VERSION}" \
+	--with-libdnet=no
+RUN make -j "$(nproc)"
+RUN make install DESTDIR="/rootfs"
+RUN install -Dm644 LICENSE /rootfs/usr/share/licenses/nmap/LICENSE
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
