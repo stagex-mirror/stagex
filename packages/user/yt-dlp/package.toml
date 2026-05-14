@@ -1,0 +1,12 @@
+[package]
+name = "yt-dlp"
+version = "2026.03.17"
+description = "A feature-rich command-line YouTube downloader"
+license = "Unlicense"
+website = "https://github.com/yt-dlp/yt-dlp"
+
+[sources.yt-dlp]
+hash = "924483986441d8a1e669a0e4371d753a9256ce4bdc06032394ccb7b793342434"
+format = "tar.gz"
+file = "v{version}.{format}"
+mirrors = ["https://github.com/yt-dlp/yt-dlp/archive/refs/tags/{file}"]
