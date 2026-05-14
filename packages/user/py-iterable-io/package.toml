@@ -1,0 +1,12 @@
+[package]
+name = "py-iterable-io"
+version = "1.0.1"
+description = "//files.pythonhosted.org/packages/source/i/iterable-io/iterable_io-1.0.1.tar.gz:Iterable stream I/O"
+license = "MIT"
+website = "https://pypi.org/project/iterable-io/"
+
+[sources.py-iterable-io]
+hash = "55db222c5914097a8508dc722f8db6112f636a04a8acb94ee6589d9b14bd4bb7"
+format = "tar.gz"
+file = "py-iterable-io-1.0.1.{format}"
+mirrors = ["https"]

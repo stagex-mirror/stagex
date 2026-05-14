@@ -1,0 +1,12 @@
+[package]
+name = "py-qrcode"
+version = "8.2"
+description = "//files.pythonhosted.org/packages/source/q/qrcode/qrcode-8.2.tar.gz:QR Code image generator for Python"
+license = "MIT"
+website = "https://pypi.org/project/qrcode/"
+
+[sources.py-qrcode]
+hash = "35c3f2a4172b33136ab9f6b3ef1c00260dd2f66f858f24d88418a015f446506c"
+format = "tar.gz"
+file = "py-qrcode-8.2.{format}"
+mirrors = ["https"]
