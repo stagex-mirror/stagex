@@ -1,18 +1,18 @@
 [package]
 name = "libclc"
-version = "19.1.7"
-description = "Open source implementation of the library requirements of the OpenCL C programming language"
+version = "22.1.5"
+description = "Open source implementation of the OpenCL C library (subproject of LLVM; uses main llvm-project archive)"
 license = "Apache-2.0 WITH LLVM-exception"
 website = "https://libclc.llvm.org"
 
 [sources.libclc]
-hash = "77e2d71f5cea1d0b1014ba88186299d1a0848eb3dc20948baae649db9e7641cb"
+hash = "7972b87b705a003ce70ab55f9f0fb495d156887cba0eb296d284731139118e2c"
 format = "tar.xz"
-file = "libclc-{version}.src.{format}"
+file = "llvm-project-{version}.src.{format}"
 mirrors = [ "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/{file}", ]
 
 [sources.cmake]
-hash = "11c5a28f90053b0c43d0dec3d0ad579347fc277199c005206b963c19aae514e3"
+hash = "7972b87b705a003ce70ab55f9f0fb495d156887cba0eb296d284731139118e2c"
 format = "tar.xz"
-file = "cmake-{version}.src.{format}"
+file = "llvm-project-{version}.src.{format}"
 mirrors = [ "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/{file}", ]

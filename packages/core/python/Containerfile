@@ -14,12 +14,15 @@ COPY --from=stagex/core-ncurses . /
 COPY --from=stagex/core-sqlite3 . /
 COPY --from=stagex/core-libffi . /
 ADD fetch/python-${VERSION}.tar.xz .
+ADD patches/openssl4.patch .
+
 WORKDIR /Python-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 ENV PYTHONHASHSEED=0
 ENV PYTHONDONTWRITEBYTECODE=1
 RUN --network=none <<-EOF
 	set -eux
+	patch -p1 < /openssl4.patch
 	./configure \
 		--prefix=/usr \
 		--enable-shared \

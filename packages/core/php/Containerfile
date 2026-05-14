@@ -31,6 +31,7 @@ ADD fetch/php-${VERSION}.tar.gz .
 
 WORKDIR /php-${VERSION}
 COPY *.patch .
+COPY patches/*.patch .
 
 ENV SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH
 ENV PHP_UNAME="Linux StageX"
@@ -48,6 +49,9 @@ RUN --network=none <<-EOF
 
 	patch -p1 < remove-timestamps-from-phar.patch
 	patch -p1 < file-order-phar-pack.patch
+	patch -p1 < php-openssl4-php_openssl.h.patch
+	patch -p1 < php-openssl4-backend_common.patch
+	patch -p1 < php-openssl4-xp_ssl.patch
 
 	export rootfs="rootfs"
 	./buildconf --force

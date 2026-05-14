@@ -1,0 +1,12 @@
+[package]
+name = "neovim"
+version = "0.12.2"
+description = "Vim-fork focused on extensibility and usability"
+license = "Apache-2.0 AND custom:Vim"
+website = "https://neovim.io"
+
+[sources.neovim]
+hash = "ef9f58da7d687ed4d1dad9715542bf0dabdeedbfe8089e2ce17fff21b920a268"
+format = "tar.gz"
+file = "v{version}.{format}"
+mirrors = ["https://github.com/neovim/neovim/archive/refs/tags/{file}"]

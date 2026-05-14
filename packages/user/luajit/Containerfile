@@ -1,0 +1,22 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+COPY --from=stagex/core-make / /
+ARG VERSION
+ADD fetch/LuaJIT-${VERSION}.tar.gz .
+WORKDIR /LuaJIT-${VERSION}
+RUN <<-EOF
+	make \
+		-j "$(nproc)" \
+		PREFIX=/usr \
+		LUA_MAINDIR=/usr/share/lua \
+		LUA_INCLUDEDIR=/usr/include/lua \
+		LUA_BINDIR=/usr/bin \
+		LIBDIR=/usr/lib \
+		INCLUDEDIR=/usr/include \
+		CC=clang \
+		AR="llvm-ar" \
+		RANLIB=llvm-ranlib
+	DESTDIR="/rootfs" make install 'PREFIX=/usr'
+	install -Dm644 -t /rootfs/usr/share/licenses/luajit/ COPYRIGHT
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

@@ -1,0 +1,14 @@
+--- a/Containerfile
++++ b/Containerfile
+@@ -6,6 +6,8 @@
+ RUN --network=none <<-EOF
+ 	set -eu
+ 	export CFLAGS="-D_GNU_SOURCE=1"
++	set -eu
++	export CFLAGS="-D_GNU_SOURCE=1"
++	export CXXFLAGS="-D_GNU_SOURCE=1"
++	# Patch CMakeLists.txt to add _GNU_SOURCE before any targets are defined
++	sed -i '3a add_definitions(-D_GNU_SOURCE=1)' build/cmake/CMakeLists.txt
+ 	cmake \
+ 		-B build-cmake \
+ 		-S build/cmake \

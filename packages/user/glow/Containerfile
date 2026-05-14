@@ -1,0 +1,19 @@
+FROM stagex/pallet-cgo AS build
+ARG VERSION
+ADD fetch/glow-${VERSION}.tar.gz .
+WORKDIR /glow-${VERSION}
+RUN go mod download
+RUN --network=none <<-EOF
+	go \
+		build \
+		-trimpath \
+		-o glow \
+		-v \
+		-ldflags="-s -w" \
+		.
+	mkdir -p /rootfs/usr/bin/
+	install -vDm755 -t /rootfs/usr/bin glow
+	install -vDm644 -t /rootfs/usr/share/licenses/glow LICENSE
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs /

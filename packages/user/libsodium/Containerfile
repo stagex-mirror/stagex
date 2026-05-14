@@ -1,7 +1,7 @@
 FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
 ADD fetch/libsodium-${VERSION}.tar.gz .
-WORKDIR /libsodium-${VERSION}
+WORKDIR /libsodium-${VERSION}-RELEASE
 RUN --network=none <<-EOF
 	set -ex
 	./configure --prefix=/usr

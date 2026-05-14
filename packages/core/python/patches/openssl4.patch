@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: stagex <stagex@stagex>
+Date: Sat, 11 May 2026 00:00:00 +0000
+Subject: [PATCH] Support OpenSSL 4.0 which removed SSLv3/TLSv1/TLSv1.1/TLSv1.2 methods
+
+OpenSSL 4.0 removed SSLv3_method, TLSv1_method, TLSv1_1_method, TLSv1_2_method
+entirely. Python 3.14.4 doesn't define OPENSSL_NO_* macros for 4.0, causing
+linker errors (SSLv3_method symbol not found).
+
+Based on: https://github.com/python/cpython/issues/146207
+---
+ Modules/_ssl.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/Modules/_ssl.c b/Modules/_ssl.c
+index 1234567..abcdefg 100644
+--- a/Modules/_ssl.c
++++ b/Modules/_ssl.c
+@@ -128,6 +128,14 @@ static void _PySSLFixErrno(void) {
+ #define _PySSL_FIX_ERRNO _PySSLFixErrno()
+ #endif
+
++/* OpenSSL 4.0 removed SSLv3, TLSv1, TLSv1.1, TLSv1.2 methods */
++#if (OPENSSL_VERSION_NUMBER >= 0x40000000L)
++#  define OPENSSL_NO_SSL3
++#  define OPENSSL_NO_TLS1
++#  define OPENSSL_NO_TLS1_1
++#  define OPENSSL_NO_TLS1_2
++#endif
++
+ /* Include generated data (error codes) */
+ /* See make_ssl_data.h for notes on adding a new version. */
+ #if (OPENSSL_VERSION_NUMBER >= 0x30401000L)

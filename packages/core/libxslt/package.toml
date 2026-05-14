@@ -1,12 +1,12 @@
 [package]
 name = "libxslt"
-version = "1.1.43"
+version = "1.1.45"
 description = "GNOME XSLT transformation library"
 license = "MIT"
 website = "https://gitlab.gnome.org/GNOME/libxslt"
 
 [sources.libxslt]
-hash = "5a3d6b383ca5afc235b171118e90f5ff6aa27e9fea3303065231a6d403f0183a"
+hash = "9acfe68419c4d06a45c550321b3212762d92f41465062ca4ea19e632ee5d216e"
 format = "tar.xz"
 file = "libxslt-{version}.{format}"
 mirrors = [ "https://download.gnome.org/sources/libxslt/{version_major_minor}/{file}",]

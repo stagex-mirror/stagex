@@ -1,0 +1,12 @@
+[package]
+name = "libtatsu"
+version = "1.0.5"
+description = "Library for parsing binary plist files"
+license = "GPL-2.1-or-later"
+website = "https://github.com/libimobiledevice/libtatsu"
+
+[sources.libtatsu]
+hash = "d98e973747b3a03c1befb1875fa43b1a109b1b332ae2252d8d471b4cfb91df6d"
+format = "tar.gz"
+file = "libtatsu-{version}.{format}"
+mirrors = [ "https://github.com/libimobiledevice/libtatsu/archive/refs/tags/{version}.{format}", ]

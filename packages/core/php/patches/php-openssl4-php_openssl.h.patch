@@ -1,0 +1,13 @@
+--- a/ext/openssl/php_openssl.h
++++ b/ext/openssl/php_openssl.h
+@@ -55,6 +55,10 @@
+ 	"AES256-GCM-SHA384:AES128:AES256:HIGH:!SSLv2:!aNULL:!eNULL:!EXPORT:!DES:!MD5:!RC4:!ADH"
+
+ #include <openssl/err.h>
++/* ERR_NUM_ERRORS was removed in OpenSSL 4.0 */
++#ifndef ERR_NUM_ERRORS
++# define ERR_NUM_ERRORS 16
++#endif
+
+ #ifdef PHP_WIN32
+ #	define PHP_OPENSSL_API __declspec(dllexport)

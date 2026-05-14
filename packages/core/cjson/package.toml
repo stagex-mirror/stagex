@@ -1,0 +1,15 @@
+[package]
+name = "cjson"
+version = "1.7.19"
+description = "Lightweight C JSON parser"
+license = "MIT"
+website = "https://github.com/DaveGamble/cJSON"
+
+[sources.cjson]
+hash = "7fa616e3046edfa7a28a32d5f9eacfd23f92900fe1f8ccd988c1662f30454562"
+format = "tar.gz"
+file = "cjson-{version}.{format}"
+mirrors = [
+  "file://fetch/{file}",
+  "https://github.com/DaveGamble/cJSON/archive/refs/tags/v{version}.{format}",
+]

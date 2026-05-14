@@ -15,3 +15,5 @@ graph.svg
 *.xz
 TODO
 __pycache__
+AGENTS.md
+.crush/

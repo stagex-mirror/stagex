@@ -3,10 +3,8 @@ ARG VERSION
 ADD fetch/aspell-${VERSION}.tar.gz .
 WORKDIR /aspell-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
-ADD clang19.patch .
 RUN --network=none <<-EOF
 	set -ex
-	patch -p1 < clang19.patch
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

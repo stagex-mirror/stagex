@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: stagex <stagex@stagex>
+Date: Sat, 10 May 2026 03:00:00 +0000
+Subject: [PATCH] Use POSIX qsort_r signature for musl compatibility
+
+---
+ lib/dictBuilder/cover.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/lib/dictBuilder/cover.c b/lib/dictBuilder/cover.c
+index 1234567..abcdefg 100644
+--- a/lib/dictBuilder/cover.c
++++ b/lib/dictBuilder/cover.c
+@@ -24,7 +24,11 @@
+ /* qsort_r is an extension. */
+ #if defined(__linux) || defined(__linux__) || defined(linux) || defined(__gnu_linux__) || \
+     defined(__CYGWIN__) || defined(__MSYS__)
+-#if !defined(_GNU_SOURCE) && !defined(__ANDROID__) /* NDK doesn't ship qsort_r(). */
++#if defined(__MUSL__) || (defined(__linux) && !defined(_GNU_SOURCE))
++#if !defined(__MUSL__) && !defined(_GNU_SOURCE) && !defined(__ANDROID__)
+ #define _GNU_SOURCE
++#endif
++#if !defined(__MUSL__)
++#define _GNU_SOURCE
+ #endif
+ #endif

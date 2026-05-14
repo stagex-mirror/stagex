@@ -1,0 +1,45 @@
+--- a/ext/openssl/xp_ssl.c
++++ b/ext/openssl/xp_ssl.c
+@@ -494,30 +494,32 @@
+ 				return 1;
+ 			}
+ 			OPENSSL_free(cert_name);
+-		} else if (san->type == GEN_IPADD) {
+-			if (san->d.iPAddress->length == 4) {
+-				snprintf(ipbuffer, sizeof(ipbuffer), "%d.%d.%d.%d",
+-					san->d.iPAddress->data[0],
+-					san->d.iPAddress->data[1],
+-					san->d.iPAddress->data[2],
+-					san->d.iPAddress->data[3]
+-				);
++		} else if (san->type == GEN_IPADD) {
++			const unsigned char *ip_data = ASN1_STRING_get0_data(san->d.iPAddress);
++			int ip_len = ASN1_STRING_length(san->d.iPAddress);
++			if (ip_len == 4) {
++				snprintf(ipbuffer, sizeof(ipbuffer), "%d.%d.%d.%d",
++					ip_data[0],
++					ip_data[1],
++					ip_data[2],
++					ip_data[3]
++				);
+ 				if (strcasecmp(subject_name, (const char*)ipbuffer) == 0) {
+ 					sk_GENERAL_NAME_pop_free(alt_names, GENERAL_NAME_free);
+
+ 					return 1;
+ 				}
+ 			}
+ #ifdef HAVE_IPV6_SAN
+-			else if (san->d.ip->length == 16 && subject_name_is_ipv6) {
++			else if (ip_len == 16 && subject_name_is_ipv6) {
+ 				ipbuffer[0] = 0;
+-				EXPAND_IPV6_ADDRESS(ipbuffer, san->d.iPAddress->data);
++				EXPAND_IPV6_ADDRESS(ipbuffer, ip_data);
+ 				if (strcasecmp((const char*)subject_name_ipv6_expanded, (const char*)ipbuffer) == 0) {
+ 					sk_GENERAL_NAME_pop_free(alt_names, GENERAL_NAME_free);
+
+ 					return 1;
+ 				}
+ 			}
+ #endif
+ 		}
+ 	}

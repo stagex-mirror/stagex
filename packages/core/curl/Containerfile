@@ -23,7 +23,8 @@ RUN --network=none <<-EOF
 		--infodir=/usr/share/info \
 		--with-ca-bundle=/etc/ssl/certs/ca-certificates.crt \
 		--with-openssl \
-		--enable-static-link
+		--enable-static-link \
+		--without-libpsl
 	make -j "$(nproc)"
 	make install DESTDIR=/rootfs
 EOF
