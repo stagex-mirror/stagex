@@ -8,10 +8,12 @@ COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-linux-headers . /
 ADD fetch/m4-${VERSION}.tar.gz .
 WORKDIR /m4-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
+	export CFLAGS="${CFLAGS:-} -Wno-error=format-security"
 	./configure \
 		--prefix=/usr \
 		gl_cv_func_getcwd_path_max="no, but it is partly working"

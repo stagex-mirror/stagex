@@ -4,7 +4,7 @@ ARG VERSION
 ADD fetch/libzstd-${VERSION}.tar.gz .
 WORKDIR /zstd-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
+	set -eu
 	cmake \
 		-B build-cmake \
 		-S build/cmake \
@@ -19,7 +19,6 @@ RUN --network=none <<-EOF
 		-Dbin_tests=false \
 		-Dbin_contrib=false \
 		-Dbin_programs=true \
-		-Dbacktrace=disabled \
 		-Dmulti_thread=enabled \
 		-Dlz4=disabled \
 		-Dlzma=disabled \

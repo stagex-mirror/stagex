@@ -1,6 +1,6 @@
 [package]
 name = "vim"
-version = "9.1.1785"
+version = "9.2.0478"
 description = "Improved vi-style text editor"
 license = "Vim"
 website = "https://www.vim.org/"
@@ -13,7 +13,7 @@ subpackages = [
 ]
 
 [sources.vim]
-hash = "d11eb36b58c7cc5b2d4b26be3304253fbb39e1f6ba22fbaae71ef924dff262e4"
+hash = "432b9b6141180a97173a54cf26d20c55fa28a2448dc3653f3c9d48e41285aead"
 format = "tar.gz"
 file = "vim-{version}.{format}"
 mirrors = [ "https://github.com/vim/vim/archive/refs/tags/v{version}.{format}",]

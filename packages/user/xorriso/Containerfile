@@ -2,8 +2,8 @@ FROM stagex/pallet-clang-gnu-busybox AS build
 COPY --from=stagex/core-coreutils . /
 COPY --from=stagex/core-openssl . /
 ARG VERSION
-ADD fetch/xorriso-${VERSION}.pl02.tar.gz .
-WORKDIR /xorriso-${VERSION}
+ADD fetch/xorriso-${VERSION}.tar.gz .
+WORKDIR /xorriso-1.5.8
 RUN --network=none <<-EOF
 	./configure \
 		--prefix=/usr

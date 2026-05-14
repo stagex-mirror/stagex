@@ -25,6 +25,7 @@ WORKDIR /node-v${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 ENV CC=clang
 ENV CXX=clang++
+ENV CXXFLAGS="-include stdlib.h"
 #ENV LDFLAGS=" \
 #	-Wl,-O1 -Wl,--sort-common -Wl,--as-needed -Wl,-z,relro \
 #	-Wl,-z,now -Wl,-z,pack-relative-relocs"
@@ -50,7 +51,6 @@ RUN --network=none <<-EOF
 		--shared-openssl \
 		--shared-zlib \
 		--without-npm \
-		--without-corepack \
 		--with-intl=system-icu \
 		--with-icu-default-data-dir=$(icu-config --icudatadir) \
 		--openssl-use-def-ca-store

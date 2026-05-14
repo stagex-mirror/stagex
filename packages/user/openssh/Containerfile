@@ -21,8 +21,7 @@ RUN --network=none <<-EOF
     --disable-utmp \
     --disable-wtmp \
     --disable-lastlog \
-    --disable-strip \
-    --with-ssl-engine
+    --disable-strip
   make
 	make DESTDIR=/rootfs install
 EOF

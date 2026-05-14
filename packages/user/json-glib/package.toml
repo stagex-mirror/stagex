@@ -1,11 +1,11 @@
 [package]
 name = "json-glib"
-version = "1.8.0"
+version = "1.10.8"
 description = "JSON parser and generator for GLib"
 license = "LGPL-2.1-or-later"
 website = "https://gnome.pages.gitlab.gnome.org/json-glib/"
 
 [sources.json-glib]
-hash = "97ef5eb92ca811039ad50a65f06633f1aae64792789307be7170795d8b319454"
+hash = "55c5c141a564245b8f8fbe7698663c87a45a7333c2a2c56f06f811ab73b212dd"
 file = "json-glib-{version}.tar.xz"
-mirrors = ["https://download.gnome.org/sources/json-glib/1.8/{file}"]
+mirrors = ["https://download.gnome.org/sources/json-glib/1.10/{file}"]

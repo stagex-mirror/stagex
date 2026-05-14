@@ -1,7 +1,7 @@
 FROM stagex/pallet-clang-cmake-busybox AS build
 ARG VERSION
 ADD fetch/vulkan-headers-${VERSION}.tar.gz .
-WORKDIR /Vulkan-Headers-vulkan-sdk-${VERSION}
+WORKDIR /Vulkan-Headers-${VERSION}
 RUN --network=none <<-EOF
   cmake -B build -G Ninja \
 		-DCMAKE_BUILD_TYPE=None \

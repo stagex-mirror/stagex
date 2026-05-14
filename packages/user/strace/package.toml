@@ -1,12 +1,12 @@
 [package]
 name = "strace"
-version = "6.18"
+version = "7.0"
 description = "Diagnostic, debugging and instructional userspace tracer for Linux"
 license = "LGPL-2.1-or-later"
 website = "https://strace.io"
 
 [sources.strace]
-hash = "0ad5dcba973a69e779650ef1cb335b12ee60716fc7326609895bd33e6d2a7325"
+hash = "6c92419be3f2ec560b31728a4652217c59864c8642ba7b1b3771b1b013ad074b"
 format = "tar.xz"
 file = "strace-{version}.{format}"
 mirrors = [ "https://github.com/strace/strace/releases/download/v{version}/{file}",]
