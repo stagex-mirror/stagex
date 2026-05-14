@@ -1,0 +1,12 @@
+[package]
+name = "rsop"
+version = "0.10.0"
+description = "Stateless OpenPGP (SOP) CLI tool"
+license = "CC0-1.0"
+website = "https://codeberg.org/heiko/rsop"
+
+[sources.rsop]
+hash = "f79b119ac2d88b84301de3e248656153dbed4a5ab9478e0b456d874b64a8eed5"
+format = "tar.gz"
+file = "rsop-v{version}.{format}"
+mirrors = ["https://codeberg.org/heiko/rsop/archive/rsop/v{version}.{format}"]
