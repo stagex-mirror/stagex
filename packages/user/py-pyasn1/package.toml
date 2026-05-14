@@ -6,7 +6,7 @@ license = "BSD-2-Clause"
 website = "https://github.com/pyasn1/pyasn1"
 
 [sources.py-pyasn1]
-hash = "697a8ecd6d98891189184ca1fa05d1bb00e2f84b5977c481452050549c8a72cf"
+hash = "9082d00df744c7ccaa5e55c24cd03287349ca9439498add162e6d7d67b55afd3"
 format = "tar.gz"
 file = "py-pyasn1-{version}.{format}"
 mirrors = [ "https://github.com/pyasn1/pyasn1/archive/refs/tags/v{version}.{format}",]
