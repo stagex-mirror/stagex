@@ -1,0 +1,27 @@
+FROM stagex/pallet-rust AS build
+ARG VERSION
+COPY --from=stagex/core-sqlite3 . /
+ADD fetch/nushell-${VERSION}.tar.gz .
+WORKDIR /nushell-${VERSION}
+ARG SOURCE_DATE_EPOCH=1
+ADD date-from-human.patch .
+RUN --network=none <<-EOF
+	patch -p1 < date-from-human.patch
+EOF
+RUN cargo fetch --locked
+ENV RUSTFLAGS="-C codegen-units=1 -C link-arg=-Wl,--build-id=none -C target-feature=+crt-static"
+RUN --network=none <<-EOF
+	set -eux
+	ARCH="$(uname -m)"
+
+	cargo build \
+		--frozen \
+		--release \
+		--target "${ARCH}-unknown-linux-musl" \
+ 		--bin nu
+
+	install -Dm755 target/${ARCH}-unknown-linux-musl/release/nu /rootfs/usr/bin/nu
+	install -Dm644 -t /rootfs/usr/share/licenses/nushell LICENSE
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
