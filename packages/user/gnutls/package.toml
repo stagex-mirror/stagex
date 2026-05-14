@@ -1,0 +1,14 @@
+[package]
+name = "gnutls"
+version = "3.8.10"
+description = "A portable, full-featured TLS implementation — secure communication library"
+license = "LGPL-2.1-or-later"
+website = "https://www.gnutls.org"
+
+[sources.gnutls]
+hash = "db7fab7cce791e7727ebbef2334301c821d79a550ec55c9ef096b610b03eb6b7"
+format = "tar.xz"
+file = "gnutls-{version}.{format}"
+mirrors = [
+  "https://www.gnupg.org/ftp/gcrypt/gnutls/v3.8/{file}",
+]

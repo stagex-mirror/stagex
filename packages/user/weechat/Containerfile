@@ -1,0 +1,44 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+ARG VERSION
+COPY --from=stagex/user-libgcrypt . /
+COPY --from=stagex/user-libgpg-error . /
+COPY --from=stagex/user-gnutls . /
+COPY --from=stagex/user-nettle . /
+COPY --from=stagex/user-libtasn1 . /
+COPY --from=stagex/user-libidn2 . /
+COPY --from=stagex/user-p11-kit . /
+COPY --from=stagex/core-brotli . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-cjson . /
+COPY --from=stagex/core-gettext . /
+COPY --from=stagex/core-ncurses . /
+COPY --from=stagex/core-curl . /
+ADD fetch/weechat-${VERSION}.tar.gz .
+WORKDIR /weechat-${VERSION}
+RUN cmake \
+	-B build \
+	-G Ninja \
+	-Wno-dev \
+	-DCMAKE_INSTALL_PREFIX=/usr \
+	-DCMAKE_INSTALL_LIBDIR=lib \
+	-DCMAKE_USE_GNUTLS=ON \
+	-DCMAKE_USE_LIBGCRYPT=ON \
+	-DENABLE_ENCHANT=OFF \
+	-DENABLE_GUILE=OFF \
+	-DENABLE_JAVASCRIPT=OFF \
+	-DENABLE_PHP=OFF \
+	-DENABLE_RUBY=OFF \
+	-DENABLE_TCL=OFF \
+	-DENABLE_PERL=OFF \
+	-DENABLE_LUA=OFF \
+	-DENABLE_SPELL=OFF \
+	-DENABLE_NLS=OFF \
+	-DENABLE_ZSTD=ON \
+	-DENABLE_HEADLESS=ON \
+	-DENABLE_MAN=OFF \
+	-DENABLE_DOC_INCOMPLETE=OFF
+RUN cmake --build build -j "$(nproc)"
+RUN DESTDIR="/rootfs" cmake --install build --prefix /usr
+RUN install -Dm644 LICENSES/GPL-3.0-or-later.txt /rootfs/usr/share/licenses/weechat/LICENSE
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
