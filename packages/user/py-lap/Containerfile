@@ -1,0 +1,12 @@
+FROM stagex/pallet-python AS build
+ARG VERSION
+ADD fetch/py-lap-.tar.gz /
+WORKDIR /lap-
+RUN --network=none <<-EOF
+	set -eu
+	pip wheel . --wheel-dir .dist --no-deps
+	python -m installer -d /rootfs .dist/*.whl
+	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

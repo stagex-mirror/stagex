@@ -1,0 +1,12 @@
+[package]
+name = "py-jellyfish"
+version = "1.2.1"
+description = "//pypi.org/packages/source/j/jellyfish/jellyfish-1.2.1.tar.gz:Python library for calculating approximate and phonetic string similarity"
+license = "MIT"
+website = "https://pypi.org/project/jellyfish/"
+
+[sources.py-jellyfish]
+hash = "72d2fda61b23babe862018729be73c8b0dc12e3e6601f36f6e65d905e249f4db"
+format = "tar.gz"
+file = "py-jellyfish-1.2.1.{format}"
+mirrors = ["https"]

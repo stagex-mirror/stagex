@@ -1,0 +1,24 @@
+FROM stagex/pallet-python AS build
+ARG VERSION
+COPY --from=stagex/user-py-confuse . /
+COPY --from=stagex/user-py-jellyfish . /
+COPY --from=stagex/user-py-lap . /
+COPY --from=stagex/user-py-mediafile . /
+COPY --from=stagex/user-py-unidecode . /
+COPY --from=stagex/user-py-numpy . /
+COPY --from=stagex/user-py-platformdirs . /
+COPY --from=stagex/user-py-pyyaml . /
+COPY --from=stagex/user-py-requests-ratelimiter . /
+COPY --from=stagex/core-ca-certificates /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+ADD fetch/v${VERSION}.tar.gz /
+WORKDIR /beets-${VERSION}
+RUN --network=none <<-EOF
+	set -eu
+	pip wheel . --wheel-dir .dist --no-deps
+	python -m installer -d /rootfs .dist/*.whl
+	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
+ENTRYPOINT ["/usr/bin/beet"]
+CMD ["--version"]

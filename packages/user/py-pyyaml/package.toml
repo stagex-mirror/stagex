@@ -1,0 +1,12 @@
+[package]
+name = "py-pyyaml"
+version = "6.0.3"
+description = "//pypi.org/packages/source/p/pyyaml/PyYAML-6.0.3.tar.gz:YAML parser and emitter for Python"
+license = "MIT"
+website = "https://pypi.org/project/pyyaml/"
+
+[sources.py-pyyaml]
+hash = "d76623373421df22fb4cf8817020cbb7ef15c725b9d5e45f17e189bfc384190f"
+format = "tar.gz"
+file = "py-pyyaml-6.0.3.{format}"
+mirrors = ["https"]

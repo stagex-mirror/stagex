@@ -1,0 +1,12 @@
+[package]
+name = "py-requests-ratelimiter"
+version = "0.10.0"
+description = "//pypi.org/packages/source/r/requests-ratelimiter/requests-ratelimiter-0.10.0.tar.gz:Rate-limiting plugin for requests"
+license = "MIT"
+website = "https://pypi.org/project/requests-ratelimiter/"
+
+[sources.py-requests-ratelimiter]
+hash = "9c1a78d7646caa5ccf211a6c341abd16d329be2c8c35044a418aa9da7c0e7a33"
+format = "tar.gz"
+file = "py-requests-ratelimiter-0.10.0.{format}"
+mirrors = ["https"]

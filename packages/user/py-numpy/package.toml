@@ -1,0 +1,12 @@
+[package]
+name = "py-numpy"
+version = "2.4.4"
+description = "//pypi.org/packages/source/n/numpy/numpy-2.4.4.tar.gz:Fundamental package for array computing in Python"
+license = "MIT"
+website = "https://pypi.org/project/numpy/"
+
+[sources.py-numpy]
+hash = "2d390634c5182175533585cc89f3608a4682ccb173cc9bb940b2881c8d6f8fa0"
+format = "tar.gz"
+file = "py-numpy-2.4.4.{format}"
+mirrors = ["https"]

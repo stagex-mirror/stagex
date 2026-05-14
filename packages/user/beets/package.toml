@@ -1,0 +1,12 @@
+[package]
+name = "beets"
+version = "2.11.0"
+description = "Music library manager and MusicBrainz tagger"
+license = "MIT"
+website = "https://beets.io"
+
+[sources.beets]
+hash = "f09dd60cc92b5501aaa77211bc19e280be4ae22a5ce3f00335c6ad3cd531326f"
+format = "tar.gz"
+file = "v{version}.{format}"
+mirrors = ["https://github.com/beetbox/beets/archive/refs/tags/{file}"]

@@ -1,0 +1,12 @@
+[package]
+name = "py-unidecode"
+version = "1.4.0"
+description = "//pypi.org/packages/source/u/unidecode/Unidecode-1.4.0.tar.gz:Unicode transliterator for Python"
+license = "MIT"
+website = "https://pypi.org/project/unidecode/"
+
+[sources.py-unidecode]
+hash = "ce35985008338b676573023acc382d62c264f307c8f7963733405add37ea2b23"
+format = "tar.gz"
+file = "py-unidecode-1.4.0.{format}"
+mirrors = ["https"]

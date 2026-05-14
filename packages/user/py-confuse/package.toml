@@ -1,0 +1,12 @@
+[package]
+name = "py-confuse"
+version = "2.2.0"
+description = "//pypi.org/packages/source/c/confuse/confuse-2.2.0.tar.gz:A Python configuration library"
+license = "MIT"
+website = "https://pypi.org/project/confuse/"
+
+[sources.py-confuse]
+hash = "35c1b53e81be125f441bee535130559c935917b26aeaa61289010cd1f55c2b9e"
+format = "tar.gz"
+file = "py-confuse-2.2.0.{format}"
+mirrors = ["https"]
