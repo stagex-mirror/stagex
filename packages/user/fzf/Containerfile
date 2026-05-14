@@ -1,0 +1,19 @@
+FROM stagex/pallet-cgo AS build
+ARG VERSION
+ADD fetch/fzf-${VERSION}.tar.gz .
+WORKDIR /fzf-${VERSION}
+RUN go mod download
+RUN --network=none <<-EOF
+	go \
+		build \
+		-trimpath \
+		-o fzf \
+		-v \
+		-ldflags="-s -w" \
+		.
+	mkdir -p /rootfs/usr/bin/
+	install -vDm755 -t /rootfs/usr/bin fzf
+	install -vDm644 -t /rootfs/usr/share/licenses/fzf LICENSE
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs /
