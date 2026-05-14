@@ -1,0 +1,12 @@
+[package]
+name = "tldr"
+version = "1.13.0"
+description = "Official tlrc client for tldr pages (binary: tldr)"
+license = "MIT"
+website = "https://github.com/tldr-pages/tlrc"
+
+[sources.tlrc]
+hash = "be72997481480d66560886d2ff7b1e1d8e086169885d85edee663c9091bd32f3"
+format = "tar.gz"
+file = "tlrc-v{version}.{format}"
+mirrors = ["https://github.com/tldr-pages/tlrc/archive/refs/tags/v{version}.{format}"]
