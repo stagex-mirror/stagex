@@ -1,0 +1,12 @@
+[package]
+name = "nano"
+version = "9.0"
+description = "Enhanced clone of the Pico text editor"
+license = "GPL-3.0-or-later"
+website = "https://nano-editor.org"
+
+[sources.nano]
+hash = "48a9cf0d021ddaf9d7b567ed30396147d4d2e3f7a32644f83257a7efead2b380"
+format = "tar.gz"
+file = "nano-{version}.{format}"
+mirrors = [ "https://nano-editor.org/dist/v{version_major}/nano-{version}.{format}",]
