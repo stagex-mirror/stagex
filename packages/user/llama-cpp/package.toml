@@ -1,11 +1,11 @@
 [package]
 name = "llama-cpp"
-version = "b4663"
+version = "9144"
 description = "LLM inference in C/C++"
 license = "MIT"
 website = "https://github.com/ggerganov/llama.cpp"
 
 [sources.llama_cpp]
-hash = "c630e767ce858e0ea16980bc38a1fa008c25a320610d07aa136b147446a1b3ef"
+hash = "d5558cd419c8d46bdc958064cb97f963d1ea793866414c025906ec15033512ed"
 file = "llama.cpp-{version}.tar.gz"
 mirrors = [ "https://github.com/ggerganov/llama.cpp/archive/refs/tags/{version}.tar.gz" ]
