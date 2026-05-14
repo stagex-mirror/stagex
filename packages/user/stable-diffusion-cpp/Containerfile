@@ -1,0 +1,24 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-make . /
+ADD fetch/stable-diffusion-cpp-${VERSION}.tar.gz .
+ADD fetch/ggml-404fcb9d7c96989569e68c9e7881ee3465a05c50.tar.gz ./stable-diffusion.cpp-${VERSION}/ggml
+RUN mv ./stable-diffusion.cpp-${VERSION}/ggml/ggml-404fcb9d7c96989569e68c9e7881ee3465a05c50/* ./stable-diffusion.cpp-${VERSION}/ggml/
+WORKDIR /stable-diffusion.cpp-${VERSION}
+RUN --network=none <<-EOF
+	unset CMAKE_GENERATOR
+	mkdir build
+	cd build
+	cmake .. \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+		-DBUILD_SHARED_LIBS=OFF \
+		-DSD_BUILD_EXAMPLES=ON \
+		-DSD_BUILD_FRONTEND=OFF \
+		-DCMAKE_INSTALL_LIBDIR=lib
+	cmake --build . -j "$(nproc)"
+	DESTDIR="/rootfs/" cmake --install .
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs /

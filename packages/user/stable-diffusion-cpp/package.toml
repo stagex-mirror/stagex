@@ -1,0 +1,14 @@
+[package]
+name        = "stable-diffusion-cpp"
+version     = "master-540-f16a110"
+description = "Minimal stable diffusion implementation in C++"
+license     = "MIT"
+website     = "https://github.com/leejet/stable-diffusion.cpp"
+
+[sources.stable-diffusion-cpp]
+hash = "afdabcbbf21691821934c56de5b125c8b41828ec5cd783ef6712866debf536ee"
+format = "tar.gz"
+file = "stable-diffusion-cpp-{version}.{format}"
+mirrors = [
+  "https://github.com/leejet/stable-diffusion.cpp/archive/refs/tags/{version}.{format}",
+]
