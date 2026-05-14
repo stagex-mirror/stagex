@@ -31,7 +31,6 @@ ADD fetch/php-${VERSION}.tar.gz .
 
 WORKDIR /php-${VERSION}
 COPY *.patch .
-COPY patches/*.patch .
 
 ENV SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH
 ENV PHP_UNAME="Linux StageX"
