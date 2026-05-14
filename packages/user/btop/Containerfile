@@ -1,0 +1,12 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+ARG VERSION
+ADD fetch/btop-v${VERSION}.tar.gz .
+WORKDIR /btop-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
+RUN <<-EOF
+	make NOWERROR=TRUE -j "$(nproc)" CXXFLAGS="-w"
+	DESTDIR=/rootfs make install PREFIX=/usr
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
