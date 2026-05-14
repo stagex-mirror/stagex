@@ -1,0 +1,12 @@
+[package]
+name = "lazydocker"
+version = "0.25.2"
+description = "Simple terminal UI for docker"
+license = "MIT"
+website = "https://github.com/jesseduffield/lazydocker"
+
+[sources.lazydocker]
+hash = "405071220e5be9aa061c65d290e0347143b73ae0a3cc01df164f0105de2b53c4"
+format = "tar.gz"
+file = "lazydocker-{version}.{format}"
+mirrors = ["https://github.com/jesseduffield/lazydocker/archive/refs/tags/v{version}.{format}"]
