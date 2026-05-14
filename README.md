@@ -143,6 +143,11 @@ dependency at a particular tag or image hash.
 This allows you to use the version you need regardless of the situation without
 resorting to low security "curl | bash" style solutions.
 
+Please keep in mind that even though we provide older versions of packages
+usually indicated by the number after the package (such as llvm21) we
+maintain a rolling release approach and only provide them for backwards
+compatibility. These can be removed at any time without previous notice.
+
 ## Goals
 
 We built StageX to satisfy high-assurance threat models where trusting any
@@ -486,6 +491,8 @@ https://arxiv.org/abs/1506.02822)
 
 * [The Full-Source Bootstrap: Building from source all the way down](https://guix.gnu.org/en/blog/2023/the-full-source-bootstrap-building-from-source-all-the-way-down/)
   * Janneke Nieuwenhuizen, Ludovic Courtès | 2023
+* [How do you trust a new Linux Distribution?](https://kron.fi/en/posts/stagex-web-of-trust/)
+  * Zoë Finja Emilia Kron | March 2026
 
 ### Presentations
 
