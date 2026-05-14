@@ -1,0 +1,12 @@
+[package]
+name = "pass"
+version = "1.7.4"
+description = "The Standard Unix Password Manager"
+license = "GPL-2.0-or-later"
+website = "https://www.passwordstore.org"
+
+[sources.pass]
+hash = "4c2d0a8b99df8915a87099607a8d912fd05d30651b6f014745c14e4ca8dbbfb7"
+format = "tar.xz"
+file = "password-store-{version}.{format}"
+mirrors = ["https://git.zx2c4.com/password-store/snapshot/{file}"]
