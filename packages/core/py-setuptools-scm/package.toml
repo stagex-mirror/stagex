@@ -9,4 +9,4 @@ website = "https://github.com/pypa/setuptools-scm"
 hash = "1c674ab4665686a0887d7e24c03ab25f24201c213e82ea689d2f3e169ef7ef57"
 format = "tar.gz"
 file = "py-setuptools-scm-{version}.{format}"
-mirrors = [ "https://files.pythonhosted.org/packages/source/s/setuptools-scm/setuptools-scm-{version}.{format}",]
+mirrors = [ "https://files.pythonhosted.org/packages/source/s/setuptools-scm/setuptools_scm-{version}.{format}",]
