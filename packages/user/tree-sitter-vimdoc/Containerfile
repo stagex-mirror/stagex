@@ -3,7 +3,7 @@ COPY --from=stagex/core-make / /
 ARG VERSION
 ADD fetch/tree-sitter-vimdoc-${VERSION}.tar.gz .
 WORKDIR /tree-sitter-vimdoc-${VERSION}
-RUN <<-EOF
+RUN --network=none <<-EOF
 	mkdir -p build && cd build
 	clang -shared -fPIC -O2 -I../src -o libtree-sitter-vimdoc.so ../src/parser.c
 	install -Dm755 libtree-sitter-vimdoc.so /rootfs/usr/lib/libtree-sitter-vimdoc.so

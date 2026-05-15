@@ -3,7 +3,7 @@ COPY --from=stagex/core-make / /
 ARG VERSION
 ADD fetch/tree-sitter-c-${VERSION}.tar.gz .
 WORKDIR /tree-sitter-c-${VERSION}
-RUN <<-EOF
+RUN --network=none <<-EOF
 	mkdir -p build && cd build
 	clang -shared -fPIC -O2 -I../src -o libtree-sitter.so ../src/parser.c
 	install -Dm755 libtree-sitter.so /rootfs/usr/lib/libtree-sitter.so

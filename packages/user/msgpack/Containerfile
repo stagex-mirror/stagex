@@ -3,7 +3,7 @@ COPY --from=stagex/core-make / /
 ARG VERSION
 ADD fetch/c-${VERSION}.tar.gz .
 WORKDIR /msgpack-c-c-${VERSION}
-RUN <<-EOF
+RUN --network=none <<-EOF
 	mkdir -p build && cd build
 	cmake \
 		-B . \

@@ -1,7 +1,7 @@
 FROM stagex/pallet-clang-cmake-busybox AS build
 ARG VERSION
 COPY --from=stagex/core-make / /
-COPY --from=stagex/user-luajit / /
+COPY --from=stagex/core-luajit / /
 COPY --from=stagex/user-libuv / /
 COPY --from=stagex/user-luv / /
 COPY --from=stagex/user-tree-sitter / /
@@ -21,7 +21,7 @@ ADD fetch/v${VERSION}.tar.gz /
 WORKDIR /neovim-${VERSION}
 ENV CFLAGS="-march=x86-64"
 ENV SOURCE_DATE_EPOCH="1"
-RUN <<-EOF
+RUN --network=none <<-EOF
 	# First build bundled lpeg dependency
 	mkdir -p build/.deps
 	cmake \

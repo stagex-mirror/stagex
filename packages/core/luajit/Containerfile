@@ -3,7 +3,7 @@ COPY --from=stagex/core-make / /
 ARG VERSION
 ADD fetch/LuaJIT-${VERSION}.tar.gz .
 WORKDIR /LuaJIT-${VERSION}
-RUN <<-EOF
+RUN --network=none <<-EOF
 	make \
 		-j "$(nproc)" \
 		PREFIX=/usr \

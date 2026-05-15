@@ -3,7 +3,7 @@ COPY --from=stagex/core-make / /
 ARG VERSION
 ADD fetch/v${VERSION}.tar.gz .
 WORKDIR /unibilium-${VERSION}
-RUN <<-EOF
+RUN --network=none <<-EOF
 	cmake \
 		-B build \
 		-G Ninja \

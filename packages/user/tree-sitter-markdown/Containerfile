@@ -3,7 +3,7 @@ COPY --from=stagex/core-make / /
 ARG VERSION
 ADD fetch/tree-sitter-markdown-${VERSION}.tar.gz .
 WORKDIR /tree-sitter-markdown-${VERSION}
-RUN <<-EOF
+RUN --network=none <<-EOF
 	mkdir -p build && cd build
 	clang -shared -fPIC -O2 -I../tree-sitter-markdown/src -o libtree-sitter-markdown.so ../tree-sitter-markdown/src/parser.c
 	install -Dm755 libtree-sitter-markdown.so /rootfs/usr/lib/libtree-sitter-markdown.so

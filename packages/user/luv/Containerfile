@@ -1,11 +1,11 @@
 FROM stagex/pallet-clang-cmake-busybox AS build
 COPY --from=stagex/core-make / /
 COPY --from=stagex/user-libuv . /
-COPY --from=stagex/user-luajit . /
+COPY --from=stagex/core-luajit . /
 ARG VERSION
 ADD fetch/luv.tar.gz .
 WORKDIR /luv-${VERSION}
-RUN <<-EOF
+RUN --network=none <<-EOF
 	mkdir -p build && cd build
 	cmake \
 		-B . \

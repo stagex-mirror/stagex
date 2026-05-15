@@ -2,7 +2,7 @@ FROM stagex/pallet-gcc-meson-busybox AS build
 ARG VERSION
 ADD fetch/libuv-${VERSION}.tar.gz .
 WORKDIR /libuv-${VERSION}
-RUN <<-EOF
+RUN --network=none <<-EOF
 	cmake \
 		-B build \
 		-G Ninja \
