@@ -18,7 +18,8 @@ RUN --network=none <<-EOF
     --with-mantype=doc \
     --with-xauth=/usr/bin/xauth \
     --with-default-path='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' \
-    --disable-utmp \
+    --with-ssl-engine \
+	--disable-utmp \
     --disable-wtmp \
     --disable-lastlog \
     --disable-strip
