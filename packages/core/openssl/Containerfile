@@ -14,7 +14,7 @@ ENV SOURCE_DATE_EPOCH=1
 ENV CC='clang -fPIE -pie'
 RUN --network=none <<-EOF
 	set -eux
-	ARCH=${ARCH}
+	ARCH="$(uname -m)"
 	perl ./Configure \
 		--prefix=/usr \
 		--libdir=lib \
