@@ -3,8 +3,9 @@ COPY --from=stagex/core-coreutils . /
 COPY --from=stagex/core-openssl . /
 ARG VERSION
 ADD fetch/xorriso-${VERSION}.tar.gz .
-WORKDIR /xorriso-*
+WORKDIR /
 RUN --network=none <<-EOF
+	cd /xorriso-*
 	./configure \
 		--prefix=/usr
 	make
