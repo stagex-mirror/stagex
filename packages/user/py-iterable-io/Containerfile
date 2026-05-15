@@ -6,6 +6,11 @@ RUN --network=none <<-EOF
 	set -eu
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 	python -m installer -d /rootfs .dist/*.whl
+	cat <<'LIC' | install -Dm644 - /rootfs/usr/share/licenses/py-iterable-io/LICENSE
+License
+-------
+Licensed under the [GNU LGPLv3](https://www.gnu.org/licenses/lgpl-3.0.html).
+LIC
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
 FROM stagex/core-filesystem AS package
