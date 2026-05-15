@@ -1,14 +1,14 @@
 [package]
-name        = "soft-serve"
-version     = "0.11.6"
+name = "soft-serve"
+version = "0.11.6"
 description = "Terminal-based Git server"
-license     = "MIT"
-website     = "https://github.com/charmbracelet/soft-serve"
+license = "MIT"
+website = "https://github.com/charmbracelet/soft-serve"
 
 [sources.soft_serve]
 hash = "0536934663508b1949193d6bd7ebcee227d40c8162a0dcfd338f1f33f74474bb"
 format = "tar.gz"
 file = "soft-serve-{version}.{format}"
 mirrors = [
-  "https://github.com/charmbracelet/soft-serve/archive/refs/tags/v{version}.{format}",
+ =="https://github.com/charmbracelet/soft-serve/archive/refs/tags/v{version}.{format}",
 ]
