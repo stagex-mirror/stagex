@@ -8,7 +8,6 @@ ARG VERSION
 ADD fetch/py-humanize-${VERSION}.tar.gz /
 WORKDIR /humanize-${VERSION}
 RUN --network=none <<-EOF
-
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 	python -m installer -d /rootfs .dist/*.whl
 	install -vDm644 LICENCE /rootfs/usr/share/licenses/py-humanize/LICENCE

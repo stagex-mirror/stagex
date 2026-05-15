@@ -4,7 +4,7 @@ ADD fetch/btop-v${VERSION}.tar.gz .
 WORKDIR /btop-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
-	make NOWERROR=TRUE -j "$(nproc)" CXXFLAGS="-w"
+	make NOWERROR=TRUE CXXFLAGS="-w"
 	DESTDIR=/rootfs make install PREFIX=/usr
 	install -vDm644 -t /rootfs/usr/share/licenses/btop/ LICENSE
 EOF

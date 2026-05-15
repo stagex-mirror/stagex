@@ -14,7 +14,7 @@ RUN --network=none <<-EOF
 		--localstatedir=/var \
 		--disable-static \
 		--disable-doc
-	make -j "$(nproc)"
+	make
 	DESTDIR="/rootfs" make install
 	install -Dm644 COPYING /rootfs/usr/share/licenses/libunistring/
 EOF

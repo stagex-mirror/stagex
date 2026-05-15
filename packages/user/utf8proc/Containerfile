@@ -12,7 +12,7 @@ RUN --network=none <<-EOF
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DCMAKE_INSTALL_LIBDIR=lib \
 		..
-	cmake --build . -j "$(nproc)"
+	cmake --build .
 	DESTDIR="/rootfs" cmake --install .
 	install -Dm644 ../LICENSE.md /rootfs/usr/share/licenses/utf8proc/
 EOF

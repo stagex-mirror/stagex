@@ -37,7 +37,7 @@ RUN --network=none <<-EOF
 		--with-zlib=link \
 		--with-zstd=link \
 		--libdir=/usr/lib
-	DESTDIR="/rootfs" make -j "$(nproc)" install
+	DESTDIR="/rootfs" make install
 	install -Dm644 COPYING.LESSERv2 /rootfs/usr/share/licenses/gnutls/
 EOF
 FROM stagex/core-filesystem AS package

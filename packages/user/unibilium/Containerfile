@@ -10,7 +10,7 @@ RUN --network=none <<-EOF
 		-Wno-dev \
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DCMAKE_INSTALL_LIBDIR=lib
-	cmake --build build -j "$(nproc)"
+	cmake --build build
 	DESTDIR="/rootfs" cmake --install build
 	install -Dm644 LICENSE /rootfs/usr/share/licenses/unibilium/LICENSE
 EOF

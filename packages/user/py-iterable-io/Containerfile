@@ -3,7 +3,6 @@ ARG VERSION
 ADD fetch/py-iterable-io-${VERSION}.tar.gz /
 WORKDIR /iterable_io-${VERSION}
 RUN --network=none <<-EOF
-
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 	python -m installer -d /rootfs .dist/*.whl
 	mkdir -p /rootfs/usr/share/licenses/py-iterable-io

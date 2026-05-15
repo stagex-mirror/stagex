@@ -3,7 +3,6 @@ ARG VERSION
 ADD fetch/py-tqdm-${VERSION}.tar.gz /
 WORKDIR /tqdm-${VERSION}
 RUN --network=none <<-EOF
-
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 	python -m installer -d /rootfs .dist/*.whl
 	install -vDm644 LICENCE /rootfs/usr/share/licenses/py-tqdm/LICENCE

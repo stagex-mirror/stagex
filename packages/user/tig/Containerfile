@@ -3,10 +3,12 @@ ARG VERSION
 COPY --from=stagex/core-ncurses / /
 ADD fetch/tig-${VERSION}.tar.gz .
 WORKDIR /tig-tig-${VERSION}
-RUN sh autogen.sh
-RUN ./configure --prefix=/usr --without-doc
-RUN make -j "$(nproc)"
-RUN make install DESTDIR="/rootfs"
-RUN install -Dm644 COPYING /rootfs/usr/share/licenses/tig/
+RUN --network=none <<-EOF
+	sh autogen.sh
+	./configure --prefix=/usr --without-doc
+	make
+	make install DESTDIR="/rootfs"
+	install -Dm644 COPYING /rootfs/usr/share/licenses/tig/
+EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

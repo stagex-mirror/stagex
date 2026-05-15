@@ -20,7 +20,7 @@ RUN --network=none <<-EOF
 		-DBUILD_SHARED_LIBS=ON \
 		-DCMAKE_C_FLAGS="-I/deps/lua-compat-5.3/c-api" \
 		..
-	cmake --build . -j "$(nproc)"
+	cmake --build .
 	DESTDIR="/rootfs" cmake --install .
 	install -Dm644 ../LICENSE.txt /rootfs/usr/share/licenses/luv/LICENSE.txt
 EOF

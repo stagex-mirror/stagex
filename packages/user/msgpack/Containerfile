@@ -16,7 +16,7 @@ RUN --network=none <<-EOF
 		-DCPACK_ENABLE_BUILD_TEST=OFF \
 		-DMSGPACK_BUILD_TESTS=OFF \
 		..
-	cmake --build . -j "$(nproc)"
+	cmake --build .
 	DESTDIR="/rootfs" cmake --install .
 	install -Dm644 ../COPYING /rootfs/usr/share/licenses/msgpack/
 EOF

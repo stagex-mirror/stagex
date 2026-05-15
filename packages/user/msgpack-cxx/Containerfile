@@ -13,7 +13,7 @@ RUN --network=none <<-EOF
 		-DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
 		-DCPP_BUILD=ON \
 		..
-	cmake --build . -j "$(nproc)"
+	cmake --build .
 	DESTDIR="/rootfs" cmake --install .
 	install -Dm644 ../COPYING /rootfs/usr/share/licenses/msgpack-cxx/
 EOF

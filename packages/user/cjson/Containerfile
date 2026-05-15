@@ -16,7 +16,7 @@ RUN --network=none <<-EOF
 		-DCJSON_BUILD_TESTS=OFF \
 		-DENABLE_CJSON_TEST=OFF \
 		-DCMAKE_C_FLAGS="-Wno-long-long -Wno-error"
-	cmake --build build -j "$(nproc)"
+	cmake --build build
 	DESTDIR="/rootfs" cmake --install build
 	rm -rf /rootfs/usr/lib64
 	install -Dm644 LICENSE /rootfs/usr/share/licenses/cjson/LICENSE

@@ -15,7 +15,7 @@ RUN sed -i 's/ac_cv_dnet_linux_pf_packet=no/ac_cv_dnet_linux_pf_packet=yes/' lib
 	--without-ndiff \
 	--without-ncat \
 	--with-version="${VERSION}"
-RUN make -j "$(nproc)"
+RUN make
 RUN make install DESTDIR="/rootfs"
 RUN install -Dm644 LICENSE /rootfs/usr/share/licenses/nmap/LICENSE
 FROM stagex/core-filesystem AS package

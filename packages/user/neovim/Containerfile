@@ -41,7 +41,7 @@ RUN --network=none <<-EOF
 		-DUSE_BUNDLED_GETTEXT=OFF \
 		-DUSE_BUNDLED_LIBICONV=OFF \
 		cmake.deps
-	cmake --build build/.deps -j "$(nproc)"
+	cmake --build build/.deps
 	
 	# Set DEPS_BUILD_DIR as environment variable so main CMake finds the deps
 	export DEPS_BUILD_DIR="${PWD}/build/.deps"
@@ -55,7 +55,7 @@ RUN --network=none <<-EOF
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DCMAKE_INSTALL_LIBDIR=lib \
 		-DENABLE_TRANSLATIONS=ON
-	cmake --build build -j "$(nproc)"
+	cmake --build build
 	DESTDIR="/rootfs" cmake --install build --prefix /usr
 	# Remove bundled parser directory - use system tree-sitter instead
 	rm -rf /rootfs/usr/share/nvim/runtime/parser
