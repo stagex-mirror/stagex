@@ -9,10 +9,10 @@ RUN --network=none <<-EOF
 	cargo build \
 		--frozen \
 		--release \
-		--target $(uname -m)-unknown-linux-musl \
+		--target ${ARCH}-unknown-linux-musl \
 		--bin bat
 	mkdir -p /rootfs/usr/bin
-	cp target/$(uname -m)-unknown-linux-musl/release/bat /rootfs/usr/bin/
+	cp target/${ARCH}-unknown-linux-musl/release/bat /rootfs/usr/bin/
 	install -Dm644 LICENSE-MIT /rootfs/usr/share/licenses/bat/
 EOF
 FROM stagex/core-filesystem AS package

@@ -5,7 +5,6 @@ WORKDIR /zeroclaw-${VERSION}
 RUN cargo fetch --locked
 ENV RUSTFLAGS="-C codegen-units=1 -C target-feature=+crt-static"
 RUN --network=none <<-EOF
-	ARCH="$(uname -m)"
 	cargo build \
 		--frozen \
 		--release \

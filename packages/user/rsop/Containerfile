@@ -9,10 +9,10 @@ RUN --network=none <<-EOF
 	cargo build \
 		--frozen \
 		--release \
-		--target $(uname -m)-unknown-linux-musl \
+		--target ${ARCH}-unknown-linux-musl \
 		--bin rsop
 	mkdir -p /rootfs/usr/bin
-	cp target/$(uname -m)-unknown-linux-musl/release/rsop /rootfs/usr/bin/
+	cp target/${ARCH}-unknown-linux-musl/release/rsop /rootfs/usr/bin/
 	install -Dm644 LICENSES/CC0-1.0.txt /rootfs/usr/share/licenses/rsop/
 EOF
 FROM stagex/core-filesystem AS package

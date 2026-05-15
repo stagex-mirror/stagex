@@ -18,7 +18,7 @@ includedir=${prefix}/include
 
 Name: tree-sitter-c
 Description: C grammar for tree-sitter
-Version: 0.24.2
+Version: ${VERSION}
 Libs: -L${libdir} -ltree-sitter
 Cflags: -I${includedir}
 EOF

@@ -8,7 +8,6 @@ RUN --network=none <<-EOF
 	make PREFIX=/usr
 	make DESTDIR=/rootfs install
 	install -Dm644 -t /rootfs/usr/share/licenses/tree-sitter/ LICENSE
-	ARCH="$(uname -m)"
 	cargo build \
 		--frozen \
 		--release \
