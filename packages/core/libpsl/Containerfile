@@ -7,7 +7,8 @@ WORKDIR /libpsl-${VERSION}
 RUN meson setup build \
 	-Dprefix=/usr \
 	-Dlibdir=/usr/lib \
-	-Dtests=false
+	-Dtests=false \
+	-Ddefault_library=both
 RUN meson compile -C build -j "$(nproc)"
 RUN DESTDIR="/rootfs" meson install -C build
 RUN install -Dm644 COPYING /rootfs/usr/share/licenses/libpsl/LICENSE
