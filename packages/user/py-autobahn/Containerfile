@@ -10,6 +10,7 @@ RUN --network=none <<-EOF
 	set -eu
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 	python -m installer -d /rootfs .dist/*.whl
+	install -vDm644 .ai/LICENSE /rootfs/usr/share/licenses/py-autobahn/LICENSE
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
 FROM stagex/core-filesystem AS package
