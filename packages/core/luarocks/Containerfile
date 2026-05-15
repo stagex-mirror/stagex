@@ -10,10 +10,8 @@ COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-libzstd . /
 ADD fetch/luarocks-${VERSION}.tar.gz .
 WORKDIR /luarocks-${VERSION}
-
 RUN --network=none <<-EOF
   set -eux
-
   ./configure \
 		--prefix=/usr \
 		--with-lua-include=/usr/include/lua

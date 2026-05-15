@@ -10,7 +10,7 @@ ENV CGO_ENABLED=0
 WORKDIR /kubectl-ai-${VERSION}
 RUN go mod download
 RUN --network=none <<-EOF
-	set -eu
+
 	go build -trimpath -o kubectl-ai ./cmd
 	mkdir -p /rootfs/usr/bin/
 	cp kubectl-ai /rootfs/usr/bin/

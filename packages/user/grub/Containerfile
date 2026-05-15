@@ -1,11 +1,11 @@
 FROM stagex/pallet-clang-gnu-busybox AS build
+ARG VERSION
 COPY --from=stagex/pallet-python . /
 COPY --from=stagex/core-gettext . /
 COPY --from=stagex/core-gawk . /
 COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/core-bsd-compat-headers . /
 COPY --from=stagex/user-autoconf-archive . /
-ARG VERSION
 ADD fetch/grub-${VERSION}.tar.gz .
 WORKDIR /grub-${VERSION}
 RUN --network=none <<-EOF
@@ -17,8 +17,6 @@ RUN --network=none <<-EOF
 	touch extra_deps.lst
 	ARCH="$(uname -m)"
 	CLFLAGS="-fno-plt"
-	LDFLAGS="-fuse-ld=bfd"
-	export LDFLAGS
 	../configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

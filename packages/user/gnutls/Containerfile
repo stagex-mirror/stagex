@@ -21,7 +21,6 @@ COPY --from=stagex/user-p11-kit . /
 ADD fetch/gnutls-${VERSION}.tar.xz .
 WORKDIR /gnutls-${VERSION}
 RUN --network=none <<-EOF
-	export PATH="/usr/bin:${PATH}"
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

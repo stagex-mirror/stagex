@@ -4,7 +4,7 @@ COPY --from=stagex/core-ca-certificates /etc/ssl/certs/ca-certificates.crt /etc/
 ADD fetch/${VERSION}.tar.gz /
 WORKDIR /yt-dlp-${VERSION}
 RUN <<-EOF
-	set -eu
+
 	python -m ensurepip --default-pip
 	pip wheel . --wheel-dir .dist --no-deps
 	python -m installer -d /rootfs .dist/*.whl

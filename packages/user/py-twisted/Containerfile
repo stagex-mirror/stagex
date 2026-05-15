@@ -5,7 +5,7 @@ ARG VERSION
 ADD fetch/py-twisted-${VERSION}.tar.gz /
 WORKDIR /twisted-${VERSION}
 RUN <<-EOF
-	set -eu
+
 	python -m ensurepip --default-pip
 	python -m pip install --no-cache-dir "hatch-fancy-pypi-readme >= 22.5.0" "incremental >= 24.7.0"
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2

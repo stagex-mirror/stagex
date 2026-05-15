@@ -4,7 +4,7 @@ ARG VERSION
 ADD fetch/py-mediafile-${VERSION}.tar.gz /
 WORKDIR /mediafile-${VERSION}
 RUN --network=none <<-EOF
-	set -eu
+
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 	python -m installer -d /rootfs .dist/*.whl
 	install -vDm644 LICENSE /rootfs/usr/share/licenses/py-mediafile/LICENSE
