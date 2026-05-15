@@ -1,4 +1,8 @@
 FROM stagex/pallet-python AS build
+COPY --from=stagex/user-py-hatchling . /
+COPY --from=stagex/user-py-trove-classifiers . /
+COPY --from=stagex/user-py-pathspec . /
+COPY --from=stagex/user-py-pluggy . /
 ARG VERSION
 ADD fetch/py-requests-ratelimiter-${VERSION}.tar.gz /
 WORKDIR /requests_ratelimiter-${VERSION}

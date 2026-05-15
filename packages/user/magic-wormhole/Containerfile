@@ -16,9 +16,11 @@ COPY --from=stagex/user-py-iterable-io . /
 COPY --from=stagex/user-py-qrcode . /
 COPY --from=stagex/core-ca-certificates /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 ADD fetch/v${VERSION}.tar.gz /
-WORKDIR /magic-wormhole-${VERSION}
+WORKDIR /magic_wormhole-${VERSION}
 RUN --network=none <<-EOF
 	set -eu
+	sitedir="$(python3 -c 'import site;print(site.getsitepackages()[0])')"
+	cp versioneer.py "/$sitedir"
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 	python -m installer -d /rootfs .dist/*.whl
 	install -vDm644 -t /rootfs/usr/share/licenses/magic-wormhole/ LICENSE
