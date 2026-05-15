@@ -1,7 +1,7 @@
 [package]
 name = "py-numpy"
 version = "2.4.4"
-description = "//pypi.org/packages/source/n/numpy/numpy-2.4.4.tar.gz:Fundamental package for array computing in Python"
+description = "Fundamental package for array computing in Python"
 license = "MIT"
 website = "https://pypi.org/project/numpy/"
 

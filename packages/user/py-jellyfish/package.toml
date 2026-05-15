@@ -1,7 +1,7 @@
 [package]
 name = "py-jellyfish"
 version = "1.2.1"
-description = "//pypi.org/packages/source/j/jellyfish/jellyfish-1.2.1.tar.gz:Python library for calculating approximate and phonetic string similarity"
+description = "Python library for calculating approximate and phonetic string similarity"
 license = "MIT"
 website = "https://pypi.org/project/jellyfish/"
 

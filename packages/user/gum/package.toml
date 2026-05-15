@@ -10,5 +10,5 @@ hash = "763a7f89dfebf8e77f86e680bace48a09423cfb9e4b4f4ba22d2c9836d311f95"
 format = "tar.gz"
 file = "gum-{version}.{format}"
 mirrors = [
- =="https://github.com/charmbracelet/gum/archive/refs/tags/v{version}.{format}",
+  "https://github.com/charmbracelet/gum/archive/refs/tags/v{version}.{format}",
 ]

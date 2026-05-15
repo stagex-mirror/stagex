@@ -10,5 +10,14 @@ hash = "afdabcbbf21691821934c56de5b125c8b41828ec5cd783ef6712866debf536ee"
 format = "tar.gz"
 file = "stable-diffusion-cpp-{version}.{format}"
 mirrors = [
- =="https://github.com/leejet/stable-diffusion.cpp/archive/refs/tags/{version}.{format}",
+ "https://github.com/leejet/stable-diffusion.cpp/archive/refs/tags/{version}.{format}",
+]
+
+[sources.ggml]
+version = "404fcb9d7c96989569e68c9e7881ee3465a05c50"
+hash = "b6c8928df06a96bfa57a5ff570c755c21aace5c3396b123edef6481b3d44ccaa"
+format = "tar.gz"
+file = "ggml-{version}.{format}"
+mirrors = [
+  "https://github.com/ggerganov/ggml/archive/{version}.{format}",
 ]

@@ -2,16 +2,24 @@ FROM stagex/pallet-clang-cmake-busybox AS build
 COPY --from=stagex/core-make / /
 ARG VERSION
 ADD fetch/tree-sitter-markdown-${VERSION}.tar.gz .
-WORKDIR /tree-sitter-markdown-${VERSION}
+WORKDIR /tree-sitter-markdown-${VERSION}/build
 RUN --network=none <<-EOF
-	mkdir -p build && cd build
 	clang -shared -fPIC -O2 -I../tree-sitter-markdown/src -o libtree-sitter-markdown.so ../tree-sitter-markdown/src/parser.c
 	install -Dm755 libtree-sitter-markdown.so /rootfs/usr/lib/libtree-sitter-markdown.so
 	install -Dm644 ../LICENSE /rootfs/usr/share/licenses/tree-sitter-markdown/LICENSE
 	mkdir -p /rootfs/usr/include/tree_sitter
 	install -Dm644 ../tree-sitter-markdown/src/tree_sitter/*.h /rootfs/usr/include/tree_sitter/ 2>/dev/null || true
-	mkdir -p /rootfs/usr/lib/pkgconfig
-	printf 'prefix=/usr\nlibdir=${prefix}/lib\nincludedir=${prefix}/include\n\nName: tree-sitter-markdown\nDescription: Markdown grammar for tree-sitter\nVersion: ${VERSION}\nLibs: -L${libdir} -ltree-sitter-markdown\nCflags: -I${includedir}\n' > /rootfs/usr/lib/pkgconfig/tree-sitter-markdown.pc
+EOF
+COPY --chmod=644 <<-EOF /rootfs/usr/lib/pkgconfig/tree-sitter-markdown.pc
+prefix=/usr
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: tree-sitter-markdown
+Description: Markdown grammar for tree-sitter
+Version: ${VERSION}
+Libs: -L${libdir} -ltree-sitter-markdown
+Cflags: -I${includedir}
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

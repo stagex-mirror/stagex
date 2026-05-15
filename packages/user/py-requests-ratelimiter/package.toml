@@ -1,7 +1,7 @@
 [package]
 name = "py-requests-ratelimiter"
 version = "0.10.0"
-description = "//pypi.org/packages/source/r/requests-ratelimiter/requests-ratelimiter-0.10.0.tar.gz:Rate-limiting plugin for requests"
+description = "Rate-limiting plugin for requests"
 license = "MIT"
 website = "https://pypi.org/project/requests-ratelimiter/"
 

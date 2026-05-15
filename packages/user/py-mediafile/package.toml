@@ -1,7 +1,7 @@
 [package]
 name = "py-mediafile"
 version = "0.17.0"
-description = "//pypi.org/packages/source/m/mediafile/mediafile-0.17.0.tar.gz:Library for reading and writing audio metadata"
+description = "Library for reading and writing audio metadata"
 license = "MIT"
 website = "https://pypi.org/project/mediafile/"
 

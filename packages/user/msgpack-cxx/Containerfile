@@ -2,9 +2,8 @@ FROM stagex/pallet-clang-cmake-busybox AS build
 COPY --from=stagex/core-make / /
 ARG VERSION
 ADD fetch/msgpack-cxx-${VERSION}.tar.gz .
-WORKDIR /msgpack-c-cpp-${VERSION}
+WORKDIR /msgpack-c-cpp-${VERSION}/build
 RUN --network=none <<-EOF
-	mkdir -p build && cd build
 	cmake \
 		-B . \
 		-G Ninja \

@@ -4,9 +4,8 @@ COPY --from=stagex/user-libuv . /
 COPY --from=stagex/core-luajit . /
 ARG VERSION
 ADD fetch/luv.tar.gz .
-WORKDIR /luv-${VERSION}
+WORKDIR /luv-${VERSION}/build
 RUN --network=none <<-EOF
-	mkdir -p build && cd build
 	cmake \
 		-B . \
 		-G Ninja \

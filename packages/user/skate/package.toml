@@ -10,5 +10,5 @@ hash = "f844fd980e1337be0f1bc321e58e48680fe3855e17c6c334ed8b22b9059949d2"
 format = "tar.gz"
 file = "skate-{version}.{format}"
 mirrors = [
- =="https://github.com/charmbracelet/skate/archive/refs/tags/v{version}.{format}",
+  "https://github.com/charmbracelet/skate/archive/refs/tags/v{version}.{format}",
 ]

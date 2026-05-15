@@ -10,5 +10,5 @@ hash = "c08b8502989fe7e9626c02938f3fc512c2a4ba21f839f455d20d7eb1da7bc39f"
 format = "tar.gz"
 file = "vhs-{version}.{format}"
 mirrors = [
- =="https://github.com/charmbracelet/vhs/archive/refs/tags/v{version}.{format}",
+  "https://github.com/charmbracelet/vhs/archive/refs/tags/v{version}.{format}",
 ]

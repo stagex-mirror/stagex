@@ -1,7 +1,7 @@
 [package]
 name = "py-pyyaml"
 version = "6.0.3"
-description = "//pypi.org/packages/source/p/pyyaml/pyyaml-6.0.3.tar.gz:YAML parser and emitter for Python"
+description = "YAML parser and emitter for Python"
 license = "MIT"
 website = "https://pypi.org/project/pyyaml/"
 

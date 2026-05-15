@@ -1,7 +1,7 @@
 [package]
 name = "py-confuse"
 version = "2.2.0"
-description = "//pypi.org/packages/source/c/confuse/confuse-2.2.0.tar.gz:A Python configuration library"
+description = "A Python configuration library"
 license = "MIT"
 website = "https://pypi.org/project/confuse/"
 

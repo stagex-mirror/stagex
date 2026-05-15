@@ -10,5 +10,5 @@ hash = "8f6a93c5f97e45308aead0154d4ec53e672ca90ab0809db543cde6be8078729e"
 format = "tar.gz"
 file = "forgejo-cli-v{version}.{format}"
 mirrors = [
- =="https://codeberg.org/forgejo-contrib/forgejo-cli/archive/v{version}.{format}",
+  "https://codeberg.org/forgejo-contrib/forgejo-cli/archive/v{version}.{format}",
 ]

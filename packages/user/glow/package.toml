@@ -10,5 +10,5 @@ hash = "1b933139da1d08647bf5b3f112cab9548fdc2b40c056c7fa3d84d8706de5265a"
 format = "tar.gz"
 file = "glow-{version}.{format}"
 mirrors = [
- =="https://github.com/charmbracelet/glow/archive/refs/tags/v{version}.{format}",
+  "https://github.com/charmbracelet/glow/archive/refs/tags/v{version}.{format}",
 ]

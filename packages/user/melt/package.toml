@@ -10,5 +10,5 @@ hash = "e6e7d1f3eba506ac7e310bbc497687e7e4e457fa685843dcf1ba00349614bfdc"
 format = "tar.gz"
 file = "melt-{version}.{format}"
 mirrors = [
- =="https://github.com/charmbracelet/melt/archive/refs/tags/v{version}.{format}",
+  "https://github.com/charmbracelet/melt/archive/refs/tags/v{version}.{format}",
 ]
