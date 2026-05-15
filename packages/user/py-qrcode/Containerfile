@@ -2,10 +2,7 @@ FROM stagex/pallet-python AS build
 ARG VERSION
 ADD fetch/py-qrcode-${VERSION}.tar.gz /
 WORKDIR /qrcode-${VERSION}
-RUN <<-EOF
-
-	python -m ensurepip --default-pip
-	python -m pip install --no-cache-dir poetry-core
+RUN --network=none <<-EOF
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 	python -m installer -d /rootfs .dist/*.whl
 	install -vDm644 LICENSE /rootfs/usr/share/licenses/py-qrcode/LICENSE

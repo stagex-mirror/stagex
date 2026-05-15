@@ -1,11 +1,6 @@
 FROM stagex/pallet-go AS build
 ARG VERSION
 ADD fetch/kubectl-ai-${VERSION}.tar.gz .
-ENV GOPATH=/cache/go
-ENV GOCACHE=/cache/
-ENV GOWORK=off
-ENV GOPROXY=https://proxy.golang.org,direct
-ENV GOSUMDB=sum.golang.org
 ENV CGO_ENABLED=0
 WORKDIR /kubectl-ai-${VERSION}
 RUN go mod download

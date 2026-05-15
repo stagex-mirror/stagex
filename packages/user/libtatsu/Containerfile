@@ -10,7 +10,7 @@ RUN --network=none <<-EOF
 	./autogen.sh
 	./configure \
 		--prefix=/usr
-	make
+	make -j "$(nproc)"
 	DESTDIR=/rootfs make install
 	install -vDm644 -t /rootfs/usr/share/licenses/libtatsu/ COPYING
 EOF

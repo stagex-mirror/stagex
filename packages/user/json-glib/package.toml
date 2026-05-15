@@ -8,4 +8,4 @@ website = "https://gnome.pages.gitlab.gnome.org/json-glib/"
 [sources.json-glib]
 hash = "55c5c141a564245b8f8fbe7698663c87a45a7333c2a2c56f06f811ab73b212dd"
 file = "json-glib-{version}.tar.xz"
-mirrors = ["https://download.gnome.org/sources/json-glib/1.10/{file}"]
+mirrors = ["https://download.gnome.org/sources/json-glib/{version_major_minor}/{file}"]

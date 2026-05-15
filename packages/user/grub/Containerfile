@@ -15,7 +15,7 @@ RUN --network=none <<-EOF
 	mkdir build-pc
 	cd build-pc
 	touch extra_deps.lst
-	ARCH="$(uname -m)"
+	ARCH=${ARCH}
 	CLFLAGS="-fno-plt"
 	../configure \
 		--prefix=/usr \
