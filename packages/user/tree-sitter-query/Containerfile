@@ -12,7 +12,7 @@ RUN <<-EOF
 	install -Dm644 ../bindings/c/tree_sitter/tree-sitter-query.h /rootfs/usr/include/tree_sitter/ 2>/dev/null || true
 	install -Dm644 ../src/tree_sitter/*.h /rootfs/usr/include/tree_sitter/ 2>/dev/null || true
 	mkdir -p /rootfs/usr/lib/pkgconfig
-	printf 'prefix=/usr\nlibdir=${prefix}/lib\nincludedir=${prefix}/include\n\nName: tree-sitter-query\nDescription: Query grammar for tree-sitter\nVersion: 0.8.0\nLibs: -L${libdir} -ltree-sitter-query\nCflags: -I${includedir}\n' > /rootfs/usr/lib/pkgconfig/tree-sitter-query.pc
+	printf 'prefix=/usr\nlibdir=${prefix}/lib\nincludedir=${prefix}/include\n\nName: tree-sitter-query\nDescription: Query grammar for tree-sitter\nVersion: ${VERSION}\nLibs: -L${libdir} -ltree-sitter-query\nCflags: -I${includedir}\n' > /rootfs/usr/lib/pkgconfig/tree-sitter-query.pc
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
