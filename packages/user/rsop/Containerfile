@@ -13,7 +13,7 @@ RUN --network=none <<-EOF
 		--bin rsop
 	mkdir -p /rootfs/usr/bin
 	cp target/$(uname -m)-unknown-linux-musl/release/rsop /rootfs/usr/bin/
-	install -Dm644 LICENSES/CC0-1.0.txt /rootfs/usr/share/licenses/rsop/LICENSE
+	install -Dm644 LICENSES/CC0-1.0.txt /rootfs/usr/share/licenses/rsop/
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

@@ -7,7 +7,7 @@ RUN --network=none <<-EOF
 	mkdir -p build && cd build
 	clang -shared -fPIC -O2 -I../src -o libtree-sitter-lua.so ../src/parser.c
 	install -Dm755 libtree-sitter-lua.so /rootfs/usr/lib/libtree-sitter-lua.so
-	install -Dm644 ../LICENSE.md /rootfs/usr/share/licenses/tree-sitter-lua/LICENSE
+	install -Dm644 ../LICENSE.md /rootfs/usr/share/licenses/tree-sitter-lua/
 	mkdir -p /rootfs/usr/include/tree_sitter
 	install -Dm644 ../bindings/c/tree_sitter/tree-sitter-lua.h /rootfs/usr/include/tree_sitter/ 2>/dev/null || true
 	install -Dm644 ../src/tree_sitter/*.h /rootfs/usr/include/tree_sitter/ 2>/dev/null || true

@@ -15,7 +15,7 @@ RUN --network=none <<-EOF
 		..
 	cmake --build . -j "$(nproc)"
 	DESTDIR="/rootfs" cmake --install .
-	install -Dm644 ../COPYING /rootfs/usr/share/licenses/msgpack-cxx/LICENSE
+	install -Dm644 ../COPYING /rootfs/usr/share/licenses/msgpack-cxx/
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

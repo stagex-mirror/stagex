@@ -14,7 +14,7 @@ RUN --network=none <<-EOF
 		..
 	cmake --build . -j "$(nproc)"
 	DESTDIR="/rootfs" cmake --install .
-	install -Dm644 ../LICENSE.md /rootfs/usr/share/licenses/utf8proc/LICENSE
+	install -Dm644 ../LICENSE.md /rootfs/usr/share/licenses/utf8proc/
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

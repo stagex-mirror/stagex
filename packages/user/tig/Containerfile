@@ -7,6 +7,6 @@ RUN sh autogen.sh
 RUN ./configure --prefix=/usr --without-doc
 RUN make -j "$(nproc)"
 RUN make install DESTDIR="/rootfs"
-RUN install -Dm644 COPYING /rootfs/usr/share/licenses/tig/LICENSE
+RUN install -Dm644 COPYING /rootfs/usr/share/licenses/tig/
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
