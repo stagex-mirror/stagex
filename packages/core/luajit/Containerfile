@@ -14,7 +14,8 @@ RUN --network=none <<-EOF
 		INCLUDEDIR=/usr/include \
 		CC=clang \
 		AR="llvm-ar" \
-		RANLIB=llvm-ranlib
+		RANLIB=llvm-ranlib \
+		XCFLAGS="-DLUAJIT_ENABLE_LUA52COMPAT -DLUAJIT_NUMMODE=2"
 	DESTDIR="/rootfs" make install 'PREFIX=/usr'
 	install -Dm644 -t /rootfs/usr/share/licenses/luajit/ COPYRIGHT
 EOF
