@@ -16,6 +16,7 @@ COPY --from=stagex/user-msgpack / /
 COPY --from=stagex/user-msgpack-cxx / /
 COPY --from=stagex/core-gettext / /
 COPY --from=stagex/user-gperf / /
+COPY --from=stagex/user-lpeg / /
 COPY --from=stagex/core-ca-certificates /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 ADD fetch/v${VERSION}.tar.gz /
 WORKDIR /neovim-${VERSION}
@@ -29,7 +30,7 @@ RUN --network=none <<-EOF
 		-G Ninja \
 		-Wno-dev \
 		-DCMAKE_INSTALL_LIBDIR=lib \
-		-DUSE_BUNDLED_LPEG=ON \
+		-DUSE_BUNDLED_LPEG=OFF \
 		-DUSE_BUNDLED_LIBUV=OFF \
 		-DUSE_BUNDLED_LUV=OFF \
 		-DUSE_BUNDLED_LUAJIT=OFF \
@@ -45,7 +46,7 @@ RUN --network=none <<-EOF
 	# Set DEPS_BUILD_DIR as environment variable so main CMake finds the deps
 	export DEPS_BUILD_DIR="${PWD}/build/.deps"
 	
-	# Build with system dependencies - skip bundled deps (except lpeg which has no system package)
+	# Build with system dependencies - skip bundled deps
 	cmake \
 		-B build \
 		-G Ninja \
