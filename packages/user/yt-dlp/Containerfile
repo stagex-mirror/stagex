@@ -1,10 +1,11 @@
 FROM stagex/pallet-python AS build
 ARG VERSION
 COPY --from=stagex/core-ca-certificates /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-ADD fetch/v${VERSION}.tar.gz /
+ADD fetch/${VERSION}.tar.gz /
 WORKDIR /yt-dlp-${VERSION}
-RUN --network=none <<-EOF
+RUN <<-EOF
 	set -eu
+	python -m ensurepip --default-pip
 	pip wheel . --wheel-dir .dist --no-deps
 	python -m installer -d /rootfs .dist/*.whl
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf

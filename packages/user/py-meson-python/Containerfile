@@ -1,7 +1,10 @@
 FROM stagex/pallet-python AS build
+COPY --from=stagex/core-meson . /
+COPY --from=stagex/user-py-pyproject-metadata . /
+COPY --from=stagex/core-samurai . /
 ARG VERSION
-ADD fetch/py-automat-${VERSION}.tar.gz /
-WORKDIR /automat-${VERSION}
+ADD fetch/py-meson-python-${VERSION}.tar.gz .
+WORKDIR /meson_python-${VERSION}
 RUN --network=none <<-EOF
 	set -eu
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2

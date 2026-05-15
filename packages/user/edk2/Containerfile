@@ -33,6 +33,11 @@ ENV CFLAGS="-Wno-unknown-warning-option -Wno-unneeded-internal-declaration"
 ADD patches/*.patch .
 RUN --network=none <<-EOF
 	patch -p1 < 0008-BaseTools-do-not-build-BrotliCompress-RH-only.patch
+	# Fix nasm 3.01: push in 64-bit mode always pushes qword, not dword
+	sed -i \
+		-e 's/push    strict dword %\[Vector\]/push    strict qword %[Vector]/' \
+		-e 's/push    strict dword 0      ; 0 will be fixed/push    strict qword 0      ; 0 will be fixed/' \
+		UefiCpuPkg/Library/CpuExceptionHandlerLib/X64/ExceptionHandlerAsm.nasm
 	rm -rf CryptoPkg/Library/OpensslLib/openssl
 	ln -s /openssl-${OPENSSL_VERSION} CryptoPkg/Library/OpensslLib/openssl
 	rm -rf CryptoPkg/Library/MbedTlsLib/mbedtls

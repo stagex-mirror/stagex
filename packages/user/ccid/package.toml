@@ -6,7 +6,7 @@ license = "LGPL-2.1-or-later"
 website = "https://ccid.apdu.fr"
 
 [sources.ccid]
-hash = "0fa61f5448902c20a83a959db8e3b819e14f20cf855739e0206c6e56e006ccaa"
-format = "tar.bz2"
+hash = "32799ab16fe6e493c9452be3823f21810fbe80b884021a6f6f3fa69f26be5c86"
+format = "tar.xz"
 file = "ccid-{version}.{format}"
 mirrors = [ "https://ccid.apdu.fr/files/{file}",]

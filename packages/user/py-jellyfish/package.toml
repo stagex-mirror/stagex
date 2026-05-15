@@ -9,4 +9,4 @@ website = "https://pypi.org/project/jellyfish/"
 hash = "72d2fda61b23babe862018729be73c8b0dc12e3e6601f36f6e65d905e249f4db"
 format = "tar.gz"
 file = "py-jellyfish-{version}.{format}"
-mirrors = ["https://files.pythonhosted.org/packages/source/j/Jellyfish/Jellyfish-{version}.{format}",]
+mirrors = ["https://files.pythonhosted.org/packages/source/j/jellyfish/jellyfish-{version}.{format}",]

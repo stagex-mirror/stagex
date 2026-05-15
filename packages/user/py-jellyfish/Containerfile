@@ -1,10 +1,12 @@
-FROM stagex/pallet-python AS build
+FROM stagex/pallet-rust AS build
+COPY --from=stagex/pallet-python . /
+COPY --from=stagex/user-maturin . /
 ARG VERSION
-ADD fetch/py-jellyfish-.tar.gz /
-WORKDIR /jellyfish-
-RUN --network=none <<-EOF
+ADD fetch/py-jellyfish-${VERSION}.tar.gz /
+WORKDIR /jellyfish-${VERSION}
+RUN <<-EOF
 	set -eu
-	pip wheel . --wheel-dir .dist --no-deps
+	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 	python -m installer -d /rootfs .dist/*.whl
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF

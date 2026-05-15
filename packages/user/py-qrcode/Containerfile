@@ -1,10 +1,12 @@
 FROM stagex/pallet-python AS build
 ARG VERSION
-ADD fetch/py-qrcode-.tar.gz /
-WORKDIR /qrcode-
-RUN --network=none <<-EOF
+ADD fetch/py-qrcode-${VERSION}.tar.gz /
+WORKDIR /qrcode-${VERSION}
+RUN <<-EOF
 	set -eu
-	pip wheel . --wheel-dir .dist --no-deps
+	python -m ensurepip --default-pip
+	python -m pip install --no-cache-dir poetry-core
+	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 	python -m installer -d /rootfs .dist/*.whl
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF

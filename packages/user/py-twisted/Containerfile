@@ -1,10 +1,14 @@
 FROM stagex/pallet-python AS build
+COPY --from=stagex/core-py-setuptools-scm . /
+COPY --from=stagex/user-py-hatchling . /
 ARG VERSION
-ADD fetch/py-twisted-.tar.gz /
-WORKDIR /twisted-
-RUN --network=none <<-EOF
+ADD fetch/py-twisted-${VERSION}.tar.gz /
+WORKDIR /twisted-${VERSION}
+RUN <<-EOF
 	set -eu
-	pip wheel . --wheel-dir .dist --no-deps
+	python -m ensurepip --default-pip
+	python -m pip install --no-cache-dir "hatch-fancy-pypi-readme >= 22.5.0" "incremental >= 24.7.0"
+	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 	python -m installer -d /rootfs .dist/*.whl
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF

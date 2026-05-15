@@ -1,4 +1,10 @@
 FROM stagex/pallet-python AS build
+COPY --from=stagex/user-py-hatchling . /
+COPY --from=stagex/user-py-hatch-vcs . /
+COPY --from=stagex/user-py-hatch-fancy-pypi-readme . /
+COPY --from=stagex/user-py-trove-classifiers . /
+COPY --from=stagex/user-py-pathspec . /
+COPY --from=stagex/user-py-pluggy . /
 ARG VERSION
 ADD fetch/py-jsonschema-${VERSION}.tar.gz .
 WORKDIR /jsonschema-${VERSION}

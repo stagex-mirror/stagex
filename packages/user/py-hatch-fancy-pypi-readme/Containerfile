@@ -1,16 +1,12 @@
-FROM stagex/pallet-cython AS build
-COPY --from=stagex/user-py-numpy . /
-COPY --from=stagex/user-py-meson-python . /
+FROM stagex/pallet-python AS build
 COPY --from=stagex/user-py-hatchling . /
 COPY --from=stagex/user-py-trove-classifiers . /
 COPY --from=stagex/user-py-pathspec . /
 COPY --from=stagex/user-py-pluggy . /
-COPY --from=stagex/core-samurai . /
 ARG VERSION
-ADD fetch/py-lap-${VERSION}.tar.gz /
-WORKDIR /lap-${VERSION}
+ADD fetch/py-hatch-fancy-pypi-readme-${VERSION}.tar.gz .
+WORKDIR /hatch_fancy_pypi_readme-${VERSION}
 RUN --network=none <<-EOF
-	set -eu
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 	python -m installer -d /rootfs .dist/*.whl
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf

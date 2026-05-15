@@ -6,7 +6,7 @@ license = "BSD-3-Clause"
 website = "https://babel.pocoo.org"
 
 [sources.py-babel]
-hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+hash = "b80b99a14bd085fcacfa15c9165f651fbb3406e66cc603abf11c5750937c992d"
 format = "tar.gz"
 file = "py-babel-{version}.{format}"
-mirrors = [ "https://files.pythonhosted.org/packages/source/B/Babel/Babel-{version}.{format}",]
+mirrors = [ "https://files.pythonhosted.org/packages/source/b/babel/babel-{version}.{format}",]

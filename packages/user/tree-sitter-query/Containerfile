@@ -1,7 +1,7 @@
 FROM stagex/pallet-clang-cmake-busybox AS build
 COPY --from=stagex/core-make / /
 ARG VERSION
-COPY fetch/tree-sitter-query-${VERSION}.tar.gz .
+ADD fetch/tree-sitter-query-${VERSION}.tar.gz .
 WORKDIR /tree-sitter-query-${VERSION}
 RUN <<-EOF
 	mkdir -p build && cd build

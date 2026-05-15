@@ -1,0 +1,12 @@
+[package]
+name = "py-poetry-core"
+version = "2.4.0"
+description = "Poetry PEP 517 Build Backend"
+license = "MIT"
+website = "https://github.com/python-poetry/poetry-core"
+
+[sources.py-poetry-core]
+hash = "4e8c7496cf797998ffc493f2e23eba4b038c894c08eadacdcdf688945de6b43a"
+format = "tar.gz"
+file = "py-poetry-core-{version}.{format}"
+mirrors = ["https://files.pythonhosted.org/packages/source/p/poetry-core/poetry_core-{version}.{format}"]
