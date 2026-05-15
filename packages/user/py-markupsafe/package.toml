@@ -9,4 +9,4 @@ website = "https://palletsprojects.com/p/markupsafe/"
 hash = "722695808f4b6457b320fdc131280796bdceb04ab50fe1795cd540799ebe1698"
 format = "tar.gz"
 file = "py-markupsafe-{version}.{format}"
-mirrors = [ "https://files.pythonhosted.org/packages/source/m/markupsafe/markupsafe-{version}.tar.gz",]
+mirrors = [ "https://files.pythonhosted.org/packages/source/M/MarkupSafe/MarkupSafe-{version}.{format}",]

@@ -8,5 +8,5 @@ website = "https://github.com/pypa/setuptools-scm"
 [sources.py-setuptools-scm]
 hash = "1c674ab4665686a0887d7e24c03ab25f24201c213e82ea689d2f3e169ef7ef57"
 format = "tar.gz"
-file = "setuptools_scm-{version}.{format}"
-mirrors = [ "https://files.pythonhosted.org/packages/7b/b1/19587742aad604f1988a8a362e660e8c3ac03adccdb71c96d86526e5eb62/setuptools_scm-{version}.{format}",]
+file = "py-setuptools-scm-{version}.{format}"
+mirrors = [ "https://files.pythonhosted.org/packages/source/s/setuptools-scm/setuptools-scm-{version}.{format}",]
