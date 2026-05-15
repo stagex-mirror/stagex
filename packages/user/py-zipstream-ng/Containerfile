@@ -1,7 +1,7 @@
 FROM stagex/pallet-python AS build
 ARG VERSION
 ADD fetch/py-zipstream-ng-${VERSION}.tar.gz /
-WORKDIR /zipstream-ng-${VERSION}
+WORKDIR /zipstream_ng-${VERSION}
 RUN --network=none <<-EOF
 	set -eu
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2

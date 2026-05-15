@@ -1,7 +1,7 @@
 FROM stagex/pallet-python AS build
 ARG VERSION
 ADD fetch/py-iterable-io-${VERSION}.tar.gz /
-WORKDIR /iterable-io-${VERSION}
+WORKDIR /iterable_io-${VERSION}
 RUN --network=none <<-EOF
 	set -eu
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
