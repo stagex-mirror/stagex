@@ -4,13 +4,15 @@ COPY --from=stagex/core-meson . /
 COPY --from=stagex/core-icu . /
 ADD fetch/libpsl-${VERSION}.tar.gz .
 WORKDIR /libpsl-${VERSION}
-RUN meson setup build \
-	-Dprefix=/usr \
-	-Dlibdir=/usr/lib \
-	-Dtests=false \
-	-Ddefault_library=both
-RUN meson compile -C build -j "$(nproc)"
-RUN DESTDIR="/rootfs" meson install -C build
-RUN install -Dm644 COPYING /rootfs/usr/share/licenses/libpsl/LICENSE
+RUN <<-EOF
+	meson setup build \
+		-Dprefix=/usr \
+		-Dlibdir=/usr/lib \
+		-Dtests=false \
+		-Ddefault_library=both
+	meson compile -C build -j "$(nproc)"
+	DESTDIR="/rootfs" meson install -C build
+	install -Dm644 COPYING /rootfs/usr/share/licenses/libpsl/LICENSE
+EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
