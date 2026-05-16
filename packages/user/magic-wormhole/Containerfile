@@ -14,6 +14,7 @@ COPY --from=stagex/user-py-txtorcon . /
 COPY --from=stagex/user-py-zipstream-ng . /
 COPY --from=stagex/user-py-iterable-io . /
 COPY --from=stagex/user-py-qrcode . /
+COPY --from=stagex/user-py-versioneer . /
 COPY --from=stagex/core-ca-certificates /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 ADD fetch/v${VERSION}.tar.gz /
 WORKDIR /magic_wormhole-${VERSION}
