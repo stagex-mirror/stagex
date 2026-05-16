@@ -10,14 +10,14 @@ RUN --network=none <<-EOF
 	mkdir -p /rootfs/usr/include/tree_sitter
 	install -Dm644 ../src/tree_sitter/*.h /rootfs/usr/include/tree_sitter/ 2>/dev/null || true
 EOF
-COPY --chmod=644 <<-EOF /rootfs/usr/lib/pkgconfig/tree-sitter-vimdoc.pc
+COPY --chmod=644 <<-'EOF' /rootfs/usr/lib/pkgconfig/tree-sitter-vimdoc.pc
 prefix=/usr
 libdir=${prefix}/lib
 includedir=${prefix}/include
 
 Name: tree-sitter-vimdoc
 Description: Vimdoc grammar for tree-sitter
-Version: ${VERSION}
+Version: 4.1.0
 Libs: -L${libdir} -ltree-sitter-vimdoc
 Cflags: -I${includedir}
 EOF
