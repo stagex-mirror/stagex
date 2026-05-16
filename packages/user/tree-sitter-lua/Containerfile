@@ -11,16 +11,5 @@ RUN --network=none <<-EOF
 	install -Dm644 ../bindings/c/tree_sitter/tree-sitter-lua.h /rootfs/usr/include/tree_sitter/ 2>/dev/null || true
 	install -Dm644 ../src/tree_sitter/*.h /rootfs/usr/include/tree_sitter/ 2>/dev/null || true
 EOF
-COPY --chmod=644 <<-'EOF' /rootfs/usr/lib/pkgconfig/tree-sitter-lua.pc
-prefix=/usr
-libdir=${prefix}/lib
-includedir=${prefix}/include
-
-Name: tree-sitter-lua
-Description: Lua grammar for tree-sitter
-Version: 0.5.0
-Libs: -L${libdir} -ltree-sitter-lua
-Cflags: -I${includedir}
-EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

@@ -98,15 +98,9 @@ RUN --network=none <<-EOF
 	strip /rootfs/usr/bin/qemu-*
 	# Non-x86_64 system binaries are non-deterministic, remove before packaging
 	rm -f /rootfs/usr/bin/qemu-system-aarch64
-	rm -f /rootfs/usr/bin/qemu-system-alpha
 	rm -f /rootfs/usr/bin/qemu-system-arm
-	rm -f /rootfs/usr/bin/qemu-system-avr
 	rm -f /rootfs/usr/bin/qemu-system-hppa
-	rm -f /rootfs/usr/bin/qemu-system-i386
 	rm -f /rootfs/usr/bin/qemu-system-loongarch64
-	rm -f /rootfs/usr/bin/qemu-system-m68k
-	rm -f /rootfs/usr/bin/qemu-system-microblaze
-	rm -f /rootfs/usr/bin/qemu-system-microblazeel
 	rm -f /rootfs/usr/bin/qemu-system-mips
 	rm -f /rootfs/usr/bin/qemu-system-mips64
 	rm -f /rootfs/usr/bin/qemu-system-mips64el
@@ -117,11 +111,17 @@ RUN --network=none <<-EOF
 	rm -f /rootfs/usr/bin/qemu-system-riscv32
 	rm -f /rootfs/usr/bin/qemu-system-riscv64
 	rm -f /rootfs/usr/bin/qemu-system-rx
+	rm -f /rootfs/usr/bin/qemu-system-sparc
+	rm -f /rootfs/usr/bin/qemu-system-sparc64
+	rm -f /rootfs/usr/bin/qemu-system-avr
+	rm -f /rootfs/usr/bin/qemu-system-i386
+	rm -f /rootfs/usr/bin/qemu-system-m68k
+	rm -f /rootfs/usr/bin/qemu-system-microblaze
+	rm -f /rootfs/usr/bin/qemu-system-microblazeel
+	rm -f /rootfs/usr/bin/qemu-system-alpha
 	rm -f /rootfs/usr/bin/qemu-system-s390x
 	rm -f /rootfs/usr/bin/qemu-system-sh4
 	rm -f /rootfs/usr/bin/qemu-system-sh4eb
-	rm -f /rootfs/usr/bin/qemu-system-sparc
-	rm -f /rootfs/usr/bin/qemu-system-sparc64
 	rm -f /rootfs/usr/bin/qemu-system-tricore
 	rm -f /rootfs/usr/bin/qemu-system-xtensa
 	rm -f /rootfs/usr/bin/qemu-system-xtensaeb

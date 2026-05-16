@@ -10,16 +10,5 @@ RUN --network=none <<-EOF
 	mkdir -p /rootfs/usr/include/tree_sitter
 	install -Dm644 ../tree-sitter-markdown/src/tree_sitter/*.h /rootfs/usr/include/tree_sitter/ 2>/dev/null || true
 EOF
-COPY --chmod=644 <<-'EOF' /rootfs/usr/lib/pkgconfig/tree-sitter-markdown.pc
-prefix=/usr
-libdir=${prefix}/lib
-includedir=${prefix}/include
-
-Name: tree-sitter-markdown
-Description: Markdown grammar for tree-sitter
-Version: 0.5.3
-Libs: -L${libdir} -ltree-sitter-markdown
-Cflags: -I${includedir}
-EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
