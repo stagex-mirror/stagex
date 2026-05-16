@@ -1,5 +1,6 @@
 FROM stagex/pallet-python AS build
 ARG VERSION
+COPY --from=stagex/user-py-poetry-core . /
 ADD fetch/py-qrcode-${VERSION}.tar.gz /
 WORKDIR /qrcode-${VERSION}
 RUN --network=none <<-EOF
