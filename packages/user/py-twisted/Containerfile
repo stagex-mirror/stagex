@@ -1,6 +1,11 @@
 FROM stagex/pallet-python AS build
-COPY --from=stagex/core-py-setuptools-scm . /
 COPY --from=stagex/core-py-hatchling . /
+COPY --from=stagex/core-py-hatch-vcs . /
+COPY --from=stagex/core-py-pathspec . /
+COPY --from=stagex/core-py-pluggy . /
+COPY --from=stagex/core-py-trove-classifiers . /
+COPY --from=stagex/core-py-packaging . /
+COPY --from=stagex/core-py-setuptools-scm . /
 ARG VERSION
 ADD fetch/py-twisted-${VERSION}.tar.gz /
 WORKDIR /twisted-${VERSION}
