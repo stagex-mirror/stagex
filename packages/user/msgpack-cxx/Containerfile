@@ -1,0 +1,20 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+COPY --from=stagex/core-make / /
+ARG VERSION
+ADD fetch/msgpack-cxx-${VERSION}.tar.gz .
+WORKDIR /msgpack-c-cpp-${VERSION}/build
+RUN --network=none <<-EOF
+	cmake \
+		-B . \
+		-G Ninja \
+		-Wno-dev \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+		-DCPP_BUILD=ON \
+		..
+	cmake --build .
+	DESTDIR="/rootfs" cmake --install .
+	install -Dm644 /msgpack-c-cpp-${VERSION}/COPYING /rootfs/usr/share/licenses/msgpack-cxx/COPYING
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

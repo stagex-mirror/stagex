@@ -1,0 +1,66 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-make / /
+COPY --from=stagex/core-luajit / /
+COPY --from=stagex/user-libuv / /
+COPY --from=stagex/user-luv / /
+COPY --from=stagex/user-tree-sitter / /
+COPY --from=stagex/user-tree-sitter-c / /
+COPY --from=stagex/user-tree-sitter-lua / /
+COPY --from=stagex/user-tree-sitter-markdown / /
+COPY --from=stagex/user-tree-sitter-query / /
+COPY --from=stagex/user-tree-sitter-vimdoc / /
+COPY --from=stagex/user-unibilium / /
+COPY --from=stagex/user-utf8proc / /
+COPY --from=stagex/user-msgpack / /
+COPY --from=stagex/user-msgpack-cxx / /
+COPY --from=stagex/core-gettext / /
+COPY --from=stagex/user-gperf / /
+COPY --from=stagex/user-lpeg / /
+COPY --from=stagex/core-ca-certificates /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+ADD fetch/v${VERSION}.tar.gz /
+WORKDIR /neovim-${VERSION}
+ENV CFLAGS="-march=x86-64"
+ENV SOURCE_DATE_EPOCH="1"
+RUN --network=none <<-EOF
+	# First build bundled lpeg dependency
+	mkdir -p build/.deps
+	cmake \
+		-B build/.deps \
+		-G Ninja \
+		-Wno-dev \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DUSE_BUNDLED_LPEG=OFF \
+		-DUSE_BUNDLED_LIBUV=OFF \
+		-DUSE_BUNDLED_LUV=OFF \
+		-DUSE_BUNDLED_LUAJIT=OFF \
+		-DUSE_BUNDLED_TS=OFF \
+		-DUSE_BUNDLED_TS_PARSERS=OFF \
+		-DUSE_BUNDLED_UNIBILIUM=OFF \
+		-DUSE_BUNDLED_UTF8PROC=OFF \
+		-DUSE_BUNDLED_GETTEXT=OFF \
+		-DUSE_BUNDLED_LIBICONV=OFF \
+		cmake.deps
+	cmake --build build/.deps
+	
+	# Set DEPS_BUILD_DIR as environment variable so main CMake finds the deps
+	export DEPS_BUILD_DIR="${PWD}/build/.deps"
+	
+	# Build with system dependencies - skip bundled deps
+	cmake \
+		-B build \
+		-G Ninja \
+		-Wno-dev \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DENABLE_TRANSLATIONS=ON
+	cmake --build build
+	DESTDIR="/rootfs" cmake --install build --prefix /usr
+	# Remove bundled parser directory - use system tree-sitter instead
+	rm -rf /rootfs/usr/share/nvim/runtime/parser
+	# Install license
+	install -Dm644 LICENSE.txt /rootfs/usr/share/licenses/neovim/LICENSE.txt
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/usr /usr

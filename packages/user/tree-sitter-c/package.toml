@@ -1,0 +1,12 @@
+[package]
+name = "tree-sitter-c"
+version = "0.24.2"
+description = "C grammar for tree-sitter"
+license = "MIT"
+website = "https://tree-sitter.github.io"
+
+[sources.tree-sitter-c]
+hash = "2eeb4db31f8fa0865e45488503d13403923bcb485a1bdb637abff8c42dd97364"
+format = "tar.gz"
+file = "tree-sitter-c-{version}.{format}"
+mirrors = ["https://github.com/tree-sitter/tree-sitter-c/archive/refs/tags/v{version}.{format}"]
