@@ -11,7 +11,8 @@ RUN --network=none <<-EOF
 		--target "$(uname -m)-unknown-linux-musl" \
 		--locked
 	install -Dm755 "target/$(uname -m)-unknown-linux-musl/release/zeroclaw" /rootfs/usr/bin/zeroclaw
-	install -Dm644 LICENSE-APACHE LICENSE-MIT /rootfs/usr/share/licenses/zeroclaw/
+	install -Dm644 LICENSE-APACHE /rootfs/usr/share/licenses/zeroclaw/LICENSE-APACHE
+	install -Dm644 LICENSE-MIT /rootfs/usr/share/licenses/zeroclaw/LICENSE-MIT
 EOF
 
 FROM stagex/core-filesystem AS package
