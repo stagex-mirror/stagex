@@ -1,0 +1,12 @@
+[package]
+name = "nmap"
+version = "7.99"
+description = "Network exploration tool and security/port scanner"
+license = "NPSL"
+website = "https://nmap.org"
+
+[sources.nmap]
+hash = "df512492ffd108e53a27a06f26d8635bbe89e0e569455dc8ffef058c035d51b2"
+format = "tar.bz2"
+file = "nmap-{version}.{format}"
+mirrors = ["https://nmap.org/dist/{file}"]
