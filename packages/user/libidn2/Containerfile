@@ -17,7 +17,7 @@ RUN --network=none <<-EOF
 		--disable-doc
 	make
 	DESTDIR="/rootfs" make install
-	install -Dm644 COPYING /rootfs/usr/share/licenses/libidn2/
+	install -Dm644 COPYING /rootfs/usr/share/licenses/libidn2/COPYING
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

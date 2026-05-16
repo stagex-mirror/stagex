@@ -40,7 +40,7 @@ RUN --network=none <<-EOF
 		-DENABLE_DOC_INCOMPLETE=OFF
 	cmake --build build
 	DESTDIR="/rootfs" cmake --install build --prefix /usr
-	install -Dm644 LICENSES/GPL-3.0-or-later.txt /rootfs/usr/share/licenses/weechat/
+	install -Dm644 LICENSES/GPL-3.0-or-later.txt /rootfs/usr/share/licenses/weechat/GPL-3.0-or-later.txt
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
