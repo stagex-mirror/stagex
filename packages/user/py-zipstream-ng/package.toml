@@ -1,0 +1,12 @@
+[package]
+name = "py-zipstream-ng"
+version = "1.9.0"
+description = "Streamed zip file creation"
+license = "MIT"
+website = "https://pypi.org/project/zipstream-ng/"
+
+[sources.py-zipstream-ng]
+hash = "a0d94030822d137efbf80dfdc680603c42f804696f41147bb3db895df667daea"
+format = "tar.gz"
+file = "py-zipstream-ng-1.9.0.{format}"
+mirrors = ["https://files.pythonhosted.org/packages/source/z/zipstream-ng/zipstream_ng-{version}.{format}",]

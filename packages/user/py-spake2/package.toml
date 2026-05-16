@@ -1,0 +1,12 @@
+[package]
+name = "py-spake2"
+version = "0.9"
+description = "SPAKE2 password-authenticated key exchange (pure python)"
+license = "MIT"
+website = "https://pypi.org/project/spake2/"
+
+[sources.py-spake2]
+hash = "421fc4a8d5ac395af7af0206ffd9e6cdf188c105cb1b883d9d683312bb5a9334"
+format = "tar.gz"
+file = "py-spake2-{version}.{format}"
+mirrors = ["https://files.pythonhosted.org/packages/source/s/spake2/spake2-{version}.{format}",]

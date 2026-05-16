@@ -1,0 +1,12 @@
+FROM stagex/pallet-python AS build
+ARG VERSION
+ADD fetch/py-automat-${VERSION}.tar.gz /
+WORKDIR /automat-${VERSION}
+RUN --network=none <<-EOF
+	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+	python -m installer -d /rootfs .dist/*.whl
+	install -vDm644 LICENSE /rootfs/usr/share/licenses/py-automat/LICENSE
+	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

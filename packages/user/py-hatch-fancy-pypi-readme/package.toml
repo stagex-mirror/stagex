@@ -1,0 +1,12 @@
+[package]
+name = "py-hatch-fancy-pypi-readme"
+version = "25.1.0"
+description = "Hatch plugin for fancy PyPI long descriptions"
+license = "MIT"
+website = "https://github.com/hynek/hatch-fancy-pypi-readme"
+
+[sources.py-hatch-fancy-pypi-readme]
+hash = "9c58ed3dff90d51f43414ce37009ad1d5b0f08ffc9fc216998a06380f01c0045"
+format = "tar.gz"
+file = "py-hatch-fancy-pypi-readme-{version}.{format}"
+mirrors = [ "https://files.pythonhosted.org/packages/source/h/hatch-fancy-pypi-readme/hatch_fancy_pypi_readme-{version}.{format}",]
