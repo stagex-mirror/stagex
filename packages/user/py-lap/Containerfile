@@ -1,0 +1,19 @@
+FROM stagex/pallet-cython AS build
+COPY --from=stagex/user-py-numpy . /
+COPY --from=stagex/user-py-meson-python . /
+COPY --from=stagex/core-py-hatchling . /
+COPY --from=stagex/core-py-trove-classifiers . /
+COPY --from=stagex/core-py-pathspec . /
+COPY --from=stagex/core-py-pluggy . /
+COPY --from=stagex/core-samurai . /
+ARG VERSION
+ADD fetch/py-lap-${VERSION}.tar.gz /
+WORKDIR /lap-${VERSION}
+RUN --network=none <<-EOF
+	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+	python -m installer -d /rootfs .dist/*.whl
+	install -vDm644 LICENSE /rootfs/usr/share/licenses/py-lap/LICENSE
+	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
