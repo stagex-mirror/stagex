@@ -9,4 +9,4 @@ website = "https://github.com/luvit/luv"
 hash = "1592562d3bc465a06ff76c825b0f4dc8e25ea9f9b98b272f47187a61f629b955"
 format = "tar.gz"
 file = "luv-{version}.{format}"
-mirrors = ["https://github.com/luvit/luv/releases/download/{version_strip_suffix}/luv-{version_strip_suffix}.{format}"]
+mirrors = ["https://github.com/luvit/luv/releases/download/{version}/luv-{version}.{format}"]
