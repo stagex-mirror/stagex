@@ -1,5 +1,6 @@
 FROM stagex/pallet-rust AS build
 ARG VERSION
+ARG TARGETARCH
 ADD fetch/forgejo-cli-v${VERSION}.tar.gz .
 WORKDIR /forgejo-cli
 ENV RUST_BACKTRACE=1

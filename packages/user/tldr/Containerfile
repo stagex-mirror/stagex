@@ -1,5 +1,6 @@
 FROM stagex/pallet-rust AS build
 ARG VERSION
+ARG TARGETARCH
 ADD fetch/tlrc-v${VERSION}.tar.gz .
 WORKDIR /tlrc-${VERSION}
 ENV RUST_BACKTRACE=1

@@ -1,5 +1,6 @@
 FROM stagex/pallet-rust AS build
 ARG VERSION
+ARG TARGETARCH
 ADD fetch/mprocs-v${VERSION}.tar.gz .
 WORKDIR /mprocs-${VERSION}
 ENV RUST_BACKTRACE=1

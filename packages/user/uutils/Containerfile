@@ -1,5 +1,6 @@
 FROM stagex/pallet-rust AS build
 ARG VERSION
+ARG TARGETARCH
 ADD fetch/uutils-${VERSION}.tar.gz .
 WORKDIR /coreutils-${VERSION}
 RUN cargo fetch --locked

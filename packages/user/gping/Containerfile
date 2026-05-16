@@ -1,5 +1,6 @@
 FROM stagex/pallet-rust AS build
 ARG VERSION
+ARG TARGETARCH
 ADD fetch/gping-${VERSION}.tar.gz .
 WORKDIR /gping-gping-v${VERSION}
 ENV RUST_BACKTRACE=1
