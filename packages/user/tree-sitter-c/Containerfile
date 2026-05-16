@@ -11,14 +11,14 @@ RUN --network=none <<-EOF
 	install -Dm644 ${PWD}/bindings/c/tree_sitter/tree-sitter-c.h /rootfs/usr/include/tree_sitter/
 	install -Dm644 ${PWD}/src/tree_sitter/*.h /rootfs/usr/include/tree_sitter/
 EOF
-COPY --chmod=644 <<-EOF /rootfs/usr/lib/pkgconfig/tree-sitter-c.pc
+COPY --chmod=644 <<-'EOF' /rootfs/usr/lib/pkgconfig/tree-sitter-c.pc
 prefix=/usr
 libdir=${prefix}/lib
 includedir=${prefix}/include
 
 Name: tree-sitter-c
 Description: C grammar for tree-sitter
-Version: ${VERSION}
+Version: 0.24.2
 Libs: -L${libdir} -ltree-sitter
 Cflags: -I${includedir}
 EOF
