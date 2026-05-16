@@ -1,6 +1,6 @@
 FROM stagex/pallet-python AS build
 COPY --from=stagex/core-py-setuptools-scm . /
-COPY --from=stagex/user-py-hatchling . /
+COPY --from=stagex/core-py-hatchling . /
 ARG VERSION
 ADD fetch/py-twisted-${VERSION}.tar.gz /
 WORKDIR /twisted-${VERSION}

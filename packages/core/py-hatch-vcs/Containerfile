@@ -1,10 +1,11 @@
 FROM stagex/pallet-python AS build
-COPY --from=stagex/user-py-trove-classifiers . /
-COPY --from=stagex/user-py-pathspec . /
-COPY --from=stagex/user-py-pluggy . /
+COPY --from=stagex/core-py-hatchling . /
+COPY --from=stagex/core-py-pathspec . /
+COPY --from=stagex/core-py-pluggy . /
+COPY --from=stagex/core-py-trove-classifiers . /
 ARG VERSION
-ADD fetch/py-hatchling-${VERSION}.tar.gz .
-WORKDIR /hatchling-${VERSION}
+ADD fetch/py-hatch-vcs-${VERSION}.tar.gz .
+WORKDIR /hatch_vcs-${VERSION}
 RUN --network=none <<-EOF
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 	python -m installer -d /rootfs .dist/*.whl

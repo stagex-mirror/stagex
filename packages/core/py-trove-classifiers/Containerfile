@@ -11,15 +11,8 @@ COPY --from=stagex/core-py-installer . /
 COPY --from=stagex/core-py-flit . /
 COPY --from=stagex/core-py-wheel . /
 COPY --from=stagex/core-py-gpep517 . /
-COPY --from=stagex/core-py-hatchling . /
-COPY --from=stagex/core-py-hatch-vcs . /
-COPY --from=stagex/core-py-pathspec . /
-COPY --from=stagex/core-py-pluggy . /
-COPY --from=stagex/core-py-trove-classifiers . /
-COPY --from=stagex/core-py-packaging . /
-COPY --from=stagex/core-py-setuptools-scm . /
-ADD fetch/py-urllib3-${VERSION}.tar.gz .
-WORKDIR /urllib3-${VERSION}
+ADD fetch/py-trove-classifiers-${VERSION}.tar.gz .
+WORKDIR /trove-classifiers-${VERSION}
 RUN --network=none <<-EOF
 	set -eu
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2

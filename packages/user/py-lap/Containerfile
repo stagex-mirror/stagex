@@ -1,10 +1,10 @@
 FROM stagex/pallet-cython AS build
 COPY --from=stagex/user-py-numpy . /
 COPY --from=stagex/user-py-meson-python . /
-COPY --from=stagex/user-py-hatchling . /
-COPY --from=stagex/user-py-trove-classifiers . /
-COPY --from=stagex/user-py-pathspec . /
-COPY --from=stagex/user-py-pluggy . /
+COPY --from=stagex/core-py-hatchling . /
+COPY --from=stagex/core-py-trove-classifiers . /
+COPY --from=stagex/core-py-pathspec . /
+COPY --from=stagex/core-py-pluggy . /
 COPY --from=stagex/core-samurai . /
 ARG VERSION
 ADD fetch/py-lap-${VERSION}.tar.gz /
