@@ -8,10 +8,10 @@ RUN --network=none <<-EOF
 	cargo build \
 		--frozen \
 		--release \
-		--target "${ARCH}-unknown-linux-musl" \
+		--target "$(uname -m)-unknown-linux-musl" \
 		--locked
-	install -Dm755 "target/${ARCH}-unknown-linux-musl/release/zeroclaw" /rootfs/usr/bin/zeroclaw
-	install -Dm644 -t /rootfs/usr/share/licenses/zeroclaw/ LICENSE-APACHE LICENSE-MIT
+	install -Dm755 "target/$(uname -m)-unknown-linux-musl/release/zeroclaw" /rootfs/usr/bin/zeroclaw
+	install -Dm644 LICENSE-APACHE LICENSE-MIT /rootfs/usr/share/licenses/zeroclaw/
 EOF
 
 FROM stagex/core-filesystem AS package
