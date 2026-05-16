@@ -1,0 +1,12 @@
+[package]
+name = "timewarrior"
+version = "1.9.1"
+description = "A command-line time tracker"
+license = "BSD-2-Clause"
+website = "https://timewarrior.net"
+
+[sources.timewarrior]
+hash = "7ad34f95c0d61d356df55149f9479f8d9aaec417e5f57f2a1cc76ae2f8a3171b"
+format = "tar.gz"
+file = "timew-{version}.{format}"
+mirrors = ["https://github.com/GothenburgBitFactory/timewarrior/releases/download/v{version}/{file}"]
