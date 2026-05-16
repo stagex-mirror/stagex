@@ -1,0 +1,12 @@
+[package]
+name = "tree-sitter-markdown"
+version = "0.5.3"
+description = "Markdown grammar for tree-sitter"
+license = "MIT"
+website = "https://tree-sitter.github.io"
+
+[sources.tree-sitter-markdown]
+hash = "df845b1ab7c7c163ec57d7fa17170c92b04be199bddab02523636efec5224ab6"
+format = "tar.gz"
+file = "tree-sitter-markdown-{version}.{format}"
+mirrors = ["https://github.com/tree-sitter-grammars/tree-sitter-markdown/archive/refs/tags/v{version}.{format}"]

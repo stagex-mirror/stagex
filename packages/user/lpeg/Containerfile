@@ -1,0 +1,27 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+COPY --from=stagex/core-luajit / /
+ARG VERSION
+ADD fetch/lpeg-${VERSION}.tar.gz .
+WORKDIR /lpeg-${VERSION}
+RUN --network=none <<-EOF
+	# Build shared library via the linux target (standard makefile target)
+	# LuaJIT installs headers to /usr/include/luajit-2.1/
+	make \
+		CC=clang \
+		LUADIR=/usr/include/luajit-2.1 \
+		linux
+
+	# Build static library from the same object files
+	llvm-ar rcs lpeg.a lpvm.o lpcap.o lptree.o lpcode.o lpprint.o lpcset.o
+	llvm-ranlib lpeg.a
+
+	# Install artifacts matching Alpine layout:
+	#   /usr/lib/lua/5.1/lpeg.a   - static library (dev)
+	#   /usr/lib/lua/5.1/lpeg.so  - shared library
+	#   /usr/share/lua/5.1/re.lua - re module
+	install -Dm644 lpeg.a /rootfs/usr/lib/lua/5.1/lpeg.a
+	install -Dm755 lpeg.so /rootfs/usr/lib/lua/5.1/lpeg.so
+	install -Dm644 re.lua /rootfs/usr/share/lua/5.1/re.lua
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

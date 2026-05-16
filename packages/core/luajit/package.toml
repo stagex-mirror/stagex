@@ -1,0 +1,12 @@
+[package]
+name = "luajit"
+version = "2.1"
+description = "LuaJIT is a Just-in-time Compiler for the Lua Language"
+license = "MIT"
+website = "https://luajit.org"
+
+[sources.luajit]
+hash = "2c3f99285f446a0793cfd77eea78c95af3ef5434e780507f93d69ec19df91871"
+format = "tar.gz"
+file = "LuaJIT-{version}.{format}"
+mirrors = [ "https://github.com/LuaJIT/LuaJIT/archive/refs/heads/v{version}.{format}",]
