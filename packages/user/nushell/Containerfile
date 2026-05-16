@@ -1,5 +1,6 @@
 FROM stagex/pallet-rust AS build
 ARG VERSION
+ARG TARGETARCH
 COPY --from=stagex/core-sqlite3 . /
 ADD fetch/nushell-${VERSION}.tar.gz .
 WORKDIR /nushell-${VERSION}
