@@ -1,0 +1,20 @@
+FROM stagex/pallet-rust AS build
+ARG VERSION
+ARG TARGETARCH
+ADD fetch/mprocs-v${VERSION}.tar.gz .
+WORKDIR /mprocs-${VERSION}
+ENV RUST_BACKTRACE=1
+ENV RUSTFLAGS="-C codegen-units=1 -C target-feature=+crt-static"
+RUN cargo fetch
+RUN --network=none <<-EOF
+	cargo build \
+		--frozen \
+		--release \
+		--target ${ARCH}-unknown-linux-musl \
+		--bin mprocs
+	mkdir -p /rootfs/usr/bin
+	cp target/${ARCH}-unknown-linux-musl/release/mprocs /rootfs/usr/bin/
+	install -Dm644 LICENSE /rootfs/usr/share/licenses/mprocs/LICENSE
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
