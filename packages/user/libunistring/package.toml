@@ -1,0 +1,12 @@
+[package]
+name = "libunistring"
+version = "1.4"
+description = "Unicode string library"
+license = "LGPL-2.1-or-later"
+website = "https://www.gnu.org/software/libunistring/"
+
+[sources.libunistring]
+hash = "708571fce9965e805fee08b410aa8e886d391a492c387f75abb7be0e195337f5"
+format = "tar.xz"
+file = "libunistring-{version}.{format}"
+mirrors = [ "https://ftp.gnu.org/gnu/libunistring/{file}", "https://ftpmirror.gnu.org/gnu/libunistring/{file}"]
