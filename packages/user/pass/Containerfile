@@ -1,0 +1,11 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+ARG VERSION
+COPY --from=stagex/user-gpg / /
+ADD fetch/password-store-${VERSION}.tar.xz .
+WORKDIR /password-store-${VERSION}
+RUN --network=none <<-EOF
+	make PREFIX=/usr bindir=/usr/bin mandir=/usr/share/man install DESTDIR="/rootfs"
+	install -Dm644 -t /rootfs/usr/share/licenses/pass/ COPYING
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
