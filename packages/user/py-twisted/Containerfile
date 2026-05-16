@@ -5,6 +5,7 @@ COPY --from=stagex/core-py-pathspec . /
 COPY --from=stagex/core-py-pluggy . /
 COPY --from=stagex/core-py-trove-classifiers . /
 COPY --from=stagex/core-py-packaging . /
+COPY --from=stagex/user-py-hatch-fancy-pypi-readme . /
 COPY --from=stagex/core-py-setuptools-scm . /
 ARG VERSION
 ADD fetch/py-twisted-${VERSION}.tar.gz /
