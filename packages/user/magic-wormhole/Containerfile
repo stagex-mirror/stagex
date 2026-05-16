@@ -1,0 +1,28 @@
+FROM stagex/pallet-python AS build
+ARG VERSION
+COPY --from=stagex/user-py-spake2 . /
+COPY --from=stagex/user-py-pynacl . /
+COPY --from=stagex/user-py-attrs . /
+COPY --from=stagex/user-py-twisted . /
+COPY --from=stagex/user-py-autobahn . /
+COPY --from=stagex/user-py-automat . /
+COPY --from=stagex/user-py-cryptography . /
+COPY --from=stagex/user-py-tqdm . /
+COPY --from=stagex/user-py-click . /
+COPY --from=stagex/user-py-humanize . /
+COPY --from=stagex/user-py-txtorcon . /
+COPY --from=stagex/user-py-zipstream-ng . /
+COPY --from=stagex/user-py-iterable-io . /
+COPY --from=stagex/user-py-qrcode . /
+COPY --from=stagex/user-py-versioneer . /
+COPY --from=stagex/core-ca-certificates /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+ADD fetch/v${VERSION}.tar.gz /
+WORKDIR /magic_wormhole-${VERSION}
+RUN --network=none <<-EOF
+	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+	python -m installer -d /rootfs .dist/*.whl
+	install -vDm644 -t /rootfs/usr/share/licenses/magic-wormhole/ LICENSE
+	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

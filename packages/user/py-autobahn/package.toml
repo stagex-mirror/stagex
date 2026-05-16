@@ -1,0 +1,12 @@
+[package]
+name = "py-autobahn"
+version = "25.12.2"
+description = "WebSocket client and server library, WAMP real-time framework"
+license = "MIT"
+website = "https://pypi.org/project/autobahn/"
+
+[sources.py-autobahn]
+hash = "754c06a54753aeb7e8d10c5cbf03249ad9e2a1a32bca8be02865c6f00628a98c"
+format = "tar.gz"
+file = "py-autobahn-{version}.{format}"
+mirrors = ["https://files.pythonhosted.org/packages/source/a/autobahn/autobahn-{version}.{format}",]

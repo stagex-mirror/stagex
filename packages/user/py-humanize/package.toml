@@ -1,0 +1,12 @@
+[package]
+name = "py-humanize"
+version = "4.15.0"
+description = "Python humanize utilities"
+license = "MIT"
+website = "https://pypi.org/project/humanize/"
+
+[sources.py-humanize]
+hash = "1dd098483eb1c7ee8e32eb2e99ad1910baefa4b75c3aff3a82f4d78688993b10"
+format = "tar.gz"
+file = "py-humanize-{version}.{format}"
+mirrors = ["https://files.pythonhosted.org/packages/source/h/humanize/humanize-{version}.{format}",]

@@ -1,0 +1,13 @@
+FROM stagex/pallet-python AS build
+ARG VERSION
+COPY --from=stagex/user-py-poetry-core . /
+ADD fetch/py-qrcode-${VERSION}.tar.gz /
+WORKDIR /qrcode-${VERSION}
+RUN --network=none <<-EOF
+	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+	python -m installer -d /rootfs .dist/*.whl
+	install -vDm644 LICENSE /rootfs/usr/share/licenses/py-qrcode/LICENSE
+	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

@@ -1,0 +1,13 @@
+FROM stagex/pallet-python AS build
+ARG VERSION
+ADD fetch/py-iterable-io-${VERSION}.tar.gz /
+WORKDIR /iterable_io-${VERSION}
+RUN --network=none <<-EOF
+	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+	python -m installer -d /rootfs .dist/*.whl
+	mkdir -p /rootfs/usr/share/licenses/py-iterable-io
+	sed -n '/^License$/,$ p' README.md > /rootfs/usr/share/licenses/py-iterable-io/LICENSE
+	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

@@ -1,0 +1,12 @@
+[package]
+name = "magic-wormhole"
+version = "0.24.0"
+description = "Get things from one computer to another, safely"
+license = "MPL-2.0"
+website = "https://magic-wormhole.readthedocs.io"
+
+[sources.magic-wormhole]
+hash = "c01b4815878e5fbcad7a22cfa190c529349bf271164189a0ad955a34a8d4cde0"
+format = "tar.gz"
+file = "v{version}.{format}"
+mirrors = ["https://files.pythonhosted.org/packages/source/m/magic-wormhole/magic_wormhole-{version}.tar.gz"]
