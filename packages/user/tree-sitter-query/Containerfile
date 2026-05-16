@@ -11,14 +11,14 @@ RUN --network=none <<-EOF
 	install -Dm644 ../bindings/c/tree_sitter/tree-sitter-query.h /rootfs/usr/include/tree_sitter/ 2>/dev/null || true
 	install -Dm644 ../src/tree_sitter/*.h /rootfs/usr/include/tree_sitter/ 2>/dev/null || true
 EOF
-COPY --chmod=644 <<-EOF /rootfs/usr/lib/pkgconfig/tree-sitter-query.pc
+COPY --chmod=644 <<-'EOF' /rootfs/usr/lib/pkgconfig/tree-sitter-query.pc
 prefix=/usr
 libdir=${prefix}/lib
 includedir=${prefix}/include
 
 Name: tree-sitter-query
 Description: Query grammar for tree-sitter
-Version: ${VERSION}
+Version: 0.8.0
 Libs: -L${libdir} -ltree-sitter-query
 Cflags: -I${includedir}
 EOF
