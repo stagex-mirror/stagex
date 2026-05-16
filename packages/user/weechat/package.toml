@@ -1,0 +1,14 @@
+[package]
+name = "weechat"
+version = "4.9.0"
+description = "A fast, lightweight and extensible talk client (IRC, Matrix, Slack, Telegram, and more)"
+license = "GPL-3.0-or-later"
+website = "https://weechat.org"
+
+[sources.weechat]
+hash = "337fc24c0a4c00aa2c47262f123014b23d55c5cf02785ecfdf204f96ccef5c65"
+format = "tar.gz"
+file = "weechat-{version}.{format}"
+mirrors = [
+  "https://weechat.org/files/src/{file}",
+]
