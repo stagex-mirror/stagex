@@ -1,0 +1,12 @@
+[package]
+name = "tig"
+version = "2.6.0"
+description = "Text-mode interface for Git"
+license = "GPL-2.0"
+website = "https://github.com/jonas/tig"
+
+[sources.tig]
+hash = "e5c84bac827ba40e4ca9a311aeef4b93257b8cccd1b15e97ead44baea787786c"
+format = "tar.gz"
+file = "tig-{version}.{format}"
+mirrors = ["https://github.com/jonas/tig/archive/refs/tags/tig-{version}.{format}"]
