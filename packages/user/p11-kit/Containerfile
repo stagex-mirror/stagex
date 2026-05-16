@@ -1,0 +1,18 @@
+FROM stagex/pallet-clang-meson-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-libffi . /
+ADD fetch/p11-kit-${VERSION}.tar.xz .
+WORKDIR /p11-kit-${VERSION}
+RUN --network=none <<-EOF
+	meson \
+		setup build \
+		--prefix=/usr \
+		-D sysconfdir=/etc \
+		-D localstatedir=/var \
+		-D test=false
+	meson compile -C build
+	DESTDIR="/rootfs" meson install -C build
+	install -Dm644 COPYING /rootfs/usr/share/licenses/p11-kit/COPYING
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

@@ -1,0 +1,12 @@
+[package]
+name = "p11-kit"
+version = "0.26.2"
+description = "Bring in and unify access to PKCS#11 modules"
+license = "BSD-3-Clause"
+website = "https://p11-glue.github.io/p11-glue/p11-kit.html"
+
+[sources.p11-kit]
+hash = "09fd9f44da4813a3141e73d5e7cf7008e5660d0405f13d56c15e1da9dcecf828"
+format = "tar.xz"
+file = "p11-kit-{version}.{format}"
+mirrors = [ "https://github.com/p11-glue/p11-kit/releases/download/{version}/{file}"]

@@ -1,0 +1,12 @@
+[package]
+name = "libidn2"
+version = "2.3.8"
+description = "Internationalized domain names (IDN) support library"
+license = "LGPL-2.1-or-later"
+website = "https://www.gnu.org/software/libidn/"
+
+[sources.libidn2]
+hash = "f557911bf6171621e1f72ff35f5b1825bb35b52ed45325dcdee931e5d3c0787a"
+format = "tar.gz"
+file = "libidn2-{version}.{format}"
+mirrors = [ "https://ftp.gnu.org/gnu/libidn/{file}", "https://ftpmirror.gnu.org/gnu/libidn/{file}"]
