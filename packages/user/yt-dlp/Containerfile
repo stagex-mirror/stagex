@@ -1,6 +1,13 @@
 FROM stagex/pallet-python AS build
 ARG VERSION
 COPY --from=stagex/core-ca-certificates /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=stagex/core-py-hatchling . /
+COPY --from=stagex/core-py-hatch-vcs . /
+COPY --from=stagex/core-py-pathspec . /
+COPY --from=stagex/core-py-pluggy . /
+COPY --from=stagex/core-py-trove-classifiers . /
+COPY --from=stagex/core-py-packaging . /
+COPY --from=stagex/core-py-setuptools-scm . /
 ADD fetch/${VERSION}.tar.gz /
 WORKDIR /yt-dlp-${VERSION}
 RUN --network=none <<-EOF
