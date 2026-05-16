@@ -7,6 +7,8 @@ ADD fetch/ggml-${GGML_VERSION}.tar.gz ./stable-diffusion.cpp-${VERSION}/
 WORKDIR /stable-diffusion.cpp-${VERSION}
 RUN --network=none <<-EOF
 	unset CMAKE_GENERATOR
+	rm -rf ggml
+	mv ggml-${GGML_VERSION} ggml
 	mkdir build
 	cd build
 	cmake .. \
@@ -19,7 +21,7 @@ RUN --network=none <<-EOF
 		-DCMAKE_INSTALL_LIBDIR=lib
 	cmake --build .
 	DESTDIR="/rootfs/" cmake --install .
-	install -vDm644 -t /rootfs/usr/share/licenses/stable-diffusion-cpp/ ${PWD}/LICENSE
+	install -vDm644 -t /rootfs/usr/share/licenses/stable-diffusion-cpp/ ../LICENSE
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs /
