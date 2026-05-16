@@ -10,9 +10,3 @@ hash = "7972b87b705a003ce70ab55f9f0fb495d156887cba0eb296d284731139118e2c"
 format = "tar.xz"
 file = "llvm-project-{version}.src.{format}"
 mirrors = [ "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/{file}", ]
-
-[sources.cmake]
-hash = "7972b87b705a003ce70ab55f9f0fb495d156887cba0eb296d284731139118e2c"
-format = "tar.xz"
-file = "llvm-project-{version}.src.{format}"
-mirrors = [ "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/{file}", ]

@@ -6,7 +6,6 @@ COPY --from=stagex/user-spirv-tools . /
 ARG VERSION
 ARG VERSION_MAJOR
 ADD fetch/llvm-project-${VERSION}.src.tar.xz .
-ADD fetch/cmake-19.1.7.src.tar.xz .
 WORKDIR /llvm-project-${VERSION}.src/libclc
 RUN --network=none <<-EOF
 		cmake -B build -G Ninja \
