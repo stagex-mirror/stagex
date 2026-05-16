@@ -1,12 +1,12 @@
 [package]
 name = "py-build"
-version = "0.7.0"
+version = "1.4.4"
 description = "Simple, correct Python build frontend"
 license = "MIT"
 website = "https://github.com/pypa/build"
 
 [sources.py-build]
-hash = "1aaadcd69338252ade4f7ec1265e1a19184bf916d84c9b7df095f423948cb89f"
+hash = "f832ae053061f3fb524af812dc94b8b84bac6880cd587630e3b5d91a6a9c1703"
 format = "tar.gz"
 file = "py-build-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/b/build/build-{version}.{format}",]

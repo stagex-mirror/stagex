@@ -1,4 +1,5 @@
 FROM stagex/pallet-cgo AS build
+COPY --from=stagex/core-openssl . /
 ARG VERSION
 ADD fetch/ssh-tpm-agent-${VERSION}.tar.gz .
 WORKDIR /ssh-tpm-agent-${VERSION}

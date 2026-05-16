@@ -1,12 +1,12 @@
 [package]
 name = "protoc-gen-openapiv2"
-version = "2.22.0"
+version = "2.29.0"
 description = "OpenAPI v2 spec generator for gRPC-Gateway"
 license = "BSD-3-Clause"
 website = "https://github.com/grpc-ecosystem/grpc-gateway"
 
 [sources.protoc-gen-openapiv2]
-hash = "509c86f389f4da5ac5ce06c6e2e85834070e4f774b4bb4c5c0536c464911ae25"
+hash = "c067650666440981109965953c4636cb08a556d0986ad4861167fec4553d8d74"
 format = "tar.gz"
 file = "protoc-gen-openapiv2-{version}.{format}"
 mirrors = [ "https://github.com/grpc-ecosystem/grpc-gateway/archive/refs/tags/v{version}.{format}",]
