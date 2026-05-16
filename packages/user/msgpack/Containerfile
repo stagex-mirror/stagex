@@ -1,7 +1,7 @@
 FROM stagex/pallet-clang-cmake-busybox AS build
 COPY --from=stagex/core-make / /
 ARG VERSION
-ADD fetch/c-${VERSION}.tar.gz .
+ADD fetch/msgpack-c-${VERSION}.tar.gz .
 WORKDIR /msgpack-c-c-${VERSION}/build
 RUN --network=none <<-EOF
 	cmake \
@@ -17,7 +17,7 @@ RUN --network=none <<-EOF
 		..
 	cmake --build .
 	DESTDIR="/rootfs" cmake --install .
-	install -Dm644 ${PWD}/COPYING /rootfs/usr/share/licenses/msgpack/
+	install -Dm644 ${PWD}/../COPYING /rootfs/usr/share/licenses/msgpack/COPYING
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
