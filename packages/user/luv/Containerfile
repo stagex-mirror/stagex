@@ -3,7 +3,7 @@ COPY --from=stagex/core-make / /
 COPY --from=stagex/user-libuv . /
 COPY --from=stagex/core-luajit . /
 ARG VERSION
-ADD fetch/luv.tar.gz .
+ADD fetch/luv-${VERSION}.tar.gz .
 WORKDIR /luv-${VERSION}/build
 RUN --network=none <<-EOF
 	cmake \
