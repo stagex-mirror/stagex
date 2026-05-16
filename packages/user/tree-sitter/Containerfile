@@ -1,6 +1,7 @@
 FROM stagex/pallet-rust AS build
 COPY --from=stagex/core-make . /
 ARG VERSION
+ARG TARGETARCH
 ADD fetch/tree-sitter-${VERSION}.tar.gz .
 WORKDIR /tree-sitter-${VERSION}
 RUN cargo fetch --locked
