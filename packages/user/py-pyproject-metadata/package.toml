@@ -1,0 +1,12 @@
+[package]
+name = "py-pyproject-metadata"
+version = "0.11.0"
+description = "A simple Python library to read metadata from pyproject.toml"
+license = "MIT OR Apache-2.0"
+website = "https://github.com/FFY00/pyproject-metadata"
+
+[sources.py-pyproject-metadata]
+hash = "c72fa49418bb7c5a10f25e050c418009898d1c051721d19f98a6fb6da59a66cf"
+format = "tar.gz"
+file = "py-pyproject-metadata-{version}.{format}"
+mirrors = [ "https://files.pythonhosted.org/packages/source/p/pyproject-metadata/pyproject_metadata-{version}.{format}", ]

@@ -1,0 +1,12 @@
+[package]
+name = "py-mediafile"
+version = "0.17.0"
+description = "Library for reading and writing audio metadata"
+license = "MIT"
+website = "https://pypi.org/project/mediafile/"
+
+[sources.py-mediafile]
+hash = "80c9003fd25d7096a7237e3b58e6ff018ef67f9c39900feafacabac1742c7d3a"
+format = "tar.gz"
+file = "py-mediafile-{version}.{format}"
+mirrors = ["https://files.pythonhosted.org/packages/source/m/mediafile/mediafile-{version}.{format}",]

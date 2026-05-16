@@ -1,0 +1,15 @@
+FROM stagex/pallet-rust AS build
+COPY --from=stagex/pallet-python . /
+COPY --from=stagex/user-maturin . /
+ARG VERSION
+ADD fetch/py-jellyfish-${VERSION}.tar.gz /
+WORKDIR /jellyfish-${VERSION}
+RUN cargo fetch --locked
+RUN --network=none <<-EOF
+	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+	python -m installer -d /rootfs .dist/*.whl
+	install -vDm644 LICENSE /rootfs/usr/share/licenses/py-jellyfish/LICENSE
+	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

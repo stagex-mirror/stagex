@@ -1,0 +1,12 @@
+[package]
+name = "py-lap"
+version = "0.5.13"
+description = "A lightweight library for performing approximate string matching"
+license = "MIT"
+website = "https://pypi.org/project/lap/"
+
+[sources.py-lap]
+hash = "9eff7169e3ca452995af0493cc20d35452c4bfd06122c36c06457119ffbd411b"
+format = "tar.gz"
+file = "py-lap-{version}.{format}"
+mirrors = ["https://files.pythonhosted.org/packages/source/l/lap/lap-{version}.{format}",]
