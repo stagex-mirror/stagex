@@ -1,0 +1,12 @@
+[package]
+name = "mprocs"
+version = "0.9.2"
+description = "Run multiple processes concurrently"
+license = "MIT"
+website = "https://github.com/pvolok/mprocs"
+
+[sources.mprocs]
+hash = "1eefc5346f3c8b24ee6bf74582312fc61284ea54d4d384a4a8226d4b75ddb98b"
+format = "tar.gz"
+file = "mprocs-v{version}.{format}"
+mirrors = ["https://github.com/pvolok/mprocs/archive/refs/tags/v{version}.{format}"]
