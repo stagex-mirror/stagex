@@ -31,3 +31,13 @@ RUN --network=none <<-EOF
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
+
+FROM package AS package-run
+COPY --from=stagex/core-attr . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/core-gmp . /
+COPY --from=stagex/user-glib . /
+COPY --from=stagex/user-json-glib . /
+COPY --from=stagex/user-libseccomp . /
+COPY --from=stagex/user-libtpms . /
+

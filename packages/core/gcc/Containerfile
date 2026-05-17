@@ -118,3 +118,13 @@ RUN [ ! -d /rootfs/usr/lib64 ] || ( mv /rootfs/usr/lib64/* /rootfs/usr/lib/ && r
 
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
+
+FROM package AS package-run
+COPY --from=stagex/core-attr . /
+COPY --from=stagex/core-gmp . /
+COPY --from=stagex/core-isl . /
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-mpc . /
+COPY --from=stagex/core-mpfr . /
+COPY --from=stagex/pallet-cgo . /
+

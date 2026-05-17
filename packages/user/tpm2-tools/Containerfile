@@ -18,3 +18,12 @@ RUN --network=none <<-EOF
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
+
+FROM package AS package-run
+COPY --from=stagex/core-attr . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/core-curl . /
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/pallet-cgo . /
+COPY --from=stagex/user-tpm2-tss . /
+

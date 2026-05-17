@@ -30,3 +30,7 @@ EOF
 RUN --network=none make DESTDIR=/rootfs install
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
+
+FROM package AS package-run
+COPY --from=stagex/core-attr . /
+

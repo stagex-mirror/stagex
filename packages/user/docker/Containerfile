@@ -84,3 +84,7 @@ RUN <<-EOF
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=install /rootfs/ /
+
+FROM package AS package-run
+COPY --from=stagex/core-attr . /
+

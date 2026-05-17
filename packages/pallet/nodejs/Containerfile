@@ -16,4 +16,8 @@ COPY --from=stagex/core-nodejs . /
 COPY --from=stagex/core-npm . /
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-zlib . /
+
+FROM package AS package-run
+COPY --from=stagex/core-attr . /
+
 ENTRYPOINT ["/usr/bin/node"]

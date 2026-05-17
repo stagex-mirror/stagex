@@ -58,3 +58,16 @@ RUN --network=none <<-EOF
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
+
+FROM package AS package-run
+COPY --from=stagex/core-attr . /
+COPY --from=stagex/core-brotli . /
+COPY --from=stagex/core-c-ares . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/core-icu . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libnghttp2 . /
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-llvm . /
+

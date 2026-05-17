@@ -25,3 +25,16 @@ RUN --network=none <<-EOF
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
+
+FROM package AS package-run
+COPY --from=stagex/core-attr . /
+COPY --from=stagex/user-libice . /
+COPY --from=stagex/user-libsm . /
+COPY --from=stagex/user-libx11 . /
+COPY --from=stagex/user-libxau . /
+COPY --from=stagex/user-libxcb . /
+COPY --from=stagex/user-libxdmcp . /
+COPY --from=stagex/user-libxext . /
+COPY --from=stagex/user-libxt . /
+COPY --from=stagex/user-util-linux . /
+

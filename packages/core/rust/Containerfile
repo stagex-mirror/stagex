@@ -523,3 +523,13 @@ EOF
 
 FROM stagex/core-filesystem AS package-rust
 COPY --from=build /rootfs/ /
+
+FROM package-rust AS package-rust-run
+COPY --from=stagex/core-attr . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/pallet-cgo . /
+

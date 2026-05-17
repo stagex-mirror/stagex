@@ -64,3 +64,11 @@ RUN --network=none <<-EOF
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/usr /usr
+
+FROM package AS package-run
+COPY --from=stagex/core-attr . /
+COPY --from=stagex/core-luajit . /
+COPY --from=stagex/user-libuv . /
+COPY --from=stagex/user-luv . /
+COPY --from=stagex/user-tree-sitter . /
+
