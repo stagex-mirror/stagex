@@ -1,12 +1,12 @@
 [package]
 name = "openssl"
-version = "3.5.2"
+version = "3.6.2"
 description = "The Open Source toolkit for Secure Sockets Layer and Transport Layer Security"
 license = "Apache-2.0"
 website = "https://www.openssl.org"
 
 [sources.openssl]
-hash = "c53a47e5e441c930c3928cf7bf6fb00e5d129b630e0aa873b08258656e7345ec"
+hash = "aaf51a1fe064384f811daeaeb4ec4dce7340ec8bd893027eee676af31e83a04f"
 format = "tar.gz"
 file = "openssl-{version}.{format}"
 mirrors = [ "https://www.openssl.org/source/{file}",]

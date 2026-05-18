@@ -1,12 +1,12 @@
 [package]
 name = "libcap"
-version = "2.70"
+version = "2.78"
 description = "POSIX capabilities library"
 license = "GPL-2.0-only OR BSD-3-Clause"
 website = "https://sites.google.com/site/fullycapable/"
 
 [sources.libcap]
-hash = "18f00ea97c7541af86379dec9d4d8ea838aac4a1f70177d81d91657e4e43b808"
+hash = "856e742e331bb53176231e1eae3588ab044e5564c811df3138bd2f1c7b953682"
 format = "tar.gz"
 file = "libcap-{version}.{format}"
 mirrors = [ "https://git.kernel.org/pub/scm/libs/libcap/libcap.git/snapshot/{file}",]

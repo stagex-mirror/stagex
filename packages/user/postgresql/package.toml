@@ -1,12 +1,12 @@
 [package]
 name = "postgresql"
-version = "18.1"
+version = "18.4"
 description = "A powerful, open source object-relational database system with over 35 years of active development that has earned it a strong reputation for reliability, feature robustness, and performance."
 website = "https://www.postgresql.org/"
 license = "PostgreSQL"
 
 [sources.postgresql]
-hash = "b0f18c2d6973d2aa023cfc77feda787d7bbe9c31a3977d0f04ac29885fb98ec4"
+hash = "450aa8f2da06c46f8221916e82ae06b04fb1040f8f00643dbf8b7d663caac0b9"
 format = "tar.gz"
 file = "postgresql-{version}.{format}"
 mirrors = [ "https://ftp.postgresql.org/pub/source/v{version}/{file}",]

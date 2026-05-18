@@ -1,0 +1,18 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-curl . /
+COPY --from=stagex/user-libplist . /
+ADD fetch/libtatsu-${VERSION}.tar.gz .
+WORKDIR /libtatsu-${VERSION}
+RUN --network=none <<-EOF
+	echo "${VERSION}" > .tarball-version
+	./autogen.sh
+	./configure \
+		--prefix=/usr
+	make -j "$(nproc)"
+	DESTDIR=/rootfs make install
+	install -vDm644 -t /rootfs/usr/share/licenses/libtatsu/ COPYING
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

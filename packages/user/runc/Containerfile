@@ -2,6 +2,8 @@ FROM stagex/pallet-cgo AS build
 ARG VERSION
 COPY --from=stagex/user-libseccomp . /
 COPY --from=stagex/user-go-md2man . /
+COPY --from=stagex/core-bash . /
+COPY --from=stagex/core-ncurses . /
 ADD fetch/runc-${VERSION}.tar.gz .
 WORKDIR /runc-${VERSION}
 COPY --chmod=755 <<-EOF /usr/bin/git

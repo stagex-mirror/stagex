@@ -1,5 +1,6 @@
 FROM stagex/pallet-rust AS build
 ARG VERSION
+ARG TARGETARCH
 ADD fetch/typst-${VERSION}.tar.gz .
 WORKDIR /typst-${VERSION}
 RUN cargo fetch

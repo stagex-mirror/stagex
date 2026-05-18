@@ -1,12 +1,12 @@
 [package]
 name = "perl"
-version = "5.38.0"
+version = "5.42.2"
 description = "Practical Extraction and Report Language"
 license = "Artistic-1.0-Perl OR GPL-1.0-or-later"
 website = "https://www.perl.org/"
 
 [sources.perl]
-hash = "eca551caec3bc549a4e590c0015003790bdd1a604ffe19cc78ee631d51f7072e"
+hash = "0a585eeb9e363c0f80482ddb3571625250c2c86aeb408853e8ea50805cfb14bb"
 format = "tar.xz"
 file = "perl-{version}.{format}"
 mirrors = [ "https://www.cpan.org/src/{version_major}.0/{file}",]

@@ -1,5 +1,6 @@
 FROM stagex/pallet-rust AS build
 ARG VERSION
+ARG TARGETARCH
 COPY --from=stagex/core-sqlite3 . /
 ADD fetch/nushell-${VERSION}.tar.gz .
 WORKDIR /nushell-${VERSION}
@@ -12,7 +13,6 @@ RUN cargo fetch --locked
 ENV RUSTFLAGS="-C codegen-units=1 -C link-arg=-Wl,--build-id=none -C target-feature=+crt-static"
 RUN --network=none <<-EOF
 	set -eux
-	ARCH="$(uname -m)"
 
 	cargo build \
 		--frozen \
