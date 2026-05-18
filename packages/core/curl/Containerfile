@@ -23,7 +23,10 @@ RUN --network=none <<-EOF
 		--infodir=/usr/share/info \
 		--with-ca-bundle=/etc/ssl/certs/ca-certificates.crt \
 		--with-openssl \
-		--enable-static-link
+		--without-libpsl \
+		--enable-static
+	# TODO: libpsl support disabled - configure fails with "runtime libs availability... failed" when libpsl is present
+	# even with static+dynamic artifacts. Needs investigation. https://github.com/curl/curl/issues/17385
 	make -j "$(nproc)"
 	make install DESTDIR=/rootfs
 EOF

@@ -1,12 +1,12 @@
 [package]
 name = "py-wcwidth"
-version = "0.2.13"
+version = "0.7.0"
 description = "Measures the displayed width of unicode strings in a terminal"
 license = "MIT"
 website = "https://github.com/jquast/wcwidth"
 
 [sources.py-wcwidth]
-hash = "72ea0c06399eb286d978fdedb6923a9eb47e1c486ce63e9b4e64fc18303972b5"
+hash = "90e3a7ea092341c44b99562e75d09e4d5160fe7a3974c6fb842a101a95e7eed0"
 format = "tar.gz"
 file = "py-wcwidth-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/w/wcwidth/wcwidth-{version}.{format}",]

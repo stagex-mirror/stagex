@@ -1,12 +1,12 @@
 [package]
 name = "samurai"
-version = "1.2"
+version = "1.3"
 description = "Ninja-compatible build tool written in C"
 license = "Apache-2.0 OR MIT"
 website = "https://github.com/michaelforney/samurai"
 
 [sources.samurai]
-hash = "3b8cf51548dfc49b7efe035e191ff5e1963ebc4fe8f6064a5eefc5343eaf78a5"
+hash = "1bc020a9e133432df51911ac71cc34322f828934d9a2282ba2916d88c15976af"
 format = "tar.gz"
 file = "samurai-{version}.{format}"
 mirrors = [ "https://github.com/michaelforney/samurai/releases/download/{version}/{file}",]

@@ -1,5 +1,6 @@
 FROM stagex/pallet-rust AS build
 ARG VERSION
+ARG TARGETARCH
 ADD fetch/just-${VERSION}.tar.gz .
 WORKDIR /just-${VERSION}
 RUN cargo fetch

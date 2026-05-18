@@ -14,7 +14,7 @@ COPY --from=stagex/core-python . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-libffi . /
 ADD fetch/py-setuptools-scm-${VERSION}.tar.gz .
-WORKDIR /setuptools-scm-${VERSION}/
+WORKDIR /setuptools_scm-${VERSION}/
 ENV SETUPTOOLS_SCM_PRETEND_VERSION=${VERSION}
 RUN --network=none <<-EOF
 	set -eu

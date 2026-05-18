@@ -1,12 +1,12 @@
 [package]
 name = "py-wheel"
-version = "0.43.0"
+version = "0.47.0"
 description = "Built-package format for Python"
 license = "MIT"
 website = "https://github.com/pypa/wheel"
 
 [sources.py-wheel]
-hash = "465ef92c69fa5c5da2d1cf8ac40559a8c940886afcef87dcf14b9470862f1d85"
+hash = "cc72bd1009ba0cf63922e28f94d9d83b920aa2bb28f798a31d0691b02fa3c9b3"
 format = "tar.gz"
 file = "py-wheel-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/w/wheel/wheel-{version}.{format}",]

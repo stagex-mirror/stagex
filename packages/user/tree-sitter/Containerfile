@@ -1,14 +1,14 @@
 FROM stagex/pallet-rust AS build
 COPY --from=stagex/core-make . /
 ARG VERSION
+ARG TARGETARCH
 ADD fetch/tree-sitter-${VERSION}.tar.gz .
 WORKDIR /tree-sitter-${VERSION}
 RUN cargo fetch --locked
 RUN --network=none <<-EOF
-	make -j "$(nproc)" PREFIX=/usr
+	make PREFIX=/usr
 	make DESTDIR=/rootfs install
 	install -Dm644 -t /rootfs/usr/share/licenses/tree-sitter/ LICENSE
-	ARCH="$(uname -m)"
 	cargo build \
 		--frozen \
 		--release \

@@ -1,5 +1,6 @@
 FROM stagex/pallet-rust AS build
 ARG VERSION
+ARG TARGETARCH
 ADD fetch/guestctl-${VERSION}.tar.gz .
 WORKDIR /guestctl
 ADD <<-EOF /.cargo/config.toml

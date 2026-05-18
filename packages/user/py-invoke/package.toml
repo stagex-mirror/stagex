@@ -1,12 +1,12 @@
 [package]
 name = "py-invoke"
-version = "2.2.0"
+version = "3.0.3"
 description = "Pythonic task execution"
 website = "https://github.com/pyinvoke/invoke"
 license = "BSD-2-Clause"
 
 [sources.py-invoke]
-hash = "44a8c1c036855d7f75a947d00892934316e095dcb81f2637b12f11fadf29882d"
+hash = "dd36db4cc608682500f950ee7926ab91243d2a304131f73bf4edb337bb898467"
 format = "tar.gz"
 file = "invoke-{version}.{format}"
 mirrors = [ "https://github.com/pyinvoke/invoke/archive/{version}/{file}",]

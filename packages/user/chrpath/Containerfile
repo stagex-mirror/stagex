@@ -1,8 +1,9 @@
 FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
 ADD fetch/chrpath-${VERSION}.tar.gz .
-WORKDIR /chrpath-${VERSION}
+WORKDIR /chrpath
 RUN --network=none <<-EOF
+	./bootstrap
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

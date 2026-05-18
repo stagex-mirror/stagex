@@ -1,11 +1,11 @@
 [package]
 name = "coreutils"
-version = "9.7"
+version = "9.11"
 description = "GNU core utilities for basic file, shell, and text manipulation"
 license = "GPL-3.0-or-later"
 website = "https://www.gnu.org/software/coreutils/"
 
 [sources.coreutils]
-hash = "e8bb26ad0293f9b5a1fc43fb42ba970e312c66ce92c1b0b16713d7500db251bf"
+hash = "394024eda0a5955217ceda9cd1201e65dc8fa3aa29c2951135a49521d57c3cc3"
 file = "coreutils-{version}.tar.xz"
 mirrors = [ "https://ftp.gnu.org/gnu/coreutils/{file}",]

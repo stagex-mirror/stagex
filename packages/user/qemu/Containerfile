@@ -96,29 +96,35 @@ RUN --network=none <<-EOF
 	make DESTDIR=/rootfs install
 	rm -rf /rootfs/var/run
 	strip /rootfs/usr/bin/qemu-*
-	# HACK: none of these binaries are deterministic so we cannot ship them
-	# Would love if anyone can figure this out but cannot let it block release
-	rm /rootfs/usr/bin/qemu-system-aarch64
-	rm /rootfs/usr/bin/qemu-system-arm
-	rm /rootfs/usr/bin/qemu-system-hppa
-	rm /rootfs/usr/bin/qemu-system-loongarch64
-	rm /rootfs/usr/bin/qemu-system-mips
-	rm /rootfs/usr/bin/qemu-system-mips64
-	rm /rootfs/usr/bin/qemu-system-mips64el
-	rm /rootfs/usr/bin/qemu-system-mipsel
-	rm /rootfs/usr/bin/qemu-system-or1k
-	rm /rootfs/usr/bin/qemu-system-ppc
-	rm /rootfs/usr/bin/qemu-system-ppc64
-	rm /rootfs/usr/bin/qemu-system-riscv32
-	rm /rootfs/usr/bin/qemu-system-riscv64
-	rm /rootfs/usr/bin/qemu-system-rx
-	rm /rootfs/usr/bin/qemu-system-sparc
-	rm /rootfs/usr/bin/qemu-system-sparc64
-	rm /rootfs/usr/bin/qemu-system-avr                                        
-	rm /rootfs/usr/bin/qemu-system-i386                                       
-	rm /rootfs/usr/bin/qemu-system-m68k                                       
-	rm /rootfs/usr/bin/qemu-system-microblaze
-	rm /rootfs/usr/bin/qemu-system-microblazeel
+	# Non-x86_64 system binaries are non-deterministic, remove before packaging
+	rm -f /rootfs/usr/bin/qemu-system-aarch64
+	rm -f /rootfs/usr/bin/qemu-system-arm
+	rm -f /rootfs/usr/bin/qemu-system-hppa
+	rm -f /rootfs/usr/bin/qemu-system-loongarch64
+	rm -f /rootfs/usr/bin/qemu-system-mips
+	rm -f /rootfs/usr/bin/qemu-system-mips64
+	rm -f /rootfs/usr/bin/qemu-system-mips64el
+	rm -f /rootfs/usr/bin/qemu-system-mipsel
+	rm -f /rootfs/usr/bin/qemu-system-or1k
+	rm -f /rootfs/usr/bin/qemu-system-ppc
+	rm -f /rootfs/usr/bin/qemu-system-ppc64
+	rm -f /rootfs/usr/bin/qemu-system-riscv32
+	rm -f /rootfs/usr/bin/qemu-system-riscv64
+	rm -f /rootfs/usr/bin/qemu-system-rx
+	rm -f /rootfs/usr/bin/qemu-system-sparc
+	rm -f /rootfs/usr/bin/qemu-system-sparc64
+	rm -f /rootfs/usr/bin/qemu-system-avr
+	rm -f /rootfs/usr/bin/qemu-system-i386
+	rm -f /rootfs/usr/bin/qemu-system-m68k
+	rm -f /rootfs/usr/bin/qemu-system-microblaze
+	rm -f /rootfs/usr/bin/qemu-system-microblazeel
+	rm -f /rootfs/usr/bin/qemu-system-alpha
+	rm -f /rootfs/usr/bin/qemu-system-s390x
+	rm -f /rootfs/usr/bin/qemu-system-sh4
+	rm -f /rootfs/usr/bin/qemu-system-sh4eb
+	rm -f /rootfs/usr/bin/qemu-system-tricore
+	rm -f /rootfs/usr/bin/qemu-system-xtensa
+	rm -f /rootfs/usr/bin/qemu-system-xtensaeb
 EOF
 
 #HACK: These have not been updated or built in more than a decade
