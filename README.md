@@ -2,7 +2,7 @@
 
 [git://codeberg.org:stagex/stagex](https://codeberg.org/stagex/stagex) | [matrix://#stagex:matrix.org](https://matrix.to/#/#stagex:matrix.org) | [ircs://irc.oftc.net:6697#stagex](https://webchat.oftc.net/?channels=stagex&uio=MT11bmRlZmluZWQmMTE9MTk14d)
 
-[![Donate to StageX's OpenCollective](https://opencollective.com/stagex/donate/button.png?color=white)](https://opencollective.com/stagex/donate)
+<a href="https://stagex.tools/donate/"><img src="https://img.shields.io/badge/Donate-2185d0?style=for-the-badge&logo=kofi&logoColor=white" height="28" /></a> <a href="https://docs.stagex.tools"><img src="https://img.shields.io/badge/Documentation-2185d0?style=for-the-badge&logo=bookstack&logoColor=white" height="28" /></a>
 
 ---
 
@@ -17,6 +17,7 @@ looking for.
 ## Table of Contents
 
 * [Usage](#usage)
+  * [Quickstart](https://docs.stagex.tools/get-started/quickstart/)
   * [Examples](#examples)
   * [Package Management Policies](#package-management-policies)
 * [Goals](#goals)
@@ -38,8 +39,8 @@ looking for.
 * [References](#references)
 * [Sponsors](#sponsors)
 * [Code of Conduct](CODE_OF_CONDUCT.md)
-* [Contributing](CONTRIBUTING.md)
-* [Maintainer Guidelines](MAINTENANCE.md)
+* [Contributing](https://docs.stagex.tools/project/contribute-to-stagex/)
+* [Maintainer Guidelines](https://docs.stagex.tools/project/maintainer-guidelines/)
 * [LICENSE](LICENSE)
 
 
@@ -402,18 +403,13 @@ make sign
 
 ## Examples
 
-* [Sui Blockchain Fullnode](https://github.com/MystenLabs/sui/blob/main/docker/sui-node-deterministic/Dockerfile)
-  * Large rust application w/ C dependencies
-* [Nimiq Blockchain Protocol](https://github.com/nimiq/core-rs-albatross/blob/albatross/build/Containerfile)
-  * Large rust application implementing all supporting software for the Nimiq blockchain protocol
-* [QuorumOS](https://github.com/tkhq/qos/tree/main/src/images)
-  * Nitro Enclave Framework w/ minimal rust init system and support applications
-* [EnclaveOS](https://git.distrust.co/public/enclaveos)
-  * Mininmal Nitro Enclave Hello World
-* [AirgapOS](https://git.distrust.co/public/airgap)
-  * Standalone minimal bootable Linux ISO for workstations
-* [ReproOS](https://codeberg.org/stagex/repros)
-  * Server Linux image w/ minimal hypervisor guest image
+* [AirgapOS](https://git.distrust.co/public/airgap): Standalone minimal bootable Linux ISO for workstations
+* [Caution](https://caution.co): Verifiable confidential compute platform for deploying and managing sensitive workloads.
+* [EnclaveOS](https://git.distrust.co/public/enclaveos): Minimal Nitro Enclave Hello World
+* [Nimiq Blockchain Protocol](https://github.com/nimiq/core-rs-albatross/blob/albatross/build/Containerfile): Large rust application implementing all supporting software for the Nimiq blockchain protocol
+* [QuorumOS](https://github.com/tkhq/qos/tree/main/src/images): Nitro Enclave Framework with minimal rust init system and support applications
+* [ReproOS](https://codeberg.org/stagex/repros): Server Linux image with minimal hypervisor guest image
+* [Sui Blockchain Fullnode](https://github.com/MystenLabs/sui/blob/main/docker/sui-node-deterministic/Dockerfile): Large rust application with C dependencies
 
 ## Resources
 
