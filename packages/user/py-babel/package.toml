@@ -1,12 +1,12 @@
 [package]
 name = "py-babel"
-version = "2.14.0"
+version = "2.18.0"
 description = "Internationalization utilities for Python"
 license = "BSD-3-Clause"
 website = "https://babel.pocoo.org"
 
 [sources.py-babel]
-hash = "6919867db036398ba21eb5c7a0f6b28ab8cbc3ae7a73a44ebe34ae74a4e7d363"
+hash = "b80b99a14bd085fcacfa15c9165f651fbb3406e66cc603abf11c5750937c992d"
 format = "tar.gz"
 file = "py-babel-{version}.{format}"
-mirrors = [ "https://files.pythonhosted.org/packages/source/B/Babel/Babel-{version}.{format}",]
+mirrors = [ "https://files.pythonhosted.org/packages/source/b/babel/babel-{version}.{format}",]

@@ -1,0 +1,16 @@
+FROM stagex/pallet-python AS build
+COPY --from=stagex/core-py-hatchling . /
+COPY --from=stagex/core-py-trove-classifiers . /
+COPY --from=stagex/core-py-pathspec . /
+COPY --from=stagex/core-py-pluggy . /
+ARG VERSION
+ADD fetch/py-hatch-fancy-pypi-readme-${VERSION}.tar.gz .
+WORKDIR /hatch_fancy_pypi_readme-${VERSION}
+RUN --network=none <<-EOF
+	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+	python -m installer -d /rootfs .dist/*.whl
+	install -vDm644 LICENSE.txt /rootfs/usr/share/licenses/py-hatch-fancy-pypi-readme/LICENSE.txt
+	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

@@ -1,13 +1,13 @@
 [package]
 name = "isl"
-version = "0.24"
+version = "0.27"
 license = "MIT"
 description = "An Integer Set Library for the Polyhedral Model (development files)"
 website = "http://isl.gforge.inria.fr/"
 
 [sources.isl]
-hash = "fcf78dd9656c10eb8cf9fbd5f59a0b6b01386205fe1934b3b287a0a1898145c0"
+hash = "626335529331f7c89fec493de929e2e92fb3d8cc860fc7af554e0518ee0029ee"
 format = "tar.bz2"
-version = "0.24"
+version = "0.27"
 file = "isl-{version}.{format}"
 mirrors = ["https://gcc.gnu.org/pub/gcc/infrastructure/{file}", "https://ftpmirror.gnu.org/gnu/gmp/{file}", "https://mirrors.kernel.org/gnu/gmp/{file}", "https://libisl.sourceforge.io/{file}" ] 

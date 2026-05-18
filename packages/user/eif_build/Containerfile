@@ -1,5 +1,6 @@
 FROM stagex/pallet-rust AS build
 ARG VERSION
+ARG TARGETARCH
 ADD fetch/eif_build-${VERSION}.tgz .
 RUN mv tkhq-eif_build-* eif_build
 WORKDIR /eif_build

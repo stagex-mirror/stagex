@@ -1,12 +1,12 @@
 [package]
 name = "py-pynacl"
-version = "1.5.0"
+version = "1.6.2"
 description = "Python binding to the Networking and Cryptography (NaCl) library"
 website = "https://pypi.python.org/pypi/PyNaCl"
 license = "Apache-2.0"
 
 [sources.py-pynacl]
-hash = "f7de97b0995a56faaf0c95c5e4b19b061e8b3d06af8ff60441fec1a5a2ac144e"
+hash = "fa489623e2a802c1c7e2127188e3072f326c229dbe23f99994b3547407a85958"
 format = "tar.gz"
 file = "pynacl-{version}.{format}"
 mirrors = [ "https://github.com/pyca/pynacl/archive/refs/tags/{version}.{format}",]

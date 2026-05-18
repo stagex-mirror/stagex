@@ -1,5 +1,6 @@
 FROM stagex/pallet-rust AS build
 ARG VERSION
+ARG TARGETARCH
 COPY --from=stagex/core-gmp . /
 COPY --from=stagex/user-nettle . /
 COPY --from=stagex/user-pcsc-lite . /

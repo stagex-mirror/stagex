@@ -1,12 +1,12 @@
 [package]
 name = "file"
-version = "5.46"
+version = "5.47"
 description = "File type identification utility"
 license = "BSD-2-Clause"
 website = "https://www.darwinsys.com/file/"
 
 [sources.file]
-hash = "73c5f11a8edf0fded2fe3471b23a7fccb3f3369a13ea612529b869c8dc96aa2b"
+hash = "354d6dfa4dde02fcbc75eff2bccfaf0910837a35874c524b46ff374c4fb04742"
 format = "tar.gz"
 file = "file-{version}.{format}"
-mirrors = [ "https://github.com/file/file/archive/FILE5_46.{format}",]
+mirrors = [ "https://github.com/file/file/archive/FILE5_47.{format}",]
