@@ -1,12 +1,12 @@
 [package]
 name = "abseil-cpp"
-version = "20240116.2"
+version = "20260107.1"
 description = "Abseil Common Libraries (C++)"
 license = "Apache-2.0"
 website = "https://abseil.io"
 
 [sources.abseil-cpp]
-hash = "733726b8c3a6d39a4120d7e45ea8b41a434cdacde401cba500f14236c49b39dc"
+hash = "4314e2a7cbac89cac25a2f2322870f343d81579756ceff7f431803c2c9090195"
 format = "tar.gz"
 file = "abseil-cpp-{version}.{format}"
 mirrors = [ "https://github.com/abseil/abseil-cpp/archive/refs/tags/{version}.{format}",]

@@ -1,15 +1,15 @@
 FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
 COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-curl . /
 COPY --from=stagex/user-libusbmuxd . /
 COPY --from=stagex/user-libplist . /
 COPY --from=stagex/user-libimobiledevice-glue . /
+COPY --from=stagex/user-libtatsu . /
 ADD fetch/libimobiledevice-${VERSION}.tar.bz2 .
-ADD libplist-fix-redecs.patch .
 WORKDIR /libimobiledevice-${VERSION}
 ENV CFLAGS="-Wno-error=int-conversion -Wno-deprecated-declarations"
 RUN --network=none <<-EOF
-	patch -p1 < /libplist-fix-redecs.patch
 	./configure \
 		--prefix=/usr \
 		--disable-static \

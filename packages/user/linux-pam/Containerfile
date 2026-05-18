@@ -1,26 +1,27 @@
-FROM stagex/pallet-clang-gnu-busybox AS build
+FROM stagex/pallet-clang-meson-busybox AS build
 COPY --from=stagex/core-gettext . /
 COPY --from=stagex/user-utmps . /
 ARG VERSION
 ADD fetch/linux-pam-${VERSION}.tar.xz .
 WORKDIR /Linux-PAM-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
-	export CFLAGS="$(pkg-config --cflags utmps)"
-	export LDFLAGS=$(pkg-config --libs utmps)
-	./configure \
+	meson setup \
 		--prefix=/usr \
 		--libdir=/usr/lib \
 		--sysconfdir=/etc \
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info \
 		--localstatedir=/var \
-		--disable-nls \
-		--disable-db \
-		--disable-examples \
-		--sbindir=/usr/sbin \
-		--enable-securedir=/usr/lib/security
-	make
-	make DESTDIR=/rootfs install
+		-Di18n=disabled \
+		-Dpam_userdb=disabled \
+		-Dexamples=false \
+		-Dsbindir=/usr/sbin \
+		-Dsecuredir=/usr/lib/security \
+		. output
+	meson compile -C output
+	DESTDIR=/rootfs meson install --no-rebuild -C output
+	install -Dm644 COPYING /rootfs/usr/share/licenses/linux-pam/COPYING
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

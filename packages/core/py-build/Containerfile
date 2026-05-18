@@ -8,8 +8,11 @@ COPY --from=stagex/core-zlib . /
 ADD fetch/py-build-${VERSION}.tar.gz .
 WORKDIR /build-${VERSION}
 RUN --network=none <<-EOF
-	set -eu
-	python setup.py install --root=/rootfs
+	set -eux
+	sitedir="$(python3 -c 'import site;print(site.getsitepackages()[0])')"
+	mkdir -p "/rootfs/${sitedir}"
+	cp -a src/build "/rootfs/$sitedir"
+	python3 -m compileall "/rootfs/$sitedir"
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
 FROM stagex/core-filesystem AS package

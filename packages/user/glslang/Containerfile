@@ -10,6 +10,7 @@ RUN --network=none <<-EOF
 		-DBUILD_EXTERNAL=OFF \
 		-DBUILD_SHARED_LIBS=ON \
 		-DALLOW_EXTERNAL_SPIRV_TOOLS=YES \
+		-DENABLE_OPT=NO \
 		-DGLSLANG_TESTS="$(want_check && echo ON || echo OFF)"
 	cmake --build build-shared
 
@@ -20,6 +21,7 @@ RUN --network=none <<-EOF
 		-DBUILD_EXTERNAL=OFF \
 		-DBUILD_SHARED_LIBS=OFF \
 		-DALLOW_EXTERNAL_SPIRV_TOOLS=YES \
+		-DENABLE_OPT=NO \
 		-DGLSLANG_TESTS="$(want_check && echo ON || echo OFF)"
 	cmake --build build-static
 

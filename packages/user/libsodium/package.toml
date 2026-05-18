@@ -1,12 +1,12 @@
 [package]
 name = "libsodium"
-version = "1.0.20"
+version = "1.0.22"
 description = "Modern and easy-to-use crypto library"
 license = "ISC"
 website = "https://doc.libsodium.org"
 
 [sources.libsodium]
-hash = "ebb65ef6ca439333c2bb41a0c1990587288da07f6c7fd07cb3a18cc18d30ce19"
+hash = "5838bb0c3da6148c24ebe531d1ed1297de9a87aea77d426bcd99f289e681631c"
 format = "tar.gz"
 file = "libsodium-{version}.{format}"
-mirrors = [ "https://github.com/jedisct1/libsodium/releases/download/{version}-RELEASE/{file}",]
+mirrors = [ "https://github.com/jedisct1/libsodium/archive/refs/tags/{version}-RELEASE.{format}",]
