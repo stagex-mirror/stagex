@@ -9,4 +9,4 @@ website = "https://typst.app"
 hash = "70a56445020ca05efc571c7b07a1a9f52eb93842d420518693c077ae74e54142"
 format = "tar.gz"
 file = "typst-{version}.{format}"
-mirrors = [ "https://github.com/typst/typst/archive/refs/tags/v{version}.{format}" ]
+mirrors = [ "https://github.com/typst/typst/archive/refs/tags/v{version}.{format}",]
