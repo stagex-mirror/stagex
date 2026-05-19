@@ -9,4 +9,4 @@ website = "https://www.hadrons.org/software/libmd/"
 hash = "ac15ffb8430502fbaccdec66c5a82ee0eab0b0f36220df56710feadfeb13d0a0"
 format = "tar.xz"
 file = "libmd-{version}.{format}"
-mirrors = [ "https://archive.hadrons.org/software/libmd/{file}" ]
+mirrors = [ "https://archive.hadrons.org/software/libmd/{file}",]
