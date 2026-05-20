@@ -9,4 +9,4 @@ website = "https://pyyaml.org"
 hash = "c7b45011e052458ae79015d5eea3046c37d099023d4b253dde26ee1c29ea2f36"
 format = "tar.gz"
 file = "{version}.{format}"
-mirrors = [ "https://github.com/yaml/pyyaml/archive/{file}", ]
+mirrors = [ "https://github.com/yaml/pyyaml/archive/{file}",]
