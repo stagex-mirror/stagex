@@ -25,6 +25,7 @@ COPY --from=stagex/user-libsodium . /
 COPY --from=stagex/user-libiconv . /
 COPY --from=stagex/core-bzip2 . /
 COPY --from=stagex/core-libzip . /
+COPY --from=stagex/core-icu . /
 
 ADD fetch/php-${VERSION}.tar.gz .
 
@@ -77,6 +78,15 @@ RUN --network=none <<-EOF
 		--enable-tokenizer=shared \
 		--enable-mysqlnd \
 		--enable-embed=shared \
+		--enable-bcmath=shared \
+		--enable-fileinfo=shared \
+		--enable-intl=shared \
+		--with-libxml \
+		--enable-dom=shared \
+		--enable-xml=shared \
+		--enable-simplexml=shared \
+		--enable-xmlreader=shared \
+		--enable-xmlwriter=shared \
 		--enable-fpm
 	make -j "$(nproc)"
 	make INSTALL_ROOT="/${rootfs}" install
@@ -85,10 +95,10 @@ RUN --network=none <<-EOF
 	install -vDm644 -t "/${rootfs}/usr/share/licenses/php" LICENSE
 
 	mkdir -p "/${rootfs}/etc/php/conf.d"
-  for path in "/${rootfs}/usr/lib/php-modules/"*.so; do
-    name=$(basename "$path" .so)
-    printf "extension=%s.so\n" "$name" > "/${rootfs}/etc/php/conf.d/ext-$name.ini"
-  done
+	for path in "/${rootfs}/usr/lib/php-modules/"*.so; do
+		name=$(basename "$path" .so)
+		printf "extension=%s.so\n" "$name" > "/${rootfs}/etc/php/conf.d/10-$name.ini"
+	done
 
   unset rootfs
 
@@ -123,6 +133,15 @@ RUN --network=none <<-EOF
 		--enable-tokenizer=shared \
 		--enable-mysqlnd \
 		--enable-embed=shared \
+		--enable-bcmath=shared \
+		--enable-fileinfo=shared \
+		--enable-intl=shared \
+		--with-libxml \
+		--enable-dom=shared \
+		--enable-xml=shared \
+		--enable-simplexml=shared \
+		--enable-xmlreader=shared \
+		--enable-xmlwriter=shared \
 		--enable-zts
 	make -j "$(nproc)"
 	make INSTALL_ROOT="/${rootfs}" install
@@ -141,104 +160,137 @@ COPY --from=build /rootfs/usr/share/licenses/php/LICENSE /usr/share/licenses/php
 FROM stagex/core-filesystem AS package-php-dev
 COPY --from=build /rootfs/usr/bin /usr/bin
 COPY --from=build /rootfs/usr/include/php /usr/include/php
+COPY --from=build /rootfs/ /
 COPY --from=build /rootfs/usr/share/licenses/php/LICENSE /usr/share/licenses/php/LICENSE
 
 FROM stagex/core-filesystem AS package-php-embed
 COPY --from=build /rootfs/usr/lib/libphp.so /usr/lib/libphp.so
 COPY --from=build /rootfs/usr/share/licenses/php/LICENSE /usr/share/licenses/php/LICENSE
 
+FROM stagex/core-filesystem AS package-php-fpm
+COPY --from=build /rootfs/usr/sbin/php-fpm /usr/bin/php-fpm
+
 FROM stagex/core-filesystem AS package-php-zts
 COPY --from=build /rootfs-zts/usr/bin/php /usr/bin/php
 COPY --from=build /rootfs-zts/usr/share/licenses/php/LICENSE /usr/share/licenses/php/LICENSE
 
-FROM stagex/core-filesystem AS package-php-dev-zts
+FROM stagex/core-filesystem AS package-php-zts-dev
 COPY --from=build /rootfs-zts/usr/bin /usr/bin
 COPY --from=build /rootfs-zts/usr/include/php /usr/include/php
 COPY --from=build /rootfs-zts/usr/share/licenses/php/LICENSE /usr/share/licenses/php/LICENSE
 
-FROM stagex/core-filesystem AS package-php-embed-zts
+FROM stagex/core-filesystem AS package-php-zts-embed
 COPY --from=build /rootfs-zts/usr/lib/libphp.so /usr/lib/libphp.so
 COPY --from=build /rootfs-zts/usr/share/licenses/php/LICENSE /usr/share/licenses/php/LICENSE
-
-FROM stagex/core-filesystem AS package-php-fpm
-COPY --from=build /rootfs/usr/sbin/php-fpm /usr/bin/php-fpm
 
 ##############################
 ####### PHP Extensions #######
 ##############################
 
-FROM stagex/core-filesystem AS package-php-ext-phar
-COPY --from=build /rootfs/usr/lib/php-modules/phar.so /usr/lib/php-modules/phar.so
-COPY --from=build /rootfs/etc/php/conf.d/ext-phar.ini /etc/php/conf.d/ext-phar.ini
+FROM stagex/core-filesystem AS package-php-bcmath
+COPY --from=build /rootfs/usr/lib/php-modules/bcmath.so /usr/lib/php-modules/bcmath.so
+COPY --from=build /rootfs/etc/php/conf.d/10-bcmath.ini /etc/php/conf.d/10-bcmath.ini
 
-FROM stagex/core-filesystem AS package-php-ext-filter
-COPY --from=build /rootfs/usr/lib/php-modules/filter.so /usr/lib/php-modules/filter.so
-COPY --from=build /rootfs/etc/php/conf.d/ext-filter.ini /etc/php/conf.d/ext-filter.ini
-
-FROM stagex/core-filesystem AS package-php-ext-curl
+FROM stagex/core-filesystem AS package-php-curl
 COPY --from=build /rootfs/usr/lib/php-modules/curl.so /usr/lib/php-modules/curl.so
-COPY --from=build /rootfs/etc/php/conf.d/ext-curl.ini /etc/php/conf.d/ext-curl.ini
+COPY --from=build /rootfs/etc/php/conf.d/10-curl.ini /etc/php/conf.d/10-curl.ini
 
-FROM stagex/core-filesystem AS package-php-ext-mbstring
+FROM stagex/core-filesystem AS package-php-dom
+COPY --from=build /rootfs/usr/lib/php-modules/dom.so /usr/lib/php-modules/dom.so
+COPY --from=build /rootfs/etc/php/conf.d/10-dom.ini /etc/php/conf.d/10-dom.ini
+
+FROM stagex/core-filesystem AS package-php-fileinfo
+COPY --from=build /rootfs/usr/lib/php-modules/fileinfo.so /usr/lib/php-modules/fileinfo.so
+COPY --from=build /rootfs/etc/php/conf.d/10-fileinfo.ini /etc/php/conf.d/10-fileinfo.ini
+
+FROM stagex/core-filesystem AS package-php-filter
+COPY --from=build /rootfs/usr/lib/php-modules/filter.so /usr/lib/php-modules/filter.so
+COPY --from=build /rootfs/etc/php/conf.d/10-filter.ini /etc/php/conf.d/10-filter.ini
+
+FROM stagex/core-filesystem AS package-php-intl
+COPY --from=build /rootfs/usr/lib/php-modules/intl.so /usr/lib/php-modules/intl.so
+COPY --from=build /rootfs/etc/php/conf.d/10-intl.ini /etc/php/conf.d/10-intl.ini
+
+FROM stagex/core-filesystem AS package-php-mbstring
 COPY --from=build /rootfs/usr/lib/php-modules/mbstring.so /usr/lib/php-modules/mbstring.so
-COPY --from=build /rootfs/etc/php/conf.d/ext-mbstring.ini /etc/php/conf.d/ext-mbstring.ini
+COPY --from=build /rootfs/etc/php/conf.d/10-mbstring.ini /etc/php/conf.d/10-mbstring.ini
 
-FROM stagex/core-filesystem AS package-php-ext-openssl
+FROM stagex/core-filesystem AS package-php-openssl
 COPY --from=build /rootfs/usr/lib/php-modules/openssl.so /usr/lib/php-modules/openssl.so
-COPY --from=build /rootfs/etc/php/conf.d/ext-openssl.ini /etc/php/conf.d/ext-openssl.ini
+COPY --from=build /rootfs/etc/php/conf.d/10-openssl.ini /etc/php/conf.d/10-openssl.ini
 
-FROM stagex/core-filesystem AS package-php-ext-sodium
+FROM stagex/core-filesystem AS package-php-phar
+COPY --from=build /rootfs/usr/lib/php-modules/phar.so /usr/lib/php-modules/phar.so
+COPY --from=build /rootfs/etc/php/conf.d/10-phar.ini /etc/php/conf.d/10-phar.ini
+
+FROM stagex/core-filesystem AS package-php-sodium
 COPY --from=build /rootfs/usr/lib/php-modules/sodium.so /usr/lib/php-modules/sodium.so
-COPY --from=build /rootfs/etc/php/conf.d/ext-sodium.ini /etc/php/conf.d/ext-sodium.ini
+COPY --from=build /rootfs/etc/php/conf.d/10-sodium.ini /etc/php/conf.d/10-sodium.ini
 
-FROM stagex/core-filesystem AS package-php-ext-tokenizer
+FROM stagex/core-filesystem AS package-php-tokenizer
 COPY --from=build /rootfs/usr/lib/php-modules/tokenizer.so /usr/lib/php-modules/tokenizer.so
-COPY --from=build /rootfs/etc/php/conf.d/ext-tokenizer.ini /etc/php/conf.d/ext-tokenizer.ini
+COPY --from=build /rootfs/etc/php/conf.d/10-tokenizer.ini /etc/php/conf.d/10-tokenizer.ini
 
-FROM stagex/core-filesystem AS package-php-ext-zip
+FROM stagex/core-filesystem AS package-php-zip
 COPY --from=build /rootfs/usr/lib/php-modules/zip.so /usr/lib/php-modules/zip.so
-COPY --from=build /rootfs/etc/php/conf.d/ext-zip.ini /etc/php/conf.d/ext-zip.ini
+COPY --from=build /rootfs/etc/php/conf.d/10-zip.ini /etc/php/conf.d/10-zip.ini
 
-FROM stagex/core-filesystem AS package-php-ext-zlib
+FROM stagex/core-filesystem AS package-php-zlib
 COPY --from=build /rootfs/usr/lib/php-modules/zlib.so /usr/lib/php-modules/zlib.so
-COPY --from=build /rootfs/etc/php/conf.d/ext-zlib.ini /etc/php/conf.d/ext-zlib.ini
+COPY --from=build /rootfs/etc/php/conf.d/10-zlib.ini /etc/php/conf.d/10-zlib.ini
 
 ##############################
 ### PHP Extensions w. ZTS ####
 ##############################
 
-FROM stagex/core-filesystem AS package-php-ext-phar-zts
-COPY --from=build /rootfs-zts/usr/lib/php-modules/phar.so /usr/lib/php-modules/phar.so
-COPY --from=build /rootfs/etc/php/conf.d/ext-phar.ini /etc/php/conf.d/ext-phar.ini
+FROM stagex/core-filesystem AS package-php-zts-bcmath
+COPY --from=build /rootfs-zts/usr/lib/php-modules/bcmath.so /usr/lib/php-modules/bcmath.so
+COPY --from=build /rootfs/etc/php/conf.d/10-bcmath.ini /etc/php/conf.d/10-bcmath.ini
 
-FROM stagex/core-filesystem AS package-php-ext-filter-zts
-COPY --from=build /rootfs-zts/usr/lib/php-modules/filter.so /usr/lib/php-modules/filter.so
-COPY --from=build /rootfs/etc/php/conf.d/ext-filter.ini /etc/php/conf.d/ext-filter.ini
-
-FROM stagex/core-filesystem AS package-php-ext-curl-zts
+FROM stagex/core-filesystem AS package-php-zts-curl
 COPY --from=build /rootfs-zts/usr/lib/php-modules/curl.so /usr/lib/php-modules/curl.so
-COPY --from=build /rootfs/etc/php/conf.d/ext-curl.ini /etc/php/conf.d/ext-curl.ini
+COPY --from=build /rootfs/etc/php/conf.d/10-curl.ini /etc/php/conf.d/10-curl.ini
 
-FROM stagex/core-filesystem AS package-php-ext-mbstring-zts
+FROM stagex/core-filesystem AS package-php-zts-dom
+COPY --from=build /rootfs-zts/usr/lib/php-modules/dom.so /usr/lib/php-modules/dom.so
+COPY --from=build /rootfs/etc/php/conf.d/10-dom.ini /etc/php/conf.d/10-dom.ini
+
+FROM stagex/core-filesystem AS package-php-zts-fileinfo
+COPY --from=build /rootfs-zts/usr/lib/php-modules/fileinfo.so /usr/lib/php-modules/fileinfo.so
+COPY --from=build /rootfs/etc/php/conf.d/10-fileinfo.ini /etc/php/conf.d/10-fileinfo.ini
+
+FROM stagex/core-filesystem AS package-php-zts-filter
+COPY --from=build /rootfs-zts/usr/lib/php-modules/filter.so /usr/lib/php-modules/filter.so
+COPY --from=build /rootfs/etc/php/conf.d/10-filter.ini /etc/php/conf.d/10-filter.ini
+
+FROM stagex/core-filesystem AS package-php-zts-intl
+COPY --from=build /rootfs-zts/usr/lib/php-modules/intl.so /usr/lib/php-modules/intl.so
+COPY --from=build /rootfs/etc/php/conf.d/10-intl.ini /etc/php/conf.d/10-intl.ini
+
+FROM stagex/core-filesystem AS package-php-zts-mbstring
 COPY --from=build /rootfs-zts/usr/lib/php-modules/mbstring.so /usr/lib/php-modules/mbstring.so
-COPY --from=build /rootfs/etc/php/conf.d/ext-mbstring.ini /etc/php/conf.d/ext-mbstring.ini
+COPY --from=build /rootfs/etc/php/conf.d/10-mbstring.ini /etc/php/conf.d/10-mbstring.ini
 
-FROM stagex/core-filesystem AS package-php-ext-openssl-zts
+FROM stagex/core-filesystem AS package-php-zts-openssl
 COPY --from=build /rootfs-zts/usr/lib/php-modules/openssl.so /usr/lib/php-modules/openssl.so
-COPY --from=build /rootfs/etc/php/conf.d/ext-openssl.ini /etc/php/conf.d/ext-openssl.ini
+COPY --from=build /rootfs/etc/php/conf.d/10-openssl.ini /etc/php/conf.d/10-openssl.ini
 
-FROM stagex/core-filesystem AS package-php-ext-sodium-zts
+FROM stagex/core-filesystem AS package-php-zts-phar
+COPY --from=build /rootfs-zts/usr/lib/php-modules/phar.so /usr/lib/php-modules/phar.so
+COPY --from=build /rootfs/etc/php/conf.d/10-phar.ini /etc/php/conf.d/10-phar.ini
+
+FROM stagex/core-filesystem AS package-php-zts-sodium
 COPY --from=build /rootfs-zts/usr/lib/php-modules/sodium.so /usr/lib/php-modules/sodium.so
-COPY --from=build /rootfs/etc/php/conf.d/ext-sodium.ini /etc/php/conf.d/ext-sodium.ini
+COPY --from=build /rootfs/etc/php/conf.d/10-sodium.ini /etc/php/conf.d/10-sodium.ini
 
-FROM stagex/core-filesystem AS package-php-ext-tokenizer-zts
+FROM stagex/core-filesystem AS package-php-zts-tokenizer
 COPY --from=build /rootfs-zts/usr/lib/php-modules/tokenizer.so /usr/lib/php-modules/tokenizer.so
-COPY --from=build /rootfs/etc/php/conf.d/ext-tokenizer.ini /etc/php/conf.d/ext-tokenizer.ini
+COPY --from=build /rootfs/etc/php/conf.d/10-tokenizer.ini /etc/php/conf.d/10-tokenizer.ini
 
-FROM stagex/core-filesystem AS package-php-ext-zip-zts
+FROM stagex/core-filesystem AS package-php-zts-zip
 COPY --from=build /rootfs-zts/usr/lib/php-modules/zip.so /usr/lib/php-modules/zip.so
-COPY --from=build /rootfs/etc/php/conf.d/ext-zip.ini /etc/php/conf.d/ext-zip.ini
+COPY --from=build /rootfs/etc/php/conf.d/10-zip.ini /etc/php/conf.d/10-zip.ini
 
-FROM stagex/core-filesystem AS package-php-ext-zlib-zts
+FROM stagex/core-filesystem AS package-php-zts-zlib
 COPY --from=build /rootfs-zts/usr/lib/php-modules/zlib.so /usr/lib/php-modules/zlib.so
-COPY --from=build /rootfs/etc/php/conf.d/ext-zlib.ini /etc/php/conf.d/ext-zlib.ini
+COPY --from=build /rootfs/etc/php/conf.d/10-zlib.ini /etc/php/conf.d/10-zlib.ini

@@ -1,12 +1,12 @@
 [package]
 name = "perl-dbi"
-version = "1.643"
+version = "1.647"
 description = "Perl database interface"
 license = "Artistic-1.0-Perl OR GPL-1.0-or-later"
 website = "https://dbi.perl.org"
 
 [sources.perl-dbi]
-hash = "8a2b993db560a2c373c174ee976a51027dd780ec766ae17620c20393d2e836fa"
+hash = "0df16af8e5b3225a68b7b592ab531004ddb35a9682b50300ce50174ad867d9aa"
 format = "tar.gz"
 file = "perl-dbi-{version}.{format}"
-mirrors = [ "https://cpan.metacpan.org/authors/id/T/TI/TIMB/DBI-{version}.{format}",]
+mirrors = [ "https://cpan.metacpan.org/authors/id/H/HM/HMBRAND/DBI-{version}.tgz",]

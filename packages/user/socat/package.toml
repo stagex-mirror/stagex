@@ -1,12 +1,12 @@
 [package]
 name = "socat"
-version = "1.8.0.1"
+version = "1.8.1.1"
 description = "Multipurpose relay for bidirectional data transfer"
 license = "GPL-2.0-only"
 website = "http://www.dest-unreach.org/socat/"
 
 [sources.socat]
-hash = "dc350411e03da657269e529c4d49fe23ba7b4610b0b225c020df4cf9b46e6982"
+hash = "f68b602c80e94b4b7498d74ec408785536fe33534b39467977a82ab2f7f01ddb"
 format = "tar.gz"
 file = "socat-{version}.{format}"
 mirrors = [ "http://www.dest-unreach.org/socat/download/{file}",]

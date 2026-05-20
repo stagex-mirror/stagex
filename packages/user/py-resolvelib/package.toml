@@ -1,12 +1,12 @@
 [package]
 name = "py-resolvelib"
-version = "1.2.0"
+version = "1.2.1"
 description = "Resolve abstract dependencies into concrete ones"
 website = "https://github.com/sarugaku/resolvelib"
 license = "ISC"
 
 [sources.py-resolvelib]
-hash = "cb5858fcd2c91bd14a77654883ec64d3de309fbca349494b084c36f4ff3ff05c"
+hash = "4d4c4137d7b8f8f27f298ff1af2faa767d790f271928506358d25e4252ed749a"
 format = "tar.gz"
 file = "py-resolvelib-{version}.{format}"
 mirrors = [ "https://github.com/sarugaku/resolvelib/archive/refs/tags/{version}.{format}",]

@@ -1,12 +1,12 @@
 [package]
 name = "kustomize"
-version = "5.7.1"
+version = "5.8.1"
 description = "Template-free customization of Kubernetes YAML manifests"
 website = "https://kustomize.io/"
 license = "Apache-2.0"
 
 [sources.kustomize]
-hash = "9e3907f0ea58426a5a4f64a457e83bbe0a1370ca76048556146f38b52d5fa5f1"
+hash = "4ea5a974c46ad6efcde4fd9c339ab1bd278a80b6872dda2d1a366936e4638475"
 format = "tar.gz"
 file = "kustomize-{version}.{format}"
 mirrors = [ "https://github.com/kubernetes-sigs/kustomize/archive/refs/tags/kustomize/v{version}.{format}",]

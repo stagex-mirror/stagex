@@ -1,0 +1,22 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+ARG VERSION
+
+COPY --from=stagex/core-php-dev . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-openssl . /
+
+ADD fetch/opentelemetry-${VERSION}.tgz .
+
+WORKDIR /opentelemetry-${VERSION}/
+RUN --network=none <<-EOF
+	set -ex
+	phpize
+	./configure
+	make
+	make install INSTALL_ROOT=/rootfs
+	install -vDm644 -t /rootfs/usr/share/licenses/php-opentelemetry LICENSE
+	mkdir -p "/rootfs/etc/php/conf.d"
+	echo "extension=opentelemetry.so" > "/rootfs/etc/php/conf.d/10-opentelemetry.ini"
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

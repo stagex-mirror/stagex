@@ -1,12 +1,12 @@
 [package]
 name = "ccid"
-version = "1.5.5"
+version = "1.7.1"
 description = "PC/SC driver for USB CCID smart card readers"
 license = "LGPL-2.1-or-later"
 website = "https://ccid.apdu.fr"
 
 [sources.ccid]
-hash = "194708f75fe369d45dd7c15e8b3e8a7db8b49cfc5557574ca2a2e76ef12ca0ca"
-format = "tar.bz2"
+hash = "32799ab16fe6e493c9452be3823f21810fbe80b884021a6f6f3fa69f26be5c86"
+format = "tar.xz"
 file = "ccid-{version}.{format}"
 mirrors = [ "https://ccid.apdu.fr/files/{file}",]

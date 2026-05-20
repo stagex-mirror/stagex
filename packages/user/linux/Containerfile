@@ -8,7 +8,7 @@ COPY --from=stagex/core-binutils . /
 COPY --from=stagex/user-elfutils . /
 COPY --from=stagex/user-kmod . /
 ARG VERSION
-ADD fetch/linux-${VERSION}.tar.xz .
+ADD fetch/linux-${VERSION}.tar.gz .
 ENV SOURCE_DATE_EPOCH=1
 ENV KBUILD_BUILD_HOST=stagex
 ENV KBUILD_BUILD_USER=user

@@ -3,6 +3,7 @@ COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-make . /
 ARG VERSION
+ARG TARGETARCH
 ADD fetch/arti-arti-v${VERSION}.tar.gz .
 WORKDIR /arti-arti-v${VERSION}
 RUN cargo fetch

@@ -19,11 +19,13 @@ COPY --from=stagex/core-libnghttp2 . /
 COPY --from=stagex/core-brotli . /
 COPY --from=stagex/core-c-ares . /
 COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-libatomic-stub . /
 ADD fetch/nodejs-${VERSION}.tar.gz .
 WORKDIR /node-v${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 ENV CC=clang
 ENV CXX=clang++
+ENV CXXFLAGS="-include stdlib.h"
 #ENV LDFLAGS=" \
 #	-Wl,-O1 -Wl,--sort-common -Wl,--as-needed -Wl,-z,relro \
 #	-Wl,-z,now -Wl,-z,pack-relative-relocs"
@@ -36,10 +38,8 @@ ENV CXX=clang++
 #ENV CXXFLAGS="$CFLAGS"
 #ENV CPPFLAGS="$CXXFLAGS"
 #ENV LTOFLAGS="-flto=auto"
-ADD patches/* .
 RUN --network=none <<-EOF
 	set -eux
-	patch -p1 < no-libatomic.patch
 	python configure.py \
 		--prefix=/usr \
 		--ninja \
@@ -49,9 +49,7 @@ RUN --network=none <<-EOF
 		--shared-cares \
 		--shared-nghttp2 \
 		--shared-openssl \
-		--shared-zlib \
 		--without-npm \
-		--without-corepack \
 		--with-intl=system-icu \
 		--with-icu-default-data-dir=$(icu-config --icudatadir) \
 		--openssl-use-def-ca-store

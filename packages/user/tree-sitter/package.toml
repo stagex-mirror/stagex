@@ -1,0 +1,13 @@
+[package]
+name = "tree-sitter"
+version = "0.26.7"
+description = "An incremental parsing system for programming tools"
+license = "MIT"
+website = "https://tree-sitter.github.io"
+subpackages = ["tree-sitter", "tree-sitter-cli"]
+
+[sources.tree-sitter]
+hash = "4343107ad1097a35e106092b79e5dd87027142c6fba5e4486b1d1d44d5499f84"
+format = "tar.gz"
+file = "tree-sitter-{version}.{format}"
+mirrors = ["https://github.com/tree-sitter/tree-sitter/archive/refs/tags/v{version}.{format}"]

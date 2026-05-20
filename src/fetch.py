@@ -11,17 +11,21 @@ from hashlib import file_digest
 from urllib.parse import urlsplit
 from urllib.request import build_opener, install_opener, urlopen, urlretrieve
 from email.message import Message
-from typing import List
-from typing import Tuple
+from typing import List, Tuple
+from concurrent.futures import ThreadPoolExecutor
+import threading
 
-# fmt: off
 class ResourceFetcher(object):
   START_TIME: 0
   def __init__(self, package_file_path: str):
     self.package_file: str = package_file_path
 
   def fetch_resource(self) -> List[Tuple[str, str, str, str]]:
-    print(f"\nParsing: {self.package_file}")
+   # time.sleep(3)
+    thread_id = threading.get_ident()
+    start = time.time()
+    print(f"[Thread {thread_id}] Starting: {self.package_file}", flush=True)
+    print(f"\nParsing: {self.package_file}", flush=True)
     stage: str = self.package_file.split(os.path.sep)[1]
     toml_package = CommonUtils.toml_read(self.package_file)
     package_info = CommonUtils.parse_package_toml_no_deps(toml_package)
@@ -75,19 +79,20 @@ class ResourceFetcher(object):
         print(f"Mirror: {url}")
         try:
           ResourceFetcher.download(url, filepath)
+          print(f"\nFinished downloading: {file}")
         except:
           error = (file, source_info.hash, url, "download")
-          print("Failed downloading from mirror")
+          print("Failed downloading from mirror: {url}")
           continue
         if not ResourceFetcher.verify(filepath, source_info.hash):
           error = (file, source_info.hash, url, "verify_download")
-          print("Failed verifying downloaded file")
+          print("Failed verifying downloaded file, from mirror: {url}")
           continue
         error = None
         break
       if error:
         failed_fetch.append(error)
-
+    print(f"[Thread {thread_id}] Finished: {self.package_file} in {time.time()-start:.2f}s", flush=True)
     return failed_fetch
 
   @staticmethod
@@ -131,14 +136,10 @@ class ResourceFetcher(object):
       with open(file_path, "rb") as f:
           return expected_digest == file_digest(f, "sha256").hexdigest()
 
-def interrupt_handler(signum, frame, ask=True):
+def interrupt_handler(signum, frame):
     print(f"Handling signal {signum} ({signal.Signals(signum).name}).")
-    if ask:
-        signal.signal(signal.SIGINT, partial(interrupt_handler, ask=False))
-        print("To confirm interrupt, press ctrl-c again.")
-        return
-
-    print("Cleaning/exiting...")
+    print(f"\033[91m To confirm interrupt, press ctrl-c again. \033[0m")
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
     time.sleep(1)
     sys.exit(0)
 
@@ -156,12 +157,17 @@ if __name__ == "__main__":
       for file_name in file_list:
         if file_name == "package.toml":
           package_files.append(os.path.join(base_dir, file_name))
-
-  for package_file in package_files:
-    rf = ResourceFetcher(package_file)
-    failed = rf.fetch_resource()
-    print()
-    if len(failed):
-      for fail in failed:
-        print(f"\nFailed: {fail}")
-      exit(1)
+  pool = ThreadPoolExecutor()
+  if pool._max_workers >= 2:
+      thrds = pool._max_workers - 1
+  else:
+      thrds = 1
+  rfetchers = [ResourceFetcher(path) for path in package_files]
+  with ThreadPoolExecutor(max_workers=thrds) as executor:
+      futures = [executor.submit(fetcher.fetch_resource) for fetcher in rfetchers]
+      pkgs = [f.result() for f in futures]
+      print()
+      if any(pkgs):
+        for fail in pkgs:
+          print(f"\nFailed: {fail}")
+        exit(1)

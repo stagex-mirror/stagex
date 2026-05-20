@@ -1,0 +1,20 @@
+FROM stagex/pallet-rust AS build
+ARG VERSION
+ARG TARGETARCH
+ADD fetch/uutils-${VERSION}.tar.gz .
+WORKDIR /coreutils-${VERSION}
+RUN cargo fetch --locked
+ENV RUSTFLAGS="-C codegen-units=1 -C target-feature=+crt-static"
+RUN --network=none <<-EOF
+	cargo build \
+		--frozen \
+		--release \
+		--target "${ARCH}-unknown-linux-musl" \
+		--bin coreutils
+	install -Dm755 "target/${ARCH}-unknown-linux-musl/release/coreutils" /rootfs/usr/bin/coreutils
+	for tool in $(/rootfs/usr/bin/coreutils --list); do
+		ln -s coreutils "/rootfs/usr/bin/${tool}"
+	done
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

@@ -1,12 +1,12 @@
 [package]
 name = "dtc"
-version = "1.7.1"
+version = "1.7.2"
 description = "Device Tree Compiler and associated tools"
 license = "GPL-2.0-or-later"
 website = "https://git.kernel.org/pub/scm/utils/dtc/dtc.git"
 
 [sources.dtc]
-hash = "398098bac205022b39d3dce5982b98c57f1023f3721a53ebcbb782be4cf7885e"
+hash = "92d8ca769805ae1f176204230438fe52808f4e1c7944053c9eec0e649b237539"
 format = "tar.xz"
 file = "dtc-{version}.{format}"
 mirrors = [ "https://kernel.org/pub/software/utils/dtc/{file}",]

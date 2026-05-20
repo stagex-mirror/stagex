@@ -16,13 +16,16 @@ COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-mold . /
 COPY --from=stagex/core-onetbb . /
+COPY --from=stagex/core-icu . /
 COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-libzstd . /
 ADD fetch/v${VERSION}.tar.gz .
 WORKDIR /solidity-${VERSION}
-RUN <<-EOF
-	set -eux
+ADD patches/*.patch .
+RUN --network=none <<-EOF
+	set -eux	
+	patch -p1 < llvm22-compatibility.patch
 	mkdir /include
 	sed -i -e 's/-Werror/-Wno-error/' cmake/EthCompilerSettings.cmake
 	export CFLAGS="-Wno-error -Wno-deprecated"

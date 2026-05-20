@@ -2,6 +2,7 @@ FROM stagex/pallet-rust AS build
 COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-make . /
 ARG VERSION
+ARG TARGETARCH
 ADD fetch/v${VERSION}.tar.gz .
 WORKDIR /snpguest-${VERSION}
 RUN cargo fetch

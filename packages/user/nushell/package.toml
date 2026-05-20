@@ -1,0 +1,12 @@
+[package]
+name = "nushell"
+description = "A new type of shell"
+license = "MIT"
+website = "https://www.nushell.sh/"
+version = "0.112.2"
+
+[sources.nushell]
+hash = "32ebcfe41b6390145e90eb86273e221f22eeacd53ecac5274405f148fb4258c2"
+format = "tar.gz"
+file = "nushell-{version}.{format}"
+mirrors = [ "https://github.com/nushell/nushell/archive/refs/tags/{version}.{format}"]

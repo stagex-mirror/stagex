@@ -12,7 +12,6 @@ ENV GOSUMDB=sum.golang.org
 ENV CGO_ENABLED=0
 ENV GOHOSTOS=linux
 ENV GOHOSTARCH=amd64
-ENV GO11MODULE=off
 WORKDIR /k9s-${VERSION}
 RUN go get ./...
 RUN --network=none <<-EOF

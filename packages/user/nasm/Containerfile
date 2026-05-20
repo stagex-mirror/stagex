@@ -2,9 +2,12 @@ FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
 ADD fetch/nasm-${VERSION}.tar.xz .
 WORKDIR /nasm-${VERSION}
+COPY patches/*.patch .
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	./configure --prefix=/usr
+	# Apply Alpine cast-to-bool patch: fix __STDC_VERSION__ typo and remove broken bool typedef hack
+	patch -p1 < alpine-cast-to-bool.patch
 	make
 	DESTDIR=/rootfs make install
 EOF

@@ -8,10 +8,10 @@ COPY --from=stagex/user-py-setuptools-rust . /
 ADD fetch/maturin-${VERSION}.tar.gz .
 WORKDIR /maturin-${VERSION}
 ENV OPENSSL_NO_VENDOR=1
-RUN MATURIN_SETUP_ARGS="--frozen" python -m build --wheel --no-isolation
+RUN MATURIN_SETUP_ARGS="--frozen" gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 RUN --network=none <<-EOF
 	set -eu
-	python -m installer --destdir=/rootfs dist/*.whl
+	python -m installer --destdir=/rootfs .dist/*.whl
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 	install -vDm 644 license-mit /rootfs/usr/share/licenses/maturin/LICENSE
 EOF

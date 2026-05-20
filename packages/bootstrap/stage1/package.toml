@@ -848,7 +848,7 @@ mirrors = [
 [sources.libarchive_352]
 hash = "f0b19ff39c3c9a5898a219497ababbadab99d8178acc980155c7e1271089b5a0"
 file = "libarchive-3.5.2.tar.xz"
-mirrors = ["http://libarchive.org/downloads/{file}"]
+mirrors = [ "https://libarchive.org/downloads/{file}", "https://slackware.cs.utah.edu/pub/slackware/slackware/source/l/libarchive/{file}"] 
 
 [sources.tcc_0926]
 hash = "6b8cbd0a5fed0636d4f0f763a603247bc1935e206e1cc5bda6a2818bab6e819f"
@@ -1192,7 +1192,11 @@ mirrors = ["https://www.unicode.org/Public/11.0.0/ucd/{file}"]
 [sources.file_544]
 hash = "3751c7fba8dbc831cb8d7cc8aff21035459b8ce5155ef8b0880a27d028475f3b"
 file = "file-5.44.tar.gz"
-mirrors = ["http://ftp.astron.com/pub/file/{file}"]
+mirrors = [
+  "http://ftp.astron.com/pub/file/{file}", 
+  "http://sources.openwrt.org/{file}", 
+  "https://download.iopsys.eu/iopsys/mirror/{file}"
+]
 
 [sources.bc_1071]
 hash = "95396f88fc719a1bf8bd463809119526fef44a42ab9eb708335c2cb79bc801c6"

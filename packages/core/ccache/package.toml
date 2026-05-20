@@ -1,11 +1,11 @@
 [package]
 name = "ccache"
-version = "4.10.2"
+version = "4.13.5"
 description = "Fast C/C++ compiler cache"
 license = "GPL-3.0-or-later"
 website = "https://ccache.dev/"
 
 [sources.ccache]
-hash = "c0b85ddfc1a3e77b105ec9ada2d24aad617fa0b447c6a94d55890972810f0f5a"
+hash = "7a8945f4ac7d4bb79c0055cd3db7857a6934c2b7ab3d80bb11a0f5271e36fd94"
 file = "ccache-{version}.tar.xz"
 mirrors = [ "https://github.com/ccache/ccache/releases/download/v{version}/{file}"]

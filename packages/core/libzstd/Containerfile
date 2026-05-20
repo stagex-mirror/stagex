@@ -19,7 +19,6 @@ RUN --network=none <<-EOF
 		-Dbin_tests=false \
 		-Dbin_contrib=false \
 		-Dbin_programs=true \
-		-Dbacktrace=disabled \
 		-Dmulti_thread=enabled \
 		-Dlz4=disabled \
 		-Dlzma=disabled \
