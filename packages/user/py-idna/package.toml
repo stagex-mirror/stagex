@@ -1,12 +1,12 @@
 [package]
 name = "py-idna"
-version = "3.14"
+version = "3.15"
 description = "Internationalized Domain Names in Applications support"
 license = "BSD-3-Clause"
 website = "https://github.com/kjd/idna"
 
 [sources.py-idna]
-hash = "8a90fd206159557821cb128e3019c35b2800b432c21fc76e5e39410f67efbd3e"
+hash = "43d303a9fa42c1551e45be4428d255d0dddd532b0190a2e81a070ed4416ded92"
 format = "tar.gz"
 file = "py-idna-{version}.{format}"
 mirrors = [ "https://github.com/kjd/idna/archive/v{version}.{format}",]
