@@ -9,5 +9,4 @@ website = "https://github.com/stevegrubb/libcap-ng"
 hash = "fe11ebbb55904763b3532f19069f13ec319042634620180a03bd4653d301563e"
 format = "tar.gz"
 file = "libcap-ng-{version}.{format}"
-mirrors = [ "https://github.com/stevegrubb/libcap-ng/archive/refs/tags/v{version}.{format}" ]
-
+mirrors = [ "https://github.com/stevegrubb/libcap-ng/archive/refs/tags/v{version}.{format}",]
