@@ -9,4 +9,4 @@ website = "https://xorg.freedesktop.org"
 hash = "d6f89f65bafb8c9b735e0515882b8a1511e8e864dde5e9513e191629369f2256"
 format = "tar.gz"
 file = "xorgproto-{version}.{format}"
-mirrors = [ "https://xorg.freedesktop.org/archive/individual/proto/{file}" ]
+mirrors = [ "https://xorg.freedesktop.org/archive/individual/proto/{file}",]
