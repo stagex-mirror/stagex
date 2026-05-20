@@ -35,15 +35,6 @@ matrix = ["@dgrove:matrix.org"]
 keyoxide = "https://keyoxide.org/C92FE5A3FBD58DD3EC5AA26BB10116B8193F2DBD"
 website = "https://dannygrove.com"
 
-[people.conyel]
-name = "Konstantinos Geles"
-location = "FR-HDF"
-email = "bioinformaticiannextdoor@gmail.com"
-matrix = ["@fire_element:matrix.org"]
-fediverse = "@bioinformatician_next_door@kafeneio.social"
-keyoxide = "https://keyoxide.org/8208F8E4F9D61005F5706A4E28E42797A19977AC"
-website = "https://silvertides.net"
-
 [people.logicwax]
 name = "Matthew Brooks"
 location = "US-CA"
@@ -101,15 +92,6 @@ id = "C92FE5A3FBD58DD3EC5AA26BB10116B8193F2DBD"
 algorithm = "RSA4096"
 servers = "openpgp.org"
 devices = "Yubikey 5 NFC, Yubikey 5C"
-offline-ca = true
-backup = true
-interaction = true
-
-[keys.conyel.personal]
-id = "8208F8E4F9D61005F5706A4E28E42797A19977AC"
-algorithm = "ED25519"
-servers = "openpgp.org"
-devices = "YubiKey 5 NFC"
 offline-ca = true
 backup = true
 interaction = true
@@ -221,18 +203,6 @@ model = "AMD Ryzen 7 7840U"
 ghz = 3.3
 cores = 8
 os = "arch Linux"
-runtime = "Docker"
-
-[machines.conyel.remote1]
-owner = "Konstantinos Geles"
-location = ""
-type = "vm"
-arch = "x86_64"
-brand = "AMD"
-model = "EPYC Rome"
-ghz = 2
-cores = 32
-os = "Proxmox/Debian"
 runtime = "Docker"
 
 [machines.panekj.main]
