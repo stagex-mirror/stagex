@@ -49,7 +49,7 @@ RUN --network=none <<-EOF
 
   /box/vendor/bin/box compile --sort-compiled-files --no-interaction
 
-  install -vDm755 -t /rootfs/usr/bin/pie pie.phar
+  install -vDm755 pie.phar /rootfs/usr/bin/pie
   /rootfs/usr/bin/pie completion bash > completions.bash
   install -vDm644 -t /rootfs/usr/share/bash-completion/completions/pie completions.bash
   install -vDm644 -t /rootfs/usr/share/licenses/pie LICENSE.md
