@@ -6,7 +6,7 @@ RUN --network=none <<-EOF
   set -eu
   gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
   python -m installer -d /rootfs .dist/*.whl
-  install -vDm644 -t /rootfs/usr/share/license/py-pyasn1 644 LICENSE.rst
+  install -vDm644 -t /rootfs/usr/share/license/py-pyasn1 LICENSE.rst
   find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
 

@@ -53,13 +53,13 @@ RUN --network=none <<-EOF
 			-ec bin-${ARCH}-efi/${vid}${did}.efidrv \
 			-o out/efi-${target}.rom;
 	done
-	install -vDm644 -t /rootfs/usr/share/ipxe 644 bin/*.lkrn
-	install -vDm644 -t /rootfs/usr/share/ipxe 644 bin/*.dsk
-	install -vDm644 -t /rootfs/usr/share/ipxe 644 bin/*.iso
-	install -vDm644 -t /rootfs/usr/share/ipxe 644 bin/*.pxe
-	install -vDm644 -t /rootfs/usr/share/ipxe 644 bin/*.kpxe
-	install -vDm644 -t /rootfs/usr/share/ipxe/${ARCH} 644 bin-${ARCH}-efi/*.efi
-	install -vDm644 -t /rootfs/usr/share/qemu 644 out/efi-*.rom
+	install -vDm644 -t /rootfs/usr/share/ipxe bin/*.lkrn
+	install -vDm644 -t /rootfs/usr/share/ipxe bin/*.dsk
+	install -vDm644 -t /rootfs/usr/share/ipxe bin/*.iso
+	install -vDm644 -t /rootfs/usr/share/ipxe bin/*.pxe
+	install -vDm644 -t /rootfs/usr/share/ipxe bin/*.kpxe
+	install -vDm644 -t /rootfs/usr/share/ipxe/${ARCH} bin-${ARCH}-efi/*.efi
+	install -vDm644 -t /rootfs/usr/share/qemu out/efi-*.rom
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

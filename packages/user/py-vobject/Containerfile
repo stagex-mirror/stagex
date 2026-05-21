@@ -8,8 +8,8 @@ WORKDIR /vobject-${VERSION}/
 RUN --network=none <<-EOF
   set -eu
   python setup.py install -O1 --root=/rootfs
-  install -vDm644 -t /rootfs/usr/share/py-vobject 644 ACKNOWLEDGEMENTS.txt
-  install -vDm644 -t /rootfs/usr/share/py-vobject 644 README.md
+  install -vDm644 -t /rootfs/usr/share/py-vobject ACKNOWLEDGEMENTS.txt
+  install -vDm644 -t /rootfs/usr/share/py-vobject README.md
   find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
 

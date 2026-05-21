@@ -22,9 +22,9 @@ RUN --network=none <<-EOF
 		install -vDm644 -t /rootfs/usr/share/licenses/sequoia-sq LICENSE.txt
 
 		#	completions
-		install -vDm644 -t /rootfs-completions/usr/share/bash-completion/completions/sq 644 target/x86_64-unknown-linux-musl/release/build/sequoia-sq-*/out/shell-completions/sq.bash
-		install -vDm644 -t /rootfs-completions/usr/share/zsh/site-functions 644 target/x86_64-unknown-linux-musl/release/build/sequoia-sq-*/out/shell-completions/_sq
-		install -vDm644 -t /rootfs-completions/usr/share/fish/vendor_completions.d 644 target/x86_64-unknown-linux-musl/release/build/sequoia-sq-*/out/shell-completions/sq.fish
+		install -vDm644 -t /rootfs-completions/usr/share/bash-completion/completions/sq target/x86_64-unknown-linux-musl/release/build/sequoia-sq-*/out/shell-completions/sq.bash
+		install -vDm644 -t /rootfs-completions/usr/share/zsh/site-functions target/x86_64-unknown-linux-musl/release/build/sequoia-sq-*/out/shell-completions/_sq
+		install -vDm644 -t /rootfs-completions/usr/share/fish/vendor_completions.d target/x86_64-unknown-linux-musl/release/build/sequoia-sq-*/out/shell-completions/sq.fish
 		install -vDm644 -t /rootfs-completions/usr/share/licenses/sequoia-sq LICENSE.txt
 EOF
 
