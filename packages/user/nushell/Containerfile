@@ -20,8 +20,8 @@ RUN --network=none <<-EOF
 		--target "${ARCH}-unknown-linux-musl" \
  		--bin nu
 
-	install -Dm755 target/${ARCH}-unknown-linux-musl/release/nu /rootfs/usr/bin/nu
-	install -Dm644 -t /rootfs/usr/share/licenses/nushell LICENSE
+	install -vDm755 -t /rootfs/usr/bin target/${ARCH}-unknown-linux-musl/release/nu
+	install -vDm644 -t /rootfs/usr/share/licenses/nushell LICENSE
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

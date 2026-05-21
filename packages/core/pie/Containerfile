@@ -49,10 +49,10 @@ RUN --network=none <<-EOF
 
   /box/vendor/bin/box compile --sort-compiled-files --no-interaction
 
-  install -Dm755 pie.phar /rootfs/usr/bin/pie
+  install -vDm755 -t /rootfs/usr/bin/pie pie.phar
   /rootfs/usr/bin/pie completion bash > completions.bash
-  install -Dm644 completions.bash /rootfs/usr/share/bash-completion/completions/pie
-  install -Dm644 -t "/rootfs/usr/share/licenses/pie" LICENSE.md
+  install -vDm644 -t /rootfs/usr/share/bash-completion/completions/pie completions.bash
+  install -vDm644 -t /rootfs/usr/share/licenses/pie LICENSE.md
 EOF
 
 FROM stagex/core-filesystem AS package

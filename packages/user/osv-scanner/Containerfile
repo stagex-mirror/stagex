@@ -19,8 +19,8 @@ RUN --network=none <<-EOF
 		--ldflags="-w -s -buildid= " \
 		./cmd/...
 	mkdir -p /rootfs
-	install -Dm755 out/osv-scanner -t /rootfs/usr/bin/
-	install -Dm755 out/osv-reporter -t /rootfs/usr/bin/
+	install -vDm755 -t /rootfs/usr/bin out/osv-scanner
+	install -vDm755 -t /rootfs/usr/bin out/osv-reporter
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

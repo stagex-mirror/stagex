@@ -9,7 +9,7 @@ RUN --network=none <<-EOF
     
     patch -p1 < allow-skipping-dotenv-load.patch
 	go build -v -o hivemind
-	install -Dm0755 -t /rootfs/usr/bin hivemind
+	install -vDm755 -t /rootfs/usr/bin hivemind
 	install -vDm644 -t /rootfs/usr/share/licenses/hivemind LICENSE
 EOF
 

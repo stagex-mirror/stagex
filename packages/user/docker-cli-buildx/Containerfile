@@ -14,7 +14,7 @@ RUN <<-EOF
 		" \
 		-o docker-buildx \
 		./cmd/buildx
-	install -Dm755 docker-buildx -t /rootfs/usr/libexec/docker/cli-plugins/
+	install -vDm755 -t /rootfs/usr/libexec/docker/cli-plugins docker-buildx
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

@@ -20,7 +20,7 @@ RUN --network=none <<-EOF
 	mkdir -p "/rootfs/${sitedir}"
 	cp -a gpep517 "/rootfs/$sitedir"
 	python3 -m compileall "/rootfs/$sitedir"
-	install -Dm755 gpep517-cli /rootfs/usr/bin/gpep517
+	install -vDm755 -t /rootfs/usr/bin/gpep517 gpep517-cli
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
 FROM stagex/core-filesystem AS package

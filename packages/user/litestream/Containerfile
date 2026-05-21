@@ -14,7 +14,7 @@ RUN go build \
   -o . ./cmd/litestream
 RUN --network=none <<-EOF
 	set -eu
-	install -Dm755 -t /rootfs/usr/bin litestream
+	install -vDm755 -t /rootfs/usr/bin litestream
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

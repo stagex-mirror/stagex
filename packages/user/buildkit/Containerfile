@@ -20,7 +20,7 @@ RUN <<-EOF
 		./cmd/...
 	rm -r docs/reference
 	mkdir -p /rootfs
-	install -Dm755 ./out/* -t /rootfs/usr/bin/
+	install -vDm755 -t /rootfs/usr/bin ./out/*
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

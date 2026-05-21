@@ -14,7 +14,7 @@ RUN go get ./...
 RUN --network=none <<-EOF
   set -eu
 	go build -trimpath -v
-	install -Dm0755 kustomize-sops /rootfs/usr/lib/kustomize/plugins/viaduct.ai/v1/ksops/ksops
+	install -vDm755 -t /rootfs/usr/lib/kustomize/plugins/viaduct.ai/v1/ksops/ksops kustomize-sops
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

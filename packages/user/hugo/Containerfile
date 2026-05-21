@@ -8,20 +8,20 @@ RUN --network=none <<-EOF
 
 	export rootfs="rootfs"
 	go build -v -o hugo
-	install -Dm0755 -t "/${rootfs}/usr/bin/" hugo
-	install -Dm0644 -t "/${rootfs}/usr/share/licenses/hugo/" LICENSE
+	install -vDm755 -t /${rootfs}/usr/bin hugo
+	install -vDm644 -t /${rootfs}/usr/share/licenses/hugo LICENSE
 	unset rootfs
 
 	export rootfs="rootfs-extended"
 	go build -v -o hugo_exended --tags extended
-	install -Dm0755 hugo_exended "/${rootfs}/usr/bin/hugo"
-	install -Dm0644 -t "/${rootfs}/usr/share/licenses/hugo/" LICENSE
+	install -vDm755 -t /${rootfs}/usr/bin/hugo hugo_exended
+	install -vDm644 -t /${rootfs}/usr/share/licenses/hugo LICENSE
 	unset rootfs
 
 	export rootfs="rootfs-extended-with-deploy"
 	go build -v -o hugo_exended_with_deploy --tags extended,deploy
-	install -Dm0755 hugo_exended_with_deploy "/${rootfs}/usr/bin/hugo"
-	install -Dm0644 -t "/${rootfs}/usr/share/licenses/hugo/" LICENSE
+	install -vDm755 -t /${rootfs}/usr/bin/hugo hugo_exended_with_deploy
+	install -vDm644 -t /${rootfs}/usr/share/licenses/hugo LICENSE
 	unset rootfs
 EOF
 

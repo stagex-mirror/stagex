@@ -12,7 +12,7 @@ RUN --network=none <<-EOF
     --frozen \
     --release \
     --target "${ARCH}-unknown-linux-musl"
-		install -Dm755 "target/${ARCH}-unknown-linux-musl/release/nit" /rootfs/usr/bin/init
+		install -vDm755 -t /rootfs/usr/bin/init target/${ARCH}-unknown-linux-musl/release/nit
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

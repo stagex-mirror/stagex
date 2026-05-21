@@ -137,10 +137,10 @@ RUN --network=none <<-EOF
 	patch -p1 < remove-git-call-from-compiler.patch
 	php -dphar.readonly=0 bin/compile
 
-	install -Dm755 composer.phar /rootfs/usr/bin/composer
+	install -vDm755 -t /rootfs/usr/bin/composer composer.phar
 	/rootfs/usr/bin/composer completion bash > completions.bash
-	install -Dm644 completions.bash /rootfs/usr/share/bash-completion/completions/composer
-	install -Dm644 -t "/rootfs/usr/share/licenses/composer" LICENSE
+	install -vDm644 -t /rootfs/usr/share/bash-completion/completions/composer completions.bash
+	install -vDm644 -t /rootfs/usr/share/licenses/composer LICENSE
 EOF
 
 FROM stagex/core-filesystem AS package

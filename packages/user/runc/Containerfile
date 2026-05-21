@@ -14,7 +14,7 @@ RUN <<-EOF
 	# HACK: build in yolo mode because of some buried error we have not tracked down yet
 	set +eux
 	make EXTRA_LDFLAGS="-w -s -buildid=" COMMIT=${VERSION} -j "$(nproc)"
-	install -Dsm755 runc /rootfs/usr/bin/runc
+	install -vDm755 -t /rootfs/usr/bin runc
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

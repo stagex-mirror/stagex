@@ -17,7 +17,7 @@ RUN --network=none <<-EOF
                --bin sevctl
        mkdir -p /rootfs/usr/bin
        cp target/${ARCH}-unknown-linux-musl/release/sevctl /rootfs/usr/bin/sevctl
-       install -Dm644 -t /rootfs/usr/share/licenses/sevctl/ LICENSE
+       install -vDm644 -t /rootfs/usr/share/licenses/sevctl LICENSE
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
