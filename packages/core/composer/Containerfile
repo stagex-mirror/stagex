@@ -136,8 +136,8 @@ RUN --network=none <<-EOF
 	patch -p1 < remove-timestamp-from-compile.patch
 	patch -p1 < remove-git-call-from-compiler.patch
 	php -dphar.readonly=0 bin/compile
-
-	install -vDm755 -t /rootfs/usr/bin/composer composer.phar
+	
+	install -vDm755 composer.phar /rootfs/usr/bin/composer
 	/rootfs/usr/bin/composer completion bash > completions.bash
 	install -vDm644 -t /rootfs/usr/share/bash-completion/completions/composer completions.bash
 	install -vDm644 -t /rootfs/usr/share/licenses/composer LICENSE
