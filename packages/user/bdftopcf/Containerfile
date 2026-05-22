@@ -5,6 +5,7 @@ COPY --from=stagex/user-util-macros . /
 ADD fetch/bdftopcf-${VERSION}.tar.xz .
 WORKDIR /bdftopcf-${VERSION}
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

@@ -4,6 +4,7 @@ ARG VERSION
 ADD fetch/rhash-${VERSION}.tar.gz .
 WORKDIR /RHash-${VERSION}
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

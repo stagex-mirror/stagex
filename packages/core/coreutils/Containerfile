@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-openssl . /
@@ -14,7 +14,7 @@ ADD fetch/coreutils-${VERSION}.tar.xz .
 WORKDIR /coreutils-${VERSION}
 ENV FORCE_UNSAFE_CONFIGURE=1
 RUN --network=none <<-EOF
-	set -ex
+	autoreconf -vfi
 	./configure \
 		--with-build-sysroot= \
 		--with-sysroot=/ \

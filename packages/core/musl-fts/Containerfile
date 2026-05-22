@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-llvm . /
@@ -17,8 +17,8 @@ COPY --from=stagex/core-m4 . /
 ADD fetch/musl-fts-${VERSION}.tar.gz .
 WORKDIR /musl-fts-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	./bootstrap.sh
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 ARG APORTS_VERSION
 ARG TARGETARCH
@@ -26,7 +26,6 @@ ADD fetch/gcc-${VERSION}.tar.xz .
 ADD fetch/aports-${APORTS_VERSION}.tar.gz .
 WORKDIR /gcc-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	[[ "$TARGETARCH" == "amd64" ]] \
 		&& ARCH="x86_64"
 	[[ "$TARGETARCH" == "arm64" ]] \
@@ -66,6 +65,7 @@ RUN --network=none <<-EOF
 	patch -p1 < 0039-except-Don-t-use-the-cached-value-of-the-gcc_except_.patch
 	export TARGET=`echo ${TARGETARCH} | sed 's/amd64/x86_64/' | sed 's/arm64/aarch64/'`-linux-musl
 	export LDFLAGS="-L/usr/lib/clang/${CLANG_VER}/lib/${TARGET}"
+	autoreconf -vfi
 	./configure \
 		--target=${TARGET} \
 		--build=${TARGET} \

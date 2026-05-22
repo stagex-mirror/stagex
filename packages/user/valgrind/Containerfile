@@ -17,6 +17,7 @@ RUN --network=none <<-EOF
 		\) \
 		-type f \
 		-exec sed -i 's/-lgcc//g' {} +
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

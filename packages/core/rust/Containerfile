@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 
 ARG VERSION
 ARG TARGETARCH
@@ -29,7 +29,6 @@ COPY --from=stagex/core-ca-certificates . /
 COPY --from=stagex/core-curl . /
 
 COPY <<-'EOF' /etc/profile
-	set -eux
 	if [ "$TARGETARCH" = "amd64" ]; then
 		export ARCH="x86_64"
 	fi
@@ -96,7 +95,6 @@ WORKDIR /mrustc-${MRUSTC_VERSION}
 COPY fetch/rustc-${BOOTSTRAP_RUST_VERSION}.0-src.tar.gz .
 
 COPY --chmod=0755 <<-'EOF' /sanitize_rust-src
-	set -eux
 
 	cd "$1"
 
@@ -191,7 +189,6 @@ EOF
 
 # We start by applying our set of patches to `mrustc` and the bootstrapped Rust source
 RUN --network=none <<-EOF
-	set -eux
 
 	export RUSTC_VERSION="${BOOTSTRAP_RUST_VERSION}.0"
 
@@ -252,7 +249,6 @@ EOF
 
 # We now prepare our working tree by defining what will be Rust's self-contained libraries
 RUN --network=none <<-EOF
-	set -eux
 
 	mkdir self-contained
 	for file in rcrt1.o crti.o crtn.o; do
@@ -271,7 +267,6 @@ EOF
 
 # Build `mrustc`, `minicargo`
 RUN --network=none <<-EOF
-	set -eux
 
 	# `mrustc` wants to compile in version information obtained with `git`, which we don't care for
 	# and don't bother adding a dependency upon `git` to enable
@@ -295,7 +290,6 @@ EOF
 
 # Build `rustc`, `cargo` with `mrustc`, `minicargo`
 RUN --network=none <<-EOF
-	set -eux
 
 	export RUSTC_TARGET="${TARGET}"
 	export RUSTC_VERSION="${BOOTSTRAP_RUST_VERSION}.0"
@@ -326,7 +320,6 @@ EOF
 ENV LLVM_USE_LIBCXX=1
 
 RUN --network=none <<-EOF
-	set -eux
 
 	export RUSTC_TARGET="${TARGET}"
 	export RUSTC_VERSION="${BOOTSTRAP_RUST_VERSION}.0"
@@ -356,7 +349,6 @@ WORKDIR /
 
 ENV CONFIGURE_FLAGS=
 COPY --chmod=0755 <<-'EOF' build
-	set -eux
 	TARGET_VERSION=${1}
 	BUILD_VERSION=${2}
 	TOOLS=${3:-cargo}
@@ -507,7 +499,6 @@ ADD fetch/rustc-1.96.0-src.tar.gz .
 
 # Patch the default for `musl` targets to be dynamically, not statically, linked
 RUN --network=none <<-EOF
-	set -eux
 	find ./rustc-${VERSION}-src/compiler/rustc_target/src/spec/targets/ -type f | grep "musl" | while IFS="\n" read -r file; do
 		sed -i s/"crt_static_default = true"/"crt_static_default = false"/ "$file"
 	done
@@ -515,7 +506,6 @@ EOF
 
 RUN --network=none ./build ${VERSION} 1.95.0 cargo,clippy,rustfmt,rust-demangler,src
 RUN --network=none <<-EOF
-	set -eux
 	mv /rust-${VERSION} /rootfs
 	find /rootfs -type f -name "*.log" -delete
 	find /rootfs -type f -name "*.a" -delete

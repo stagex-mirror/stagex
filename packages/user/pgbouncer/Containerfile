@@ -5,6 +5,7 @@ ARG VERSION
 ADD fetch/pgbouncer-${VERSION}.tar.gz .
 WORKDIR /pgbouncer-${VERSION}
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure
 	make pgbouncer
 	make install_pgbouncer DESTDIR=/rootfs

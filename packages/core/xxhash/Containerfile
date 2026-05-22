@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
@@ -12,7 +12,6 @@ ADD fetch/xxhash-${VERSION}.tar.gz .
 WORKDIR /xxHash-${VERSION}
 ARG TARGETARCH
 RUN --network=none <<EOF
-	set -eux
 	export DISPATCH=0
 	[[ "$TARGETARCH" == "amd64" ]] && export DISPATCH=1
 	make -j "$(nproc)" DISPATCH="$DISPATCH"

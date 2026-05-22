@@ -11,6 +11,7 @@ COPY --from=stagex/user-libxau . /
 ADD fetch/libX11-${VERSION}.tar.xz .
 WORKDIR /libX11-${VERSION}
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

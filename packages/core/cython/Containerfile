@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
@@ -19,7 +19,6 @@ COPY --from=stagex/core-py-wheel . /
 ADD fetch/cython-${VERSION}.tar.gz .
 WORKDIR /cython-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 	python -m installer -d /rootfs .dist/*.whl
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf

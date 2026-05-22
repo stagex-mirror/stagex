@@ -4,6 +4,7 @@ COPY --from=stagex/core-gawk . /
 ADD fetch/util-macros-${VERSION}.tar.xz .
 WORKDIR /util-macros-${VERSION}
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure --prefix=/usr
 	make
 	make DESTDIR=/rootfs install

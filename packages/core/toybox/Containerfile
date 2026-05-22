@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-zlib . /
@@ -14,7 +14,6 @@ COPY --from=stagex/core-profile / /
 ADD fetch/toybox-${VERSION}.tar.gz .
 WORKDIR /toybox-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 
 	export KCONFIG_NOTIMESTAMP=1
 	make defconfig

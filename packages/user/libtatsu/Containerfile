@@ -8,6 +8,7 @@ WORKDIR /libtatsu-${VERSION}
 RUN --network=none <<-EOF
 	echo "${VERSION}" > .tarball-version
 	./autogen.sh
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr
 	make -j "$(nproc)"

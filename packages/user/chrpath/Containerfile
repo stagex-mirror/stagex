@@ -4,6 +4,7 @@ ADD fetch/chrpath-${VERSION}.tar.gz .
 WORKDIR /chrpath
 RUN --network=none <<-EOF
 	./bootstrap
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

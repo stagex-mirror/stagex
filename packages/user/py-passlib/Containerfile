@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/pallet-python . /
 COPY --from=stagex/core-py-setuptools . /
@@ -6,7 +6,6 @@ COPY --from=stagex/core-py-wheel . /
 ADD fetch/py-passlib-${VERSION}.tar.gz .
 WORKDIR /passlib-${VERSION}/
 RUN --network=none <<-EOF
-  set -eu
   python setup.py install -O1 --root=/rootfs
   install -vDm644 -t /rootfs/usr/share/licenses/py-passlib LICENSE
   find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf

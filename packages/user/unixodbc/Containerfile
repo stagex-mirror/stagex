@@ -4,6 +4,7 @@ ARG VERSION
 ADD fetch/unixodbc-${VERSION}.tar.gz .
 WORKDIR /unixODBC-${VERSION}
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

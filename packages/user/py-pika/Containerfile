@@ -3,7 +3,6 @@ ARG VERSION
 ADD fetch/py-pika-${VERSION}.tar.gz .
 WORKDIR /pika-${VERSION}
 RUN --network=none <<-EOF
-  set -eu
   gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
   python -m installer --destdir=/rootfs .dist/*.whl
   install -vDm644 -t /rootfs/usr/share/licenses/py-pika LICENSE

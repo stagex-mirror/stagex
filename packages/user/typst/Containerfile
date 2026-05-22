@@ -6,7 +6,6 @@ WORKDIR /typst-${VERSION}
 RUN cargo fetch
 ENV RUSTFLAGS="-C target-feature=+crt-static"
 RUN --network=none <<-EOF
-	set -eux
 	ARCH="$(uname -m)"
 	cargo build \
 		--frozen \

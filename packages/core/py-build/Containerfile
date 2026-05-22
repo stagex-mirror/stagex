@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
@@ -8,7 +8,6 @@ COPY --from=stagex/core-zlib . /
 ADD fetch/py-build-${VERSION}.tar.gz .
 WORKDIR /build-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	sitedir="$(python3 -c 'import site;print(site.getsitepackages()[0])')"
 	mkdir -p "/rootfs/${sitedir}"
 	cp -a src/build "/rootfs/$sitedir"

@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-zlib . /
@@ -13,7 +13,7 @@ COPY --from=stagex/core-musl . /
 ADD fetch/gettext-${VERSION}.tar.xz .
 WORKDIR /gettext-${VERSION}
 RUN <<-EOF
-	set -eux
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--enable-threads=posix \

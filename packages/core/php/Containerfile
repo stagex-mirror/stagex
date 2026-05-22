@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 ARG SOURCE_DATE_EPOCH=1
 
@@ -44,13 +44,13 @@ ENV CXXFLAGS="$CFLAGS"
 ENV LDFLAGS="-Wl,-O1, -pie"
 
 RUN --network=none <<-EOF
-	set -eux
 
 	patch -p1 < remove-timestamps-from-phar.patch
 	patch -p1 < file-order-phar-pack.patch
 
 	export rootfs="rootfs"
 	./buildconf --force
+	autoreconf -vfi
 	./configure \
 		--with-config-file-path=/etc/php \
 		--with-config-file-scan-dir=/etc/php/conf.d \
@@ -106,6 +106,7 @@ RUN --network=none <<-EOF
 
 	export rootfs="rootfs-zts"
 	./buildconf --force
+	autoreconf -vfi
 	./configure \
 		--with-config-file-path=/etc/php \
 		--with-config-file-scan-dir=/etc/php/conf.d \

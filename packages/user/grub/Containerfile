@@ -17,6 +17,7 @@ RUN --network=none <<-EOF
 	touch extra_deps.lst
 	ARCH=${ARCH}
 	CLFLAGS="-fno-plt"
+	autoreconf -vfi
 	../configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \
@@ -33,6 +34,7 @@ RUN --network=none <<-EOF
 	cd ..
 	mkdir build-efi
 	cd build-efi
+	autoreconf -vfi
 	../configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

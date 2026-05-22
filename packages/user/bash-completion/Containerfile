@@ -6,7 +6,6 @@ WORKDIR /bash-completion-${VERSION}
 ENV CFLAGS="-march=x86-64 -mtune=generic -fno-lto"
 ENV CXXFLAGS="-fno-lto"
 RUN --network=none <<-EOF
-  set -eu
 	autoreconf -fi
 	./configure \
 		--prefix=/usr \

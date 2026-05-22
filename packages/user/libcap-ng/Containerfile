@@ -4,8 +4,8 @@ ARG VERSION
 ADD fetch/libcap-ng-${VERSION}.tar.gz .
 WORKDIR /libcap-ng-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	./autogen.sh
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
@@ -26,13 +26,13 @@ COPY <<-EOF configure.ac
 EOF
 ADD *.patch .
 RUN --network=none <<-EOF
-	set -eu
 	patch -p1 < paths.patch
 	patch -p1 < liblua.so.patch
 	#patch -p1 < skip-ranlib.patch
 	libtoolize --force --install
 	aclocal
 	autoconf
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr
 	make \

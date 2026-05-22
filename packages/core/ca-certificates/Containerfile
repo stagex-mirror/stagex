@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG BUILD_VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-make . /
@@ -15,7 +15,6 @@ ADD fetch/certdata.txt .
 WORKDIR /ca-certificates-${BUILD_VERSION}
 ADD *.patch .
 RUN --network=none <<-EOF
-	set -eux
 	patch -p1 < remove-timestamp.patch
 	rm -f ./certdata.txt
 	mv ../certdata.txt ./certdata.txt

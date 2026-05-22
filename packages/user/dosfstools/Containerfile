@@ -4,6 +4,7 @@ ADD fetch/dosfstools-${VERSION}.tar.gz .
 WORKDIR /dosfstools-${VERSION}
 RUN --network=none <<-EOF
 	./autogen.sh
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sbindir=/usr/sbin \

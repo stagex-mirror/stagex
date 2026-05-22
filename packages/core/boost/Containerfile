@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-mold . /
@@ -32,7 +32,6 @@ RUN cat > user-config.jam <<-EOF
 EOF
 
 RUN --network=none <<-EOF
-	set -eux
 	PY3_FULL="$(python3 --version 2>&1 | cut -d' ' -f2)"
 	PY3_VERSION="${PY3_FULL%.*}"
 	# Find the latest clang runtime and symlink it to the location with a target

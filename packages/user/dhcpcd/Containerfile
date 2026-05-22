@@ -4,6 +4,7 @@ COPY --from=stagex/user-libmnl . /
 ADD fetch/dhcpcd-${VERSION}.tar.xz .
 WORKDIR /dhcpcd-${VERSION}
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

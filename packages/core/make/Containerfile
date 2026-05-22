@@ -4,6 +4,8 @@ ARG VERSION
 ADD fetch/make-${VERSION}.tar.gz .
 WORKDIR /make-${VERSION}
 RUN --network=none <<-EOF
+	set -eux
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--mandir=/usr/share/man \

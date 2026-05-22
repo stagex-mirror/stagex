@@ -8,7 +8,6 @@ ENV GOBIN=${GOPATH}/bin
 ENV PATH=${GOBIN}:${PATH}
 WORKDIR /buildkit-${VERSION}
 RUN <<-EOF
-	set -eux
 	mkdir -p out
 	go build -v \
 		--ldflags=" \

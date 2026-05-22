@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-pkgconf . /
 COPY --from=stagex/core-busybox . /
@@ -13,6 +13,7 @@ COPY --from=stagex/core-bsd-compat-headers . /
 ADD fetch/tcl${VERSION}-src.tar.gz .
 WORKDIR /tcl${VERSION}/unix
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

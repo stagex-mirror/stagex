@@ -12,6 +12,7 @@ ADD fetch/libSM-${VERSION}.tar.xz .
 WORKDIR /libSM-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

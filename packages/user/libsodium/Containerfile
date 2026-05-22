@@ -3,7 +3,7 @@ ARG VERSION
 ADD fetch/libsodium-${VERSION}.tar.gz .
 WORKDIR /libsodium-${VERSION}-RELEASE
 RUN --network=none <<-EOF
-	set -ex
+	autoreconf -vfi
 	./configure --prefix=/usr
 	make
 	make DESTDIR="/rootfs" install

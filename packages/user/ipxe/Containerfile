@@ -8,7 +8,6 @@ ADD fetch/ipxe-${VERSION}.tar.gz .
 WORKDIR /ipxe-${VERSION}/src
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
-	set -ex
 	ARCH="$(uname -m)"
 	mkdir -p out
 	make \

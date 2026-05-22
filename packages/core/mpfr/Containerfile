@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-llvm . /
@@ -12,7 +12,7 @@ COPY --from=stagex/core-gmp . /
 ADD fetch/mpfr-${VERSION}.tar.bz2 .
 WORKDIR /mpfr-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--disable-maintainer-mode \

@@ -3,7 +3,6 @@ ARG VERSION
 ADD fetch/py-fluidity-${VERSION}.tar.gz .
 WORKDIR /fluidity-468627ea13ed4c3043dc67ccc1ff16089fdb7b25
 RUN --network=none <<-EOF
-	set -eu
 	python setup.py build
 	python setup.py install --root=/rootfs --optimize=1
 	install -vDm644 -t /rootfs/usr/share/licenses/py-fluidity LICENSE

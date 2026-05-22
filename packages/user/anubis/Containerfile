@@ -10,7 +10,6 @@ WORKDIR /anubis-${VERSION}
 RUN go mod download && npm ci
 ENV CGO_ENABLED=0
 RUN --network=none <<-EOF
-	set -eu
 	make build
 	mkdir -p /rootfs/usr/bin/
 	cp var/anubis /rootfs/usr/bin/

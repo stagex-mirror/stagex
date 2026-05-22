@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-zlib . /
@@ -11,8 +11,8 @@ ADD fetch/attr-${VERSION}.tar.gz .
 WORKDIR /attr-${VERSION}
 ADD patches/basename.patch .
 RUN --network=none <<-EOF
-	set -eux
 	patch -p1 < basename.patch
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--exec-prefix=/ \

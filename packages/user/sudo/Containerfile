@@ -3,7 +3,7 @@ ARG VERSION
 ADD fetch/sudo-${VERSION}.tar.gz .
 WORKDIR /sudo-${VERSION}
 RUN --network=none <<-EOF
-  set -eu
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--libexecdir=/usr/lib \

@@ -11,6 +11,7 @@ ADD fetch/go1.4.src.tar.gz /go1_4
 WORKDIR /go1_4/go
 ENV GOHOSTARCH=386
 RUN --network=none <<-EOF
+	set -eux
 	mkdir -p /var/tmp
 
 	set -eux

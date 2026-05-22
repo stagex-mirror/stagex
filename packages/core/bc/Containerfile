@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
@@ -17,7 +17,7 @@ COPY --from=stagex/core-ncurses . /
 ADD fetch/bc-${VERSION}.tar.gz .
 WORKDIR /bc-${VERSION}
 RUN --network=none <<-EOF
-	set -ex
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

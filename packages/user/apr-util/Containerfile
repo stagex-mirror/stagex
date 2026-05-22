@@ -13,6 +13,7 @@ WORKDIR /apr-util-${VERSION}
 COPY *.patch .
 RUN --network=none <<-EOF
 	patch -p1 < musl-fix-testsuite.patch
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--with-apr=/usr \

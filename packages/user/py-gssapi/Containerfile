@@ -13,7 +13,6 @@ COPY --from=stagex/user-util-linux . /
 ADD fetch/py-gssapi-${VERSION}.tar.gz .
 WORKDIR /python-gssapi-${VERSION}
 RUN --network=none <<-EOF
-	set -eu
 	python setup.py install --root=/rootfs --optimize=1
 	install -vDm644 -t /rootfs/usr/share/licenses/py-gssapi/LICENSE LICENSE.txt
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf

@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 ARG COMPOSER_BOOT_VERSION
 ARG SOURCE_DATE_EPOCH
@@ -93,7 +93,6 @@ ENV SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH
 
 # Strip sha1 from git archive directory name
 RUN <<-EOF
-	set -eux
 	path="./vendor"
 
   find "$path" -type d -maxdepth 2 -mindepth 2 | while read -r dir; do
@@ -116,7 +115,6 @@ EOF
 COPY boot/*.patch .
 COPY boot/bootstrap-autoloader.php ./vendor/autoload.php
 RUN --network=none <<-EOF
-	set -eux
 	patch -p1 < bootstrap-autoloader.patch
 	php ./bin/composer about
 EOF
@@ -125,14 +123,12 @@ EOF
 ADD fetch/composer-${VERSION}.tar.gz /
 WORKDIR /composer-${VERSION}
 RUN <<-EOF
-	set -eux
 	php /composer-boot/composer-${COMPOSER_BOOT_VERSION}/bin/composer install --no-dev --no-interaction
 EOF
 
 COPY *.patch .
 ENV STAGEX_COMPOSER_VERSION=${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	patch -p1 < remove-timestamp-from-compile.patch
 	patch -p1 < remove-git-call-from-compiler.patch
 	php -dphar.readonly=0 bin/compile

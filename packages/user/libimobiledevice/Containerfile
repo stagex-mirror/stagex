@@ -10,6 +10,7 @@ ADD fetch/libimobiledevice-${VERSION}.tar.bz2 .
 WORKDIR /libimobiledevice-${VERSION}
 ENV CFLAGS="-Wno-error=int-conversion -Wno-deprecated-declarations"
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--disable-static \

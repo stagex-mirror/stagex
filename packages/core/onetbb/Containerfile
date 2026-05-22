@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-libzstd . /
@@ -15,7 +15,6 @@ ADD fetch/onetbb-${VERSION}.tar.gz .
 WORKDIR /oneTBB-${VERSION}
 ENV LDFLAGS="-Wl,--undefined-version"
 RUN --network=none <<-EOF
-	set -ex
 	cmake -B build -G Ninja \
 		-DCMAKE_INSTALL_PREFIX=/usr/ \
 		-DCMAKE_INSTALL_LIBDIR=/usr/lib \

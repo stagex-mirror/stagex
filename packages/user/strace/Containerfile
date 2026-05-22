@@ -3,6 +3,7 @@ ARG VERSION
 ADD fetch/strace-${VERSION}.tar.xz .
 WORKDIR /strace-${VERSION}
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
     --sysconfdir=/etc \

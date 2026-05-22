@@ -5,7 +5,6 @@ WORKDIR /hivemind-${VERSION}
 COPY *.patch .
 RUN go mod download
 RUN --network=none <<-EOF
-	set -eux
     
     patch -p1 < allow-skipping-dotenv-load.patch
 	go build -v -o hivemind

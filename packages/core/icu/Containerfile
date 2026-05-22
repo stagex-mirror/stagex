@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 ARG VERSION_UNDER
 COPY --from=stagex/core-busybox . /
@@ -15,6 +15,7 @@ ADD fetch/icu4c-${VERSION_UNDER}-data-bin-l.zip .
 ADD fetch/icu4c-${VERSION_UNDER}-data-bin-b.zip .
 WORKDIR /icu/source
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

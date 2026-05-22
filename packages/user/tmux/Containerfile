@@ -6,7 +6,6 @@ ARG VERSION
 ADD fetch/tmux-${VERSION}.tar.gz .
 WORKDIR /tmux-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	autoreconf -vfi
 	./configure \
 		--prefix=/usr \

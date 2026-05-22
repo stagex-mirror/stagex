@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG GCC_VERSION
 ARG GMP_VERSION
 ARG MPFR_VERSION
@@ -48,7 +48,6 @@ ADD fetch/mpc-${MPC_VERSION}.tar.gz .
 ADD fetch/isl-${ISL_VERSION}.tar.bz2 .
 WORKDIR /gcc-${GCC_VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	mv ../gmp-${GMP_VERSION} gmp
 	mv ../mpfr-${MPFR_VERSION} mpfr
 	mv ../mpc-${MPC_VERSION} mpc
@@ -61,7 +60,6 @@ ENV FAKETIME="1970-01-01 00:00:00 GMT"
 # Phase 1: Build cross binutils
 WORKDIR /build-binutils
 RUN --network=none <<-EOF
-	set -eux
 	../binutils-${BINUTILS_VERSION}/configure \
 		--target=${TARGET} \
 		--prefix=${OUTPUT} \
@@ -73,7 +71,6 @@ EOF
 # Phase 2: Build and install cross gcc, without libgcc
 WORKDIR /build-gcc
 RUN --network=none <<-EOF
-	set -eux
 	../gcc-${GCC_VERSION}/configure \
 		--target=${TARGET} \
 		--prefix=${OUTPUT} \
@@ -88,7 +85,6 @@ EOF
 # Phase 4: Build and Install glibc headers for use by libgcc
 WORKDIR /build-glibc
 RUN --network=none <<-EOF
-	set -eux
 	sed -i 's/--yacc //' \
 		../glibc-${GLIBC_VERSION}/intl/Makefile
 	../glibc-${GLIBC_VERSION}/configure \
@@ -121,21 +117,18 @@ ENV LD_LIBRARY_PATH=/opt/cross/lib:/usr/lib
 WORKDIR /
 WORKDIR /build-gcc
 RUN --network=none <<-EOF
-	set -eux
 	make -j "$(nproc)" all-target-libgcc
 	make install-target-libgcc
 EOF
 # Phase 6: Build and install glibc
 WORKDIR /build-glibc
 RUN --network=none <<-EOF
-	set -eux
 	make -j "$(nproc)"
 	make install
 EOF
 # Phase 7: Build and install remaining gcc targets (C++)
 WORKDIR /build-gcc
 RUN --network=none <<-EOF
-	set -eux
 	make -j "$(nproc)"
 	make install
 EOF

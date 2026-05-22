@@ -12,7 +12,6 @@ ENV GOHOSTOS=linux
 ENV GOHOSTARCH=amd64
 RUN go get ./...
 RUN --network=none <<-EOF
-  set -eu
 	go build -trimpath -v
 	install -vDm755 -t /rootfs/usr/lib/kustomize/plugins/viaduct.ai/v1/ksops/ksops kustomize-sops
 EOF

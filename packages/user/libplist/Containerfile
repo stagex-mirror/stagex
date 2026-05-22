@@ -4,6 +4,7 @@ COPY --from=stagex/core-openssl . /
 ADD fetch/libplist-${VERSION}.tar.bz2 .
 WORKDIR /libplist-${VERSION}
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr
 	make

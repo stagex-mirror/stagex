@@ -3,6 +3,7 @@ ARG VERSION
 ADD fetch/cpio-${VERSION}.tar.gz .
 WORKDIR /cpio-${VERSION}
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--bindir=/usr/bin \

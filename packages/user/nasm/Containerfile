@@ -5,6 +5,7 @@ WORKDIR /nasm-${VERSION}
 COPY patches/*.patch .
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure --prefix=/usr
 	# Apply Alpine cast-to-bool patch: fix __STDC_VERSION__ typo and remove broken bool typedef hack
 	patch -p1 < alpine-cast-to-bool.patch

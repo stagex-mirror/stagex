@@ -20,6 +20,7 @@ RUN --network=none <<-EOF
 	cd build
 	echo "slibdir=${LIBDIR}" >> configparams
 	echo "rtlddir=${LIBDIR}" >> configparams
+	autoreconf -vfi
 	../configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

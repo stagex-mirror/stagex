@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-llvm . /
@@ -11,7 +11,6 @@ ADD fetch/samurai-${VERSION}.tar.gz .
 WORKDIR /samurai-${VERSION}
 COPY *.patch .
 RUN --network=none <<-EOF
-	set -eux
 	patch -p1 CVE-2021-30218.patch
 	patch -p1 CVE-2021-30219.patch
 	make CFLAGS="-O2" CC=clang -j "$(nproc)"

@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
@@ -17,7 +17,6 @@ ADD fetch/py-setuptools-scm-${VERSION}.tar.gz .
 WORKDIR /setuptools_scm-${VERSION}/
 ENV SETUPTOOLS_SCM_PRETEND_VERSION=${VERSION}
 RUN --network=none <<-EOF
-	set -eu
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 	python -m installer -d /rootfs .dist/*.whl
 	find /rootfs | grep -E "(/**pycache**$|.pyc$|.pyo$)" | xargs rm -rf

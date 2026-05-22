@@ -10,6 +10,7 @@ COPY --from=stagex/user-libverto . /
 ADD fetch/krb5-${VERSION}.tar.gz .
 WORKDIR /krb5-${VERSION}/src
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		CPPFLAGS="-fPIC -I/usr/include/et" \
 		WARN_CFLAGS= \

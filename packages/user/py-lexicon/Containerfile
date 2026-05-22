@@ -3,7 +3,6 @@ ARG VERSION
 ADD fetch/python-lexicon-${VERSION}.tar.gz .
 WORKDIR /lexicon-${VERSION}
 RUN --network=none <<-EOF
-	set -eu
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 	python -m installer --destdir=/rootfs .dist/*.whl
 	install -vDm644 -t /rootfs/usr/share/licenses/py-lexicon LICENSE

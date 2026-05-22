@@ -4,6 +4,7 @@ ARG VERSION
 ADD fetch/libevent-${VERSION}.tar.gz .
 WORKDIR /libevent-${VERSION}-stable
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc

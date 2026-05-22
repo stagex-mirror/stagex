@@ -10,6 +10,7 @@ ADD fetch/openldap-${VERSION}.tgz .
 WORKDIR /openldap-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--enable-slapd \

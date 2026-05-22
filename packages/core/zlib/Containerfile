@@ -10,7 +10,8 @@ ADD fetch/zlib-${VERSION}.tar.gz .
 WORKDIR /zlib-${VERSION}
 ENV CFLAGS="-fPIC"
 RUN --network=none <<-EOF
-	set -eux; \
+	set -eux
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--libdir=/usr/lib \

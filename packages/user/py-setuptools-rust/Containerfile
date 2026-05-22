@@ -5,7 +5,6 @@ ADD fetch/py-setuptools-rust-${VERSION}.tar.gz .
 WORKDIR /setuptools-rust-${VERSION}
 ENV SETUPTOOLS_SCM_PRETEND_VERSION=${VERSION}
 RUN --network=none <<-EOF
-	set -eu
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 	python -m installer -d /rootfs .dist/*.whl
 	install -vDm644 -t /rootfs/usr/share/licenses/py-setuptools-rust LICENSE

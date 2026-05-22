@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-binutils . /
@@ -14,7 +14,6 @@ COPY --from=stagex/core-zlib . /
 ADD fetch/${VERSION}.tar.gz .
 WORKDIR /range-v3-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	CC=clang
 	CXX=clang++
 	cmake -B build -G Ninja \

@@ -5,7 +5,6 @@ ADD fetch/${VERSION}.tar.gz .
 WORKDIR /hardened_malloc-${VERSION}
 
 RUN --network=none <<-EOF
-	set -eux
 	make CONFIG_NATIVE=false CC=gcc -j "$(nproc)"
 	mkdir -p /rootfs/usr/lib
 	install -vDm755 -t /rootfs/usr/lib out/libhardened_malloc.so

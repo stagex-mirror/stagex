@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-pkgconf . /
@@ -25,12 +25,12 @@ WORKDIR /readline-${VERSION}
 ADD *.patch .
 ENV PATCH_LEVEL=10
 RUN --network=none <<-EOF
-	set -eu
 	p=1; while [ ${p} -le ${PATCH_LEVEL} ]; do
 		printf "Applying patch readline82-$(printf "%03d" $p)\n"
 		patch -p0 -i ../readline82-$(printf "%03d" $p)
 		p=$(( p + 1 ))
 	done
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--mandir=/usr/share/man \

@@ -1,10 +1,9 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 COPY --from=stagex/bootstrap-stage3 . /
 
 ARG VERSION
 ARG TARGETARCH
 COPY <<-'EOF' /etc/profile
-	set -eux
 
 	export MAJOR_VERSION=$(echo "$VERSION" | cut -d'.' -f1)
 

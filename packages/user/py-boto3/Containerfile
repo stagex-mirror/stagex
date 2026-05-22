@@ -6,7 +6,6 @@ COPY --from=stagex/user-py-s3transfer . /
 ADD fetch/py-boto3-${VERSION}.tar.gz .
 WORKDIR /boto3-${VERSION}
 RUN <<-EOF
-	set -eu
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 	python -m installer --destdir=/rootfs .dist/*.whl
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf

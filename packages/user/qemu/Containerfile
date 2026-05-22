@@ -49,6 +49,7 @@ ADD *.patch .
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	export LTOFLAGS="-flto=auto"
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

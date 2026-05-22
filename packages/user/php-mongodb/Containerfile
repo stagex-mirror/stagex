@@ -9,8 +9,8 @@ ADD fetch/mongodb-${VERSION}.tgz .
 
 WORKDIR /mongodb-${VERSION}/
 RUN --network=none <<-EOF
-	set -ex
 	phpize
+	autoreconf -vfi
 	./configure \
 		--enable-mongodb \
 		--with-mongodb-ssl=openssl

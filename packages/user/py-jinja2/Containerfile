@@ -4,7 +4,6 @@ ADD fetch/py-jinja2-${VERSION}.tar.gz .
 WORKDIR /jinja2-${VERSION}
 RUN gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 RUN --network=none <<-EOF
-    set -eu
     python -m installer -d /rootfs .dist/*.whl
     find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF

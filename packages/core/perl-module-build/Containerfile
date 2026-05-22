@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 ENV SOURCE_DATE_EPOCH=1
 COPY --from=stagex/core-busybox . /
@@ -13,7 +13,6 @@ COPY --from=stagex/core-perl . /
 ADD fetch/perl-module-build-${VERSION}.tar.gz .
 WORKDIR /Module-Build-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	perl Build.PL installdirs=vendor
 	perl Build
 	perl Build install destdir="/rootfs"

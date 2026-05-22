@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 ARG SOLIDITY_GIT_SHA
 COPY --from=stagex/core-busybox . /
@@ -24,7 +24,6 @@ ADD fetch/v${VERSION}.tar.gz .
 WORKDIR /solidity-${VERSION}
 ADD patches/*.patch .
 RUN --network=none <<-EOF
-	set -eux	
 	patch -p1 < llvm22-compatibility.patch
 	mkdir /include
 	sed -i -e 's/-Werror/-Wno-error/' cmake/EthCompilerSettings.cmake

@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-llvm . /
@@ -19,7 +19,6 @@ ADD fetch/docbook-xml-4.3.zip .
 ADD fetch/docbook-xml-4.4.zip .
 ADD fetch/docbook-xml-4.5.zip .
 RUN --network=none <<-EOF
-	set -eux
 	for version in 4.1.2 4.2 4.3 4.4 ${VERSION}; do
 		name=docbook-xml-${version}
 		mkdir -p ${name}

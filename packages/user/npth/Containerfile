@@ -3,6 +3,7 @@ ARG VERSION
 ADD fetch/npth-${VERSION}.tar.bz2 .
 WORKDIR /npth-${VERSION}
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--bindir=/usr/bin \

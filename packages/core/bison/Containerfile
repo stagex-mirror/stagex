@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 ARG TARGETARCH
 COPY --from=stagex/core-musl . /
@@ -22,11 +22,11 @@ ENV CXXFLAGS="-fno-lto"
 ENV SOURCE_DATE_EPOCH="1"
 ENV M4=/usr/bin/m4
 RUN --network=none <<-EOF
-	set -eux
         [[ "$TARGETARCH" == "amd64" ]] \
                 && CFLAGS="$CFLAGS -march=x86-64"
         [[ "$TARGETARCH" == "arm64" ]] \
                 && CFLAGS="$CFLAGS -march=armv8-a"
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--disable-nls \

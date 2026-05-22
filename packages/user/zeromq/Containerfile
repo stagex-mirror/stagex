@@ -34,5 +34,5 @@ RUN --network=none <<-EOF
 EOF
 
 # FROM stagex/core-filesystem AS package
-FROM scratch AS package
+FROM stagex/core-profile AS package
 COPY --from=build /rootfs/ /

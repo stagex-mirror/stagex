@@ -3,6 +3,7 @@ ARG VERSION
 ADD fetch/libmnl-${VERSION}.tar.bz2 .
 WORKDIR /libmnl-${VERSION}
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

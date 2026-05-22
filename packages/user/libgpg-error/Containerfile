@@ -5,6 +5,7 @@ ADD fetch/libgpg-error-${VERSION}.tar.bz2 .
 WORKDIR /libgpg-error-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--mandir=/usr/share/man \

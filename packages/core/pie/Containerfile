@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 ARG SOURCE_DATE_EPOCH=1
 
@@ -37,13 +37,11 @@ RUN composer install --no-dev
 
 
 RUN <<-EOF
-  set -eux
   mkdir /box
   composer require -n -d /box humbug/box=4.6.10
 EOF
 
 RUN --network=none <<-EOF
-  set -eux
   # Change the version replacements from git to the $VERSION variable
   sed -i "s|\"git\": \"pie_version\",|\"replacements\": {\"pie_version\": \"${VERSION}\"},|g" box.json.dist
 

@@ -5,6 +5,7 @@ ARG VERSION
 ADD fetch/xtrans-${VERSION}.tar.xz .
 WORKDIR /xtrans-${VERSION}
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr
 	make

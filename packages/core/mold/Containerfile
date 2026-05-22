@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-libzstd . /
@@ -16,7 +16,6 @@ ADD fetch/mold-${VERSION}.tar.gz .
 WORKDIR /mold-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
-	set -eux
 
 	# Downscope `third-party` (the libs `mold` vendors itself) to only what's used
 	# TODO: Vendor `blake3` via StageX, as `mold` will automatically prefer a system lib to its own

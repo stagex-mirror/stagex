@@ -14,6 +14,7 @@ ENV CPPFLAGS="$CXXFLAGS"
 ADD patches/* .
 RUN --network=none <<-EOF
 	patch -p1 < musl-gdb.patch
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

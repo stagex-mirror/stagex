@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
@@ -14,7 +14,6 @@ COPY --from=stagex/core-py-gpep517 . /
 ADD fetch/py-trove-classifiers-${VERSION}.tar.gz .
 WORKDIR /trove-classifiers-${VERSION}
 RUN --network=none <<-EOF
-	set -eu
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 	python -m installer -d /rootfs .dist/*.whl
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf

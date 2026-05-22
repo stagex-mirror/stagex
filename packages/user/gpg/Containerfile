@@ -10,6 +10,7 @@ ADD patches/musl-time_t.patch .
 WORKDIR /gnupg-${VERSION}
 RUN --network=none <<-EOF
 	patch -p1 < ../musl-time_t.patch
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--bindir=/usr/bin \

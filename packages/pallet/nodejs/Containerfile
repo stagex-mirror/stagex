@@ -1,4 +1,4 @@
-FROM scratch AS package
+FROM stagex/core-profile AS package
 COPY --from=stagex/core-profile . /
 COPY --from=stagex/core-brotli . /
 COPY --from=stagex/core-busybox . /

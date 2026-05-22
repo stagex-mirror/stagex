@@ -14,7 +14,6 @@ ENV GOLDFLAGS="-X 'k8s.io/client-go/pkg/version.gitVersion=${VERSION}' -X 'k8s.i
 WORKDIR /kubernetes-${VERSION}
 RUN go mod download
 RUN --network=none <<-EOF
-	set -eu
 	go build -trimpath -v k8s.io/kubernetes/cmd/kubectl
 	mkdir -p /rootfs/usr/bin/
 	cp kubectl /rootfs/usr/bin/

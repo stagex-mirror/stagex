@@ -6,6 +6,7 @@ ADD fetch/xorriso-${VERSION}.tar.gz .
 WORKDIR /
 RUN --network=none <<-EOF
 	cd /xorriso-*
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr
 	make

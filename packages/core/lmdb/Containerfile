@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-llvm . /
@@ -12,7 +12,6 @@ ADD fetch/lmdb-${VERSION}.tar.gz .
 WORKDIR /openldap-LMDB_${VERSION}/libraries/liblmdb
 COPY *.patch .
 RUN --network=none <<-EOF
-	set -eux
 	ln -s /usr/bin/clang /usr/bin/gcc
 	patch -p1 lmdb-make.patch
 	export CFLAGS="-O2 -fPIC"

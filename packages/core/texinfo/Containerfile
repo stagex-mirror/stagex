@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-openssl . /
@@ -14,7 +14,7 @@ COPY --from=stagex/core-ncurses . /
 ADD fetch/texinfo-${VERSION}.tar.xz .
 WORKDIR /texinfo-${VERSION}
 RUN --network=none <<-EOF
-	set -ex
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--disable-nls

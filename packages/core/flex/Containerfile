@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-perl . /
@@ -18,8 +18,8 @@ COPY --from=stagex/core-musl . /
 ADD fetch/flex-${VERSION}.tar.gz .
 WORKDIR /flex-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	./autogen.sh
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--bindir=/usr/bin \

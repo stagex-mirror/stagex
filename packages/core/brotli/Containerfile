@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-llvm . /
@@ -14,7 +14,6 @@ COPY --from=stagex/core-openssl . /
 ADD fetch/brotli-${VERSION}.tar.gz .
 WORKDIR /brotli-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	cmake -B build -G Ninja \
 		-DCMAKE_BUILD_TYPE=None \
 		-DCMAKE_INSTALL_PREFIX=/usr \

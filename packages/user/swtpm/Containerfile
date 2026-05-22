@@ -20,6 +20,7 @@ ADD patches/*.patch .
 RUN --network=none <<-EOF
 	patch -p1 < no-expect.patch
 	NOCONFIGURE=1 ./autogen.sh
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--libdir=/usr/lib \

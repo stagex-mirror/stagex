@@ -12,7 +12,6 @@ ADD fetch/helm-${VERSION}.tar.gz .
 WORKDIR /helm-${VERSION}
 RUN go get ./...
 RUN <<-EOF
-	set -eu
 	go build -v -trimpath ./cmd/helm
 	mkdir -p /rootfs/usr/bin/
 	cp helm /rootfs/usr/bin/

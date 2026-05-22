@@ -3,6 +3,7 @@ ARG VERSION
 ADD fetch/autoconf-archive-${VERSION}.tar.xz .
 WORKDIR /autoconf-archive-${VERSION}
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--sysconfdir=/etc \
 		--localstatedir=/etc \

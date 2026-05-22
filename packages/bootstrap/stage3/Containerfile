@@ -43,6 +43,7 @@ ARG MAKE_VERSION
 ADD fetch/make-${MAKE_VERSION}.tar.gz /
 WORKDIR /make-${MAKE_VERSION}
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--build=${BUILD} \
 		--host=${TARGET} \
@@ -166,7 +167,7 @@ ARG XZ_VERSION
 ADD fetch/xz-${XZ_VERSION}.tar.gz /
 WORKDIR /xz-${XZ_VERSION}
 RUN --network=none <<-EOF
-	autoreconf -fi
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--host=${TARGET}
@@ -214,6 +215,7 @@ ac_cv_file__dev_ptc=no
 EOF
 ENV CONFIG_SITE=config.site
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--build=${BUILD} \
@@ -371,7 +373,7 @@ RUN <<-EOF
 	export CFLAGS="-llzma -lucontext"
 	export CXXFLAGS="$CFLAGS"
 	export CPPFLAGS="$CFLAGS"
-	autoreconf -i
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--host=${TARGET} \

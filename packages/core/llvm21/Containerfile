@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 
 ARG VERSION
 ARG CPORTS_VERSION
@@ -32,7 +32,6 @@ EOF
 SHELL ["/bin/sh","-l","-c"]
 
 COPY <<-'EOF' /etc/profile
-	set -eux
 
 	export MAJOR_VERSION=$(echo "$VERSION" | cut -d'.' -f1)
 

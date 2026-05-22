@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-gawk . /
@@ -22,8 +22,8 @@ COPY --from=stagex/core-ncurses . /
 ADD fetch/pcre2-${VERSION}.tar.gz .
 WORKDIR /pcre2-pcre2-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	./autogen.sh
+	autoreconf -vfi
 	./configure \
 		CFLAGS="-O3" \
 		--disable-shared \

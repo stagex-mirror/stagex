@@ -4,7 +4,6 @@ ADD fetch/hugo-${VERSION}.tar.gz .
 WORKDIR /hugo-${VERSION}
 RUN go mod download
 RUN --network=none <<-EOF
-	set -eux
 
 	export rootfs="rootfs"
 	go build -v -o hugo

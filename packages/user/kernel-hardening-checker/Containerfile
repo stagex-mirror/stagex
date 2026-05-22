@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
@@ -11,7 +11,6 @@ COPY --from=stagex/core-py-wheel . /
 ADD fetch/kernel-hardening-checker-${VERSION}.tar.gz .
 WORKDIR /kernel-hardening-checker-${VERSION}
 RUN --network=none <<-EOF
-	set -eu
 	sitedir="$(python3 -c 'import site;print(site.getsitepackages()[0])')"
 	mkdir -p "/rootfs/${sitedir}"
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2

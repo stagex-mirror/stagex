@@ -10,6 +10,7 @@ WORKDIR /OpenSC-${VERSION}
 ENV CFLAGS="-U_FORTIFY_SOURCE -Wno-error"
 RUN --network=none <<-EOF
 		./bootstrap
+		autoreconf -vfi
 		./configure \
 			--prefix=/usr \
 			--sysconfdir=/etc \

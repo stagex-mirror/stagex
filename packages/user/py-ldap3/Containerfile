@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/pallet-python . /
 COPY --from=stagex/core-py-setuptools . /
@@ -7,7 +7,6 @@ COPY --from=stagex/user-py-pyasn1 . /
 ADD fetch/py-ldap3-${VERSION}.tar.gz .
 WORKDIR /ldap3-${VERSION}/
 RUN --network=none <<-EOF
-  set -eu
   python setup.py build
   python setup.py install -O1 --root=/rootfs
   install -vDm644 -t /rootfs/usr/share/licenses/py-ldap3 LICENSE.txt

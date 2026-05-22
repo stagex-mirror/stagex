@@ -6,6 +6,7 @@ ADD fetch/pcsc-lite-${VERSION}.tar.xz .
 WORKDIR /pcsc-lite-${VERSION}
 RUN --network=none <<-EOF
 	./bootstrap
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

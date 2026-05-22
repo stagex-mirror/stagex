@@ -3,7 +3,6 @@ ARG VERSION
 ADD fetch/py-pycparser-${VERSION}.tar.gz .
 WORKDIR /pycparser-release_v${VERSION}
 RUN --network=none <<-EOF
-	set -eu
 	python setup.py build
 	cd pycparser
 	python _build_tables.py

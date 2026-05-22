@@ -11,6 +11,7 @@ COPY --from=stagex/user-util-macros . /
 ADD fetch/libxcb-${VERSION}.tar.xz .
 WORKDIR /libxcb-${VERSION}
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--enable-xkb \

@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-mold . /
@@ -13,8 +13,8 @@ ARG VERSION
 ADD fetch/yaml-${VERSION}.tar.gz .
 WORKDIR /yaml-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	CC=clang
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

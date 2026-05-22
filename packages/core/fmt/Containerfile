@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-samurai . /
@@ -15,7 +15,6 @@ ADD fetch/fmt-${VERSION}.tar.gz .
 WORKDIR /fmt-${VERSION}
 COPY *.patch .
 RUN --network=none <<-EOF
-	set -eux
 	patch -p1 fix-handling-of-static-separator.patch
 	# Build in-tree so the prebuilt docs get installed correctly.
 	# See https://github.com/fmtlib/fmt/issues/2837

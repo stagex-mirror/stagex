@@ -5,6 +5,7 @@ COPY --from=stagex/user-bdftopcf . /
 ADD fetch/terminus-font-${VERSION}.tar.gz .
 WORKDIR /terminus-font-${VERSION}
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--x11dir=/usr/share/fonts/misc \

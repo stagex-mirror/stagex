@@ -5,6 +5,7 @@ COPY --from=stagex/user-gperf . /
 ADD fetch/libseccomp-${VERSION}.tar.gz .
 WORKDIR /libseccomp-${VERSION}
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--infodir=/usr/share/info \

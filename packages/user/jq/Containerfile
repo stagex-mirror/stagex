@@ -3,7 +3,7 @@ ARG VERSION
 ADD fetch/jq-${VERSION}.tar.gz .
 WORKDIR /jq-${VERSION}
 RUN --network=none <<-EOF
-	set -ex
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

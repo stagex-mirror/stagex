@@ -5,8 +5,8 @@ COPY --from=stagex/user-libtasn1 . /
 ADD fetch/libtpms-${VERSION}.tar.gz .
 WORKDIR /libtpms-${VERSION}
 RUN --network=none <<-EOF
-	set -ex
 	NOCONFIGURE=1 ./autogen.sh
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--libdir=/usr/lib \

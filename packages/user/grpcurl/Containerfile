@@ -13,7 +13,6 @@ WORKDIR /grpcurl-${VERSION}
 ENV GOPATH="/grpcurl-${VERSION}"
 RUN go get ./...
 RUN <<-EOF
-	set -eu
 	go build -trimpath -v ./cmd/grpcurl
 	mkdir -p /rootfs/usr/bin/
   cp grpcurl /rootfs/usr/bin/

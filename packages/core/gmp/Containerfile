@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
@@ -16,7 +16,7 @@ COPY --from=stagex/core-libzstd . /
 ADD fetch/gmp-${VERSION}.tar.xz .
 WORKDIR /gmp-${VERSION}
 RUN --network=none <<EOF
-	set -eux
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--build=$(uname -m)-linux-musl

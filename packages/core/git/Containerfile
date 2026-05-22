@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
@@ -17,7 +17,7 @@ ADD fetch/git-${VERSION}.tar.xz .
 WORKDIR /git-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
-	set -eux
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--bindir=/usr/bin \

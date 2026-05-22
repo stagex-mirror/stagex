@@ -7,7 +7,7 @@ COPY --from=stagex/user-libgpg-error . /
 ADD fetch/pinentry-${VERSION}.tar.bz2 .
 WORKDIR /pinentry-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--disable-pinentry-gtk2 \

@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-autoconf . /
 COPY --from=stagex/core-automake . /
@@ -17,7 +17,6 @@ COPY --from=stagex/core-musl . /
 ADD fetch/re2c-${VERSION}.tar.gz .
 WORKDIR /re2c-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	autoreconf -i -W all
 	./configure \
 		--prefix=/usr

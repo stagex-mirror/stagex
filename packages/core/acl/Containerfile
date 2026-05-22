@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-llvm . /
@@ -12,7 +12,7 @@ COPY --from=stagex/core-attr . /
 ADD fetch/acl-${VERSION}.tar.gz .
 WORKDIR /acl-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--libdir=/usr/lib \

@@ -3,6 +3,7 @@ ARG VERSION
 ADD fetch/gperf-${VERSION}.tar.gz .
 WORKDIR /gperf-${VERSION}
 RUN --network=none <<EOF
+	autoreconf -vfi
 	./configure
 	make
 	DESTDIR=/rootfs make install

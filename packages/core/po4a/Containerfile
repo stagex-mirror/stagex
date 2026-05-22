@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-llvm . /
@@ -24,7 +24,6 @@ ADD fetch/po4a-${VERSION}.tar.gz .
 WORKDIR /po4a-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
-	set -eux
 	perl Build.PL \
 		--installdirs=vendor \
 		--create_packlist=0

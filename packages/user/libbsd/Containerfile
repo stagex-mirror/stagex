@@ -5,6 +5,7 @@ COPY --from=stagex/user-libmd . /
 ADD fetch/libbsd-${VERSION}.tar.xz .
 WORKDIR /libbsd-${VERSION}
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

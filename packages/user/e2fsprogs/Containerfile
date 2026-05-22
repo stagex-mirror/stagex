@@ -4,6 +4,7 @@ COPY --from=stagex/user-util-linux . /
 ADD fetch/e2fsprogs-${VERSION}.tar.gz .
 WORKDIR /e2fsprogs-${VERSION}
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--mandir=/usr/share/man \

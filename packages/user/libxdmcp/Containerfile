@@ -6,6 +6,7 @@ ARG VERSION
 ADD fetch/libXdmcp-${VERSION}.tar.xz .
 WORKDIR /libXdmcp-${VERSION}
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure CPPFLAGS="-Darc4random_buf=my_arc4random_buf" \
 		--prefix=/usr \
 		--sysconfdir=/etc

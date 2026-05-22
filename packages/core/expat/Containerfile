@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
@@ -11,7 +11,7 @@ COPY --from=stagex/core-make . /
 ADD fetch/expat-${VERSION}.tar.gz .
 WORKDIR /expat-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--mandir=/usr/share/man \

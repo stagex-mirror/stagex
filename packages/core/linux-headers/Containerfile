@@ -1,10 +1,9 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/bootstrap-stage3 . /
 ADD fetch/linux-${VERSION}.tar.xz .
 WORKDIR /linux-${VERSION}
 RUN <<-EOF
-	set -eux
 	make headers
 	mkdir -p /rootfs/usr
 	cp -a usr/include /rootfs/usr/

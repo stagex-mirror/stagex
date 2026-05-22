@@ -3,6 +3,7 @@ ARG VERSION
 ADD fetch/alsa-lib-${VERSION}.tar.bz2 .
 WORKDIR /alsa-lib-${VERSION}
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--libdir=/usr/lib \

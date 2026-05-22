@@ -3,7 +3,7 @@ ARG VERSION
 ADD fetch/libarchive-${VERSION}.tar.xz .
 WORKDIR /libarchive-${VERSION}
 RUN --network=none <<-EOF
-	set -ex
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
     --without-xml2

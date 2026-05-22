@@ -4,6 +4,7 @@ ARG VERSION
 ADD fetch/mpfr-${VERSION}.tar.gz .
 WORKDIR /mpfr-${VERSION}
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--enable-shared

@@ -3,7 +3,6 @@ ARG VERSION
 ADD fetch/py-distlib-${VERSION}.tar.gz .
 WORKDIR /distlib-${VERSION}/
 RUN --network=none <<-EOF
-set -eu
   gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
   python -m installer -d /rootfs .dist/*.whl
   install -vDm644 -t /rootfs/usr/share/license/py-distlib LICENSE.txt

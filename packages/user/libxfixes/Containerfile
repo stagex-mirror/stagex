@@ -10,6 +10,7 @@ ADD fetch/libXfixes-${VERSION}.tar.xz .
 WORKDIR /libXfixes-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

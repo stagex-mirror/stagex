@@ -5,6 +5,7 @@ ARG VERSION
 ADD fetch/pcsc-tools-${VERSION}.tar.bz2 .
 WORKDIR /pcsc-tools-${VERSION}
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

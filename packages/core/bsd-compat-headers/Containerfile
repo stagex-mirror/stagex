@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG APORTS_VERSION
 COPY --from=stagex/core-busybox . /
 ADD fetch/aports-${APORTS_VERSION}.tar.gz .

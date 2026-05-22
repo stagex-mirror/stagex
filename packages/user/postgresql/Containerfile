@@ -9,6 +9,7 @@ ARG VERSION
 ADD fetch/postgresql-${VERSION}.tar.gz .
 WORKDIR /postgresql-${VERSION}
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		TCLSH=/usr/bin/tclsh9.0 \
 		LDFLAGS_EX_BE="-Wl,--export-dynamic" \

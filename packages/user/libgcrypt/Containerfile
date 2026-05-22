@@ -5,6 +5,7 @@ ADD fetch/libgcrypt-${VERSION}.tar.bz2 .
 WORKDIR /libgcrypt-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--bindir=/usr/bin \

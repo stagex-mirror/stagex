@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-lua . /
@@ -11,7 +11,7 @@ COPY --from=stagex/core-libzstd . /
 ADD fetch/luarocks-${VERSION}.tar.gz .
 WORKDIR /luarocks-${VERSION}
 RUN --network=none <<-EOF
-  set -eux
+  autoreconf -vfi
   ./configure \
 		--prefix=/usr \
 		--with-lua-include=/usr/include/lua

@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-llvm . /
@@ -17,7 +17,6 @@ COPY --from=stagex/core-hiredis . /
 ADD fetch/ccache-${VERSION}.tar.xz .
 WORKDIR /ccache-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
 	cmake \
 		-G Ninja \
 		-B build \

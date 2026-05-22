@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-go . /
@@ -15,7 +15,6 @@ ENV GOHOSTARCH=amd64
 WORKDIR /k9s-${VERSION}
 RUN go get ./...
 RUN --network=none <<-EOF
-	set -eu
 	go build -trimpath -o k9s -v main.go
 	mkdir -p /rootfs/usr/bin/
 	cp k9s /rootfs/usr/bin/

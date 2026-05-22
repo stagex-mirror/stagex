@@ -12,7 +12,6 @@ EOF
 RUN cargo fetch --locked
 ENV RUSTFLAGS="-C codegen-units=1 -C link-arg=-Wl,--build-id=none -C target-feature=+crt-static"
 RUN --network=none <<-EOF
-	set -eux
 
 	cargo build \
 		--frozen \

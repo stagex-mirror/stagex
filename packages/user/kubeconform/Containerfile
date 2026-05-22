@@ -12,7 +12,6 @@ ENV GOHOSTOS=linux
 ENV GOHOSTARCH=amd64
 RUN go get ./...
 RUN <<-EOF
-	set -eu
 	go build -o bin/ -trimpath -v ./...
 	mkdir -p /rootfs/usr/bin/
 	cp bin/kubeconform /rootfs/usr/bin/

@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-mold . /
@@ -11,7 +11,7 @@ COPY --from=stagex/core-busybox . /
 ADD fetch/binutils-${VERSION}.tar.xz .
 WORKDIR /binutils-${VERSION}
 RUN --network=none <<-EOF
-	set -ex
+	autoreconf -vfi
 	./configure \
 		--with-sysroot=/ \
 		--prefix=/usr \

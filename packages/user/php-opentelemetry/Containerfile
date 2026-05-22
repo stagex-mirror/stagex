@@ -9,8 +9,8 @@ ADD fetch/opentelemetry-${VERSION}.tgz .
 
 WORKDIR /opentelemetry-${VERSION}/
 RUN --network=none <<-EOF
-	set -ex
 	phpize
+	autoreconf -vfi
 	./configure
 	make
 	make install INSTALL_ROOT=/rootfs

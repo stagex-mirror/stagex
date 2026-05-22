@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-ncurses . /
@@ -16,7 +16,7 @@ COPY --from=stagex/core-make . /
 ADD fetch/libedit-${VERSION}.tar.gz .
 WORKDIR /libedit-${VERSION}
 RUN --network=none <<-EOF
-	set -eux
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

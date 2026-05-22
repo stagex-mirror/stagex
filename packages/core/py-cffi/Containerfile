@@ -1,4 +1,4 @@
-FROM scratch AS build
+FROM stagex/core-profile AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
@@ -17,7 +17,6 @@ COPY --from=stagex/core-py-installer . /
 ADD fetch/py-cffi-${VERSION}.tar.gz .
 WORKDIR /cffi-${VERSION}
 RUN --network=none <<-EOF
-	set -eu
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 	python -m installer -d /rootfs .dist/*.whl
 	install -vDm644 -t /rootfs/usr/share/licenses/py-cffi LICENSE
