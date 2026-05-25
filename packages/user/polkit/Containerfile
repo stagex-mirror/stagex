@@ -1,0 +1,37 @@
+FROM stagex/pallet-clang-meson-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-docbook-xsl . /
+COPY --from=stagex/core-expat . /
+COPY --from=stagex/core-gettext . /
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-libxslt . /
+COPY --from=stagex/core-pcre2 . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/user-dbus . /
+COPY --from=stagex/user-duktape . /
+COPY --from=stagex/user-glib . /
+COPY --from=stagex/user-gobject-introspection . /
+COPY --from=stagex/user-pam . /
+COPY --from=stagex/user-systemd . /
+ADD fetch/polkit-${VERSION}.tar.gz .
+WORKDIR /polkit-${VERSION}
+RUN --network=none <<-EOF
+	export CFLAGS="-ffat-lto-objects -O2"
+	export CXXFLAGS="-O2"
+	export CPPFLAGS="-O2"
+	meson setup \
+		--default-library=shared \
+		--prefix=/usr \
+		-Dauthfw=pam \
+		-Dexamples=false \
+		-Dgettext=true \
+		-Dgtk_doc=false \
+		-Dintrospection=true \
+		-Dman=true \
+		-Dtests=false \
+		. output
+meson compile -C output
+DESTDIR=/rootfs meson install --no-rebuild -C output
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
