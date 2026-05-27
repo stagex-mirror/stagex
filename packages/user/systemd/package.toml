@@ -1,0 +1,12 @@
+[package]
+name = "systemd"
+version = "260.1"
+description = "system and service manager"
+license = "LGPL-2.1-or-later"
+website = "https://systemd.io"
+
+[sources.systemd]
+hash = "11b9821892b75d19af7b21f0f7f4e53636638147faf3e6a4ded78b40cb38993f"
+format = "tar.gz"
+file = "systemd-{version}.{format}"
+mirrors = ["https://github.com/systemd/systemd/archive/refs/tags/v{version}.{format}"]

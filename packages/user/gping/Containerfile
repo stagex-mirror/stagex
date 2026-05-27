@@ -5,6 +5,7 @@ ADD fetch/gping-${VERSION}.tar.gz .
 WORKDIR /gping-gping-v${VERSION}
 ENV RUST_BACKTRACE=1
 ENV RUSTFLAGS='-C codegen-units=1 -C target-feature=+crt-static'
+ENV SOURCE_DATE_EPOCH=1
 RUN cargo fetch
 RUN --network=none <<-EOF
 	cargo build \

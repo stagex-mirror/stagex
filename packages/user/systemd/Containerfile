@@ -1,0 +1,51 @@
+FROM stagex/pallet-clang-meson-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-bash . /
+COPY --from=stagex/core-coreutils . /
+COPY --from=stagex/user-gperf . /
+COPY --from=stagex/user-py-jinja2 . /
+COPY --from=stagex/user-py-markupsafe . /
+ADD fetch/systemd-${VERSION}.tar.gz .
+WORKDIR /systemd-${VERSION}
+ARG SOURCE_DATE_EPOCH=1
+RUN --network=none <<-EOF
+	meson setup \
+		--prefix=/usr \
+		--default-library=static \
+		-Dlibc=musl \
+		-Dmode=release \
+		-Dvcs-tag=false \
+		-Dman=false \
+		-Dtests=false \
+		-Dfirstboot=false \
+		-Dldconfig=false \
+		-Dresolve=false \
+		-Defi=false \
+		-Dtpm=false \
+		-Dcoredump=false \
+		-Dpstore=false \
+		-Doomd=false \
+		-Dlogind=false \
+		-Dhostnamed=false \
+		-Dlocaled=false \
+		-Dmachined=false \
+		-Dportabled=false \
+		-Dhomed=false \
+		-Dnetworkd=false \
+		-Dtimedated=false \
+		-Dtimesyncd=false \
+		-Dremote=false \
+		-Dnsresourced=false \
+		-Dnss-myhostname=false \
+		-Dnss-mymachines=false \
+		-Dnss-resolve=false \
+		-Dnss-systemd=false \
+		-Duserdb=false \
+		-Dsysusers=false \
+		-Dukify=false \
+		. output
+	meson compile -C output
+	DESTDIR=/rootfs meson install -C output
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
