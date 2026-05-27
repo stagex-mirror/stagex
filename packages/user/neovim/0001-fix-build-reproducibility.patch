@@ -1,0 +1,153 @@
+diff --git a/src/gen/preload_nlua.lua b/src/gen/preload_nlua.lua
+index 8980984..8570b21 100644
+--- a/src/gen/preload_nlua.lua
++++ b/src/gen/preload_nlua.lua
+
+@@ -1,3 +1,5 @@
++math.randomseed(0)
++require("jit").off()
+ local srcdir = table.remove(arg, 1)
+ local nlualib = table.remove(arg, 1)
+ local gendir = table.remove(arg, 1)
+diff --git a/src/gen/gen_api_dispatch.lua b/src/gen/gen_api_dispatch.lua
+index c8b1de4..d70d3a7 100644
+--- a/src/gen/gen_api_dispatch.lua
++++ b/src/gen/gen_api_dispatch.lua
+
+@@ -290,8 +290,58 @@ for _, f in ipairs(functions) do
+   end
+ end
+ 
++-- Deterministic mpack encoder: handles mixed tables as array+map (like mpack.encode)
++local function det_encode(v)
++  local t = type(v)
++  if t == 'nil' then return string.char(0x00) end
++  if t == 'boolean' then return string.char(v and 0xc3 or 0xc2) end
++  if t == 'number' or t == 'string' then return vim.mpack.encode(v) end
++  if t ~= 'table' then return vim.mpack.encode(v) end
++  local num_keys = {}
++  local str_keys = {}
++  local max_idx = 0
++  for k in pairs(v) do
++    if type(k) == 'number' and k > 0 and k == math.floor(k) then
++      table.insert(num_keys, k)
++      if k > max_idx then max_idx = k end
++    else
++      table.insert(str_keys, k)
++    end
++  end
++  table.sort(num_keys)
++  table.sort(str_keys)
++  local is_pure_array = (#num_keys == max_idx and #str_keys == 0)
++  local parts
++  if is_pure_array then
++    -- Pure array
++    local hdr = (max_idx <= 15) and string.char(0x90 + max_idx) or
++      string.char(0xdc, math.floor(max_idx / 256), max_idx % 256)
++    parts = { hdr }
++    for i = 1, max_idx do parts[#parts + 1] = det_encode(v[i]) end
++  else
++    -- Mixed or map: encode as array portion + map portion
++    parts = {}
++    if max_idx > 0 then
++      local ahdr = (max_idx <= 15) and string.char(0x90 + max_idx) or
++        string.char(0xdc, math.floor(max_idx / 256), max_idx % 256)
++      parts[#parts + 1] = ahdr
++      for _, i in ipairs(num_keys) do parts[#parts + 1] = det_encode(v[i]) end
++    end
++    if #str_keys > 0 then
++      local mhdr = (#str_keys <= 15) and string.char(0x80 + #str_keys) or
++        string.char(0xde, math.floor(#str_keys / 256), #str_keys % 256)
++      parts[#parts + 1] = mhdr
++      for _, k in ipairs(str_keys) do
++        parts[#parts + 1] = det_encode(k)
++        parts[#parts + 1] = det_encode(v[k])
++      end
++    end
++  end
++  return table.concat(parts)
++end
++
+ local metadata_output = assert(io.open(exported_funcs_metadata_outputf, 'wb'))
+-metadata_output:write(vim.mpack.encode(exported_functions))
++metadata_output:write(det_encode(exported_functions))
+ metadata_output:close()
+ 
+ -- start building the dispatch wrapper output
+index 01b4c26..461a83b 100644
+--- a/src/gen/gen_api_ui_events.lua
++++ b/src/gen/gen_api_ui_events.lua
+
+@@ -216,5 +218,54 @@ for _, ev in ipairs(events) do
+   end
+ end
+ 
+-metadata_output:write(mpack.encode(exported_events))
++-- Deterministic mpack encoder: handles mixed tables as array+map (like mpack.encode)
++local function det_encode(v)
++  local t = type(v)
++  if t == 'nil' then return string.char(0x00) end
++  if t == 'boolean' then return string.char(v and 0xc3 or 0xc2) end
++  if t == 'number' or t == 'string' then return mpack.encode(v) end
++  if t ~= 'table' then return mpack.encode(v) end
++  local num_keys = {}
++  local str_keys = {}
++  local max_idx = 0
++  for k in pairs(v) do
++    if type(k) == 'number' and k > 0 and k == math.floor(k) then
++      table.insert(num_keys, k)
++      if k > max_idx then max_idx = k end
++    else
++      table.insert(str_keys, k)
++    end
++  end
++  table.sort(num_keys)
++  table.sort(str_keys)
++  local is_pure_array = (#num_keys == max_idx and #str_keys == 0)
++  local parts
++  if is_pure_array then
++    -- Pure array
++    local hdr = (max_idx <= 15) and string.char(0x90 + max_idx) or
++      string.char(0xdc, math.floor(max_idx / 256), max_idx % 256)
++    parts = { hdr }
++    for i = 1, max_idx do parts[#parts + 1] = det_encode(v[i]) end
++  else
++    -- Mixed or map: encode as array portion + map portion
++    parts = {}
++    if max_idx > 0 then
++      local ahdr = (max_idx <= 15) and string.char(0x90 + max_idx) or
++        string.char(0xdc, math.floor(max_idx / 256), max_idx % 256)
++      parts[#parts + 1] = ahdr
++      for _, i in ipairs(num_keys) do parts[#parts + 1] = det_encode(v[i]) end
++    end
++    if #str_keys > 0 then
++      local mhdr = (#str_keys <= 15) and string.char(0x80 + #str_keys) or
++        string.char(0xde, math.floor(#str_keys / 256), #str_keys % 256)
++      parts[#parts + 1] = mhdr
++      for _, k in ipairs(str_keys) do
++        parts[#parts + 1] = det_encode(k)
++        parts[#parts + 1] = det_encode(v[k])
++      end
++    end
++  end
++  return table.concat(parts)
++end
++metadata_output:write(det_encode(exported_events))
+ metadata_output:close()
+index fa0d46c..06197ca 100644
+--- a/src/gen/gen_options.lua
++++ b/src/gen/gen_options.lua
+
+@@ -422,9 +422,11 @@ local function gen_map(output_file, option_index)
+   -- Generate option index map.
+   local hashy = require('gen.hashy')
+ 
++  local opt_keys = vim.tbl_keys(option_index)
++  table.sort(opt_keys)
+   local neworder, hashfun = hashy.hashy_hash(
+     'find_option',
+-    vim.tbl_keys(option_index),
++    opt_keys,
+     function(idx)
+       return ('option_hash_elems[%s].name'):format(idx)
+     end
