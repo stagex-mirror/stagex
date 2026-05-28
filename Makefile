@@ -29,6 +29,10 @@ verify: signatures ## Verify local build against committed digests
 	@$(call verify, pallet)
 	@$(call verify, user)
 
+.PHONY: lint-containerfiles
+lint-containerfiles: ## Validate Containerfile stage-naming conventions
+	@python3 src/lint-containerfiles.py $(PKG)
+
 digests: all ## Generate new digests from full tree
 	@./src/digests.py
 
