@@ -1,6 +1,8 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/core-profile AS build
 ARG VERSION
-COPY --from=stagex/core-rust . /
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-make . /
 COPY --from=stagex/core-gdbm . /
 COPY --from=stagex/core-readline . /
 COPY --from=stagex/core-libucontext . /
@@ -25,37 +27,36 @@ ENV CPPFLAGS="$CXXFLAGS"
 ENV ARCH="$(uname -m)"
 COPY *.patch .
 RUN --network=none <<-EOF
-        set -eux
-				patch -p1 dont-install-bundled-gems.patch
-        export CFLAGS="${CFLAGS/-Os/-O2} -fno-omit-frame-pointer -fno-strict-aliasing"
-        export CPPFLAGS="${CPPFLAGS/-Os/-O2} -fno-omit-frame-pointer -fno-strict-aliasing"
+	patch -p1 dont-install-bundled-gems.patch
+	export CFLAGS="${CFLAGS/-Os/-O2} -fno-omit-frame-pointer -fno-strict-aliasing"
+	export CPPFLAGS="${CPPFLAGS/-Os/-O2} -fno-omit-frame-pointer -fno-strict-aliasing"
 
-        # Needed for coroutine stuff
-        export LIBS="-lucontext"
+	# Needed for coroutine stuff
+	export LIBS="-lucontext"
 
-        # ruby saves path to install. we want use $PATH
-        export INSTALL=install
+	# ruby saves path to install. we want use $PATH
+	export INSTALL=install
 
-        rm ./configure
-        autoconf -f
+	rm ./configure
+	autoconf -f
 
-        # the configure script does not detect isnan/isinf as macros
-        export ac_cv_func_isnan=yes
-        export ac_cv_func_isinf=yes
-        ./configure \
-                --prefix=/usr \
-                --sysconfdir=/etc \
-                --mandir=/usr/share/man \
-                --infodir=/usr/share/info \
-                --with-sitedir=/usr/local/lib/site_ruby \
-								--with-search-path="/usr/lib/site_ruby/${VERSION}/${ARCH}" \
-                --enable-pthread \
-                --disable-rpath \
-                --enable-shared \
-                --with-mantype=man  || { cat config.log; exit 1; }
-        make -j "$(nproc)"
-        make DESTDIR=/rootfs install
-	install -Dm644 -t /rootfs/usr/share/licenses/ruby BSDL
+	# the configure script does not detect isnan/isinf as macros
+	export ac_cv_func_isnan=yes
+	export ac_cv_func_isinf=yes
+	./configure \
+					--prefix=/usr \
+					--sysconfdir=/etc \
+					--mandir=/usr/share/man \
+					--infodir=/usr/share/info \
+					--with-sitedir=/usr/local/lib/site_ruby \
+					--with-search-path="/usr/lib/site_ruby/${VERSION}/${ARCH}" \
+					--enable-pthread \
+					--disable-rpath \
+					--enable-shared \
+					--with-mantype=man  || { cat config.log; exit 1; }
+	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
+	install -vDm644 -t /rootfs/usr/share/licenses/ruby BSDL
 	find /rootfs -name mkmf.log -delete
 EOF
 FROM stagex/core-filesystem AS package
