@@ -521,5 +521,5 @@ RUN --network=none <<-EOF
 	done
 EOF
 
-FROM stagex/core-filesystem AS package-rust
+FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
