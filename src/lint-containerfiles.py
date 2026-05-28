@@ -3,23 +3,23 @@
 
 Rules per packages/<cat>/<name>/Containerfile:
 
-1. Every `FROM ... AS <stage>` line whose stage starts with `package` must
+1. Every `FROM ... AS <stage>` whose stage is in the package family must
    match exactly one of:
        package
-       package_runtime
+       runtime
        package-<sub>
-       package-<sub>_runtime
+       runtime-<sub>
    `<sub>` must appear in the corresponding package.toml's `subpackages` list.
-   The underscore separator on `_runtime` keeps the closure suffix disjoint
-   from subpackage names (which use hyphens).
+   "package*" stages are the built outputs; "runtime*" stages are the
+   auto-generated runtime-dependency target stages. Two parallel namespaces.
 
 2. If `subpackages` is declared in package.toml: there must be one
    `AS package-<sub>` stage per declared subpackage, and there must NOT be a
    bare `AS package` stage.
 
 3. If `subpackages` is NOT declared: the file must either contain a bare
-   `AS package` stage, or have no `package*` stages at all (rebase pattern,
-   typical of `packages/pallet/`).
+   `AS package` stage, or have no `package*`/`runtime*` stages at all
+   (rebase pattern, typical of `packages/pallet/`).
 
 4. No trailing whitespace on `AS <stage>` lines.
 
@@ -48,23 +48,25 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FROM_AS_RE = re.compile(r"^FROM\s+\S+(?:\s+--platform=\S+)?\s+AS\s+(.+?)\s*$")
 
 
-def classify_package_stage(stage: str):
-    """Return (sub, is_runtime) for a 'package*' stage, or None if not package family.
+def classify_stage(stage: str):
+    """Return (sub, is_runtime) for a package-family stage, or None otherwise.
 
-    `sub` is None for the bare package family ('package', 'package_runtime').
-    The underscore separator on '_runtime' keeps the closure suffix disjoint
-    from subpackage names (which use hyphens), so there is no ambiguity.
+    "package*" stages and "runtime*" stages share a flat (sub, is_runtime) shape:
+        package         -> (None, False)
+        runtime         -> (None, True)
+        package-<sub>   -> (<sub>, False)
+        runtime-<sub>   -> (<sub>, True)
+    The two namespaces are disjoint by prefix, so there is no ambiguity.
     """
     if stage == "package":
         return (None, False)
-    if stage == "package_runtime":
+    if stage == "runtime":
         return (None, True)
-    if not stage.startswith("package-"):
-        return None
-    rest = stage[len("package-"):]
-    if rest.endswith("_runtime"):
-        return (rest[:-len("_runtime")], True)
-    return (rest, False)
+    if stage.startswith("package-"):
+        return (stage[len("package-"):], False)
+    if stage.startswith("runtime-"):
+        return (stage[len("runtime-"):], True)
+    return None
 
 
 def parse_subpackages(toml_path: str) -> list[str]:
@@ -85,9 +87,9 @@ def lint_file(path: str) -> list[str]:
     sub_set = set(subpackages)
 
     stages_seen: dict[str, int] = {}
-    package_stages: set[str] = set()
     package_sub_stages: set[str] = set()
     has_bare_package = False
+    has_any_family_stage = False
 
     with open(path) as f:
         for lineno, raw in enumerate(f, 1):
@@ -110,25 +112,26 @@ def lint_file(path: str) -> list[str]:
             else:
                 stages_seen[stage] = lineno
 
-            if not stage.startswith("package"):
+            if not (stage.startswith("package") or stage.startswith("runtime")):
                 continue
 
-            parsed = classify_package_stage(stage)
+            parsed = classify_stage(stage)
             if parsed is None:
                 errors.append(
-                    f"{path}:{lineno}: invalid package stage name '{stage}' "
-                    f"(expected: package, package_runtime, package-<sub>, or package-<sub>_runtime)"
+                    f"{path}:{lineno}: invalid stage name '{stage}' "
+                    f"(expected: package, runtime, package-<sub>, or runtime-<sub>)"
                 )
                 continue
 
+            has_any_family_stage = True
             sub, is_runtime = parsed
             if sub is None:
-                has_bare_package = True
-                package_stages.add("package_runtime" if is_runtime else "package")
+                if not is_runtime:
+                    has_bare_package = True
             else:
                 if sub == "":
                     errors.append(
-                        f"{path}:{lineno}: invalid package stage name '{stage}' (empty subpackage)"
+                        f"{path}:{lineno}: invalid stage name '{stage}' (empty subpackage)"
                     )
                     continue
                 if sub not in sub_set:
@@ -136,9 +139,8 @@ def lint_file(path: str) -> list[str]:
                         f"{path}:{lineno}: stage '{stage}' references subpackage '{sub}' "
                         f"not declared in package.toml's subpackages list"
                     )
-                package_sub_stages.add(sub)
-
-    has_any_package_stage = bool(package_stages or package_sub_stages)
+                if not is_runtime:
+                    package_sub_stages.add(sub)
 
     if sub_set:
         if has_bare_package:
@@ -153,7 +155,7 @@ def lint_file(path: str) -> list[str]:
                 f"subpackage(s): {sorted(missing)}"
             )
     else:
-        if has_any_package_stage and not has_bare_package:
+        if has_any_family_stage and not has_bare_package:
             errors.append(
                 f"{path}: package has no declared subpackages but Containerfile "
                 f"is missing a bare 'AS package' stage"

@@ -31,6 +31,10 @@ EOF
 FROM stagex/core-filesystem AS package-zbarcam
 COPY --from=build-zbarcam /rootfs/ /
 
+FROM package-zbarcam AS runtime-zbarcam
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/user-libzbar . /
+
 FROM base AS build-libzbar
 RUN --network=none <<-EOF
 	./configure \
@@ -58,6 +62,9 @@ EOF
 FROM stagex/core-filesystem AS package-libzbar
 COPY --from=build-libzbar /rootfs/ /
 
+FROM package-libzbar AS runtime-libzbar
+COPY --from=stagex/core-musl . /
+
 FROM base AS build-libzbar-optimized-qrcode
 RUN --network=none <<-EOF
 	./configure \
@@ -84,3 +91,7 @@ RUN --network=none <<-EOF
 EOF
 FROM stagex/core-filesystem AS package-libzbar-optimized-qrcode
 COPY --from=build-libzbar-optimized-qrcode /rootfs/ /
+
+FROM package-libzbar-optimized-qrcode AS runtime-libzbar-optimized-qrcode
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/user-libzbar . /

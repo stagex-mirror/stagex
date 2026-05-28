@@ -150,3 +150,13 @@ RUN --network=none <<-EOF
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
+
+FROM package AS runtime
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-gmp . /
+COPY --from=stagex/core-isl . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-mpc . /
+COPY --from=stagex/core-mpfr . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-zlib . /

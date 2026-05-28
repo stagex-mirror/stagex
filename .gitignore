@@ -4,6 +4,7 @@ packages/*/*/fetch/*
 /signatures
 build.log
 graph.svg
+.build-temp
 *.TXT
 *.tar
 *.zip

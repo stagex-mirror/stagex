@@ -152,7 +152,6 @@ RUN --network=none <<-EOF
 
 EOF
 
-
 FROM stagex/core-filesystem AS package-php
 COPY --from=build /rootfs/usr/bin/php /usr/bin/php
 COPY --from=build /rootfs/usr/share/licenses/php/LICENSE /usr/share/licenses/php/LICENSE
@@ -169,6 +168,17 @@ COPY --from=build /rootfs/usr/share/licenses/php/LICENSE /usr/share/licenses/php
 
 FROM stagex/core-filesystem AS package-php-fpm
 COPY --from=build /rootfs/usr/sbin/php-fpm /usr/bin/php-fpm
+
+FROM package-php-fpm AS runtime-php-fpm
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/user-argon2 . /
+COPY --from=stagex/user-libiconv . /
 
 FROM stagex/core-filesystem AS package-php-zts
 COPY --from=build /rootfs-zts/usr/bin/php /usr/bin/php

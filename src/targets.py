@@ -172,8 +172,28 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
             continue
 
           deps: List[str] = list()
+          in_runtime_stage = False
+          has_package_stage = False
           with open(container_file_path, "r") as file:
             for line in file:
+              if line.startswith("FROM"):
+                # Runtime target stages ("AS runtime" / "AS runtime-<sub>")
+                # declare runtime dependencies, not build dependencies; skip
+                # their COPY lines so editing a target does not invalidate
+                # the build. The "runtime" prefix is a parallel namespace to
+                # "package", so a subpackage stage literally named
+                # "package-<x>-runtime" (e.g. core/llvm's llvm-runtime
+                # subpackage) is unambiguously NOT a runtime target.
+                tokens = line.split()
+                if "AS" in tokens:
+                  as_target = tokens[-1]
+                  in_runtime_stage = as_target == "runtime" or as_target.startswith("runtime-")
+                  if as_target == "package":
+                    has_package_stage = True
+                else:
+                  in_runtime_stage = False
+              if in_runtime_stage:
+                continue
               if line.startswith("COPY"):
                 first_arg = line.split(" ")[1]
                 if first_arg.startswith("--from"):
@@ -187,6 +207,7 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
 
           package_info = CommonUtils.parse_package_toml_no_deps(package_data)
           package_info.deps = deps
+          package_info.has_package_stage = has_package_stage
           if len(package_info.subpackages):
             for subpackage in package_info.subpackages:
               self.packages[stage][subpackage] = replace(package_info)
@@ -225,6 +246,8 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
     args: List[str] = list()
     if package.origin:
         args.append(f"--target package-{package.name}")
+    elif getattr(package, "has_package_stage", False):
+        args.append("--target package")
 
     if package.version:
         args.append(f"--build-arg VERSION={package.version}")

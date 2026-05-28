@@ -23,3 +23,9 @@ EOF
 ENTRYPOINT ["bin/sh"]
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
+
+FROM package AS runtime
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/user-libxau . /
+COPY --from=stagex/user-libxcb . /
+COPY --from=stagex/user-libxdmcp . /

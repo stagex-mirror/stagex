@@ -96,3 +96,6 @@ COPY --from=build-linux-nitro /rootfs/ /
 
 FROM stagex/core-filesystem AS package-gen_initramfs
 COPY --from=build-gen_initramfs /rootfs/ /
+
+FROM package-gen_initramfs AS runtime-gen_initramfs
+COPY --from=stagex/core-musl . /

@@ -29,6 +29,10 @@ verify: signatures ## Verify local build against committed digests
 	@$(call verify, pallet)
 	@$(call verify, user)
 
+.PHONY: verify-runtime
+verify-runtime: ## Verify auto-generated runtime target stages
+	@python3 src/verify-runtime-deps.py $(PKG)
+
 .PHONY: lint-containerfiles
 lint-containerfiles: ## Validate Containerfile stage-naming conventions
 	@python3 src/lint-containerfiles.py $(PKG)
