@@ -1,0 +1,12 @@
+[package]
+name = "libmicrohttpd"
+version = "1.0.5"
+description = "Lightweight HTTP server library"
+license = "LGPL-2.1-or-later"
+website = "https://www.gnu.org/software/libmicrohttpd/"
+
+[sources.libmicrohttpd]
+hash = "b46d00f58efa6f497b97d2e782c4ee66301d412ddd855dd3068518b3a2cd3ea2"
+format = "tar.gz"
+file = "libmicrohttpd-{version}.{format}"
+mirrors = ["https://ftp.gnu.org/gnu/libmicrohttpd/libmicrohttpd-{version}.{format}"]

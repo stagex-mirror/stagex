@@ -1,0 +1,15 @@
+[package]
+name = "stow"
+version = "2.4.1"
+description = "A symlinking tool for managing a package of software"
+license = "GPL-3.0"
+website = "https://www.gnu.org/software/stow/"
+
+[sources.stow]
+hash = "2a671e75fc207303bfe86a9a7223169c7669df0a8108ebdf1a7fe8cd2b88780b"
+format = "tar.gz"
+file = "stow-{version}.{format}"
+mirrors = ["https://ftpmirror.gnu.org/stow/{file}"]
+
+[build]
+depends = []

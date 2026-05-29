@@ -1,0 +1,12 @@
+[package]
+name = "libopenmpt"
+version = "0.8.7"
+description = "MOD music file library"
+license = "MIT"
+website = "https://lib.openmpt.org/"
+
+[sources.libopenmpt]
+hash = "275c29ef47be9992f62a35fcc96f7ca05c06d2fd05c9298b8dee9f743f75b089"
+format = "tar.gz"
+file = "libopenmpt-{version}+release.autotools.{format}"
+mirrors = ["https://lib.openmpt.org/files/libopenmpt/src/libopenmpt-{version}+release.autotools.{format}"]

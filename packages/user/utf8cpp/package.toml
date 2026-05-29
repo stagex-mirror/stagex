@@ -1,0 +1,12 @@
+[package]
+name = "utf8cpp"
+version = "4.0.6"
+description = "UTF-8 with C++ic API"
+license = "BSD-2-Clause"
+website = "https://github.com/nemtrif/utfcpp"
+
+[sources.utf8cpp]
+hash = "6920a6a5d6a04b9a89b2a89af7132f8acefd46e0c2a7b190350539e9213816c0"
+format = "tar.gz"
+file = "utfcpp-{version}.{format}"
+mirrors = ["https://github.com/nemtrif/utfcpp/archive/refs/tags/v{version}.{format}"]

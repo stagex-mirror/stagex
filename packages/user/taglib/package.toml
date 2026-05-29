@@ -1,0 +1,12 @@
+[package]
+name = "taglib"
+version = "2.3"
+description = "Audio metadata library"
+license = "LGPL-2.1-or-later"
+website = "https://taglib.org/"
+
+[sources.taglib]
+hash = "1b4b9edd723c92da3e6845bd2a3f5cde181643ff788ffe52ff53a5fd711cc8ce"
+format = "tar.gz"
+file = "taglib-v{version}.{format}"
+mirrors = ["https://github.com/taglib/taglib/archive/refs/tags/v{version}.{format}"]

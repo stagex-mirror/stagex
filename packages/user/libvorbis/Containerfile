@@ -1,0 +1,32 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+ARG VERSION
+COPY --from=stagex/user-libogg . /
+ADD fetch/libvorbis-${VERSION}.tar.gz .
+WORKDIR /vorbis-${VERSION}
+ARG SOURCE_DATE_EPOCH=1
+ENV CFLAGS="-O2 -ffile-prefix-map=/vorbis-${VERSION}=."
+RUN --network=none <<-EOF
+	sed -i 's/cmake_minimum_required(VERSION 2.8.12)/cmake_minimum_required(VERSION 3.5)/' CMakeLists.txt
+	cmake \
+		-B build \
+		-G Ninja \
+		-Wno-dev \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DBUILD_SHARED_LIBS=OFF \
+		-DINSTALL_PKGCONFIG_FILES=ON \
+		-DENABLE_TESTS=OFF \
+		-DENABLE_DOXYGEN=OFF \
+		-DENABLE_EXAMPLES=OFF \
+		.
+	cmake --build build
+	DESTDIR=/rootfs cmake --install build
+	# Fix vorbis.pc files: Requires.private → Requires so ffmpeg finds deps via pkg-config
+	for pc in /rootfs/usr/lib/pkgconfig/vorbis*.pc; do
+		sed -i 's/Requires.private:/Requires:/' "$pc"
+	done
+	install -Dm644 COPYING /rootfs/usr/share/licenses/libvorbis/COPYING
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

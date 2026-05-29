@@ -1,0 +1,26 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-make . /
+COPY --from=stagex/user-libogg . /
+COPY --from=stagex/user-libvorbis . /
+COPY --from=stagex/user-libmpg123 . /
+ADD fetch/libopenmpt-${VERSION}+release.autotools.tar.gz .
+WORKDIR /libopenmpt-${VERSION}+release.autotools
+ARG SOURCE_DATE_EPOCH=1
+ENV CFLAGS="-O2 -ffile-prefix-map=/libopenmpt-${VERSION}+release.autotools=."
+ENV CXXFLAGS="-O2 -ffile-prefix-map=/libopenmpt-${VERSION}+release.autotools=."
+RUN --network=none <<-EOF
+	./configure \
+		--prefix=/usr \
+		--disable-shared \
+		--disable-openmpt123 \
+		--disable-examples \
+		--disable-libsamplerate \
+		--disable-vorbisfile \
+		--disable-fftw
+	make -j$(nproc)
+	DESTDIR=/rootfs make install
+	install -Dm644 LICENSE /rootfs/usr/share/licenses/libopenmpt/LICENSE
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

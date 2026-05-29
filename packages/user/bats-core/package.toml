@@ -1,0 +1,15 @@
+[package]
+name = "bats-core"
+version = "1.11.0"
+description = "Builder Automated Testing System (BATS) core framework"
+license = "MIT"
+website = "https://github.com/bats-core/bats-core"
+
+[sources.bats-core]
+hash = "aeff09fdc8b0c88b3087c99de00cf549356d7a2f6a69e3fcec5e0e861d2f9063"
+format = "tar.gz"
+file = "bats-{version}.{format}"
+mirrors = ["https://github.com/bats-core/bats-core/archive/v{version}.{format}"]
+
+[build]
+depends = ["core-bash", "core-ncurses"]

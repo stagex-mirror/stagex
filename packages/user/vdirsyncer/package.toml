@@ -1,0 +1,12 @@
+[package]
+name = "vdirsyncer"
+version = "0.20.0"
+description = "Calendar and address book synchronization tool"
+website = "https://pypi.python.org/pypi/vdirsyncer/"
+license = "MIT"
+
+[sources.vdirsyncer]
+hash = "feb1a533500a95c14fd155733a1056fe359192553d82c07c6ba04fcbfc40b12d"
+format = "tar.gz"
+file = "vdirsyncer-{version}.{format}"
+mirrors = [ "https://files.pythonhosted.org/packages/source/v/vdirsyncer/vdirsyncer-{version}.{format}",]

@@ -1,0 +1,12 @@
+[package]
+name = "py-atomicwrites"
+version = "1.4.1"
+description = "Atomic file writes"
+website = "https://pypi.python.org/pypi/atomicwrites/"
+license = "MIT"
+
+[sources.py-atomicwrites]
+hash = "81b2c9071a49367a7f770170e5eec8cb66567cfbbc8c73d20ce5ca4a8d71cf11"
+format = "tar.gz"
+file = "py-atomicwrites-{version}.{format}"
+mirrors = [ "https://files.pythonhosted.org/packages/source/a/atomicwrites/atomicwrites-{version}.{format}",]

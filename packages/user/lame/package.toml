@@ -1,0 +1,12 @@
+[package]
+name = "lame"
+version = "3.100"
+description = "MP3 audio encoder"
+license = "MP3LAME"
+website = "https://lame.sourceforge.io/"
+
+[sources.lame]
+hash = "ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e"
+format = "tar.gz"
+file = "lame-{version}.{format}"
+mirrors = ["https://downloads.sourceforge.net/project/lame/lame/{version}/lame-{version}.{format}"]

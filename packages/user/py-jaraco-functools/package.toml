@@ -1,0 +1,12 @@
+[package]
+name = "py-jaraco-functools"
+version = "4.5.0"
+description = "Functional programming tools"
+website = "https://pypi.python.org/pypi/jaraco.functools/"
+license = "MIT"
+
+[sources.py-jaraco-functools]
+hash = "3bb5665ea4a020cf78a7040e89154c77edadb3ca74f366479669c5999aa70b03"
+format = "tar.gz"
+file = "py-jaraco-functools-{version}.{format}"
+mirrors = [ "https://files.pythonhosted.org/packages/source/j/jaraco.functools/jaraco_functools-{version}.{format}",]

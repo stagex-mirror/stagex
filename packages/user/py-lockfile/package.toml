@@ -1,0 +1,12 @@
+[package]
+name = "py-lockfile"
+version = "0.12.2"
+description = "Portable named locks"
+website = "https://pypi.python.org/pypi/lockfile/"
+license = "MIT"
+
+[sources.py-lockfile]
+hash = "6aed02de03cba24efabcd600b30540140634fc06cfa603822d508d5361e9f799"
+format = "tar.gz"
+file = "py-lockfile-{version}.{format}"
+mirrors = [ "https://files.pythonhosted.org/packages/source/l/lockfile/lockfile-{version}.{format}",]

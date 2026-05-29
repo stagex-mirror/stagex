@@ -1,0 +1,16 @@
+FROM stagex/pallet-python AS build
+ARG VERSION
+COPY --from=stagex/user-py-jaraco-classes . /
+COPY --from=stagex/user-py-jaraco-functools . /
+COPY --from=stagex/user-py-jaraco-context . /
+COPY --from=stagex/user-py-jeepney . /
+COPY --from=stagex/user-py-secretstorage . /
+ADD fetch/py-keyring-${VERSION}.tar.gz .
+WORKDIR /keyring-${VERSION}
+RUN --network=none <<-EOF
+	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+	python -m installer -d /rootfs .dist/*.whl
+	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

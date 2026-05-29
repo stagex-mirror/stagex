@@ -1,0 +1,12 @@
+[package]
+name = "py-keyring"
+version = "25.7.0"
+description = "Python keyring library"
+website = "https://pypi.python.org/pypi/keyring/"
+license = "MIT"
+
+[sources.py-keyring]
+hash = "fe01bd85eb3f8fb3dd0405defdeac9a5b4f6f0439edbb3149577f244a2e8245b"
+format = "tar.gz"
+file = "py-keyring-{version}.{format}"
+mirrors = [ "https://files.pythonhosted.org/packages/source/k/keyring/keyring-{version}.{format}",]

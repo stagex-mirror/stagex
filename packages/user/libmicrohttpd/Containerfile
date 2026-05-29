@@ -1,0 +1,26 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-openssl . /
+ADD fetch/libmicrohttpd-${VERSION}.tar.gz .
+WORKDIR /libmicrohttpd-${VERSION}
+ARG SOURCE_DATE_EPOCH=1
+ENV CFLAGS="-O2 -fPIC -ffile-prefix-map=/libmicrohttpd-${VERSION}=."
+RUN --network=none <<-EOF
+	./configure \
+		--prefix=/usr \
+		--disable-shared \
+		--enable-epoll \
+		--enable-poll \
+		--disable-https \
+		--disable-debugging-flags \
+		--disable-largefile \
+		--disable-threads \
+		--disable-examples \
+		--disable-docs
+	make -j$(nproc)
+	DESTDIR=/rootfs make install
+	install -Dm644 COPYING /rootfs/usr/share/licenses/libmicrohttpd/COPYING
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

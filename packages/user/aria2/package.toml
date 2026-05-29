@@ -1,0 +1,15 @@
+[package]
+name = "aria2"
+version = "1.37.0"
+description = "Lightweight multi-protocol & multi-source command-line download utility"
+license = "GPL-2.0"
+website = "https://aria2.github.io/"
+
+[sources.aria2]
+hash = "8e7021c6d5e8f8240c9cc19482e0c8589540836747744724d86bf8af5a21f0e8"
+format = "tar.gz"
+file = "aria2-{version}.{format}"
+mirrors = ["https://github.com/aria2/aria2/releases/download/release-{version}/{file}"]
+
+[build]
+depends = ["core-openssl", "core-libzstd"]

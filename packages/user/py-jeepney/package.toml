@@ -1,0 +1,12 @@
+[package]
+name = "py-jeepney"
+version = "0.9.0"
+description = "Zero-dependency D-Bus client"
+website = "https://pypi.python.org/pypi/jeepney/"
+license = "MIT"
+
+[sources.py-jeepney]
+hash = "cf0e9e845622b81e4a28df94c40345400256ec608d0e55bb8a3feaa9163f5732"
+format = "tar.gz"
+file = "py-jeepney-{version}.{format}"
+mirrors = [ "https://files.pythonhosted.org/packages/source/j/jeepney/jeepney-{version}.{format}",]

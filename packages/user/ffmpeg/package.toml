@@ -1,0 +1,12 @@
+[package]
+name = "ffmpeg"
+version = "7.1.1"
+description = "Audio/video processing suite"
+license = "LGPL-2.1-or-later"
+website = "https://ffmpeg.org/"
+
+[sources.ffmpeg]
+hash = "9a6e57a446b671012612aaeb9df5126794d5ac8f2015ca220934f99a6a4e0601"
+format = "tar.gz"
+file = "ffmpeg-{version}.{format}"
+mirrors = ["https://ffmpeg.org/releases/ffmpeg-{version}.{format}"]

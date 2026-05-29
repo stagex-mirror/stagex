@@ -1,0 +1,12 @@
+[package]
+name = "py-python-dateutil"
+version = "2.9.0.post0"
+description = "Date utilities for Python"
+website = "https://pypi.python.org/pypi/python-dateutil/"
+license = "Apache-2.0"
+
+[sources.py-python-dateutil]
+hash = "37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3"
+format = "tar.gz"
+file = "py-python-dateutil-{version}.{format}"
+mirrors = [ "https://files.pythonhosted.org/packages/source/p/python-dateutil/python-dateutil-{version}.{format}",]

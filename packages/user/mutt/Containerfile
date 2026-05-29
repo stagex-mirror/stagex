@@ -1,0 +1,28 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-ncurses . /
+COPY --from=stagex/core-sqlite3 . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-zlib . /
+ADD fetch/mutt-${VERSION}.tar.gz .
+WORKDIR /mutt-${VERSION}
+ENV CFLAGS="-O2 -fPIC -ffile-prefix-map=/mutt-${VERSION}=."
+RUN --network=none <<-EOF
+	./configure \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--disable-docbook \
+		--disable-html \
+		--disable-fcrypt \
+		--disable-hesiod \
+		--disable-pop \
+		--disable-sasl \
+		--disable-smtp \
+		--disable-idn \
+		--disable-gnupg
+	make -j$(nproc)
+	DESTDIR=/rootfs make install
+	install -Dm644 GPL /rootfs/usr/share/licenses/mutt/GPL
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

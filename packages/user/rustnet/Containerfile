@@ -1,0 +1,32 @@
+FROM stagex/pallet-rust AS build
+ARG VERSION
+ARG TARGETARCH
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/user-elfutils . /
+COPY --from=stagex/user-libpcap . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/user-libbpf . /
+ADD fetch/rustnet-v${VERSION}.tar.gz .
+WORKDIR /rustnet-${VERSION}
+ENV RUSTFLAGS="-C codegen-units=1 -C target-feature=+crt-static -C link-arg=-fuse-ld=mold -C link-arg=-lzstd -C link-arg=-Wl,--sort-common -C link-arg=-Wl,--allow-multiple-definition -C link-arg=-Wl,--build-id=none -C strip=symbols"
+ENV LIBBPF_SYS_USE_SYSTEM_LIBBPF=1
+ENV LIBBPF_SYS_USE_SYSTEM_ZSTD=1
+ENV CARGO_INCREMENTAL=0
+ENV LIBBPF_CLANG=/usr/bin/clang
+ENV LIBBPF_CFLAGS="-I/usr/include"
+ENV PKG_CONFIG_PATH=/usr/lib/pkgconfig
+ENV SOURCE_DATE_EPOCH=1
+RUN cargo fetch
+RUN --network=none <<-EOF
+	cargo build \
+		--frozen \
+		--release \
+		--target ${ARCH}-unknown-linux-musl \
+		--bin rustnet
+	mkdir -p /rootfs/usr/bin
+	cp target/${ARCH}-unknown-linux-musl/release/rustnet /rootfs/usr/bin/
+	install -Dm644 LICENSE /rootfs/usr/share/licenses/rustnet/LICENSE
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

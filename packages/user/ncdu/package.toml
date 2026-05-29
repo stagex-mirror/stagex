@@ -1,0 +1,15 @@
+[package]
+name = "ncdu"
+version = "1.19"
+description = "Disk usage analyzer with ncurses interface"
+license = "WTFPL"
+website = "https://dev.yorhel.nl/ncdu"
+
+[sources.ncdu]
+hash = "30363019180cde0752c7fb006c12e154920412f4e1b5dc3090654698496bb17d"
+format = "tar.gz"
+file = "ncdu-{version}.{format}"
+mirrors = ["https://dev.yorhel.nl/download/{file}"]
+
+[build]
+depends = ["core-ncurses"]

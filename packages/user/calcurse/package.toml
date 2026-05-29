@@ -1,0 +1,15 @@
+[package]
+name = "calcurse"
+version = "4.8.2"
+description = "Text-mode calendar and date planner"
+license = "GPL-2.0"
+website = "https://calcurse.org"
+
+[sources.calcurse]
+hash = "849ba852c7f37b6772365cb0c42a94cde0fe75efba91363e96a0e7ef797ba565"
+format = "tar.gz"
+file = "calcurse-{version}.{format}"
+mirrors = ["https://www.calcurse.org/files/{file}"]
+
+[build]
+depends = []

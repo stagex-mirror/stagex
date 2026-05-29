@@ -1,0 +1,12 @@
+[package]
+name = "py-more-itertools"
+version = "11.1.0"
+description = "More routines for operating on iterables"
+website = "https://pypi.python.org/pypi/more-itertools/"
+license = "MIT"
+
+[sources.py-more-itertools]
+hash = "48e8f4d9e7e5878571ecf6f2b4e57634f93cd474cc8cfbd2376f2d11b396e30d"
+format = "tar.gz"
+file = "py-more-itertools-{version}.{format}"
+mirrors = [ "https://files.pythonhosted.org/packages/source/m/more-itertools/more_itertools-{version}.{format}",]

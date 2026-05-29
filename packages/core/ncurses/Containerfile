@@ -46,6 +46,15 @@ RUN --network=none <<-EOF
 	ln -s libncurses.a usr/lib/libcurses.a
 	ln -s libncurses.so usr/lib/libcurses.so
 	echo 'INPUT(-lncursesw)' > usr/lib/libcursesw.so
+	# link tinfo -> ncurses (Alpine/Chimera compatibility)
+	ln -s libncursesw.a usr/lib/libtinfo.a
+	ln -s libncursesw.so usr/lib/libtinfo.so
+	# create ncursesw/ subdir for headers (musickube compatibility)
+	install -d usr/include/ncursesw
+	for h in curses.h ncurses.h form.h menu.h panel.h unctrl.h term.h term_entry.h termcap.h \
+	  cursesapp.h cursesf.h cursesm.h cursesp.h cursesw.h cursslk.h eti.h etip.h ncurses_dll.h; do
+		ln -sf ../$h usr/include/ncursesw/$h
+	done
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

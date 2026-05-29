@@ -1,0 +1,12 @@
+[package]
+name = "libmpg123"
+version = "1.32.5"
+description = "MP3 decoder library"
+license = "LGPL-2.1-or-later"
+website = "https://www.mpg123.de/"
+
+[sources.libmpg123]
+hash = "af908cdf6cdb6544b97bc706a799f79894e69468af5881bf454a0ebb9171ed63"
+format = "tar.bz2"
+file = "mpg123-{version}.{format}"
+mirrors = ["https://sourceforge.net/projects/mpg123/files/mpg123/{version}/mpg123-{version}.{format}/download"]

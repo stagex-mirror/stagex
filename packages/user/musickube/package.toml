@@ -1,0 +1,12 @@
+[package]
+name = "musickube"
+version = "3.0.5"
+description = "Terminal-based music player and streaming audio server"
+license = "BSD-3-Clause"
+website = "https://github.com/clangen/musikcube"
+
+[sources.musickube]
+hash = "708292a583bb5072a8dbb14e408c2a1f61de9b8c9786d4e53b3e69bef5dad8c5"
+format = "tar.gz"
+file = "musikcube-{version}.{format}"
+mirrors = ["https://github.com/clangen/musikcube/archive/refs/tags/{version}.{format}"]

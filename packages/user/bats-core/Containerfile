@@ -1,0 +1,18 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-bash . /
+COPY --from=stagex/core-ncurses . /
+ADD fetch/bats-${VERSION}.tar.gz .
+WORKDIR /bats-core-${VERSION}
+ARG SOURCE_DATE_EPOCH=1
+RUN --network=none <<-EOF
+	# Install bats-core without running install.sh (bash has issues with musl)
+	install -d /rootfs/usr/bin /rootfs/usr/lib/bats-core /rootfs/usr/libexec/bats-core
+	cp bin/bats /rootfs/usr/bin/
+	cp -r lib/bats-core/* /rootfs/usr/lib/bats-core/
+	cp -r libexec/bats-core/* /rootfs/usr/libexec/bats-core/
+	install -d /rootfs/usr/share/licenses/bats-core
+	install -m644 LICENSE.md /rootfs/usr/share/licenses/bats-core/LICENSE.md
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

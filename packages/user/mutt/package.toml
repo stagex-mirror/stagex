@@ -1,0 +1,15 @@
+[package]
+name = "mutt"
+version = "2.3.2"
+description = "A text-mode email client"
+license = "GPL-2.0"
+website = "https://mutt.org"
+
+[sources.mutt]
+hash = "9b4f7a442e41c057774ba7c36fa41aba2edd2e7a12a86031e6ebb113bab2c79e"
+format = "tar.gz"
+file = "mutt-{version}.{format}"
+mirrors = ["http://ftp.mutt.org/pub/mutt/mutt-{version}.{format}"]
+
+[build]
+depends = []

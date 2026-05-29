@@ -1,0 +1,52 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+ARG VERSION
+COPY --from=stagex/user-nasm . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-xz . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/user-lame . /
+COPY --from=stagex/user-libogg . /
+COPY --from=stagex/user-libvorbis . /
+ADD fetch/ffmpeg-${VERSION}.tar.gz .
+WORKDIR /ffmpeg-${VERSION}
+ARG SOURCE_DATE_EPOCH=1
+ENV CFLAGS="-O2 -fPIC -ffile-prefix-map=/ffmpeg-${VERSION}=."
+ENV PKG_CONFIG_PATH="/usr/lib/pkgconfig"
+RUN --network=none <<-EOF
+	export CFLAGS="-O2 -fPIC -ffile-prefix-map=/ffmpeg-${VERSION}=."
+	export CXXFLAGS="-O2 -fPIC -ffile-prefix-map=/ffmpeg-${VERSION}=."
+	export LDFLAGS="-Wl,--build-id=none"
+	./configure \
+		--cc=clang \
+		--enable-pic \
+		--disable-asm \
+		--prefix=/usr \
+		--disable-shared \
+		--disable-programs \
+		--disable-doc \
+		--disable-devices \
+		--disable-filters \
+		--disable-protocols \
+		--disable-network \
+		--disable-avdevice \
+		--disable-postproc \
+		--disable-swscale \
+		--disable-avfilter \
+		--enable-libmp3lame \
+		--enable-libvorbis \
+		--enable-gpl \
+		--enable-version3 \
+		--disable-debug \
+		--disable-stripping \
+		--enable-static
+	# Fix: disable direct symbol refs in inline asm for PIC compatibility
+	# (ffmpeg enables them even with --enable-pic, causing R_X86_64_PC32 relocations)
+	sed -i '/HAVE_INLINE_ASM_DIRECT_SYMBOL_REFS/d' config.h
+	make -j$(nproc)
+	make -j$(nproc)
+	DESTDIR=/rootfs make install
+	install -Dm644 LICENSE.md /rootfs/usr/share/licenses/ffmpeg/LICENSE.md
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

@@ -1,0 +1,15 @@
+[package]
+name = "rsync"
+version = "3.2.7"
+description = "Remote and local file synchronization tool"
+license = "GPL-3.0"
+website = "https://rsync.samba.org/"
+
+[sources.rsync]
+hash = "4e7d9d3f6ed10878c58c5fb724a67dacf4b6aac7340b13e488fb2dc41346f2bb"
+format = "tar.gz"
+file = "rsync-{version}.{format}"
+mirrors = ["https://download.samba.org/pub/rsync/src/{file}"]
+
+[build]
+depends = ["core-openssl"]

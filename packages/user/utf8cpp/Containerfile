@@ -1,0 +1,22 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+ARG VERSION
+ADD fetch/utfcpp-${VERSION}.tar.gz .
+WORKDIR /utfcpp-${VERSION}
+ARG SOURCE_DATE_EPOCH=1
+RUN --network=none <<-EOF
+	cmake \
+		-B build \
+		-G Ninja \
+		-Wno-dev \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DUTF8CPP_BUILD_TESTS=OFF \
+		-DUTF8CPP_BUILD_SIZETYPES_TEST=OFF \
+		.
+	cmake --build build
+	DESTDIR=/rootfs cmake --install build
+	install -Dm644 LICENSE /rootfs/usr/share/licenses/utf8cpp/LICENSE
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
