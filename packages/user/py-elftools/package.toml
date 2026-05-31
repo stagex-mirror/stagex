@@ -1,0 +1,12 @@
+[package]
+name = "py-elftools"
+version = "0.33"
+description = "Pure-Python library for parsing and analyzing ELF files and DWARF debugging information"
+license = "Unlicense AND MIT"
+website = "https://github.com/eliben/pyelftools"
+
+[sources.py-elftools]
+hash = "660d82dcbeb8e83d1702bd97f223f761625da06111c0cc988eac6b8ab0c1b61f"
+format = "tar.gz"
+file = "py-elftools-{version}.{format}"
+mirrors = [ "https://files.pythonhosted.org/packages/source/p/pyelftools/pyelftools-{version}.{format}",]
