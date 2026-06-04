@@ -1,0 +1,15 @@
+[package]
+name = "firefox"
+version = "151.0.2"
+description = "Mozilla Firefox web browser"
+license = "MPL-2.0"
+website = "https://www.mozilla.org/firefox"
+
+[sources.firefox]
+hash = "63c4267799f2618dd7ac5997d0306bbcf2a5306caaca0056795bc6c61d00f8c8"
+format = "tar.xz"
+file = "firefox-{version}.source.{format}"
+mirrors = ["https://ftp.mozilla.org/pub/firefox/releases/{version}/source/{file}"]
+
+[build]
+depends = []

@@ -1,0 +1,9 @@
+--- a/config/gcc_hidden.h
++++ b/config/gcc_hidden.h
+@@ -4,3 +4,4 @@
+  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ 
+ /* Begin all files as hidden visibility */
++#if !defined(_LIBCPP_VERSION)
+ #pragma GCC visibility push(hidden)
++#endif

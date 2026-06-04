@@ -1,0 +1,116 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+COPY --from=stagex/core-nspr . /
+COPY --from=stagex/core-nss . /
+COPY --from=stagex/core-dbus . /
+COPY --from=stagex/core-sqlite3 . /
+COPY --from=stagex/core-icu . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-libffi . /
+COPY --from=stagex/core-libpng . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-ncurses . /
+COPY --from=stagex/core-rust . /
+COPY --from=stagex/core-ca-certificates . /
+COPY --from=stagex/core-nodejs . /
+COPY --from=stagex/core-libnghttp2 . /
+COPY --from=stagex/core-brotli . /
+COPY --from=stagex/core-c-ares . /
+COPY --from=stagex/user-alsa-lib . /
+COPY --from=stagex/user-pipewire . /
+COPY --from=stagex/user-wayland . /
+COPY --from=stagex/user-wayland-protocols . /
+COPY --from=stagex/user-xorgproto . /
+COPY --from=stagex/user-xkbcommon . /
+COPY --from=stagex/user-libx11 . /
+COPY --from=stagex/user-libxcb . /
+COPY --from=stagex/user-libxext . /
+COPY --from=stagex/user-libxrandr . /
+COPY --from=stagex/user-libxdamage . /
+COPY --from=stagex/user-libxfixes . /
+COPY --from=stagex/user-libxcomposite . /
+COPY --from=stagex/user-libxcursor . /
+COPY --from=stagex/user-libxi . /
+COPY --from=stagex/user-libxau . /
+COPY --from=stagex/user-libxdmcp . /
+COPY --from=stagex/user-libxrender . /
+COPY --from=stagex/user-libice . /
+COPY --from=stagex/user-libsm . /
+COPY --from=stagex/user-eudev . /
+COPY --from=stagex/user-pango . /
+COPY --from=stagex/user-cairo . /
+COPY --from=stagex/user-harfbuzz . /
+COPY --from=stagex/user-glib . /
+COPY --from=stagex/user-fribidi . /
+COPY --from=stagex/user-freetype . /
+COPY --from=stagex/user-fontconfig . /
+COPY --from=stagex/user-pixman . /
+COPY --from=stagex/user-gtk3 . /
+COPY --from=stagex/user-atk . /
+COPY --from=stagex/user-gdk-pixbuf . /
+COPY --from=stagex/user-libepoxy . /
+COPY --from=stagex/user-nasm . /
+COPY --from=stagex/user-util-linux . /
+COPY --from=stagex/core-expat . /
+COPY --from=stagex/core-pcre2 . /
+ARG VERSION
+ADD fetch/firefox-${VERSION}.source.tar.xz .
+RUN mv firefox-* source
+WORKDIR /source
+# Patch: disable gcc_hidden.h visibility push for libc++/musl compatibility
+RUN : > config/gcc_hidden.h
+# Patch: libwebrtc desktop_capturer.h missing sys/types.h for pid_t (musl)
+RUN sed -i '1i#include <sys/types.h>' third_party/libwebrtc/modules/desktop_capture/desktop_capturer.h
+# Patch: guard linux/prctl.h include for musl (prevents prctl_mm_map redefinition)
+RUN sed -i '/#include <linux\/prctl.h>/i #if defined(__GLIBC__)' third_party/libwebrtc/rtc_base/platform_thread_types.cc && \
+	sed -i '/#include <linux\/prctl.h>/a #endif' third_party/libwebrtc/rtc_base/platform_thread_types.cc
+ENV CFLAGS="-O2 -fPIC -ffile-prefix-map=/source=. -D_GNU_SOURCE"
+ENV CXXFLAGS="-O2 -fPIC -ffile-prefix-map=/source=. -Wno-error=visibility -Wno-redundant-decls -fvisibility=default"
+ENV RUST_TARGET="x86_64-unknown-linux-musl"
+ENV RUSTFLAGS="-A elided_lifetimes_in_paths -A redundant-parentheses"
+ENV LD_LIBRARY_PATH="/usr/lib"
+ENV PKG_CONFIG_PATH="/usr/lib/pkgconfig"
+ENV AC_ADD_ARGS="--disable-jemalloc --disable-rust-simd --disable-hardening --disable-updater --disable-warnings-as-errors"
+ENV MACH_BUILD_PYTHON_NATIVE_PACKAGE_SOURCE=system
+ENV LDFLAGS="-Wl,-z,stack-size=2097152 --ld-path=/usr/bin/ld.lld"
+ENV LD=ld.lld
+RUN <<-EOF
+	export CARGO_NET_TLS_NO_VERIFY=1
+	cargo install cbindgen --root /usr --locked
+EOF
+RUN <<-EOF
+	export CBINDGEN=/usr/bin/cbindgen
+	export AS=clang
+	export LD=ld.lld LDFLAGS="-Wl,-z,stack-size=2097152 --ld-path=/usr/bin/ld.lld"
+	ln -sf /usr/lib/libc++.so /usr/lib/libstdc++.so
+	mkdir -p obj-dir
+	cd obj-dir
+	../configure \
+		--host=x86_64-unknown-linux-musl \
+		--prefix=/usr \
+		--disable-debug \
+		--disable-tests \
+		--disable-crashreporter \
+		--enable-official-branding \
+		--enable-default-toolkit=cairo-gtk3-wayland-only \
+		--enable-linker=lld \
+		--disable-elf-hack \
+		--with-system-nspr \
+		--with-system-zlib \
+		--with-system-ffi \
+		--without-wasm-sandboxed-libraries \
+		--disable-audio-backends \
+		$AC_ADD_ARGS
+EOF
+RUN --network=none <<-EOF
+	export LD=ld.lld LDFLAGS="-Wl,-z,stack-size=2097152 --ld-path=/usr/bin/ld.lld"
+	make -C obj-dir -j$(nproc) || true
+EOF
+RUN --network=none <<-EOF
+	export LD=ld.lld LDFLAGS="-Wl,-z,stack-size=2097152 --ld-path=/usr/bin/ld.lld"
+	make -C obj-dir -j$(nproc)
+	DESTDIR=/rootfs make -C obj-dir install
+	install -Dm644 LICENSE /rootfs/usr/share/licenses/firefox/LICENSE
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
