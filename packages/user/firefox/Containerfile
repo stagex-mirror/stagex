@@ -68,23 +68,15 @@ ENV CFLAGS="-O2 -fPIC -ffile-prefix-map=/source=. -D_GNU_SOURCE"
 ENV CXXFLAGS="-O2 -fPIC -ffile-prefix-map=/source=. -Wno-error=visibility -Wno-redundant-decls -fvisibility=default"
 ENV RUST_TARGET="x86_64-unknown-linux-musl"
 ENV RUSTFLAGS="-A elided_lifetimes_in_paths -A redundant-parentheses"
-ENV LD_LIBRARY_PATH="/usr/lib"
-ENV PKG_CONFIG_PATH="/usr/lib/pkgconfig"
-ENV AC_ADD_ARGS="--disable-jemalloc --disable-rust-simd --disable-hardening --disable-updater --disable-warnings-as-errors"
 ENV MACH_BUILD_PYTHON_NATIVE_PACKAGE_SOURCE=system
-ENV LDFLAGS="-Wl,-z,stack-size=2097152 --ld-path=/usr/bin/ld.lld"
-ENV LD=ld.lld
 RUN <<-EOF
 	export CARGO_NET_TLS_NO_VERIFY=1
 	cargo install cbindgen --root /usr --locked
 EOF
-RUN <<-EOF
-	export CBINDGEN=/usr/bin/cbindgen
-	export AS=clang
-	export LD=ld.lld LDFLAGS="-Wl,-z,stack-size=2097152 --ld-path=/usr/bin/ld.lld"
+RUN --network=none <<-EOF
+	export CBINDGEN=/usr/bin/cbindgen AS=clang LD=ld.lld LDFLAGS="-Wl,-z,stack-size=2097152 --ld-path=/usr/bin/ld.lld"
 	ln -sf /usr/lib/libc++.so /usr/lib/libstdc++.so
-	mkdir -p obj-dir
-	cd obj-dir
+	mkdir -p obj-dir && cd obj-dir
 	../configure \
 		--host=x86_64-unknown-linux-musl \
 		--prefix=/usr \
@@ -100,17 +92,14 @@ RUN <<-EOF
 		--with-system-ffi \
 		--without-wasm-sandboxed-libraries \
 		--disable-audio-backends \
-		$AC_ADD_ARGS
-EOF
-RUN --network=none <<-EOF
-	export LD=ld.lld LDFLAGS="-Wl,-z,stack-size=2097152 --ld-path=/usr/bin/ld.lld"
-	make -C obj-dir -j$(nproc) || true
-EOF
-RUN --network=none <<-EOF
-	export LD=ld.lld LDFLAGS="-Wl,-z,stack-size=2097152 --ld-path=/usr/bin/ld.lld"
-	make -C obj-dir -j$(nproc)
-	DESTDIR=/rootfs make -C obj-dir install
-	install -Dm644 LICENSE /rootfs/usr/share/licenses/firefox/LICENSE
+		--disable-jemalloc \
+		--disable-rust-simd \
+		--disable-hardening \
+		--disable-updater \
+		--disable-warnings-as-errors
+	make -C . -j$(nproc)
+	DESTDIR=/rootfs make -C . install
+	install -Dm644 ../LICENSE /rootfs/usr/share/licenses/firefox/LICENSE
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
