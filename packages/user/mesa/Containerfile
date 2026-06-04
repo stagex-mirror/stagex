@@ -1,0 +1,78 @@
+FROM stagex/pallet-clang-meson-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-bison . /
+COPY --from=stagex/core-flex . /
+COPY --from=stagex/core-m4 . /
+COPY --from=stagex/core-expat . /
+COPY --from=stagex/core-libffi . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-ncurses . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-rust . /
+COPY --from=stagex/core-ca-certificates . /
+COPY --from=stagex/core-rust-bindgen . /
+COPY --from=stagex/core-lua . /
+COPY --from=stagex/user-wayland . /
+COPY --from=stagex/user-wayland-protocols . /
+COPY --from=stagex/user-glslang . /
+COPY --from=stagex/user-elfutils . /
+COPY --from=stagex/user-libarchive . /
+COPY --from=stagex/user-libdrm . /
+COPY --from=stagex/user-libpciaccess . /
+COPY --from=stagex/user-vulkan-headers . /
+COPY --from=stagex/user-vulkan-loader . /
+COPY --from=stagex/user-spirv-headers . /
+COPY --from=stagex/user-spirv-llvm-translator . /
+COPY --from=stagex/user-spirv-tools . /
+COPY --from=stagex/user-libclc . /
+COPY --from=stagex/user-py-mako . /
+COPY --from=stagex/user-py-ply . /
+COPY --from=stagex/user-py-pycparser . /
+COPY --from=stagex/user-py-pyyaml . /
+COPY --from=stagex/user-py-markupsafe . /
+COPY --from=stagex/user-py-pygments . /
+ADD fetch/mesa-${VERSION}.tar.xz .
+COPY patches/musl-stacksize.patch .
+RUN mv mesa-${VERSION}* mesa
+WORKDIR /mesa
+ENV SOURCE_DATE_EPOCH=1
+ENV CFLAGS="-O2 -fPIC -ffile-prefix-map=/mesa=."
+ENV PKG_CONFIG_PATH="/usr/lib/pkgconfig"
+RUN <<-EOF
+	export CARGO_NET_TLS_NO_VERIFY=1
+	cargo install cbindgen --root /usr --locked
+EOF
+RUN <<-EOF
+	patch -p1 < /musl-stacksize.patch || true
+	meson subprojects download $(ls subprojects/*-rs.wrap | xargs -I{} basename {} .wrap) 2>/dev/null || true
+EOF
+RUN --network=none <<-EOF
+	export CBINDGEN=/usr/bin/cbindgen
+	meson setup \
+		--prefix=/usr \
+		-Dlibdir=lib \
+		-Dplatforms=wayland \
+		-Dglx=disabled \
+		-Degl=enabled \
+		-Dgles1=enabled \
+		-Dgles2=enabled \
+		-Dgbm=enabled \
+		-Dllvm=enabled \
+		-Dllvm-orcjit=false \
+		-Dgallium-drivers=llvmpipe,radeonsi,iris,crocus,i915,nouveau,virgl,svga,zink \
+		-Dvulkan-drivers=swrast,amd,intel,intel_hasvk,nouveau,virtio \
+		-Dgallium-va=disabled \
+		-Dglvnd=disabled \
+		-Db_ndebug=true \
+		-Dcpp_rtti=false \
+		. output
+	meson compile -C output
+	DESTDIR=/rootfs meson install -C output
+	install -Dm644 docs/license.rst /rootfs/usr/share/licenses/mesa/license.rst
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

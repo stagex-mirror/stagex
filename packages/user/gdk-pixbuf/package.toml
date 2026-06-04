@@ -1,0 +1,12 @@
+[package]
+name = "gdk-pixbuf"
+version = "2.42.10"
+description = "Image loading and manipulation library"
+license = "LGPL-2.1-or-later"
+website = "https://gitlab.gnome.org/GNOME/gdk-pixbuf"
+
+[sources.gdk-pixbuf]
+hash = "ee9b6c75d13ba096907a2e3c6b27b61bcd17f5c7ebeab5a5b439d2f2e39fe44b"
+format = "tar.xz"
+file = "gdk-pixbuf-{version}.{format}"
+mirrors = ["https://download.gnome.org/sources/gdk-pixbuf/{version_major_minor}/{file}"]

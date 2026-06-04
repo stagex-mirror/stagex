@@ -1,0 +1,15 @@
+[package]
+name = "libevdev"
+version = "1.13.6"
+description = "Abstracted evdev interface library"
+license = "MIT"
+website = "https://www.freedesktop.org/software/libevdev/"
+
+[sources.libevdev]
+hash = "73f215eccbd8233f414737ac06bca2687e67c44b97d2d7576091aa9718551110"
+format = "tar.xz"
+file = "libevdev-{version}.{format}"
+mirrors = ["https://www.freedesktop.org/software/libevdev/{file}"]
+
+[build]
+depends = []

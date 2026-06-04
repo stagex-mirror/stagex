@@ -1,0 +1,15 @@
+[package]
+name = "nss"
+version = "3.124"
+description = "Network Security Services library"
+license = "MPL-2.0"
+website = "https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS"
+
+[sources.nss]
+hash = "362de77e31a16e64be500a22980448c7f08e98dd8ab85c29d0c5e41d4df68d1c"
+format = "tar.gz"
+file = "nss-{version}-with-nspr-4.39.{format}"
+mirrors = ["https://ftp.mozilla.org/pub/mozilla.org/security/nss/releases/NSS_3_124_RTM/src/{file}"]
+
+[build]
+depends = []

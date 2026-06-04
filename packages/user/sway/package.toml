@@ -1,0 +1,15 @@
+[package]
+name = "sway"
+version = "1.12"
+description = "i3-compatible Wayland window manager"
+license = "MIT"
+website = "https://swaywm.org"
+
+[sources.sway]
+hash = "a7b1becc217433c11c6284d36bcea0687b87b77b0ed26a384565292ec321f2b1"
+format = "tar.gz"
+file = "sway-{version}.{format}"
+mirrors = ["https://github.com/swaywm/sway/releases/download/{version}/{file}"]
+
+[build]
+depends = []

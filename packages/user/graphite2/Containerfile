@@ -1,0 +1,21 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-cmake . /
+ADD fetch/graphite2-${VERSION}.tar.gz .
+RUN mv graphite2-${VERSION}* graphite2
+WORKDIR /graphite2
+ENV SOURCE_DATE_EPOCH=1
+ENV CFLAGS="-O2 -fPIC -ffile-prefix-map=/graphite2=."
+RUN --network=none <<-EOF
+	cmake \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DENABLE_TESTS=OFF \
+		-DENABLE_BENCHMARK=OFF \
+		.
+	make -j$(nproc)
+	DESTDIR=/rootfs make install
+	install -Dm644 LICENSE.txt /rootfs/usr/share/licenses/graphite2/LICENSE.txt
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

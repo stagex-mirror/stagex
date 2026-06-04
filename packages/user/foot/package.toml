@@ -1,0 +1,15 @@
+[package]
+name = "foot"
+version = "1.27.0"
+description = "Wayland terminal emulator"
+license = "MIT"
+website = "https://codeberg.org/dnkl/foot"
+
+[sources.foot]
+hash = "d1e1d04cd7a3a1615b4d8dbf9645b9a35cdc3f36fba4e1c0fd252ad0bd6651c8"
+format = "tar.gz"
+file = "foot-{version}.{format}"
+mirrors = ["https://codeberg.org/dnkl/foot/releases/download/{version}/{file}"]
+
+[build]
+depends = []

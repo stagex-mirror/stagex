@@ -1,0 +1,12 @@
+[package]
+name = "gtk3"
+version = "3.24.52"
+description = "GIMP Toolkit"
+license = "LGPL-2.1-or-later"
+website = "https://gtk.org"
+
+[sources.gtk3]
+hash = "80931fa472a77b9a164f6740e3c0b444fac6770054632d35a7ff9d679e5e7b9f"
+format = "tar.xz"
+file = "gtk-{version}.{format}"
+mirrors = ["https://download.gnome.org/sources/gtk/3.24/{file}"]

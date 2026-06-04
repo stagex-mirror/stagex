@@ -1,0 +1,17 @@
+FROM stagex/pallet-clang-meson-busybox AS build
+COPY --from=stagex/user-hwdata . /
+COPY --from=stagex/core-python . /
+ARG VERSION
+ADD fetch/libdisplay-info-${VERSION}.tar.bz2 .
+WORKDIR /libdisplay-info-${VERSION}
+ENV CFLAGS="-O2 -fPIC -ffile-prefix-map=/libdisplay-info-${VERSION}=."
+RUN --network=none <<-EOF
+	meson setup \
+		--prefix=/usr \
+		-Dlibdir=lib \
+		. build
+	meson compile -C build
+	DESTDIR=/rootfs meson install -C build
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

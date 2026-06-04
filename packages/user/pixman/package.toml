@@ -1,0 +1,15 @@
+[package]
+name = "pixman"
+version = "0.46.2"
+description = "Low-level pixel manipulation library"
+license = "MIT"
+website = "https://www.cairographics.org/"
+
+[sources.pixman]
+hash = "d075209d18728b1ca5d0bb864aa047a262a1fde206da8a677d6af75b2ee1ae98"
+format = "tar.xz"
+file = "pixman-{version}.{format}"
+mirrors = ["https://www.cairographics.org/releases/{file}"]
+
+[build]
+depends = []

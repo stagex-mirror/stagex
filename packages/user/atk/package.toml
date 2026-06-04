@@ -1,0 +1,12 @@
+[package]
+name = "atk"
+version = "2.38.0"
+description = "Accessibility Toolkit"
+license = "LGPL-2.1-or-later"
+website = "https://gitlab.gnome.org/GNOME/atk"
+
+[sources.atk]
+hash = "ac4de2a4ef4bd5665052952fe169657e65e895c5057dffb3c2a810f6191a0c36"
+format = "tar.xz"
+file = "atk-{version}.{format}"
+mirrors = ["https://download.gnome.org/sources/atk/{version_major_minor}/{file}"]

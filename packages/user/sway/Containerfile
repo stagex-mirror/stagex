@@ -1,0 +1,48 @@
+FROM stagex/pallet-clang-meson-busybox AS build
+ARG VERSION
+COPY --from=stagex/user-wayland . /
+COPY --from=stagex/user-wayland-protocols . /
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-expat . /
+COPY --from=stagex/user-xkbcommon . /
+COPY --from=stagex/user-pango . /
+COPY --from=stagex/user-glib . /
+COPY --from=stagex/user-harfbuzz . /
+COPY --from=stagex/user-fribidi . /
+COPY --from=stagex/user-cairo . /
+COPY --from=stagex/user-freetype . /
+COPY --from=stagex/user-fontconfig . /
+COPY --from=stagex/core-libpng . /
+COPY --from=stagex/core-brotli . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-icu . /
+COPY --from=stagex/user-json-c . /
+COPY --from=stagex/core-pcre2 . /
+COPY --from=stagex/user-libdrm . /
+COPY --from=stagex/user-systemd . /
+COPY --from=stagex/user-wlroots . /
+COPY --from=stagex/user-libevdev . /
+COPY --from=stagex/user-libinput . /
+COPY --from=stagex/user-pixman . /
+COPY --from=stagex/user-seatd . /
+COPY --from=stagex/user-libdisplay-info . /
+COPY --from=stagex/user-hwdata . /
+ADD fetch/sway-${VERSION}.tar.gz .
+WORKDIR /sway-${VERSION}
+ENV CFLAGS="-O2 -fPIC -ffile-prefix-map=/sway-${VERSION}=."
+RUN --network=none <<-EOF
+	meson setup \
+		--prefix=/usr \
+		-Dlibdir=lib \
+		-Dwerror=false \
+		-Dswaybar=true \
+		-Dswaynag=true \
+		-Dtray=disabled \
+		-Dman-pages=disabled \
+		. build
+	meson compile -C build
+	DESTDIR=/rootfs meson install -C build
+	install -Dm644 LICENSE /rootfs/usr/share/licenses/sway/LICENSE
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

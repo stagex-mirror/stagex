@@ -1,0 +1,24 @@
+FROM stagex/pallet-clang-meson-busybox AS build
+COPY --from=stagex/user-systemd . /
+COPY --from=stagex/user-libevdev . /
+COPY --from=stagex/core-lua . /
+ARG VERSION
+ADD fetch/libinput-${VERSION}.tar.gz .
+WORKDIR /libinput-${VERSION}
+ENV CFLAGS="-O2 -fPIC -ffile-prefix-map=/libinput-${VERSION}=."
+RUN --network=none <<-EOF
+	meson setup \
+		--prefix=/usr \
+		-Dlibdir=lib \
+		-Dlibwacom=false \
+		-Dmtdev=false \
+		-Dtests=false \
+		-Ddocumentation=false \
+		-Ddebug-gui=false \
+		. build
+	meson compile -C build
+	DESTDIR=/rootfs meson install -C build
+	install -Dm644 COPYING /rootfs/usr/share/licenses/libinput/COPYING
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

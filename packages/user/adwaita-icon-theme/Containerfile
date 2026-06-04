@@ -1,0 +1,18 @@
+FROM stagex/pallet-clang-meson-busybox AS build
+ARG VERSION
+ADD fetch/adwaita-icon-theme-${VERSION}.tar.xz .
+RUN mv adwaita-icon-theme-${VERSION}* adwaita
+WORKDIR /adwaita
+RUN --network=none <<-EOF
+	echo '#!/bin/sh' > /usr/bin/gtk-update-icon-cache
+	echo 'exit 0' >> /usr/bin/gtk-update-icon-cache
+	chmod +x /usr/bin/gtk-update-icon-cache
+	meson setup \
+		--prefix=/usr \
+		. output
+	meson compile -C output
+	DESTDIR=/rootfs meson install -C output
+	rm -f /rootfs/usr/bin/gtk-update-icon-cache
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

@@ -1,0 +1,12 @@
+[package]
+name = "libepoxy"
+version = "1.5.10"
+description = "OpenGL management utility library"
+license = "MIT"
+website = "https://github.com/anholt/libepoxy"
+
+[sources.libepoxy]
+hash = "072cda4b59dd098bba8c2363a6247299db1fa89411dc221c8b81b8ee8192e623"
+format = "tar.xz"
+file = "libepoxy-{version}.{format}"
+mirrors = ["https://download.gnome.org/sources/libepoxy/{version_major_minor}/{file}"]

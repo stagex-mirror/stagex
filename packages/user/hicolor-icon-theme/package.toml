@@ -1,0 +1,12 @@
+[package]
+name = "hicolor-icon-theme"
+version = "0.18"
+description = "HiColor icon theme"
+license = "MIT"
+website = "https://icon-theme.freedesktop.org"
+
+[sources.hicolor-icon-theme]
+hash = "db0e50a80aa3bf64bb45cbca5cf9f75efd9348cf2ac690b907435238c3cf81d7"
+format = "tar.xz"
+file = "hicolor-icon-theme-{version}.{format}"
+mirrors = ["https://icon-theme.freedesktop.org/releases/{file}"]

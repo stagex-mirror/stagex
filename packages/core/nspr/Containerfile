@@ -1,0 +1,23 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+ARG VERSION
+ADD fetch/nspr-${VERSION}.tar.gz .
+WORKDIR /nspr-${VERSION}/nspr
+ENV CFLAGS="-O2 -fPIC -ffile-prefix-map=/nspr-${VERSION}=."
+ENV CC="clang"
+ENV HOST_CC="clang"
+ENV RANLIB="llvm-ranlib"
+ENV AR="llvm-ar"
+RUN --network=none <<-EOF
+	./configure \
+		--prefix=/usr \
+		--host=x86_64-linux-musl \
+		--enable-64bit \
+		--disable-debug \
+		--enable-optimize \
+		--enable-libdir=lib
+	make -j$(nproc) USE_64=1
+	DESTDIR=/rootfs make install
+	install -Dm644 LICENSE /rootfs/usr/share/licenses/nspr/LICENSE
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

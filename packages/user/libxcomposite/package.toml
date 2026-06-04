@@ -1,0 +1,15 @@
+[package]
+name = "libxcomposite"
+version = "0.4.7"
+description = "X11 Composite extension library"
+license = "MIT"
+website = "https://www.x.org"
+
+[sources.libxcomposite]
+hash = "5fc39a8fd6452ec225a95070dd5ac312899247a154fd041cc5f100a93c4ce192"
+format = "tar.gz"
+file = "libXcomposite-{version}.{format}"
+mirrors = ["https://www.x.org/releases/individual/lib/{file}"]
+
+[build]
+depends = []
