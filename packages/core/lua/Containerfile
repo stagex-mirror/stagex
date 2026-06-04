@@ -50,6 +50,22 @@ RUN --network=none <<-EOF
 		INSTALL_INC="/rootfs/usr/include/lua" \
 		INSTALL_LIB="/rootfs/usr/lib/lua" \
 		install
+	# Install pkg-config files (Alpine compatibility)
+	mkdir -p /rootfs/usr/lib/pkgconfig
+	install -Dm644 -t /rootfs/usr/lib/pkgconfig /dev/null
+	{ echo "prefix=/usr"
+	echo "exec_prefix=\${prefix}"
+	echo "libdir=\${prefix}/lib/lua"
+	echo "includedir=\${prefix}/include/lua"
+	echo ""
+	echo "Name: Lua"
+	echo "Description: Lua interpreter"
+	echo "Version: 5.5.0"
+	echo "Libs: -L\${libdir} -llua"
+	echo "Cflags: -I\${includedir}"
+	} > /rootfs/usr/lib/pkgconfig/lua-5.5.pc
+	ln -sf lua-5.5.pc /rootfs/usr/lib/pkgconfig/lua5.5.pc
+	ln -sf lua-5.5.pc /rootfs/usr/lib/pkgconfig/lua.pc
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
