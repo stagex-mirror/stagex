@@ -1,0 +1,12 @@
+[package]
+name = "kubectl-ai"
+version = "0.0.31"
+description = "AI powered Kubernetes Assistant — a kubectl plugin for interacting with LLMs to manage Kubernetes clusters"
+license = "Apache-2.0"
+website = "https://github.com/GoogleCloudPlatform/kubectl-ai"
+
+[sources.github]
+hash = "a16ccc914fb957e59b7d03f2c707672366ec4444e5c34777361f2efea3e732f3"
+format = "tar.gz"
+file = "kubectl-ai-{version}.{format}"
+mirrors = ["https://github.com/GoogleCloudPlatform/kubectl-ai/archive/refs/tags/v{version}.{format}"]
