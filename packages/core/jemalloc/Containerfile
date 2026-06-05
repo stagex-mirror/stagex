@@ -1,0 +1,14 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+ARG VERSION
+ADD fetch/jemalloc-${VERSION}.tar.bz2 .
+WORKDIR /jemalloc-${VERSION}
+RUN ./configure \
+	--prefix=/usr \
+	--disable-debug \
+	--disable-libssp \
+	--enable-shared
+RUN make -j$(nproc)
+RUN make DESTDIR=/rootfs install
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

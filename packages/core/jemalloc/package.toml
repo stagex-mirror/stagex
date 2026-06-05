@@ -1,0 +1,15 @@
+[package]
+name = "jemalloc"
+version = "5.3.1"
+description = "General-purpose scalable concurrent malloc implementation"
+license = "BSD-2-Clause"
+website = "https://jemalloc.net"
+
+[sources.jemalloc]
+hash = "3826bc80232f22ed5c4662f3034f799ca316e819103bdc7bb99018a421706f92"
+format = "tar.bz2"
+file = "jemalloc-{version}.{format}"
+mirrors = ["https://github.com/jemalloc/jemalloc/releases/download/5.3.1/jemalloc-5.3.1.tar.bz2"]
+
+[build]
+depends = []
