@@ -1,17 +1,17 @@
 [package]
 name = "ca-certificates"
-version = "f2e816d18e74480775f74a2620f48c4d4dc51b7e"
+version = "089afe88dd219cf4b1516fd04f3b1c1fda3b7b61"
 description = "Common CA certificates for SSL/TLS"
 license = "MPL-2.0"
 website = "https://wiki.mozilla.org/CA"
 
 [sources.certdata]
 file = "certdata.txt"
-hash = "8944ec6b572b577daee4fc681a425881f841ec2660e4cb5f0eee727f84620697"
+hash = "77130ef91213772844561fbd3aa31d413b25c2ac7f576fea3bc3bbff7ef93489"
 mirrors = ["https://hg.mozilla.org/projects/nss/raw-file/{version}/lib/ckfw/builtins/{file}"]
 
 [sources.build]
-version = "914471a540cba8115ff719da768bd2d3cbe73d2b"
-hash = "a5542854cd95c7d55f4bf5b71676d3432d3624f857eaf339bbdd98bb541aaadd"
+version = "721ff6606b8c145755691d6cf87088ae7ff3d346"
+hash = "466dac62a40edf80fb496dc032f17ac454aa8a14cc02e649a02d33349d19e61c"
 file = "ca-certificates-{version}.tar.gz"
 mirrors = ["https://gitlab.alpinelinux.org/alpine/ca-certificates/-/archive/{version}/{file}"]
