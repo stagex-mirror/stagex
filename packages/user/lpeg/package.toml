@@ -1,0 +1,16 @@
+[package]
+name = "lpeg"
+version = "1.1.0"
+description = "LPeg is a simple library for pattern matching and parsing"
+license = "MIT"
+website = "https://www.inf.puc-rio.br/~roberto/lpeg/"
+subpackages = [
+  "lpeg",
+  "lpeg-lua55",
+]
+
+[sources.lpeg]
+hash = "4b155d67d2246c1ffa7ad7bc466c1ea899bbc40fef0257cc9c03cecbaed4352a"
+format = "tar.gz"
+file = "lpeg-{version}.{format}"
+mirrors = [ "https://www.inf.puc-rio.br/~roberto/lpeg/{file}", ]

@@ -1,0 +1,38 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+COPY --from=stagex/core-luajit / /
+COPY --from=stagex/core-lua / /
+ARG VERSION
+ADD fetch/lpeg-${VERSION}.tar.gz .
+WORKDIR /lpeg-${VERSION}
+RUN --network=none <<-EOF
+	# Default: build for LuaJIT (what neovim uses)
+	make \
+		CC=clang \
+		LUADIR=/usr/include/luajit-2.1 \
+		linux
+
+	llvm-ar rcs lpeg.a lpvm.o lpcap.o lptree.o lpcode.o lpprint.o lpcset.o
+	llvm-ranlib lpeg.a
+
+	install -Dm644 lpeg.a /rootfs/usr/lib/lua/5.1/lpeg.a
+	install -Dm755 lpeg.so /rootfs/usr/lib/lua/5.1/lpeg.so
+	install -Dm644 re.lua /rootfs/usr/share/lua/5.1/re.lua
+
+	# Lua 5.5 sub-package
+	make clean
+	make \
+		CC=clang \
+		LUADIR=/usr/include/lua \
+		linux
+
+	llvm-ar rcs lpeg.a lpvm.o lpcap.o lptree.o lpcode.o lpprint.o lpcset.o
+	llvm-ranlib lpeg.a
+
+	install -Dm644 lpeg.a /rootfs-lua55/usr/lib/lua/5.5/lpeg.a
+	install -Dm755 lpeg.so /rootfs-lua55/usr/lib/lua/5.5/lpeg.so
+	install -Dm644 re.lua /rootfs-lua55/usr/share/lua/5.5/re.lua
+EOF
+FROM stagex/core-filesystem AS package-lpeg
+COPY --from=build /rootfs/ /
+FROM stagex/core-filesystem AS package-lpeg-lua55
+COPY --from=build /rootfs-lua55/ /

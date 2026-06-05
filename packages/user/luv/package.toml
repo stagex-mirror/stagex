@@ -1,0 +1,12 @@
+[package]
+name = "luv"
+version = "1.48.0-1"
+description = "Lua bindings to libuv"
+license = "MIT"
+website = "https://github.com/luvit/luv"
+
+[sources.luv]
+hash = "1592562d3bc465a06ff76c825b0f4dc8e25ea9f9b98b272f47187a61f629b955"
+format = "tar.gz"
+file = "luv-{version}.{format}"
+mirrors = ["https://github.com/luvit/luv/releases/download/{version}/luv-{version}.{format}"]

@@ -1,0 +1,114 @@
+diff -ruN a/src/gen/gen_api_dispatch.lua b/src/gen/gen_api_dispatch.lua
+--- a/src/gen/gen_api_dispatch.lua	2026-05-27 09:18:53.829589099 +0000
++++ b/src/gen/gen_api_dispatch.lua	2026-05-27 09:18:53.853589222 +0000
+@@ -290,8 +290,10 @@
+   end
+ end
+ 
++local det_encode = require('gen.util').det_encode
++
+ local metadata_output = assert(io.open(exported_funcs_metadata_outputf, 'wb'))
+-metadata_output:write(vim.mpack.encode(exported_functions))
++metadata_output:write(det_encode(vim.mpack, exported_functions))
+ metadata_output:close()
+ 
+ -- start building the dispatch wrapper output
+diff -ruN a/src/gen/gen_api_ui_events.lua b/src/gen/gen_api_ui_events.lua
+--- a/src/gen/gen_api_ui_events.lua	2026-05-27 09:18:53.829589099 +0000
++++ b/src/gen/gen_api_ui_events.lua	2026-05-27 09:18:53.853589222 +0000
+@@ -216,5 +216,7 @@
+   end
+ end
+ 
+-metadata_output:write(mpack.encode(exported_events))
++local det_encode = require('gen.util').det_encode
++
++metadata_output:write(det_encode(mpack, exported_events))
+ metadata_output:close()
+diff -ruN a/src/gen/gen_options.lua b/src/gen/gen_options.lua
+--- a/src/gen/gen_options.lua	2026-05-27 09:18:53.829589099 +0000
++++ b/src/gen/gen_options.lua	2026-05-27 09:18:53.857589243 +0000
+@@ -422,9 +422,12 @@
+   -- Generate option index map.
+   local hashy = require('gen.hashy')
+ 
++  local opt_keys = vim.tbl_keys(option_index)
++  table.sort(opt_keys)
++
+   local neworder, hashfun = hashy.hashy_hash(
+     'find_option',
+-    vim.tbl_keys(option_index),
++    opt_keys,
+     function(idx)
+       return ('option_hash_elems[%s].name'):format(idx)
+     end
+diff -ruN a/src/gen/preload_nlua.lua b/src/gen/preload_nlua.lua
+--- a/src/gen/preload_nlua.lua	2026-05-27 09:18:53.829589099 +0000
++++ b/src/gen/preload_nlua.lua	2026-05-27 09:18:53.849589202 +0000
+@@ -1,3 +1,5 @@
++math.randomseed(0)
++require("jit").off()
+ local srcdir = table.remove(arg, 1)
+ local nlualib = table.remove(arg, 1)
+ local gendir = table.remove(arg, 1)
+diff -ruN a/src/gen/util.lua b/src/gen/util.lua
+--- a/src/gen/util.lua	2026-05-27 09:18:53.829589099 +0000
++++ b/src/gen/util.lua	2026-05-27 09:18:53.849589202 +0000
+@@ -404,4 +404,57 @@
+   return s
+ end
+ 
++
++--- Deterministic mpack encoder for build reproducibility.
++--- Handles mixed tables as array+map (matching mpack.encode behavior).
++---
++--- @param mpack module providing encode() function
++--- @param v any value to encode
++--- @return string encoded bytes
++function M.det_encode(mpack, v)
++  local t = type(v)
++  if t == 'nil' then return string.char(0x00) end
++  if t == 'boolean' then return string.char(v and 0xc3 or 0xc2) end
++  if t == 'number' or t == 'string' then return mpack.encode(v) end
++  if t ~= 'table' then return mpack.encode(v) end
++  local num_keys = {}
++  local str_keys = {}
++  local max_idx = 0
++  for k in pairs(v) do
++    if type(k) == 'number' and k > 0 and k == math.floor(k) then
++      table.insert(num_keys, k)
++      if k > max_idx then max_idx = k end
++    else
++      table.insert(str_keys, k)
++    end
++  end
++  table.sort(num_keys)
++  table.sort(str_keys)
++  local is_pure_array = (#num_keys == max_idx and #str_keys == 0)
++  local parts
++  if is_pure_array then
++    local hdr = (max_idx <= 15) and string.char(0x90 + max_idx) or
++      string.char(0xdc, math.floor(max_idx / 256), max_idx % 256)
++    parts = { hdr }
++    for i = 1, max_idx do parts[#parts + 1] = M.det_encode(mpack, v[i]) end
++  else
++    parts = {}
++    if max_idx > 0 then
++      local ahdr = (max_idx <= 15) and string.char(0x90 + max_idx) or
++        string.char(0xdc, math.floor(max_idx / 256), max_idx % 256)
++      parts[#parts + 1] = ahdr
++      for _, i in ipairs(num_keys) do parts[#parts + 1] = M.det_encode(mpack, v[i]) end
++    end
++    if #str_keys > 0 then
++      local mhdr = (#str_keys <= 15) and string.char(0x80 + #str_keys) or
++        string.char(0xde, math.floor(#str_keys / 256), #str_keys % 256)
++      parts[#parts + 1] = mhdr
++      for _, k in ipairs(str_keys) do
++        parts[#parts + 1] = M.det_encode(mpack, k)
++        parts[#parts + 1] = M.det_encode(mpack, v[k])
++      end
++    end
++  end
++  return table.concat(parts)
++end
+ return M
