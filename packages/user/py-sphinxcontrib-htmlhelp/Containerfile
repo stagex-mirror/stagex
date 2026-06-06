@@ -1,7 +1,7 @@
 FROM stagex/pallet-python AS build
 ARG VERSION
 ADD fetch/py-sphinxcontrib-htmlhelp-${VERSION}.tar.gz .
-WORKDIR /sphinxcontrib-htmlhelp-${VERSION}
+WORKDIR /sphinxcontrib_htmlhelp-${VERSION}
 RUN --network=none <<-EOF
 	set -eu
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
