@@ -25,7 +25,7 @@ RUN --network=none <<-EOF
 		make
 		make -C src/tools
 		make DESTDIR=/rootfs install
-		install -D -m644 etc/opensc.conf /rootfs/etc/opensc.conf
+		install -vDm644 -t /rootfs/etc etc/opensc.conf
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

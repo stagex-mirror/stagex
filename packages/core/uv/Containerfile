@@ -34,8 +34,8 @@ RUN --network=none <<-EOF
 		--bin uv
 	mkdir -p /rootfs/usr/bin
 	cp target/${ARCH}-unknown-linux-musl/release/uv /rootfs/usr/bin/uv
-	install -Dm644 -t /rootfs/usr/share/licenses/uv/ LICENSE-MIT
-	install -Dm644 -t /rootfs/usr/share/licenses/uv/ LICENSE-APACHE
+	install -vDm644 -t /rootfs/usr/share/licenses/uv LICENSE-MIT
+	install -vDm644 -t /rootfs/usr/share/licenses/uv LICENSE-APACHE
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

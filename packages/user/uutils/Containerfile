@@ -11,7 +11,7 @@ RUN --network=none <<-EOF
 		--release \
 		--target "${ARCH}-unknown-linux-musl" \
 		--bin coreutils
-	install -Dm755 "target/${ARCH}-unknown-linux-musl/release/coreutils" /rootfs/usr/bin/coreutils
+	install -vDm755 -t /rootfs/usr/bin target/${ARCH}-unknown-linux-musl/release/coreutils
 	for tool in $(/rootfs/usr/bin/coreutils --list); do
 		ln -s coreutils "/rootfs/usr/bin/${tool}"
 	done

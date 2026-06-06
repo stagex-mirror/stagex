@@ -27,7 +27,7 @@ RUN --network=none <<-EOF
 	cmake --build build
 	DESTDIR=/rootfs cmake --install build
 	for file in common dec enc; do
-		install -D -m 755 build/libbrotli$file.a /rootfs/usr/lib64
+		install -vDm755 -t /rootfs/usr/lib64 build/libbrotli$file.a
 	done
 	mv /rootfs/usr/lib64 /rootfs/usr/lib
 EOF

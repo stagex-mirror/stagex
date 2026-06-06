@@ -8,7 +8,7 @@ WORKDIR /passlib-${VERSION}/
 RUN --network=none <<-EOF
   set -eu
   python setup.py install -O1 --root=/rootfs
-  install -Dm644 LICENSE /rootfs/usr/share/licenses/py-passlib/LICENSE
+  install -vDm644 -t /rootfs/usr/share/licenses/py-passlib LICENSE
   find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
 

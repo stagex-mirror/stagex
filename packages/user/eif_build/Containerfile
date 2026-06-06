@@ -12,7 +12,7 @@ RUN --network=none <<-EOF
 		--locked \
 		--release \
 		--target ${ARCH}-unknown-linux-musl
-	install -D -t /rootfs/usr/bin /eif_build/target/${ARCH}-unknown-linux-musl/release/eif_build
+	install -vDm755 -t /rootfs/usr/bin /eif_build/target/${ARCH}-unknown-linux-musl/release/eif_build
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
