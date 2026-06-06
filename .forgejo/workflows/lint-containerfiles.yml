@@ -1,0 +1,43 @@
+name: lint-containerfiles
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+
+jobs:
+  lint:
+    name: Lint changed Containerfiles
+    runs-on: codeberg-tiny
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 #v6.0.3
+        with:
+          fetch-depth: 0
+
+      - name: Lint changed Containerfiles
+        run: |
+          set -e
+          # actions/checkout's fetch-depth: 0 above fetches all branches,
+          # so origin/<base_ref> is already locally available with full
+          # history; no extra fetch needed.
+          base="origin/${{ forgejo.base_ref }}"
+          changed=$(git diff --name-only --diff-filter=ACMR "$base"...HEAD -- \
+            'packages/*/*/Containerfile' 'packages/*/*/package.toml')
+          if [ -z "$changed" ]; then
+            echo "No Containerfile or package.toml changes; skipping."
+            exit 0
+          fi
+          # Lint every Containerfile whose dir contains a changed file
+          # (a package.toml change can invalidate its Containerfile too).
+          dirs=$(printf '%s\n' $changed | xargs -n1 dirname | sort -u)
+          files=$(printf '%s\n' $dirs | sed 's|$|/Containerfile|' | xargs -I{} sh -c '[ -f {} ] && echo {}')
+          if [ -z "$files" ]; then
+            echo "No Containerfiles to lint."
+            exit 0
+          fi
+          echo "Linting:"
+          echo "$files"
+          python3 src/lint-containerfiles.py $files

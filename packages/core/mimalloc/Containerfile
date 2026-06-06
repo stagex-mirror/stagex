@@ -45,5 +45,5 @@ RUN --network=none <<-EOF
   cp ../LICENSE /rootfs/usr/share/licenses/mimalloc
 EOF
 
-FROM stagex/core-filesystem AS package-mimalloc
+FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs /
