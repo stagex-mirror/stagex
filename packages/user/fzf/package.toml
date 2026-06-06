@@ -1,0 +1,12 @@
+[package]
+name = "fzf"
+version = "0.73.1"
+description = "General-purpose command-line fuzzy finder"
+license = "MIT"
+website = "https://github.com/junegunn/fzf"
+
+[sources.fzf]
+hash = "ae4f49f8606a7d28498208fa1b93c5d3b890719eea97e02559e66160138b750c"
+format = "tar.gz"
+file = "fzf-{version}.{format}"
+mirrors = ["https://github.com/junegunn/fzf/archive/refs/tags/v{version}.{format}"]
