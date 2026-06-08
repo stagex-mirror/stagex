@@ -1,0 +1,16 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+ARG VERSION
+ADD fetch/libpcap-${VERSION}.tar.gz .
+WORKDIR /libpcap-${VERSION}
+ENV CFLAGS="-O2 -fPIC -ffile-prefix-map=/libpcap-${VERSION}=."
+RUN --network=none <<-EOF
+	./configure \
+		--prefix=/usr \
+		--disable-shared \
+		--enable-static
+	make -j$(nproc)
+	make DESTDIR=/rootfs install
+	install -Dm644 LICENSE /rootfs/usr/share/licenses/libpcap/LICENSE
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

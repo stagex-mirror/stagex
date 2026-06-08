@@ -1,0 +1,19 @@
+FROM stagex/pallet-rust AS build
+ARG VERSION
+ADD fetch/zeroclaw-v${VERSION}.tar.gz .
+WORKDIR /zeroclaw-${VERSION}
+RUN cargo fetch --locked
+ENV RUSTFLAGS="-C codegen-units=1 -C target-feature=+crt-static"
+RUN --network=none <<-EOF
+	cargo build \
+		--frozen \
+		--release \
+		--target "$(uname -m)-unknown-linux-musl" \
+		--locked
+	install -Dm755 "target/$(uname -m)-unknown-linux-musl/release/zeroclaw" /rootfs/usr/bin/zeroclaw
+	install -Dm644 LICENSE-APACHE /rootfs/usr/share/licenses/zeroclaw/LICENSE-APACHE
+	install -Dm644 LICENSE-MIT /rootfs/usr/share/licenses/zeroclaw/LICENSE-MIT
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
