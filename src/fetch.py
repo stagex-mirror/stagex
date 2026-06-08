@@ -82,11 +82,11 @@ class ResourceFetcher(object):
           print(f"\nFinished downloading: {file}")
         except:
           error = (file, source_info.hash, url, "download")
-          print("Failed downloading from mirror: {url}")
+          print(f"Failed downloading from mirror: {url}")
           continue
         if not ResourceFetcher.verify(filepath, source_info.hash):
           error = (file, source_info.hash, url, "verify_download")
-          print("Failed verifying downloaded file, from mirror: {url}")
+          print(f"Failed verifying downloaded file, from mirror: {url}")
           continue
         error = None
         break
