@@ -1,0 +1,51 @@
+FROM stagex/pallet-clang-meson-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-pcre2 . /
+COPY --from=stagex/core-expat . /
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-gettext . /
+COPY --from=stagex/user-glib . /
+COPY --from=stagex/user-atk . /
+COPY --from=stagex/user-pango . /
+COPY --from=stagex/user-cairo . /
+COPY --from=stagex/user-gdk-pixbuf . /
+COPY --from=stagex/user-libepoxy . /
+COPY --from=stagex/user-mesa . /
+COPY --from=stagex/user-wayland . /
+COPY --from=stagex/user-wayland-protocols . /
+COPY --from=stagex/user-xkbcommon . /
+COPY --from=stagex/user-fribidi . /
+COPY --from=stagex/user-harfbuzz . /
+COPY --from=stagex/user-freetype . /
+COPY --from=stagex/user-fontconfig . /
+COPY --from=stagex/user-adwaita-icon-theme . /
+COPY --from=stagex/user-hicolor-icon-theme . /
+COPY --from=stagex/user-pixman . /
+COPY --from=stagex/core-libpng . /
+COPY --from=stagex/core-brotli . /
+COPY --from=stagex/core-zlib . /
+ADD fetch/gtk-${VERSION}.tar.xz .
+RUN mv gtk-${VERSION}* gtk
+WORKDIR /gtk
+ENV SOURCE_DATE_EPOCH=1
+ENV CFLAGS="-O2 -fPIC -ffile-prefix-map=/gtk=."
+ENV PKG_CONFIG_PATH="/usr/lib/pkgconfig"
+RUN --network=none <<-EOF
+	meson setup \
+		--prefix=/usr \
+		-Dlibdir=lib \
+		-Dx11_backend=false \
+		-Dwayland_backend=true \
+		-Dcolord=no \
+		-Dprint_backends=file \
+		-Dtests=false \
+		-Dintrospection=false \
+		-Dgtk_doc=false \
+		. output
+	meson compile -C output -j1
+	DESTDIR=/rootfs meson install -C output
+	install -Dm644 COPYING /rootfs/usr/share/licenses/gtk3/COPYING
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
