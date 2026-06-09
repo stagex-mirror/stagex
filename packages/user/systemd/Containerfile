@@ -1,0 +1,81 @@
+FROM stagex/pallet-clang-meson-busybox AS build
+COPY --from=stagex/core-coreutils . /
+COPY --from=stagex/user-gperf . /
+COPY --from=stagex/user-util-linux . /
+COPY --from=stagex/user-kmod . /
+COPY --from=stagex/user-py-jinja2 . /
+COPY --from=stagex/user-py-markupsafe . /
+COPY --from=stagex/user-py-elftools . /
+COPY --from=stagex/core-bash . /
+ARG VERSION
+ADD fetch/systemd-${VERSION}.tar.gz .
+ENV SOURCE_DATE_EPOCH=1
+WORKDIR /systemd-${VERSION}
+RUN --network=none <<-EOF
+	meson setup \
+		--buildtype=release \
+		-Dmode=release \
+		-Dlibdir=/usr/lib \
+		-Dversion-tag="${VERSION}-stagex" \
+		-Dlibc=musl \
+		-Dselinux=disabled \
+		-Dblkid=enabled \
+		-Dkmod=enabled \
+		-Dopenssl=disabled \
+		-Dgshadow=false \
+		-Dutmp=false \
+		-Duserdb=false \
+		-Ddbus=disabled \
+		-Dglib=disabled \
+		-Dnss-mymachines=disabled \
+		-Dnss-myhostname=false \
+		-Dnss-resolve=disabled \
+		-Dnss-systemd=false \
+		-Dbacklight=false \
+		-Dbinfmt=false \
+		-Dbpf-framework=disabled \
+		-Dcoredump=false \
+		-Denvironment-d=false \
+		-Dfirstboot=false \
+		-Dhibernate=false \
+		-Dhostnamed=false \
+		-Dlink-udev-shared=false \
+		-Dlogind=false \
+		-Dmachined=false \
+		-Dnetworkd=false \
+		-Doomd=false \
+		-Dportabled=false \
+		-Dsysext=false \
+		-Danalyze=false \
+		-Dtimedated=false \
+		-Dtimesyncd=false \
+		-Dtmpfiles=false \
+		-Dpolkit=disabled \
+		-Dstatic-libudev=true \
+		-Dman=disabled \
+		-Dtests=false \
+		-Dwerror=false \
+		-Dsplit-bin=false \
+		-Dtranslations=false \
+		-Dxdg-autostart=false \
+		-Daudit=disabled \
+		-Dukify=disabled \
+		-Dkernel-install=false \
+		-Drfkill=false \
+		-Dvmspawn=disabled \
+		-Dhomed=disabled \
+		-Dremote=disabled \
+		-Dmountfsd=false \
+		-Dsysupdate=disabled \
+		-Dsysupdated=disabled \
+		-Dbootloader=enabled \
+		-Defi=true \
+		-Dsbat-distro-summary="StageX" \
+		-Dsbat-distro-url=https://stagex.tools/ \
+		-Dsbat-distro=stagex \
+		. output
+	meson compile -C output
+	DESTDIR=/rootfs meson install --no-rebuild -C output
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs /
