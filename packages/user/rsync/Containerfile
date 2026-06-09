@@ -1,0 +1,24 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-xxhash . /
+COPY --from=stagex/core-gawk . /
+ARG VERSION
+ADD fetch/rsync-${VERSION}.tar.gz .
+WORKDIR /rsync-${VERSION}
+RUN --network=none <<-EOF
+  ./configure \
+    --prefix=/usr \
+    --sysconfdir=/etc \
+    --mandir=/usr/share/man \
+    --with-included-popt \
+    --without-included-zlib \
+    --disable-zstd \
+    --disable-lz4 \
+    --disable-md2man \
+    --disable-debug
+  make
+  make DESTDIR=/rootfs install
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
