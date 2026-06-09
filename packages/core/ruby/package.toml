@@ -1,11 +1,11 @@
 [package]
 name = "ruby"
-version = "4.0.3"
+version = "4.0.5"
 description = "An object-oriented language for quick and easy programming"
 license = "BSD-2-Clause"
 website = "https://ruby-lang.org"
 
 [sources.ruby]
-hash = "77964acc370d5c8375b9502e5ba6c13c03ef91ab9eb9f521c84fb42b9c9a6b0f"
+hash = "7d6149079a63f8ae1d326c9fa65c6019ba2dc3155eae7b39159817911c88958e"
 file = "ruby-{version}.tar.gz"
 mirrors = ["https://cache.ruby-lang.org/pub/ruby/{version_major_minor}/{file}"]

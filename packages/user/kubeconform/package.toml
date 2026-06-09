@@ -1,12 +1,12 @@
 [package]
 name = "kubeconform"
-version = "0.7.0"
+version = "0.8.0"
 description = "FAST Kubernetes manifests validator, with support for Custom Resources!"
 website = "https://github.com/yannh/kubeconform"
 license = "Apache-2.0"
 
 [sources.kubeconform]
-hash = "9cb00e6385346c9de21e8fe318a4ec9854a8c7165d08b10b20ed32e28faef9a8"
+hash = "c345de9c3207f2d24628c64fe3cb9bed55c4248b12c181efe81ee907d6c994f2"
 format = "tar.gz"
 file = "kubeconform-{version}.{format}"
 mirrors = [ "https://github.com/yannh/kubeconform/archive/refs/tags/v{version}.{format}",]
