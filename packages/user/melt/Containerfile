@@ -1,0 +1,19 @@
+FROM stagex/pallet-cgo AS build
+ARG VERSION
+ADD fetch/melt-${VERSION}.tar.gz .
+WORKDIR /melt-${VERSION}
+RUN go mod download
+RUN --network=none <<-EOF
+	go \
+		build \
+		-trimpath \
+		-o melt \
+		-v \
+		-ldflags="-s -w" \
+		./cmd/melt
+	mkdir -p /rootfs/usr/bin/
+	install -vDm755 -t /rootfs/usr/bin melt
+	install -vDm644 -t /rootfs/usr/share/licenses/melt LICENSE.md
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs /

@@ -154,8 +154,8 @@ RUN --network=none <<-EOF
 		pc-bios/palcode-clipper \
 		pc-bios/openbios-*
 	make -dC pc-bios/optionrom all
-	install -vDm 644 pc-bios/optionrom/*.bin -t /rootfs/usr/share/qemu
-	install -vDm 644 pc-bios/optionrom/*.img -t /rootfs/usr/share/qemu
+	install -vDm644 -t /rootfs/usr/share/qemu pc-bios/optionrom/*.bin
+	install -vDm644 -t /rootfs/usr/share/qemu pc-bios/optionrom/*.img
 EOF
 
 FROM stagex/core-filesystem AS package

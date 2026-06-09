@@ -12,7 +12,7 @@ RUN --network=none <<-EOF
 	set -eu
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 	python -m installer --destdir=/rootfs .dist/*.whl
-	install -Dm0644 -t /rootfs/usr/share/licenses/py-argcomplete/ LICENSE.rst
+	install -vDm644 -t /rootfs/usr/share/licenses/py-argcomplete LICENSE.rst
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
 

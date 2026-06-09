@@ -1,0 +1,6 @@
+[package]
+name = "ruby"
+version_from = "core-ruby"
+description = "Runtime for building ruby packages"
+license = "Apache-2.0 AND BSD-2-Clause AND GPL-2.0-only AND GPL-3.0-or-later AND ISC AND MIT AND Zlib"
+website = "https://ruby-lang.org"

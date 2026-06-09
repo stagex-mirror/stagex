@@ -9,7 +9,7 @@ RUN --network=none <<-EOF
 	python _build_tables.py
 	cd ..
 	python setup.py install --root=/rootfs --optimize=1
-	install -Dm0644 -t /rootfs/usr/share/licenses/py-pycparser/ LICENSE
+	install -vDm644 -t /rootfs/usr/share/licenses/py-pycparser LICENSE
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
 

@@ -1,7 +1,7 @@
 FROM stagex/pallet-cython AS build
 ARG VERSION
 ADD fetch/py-markupsafe-${VERSION}.tar.gz .
-WORKDIR /MarkupSafe-${VERSION}
+WORKDIR /markupsafe-${VERSION}
 RUN gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 RUN --network=none <<-EOF
     set -eu

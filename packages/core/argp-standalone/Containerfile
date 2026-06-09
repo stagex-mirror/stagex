@@ -25,8 +25,8 @@ RUN --network=none <<-EOF
 		--infodir=/usr/share/info \
 		--localstatedir=/var
 	make -j "$(nproc)"
-	install -D -m644 argp.h /rootfs/usr/include/argp.h
-	install -D -m755 libargp.a /rootfs/usr/lib/libargp.a
+	install -vDm644 -t /rootfs/usr/include argp.h
+	install -vDm755 -t /rootfs/usr/lib libargp.a
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

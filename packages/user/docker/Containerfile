@@ -77,8 +77,8 @@ COPY --from=build-docker /build/ /build/
 COPY --from=build-dockerd /build/ /build/
 WORKDIR /
 RUN <<-EOF
-	install -Dm755 /build/docker /rootfs/usr/bin/docker
-	install -Dm755 -t /rootfs/usr/bin /build/dockerd /build/docker-proxy
+	install -vDm755 -t /rootfs/usr/bin /build/docker
+	install -vDm755 -t /rootfs/usr/bin /build/dockerd /build/docker-proxy
 	# symlink externally provided tini-static binary
 	ln -sf /sbin/tini-static /rootfs/usr/bin/docker-init
 EOF

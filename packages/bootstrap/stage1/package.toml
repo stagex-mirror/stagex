@@ -89,6 +89,7 @@ mirrors = ["https://mirrors.kernel.org/pub/linux/utils/kbd/{file}"]
 hash = "c40385e142989c91989413f3c5a31282b2ffdca16b69cd3ecfde537b8a474921"
 file = "flex-2.5.33.tar.gz"
 mirrors = [
+  "https://snapshot.debian.org/archive/debian/20070101T000000Z/pool/main/f/flex/flex_2.5.33.orig.tar.gz",
   "http://ftp-tel.sjtu.edu.cn/sites/ftp.openpkg.org/sources/DST/flex/{file}",
 ]
 

@@ -14,13 +14,13 @@ RUN <<-EOF
 		-j "$(nproc)"
 	make man
 	rm ./bin/gen-manpages
-	install -d /rootfs/usr/bin/
-	install -Dsm755 ./bin/* /rootfs/usr/bin/
-	install -d /rootfs/usr/share/man/man5/
-	install -Dm644 ./man/*.5 /rootfs/usr/share/man/man5/
-	install -d /rootfs/usr/share/man/man8/
-	install -Dm644 ./man/*.8 /rootfs/usr/share/man/man8/
-	install -d /rootfs/etc/containerd/
+	install -vdm0755 /rootfs/usr/bin/
+	install -vDm755 -t /rootfs/usr/bin ./bin/*
+	install -vdm0755 /rootfs/usr/share/man/man5/
+	install -vDm644 -t /rootfs/usr/share/man/man5 ./man/*.5
+	install -vdm0755 /rootfs/usr/share/man/man8/
+	install -vDm644 -t /rootfs/usr/share/man/man8 ./man/*.8
+	install -vdm0755 /rootfs/etc/containerd/
 	/rootfs/usr/bin/containerd config default \
 		| sed "s|/opt/cni/bin|/usr/libexec/cni|g" \
 		> /rootfs/etc/containerd/config.toml

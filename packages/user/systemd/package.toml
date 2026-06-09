@@ -1,0 +1,12 @@
+[package]
+name = "systemd"
+version = "260.2"
+description = "System and Service Manager"
+license = "BSD-2-Clause AND BSD-3-Clause AND CC0-1.0 AND GPL-2.0 WITH Linux-syscall-note AND GPL-2.0-or-later AND LGPL-2.0-or-later AND LGPL-2.1-or-later AND LicenseRef-alg-sha1-public-domain AND LicenseRef-lookup3-public-domain AND LicenseRef-murmurhash2-public-domain AND MIT AND MIT-0 AND OFL-1.1"
+website = "https://systemd.io/"
+
+[sources.systemd]
+hash = "71a9ed11cf773478b0d7a16cd96e39ca3c3939ab37ed9a8ee814c31ea9b4f2b5"
+format = "tar.gz"
+file = "systemd-{version}.{format}"
+mirrors = [ "https://github.com/systemd/systemd/archive/refs/tags/v{version}.{format}",]

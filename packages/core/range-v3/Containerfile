@@ -33,7 +33,7 @@ RUN --network=none <<-EOF
 	mv /rootfs/usr/lib64/* /rootfs/usr/lib/
 	rmdir /rootfs/usr/lib64
 	cat /rootfs/usr/lib/range-v3/range-v3-config.cmake
-	install -Dm644 -t /rootfs/usr/share/licenses/range-v3/ LICENSE.txt
+	install -vDm644 -t /rootfs/usr/share/licenses/range-v3 LICENSE.txt
 EOF
 
 FROM stagex/core-filesystem AS package

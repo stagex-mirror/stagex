@@ -105,7 +105,7 @@ RUN --network=none <<-EOF
 		install-headers
 	make -j "$(nproc)" csu/subdir_lib
 	mkdir -p ${OUTPUT}/${TARGET}/lib ${OUTPUT}/${TARGET}/include/gnu
-	install csu/crt1.o csu/crti.o csu/crtn.o -t ${OUTPUT}/${TARGET}/lib
+	install -vDm644 -t ${OUTPUT}/${TARGET}/lib csu/crt1.o csu/crti.o csu/crtn.o
 	/opt/cross/bin/${TARGET}-gcc \
 		-nostdlib \
 		-nostartfiles \

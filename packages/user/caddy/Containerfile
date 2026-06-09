@@ -11,10 +11,10 @@ RUN --network=none <<-EOF
 	  -o . ./cmd/...
 	./caddy manpage --directory manpages
 	./caddy completion bash > completions.bash
-	install -Dm755 -t /rootfs/usr/bin caddy
-	install -Dm644 -t /rootfs/usr/share/man/man8/ manpages/*.8
-	install -Dm644 -t /rootfs/usr/share/licenses/caddy/ LICENSE
-	install -Dm644 completions.bash /rootfs/usr/share/bash-completion/completions/caddy
+	install -vDm755 -t /rootfs/usr/bin caddy
+	install -vDm644 -t /rootfs/usr/share/man/man8 manpages/*.8
+	install -vDm644 -t /rootfs/usr/share/licenses/caddy LICENSE
+	install -vDm644 -t /rootfs/usr/share/bash-completion/completions/caddy completions.bash
 EOF
 
 FROM stagex/core-filesystem AS package
