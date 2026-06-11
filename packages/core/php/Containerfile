@@ -159,8 +159,8 @@ COPY --from=build /rootfs/usr/share/licenses/php/LICENSE /usr/share/licenses/php
 
 FROM stagex/core-filesystem AS package-php-dev
 COPY --from=build /rootfs/usr/bin /usr/bin
+COPY --from=build /rootfs/usr/lib /usr/lib
 COPY --from=build /rootfs/usr/include/php /usr/include/php
-COPY --from=build /rootfs/ /
 COPY --from=build /rootfs/usr/share/licenses/php/LICENSE /usr/share/licenses/php/LICENSE
 
 FROM stagex/core-filesystem AS package-php-embed
