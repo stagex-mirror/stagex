@@ -1,12 +1,12 @@
 [package]
 name = "nodejs"
-version = "25.9.0"
+version = "26.3.0"
 description = "Evented I/O for V8 javascript ('Current' release)"
 website = "https://nodejs.org/"
 license = "MIT"
 
 [sources.nodejs]
-hash = "d55d77187039d4cd85c732f76838f44e3be552054473459dfa9cc0eb611ea664"
+hash = "a3350c1adda81e921c1dae03cbdf0547c29b5ec43b5e00ac66f043a5c76bc74c"
 format = "tar.gz"
 file = "nodejs-{version}.{format}"
 mirrors = [ "https://nodejs.org/dist/v{version}/node-v{version}.{format}",]
