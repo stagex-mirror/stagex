@@ -1,46 +1,41 @@
 FROM stagex/pallet-cgo AS base
+COPY --from=stagex/core-gmp . /
+COPY --from=stagex/core-ncurses . /
+COPY --from=stagex/core-libedit . /
+COPY --from=stagex/user-jansson . /
+COPY --from=stagex/user-libnftnl . /
+COPY --from=stagex/user-libmnl . /
+COPY --from=stagex/user-nftables . /
 COPY --from=stagex/user-libseccomp . /
 ARG VERSION
 ENV CGO_ENABLED=1
 
 FROM base AS build-dockerd
 ADD fetch/docker-${VERSION}.tar.gz .
-WORKDIR /moby-${VERSION}
-COPY <<-EOF go.mod
-	module github.com/docker/docker
-	go 1.22.0
-EOF
-RUN <<-EOF
-	go mod tidy -modfile=vendor.mod
-	go mod vendor -modfile=vendor.mod
-EOF
+WORKDIR /moby-docker-v${VERSION}
 RUN --network=none <<-EOF
 	go build \
-		-mod=vendor \
-		-modfile=vendor.mod \
 		-o /build/dockerd \
 		-tags seccomp \
 		-gcflags='' \
 		-ldflags " \
 			${GO_LDFLAGS} \
-			-X \"github.com/docker/docker/dockerversion.Version=${VERSION}\" \
-			-X \"github.com/docker/docker/dockerversion.GitCommit=${VERSION}\" \
-			-X \"github.com/docker/docker/dockerversion.BuildTime=\" \
+			-X \"github.com/moby/moby/v2/dockerversion.Version=${VERSION}\" \
+			-X \"github.com/moby/moby/v2/dockerversion.GitCommit=${VERSION}\" \
+			-X \"github.com/moby/moby/v2/dockerversion.BuildTime=\" \
 		" \
-		github.com/docker/docker/cmd/dockerd
+		./cmd/dockerd
 	go build \
-		-mod=vendor \
-		-modfile=vendor.mod \
 		-o /build/docker-proxy \
 		-tags seccomp \
 		-gcflags='' \
 		-ldflags " \
 			${GO_LDFLAGS} \
-			-X \"github.com/docker/docker/dockerversion.Version=${VERSION}\" \
-			-X \"github.com/docker/docker/dockerversion.GitCommit=${VERSION}\" \
-			-X \"github.com/docker/docker/dockerversion.BuildTime=\" \
+			-X \"github.com/moby/moby/v2/dockerversion.Version=${VERSION}\" \
+			-X \"github.com/moby/moby/v2/dockerversion.GitCommit=${VERSION}\" \
+			-X \"github.com/moby/moby/v2/dockerversion.BuildTime=\" \
 		" \
-		github.com/docker/docker/cmd/docker-proxy
+		./cmd/docker-proxy
 
 EOF
 

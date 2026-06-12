@@ -20,10 +20,8 @@ ADD fetch/util-linux-${VERSION}.tar.gz .
 RUN mv /util-linux-* util-linux
 WORKDIR /util-linux
 ADD patches/cryptsetup-auto.patch .
-ADD patches/at-handle-fid-musl.patch .
 RUN --network=none <<-EOF
 	patch -p1 < cryptsetup-auto.patch
-	patch -p1 < at-handle-fid-musl.patch
 	export PKG_CONFIG_FDO_SYSROOT_FILES=1
 	export CFLAGS="-D_DIRENT_HAVE_D_TYPE"
 	rm tests/ts/lsns/ioctl_ns

@@ -1,12 +1,12 @@
 [package]
 name = "expat"
-version = "2.8.0"
+version = "2.8.1"
 description = "Stream-oriented XML parser library"
 license = "MIT"
 website = "https://libexpat.github.io"
 
 [sources.expat]
-hash = "c7cec5f60ea3a42e7780781c6745255c19aa3dbfeeae58646b7132f88dc24780"
+hash = "a52eb72108be160e190b5cafa5bba8663f1313f2013e26060d1c18e26e31067b"
 format = "tar.gz"
 file = "expat-{version}.{format}"
 mirrors = [ "https://github.com/libexpat/libexpat/releases/download/R_{version_under}/{file}",]

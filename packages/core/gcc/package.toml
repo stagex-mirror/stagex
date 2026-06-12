@@ -9,7 +9,7 @@ website="https://gcc.gnu.org"
 hash = "438fd996826b0c82485a29da03a72d71d6e3541a83ec702df4271f6fe025d24e"
 format = "tar.xz"
 file = "gcc-{version}.{format}"
-mirrors = [ "https://mirrors.kernel.org/gnu/gcc/gcc-{version}/{file}",]
+mirrors = [ "https://ftpmirror.gnu.org/gnu/gcc/gcc-{version}/{file}", "https://mirrors.kernel.org/gnu/gcc/gcc-{version}/{file}",]
 
 [sources.aports]
 hash = "f7ecc4754608f4e1cc0beef2a96900910ff84af75421879f175c8adb353a541c"
