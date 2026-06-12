@@ -1,12 +1,12 @@
 [package]
 name = "pie"
-version = "1.4.2"
+version = "1.4.5"
 description = "The PHP Installer for Extensions."
 license = "MIT"
 website = "https://codeberg.org/stagex/pie"
 
 [sources.pie]
-hash = "d40fe036d72c2079c732565b33d950611b8566a4f3a168e1de2673263222ce3f"
+hash = "f2c0a020fc89ebde17b9f2b65bc26d3db650bd657789855b34541ef9fbabf1b4"
 format = "tar.gz"
 file = "pie-{version}.{format}"
-mirrors = [ "https://github.com/php/pie/archive/refs/tags/{version}.{format}", ]
+mirrors = [ "https://github.com/php/pie/archive/refs/tags/{version}.{format}",]
