@@ -1,0 +1,12 @@
+[package]
+name = "zeroclaw"
+version = "0.8.0"
+description = "A personal AI assistant you run on your own devices"
+license = "MIT OR Apache-2.0"
+website = "https://github.com/zeroclaw-labs/zeroclaw"
+
+[sources.zeroclaw]
+hash = "201e25ac0cbc757d2176291182f3a9e228109c4f92b28ca90122b4beeb1ca826"
+format = "tar.gz"
+file = "zeroclaw-v{version}.{format}"
+mirrors = ["https://github.com/zeroclaw-labs/zeroclaw/archive/refs/tags/v{version}.{format}"]

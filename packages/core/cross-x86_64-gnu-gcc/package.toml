@@ -9,7 +9,7 @@ version = "15.2.0"
 hash = "438fd996826b0c82485a29da03a72d71d6e3541a83ec702df4271f6fe025d24e"
 format = "tar.xz"
 file = "gcc-{version}.{format}"
-mirrors = [ "https://mirrors.kernel.org/gnu/gcc/gcc-{version}/{file}",]
+mirrors = [ "https://ftpmirror.gnu.org/gnu/gcc/gcc-{version}/{file}", "https://mirrors.kernel.org/gnu/gcc/gcc-{version}/{file}",]
 
 [sources.gmp]
 version = "6.2.1"
@@ -45,4 +45,4 @@ mirrors = ["http://ftpmirror.gnu.org/gnu/glibc/{file}", "https://mirrors.kernel.
 version = "2.44"
 hash = "ce2017e059d63e67ddb9240e9d4ec49c2893605035cd60e92ad53177f4377237"
 file = "binutils-{version}.tar.xz"
-mirrors = ["https://mirrors.kernel.org/gnu/binutils/{file}"]
+mirrors = ["https://ftpmirror.gnu.org/gnu/binutils/{file}", "https://mirrors.kernel.org/gnu/binutils/{file}"]
