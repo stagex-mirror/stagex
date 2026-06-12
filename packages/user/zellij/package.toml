@@ -1,0 +1,12 @@
+[package]
+name = "zellij"
+version = "0.44.3"
+description = "A terminal workspace with batteries included"
+license = "MIT"
+website = "https://zellij.dev"
+
+[sources.zellij]
+hash = "33ae61fc802b59462fed49b424893596d3aa819646bdce53d5602f714c1264fe"
+format = "tar.gz"
+file = "zellij-{version}.{format}"
+mirrors = ["https://github.com/zellij-org/zellij/archive/refs/tags/v{version}.{format}"]
