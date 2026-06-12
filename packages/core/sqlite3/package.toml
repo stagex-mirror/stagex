@@ -9,4 +9,4 @@ website = "https://www.sqlite.org"
 hash = "7fe547e2870e470f4891ff71f71b701e312d44e4413faabf5958afa0c789d3ca"
 format = "tar.gz"
 file = "sqlite3-{version}.{format}"
-mirrors = [ "https://github.com/sqlite/sqlite/archive/refs/tags/version-{version}.{format}", ]
+mirrors = [ "https://github.com/sqlite/sqlite/archive/refs/tags/version-{version}.{format}",]
