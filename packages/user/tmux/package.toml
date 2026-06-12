@@ -9,4 +9,4 @@ website = "https://github.com/tmux/tmux"
 hash = "390759d25fdba016887ec982b808927e637070fd7d03a8021f8ef3102b9ae3c7"
 format = "tar.gz"
 file = "tmux-{version}.{format}"
-mirrors = ["https://github.com/tmux/tmux/releases/download/{version}/tmux-{version}.{format}"]
+mirrors = [ "https://github.com/tmux/tmux/releases/download/{version}/tmux-{version}.{format}",]
