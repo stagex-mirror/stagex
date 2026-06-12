@@ -8,4 +8,4 @@ website = "https://github.com/redis/hiredis"
 [sources.hiredis]
 hash = "5fa6e719e59cd4f8ae435c52a18ac4035d135251f9ee54e7a045bccf59107ed8"
 file = "hiredis-{version}.tar.gz"
-mirrors = [ "https://github.com/redis/hiredis/archive/v{version}.tar.gz"]
+mirrors = [ "https://github.com/redis/hiredis/archive/v{version}.tar.gz",]
