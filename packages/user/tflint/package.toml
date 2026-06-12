@@ -1,12 +1,12 @@
 [package]
 name = "tflint"
-version = "0.62.0"
+version = "0.63.1"
 description = "Pluggable Terraform linter"
 license = "MPL-2.0"
 website = "https://github.com/terraform-linters/tflint"
 
 [sources.tflint]
-hash = "e3736da82afb3a77037f72b9a01f2d5a60560664ed927426627ef7cfa3356fdd"
+hash = "1a7dbe7f2ff1ce6cf071454de47978b69a08cb495fe677418eb6709d9c88e1c1"
 format = "tar.gz"
 file = "tflint-{version}.{format}"
 mirrors = [ "https://github.com/terraform-linters/tflint/archive/refs/tags/v{version}.{format}",]
