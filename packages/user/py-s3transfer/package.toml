@@ -1,12 +1,12 @@
 [package]
 name = "py-s3transfer"
-version = "0.17.0"
+version = "0.18.0"
 description = "Amazon S3 Transfer Manager for Python"
 website = "https://github.com/boto/s3transfer"
 license = "Apache-2.0"
 
 [sources.py-s3transfer]
-hash = "42d2c4dea230dfa19bf18f5007f00731e190e45453c882e2ec68732897b55877"
+hash = "2a3d9a4b17055cf854b386a0a1ef45bcebf31ff8b72af01766b60ae06aab4fbc"
 format = "tar.gz"
 file = "py-s3transfer-{version}.{format}"
 mirrors = [ "https://github.com/boto/s3transfer/archive/{version}/s3transfer-{version}.{format}",]
