@@ -6,6 +6,8 @@ COPY --from=stagex/core-gawk . /
 ARG VERSION
 ADD fetch/rsync-${VERSION}.tar.gz .
 WORKDIR /rsync-${VERSION}
+ENV CFLAGS="-O2 -fPIC -ffile-prefix-map=/rsync-${VERSION}=."
+ENV CPPFLAGS="-D_GNU_SOURCE -std=c17"
 RUN --network=none <<-EOF
   ./configure \
     --prefix=/usr \
@@ -17,8 +19,9 @@ RUN --network=none <<-EOF
     --disable-lz4 \
     --disable-md2man \
     --disable-debug
-  make
+  make -j$(nproc)
   make DESTDIR=/rootfs install
+  install -vDm644 -t /rootfs/usr/share/licenses/rsync COPYING
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
