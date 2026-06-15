@@ -9,4 +9,4 @@ website = "https://gmplib.org"
 hash = "a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898"
 format = "tar.xz"
 file = "gmp-{version}.{format}"
-mirrors = [ "https://gmplib.org/download/gmp/{file}",]
+mirrors = ["https://mirrors.kernel.org/gnu/gmp/{file}", "https://ftp.gnu.org/gnu/gmp/{file}", "https://gmplib.org/download/gmp/{file}"]

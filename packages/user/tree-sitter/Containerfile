@@ -8,14 +8,14 @@ RUN cargo fetch --locked
 RUN --network=none <<-EOF
 	make PREFIX=/usr
 	make DESTDIR=/rootfs install
-	install -Dm644 -t /rootfs/usr/share/licenses/tree-sitter/ LICENSE
+	install -vDm644 -t /rootfs/usr/share/licenses/tree-sitter LICENSE
 	cargo build \
 		--frozen \
 		--release \
 		--target "${ARCH}-unknown-linux-musl"
 	mkdir -p /rootfs-cli/usr/bin
 	cp target/${ARCH}-unknown-linux-musl/release/tree-sitter /rootfs-cli/usr/bin
-	install -Dm644 -t /rootfs-cli/usr/share/licenses/tree-sitter/ LICENSE
+	install -vDm644 -t /rootfs-cli/usr/share/licenses/tree-sitter LICENSE
 EOF
 
 FROM stagex/core-filesystem AS package-tree-sitter

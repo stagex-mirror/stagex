@@ -10,7 +10,7 @@ RUN <<-EOF
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 	python -m installer --destdir=/rootfs .dist/*.whl
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
-	install -Dm0644 -t /rootfs/usr/share/licenses/py-boto3/ LICENSE
+	install -vDm644 -t /rootfs/usr/share/licenses/py-boto3 LICENSE
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

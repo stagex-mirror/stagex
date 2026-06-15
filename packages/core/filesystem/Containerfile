@@ -2,13 +2,13 @@ FROM scratch AS build
 COPY --from=stagex/bootstrap-stage3 . /
 WORKDIR /rootfs
 RUN <<-EOF
-	install -d -m0750 root
-	install -d -m0755 etc
-	install -d -m0755 usr
-	install -d -m1777 tmp
-	install -d -m1777 var/tmp
-	install -d -m1777 var/spool/mail
-	install -o 1000 -g 1000 -d -m0755 home/user
+	install -vdm0750 root
+	install -vdm0755 etc
+	install -vdm0755 usr
+	install -vdm1777 tmp
+	install -vdm1777 var/tmp
+	install -vdm1777 var/spool/mail
+	install -vd -o 1000 -g 1000 -m0755 home/user
 	ln -sT usr/lib lib64
 	ln -sT usr/lib lib
 	ln -sT usr/bin bin

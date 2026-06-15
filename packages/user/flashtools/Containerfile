@@ -5,11 +5,11 @@ WORKDIR /flashtools-${VERSION}
 RUN --network=none <<-EOF
 	make all
   mkdir -p /rootfs/usr/bin/
-  install -D -m 0755 flashtool /rootfs/usr/bin/
-  install -D -m 0755 peek /rootfs/usr/bin/
-  install -D -m 0755 poke /rootfs/usr/bin/
-  install -D -m 0755 cbfs /rootfs/usr/bin/
-  install -D -m 0755 uefi /rootfs/usr/bin/
+  install -vDm755 -t /rootfs/usr/bin flashtool
+  install -vDm755 -t /rootfs/usr/bin peek
+  install -vDm755 -t /rootfs/usr/bin poke
+  install -vDm755 -t /rootfs/usr/bin cbfs
+  install -vDm755 -t /rootfs/usr/bin uefi
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs// /

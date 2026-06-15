@@ -11,20 +11,20 @@ RUN --network=none <<-EOF
 	set -eux
 	dest=out/usr/share/xml/docbook/xsl-stylesheets-${VERSION}
 	mkdir -p $dest
-	install -dm755 out
-	install -m644 VERSION VERSION.xsl "$dest"/
+	install -vdm0755 out
+	install -vDm644 -t $dest VERSION VERSION.xsl
 	ln -s xsl-stylesheets-${VERSION} out/usr/share/xml/docbook/xsl-stylesheets-current
 	for dir in assembly common eclipse epub epub3 fo highlighting html \
 		htmlhelp javahelp lib manpages params profiling roundtrip template \
 		website xhtml xhtml-1_1 xhtml5; do
-		install -dm755 $dest/$dir
+		install -vdm0755 $dest/$dir
 		for f in $dir/*.xml $dir/*.xsl $dir/*.dtd $dir/*.ent; do
 			[ -e "$f" ] || continue
-			install -m644 $f $dest/$dir
+			install -vDm644 $f $dest/$dir
 		done
 	done
-	install -dm755 out/etc/xml
-	install -m644 -D COPYING out/usr/share/licenses/docbook-xsl/COPYING
+	install -vdm0755 out/etc/xml
+	install -vDm644 -t out/usr/share/licenses/docbook-xsl COPYING
 	docbookdir=/usr/share/xml/docbook
 	urls="
 		http://cdn.docbook.org/release/xsl-nons

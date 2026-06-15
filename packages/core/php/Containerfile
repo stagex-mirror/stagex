@@ -92,7 +92,7 @@ RUN --network=none <<-EOF
 	make INSTALL_ROOT="/${rootfs}" install
 	rm -rf "/${rootfs}/var/run"
 	rm "/${rootfs}/usr/bin/phar.phar"
-	install -vDm644 -t "/${rootfs}/usr/share/licenses/php" LICENSE
+	install -vDm644 -t /${rootfs}/usr/share/licenses/php LICENSE
 
 	mkdir -p "/${rootfs}/etc/php/conf.d"
 	for path in "/${rootfs}/usr/lib/php-modules/"*.so; do
@@ -147,7 +147,7 @@ RUN --network=none <<-EOF
 	make INSTALL_ROOT="/${rootfs}" install
 	rm -rf "/${rootfs}/var/run"
 	rm "/${rootfs}/usr/bin/phar.phar"
-	install -vDm644 -t "/${rootfs}/usr/share/licenses/php" LICENSE
+	install -vDm644 -t /${rootfs}/usr/share/licenses/php LICENSE
 	unset rootfs
 
 EOF
@@ -159,8 +159,8 @@ COPY --from=build /rootfs/usr/share/licenses/php/LICENSE /usr/share/licenses/php
 
 FROM stagex/core-filesystem AS package-php-dev
 COPY --from=build /rootfs/usr/bin /usr/bin
+COPY --from=build /rootfs/usr/lib /usr/lib
 COPY --from=build /rootfs/usr/include/php /usr/include/php
-COPY --from=build /rootfs/ /
 COPY --from=build /rootfs/usr/share/licenses/php/LICENSE /usr/share/licenses/php/LICENSE
 
 FROM stagex/core-filesystem AS package-php-embed

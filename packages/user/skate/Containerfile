@@ -1,0 +1,19 @@
+FROM stagex/pallet-cgo AS build
+ARG VERSION
+ADD fetch/skate-${VERSION}.tar.gz .
+WORKDIR /skate-${VERSION}
+RUN go mod download
+RUN --network=none <<-EOF
+	go \
+		build \
+		-trimpath \
+		-o skate \
+		-v \
+		-ldflags="-s -w" \
+		.
+	mkdir -p /rootfs/usr/bin/
+	install -vDm755 -t /rootfs/usr/bin skate
+	install -vDm644 -t /rootfs/usr/share/licenses/skate LICENSE
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs /

@@ -501,6 +501,9 @@ RUN --network=none ./build 1.94.1 1.93.1 ""
 ENV LLVM_VERSION="system"
 
 ADD fetch/rustc-1.95.0-src.tar.gz .
+RUN --network=none ./build 1.95.0 1.94.1 ""
+
+ADD fetch/rustc-1.96.0-src.tar.gz .
 
 # Patch the default for `musl` targets to be dynamically, not statically, linked
 RUN --network=none <<-EOF
@@ -510,7 +513,7 @@ RUN --network=none <<-EOF
 	done
 EOF
 
-RUN --network=none ./build ${VERSION} 1.94.1 cargo,clippy,rustfmt,rust-demangler,src
+RUN --network=none ./build ${VERSION} 1.95.0 cargo,clippy,rustfmt,rust-demangler,src
 RUN --network=none <<-EOF
 	set -eux
 	mv /rust-${VERSION} /rootfs
@@ -521,5 +524,5 @@ RUN --network=none <<-EOF
 	done
 EOF
 
-FROM stagex/core-filesystem AS package-rust
+FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

@@ -13,8 +13,8 @@ RUN --network=none <<-EOF
 		-DCMAKE_BUILD_TYPE=None \
 		-DCMAKE_POLICY_VERSION_MINIMUM=3.5
 	cmake --build build --target all tini
-	install -Dm755 build/tini /rootfs/usr/sbin/tini
-	install -Dm755 build/tini-static /rootfs/usr/sbin/tini-static
+	install -vDm755 -t /rootfs/usr/sbin build/tini
+	install -vDm755 -t /rootfs/usr/sbin build/tini-static
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

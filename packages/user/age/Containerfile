@@ -9,9 +9,9 @@ RUN go build \
   -o . ./cmd/...                
 RUN <<-EOF                      
   set -eu                       
-  install -Dm755 -t /rootfs/usr/bin age age-keygen
-  install -Dm644 -t /rootfs/usr/share/man/man1/ doc/age.1 doc/age-keygen.1
-  install -Dm644 -t /rootfs/usr/share/licenses/age/ LICENSE
+  install -vDm755 -t /rootfs/usr/bin age age-keygen
+  install -vDm644 -t /rootfs/usr/share/man/man1 doc/age.1 doc/age-keygen.1
+  install -vDm644 -t /rootfs/usr/share/licenses/age LICENSE
 EOF
 
 FROM stagex/core-filesystem AS package

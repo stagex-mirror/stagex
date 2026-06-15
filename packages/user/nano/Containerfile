@@ -8,7 +8,7 @@ RUN --network=none <<-EOF
 	./configure --prefix=/usr
 	make
 	make DESTDIR="/rootfs" install
-	install -vDm644 -t "/rootfs/usr/share/licenses/nano" COPYING
+	install -vDm644 -t /rootfs/usr/share/licenses/nano COPYING
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
