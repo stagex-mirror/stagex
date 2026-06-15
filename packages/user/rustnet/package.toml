@@ -1,0 +1,12 @@
+[package]
+name = "rustnet"
+version = "1.3.0"
+description = "Network monitoring TUI with DPI and process attribution"
+license = "MIT"
+website = "https://github.com/domcyrus/rustnet"
+
+[sources.rustnet]
+hash = "258ea142f3ca04e45c33761eb28868a8d8afc62a3f9556a1d5b312e805905ce5"
+format = "tar.gz"
+file = "rustnet-v{version}.{format}"
+mirrors = ["https://github.com/domcyrus/rustnet/archive/refs/tags/v{version}.{format}"]

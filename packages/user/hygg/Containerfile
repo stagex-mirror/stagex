@@ -1,0 +1,19 @@
+FROM stagex/pallet-rust AS build
+ARG VERSION
+ARG TARGETARCH
+ADD fetch/hygg-${VERSION}.tar.gz .
+WORKDIR /hygg-${VERSION}
+ENV RUSTFLAGS="-C codegen-units=1 -C target-feature=+crt-static"
+RUN cargo fetch
+RUN --network=none <<-EOF
+	cargo build \
+		--frozen \
+		--release \
+		--target ${ARCH}-unknown-linux-musl \
+		--bin hygg
+	install -vdm0755 /rootfs/usr/bin
+	install -vDm755 -t /rootfs/usr/bin target/${ARCH}-unknown-linux-musl/release/hygg
+	install -vDm644 -t /rootfs/usr/share/licenses/hygg LICENSE
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
