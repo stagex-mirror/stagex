@@ -1,12 +1,12 @@
 [package]
 name = "aws-cli"
-version = "2.34.58"
+version = "2.35.6"
 description = "Universal command line interface for Amazon Web Services"
 license = "Apache-2.0"
 website = "https://aws.amazon.com/cli/"
 
 [sources.aws-cli]
-hash = "6af198034a22249f23835808bb200776e3d34fb007eeba639af4d7e25c320cf1"
+hash = "6d1a5700e7e315bddf999c28e1e0e22132fbbbb92989364eb12bfc1d0dfd3e0f"
 format = "tar.gz"
 file = "aws-cli-{version}.{format}"
 mirrors = [ "https://github.com/aws/aws-cli/archive/refs/tags/{version}.{format}",]
