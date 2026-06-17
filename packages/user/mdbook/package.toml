@@ -1,12 +1,12 @@
 [package]
 name = "mdbook"
-version = "0.5.2"
+version = "0.5.3"
 description = "Create books from Markdown files"
 license = "MPL-2.0"
 website = "https://rust-lang.github.io/mdBook/"
 
 [sources.mdbook]
-hash = "2c8615a17c5670f9aa6d8dbf77c343cf430f95f571f28a87bb7aaa8f29c1ac5b"
+hash = "7c3e2907c0482fc9721a46ac42d7954600d795ce2152bed418553999ec1ee8f1"
 format = "tar.gz"
 file = "mdbook-{version}.{format}"
 mirrors = [ "https://codeload.github.com/rust-lang/mdBook/{format}/refs/tags/v{version}",]
