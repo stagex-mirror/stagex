@@ -1,19 +1,13 @@
 [package]
 name = "vim"
-version = "9.2.0600"
+version = "9.2.0663"
 description = "Improved vi-style text editor"
 license = "Vim"
 website = "https://www.vim.org/"
-subpackages = [
-  "vim",
-  "vimdiff",
-  "vim-tutor",
-  "vim-common",
-  "xxd",
-]
+subpackages = [ "vim", "vimdiff", "vim-tutor", "vim-common", "xxd",]
 
 [sources.vim]
-hash = "9bbfe0be244dbd57d2b0f9a3749e3504d215185376bbddfc3ad6420c113b4be1"
+hash = "7eb2a5ed3423d1f56b1eeb8731f24346e461736f709043338cec8ddd06f0a404"
 format = "tar.gz"
 file = "vim-{version}.{format}"
 mirrors = [ "https://github.com/vim/vim/archive/refs/tags/v{version}.{format}",]
