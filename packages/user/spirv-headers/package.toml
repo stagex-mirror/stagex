@@ -1,11 +1,11 @@
 [package]
 name = "spirv-headers"
-version = "1.4.341.0"
+version = "1.4.350.0"
 description = "Machine-readable files for the SPIR-V Registry"
 website = "https://github.com/KhronosGroup/SPIRV-Headers"
 license = "GPL-3.0-or-later"
 
 [sources.spirv-headers]
-hash = "cab0a654c4917e16367483296b44cdb1d614e3120c721beafcd37e3a8580486c"
+hash = "9905d9341f20388adb852c77dd982f2c4d539fd68e6c1f1bcebf034715f2d1d5"
 file = "spirv-headers-{version}.tar.gz"
-mirrors = [ "https://github.com/KhronosGroup/SPIRV-Headers/archive/refs/tags/vulkan-sdk-{version}.tar.gz", ]
+mirrors = [ "https://github.com/KhronosGroup/SPIRV-Headers/archive/refs/tags/vulkan-sdk-{version}.tar.gz",]
