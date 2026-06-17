@@ -1,12 +1,12 @@
 [package]
 name = "typst"
-version = "0.14.2"
+version = "0.15.0"
 description = "A new markup-based typesetting system that is powerful and easy to learn"
 license = "Apache-2.0"
 website = "https://typst.app"
 
 [sources.typst]
-hash = "70a56445020ca05efc571c7b07a1a9f52eb93842d420518693c077ae74e54142"
+hash = "5044bd12138491c6e880df0e09056a9ae4607d937c73962d5806402ae6ee96a6"
 format = "tar.gz"
 file = "typst-{version}.{format}"
-mirrors = [ "https://github.com/typst/typst/archive/refs/tags/v{version}.{format}" ]
+mirrors = [ "https://github.com/typst/typst/archive/refs/tags/v{version}.{format}",]
