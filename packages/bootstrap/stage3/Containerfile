@@ -25,6 +25,7 @@ RUN --network=none <<-EOF
 	install -vdm1777 tmp
 	install -vdm1777 var/tmp
 	install -vdm1777 var/spool/mail
+	install -vDm0755 -t /rootfs/usr/bin/ /usr/bin/autoconf-2.71
 	install -vd -o 1000 -g 1000 -m0755 home/user
 	ln -sT usr/lib lib64
 	ln -sT lib usr/lib64
@@ -33,6 +34,7 @@ RUN --network=none <<-EOF
 	ln -sT usr/sbin sbin
 	ln -sT ../run var/run
 	ln -sT ../run/lock var/lock
+	ln -sT /usr/bin/autoconf-2.71 usr/bin/autoconf
 	install -vDm755 -t /rootfs/etc /etc/profile
 	find /rootfs/ -type f -exec install -Dm 755 "{}" "/{}" \;
 EOF
