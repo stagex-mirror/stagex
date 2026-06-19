@@ -1,12 +1,12 @@
 [package]
 name = "fuse-overlayfs"
-version = "1.16"
+version = "1.17"
 description = "FUSE implementation of overlayfs for rootless containers"
 license = "GPL-2.0-or-later"
 website = "https://github.com/containers/fuse-overlayfs"
 
 [sources.fuse-overlayfs]
-hash = "45968517603389ead067222d234bc8d8ed33e4b4f8ba16216bdd3e6aedcccea9"
+hash = "cefffecfbb001b2784f19af344f27eae07b31a4faa38d345b738af96b2bec59e"
 format = "tar.gz"
 file = "fuse-overlayfs-{version}.{format}"
 mirrors = [ "https://github.com/containers/fuse-overlayfs/archive/v{version}/{file}",]
