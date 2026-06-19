@@ -1,12 +1,12 @@
 [package]
 name = "linux-headers"
-version = "7.0"
+version = "7.1"
 description = "Linux kernel header files"
 license = "GPL-2.0-only"
 website = "https://www.kernel.org"
 
 [sources.linux-headers]
-hash = "bb7f6d80b387c757b7d14bb93028fcb90f793c5c0d367736ee815a100b3891f0"
+hash = "691f44797fbe790dc8a321604c927087526ad27b6d649925d60f8eed0a2564a0"
 format = "tar.xz"
 file = "linux-{version}.{format}"
 mirrors = [ "https://mirrors.edge.kernel.org/pub/linux/kernel/v{version_major}.x/linux-{version}.{format}",]
