@@ -1,12 +1,12 @@
 [package]
 name = "diffoscope"
-version = "318"
+version = "319"
 description = "In-depth comparison of files, archives, and directories"
 license = "GPL-3.0-or-later"
 website = "https://diffoscope.org"
 
 [sources.diffoscope]
-hash = "a248ec7b8bbed6cb15cfc1b8c22abd7aaea71bf994403f7b50415bd445135b0d"
+hash = "63bd2774bae719ca11400e19c6231c24861686367c91f2fff4ce6e7080314e08"
 format = "tar.gz"
 file = "diffoscope-{version}.{format}"
 mirrors = [ "https://salsa.debian.org/reproducible-builds/diffoscope/-/archive/{version}/{file}",]
