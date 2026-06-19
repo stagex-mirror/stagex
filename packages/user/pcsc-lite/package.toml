@@ -1,12 +1,12 @@
 [package]
 name = "pcsc-lite"
-version = "2.4.1"
+version = "2.5.1"
 description = "Middleware to access a smart card using SCard API"
 license = "BSD-3-Clause"
 website = "https://pcsclite.apdu.fr"
 
 [sources.pcsc-lite]
-hash = "afd3ba68c8000d2be048dc292df99a9812df9ad2efaf0a366eea22ac1faa19a7"
+hash = "bfcfe38a20afc49849c6bf55325e38f449fc4b26d3923fdc32b969ae41a8741b"
 format = "tar.xz"
 file = "pcsc-lite-{version}.{format}"
 mirrors = [ "https://pcsclite.apdu.fr/files/{file}",]
