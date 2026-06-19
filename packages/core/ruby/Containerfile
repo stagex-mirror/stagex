@@ -37,8 +37,7 @@ RUN --network=none <<-EOF
 	# ruby saves path to install. we want use $PATH
 	export INSTALL=install
 
-	rm ./configure
-	autoconf -f
+	autoreconf -vfi
 
 	# the configure script does not detect isnan/isinf as macros
 	export ac_cv_func_isnan=yes
