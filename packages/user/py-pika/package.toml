@@ -1,12 +1,12 @@
 [package]
 name = "py-pika"
-version = "1.4.0"
+version = "1.4.1"
 description = "Pure Python RabbitMQ/AMQP 0-9-1 client library"
 license = "BSD-3-Clause"
 website = "https://github.com/pika/pika/"
 
 [sources.py-pika]
-hash = "568e8d72deb2bb93fdcf84288c7eb7894750f89990753b3a18b435eb226b0ae7"
+hash = "4ac46aac99bd9542ffd0d5c424b144c404bc8534825694345a3a446a6e5229f9"
 format = "tar.gz"
 file = "py-pika-{version}.{format}"
 mirrors = [ "https://github.com/pika/pika/archive/refs/tags/{version}.{format}",]
