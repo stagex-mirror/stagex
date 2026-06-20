@@ -18,7 +18,6 @@ COPY --from=stagex/core-m4 . /
 ADD fetch/libxml2-${VERSION}.tar.xz .
 WORKDIR /libxml2-${VERSION}
 RUN --network=none <<-EOF
-	sh autogen.sh
 	autoreconf -vfi
 	./configure \
 		--prefix=/usr \

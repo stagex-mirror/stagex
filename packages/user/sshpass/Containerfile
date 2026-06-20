@@ -6,7 +6,7 @@ COPY --from=stagex/user-openssh . /
 ADD fetch/sshpass-${VERSION}.tar.gz .
 WORKDIR /sshpass-${VERSION}
 RUN --network=none <<-EOF
-  autoreconf -vif
+  autoreconf -vfi
   ./configure \
     --prefix=/usr
   make -j "$(nproc)"

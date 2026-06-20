@@ -70,7 +70,6 @@ RUN --network=none <<-EOF
 	# For whatever reason, this adds `mimalloc`'s object file only to the shared object...
 	export LDFLAGS="$LDFLAGS -Wl,--push-state,--whole-archive,$MIMALLOC_O,--pop-state"
 
-	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

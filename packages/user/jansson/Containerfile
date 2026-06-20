@@ -3,7 +3,7 @@ ARG VERSION
 ADD fetch/jansson-${VERSION}.tar.gz .
 WORKDIR /jansson-${VERSION}
 RUN --network=none <<-EOF
-	/usr/bin/autoreconf -vif
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

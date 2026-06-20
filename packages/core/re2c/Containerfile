@@ -17,7 +17,7 @@ COPY --from=stagex/core-musl . /
 ADD fetch/re2c-${VERSION}.tar.gz .
 WORKDIR /re2c-${VERSION}
 RUN --network=none <<-EOF
-	autoreconf -i -W all
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr
 	make -j "$(nproc)"

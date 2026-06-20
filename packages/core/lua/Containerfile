@@ -29,9 +29,6 @@ RUN --network=none <<-EOF
 	patch -p1 < paths.patch
 	patch -p1 < liblua.so.patch
 	#patch -p1 < skip-ranlib.patch
-	libtoolize --force --install
-	aclocal
-	autoconf
 	autoreconf -vfi
 	./configure \
 		--prefix=/usr

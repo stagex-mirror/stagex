@@ -4,7 +4,7 @@ COPY --from=stagex/user-fuse3 . /
 ADD fetch/fuse-overlayfs-${VERSION}.tar.gz .
 WORKDIR /fuse-overlayfs-${VERSION}
 RUN --network=none <<-EOF
-	/usr/bin/autoreconf -fis
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--mandir=/usr/share/man

@@ -17,11 +17,6 @@ ADD fetch/libev-${VERSION}.tar.gz .
 WORKDIR /libev-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<EOF
-	libtoolize --force
-	aclocal -I m4
-	autoheader
-	autoconf
-	automake --add-missing
 	autoreconf -vfi
 	./configure \
 		--prefix=/usr \

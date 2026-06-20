@@ -4,6 +4,7 @@ ADD fetch/libpcap-${VERSION}.tar.gz .
 WORKDIR /libpcap-${VERSION}
 ENV CFLAGS="-O2 -fPIC -ffile-prefix-map=/libpcap-${VERSION}=."
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--disable-shared \

@@ -22,7 +22,6 @@ COPY --from=stagex/core-ncurses . /
 ADD fetch/pcre2-${VERSION}.tar.gz .
 WORKDIR /pcre2-pcre2-${VERSION}
 RUN --network=none <<-EOF
-	./autogen.sh
 	autoreconf -vfi
 	./configure \
 		CFLAGS="-O3" \

@@ -9,6 +9,7 @@ COPY --from=stagex/user-jansson . /
 ADD fetch/nftables-${VERSION}.tar.xz .
 WORKDIR /nftables-${VERSION}
 RUN --network=none <<-EOF
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

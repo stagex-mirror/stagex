@@ -5,7 +5,6 @@ COPY --from=stagex/user-doxygen . /
 ADD fetch/${VERSION}.tar.gz .
 WORKDIR /inotify-tools-${VERSION}
 RUN --network=none <<-EOF
-	./autogen.sh
 	autoreconf -vfi
 	./configure --prefix=/usr --enable-fanotify
 	make

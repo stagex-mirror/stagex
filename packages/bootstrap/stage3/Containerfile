@@ -25,12 +25,12 @@ RUN --network=none <<-EOF
 	install -vdm1777 tmp
 	install -vdm1777 var/tmp
 	install -vdm1777 var/spool/mail
-	install -vDm0755 -t /rootfs/usr/bin/ /usr/bin/autoconf-2.71
-	install -vDm0755 -t /rootfs/usr/bin/ /usr/bin/autoheader-2.71
-	install -vDm0755 -t /rootfs/usr/bin/ /usr/bin/autoreconf-2.71
-	install -vDm0755 -t /rootfs/usr/bin/ /usr/bin/autom4te-2.71
-	install -vDm0755 -t /rootfs/usr/bin/ /usr/bin/automake-1.16
-	install -vDm0755 -t /rootfs/usr/bin/ /usr/bin/aclocal-1.16
+	install -vdm0755 usr/share
+	cp -dRv /usr/bin/autoconf* /usr/bin/autoheader* /usr/bin/autom4te* /usr/bin/autoreconf* /usr/bin/autoscan* /usr/bin/autoupdate* /usr/bin/automake* /usr/bin/aclocal* /usr/bin/ifnames* /usr/bin/autopoint /rootfs/usr/bin/
+	install -vDm0755 -t /rootfs/usr/bin/ /usr/bin/m4 /usr/bin/perl
+	cp -dRv /usr/lib/perl5 /rootfs/usr/lib/
+	cp -dRv /usr/share/autoconf-* /usr/share/automake-* /usr/share/aclocal* /rootfs/usr/share/
+	cp -dRv /usr/share/gettext* /rootfs/usr/share/
 	install -vd -o 1000 -g 1000 -m0755 home/user
 	ln -sT usr/lib lib64
 	ln -sT lib usr/lib64
@@ -39,12 +39,6 @@ RUN --network=none <<-EOF
 	ln -sT usr/sbin sbin
 	ln -sT ../run var/run
 	ln -sT ../run/lock var/lock
-	ln -sT /usr/bin/autoconf-2.71 usr/bin/autoconf
-	ln -sT /usr/bin/automake-1.16 usr/bin/automake
-	ln -sT /usr/bin/aclocal-1.16 usr/bin/aclocal
-	ln -sT /usr/bin/autoheader-2.71 usr/bin/autoheader
-	ln -sT /usr/bin/autoreconf-2.71 usr/bin/autoreconf
-	ln -sT /usr/bin/autom4te-2.71 usr/bin/autom4te
 	install -vDm755 -t /rootfs/etc /etc/profile
 	find /rootfs/ -type f -exec install -Dm 755 "{}" "/{}" \;
 EOF

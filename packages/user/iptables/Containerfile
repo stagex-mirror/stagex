@@ -5,7 +5,7 @@ COPY --from=stagex/user-libmnl . /
 ADD fetch/iptables-${VERSION}.tar.xz .
 WORKDIR /iptables-${VERSION}
 RUN --network=none <<-EOF
-	/usr/bin/autoreconf -vif
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--mandir=/usr/share/man \

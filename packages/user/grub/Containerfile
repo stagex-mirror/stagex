@@ -9,7 +9,6 @@ COPY --from=stagex/user-autoconf-archive . /
 ADD fetch/grub-${VERSION}.tar.gz .
 WORKDIR /grub-${VERSION}
 RUN --network=none <<-EOF
-	sh autogen.sh
 	LDFLAGS="-fuse-ld=bfd"
 	export LDFLAGS
 	mkdir build-pc

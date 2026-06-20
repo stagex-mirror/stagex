@@ -18,7 +18,6 @@ COPY --from=stagex/core-po4a . /
 ADD fetch/xz-${VERSION}.tar.gz .
 WORKDIR /xz-${VERSION}
 RUN --network=none <<-EOF
-	./autogen.sh
 	autoreconf -vfi
 	./configure \
 		--prefix=/usr \

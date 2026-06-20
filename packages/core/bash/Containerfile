@@ -15,10 +15,6 @@ COPY --from=stagex/core-perl . /
 ADD fetch/bash-${VERSION}.tar.gz .
 WORKDIR /bash-${VERSION}
 RUN --network=none <<-EOF
-
-	rm ./configure
-	autoconf -f
-
 	autoreconf -vfi
 	./configure \
 		--prefix=/usr \

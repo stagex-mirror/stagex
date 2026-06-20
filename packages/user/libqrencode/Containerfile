@@ -3,7 +3,7 @@ ARG VERSION
 ADD fetch/v${VERSION}.tar.gz .
 WORKDIR /libqrencode-${VERSION}
 RUN --network=none <<-EOF
-	autoreconf -fvi
+	autoreconf -vfi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

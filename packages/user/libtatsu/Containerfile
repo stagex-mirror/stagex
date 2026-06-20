@@ -7,7 +7,6 @@ ADD fetch/libtatsu-${VERSION}.tar.gz .
 WORKDIR /libtatsu-${VERSION}
 RUN --network=none <<-EOF
 	echo "${VERSION}" > .tarball-version
-	./autogen.sh
 	autoreconf -vfi
 	./configure \
 		--prefix=/usr
