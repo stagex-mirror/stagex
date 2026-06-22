@@ -1,0 +1,40 @@
+FROM stagex/pallet-clang-gnu-busybox AS base
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-ncurses . /
+ARG VERSION
+ADD fetch/coreboot-${VERSION}.tar.gz .
+ENV SOURCE_DATE_EPOCH=1 BUILD_TIMELESS=1
+WORKDIR /coreboot-${VERSION}
+
+# Build coreboot with system clang (no crossgcc toolchain needed via ANY_TOOLCHAIN)
+#
+# AMD-only note: coreboot's libgfxinit module (Intel iGPU support) is
+# written in Ada/SPARK and requires gnat. Since StageX does not yet have
+# a source-bootstrapped Ada compiler, Intel iGPU initialization is not
+# available. AMD platforms do not use libgfxinit, so this has no impact
+# on AMD-targeted builds. When a gnat package becomes available, Intel
+# targets can be added by enabling CONFIG_MAINBOARD_USE_LIBGFXINIT.
+#
+# Real AMD hardware targets (OpenSIL: onyx_poc, birman, turin_poc) all
+# require APCB (AMD Platform Calibration Binary) blobs for memory training.
+# Without them the build succeeds but the ROM will not boot. QEMU is the
+# only truly blobless target.
+#
+# To add new targets:
+#   1. Create a <name>.config file with the desired board configuration
+#   2. Add a build-<name> stage below (see build-coreboot-generic)
+#   3. Add a package-<name> stage and list it in subpackages
+#
+FROM base AS build-coreboot-generic
+ADD generic.config .config
+RUN --network=none <<-EOF
+	make olddefconfig
+	make -j"$(nproc)"
+	mkdir -p /rootfs/usr/share/coreboot
+	cp build/coreboot.rom /rootfs/usr/share/coreboot/coreboot-generic.rom
+	cp .config /rootfs/usr/share/coreboot/generic.config
+EOF
+
+FROM stagex/core-filesystem AS package-coreboot-generic
+COPY --from=build-coreboot-generic /rootfs/ /

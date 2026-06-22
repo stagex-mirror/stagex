@@ -1,0 +1,13 @@
+[package]
+name = "coreboot"
+version = "26.03"
+description = "Fast, open-source PC firmware"
+website = "https://www.coreboot.org"
+license = "GPL-2.0-only"
+subpackages = ["coreboot-generic"]
+
+[sources.coreboot]
+hash = "435e407d662f16fe23482046d9b4564c724e11ac2d4e9fe7034138b3c6db6fc7"
+format = "tar.gz"
+file = "coreboot-{version}.{format}"
+mirrors = [ "https://github.com/coreboot/coreboot/archive/refs/tags/{version}.{format}" ]
