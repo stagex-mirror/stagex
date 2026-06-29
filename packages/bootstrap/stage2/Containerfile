@@ -1,43 +1,65 @@
-FROM scratch AS build
+FROM --platform=linux/386 stagex/bootstrap-stage1 AS xbuild
+ARG TARGETARCH
 ARG GCC_SOURCE
 ARG GCC_VERSION
+ARG GMP_VERSION
+ARG MPFR_VERSION
+ARG MPC_VERSION
+ARG ISL_VERSION
 ARG LINUX_SOURCE
 ARG LINUX_VERSION
 ARG MUSL_SOURCE
 ARG MUSL_VERSION
 ARG BINUTILS_SOURCE
 ARG BINUTILS_VERSION
+ARG BUSYBOX_SOURCE
+ARG BUSYBOX_VERSION
+ARG MAKE_SOURCE
+ARG MAKE_VERSION
 ENV TZ=UTC
 ENV LANG=C.UTF-8
 ENV SOURCE_DATE_EPOCH=1
 ENV KCONFIG_NOTIMESTAMP=1
 ENV BASE_PATH=/usr/sbin:/usr/bin:/sbin:/bin
 ENV PATH=${BASE_PATH}
+WORKDIR /
 COPY --from=fetch . .
-COPY --from=stagex/bootstrap-stage1 . /
 
+COPY --chmod=755 <<-'EOF' /env.sh
+	case "${TARGETARCH}" in
+		amd64) export TARGET_ARCH=x86_64 ;;
+		arm64) export TARGET_ARCH=aarch64 ;;
+		riscv64) export TARGET_ARCH=riscv64 ;;
+		*) echo "Unsupported TARGETARCH: ${TARGETARCH}" >&2; exit 1 ;;
+	esac
+	export BUILD=i386-unknown-linux-musl
+	export TARGET=${TARGET_ARCH}-linux-musl
+	export SYSROOT=/usr/${TARGET}
+	export PATH=${SYSROOT}/bin:${BASE_PATH}
+EOF
+
+# gmp/mpfr/mpc/isl renamed into gcc source tree for gcc's in-tree detection.
 RUN --network=none <<-EOF
 	set -eux
 	tar -xf ${LINUX_SOURCE}
 	tar -xzf ${MUSL_SOURCE}
 	tar -xf ${BINUTILS_SOURCE}
 	tar -xf ${GCC_SOURCE}
-	cd gcc-${GCC_VERSION}
-	mv ../*.tar.* .; \
-	./contrib/download_prerequisites
+	tar -xjf ${BUSYBOX_SOURCE}
+	tar -xzf ${MAKE_SOURCE}
+	tar -xf gmp-${GMP_VERSION}.tar.bz2
+	tar -xf mpfr-${MPFR_VERSION}.tar.bz2
+	tar -xf mpc-${MPC_VERSION}.tar.gz
+	tar -xf isl-${ISL_VERSION}.tar.bz2
+	mv gmp-${GMP_VERSION}   gcc-${GCC_VERSION}/gmp
+	mv mpfr-${MPFR_VERSION} gcc-${GCC_VERSION}/mpfr
+	mv mpc-${MPC_VERSION}   gcc-${GCC_VERSION}/mpc
+	mv isl-${ISL_VERSION}   gcc-${GCC_VERSION}/isl
 EOF
 
-# Set environment variables based on target (gcc target format, like x86_64 or aarch64)
-COPY --chmod=755 <<-'EOF' /env.sh
-	export TARGET=${TARGET_ARCH}-linux-musl
-	export SYSROOT=/usr/${TARGET}
-	export PATH=${SYSROOT}/bin:${BASE_PATH}
-EOF
-
-ARG TARGET_LIST="x86_64 aarch64"
-
-# Setup sysroot
-COPY --chmod=755 <<-'EOF' /sysroot.sh
+# Phase 1: i386-hosted cross-toolchain in ${SYSROOT}, discarded from the
+# final image. Phase 2 (below) uses it to assemble the native rootfs.
+RUN --network=none <<-EOF
 	set -eux
 	. /env.sh
 	mkdir -p ${SYSROOT}
@@ -49,15 +71,8 @@ COPY --chmod=755 <<-'EOF' /sysroot.sh
 	ln -sfv ../lib32 lib32
 	ln -sfv ../include include
 EOF
-RUN --network=none <<-EOF
-	set -eux
-	for arch in ${TARGET_LIST}; do
-		TARGET_ARCH=$arch /sysroot.sh
-	done
-EOF
 
-# Install musl headers
-COPY --chmod=755 <<-'EOF' /musl1.sh
+RUN --network=none <<-EOF
 	set -eux
 	. /env.sh
 	cd /musl-${MUSL_VERSION}
@@ -69,19 +84,12 @@ COPY --chmod=755 <<-'EOF' /musl1.sh
 		DESTDIR="${SYSROOT}" \
 		install-headers
 EOF
+
 RUN --network=none <<-EOF
 	set -eux
-	for arch in ${TARGET_LIST}; do
-		TARGET_ARCH=$arch /musl1.sh
-	done
-EOF
-
-# Build and install cross binutils
-COPY --chmod=755 <<-'EOF' /binutils.sh
-	set -eux
 	. /env.sh
-	mkdir -p /build-binutils-${TARGET_ARCH}
-	cd /build-binutils-${TARGET_ARCH}
+	mkdir -p /build-xbinutils
+	cd /build-xbinutils
 	/binutils-${BINUTILS_VERSION}/configure \
 		--target="${TARGET}" \
 		--prefix="" \
@@ -111,41 +119,34 @@ COPY --chmod=755 <<-'EOF' /binutils.sh
 		install-strip-gas \
 		install-strip-ld
 EOF
+
 RUN --network=none <<-EOF
 	set -eux
-	for arch in ${TARGET_LIST}; do
-		TARGET_ARCH=$arch /binutils.sh
-	done
-EOF
-
-# Build and install cross gcc and bootstrap libgcc
-COPY --chmod=755 <<-'EOF' /gcc1.sh
-	set -eux
 	. /env.sh
-	mkdir -p /build-gcc-${TARGET_ARCH}
-	cd /build-gcc-${TARGET_ARCH}
+	mkdir -p /build-xgcc
+	cd /build-xgcc
 	/gcc-${GCC_VERSION}/configure \
-	--prefix="" \
-	--exec-prefix="" \
-	--sbindir=/bin \
-	--libexecdir=/lib \
-	--datarootdir=/_tmp \
-	--target=${TARGET} \
-	--disable-multilib \
-	--disable-bootstrap \
-	--disable-assembly \
-	--disable-libmudflap \
-	--disable-libsanitizer \
-	--disable-gnu-indirect-function \
-	--disable-libmpx \
-	--disable-werror \
-	--enable-languages=c,c++ \
-	--enable-tls \
-	--enable-initfini-array \
-	--enable-libstdcxx-time=rt \
-	--enable-deterministic-archives \
-	--with-build-sysroot=${SYSROOT} \
-	--with-sysroot=/
+		--prefix="" \
+		--exec-prefix="" \
+		--sbindir=/bin \
+		--libexecdir=/lib \
+		--datarootdir=/_tmp \
+		--target=${TARGET} \
+		--disable-multilib \
+		--disable-bootstrap \
+		--disable-assembly \
+		--disable-libmudflap \
+		--disable-libsanitizer \
+		--disable-gnu-indirect-function \
+		--disable-libmpx \
+		--disable-werror \
+		--enable-languages=c,c++ \
+		--enable-tls \
+		--enable-initfini-array \
+		--enable-libstdcxx-time=rt \
+		--enable-deterministic-archives \
+		--with-build-sysroot=${SYSROOT} \
+		--with-sysroot=/
 	make \
 		-j$(nproc) \
 		all-gcc
@@ -159,19 +160,12 @@ COPY --chmod=755 <<-'EOF' /gcc1.sh
 		install-strip-gcc \
 		install-strip-target-libgcc
 EOF
+
 RUN --network=none <<-EOF
 	set -eux
-	for arch in ${TARGET_LIST}; do
-		TARGET_ARCH=$arch /gcc1.sh
-	done
-EOF
-
-# Build and install cross musl
-COPY --chmod=755 <<-'EOF' /musl2.sh
-	set -eux
 	. /env.sh
-	mkdir -p /build-musl-${TARGET_ARCH}
-	cd /build-musl-${TARGET_ARCH}
+	mkdir -p /build-xmusl
+	cd /build-xmusl
 	ARCH="${TARGET_ARCH}" \
 	CC="${TARGET}-gcc" \
 	CROSS_COMPILE="${TARGET}-" \
@@ -195,19 +189,12 @@ COPY --chmod=755 <<-'EOF' /musl2.sh
 		"${SYSROOT}/usr/lib/libc.so" \
 		"${SYSROOT}/lib/ld-musl-${TARGET_ARCH}.so.1"
 EOF
+
+# Finish libgcc/libstdc++ now that musl libs exist in the sysroot.
 RUN --network=none <<-EOF
 	set -eux
-	for arch in ${TARGET_LIST}; do
-		TARGET_ARCH=$arch /musl2.sh
-	done
-EOF
-
-# Build and install final libgcc/libstdc++
-COPY --chmod=755 <<-'EOF' /gcc2.sh
-	set -eux
 	. /env.sh
-	mkdir -p /build-gcc-${TARGET_ARCH}
-	cd /build-gcc-${TARGET_ARCH}
+	cd /build-xgcc
 	make \
 		-j $(nproc) \
 		-C "${TARGET}/libgcc" \
@@ -223,52 +210,158 @@ COPY --chmod=755 <<-'EOF' /gcc2.sh
 		install-strip-target-libgcc \
 		install-strip-target-libstdc++-v3
 EOF
+
 RUN --network=none <<-EOF
 	set -eux
-	for arch in ${TARGET_LIST}; do
-		TARGET_ARCH=$arch /gcc2.sh
-	done
-EOF
-
-# Build and install linux headers
-COPY --chmod=755 <<-'EOF' /linux.sh
-	set -eux
 	. /env.sh
-	cp -r /linux-${LINUX_VERSION} /linux-build-${TARGET_ARCH}
-	cd /linux-build-${TARGET_ARCH}
-	set -eux
-	make -j$(nproc) ARCH="$(echo ${TARGET_ARCH} | sed 's/aarch64/arm64/')" headers
+	cp -r /linux-${LINUX_VERSION} /linux-xbuild
+	cd /linux-xbuild
+	LINUX_ARCH=$(echo "${TARGET_ARCH}" \
+		| sed -e 's/aarch64/arm64/' -e 's/riscv64/riscv/')
+	make -j$(nproc) ARCH="${LINUX_ARCH}" headers
 	find usr/include ! -name '*.h' -type f -delete
 	cp -Rv usr/include/* "${SYSROOT}/include/"
-	rm -rf "${SYSROOT}/_tmp"
-EOF
-RUN --network=none <<-EOF
-	set -eux
-	for arch in ${TARGET_LIST}; do
-		TARGET_ARCH=$arch /linux.sh
-	done
+	rm -rf "${SYSROOT}/_tmp" /linux-xbuild
 EOF
 
-# Finalize installation, copy prefixed binaries to /usr/bin
-COPY --chmod=755 <<-'EOF' /install.sh
+RUN --network=none <<-EOF
 	set -eux
 	. /env.sh
-	rm -rf "${SYSROOT}/_tmp"
-	mkdir -p /rootfs/${SYSROOT}
-	cd /rootfs/${SYSROOT}
-	mv ${SYSROOT}/* .
-	mkdir -p /rootfs/usr/bin
-	for bin_path in $(find bin -name ${TARGET}-*); do
+	mkdir -p /usr/bin
+	for bin_path in $(find ${SYSROOT}/bin -name "${TARGET}-*"); do
 		bin_name=$(basename "$bin_path")
-		ln -s ${SYSROOT}/bin/${bin_name} /rootfs/usr/bin/${bin_name}
-	done
-EOF
-RUN --network=none <<-EOF
-	set -eux
-	for arch in ${TARGET_LIST}; do
-		TARGET_ARCH=$arch /install.sh
+		ln -sf "${SYSROOT}/bin/${bin_name}" "/usr/bin/${bin_name}"
 	done
 EOF
 
-FROM stagex/bootstrap-stage1 AS package
-COPY --from=build /rootfs/ /
+# Phase 2: native target-arch rootfs in /rootfs. Ships as bootstrap-stage2.
+RUN --network=none <<-EOF
+	set -eux
+	install -vdm0755 /rootfs/etc
+	install -vdm0755 /rootfs/usr
+	install -vdm0755 /rootfs/usr/bin
+	install -vdm0755 /rootfs/usr/lib
+	install -vdm0755 /rootfs/usr/include
+	install -vdm0755 /rootfs/usr/share
+	install -vdm1777 /rootfs/tmp
+	install -vdm0750 /rootfs/root
+	ln -sT usr/lib /rootfs/lib64
+	ln -sT lib /rootfs/usr/lib64
+	ln -sT usr/lib /rootfs/lib
+	ln -sT usr/bin /rootfs/bin
+	ln -sT usr/sbin /rootfs/sbin
+EOF
+
+RUN --network=none <<-EOF
+	set -eux
+	. /env.sh
+	cp -r /linux-${LINUX_VERSION} /linux-native
+	cd /linux-native
+	LINUX_ARCH=$(echo "${TARGET_ARCH}" \
+		| sed -e 's/aarch64/arm64/' -e 's/riscv64/riscv/')
+	make -j$(nproc) ARCH="${LINUX_ARCH}" headers
+	find usr/include ! -name '*.h' -type f -delete
+	cp -Rv usr/include/* /rootfs/usr/include/
+	rm -rf /linux-native
+EOF
+
+RUN --network=none <<-EOF
+	set -eux
+	. /env.sh
+	cd /musl-${MUSL_VERSION}
+	make clean distclean
+	./configure \
+		--prefix=/usr \
+		--host=${TARGET}
+	make DESTDIR=/rootfs install
+	mv -f /rootfs/usr/lib/libc.so /rootfs/usr/lib/ld-musl-${TARGET_ARCH}.so.1
+	ln -sf ld-musl-${TARGET_ARCH}.so.1 /rootfs/usr/lib/libc.musl-${TARGET_ARCH}.so.1
+	ln -sf /usr/lib/ld-musl-${TARGET_ARCH}.so.1 /rootfs/usr/lib/libc.so
+	ln -sf /usr/lib/ld-musl-${TARGET_ARCH}.so.1 /rootfs/usr/bin/ldd
+EOF
+
+RUN --network=none <<-EOF
+	set -eux
+	. /env.sh
+	mkdir -p /build-nbinutils
+	cd /build-nbinutils
+	/binutils-${BINUTILS_VERSION}/configure \
+		--build=${BUILD} \
+		--host=${TARGET} \
+		--prefix=/usr \
+		--bindir=/usr/bin \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--sysconfdir=/etc \
+		--disable-nls \
+		--disable-multilib \
+		--disable-plugins \
+		--disable-gprofng \
+		--enable-64-bit-bfd \
+		--enable-ld=default \
+		--enable-install-libiberty \
+		--enable-deterministic-archives
+	make
+	make DESTDIR=/rootfs install
+EOF
+
+# Downstream Makefiles assume `cc`; symlink it alongside gcc below.
+RUN --network=none <<-EOF
+	set -eux
+	. /env.sh
+	mkdir -p /build-ngcc
+	cd /build-ngcc
+	/gcc-${GCC_VERSION}/configure \
+		--build=${BUILD} \
+		--host=${TARGET} \
+		--target=${TARGET} \
+		--prefix=/usr \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--libdir=/usr/lib \
+		--disable-cet \
+		--disable-fixed-point \
+		--disable-libstdcxx-pch \
+		--disable-multilib \
+		--disable-libsanitizer \
+		--disable-nls \
+		--disable-werror \
+		--enable-__cxa_atexit \
+		--enable-default-pie \
+		--enable-default-ssp \
+		--enable-languages=c,c++ \
+		--enable-link-serialization=2 \
+		--enable-linker-build-id
+	make
+	make DESTDIR=/rootfs install
+	ln -sf gcc /rootfs/usr/bin/cc
+EOF
+
+RUN --network=none <<-EOF
+	set -eux
+	. /env.sh
+	cd /make-${MAKE_VERSION}
+	./configure \
+		--build=${BUILD} \
+		--host=${TARGET} \
+		--prefix=/usr \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--disable-nls
+	make
+	make DESTDIR=/rootfs install
+EOF
+
+RUN --network=none <<-EOF
+	set -eux
+	. /env.sh
+	cd /busybox-${BUSYBOX_VERSION}
+	make CROSS_COMPILE=${TARGET}- defconfig
+	echo "CONFIG_STATIC=y" >> .config
+	make CROSS_COMPILE=${TARGET}-
+	cp busybox /rootfs/usr/bin/busybox
+EOF
+
+FROM scratch AS package
+COPY --from=xbuild /rootfs/ /
+RUN ["/usr/bin/busybox", "--install", "-s", "/usr/bin"]

@@ -1,17 +1,19 @@
-FROM --platform=linux/386 stagex/bootstrap-stage2 AS base
+FROM stagex/bootstrap-stage2 AS base
 ARG TARGETARCH
 WORKDIR /rootfs/
 SHELL ["/bin/sh","-l","-c"]
 ENV SOURCE_DATE_EPOCH=1
 COPY <<-'EOF' /etc/profile
-  set -eux
-	[[ "$TARGETARCH" == "amd64" ]] \
-		&& ARCH="x86_64"
-	[[ "$TARGETARCH" == "arm64" ]] \
-		&& ARCH="aarch64"
+	set -eux
+	case "${TARGETARCH}" in
+		amd64) ARCH=x86_64 ;;
+		arm64) ARCH=aarch64 ;;
+		riscv64) ARCH=riscv64 ;;
+		*) echo "Unsupported TARGETARCH: ${TARGETARCH}" >&2; exit 1 ;;
+	esac
 	export ARCH
+	export PATH=/usr/sbin:/usr/bin:/sbin:/bin
 	export MAKEFLAGS="-j$(nproc)"
-	export BUILD=i386-unknown-linux-musl
 	export TARGET=${ARCH}-linux-musl
 EOF
 WORKDIR /rootfs
@@ -44,8 +46,6 @@ ADD fetch/make-${MAKE_VERSION}.tar.gz /
 WORKDIR /make-${MAKE_VERSION}
 RUN --network=none <<-EOF
 	./configure \
-		--build=${BUILD} \
-		--host=${TARGET} \
 		--prefix=/usr \
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info \
@@ -61,12 +61,11 @@ ARG BUSYBOX_VERSION
 ADD fetch/busybox-${BUSYBOX_VERSION}.tar.bz2 /
 WORKDIR /busybox-${BUSYBOX_VERSION}
 RUN --network=none <<-EOF
-	make CROSS_COMPILE=${TARGET}- defconfig
+	make defconfig
 	echo "CONFIG_STATIC=y" >> .config
-	make CROSS_COMPILE=${TARGET}-
+	make
 	mkdir -p /rootfs/usr/bin
 	cp busybox /rootfs/usr/bin
-	cp busybox /usr/bin
 	cd /rootfs
 	/usr/bin/busybox --install -s usr/bin
 	rm -rf /busybox-*
@@ -78,9 +77,8 @@ ARG LINUX_VERSION
 ADD fetch/linux-${LINUX_VERSION}.tar.xz /
 WORKDIR /linux-${LINUX_VERSION}
 RUN --network=none <<-EOF
-	LINUX_ARCH="$ARCH"
-	[[ "$TARGETARCH" == "arm64" ]] \
-		&& LINUX_ARCH="$TARGETARCH"
+	LINUX_ARCH=$(echo "$ARCH" \
+		| sed -e 's/aarch64/arm64/' -e 's/riscv64/riscv/' -e 's/x86_64/x86/')
 	make ARCH="$LINUX_ARCH" headers
 	find usr/include -name '.*' -delete
 	rm usr/include/Makefile
@@ -96,8 +94,6 @@ ADD fetch/binutils-${BINUTILS_VERSION}.tar.xz /
 WORKDIR /binutils-${BINUTILS_VERSION}
 RUN --network=none <<-EOF
 	./configure \
-		--build=${BUILD} \
-		--host=${TARGET} \
 		--prefix=/usr \
 		--bindir=/usr/bin \
 		--mandir=/usr/share/man \
@@ -116,48 +112,18 @@ RUN --network=none <<-EOF
 	rm -rf /binutils-*
 EOF
 
-FROM base AS gcc
-ARG TARGETARCH
-ARG GCC_VERSION
-ARG GMP_VERSION
-ARG MPFR_VERSION
-ARG MPC_VERSION
-ARG ISL_VERSION
-ADD fetch/gcc-${GCC_VERSION}.tar.xz /
-ADD fetch/gmp-${GMP_VERSION}.tar.bz2 /
-ADD fetch/mpfr-${MPFR_VERSION}.tar.bz2 /
-ADD fetch/mpc-${MPC_VERSION}.tar.gz /
-ADD fetch/isl-${ISL_VERSION}.tar.bz2 /
-WORKDIR /gcc-${GCC_VERSION}
+# LAST place gcc-built artifacts appear in stage3's build graph — tier-1
+# stages COPY from here; nothing from this stage reaches the final install.
+FROM base AS gcc-runtime
 RUN --network=none <<-EOF
-	mv ../gmp-${GMP_VERSION} gmp
-	mv ../mpfr-${MPFR_VERSION} mpfr
-	mv ../mpc-${MPC_VERSION} mpc
-	mv ../isl-${ISL_VERSION} isl
-	./configure \
-		--build=${BUILD} \
-		--host=${TARGET} \
-		--target=${TARGET} \
-		--prefix=/usr \
-		--mandir=/usr/share/man \
-		--infodir=/usr/share/info \
-		--libdir=/usr/lib \
-		--disable-cet \
-		--disable-fixed-point \
-		--disable-libstdcxx-pch \
-		--disable-multilib \
-		--disable-libsanitizer \
-		--disable-nls \
-		--disable-werror \
-		--enable-__cxa_atexit \
-		--enable-default-pie \
-		--enable-default-ssp \
-		--enable-languages=c,c++ \
-		--enable-link-serialization=2 \
-		--enable-linker-build-id
-	make
-	make DESTDIR=/rootfs install
-	rm -rf /gcc-*
+	set -eux
+	mkdir -p /rootfs/usr/bin /rootfs/usr/lib /rootfs/usr/libexec /rootfs/usr/include
+	cp -a /usr/bin/gcc /usr/bin/g++ /usr/bin/cpp /rootfs/usr/bin/
+	cp -a /usr/lib/libstdc++* /rootfs/usr/lib/  || true
+	cp -a /usr/lib/libgcc_s* /rootfs/usr/lib/  || true
+	cp -a /usr/lib/gcc /rootfs/usr/lib/
+	cp -a /usr/libexec/gcc /rootfs/usr/libexec/
+	cp -aR /usr/include/c++ /rootfs/usr/include/ || true
 EOF
 
 FROM base AS xz
@@ -166,10 +132,8 @@ ARG XZ_VERSION
 ADD fetch/xz-${XZ_VERSION}.tar.gz /
 WORKDIR /xz-${XZ_VERSION}
 RUN --network=none <<-EOF
-	autoreconf -fi
 	./configure \
-		--prefix=/usr \
-		--host=${TARGET}
+		--prefix=/usr
 	make DESTDIR=/rootfs install
 	rm -rf /xz-*
 EOF
@@ -180,7 +144,6 @@ ARG LIBUCONTEXT_VERSION
 ADD fetch/libucontext-${LIBUCONTEXT_VERSION}.tar.gz /
 WORKDIR /libucontext-libucontext-${LIBUCONTEXT_VERSION}
 RUN --network=none <<-EOF
-	export CC=${ARCH}-linux-musl-gcc
 	sed 's/\((wildcard .*)\)/(sort $\1)/g' -i Makefile
 	make -j1 ARCH=${ARCH} DESTDIR=/rootfs install
 	rm -rf /libucontext-*
@@ -193,8 +156,7 @@ ADD fetch/musl-${MUSL_VERSION}.tar.gz /
 WORKDIR /musl-${MUSL_VERSION}
 RUN --network=none <<-EOF
 	./configure \
-		--prefix=/usr \
-		--host=${TARGET}
+		--prefix=/usr
 	make DESTDIR=/rootfs install
 	ln -sf /usr/lib/ld-musl-${ARCH}.so.1 /rootfs/usr/bin/ldd
 	mv -f /rootfs/usr/lib/libc.so /rootfs/usr/lib/ld-musl-${ARCH}.so.1
@@ -216,13 +178,9 @@ ENV CONFIG_SITE=config.site
 RUN --network=none <<-EOF
 	./configure \
 		--prefix=/usr \
-		--build=${BUILD} \
-		--host=${TARGET} \
-		--target=${TARGET} \
-		--with-build-python \
 		--with-computed-gotos \
 		--without-ensurepip \
-		--disable-ipv6 \
+		--disable-ipv6
 	make
 	make DESTDIR=/rootfs install
 	ln -s /usr/bin/python3 /rootfs/usr/bin/python
@@ -235,7 +193,7 @@ COPY --from=musl /rootfs/ /
 COPY --from=busybox /rootfs/ /
 COPY --from=python /rootfs/ /
 COPY --from=make /rootfs/ /
-COPY --from=gcc /rootfs/ /
+COPY --from=gcc-runtime /rootfs/ /
 COPY --from=binutils /rootfs/ /
 COPY --from=linux-headers /rootfs/ /
 ARG TARGETARCH
@@ -262,7 +220,7 @@ COPY --from=musl /rootfs/ /
 COPY --from=busybox /rootfs/ /
 COPY --from=python /rootfs/ /
 COPY --from=make /rootfs/ /
-COPY --from=gcc /rootfs/ /
+COPY --from=gcc-runtime /rootfs/ /
 COPY --from=binutils /rootfs/ /
 COPY --from=cmake /rootfs/ /
 ARG TARGETARCH
@@ -303,7 +261,7 @@ COPY --from=base /rootfs/ /
 COPY --from=musl /rootfs/ /
 COPY --from=busybox /rootfs/ /
 COPY --from=make /rootfs/ /
-COPY --from=gcc /rootfs/ /
+COPY --from=gcc-runtime /rootfs/ /
 COPY --from=binutils /rootfs/ /
 COPY --from=cmake /rootfs/ /
 COPY --from=libzstd /rootfs/ /
@@ -328,7 +286,7 @@ COPY --from=base /rootfs/ /
 COPY --from=musl /rootfs/ /
 COPY --from=busybox /rootfs/ /
 COPY --from=make /rootfs/ /
-COPY --from=gcc /rootfs/ /
+COPY --from=gcc-runtime /rootfs/ /
 COPY --from=binutils /rootfs/ /
 COPY --from=cmake /rootfs/ /
 COPY --from=libzstd /rootfs/ /
@@ -357,7 +315,7 @@ ARG LIBUNWIND_VERSION
 COPY --from=musl /rootfs/ /
 COPY --from=busybox /rootfs/ /
 COPY --from=make /rootfs/ /
-COPY --from=gcc /rootfs/ /
+COPY --from=gcc-runtime /rootfs/ /
 COPY --from=binutils /rootfs/ /
 COPY --from=cmake /rootfs/ /
 COPY --from=libzstd /rootfs/ /
@@ -366,15 +324,12 @@ COPY --from=zlib /rootfs/ /
 COPY --from=libucontext /rootfs/ /
 ADD fetch/libunwind-${LIBUNWIND_VERSION}.tar.gz /
 WORKDIR /libunwind-${LIBUNWIND_VERSION}
-RUN <<-EOF
-	set -eux
+RUN --network=none <<-EOF
 	export CFLAGS="-llzma -lucontext"
 	export CXXFLAGS="$CFLAGS"
 	export CPPFLAGS="$CFLAGS"
-	autoreconf -i
 	./configure \
 		--prefix=/usr \
-		--host=${TARGET} \
 		--enable-cxx-exceptions \
 		--disable-tests
 	make
@@ -382,24 +337,616 @@ RUN <<-EOF
 	rm -rf /libunwind-*
 EOF
 
-FROM scratch AS install
-ARG TARGETARCH
-SHELL ["/bin/sh","-l","-c"]
+# TIER 1: gcc-built bootstrap clang. Single target, never ships.
+FROM scratch AS llvm-bootstrap
 COPY --from=base /rootfs/ /
+COPY --from=musl /rootfs/ /
 COPY --from=busybox /rootfs/ /
 COPY --from=make /rootfs/ /
-COPY --from=musl /rootfs/ /
-COPY --from=gcc /rootfs/ /
+COPY --from=gcc-runtime /rootfs/ /
 COPY --from=binutils /rootfs/ /
 COPY --from=python /rootfs/ /
 COPY --from=cmake /rootfs/ /
 COPY --from=linux-headers /rootfs/ /
 COPY --from=libffi /rootfs/ /
 COPY --from=libzstd /rootfs/ /
-COPY --from=libunwind /rootfs/ /
-COPY --from=libucontext /rootfs/ /
 COPY --from=zlib /rootfs/ /
 COPY --from=xz /rootfs/ /
+COPY --from=libucontext /rootfs/ /
+COPY --from=libunwind /rootfs/ /
+ARG TARGETARCH
+ARG LLVM_VERSION
+ADD fetch/llvm-${LLVM_VERSION}.tar.xz /
+COPY patches/*.patch /llvm-project-${LLVM_VERSION}.src/
+WORKDIR /llvm-project-${LLVM_VERSION}.src
+SHELL ["/bin/sh","-l","-c"]
+
+RUN --network=none <<-EOF
+	for file in $(find . -maxdepth 1 -name "*.patch" | sort); do
+		patch -p1 < "$file"
+	done
+EOF
+
+RUN --network=none <<-EOF
+	MAJOR_VERSION=$(echo "$LLVM_VERSION" | cut -d'.' -f1)
+	case "$ARCH" in
+		x86_64) LLVM_TARGET_ARCH=X86 ;;
+		aarch64) LLVM_TARGET_ARCH=AArch64 ;;
+		riscv64) LLVM_TARGET_ARCH=RISCV ;;
+		*) exit 1 ;;
+	esac
+	export CFLAGS="-fPIC"
+	export CXXFLAGS="$CFLAGS"
+	cmake \
+		-B build \
+		-S llvm \
+		-Wno-dev \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr/ \
+		-DCMAKE_INSTALL_LIBDIR=/usr/lib \
+		-DCMAKE_INSTALL_RPATH=/usr/lib \
+		-DLLVM_HOST_TRIPLE="${TARGET}" \
+		-DLLVM_TARGET_ARCH="${LLVM_TARGET_ARCH}" \
+		-DLLVM_TARGETS_TO_BUILD="${LLVM_TARGET_ARCH}" \
+		-DLLVM_RUNTIME_TARGETS="${TARGET}" \
+		-DLLVM_BUILTIN_TARGETS="${TARGET}" \
+		-DLLVM_ENABLE_PROJECTS="clang;lld" \
+		-DLLVM_ENABLE_RUNTIMES="compiler-rt;libunwind;libcxx;libcxxabi" \
+		-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON \
+		-DLLVM_BUILD_LLVM_DYLIB=ON \
+		-DLLVM_LINK_LLVM_DYLIB=ON \
+		-DLLVM_INSTALL_UTILS=ON \
+		-DLLVM_INSTALL_BINUTILS_SYMLINKS=ON \
+		-DLLVM_ENABLE_BACKTRACES=OFF \
+		-DLLVM_ENABLE_BINDINGS=OFF \
+		-DLLVM_ENABLE_PEDANTIC=OFF \
+		-DLLVM_ENABLE_PLUGINS=OFF \
+		-DLLVM_ENABLE_TELEMETRY=OFF \
+		-DLLVM_ENABLE_LIBXML2=OFF \
+		-DLLVM_ENABLE_LIBEDIT=OFF \
+		-DLLVM_ENABLE_LIBPFM=OFF \
+		-DLLVM_ENABLE_ICU=OFF \
+		-DLLVM_ENABLE_ICONV=OFF \
+		-DLLVM_ENABLE_ZSTD=OFF \
+		-DCLANG_DEFAULT_RTLIB=compiler-rt \
+		-DCLANG_DEFAULT_CXX_STDLIB=libc++ \
+		-DCLANG_DEFAULT_UNWINDLIB=libunwind \
+		-DCLANG_CONFIG_FILE_SYSTEM_DIR=/etc/clang \
+		-DCLANG_ENABLE_STATIC_ANALYZER=OFF \
+		-DRUNTIMES_${TARGET}_LIBCXX_HAS_MUSL_LIBC=ON \
+		-DRUNTIMES_${TARGET}_LIBCXX_CXX_ABI=libcxxabi \
+		-DRUNTIMES_${TARGET}_LIBCXX_HARDENING_MODE=fast \
+		-DRUNTIMES_${TARGET}_LIBCXX_HAS_ATOMIC_LIB=OFF \
+		-DRUNTIMES_${TARGET}_LIBCXX_USE_COMPILER_RT=ON \
+		-DRUNTIMES_${TARGET}_LIBCXXABI_USE_COMPILER_RT=ON \
+		-DRUNTIMES_${TARGET}_LIBCXXABI_USE_LLVM_UNWINDER=ON \
+		-DRUNTIMES_${TARGET}_LIBUNWIND_USE_COMPILER_RT=ON \
+		-DRUNTIMES_${TARGET}_COMPILER_RT_BUILD_BUILTINS=ON \
+		-DRUNTIMES_${TARGET}_COMPILER_RT_EXCLUDE_ATOMIC_BUILTIN=OFF \
+		-DRUNTIMES_${TARGET}_COMPILER_RT_USE_BUILTINS_LIBRARY=ON \
+		-DRUNTIMES_${TARGET}_COMPILER_RT_USE_LLVM_UNWINDER=ON \
+		-DRUNTIMES_${TARGET}_COMPILER_RT_BUILD_GWP_ASAN=OFF \
+		-DRUNTIMES_${TARGET}_COMPILER_RT_BUILD_SANITIZERS=OFF \
+		-DRUNTIMES_${TARGET}_COMPILER_RT_DEFAULT_TARGET_ONLY=ON \
+		-DRUNTIMES_${TARGET}_COMPILER_RT_SCUDO_STANDALONE_BUILD_SHARED=OFF
+	cmake --build build -v --parallel $(nproc)
+	DESTDIR=/rootfs cmake --install build
+	rm -f /rootfs/usr/lib/clang/${MAJOR_VERSION}/lib/${TARGET}/libclang_rt.nsan* || true
+	# clang.cfg makes tier-2 stages pick up lld without an extra flag.
+	mkdir -p /rootfs/etc/clang
+	echo "-fuse-ld=lld" > /rootfs/etc/clang/clang.cfg
+	echo "-fuse-ld=lld" > /rootfs/etc/clang/clang++.cfg
+	ln -sf /usr/bin/clang++ /rootfs/usr/bin/c++
+	ln -sf /usr/bin/clang /rootfs/usr/bin/cc
+	ln -sf /usr/bin/ld.lld /rootfs/usr/bin/ld
+EOF
+
+# clang 16+ promoted -Wincompatible-pointer-types and friends to errors;
+# GNU make 4.4 / busybox / etc. fail to compile without these downgrades.
+# Separate RUN to keep cache hits on the long LLVM build above.
+RUN --network=none <<-EOF
+	cat > /rootfs/etc/clang/clang.cfg <<-CFG
+	-fuse-ld=lld
+	-std=gnu17
+	-Wno-error=incompatible-pointer-types
+	-Wno-error=incompatible-function-pointer-types
+	-Wno-error=implicit-function-declaration
+	-Wno-error=implicit-int
+	CFG
+EOF
+
+# TIER 2 (cc-*): clang-built. These ship. gcc-runtime is pulled into the
+# build env so tier-1 clang can run; it never reaches /rootfs.
+FROM scratch AS cc-musl
+COPY --from=base /rootfs/ /
+COPY --from=busybox /rootfs/ /
+COPY --from=make /rootfs/ /
+COPY --from=musl /rootfs/ /
+COPY --from=linux-headers /rootfs/ /
+COPY --from=gcc-runtime /rootfs/ /
+COPY --from=zlib /rootfs/ /
+COPY --from=llvm-bootstrap /rootfs/ /
+ARG TARGETARCH
+ARG MUSL_VERSION
+ADD fetch/musl-${MUSL_VERSION}.tar.gz /
+WORKDIR /musl-${MUSL_VERSION}
+SHELL ["/bin/sh","-l","-c"]
+RUN --network=none <<-EOF
+	# Pre-create the scaffold so musl's install resolves /lib → /usr/lib
+	# instead of creating a /lib dir that collides with consumer stages.
+	mkdir -p /rootfs/usr/bin /rootfs/usr/lib /rootfs/usr/include /rootfs/usr/sbin
+	ln -sT usr/lib /rootfs/lib
+	ln -sT usr/lib /rootfs/lib64
+	ln -sT lib /rootfs/usr/lib64
+	ln -sT usr/bin /rootfs/bin
+	ln -sT usr/sbin /rootfs/sbin
+	CC=clang ./configure --prefix=/usr
+	make DESTDIR=/rootfs install
+	ln -sf /usr/lib/ld-musl-${ARCH}.so.1 /rootfs/usr/bin/ldd
+	mv -f /rootfs/usr/lib/libc.so /rootfs/usr/lib/ld-musl-${ARCH}.so.1
+	ln -sf ld-musl-${ARCH}.so.1 /rootfs/usr/lib/libc.musl-${ARCH}.so.1
+	ln -sf /usr/lib/ld-musl-${ARCH}.so.1 /rootfs/usr/lib/libc.so
+EOF
+
+FROM scratch AS cc-make
+COPY --from=base /rootfs/ /
+COPY --from=busybox /rootfs/ /
+COPY --from=make /rootfs/ /
+COPY --from=cc-musl /rootfs/ /
+COPY --from=linux-headers /rootfs/ /
+COPY --from=gcc-runtime /rootfs/ /
+COPY --from=zlib /rootfs/ /
+COPY --from=llvm-bootstrap /rootfs/ /
+ARG TARGETARCH
+ARG MAKE_VERSION
+ADD fetch/make-${MAKE_VERSION}.tar.gz /
+WORKDIR /make-${MAKE_VERSION}
+SHELL ["/bin/sh","-l","-c"]
+RUN --network=none <<-EOF
+	CC=clang ./configure \
+		--prefix=/usr \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--disable-nls
+	make
+	make DESTDIR=/rootfs install
+EOF
+
+FROM scratch AS cc-busybox
+COPY --from=base /rootfs/ /
+COPY --from=busybox /rootfs/ /
+COPY --from=make /rootfs/ /
+COPY --from=cc-musl /rootfs/ /
+COPY --from=linux-headers /rootfs/ /
+COPY --from=gcc-runtime /rootfs/ /
+COPY --from=zlib /rootfs/ /
+COPY --from=llvm-bootstrap /rootfs/ /
+ARG TARGETARCH
+ARG BUSYBOX_VERSION
+ADD fetch/busybox-${BUSYBOX_VERSION}.tar.bz2 /
+WORKDIR /busybox-${BUSYBOX_VERSION}
+SHELL ["/bin/sh","-l","-c"]
+RUN --network=none <<-EOF
+	make CC=clang HOSTCC=clang defconfig
+	echo "CONFIG_STATIC=y" >> .config
+	make CC=clang HOSTCC=clang
+	mkdir -p /rootfs/usr/bin
+	cp busybox /rootfs/usr/bin
+	cd /rootfs
+	/usr/bin/busybox --install -s usr/bin
+EOF
+
+FROM scratch AS cc-binutils
+COPY --from=base /rootfs/ /
+COPY --from=busybox /rootfs/ /
+COPY --from=make /rootfs/ /
+COPY --from=cc-musl /rootfs/ /
+COPY --from=linux-headers /rootfs/ /
+COPY --from=gcc-runtime /rootfs/ /
+COPY --from=zlib /rootfs/ /
+COPY --from=llvm-bootstrap /rootfs/ /
+ARG TARGETARCH
+ARG BINUTILS_VERSION
+ADD fetch/binutils-${BINUTILS_VERSION}.tar.xz /
+WORKDIR /binutils-${BINUTILS_VERSION}
+SHELL ["/bin/sh","-l","-c"]
+RUN --network=none <<-EOF
+	CC=clang CXX=clang++ CXXFLAGS="-stdlib=libc++" ./configure \
+		--prefix=/usr \
+		--bindir=/usr/bin \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--sysconfdir=/etc \
+		--disable-nls \
+		--disable-multilib \
+		--disable-plugins \
+		--disable-gprofng \
+		--enable-64-bit-bfd \
+		--enable-ld=default \
+		--enable-install-libiberty \
+		--enable-deterministic-archives
+	make
+	make DESTDIR=/rootfs install
+EOF
+
+FROM scratch AS cc-xz
+COPY --from=base /rootfs/ /
+COPY --from=busybox /rootfs/ /
+COPY --from=make /rootfs/ /
+COPY --from=cc-musl /rootfs/ /
+COPY --from=linux-headers /rootfs/ /
+COPY --from=gcc-runtime /rootfs/ /
+COPY --from=zlib /rootfs/ /
+COPY --from=llvm-bootstrap /rootfs/ /
+ARG TARGETARCH
+ARG XZ_VERSION
+ADD fetch/xz-${XZ_VERSION}.tar.gz /
+WORKDIR /xz-${XZ_VERSION}
+SHELL ["/bin/sh","-l","-c"]
+RUN --network=none <<-EOF
+	CC=clang ./configure --prefix=/usr
+	make DESTDIR=/rootfs install
+EOF
+
+FROM scratch AS cc-libucontext
+COPY --from=base /rootfs/ /
+COPY --from=busybox /rootfs/ /
+COPY --from=make /rootfs/ /
+COPY --from=cc-musl /rootfs/ /
+COPY --from=linux-headers /rootfs/ /
+COPY --from=gcc-runtime /rootfs/ /
+COPY --from=zlib /rootfs/ /
+COPY --from=llvm-bootstrap /rootfs/ /
+ARG TARGETARCH
+ARG LIBUCONTEXT_VERSION
+ADD fetch/libucontext-${LIBUCONTEXT_VERSION}.tar.gz /
+WORKDIR /libucontext-libucontext-${LIBUCONTEXT_VERSION}
+SHELL ["/bin/sh","-l","-c"]
+RUN --network=none <<-EOF
+	sed 's/\((wildcard .*)\)/(sort $\1)/g' -i Makefile
+	make -j1 CC=clang ARCH=${ARCH} DESTDIR=/rootfs install
+EOF
+
+FROM scratch AS cc-zlib
+COPY --from=base /rootfs/ /
+COPY --from=busybox /rootfs/ /
+COPY --from=make /rootfs/ /
+COPY --from=cc-musl /rootfs/ /
+COPY --from=cc-binutils /rootfs/ /
+COPY --from=linux-headers /rootfs/ /
+COPY --from=gcc-runtime /rootfs/ /
+COPY --from=zlib /rootfs/ /
+COPY --from=llvm-bootstrap /rootfs/ /
+ARG TARGETARCH
+ARG ZLIB_VERSION
+ADD fetch/zlib-${ZLIB_VERSION}.tar.gz /
+WORKDIR /zlib-${ZLIB_VERSION}
+SHELL ["/bin/sh","-l","-c"]
+RUN --network=none <<-EOF
+	export CC=clang
+	export CFLAGS="-fPIC"
+	# Without -shared zlib's configure probe fails (no main()) and silently
+	# disables libz.so. Force LDSHARED so the probe succeeds.
+	export LDSHARED="clang -shared"
+	./configure \
+		--prefix=/usr \
+		--libdir=/usr/lib \
+		--shared
+	make -j "$(nproc)"
+	DESTDIR=/rootfs make install
+EOF
+
+FROM scratch AS cc-libffi
+COPY --from=base /rootfs/ /
+COPY --from=busybox /rootfs/ /
+COPY --from=make /rootfs/ /
+COPY --from=cc-musl /rootfs/ /
+COPY --from=cc-binutils /rootfs/ /
+COPY --from=linux-headers /rootfs/ /
+COPY --from=gcc-runtime /rootfs/ /
+COPY --from=zlib /rootfs/ /
+COPY --from=llvm-bootstrap /rootfs/ /
+ARG TARGETARCH
+ARG LIBFFI_VERSION
+ADD fetch/libffi-${LIBFFI_VERSION}.tar.gz /
+WORKDIR /libffi-${LIBFFI_VERSION}
+SHELL ["/bin/sh","-l","-c"]
+RUN --network=none <<-EOF
+	set -ex
+	CC=clang ./configure \
+		--prefix=/usr \
+		--enable-pax_emutrap \
+		--enable-portable-binary \
+		--disable-exec-static-tramp \
+		--without-gcc-arch
+	make -j "$(nproc)"
+	DESTDIR=/rootfs make install
+	rm -rf /rootfs/usr/lib64
+EOF
+
+FROM scratch AS cc-python
+COPY --from=base /rootfs/ /
+COPY --from=busybox /rootfs/ /
+COPY --from=make /rootfs/ /
+COPY --from=cc-musl /rootfs/ /
+COPY --from=cc-binutils /rootfs/ /
+COPY --from=cc-libffi /rootfs/ /
+COPY --from=linux-headers /rootfs/ /
+COPY --from=gcc-runtime /rootfs/ /
+COPY --from=zlib /rootfs/ /
+COPY --from=llvm-bootstrap /rootfs/ /
+ARG TARGETARCH
+ARG PYTHON_VERSION
+ADD fetch/python-${PYTHON_VERSION}.tar.xz /
+WORKDIR /Python-${PYTHON_VERSION}
+COPY <<-EOF config.site
+ac_cv_file__dev_ptmx=no
+ac_cv_file__dev_ptc=no
+EOF
+ENV CONFIG_SITE=config.site
+SHELL ["/bin/sh","-l","-c"]
+RUN --network=none <<-EOF
+	CC=clang CXX=clang++ ./configure \
+		--prefix=/usr \
+		--with-computed-gotos \
+		--without-ensurepip \
+		--disable-ipv6
+	make
+	make DESTDIR=/rootfs install
+	ln -s /usr/bin/python3 /rootfs/usr/bin/python
+EOF
+
+FROM scratch AS cc-cmake
+COPY --from=base /rootfs/ /
+COPY --from=busybox /rootfs/ /
+COPY --from=make /rootfs/ /
+COPY --from=cc-musl /rootfs/ /
+COPY --from=cc-binutils /rootfs/ /
+COPY --from=cc-python /rootfs/ /
+COPY --from=linux-headers /rootfs/ /
+COPY --from=gcc-runtime /rootfs/ /
+COPY --from=zlib /rootfs/ /
+COPY --from=llvm-bootstrap /rootfs/ /
+ARG TARGETARCH
+ARG CMAKE_VERSION
+ADD fetch/cmake-${CMAKE_VERSION}.tar.gz /
+WORKDIR /cmake-${CMAKE_VERSION}/build
+SHELL ["/bin/sh","-l","-c"]
+RUN --network=none <<-EOF
+	export CC=clang
+	export CXX=clang++
+	export CFLAGS="-fPIC"
+	export CXXFLAGS="-fPIC -stdlib=libc++"
+	export LDFLAGS="-stdlib=libc++"
+	../configure \
+		--prefix=/usr \
+		-- \
+		-DCMAKE_USE_OPENSSL=OFF
+	make
+	make DESTDIR=/rootfs install
+EOF
+
+FROM scratch AS cc-libzstd
+COPY --from=base /rootfs/ /
+COPY --from=busybox /rootfs/ /
+COPY --from=make /rootfs/ /
+COPY --from=cc-musl /rootfs/ /
+COPY --from=cc-binutils /rootfs/ /
+COPY --from=cc-cmake /rootfs/ /
+COPY --from=linux-headers /rootfs/ /
+COPY --from=gcc-runtime /rootfs/ /
+COPY --from=zlib /rootfs/ /
+COPY --from=llvm-bootstrap /rootfs/ /
+ARG TARGETARCH
+ARG LIBZSTD_VERSION
+ADD fetch/libzstd-${LIBZSTD_VERSION}.tar.gz /
+WORKDIR /zstd-${LIBZSTD_VERSION}
+SHELL ["/bin/sh","-l","-c"]
+RUN --network=none <<-EOF
+	export CC=clang
+	export CXX=clang++
+	cmake \
+		-B build-cmake \
+		-S build/cmake \
+		-DCMAKE_INSTALL_PREFIX=/usr/ \
+		-DCMAKE_C_COMPILER=clang \
+		-DCMAKE_CXX_COMPILER=clang++ \
+		-Dbacktrace=disabled \
+		-Db_lto=false \
+		-Db_staticpic=true \
+		-Db_pie=true \
+		-Dpython.bytecompile=0 \
+		-Dwerror=false \
+		-Db_ndebug=true \
+		-Dbin_tests=false \
+		-Dbin_contrib=false \
+		-Dbin_programs=true \
+		-Dmulti_thread=enabled \
+		-Dlz4=disabled \
+		-Dlzma=disabled \
+		-Dzlib=disabled
+	cmake --build build-cmake -v --parallel $(nproc)
+	mkdir -p /rootfs/usr/lib
+	ln -s lib /rootfs/usr/lib64
+	DESTDIR=/rootfs cmake --install build-cmake
+	rm -rf /rootfs/usr/lib64
+EOF
+
+FROM scratch AS cc-libunwind
+COPY --from=base /rootfs/ /
+COPY --from=busybox /rootfs/ /
+COPY --from=make /rootfs/ /
+COPY --from=cc-musl /rootfs/ /
+COPY --from=cc-binutils /rootfs/ /
+COPY --from=cc-cmake /rootfs/ /
+COPY --from=cc-libzstd /rootfs/ /
+COPY --from=cc-xz /rootfs/ /
+COPY --from=cc-zlib /rootfs/ /
+COPY --from=cc-libucontext /rootfs/ /
+COPY --from=linux-headers /rootfs/ /
+COPY --from=gcc-runtime /rootfs/ /
+COPY --from=zlib /rootfs/ /
+COPY --from=llvm-bootstrap /rootfs/ /
+ARG TARGETARCH
+ARG LIBUNWIND_VERSION
+ADD fetch/libunwind-${LIBUNWIND_VERSION}.tar.gz /
+WORKDIR /libunwind-${LIBUNWIND_VERSION}
+SHELL ["/bin/sh","-l","-c"]
+RUN --network=none <<-EOF
+	export CC=clang
+	export CXX=clang++
+	export CFLAGS="-llzma -lucontext"
+	export CXXFLAGS="-llzma -lucontext -stdlib=libc++"
+	export CPPFLAGS="-llzma -lucontext"
+	./configure \
+		--prefix=/usr \
+		--enable-cxx-exceptions \
+		--disable-tests
+	make
+	make DESTDIR=/rootfs install
+EOF
+
+# TIER 2 LLVM: full 19-target clang, built by tier-1 clang with libc++.
+# No libstdc++/libgcc_s linkage in the output.
+FROM scratch AS llvm
+COPY --from=base /rootfs/ /
+COPY --from=cc-musl /rootfs/ /
+COPY --from=cc-busybox /rootfs/ /
+COPY --from=cc-make /rootfs/ /
+COPY --from=cc-binutils /rootfs/ /
+COPY --from=cc-python /rootfs/ /
+COPY --from=cc-cmake /rootfs/ /
+COPY --from=cc-libffi /rootfs/ /
+COPY --from=cc-libzstd /rootfs/ /
+COPY --from=cc-zlib /rootfs/ /
+COPY --from=cc-xz /rootfs/ /
+COPY --from=cc-libucontext /rootfs/ /
+COPY --from=cc-libunwind /rootfs/ /
+COPY --from=linux-headers /rootfs/ /
+# Build-env only — tier-1 clang needs libstdc++ to run. Not COPYed into /rootfs.
+COPY --from=gcc-runtime /rootfs/ /
+COPY --from=llvm-bootstrap /rootfs/ /
+ARG TARGETARCH
+ARG LLVM_VERSION
+ADD fetch/llvm-${LLVM_VERSION}.tar.xz /
+COPY patches/*.patch /llvm-project-${LLVM_VERSION}.src/
+WORKDIR /llvm-project-${LLVM_VERSION}.src
+SHELL ["/bin/sh","-l","-c"]
+
+RUN --network=none <<-EOF
+	for file in $(find . -maxdepth 1 -name "*.patch" | sort); do
+		patch -p1 < "$file"
+	done
+EOF
+
+RUN --network=none <<-EOF
+	MAJOR_VERSION=$(echo "$LLVM_VERSION" | cut -d'.' -f1)
+	case "$ARCH" in
+		x86_64) LLVM_TARGET_ARCH=X86 ;;
+		aarch64) LLVM_TARGET_ARCH=AArch64 ;;
+		riscv64) LLVM_TARGET_ARCH=RISCV ;;
+		*) exit 1 ;;
+	esac
+	# AMDGPU excluded due to non-deterministic build output
+	LLVM_TARGETS_TO_BUILD="AArch64;ARM;AVR;BPF;Hexagon;Lanai;LoongArch;Mips;MSP430;NVPTX;PowerPC;RISCV;Sparc;SPIRV;SystemZ;VE;WebAssembly;X86;XCore"
+	export CFLAGS="-fPIC"
+	export CXXFLAGS="-fPIC -stdlib=libc++"
+	export LDFLAGS="-stdlib=libc++"
+	cmake \
+		-B build \
+		-S llvm \
+		-Wno-dev \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr/ \
+		-DCMAKE_INSTALL_LIBDIR=/usr/lib \
+		-DCMAKE_INSTALL_RPATH=/usr/lib \
+		-DCMAKE_C_COMPILER=/usr/bin/clang \
+		-DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
+		-DCMAKE_AR=/usr/bin/llvm-ar \
+		-DCMAKE_NM=/usr/bin/llvm-nm \
+		-DCMAKE_RANLIB=/usr/bin/llvm-ranlib \
+		-DLLVM_USE_LINKER=lld \
+		-DLLVM_HEADERS_TABLEGEN=/usr/bin/llvm-tblgen \
+		-DCLANG_TABLEGEN=/usr/bin/clang-tblgen \
+		-DLLVM_NATIVE_TOOL_DIR=/usr/bin/ \
+		-DLLVM_HOST_TRIPLE="${TARGET}" \
+		-DLLVM_TARGET_ARCH="${LLVM_TARGET_ARCH}" \
+		-DLLVM_TARGETS_TO_BUILD="${LLVM_TARGETS_TO_BUILD}" \
+		-DLLVM_RUNTIME_TARGETS="${TARGET}" \
+		-DLLVM_BUILTIN_TARGETS="${TARGET}" \
+		-DLLVM_ENABLE_PROJECTS="clang;lld" \
+		-DLLVM_ENABLE_RUNTIMES="compiler-rt;libunwind;libcxx;libcxxabi" \
+		-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON \
+		-DLLVM_BUILD_LLVM_DYLIB=ON \
+		-DLLVM_LINK_LLVM_DYLIB=ON \
+		-DLLVM_INSTALL_UTILS=ON \
+		-DLLVM_INSTALL_BINUTILS_SYMLINKS=ON \
+		-DLLVM_ENABLE_LIBCXX=ON \
+		-DLLVM_ENABLE_BACKTRACES=OFF \
+		-DLLVM_ENABLE_BINDINGS=OFF \
+		-DLLVM_ENABLE_PEDANTIC=OFF \
+		-DLLVM_ENABLE_PLUGINS=OFF \
+		-DLLVM_ENABLE_TELEMETRY=OFF \
+		-DLLVM_ENABLE_LIBXML2=OFF \
+		-DLLVM_ENABLE_LIBEDIT=OFF \
+		-DLLVM_ENABLE_LIBPFM=OFF \
+		-DLLVM_ENABLE_ICU=OFF \
+		-DLLVM_ENABLE_ICONV=OFF \
+		-DLLVM_ENABLE_ZSTD=OFF \
+		-DCLANG_DEFAULT_RTLIB=compiler-rt \
+		-DCLANG_DEFAULT_CXX_STDLIB=libc++ \
+		-DCLANG_DEFAULT_UNWINDLIB=libunwind \
+		-DCLANG_CONFIG_FILE_SYSTEM_DIR=/etc/clang \
+		-DCLANG_ENABLE_STATIC_ANALYZER=OFF \
+		-DRUNTIMES_${TARGET}_LIBCXX_HAS_MUSL_LIBC=ON \
+		-DRUNTIMES_${TARGET}_LIBCXX_CXX_ABI=libcxxabi \
+		-DRUNTIMES_${TARGET}_LIBCXX_HARDENING_MODE=fast \
+		-DRUNTIMES_${TARGET}_LIBCXX_HAS_ATOMIC_LIB=OFF \
+		-DRUNTIMES_${TARGET}_LIBCXX_USE_COMPILER_RT=ON \
+		-DRUNTIMES_${TARGET}_LIBCXXABI_USE_COMPILER_RT=ON \
+		-DRUNTIMES_${TARGET}_LIBCXXABI_USE_LLVM_UNWINDER=ON \
+		-DRUNTIMES_${TARGET}_LIBUNWIND_USE_COMPILER_RT=ON \
+		-DRUNTIMES_${TARGET}_COMPILER_RT_BUILD_BUILTINS=ON \
+		-DRUNTIMES_${TARGET}_COMPILER_RT_EXCLUDE_ATOMIC_BUILTIN=OFF \
+		-DRUNTIMES_${TARGET}_COMPILER_RT_USE_BUILTINS_LIBRARY=ON \
+		-DRUNTIMES_${TARGET}_COMPILER_RT_USE_LLVM_UNWINDER=ON \
+		-DRUNTIMES_${TARGET}_COMPILER_RT_BUILD_GWP_ASAN=OFF \
+		-DRUNTIMES_${TARGET}_COMPILER_RT_BUILD_SANITIZERS=OFF \
+		-DRUNTIMES_${TARGET}_COMPILER_RT_DEFAULT_TARGET_ONLY=ON \
+		-DRUNTIMES_${TARGET}_COMPILER_RT_SCUDO_STANDALONE_BUILD_SHARED=OFF
+	cmake --build build -v --parallel $(nproc)
+	DESTDIR=/rootfs cmake --install build
+	rm -f /rootfs/usr/lib/clang/${MAJOR_VERSION}/lib/${TARGET}/libclang_rt.nsan* || true
+	ln -sf /usr/bin/clang++ /rootfs/usr/bin/c++
+	ln -sf /usr/bin/clang /rootfs/usr/bin/cc
+	ln -sf /usr/bin/ld.lld /rootfs/usr/bin/ld
+	ln -sf /usr/lib/clang/${MAJOR_VERSION}/lib/${TARGET}/libclang_rt.builtins.a \
+		/rootfs/usr/lib/libclang_rt.builtins.a
+	strip /rootfs/usr/lib/libLLVM.so.${MAJOR_VERSION}.1 || true
+	mkdir -p /rootfs/etc/clang
+	echo "-fuse-ld=lld" > /rootfs/etc/clang/clang.cfg
+	echo "-fuse-ld=lld" > /rootfs/etc/clang/clang++.cfg
+EOF
+
+# INSTALL: tier-2 outputs only. Zero libstdc++/libgcc_s/gcc artifacts ship.
+FROM scratch AS install
+ARG TARGETARCH
+SHELL ["/bin/sh","-l","-c"]
+COPY --from=base /rootfs/ /
+COPY --from=cc-busybox /rootfs/ /
+COPY --from=cc-make /rootfs/ /
+COPY --from=cc-musl /rootfs/ /
+COPY --from=cc-binutils /rootfs/ /
+COPY --from=cc-python /rootfs/ /
+COPY --from=cc-cmake /rootfs/ /
+COPY --from=linux-headers /rootfs/ /
+COPY --from=cc-libffi /rootfs/ /
+COPY --from=cc-libzstd /rootfs/ /
+COPY --from=cc-libunwind /rootfs/ /
+COPY --from=cc-libucontext /rootfs/ /
+COPY --from=cc-zlib /rootfs/ /
+COPY --from=cc-xz /rootfs/ /
+COPY --from=llvm /rootfs/ /
 #Non deterministic edge case and we don't need it
 RUN rm -rf /usr/share/info/dir
 

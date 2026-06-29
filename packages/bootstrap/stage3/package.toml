@@ -72,9 +72,9 @@ mirrors = [ "https://cmake.org/files/v{version_major_minor}/{file}",]
 
 [sources.xz]
 version = "5.6.2"
-hash = "92a439948bba24c2bc25bb67a087a19194905209c56b5e600bc94fd2a472e687"
+hash = "8bfd20c0e1d86f0402f2497cfa71c6ab62d4cd35fd704276e3140bfb71414519"
 file = "xz-{version}.tar.gz"
-mirrors = [ "https://github.com/tukaani-project/xz/archive/refs/tags/v{version}.tar.gz",]
+mirrors = [ "https://github.com/tukaani-project/xz/releases/download/v{version}/{file}",]
 
 [sources.libucontext]
 version = "1.3.2"
@@ -84,9 +84,9 @@ mirrors = [ "https://github.com/kaniini/libucontext/archive/refs/tags/libucontex
 
 [sources.libunwind]
 version = "1.8.2"
-hash = "3b888e01f3d25f7914bbfd31139066bb4547e079322975134b03c92e4c6a2066"
+hash = "7f262f1a1224f437ede0f96a6932b582c8f5421ff207c04e3d9504dfa04c8b82"
 file = "libunwind-{version}.tar.gz"
-mirrors = [ "https://github.com/libunwind/libunwind/archive/refs/tags/v{version}.tar.gz" ]
+mirrors = [ "https://github.com/libunwind/libunwind/releases/download/v{version}/{file}" ]
 
 [sources.python]
 version = "3.11.8"
@@ -114,3 +114,9 @@ hash = "bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16"
 format = "tar.gz"
 file = "zlib-{version}.{format}"
 mirrors = [ "https://www.zlib.net/fossils/{file}",]
+
+[sources.llvm]
+version = "22.1.5"
+hash = "7972b87b705a003ce70ab55f9f0fb495d156887cba0eb296d284731139118e2c"
+file = "llvm-{version}.tar.xz"
+mirrors = [ "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/llvm-project-{version}.src.tar.xz",]

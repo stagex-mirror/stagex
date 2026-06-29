@@ -1,13 +1,12 @@
 [package]
 name = "stage2"
-description = "Cross-compilation toolchain bridging x86 to 64-bit architectures"
+description = "Native target-arch toolchain Canadian-crossed from stage1's i386 base"
 license = "0BSD AND Apache-2.0 AND (Artistic-1.0-Perl OR GPL-1.0-or-later) AND BSD-2-Clause AND GPL-2.0-only WITH Linux-syscall-note AND GPL-2.0-or-later AND GPL-3.0-or-later AND LGPL-2.0-or-later AND LGPL-2.1-or-later AND LGPL-3.0-or-later AND MIT AND PSF-2.0 AND Zlib"
 website = "https://codeberg.org/stagex/stagex"
-platforms = ["linux/386"]
 
 [sources.musl]
-version = "1.1.24"
-hash = "1370c9a812b2cf2a7d92802510cca0058cc37e66a7bedd70051f0a34015022a3"
+version = "1.2.6"
+hash = "d585fd3b613c66151fc3249e8ed44f77020cb5e6c1e635a616d3f9f82460512a"
 file = "musl-{version}.tar.gz"
 mirrors = ["https://musl.libc.org/releases/{file}"]
 
@@ -52,3 +51,15 @@ version = "2.35"
 hash = "1b11659fb49e20e18db460d44485f09442c8c56d5df165de9461eb09c8302f85"
 file = "binutils-{version}.tar.xz"
 mirrors = ["https://ftpmirror.gnu.org/gnu/binutils/{file}", "https://mirrors.kernel.org/gnu/binutils/{file}"]
+
+[sources.busybox]
+version = "1.35.0"
+hash = "faeeb244c35a348a334f4a59e44626ee870fb07b6884d68c10ae8bc19f83a694"
+file = "busybox-{version}.tar.bz2"
+mirrors = ["https://busybox.net/downloads/{file}"]
+
+[sources.make]
+version = "4.4"
+hash = "581f4d4e872da74b3941c874215898a7d35802f03732bdccee1d4a7979105d18"
+file = "make-{version}.tar.gz"
+mirrors = ["https://ftpmirror.gnu.org/gnu/make/{file}", "https://mirrors.kernel.org/gnu/make/{file}"]
