@@ -29,5 +29,15 @@ COPY <<-'EOF' /etc/profile
 		export CMAKE_GENERATOR=${CMAKE_GENERATOR:-ninja}
 	fi
 	export LDFLAGS="--ld-path=/usr/bin/${LD}"
+	# Cross-detect: under qemu-user `uname -m` reports the target arch, so a
+	# mismatch with $ARCH means the build is running on the host (cross mode).
+	# Stage2's sysroot lives at /usr/${ARCH}-linux-musl; clang accepts the
+	# same form for --target.
+	if [[ -n "$ARCH" ]] && [[ "$(uname -m)" != "$ARCH" ]]; then
+		SYSROOT_TARGET="${ARCH}-linux-musl"
+		export CFLAGS="${CFLAGS:-} --target=$SYSROOT_TARGET --sysroot=/usr/$SYSROOT_TARGET"
+		export CXXFLAGS="${CXXFLAGS:-} --target=$SYSROOT_TARGET --sysroot=/usr/$SYSROOT_TARGET"
+		export LDFLAGS="$LDFLAGS --target=$SYSROOT_TARGET --sysroot=/usr/$SYSROOT_TARGET"
+	fi
 EOF
 SHELL ["/bin/sh","-l","-c"]

@@ -362,6 +362,18 @@ RUN --network=none <<-EOF
 	cp busybox /rootfs/usr/bin/busybox
 EOF
 
-FROM scratch AS package
+# Surface the xbuild sysroot at a fixed path so the sysroot subpackage can
+# COPY it without needing ${TARGET} expansion in a FROM stage.
+RUN --network=none <<-EOF
+	set -eux
+	. /env.sh
+	mkdir -p /sysroot/usr
+	cp -al ${SYSROOT} /sysroot/usr/${TARGET}
+EOF
+
+FROM scratch AS package-stage2
 COPY --from=xbuild /rootfs/ /
 RUN ["/usr/bin/busybox", "--install", "-s", "/usr/bin"]
+
+FROM scratch AS package-stage2-sysroot
+COPY --from=xbuild /sysroot/ /
