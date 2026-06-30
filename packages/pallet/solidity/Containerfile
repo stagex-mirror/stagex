@@ -1,6 +1,6 @@
 FROM scratch
 COPY --from=stagex/core-busybox . /
-COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-solidity . /
 

@@ -10,11 +10,15 @@ ADD fetch/zlib-${VERSION}.tar.gz .
 WORKDIR /zlib-${VERSION}
 ENV CFLAGS="-fPIC"
 RUN --network=none <<-EOF
-	set -eux; \
+	set -eux
+	# zlib's configure tests shared-lib support by linking with $LDSHARED.
+	# Default LDSHARED=$CC (just "clang") fails the test (no main()) so
+	# configure silently disables shared lib. Force -shared so the test succeeds.
+	export LDSHARED="clang -shared"
 	./configure \
 		--prefix=/usr \
 		--libdir=/usr/lib \
-		--shared; \
+		--shared
 	make -j "$(nproc)"
 	make DESTDIR=/rootfs install
 EOF

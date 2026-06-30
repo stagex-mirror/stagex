@@ -89,20 +89,6 @@ RUN --network=none <<-EOF
 
 	# Manually add `mimalloc`'s static archive to the static `libc`
 	ar r /rootfs/usr/lib/libc.a $MIMALLOC_O
-
-	# `mimalloc` also depends on `__popcountdi2` from `libgcc` or `compiler-rt`.
-	# Frustratingly, `mimalloc` only does this if it detects GCC and assumes it can rely on it.
-	# It doesn't allow disabling it for those who use GCC but don't want to require `libgcc`.
-	# Thankfully, that also means this block of code should disappear if built by LLVM.
-	mkdir c_runtime
-	cd c_runtime
-	ar x $(find /usr/lib -type f -name libgcc.a)
-	for file in $(ls); do
-		if [ ! "$(nm -f just-symbols $file | grep __popcountdi2)" = "" ]; then
-			ar r /rootfs/usr/lib/libc.a $file
-			break
-		fi
-	done
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

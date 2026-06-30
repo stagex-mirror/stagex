@@ -26,7 +26,8 @@ RUN --network=none <<-EOF
 	    CONFIG_MD5_HWACCEL
 	"
 	fi
-	make defconfig
+	export HOSTCC=clang CC=clang
+	make HOSTCC=clang CC=clang defconfig
 	for conf in $unsetConfs; do
 		sed -i \
 			-e "s!^$conf=.*\$!# $conf is not set!" \
@@ -42,14 +43,14 @@ RUN --network=none <<-EOF
 			echo "$confV" >> .config
 		fi
 	done
-	make oldconfig
+	make HOSTCC=clang CC=clang oldconfig
 	for conf in $unsetConfs; do
 		! grep -q "^$conf=" .config
 	done
 	for confV in $setConfs; do
 		grep -q "^$confV\$" .config
 	done
-	make -j$(nproc)
+	make HOSTCC=clang CC=clang -j$(nproc)
 	mkdir -p /rootfs/usr/bin
 	cp busybox /rootfs/usr/bin
 	cp busybox /usr/bin

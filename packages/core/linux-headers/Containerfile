@@ -5,7 +5,7 @@ ADD fetch/linux-${VERSION}.tar.xz .
 WORKDIR /linux-${VERSION}
 RUN <<-EOF
 	set -eux
-	make headers
+	make HOSTCC=clang headers
 	mkdir -p /rootfs/usr
 	cp -a usr/include /rootfs/usr/
 	find /rootfs/usr/include/ ! -iname "*.h" -type f -exec rm -v {} \+

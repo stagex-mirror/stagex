@@ -1,4 +1,4 @@
-FROM stagex/pallet-gcc-gnu-busybox AS build
+FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
 
 ADD fetch/${VERSION}.tar.gz .
@@ -6,7 +6,11 @@ WORKDIR /hardened_malloc-${VERSION}
 
 RUN --network=none <<-EOF
 	set -eux
-	make CONFIG_NATIVE=false CC=gcc -j "$(nproc)"
+	# Upstream Makefile hardcodes -lstdc++ and assumes the default linker
+	# supports LTO via LLVMgold.so. We use libc++ and lld instead.
+	sed -i 's/-lstdc++/-lc++/g' Makefile
+	export LDFLAGS="--ld-path=/usr/bin/ld.lld"
+	make CONFIG_NATIVE=false CC=clang -j "$(nproc)"
 	mkdir -p /rootfs/usr/lib
 	install -vDm755 -t /rootfs/usr/lib out/libhardened_malloc.so
 	install -vDm644 -t /rootfs/usr/share/licenses/hardened_malloc LICENSE

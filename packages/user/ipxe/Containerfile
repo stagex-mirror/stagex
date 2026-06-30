@@ -1,3 +1,9 @@
+# ipxe is a network bootloader with x86 16-bit/32-bit firmware code that uses
+# gcc-only flags (-mpreferred-stack-boundary=2, etc.). Migrating to clang
+# would mean patching every gcc-ism in ipxe's Makefile. This stays on the gcc
+# pallet until upstream gains real clang support;
+# the gcc dependency does not propagate into linked binaries since ipxe is
+# firmware-only.
 FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
 COPY --from=stagex/core-xz . /
