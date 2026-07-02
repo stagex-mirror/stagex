@@ -55,13 +55,22 @@ RUN --network=none <<-EOF
 	mv mpfr-${MPFR_VERSION} gcc-${GCC_VERSION}/mpfr
 	mv mpc-${MPC_VERSION}   gcc-${GCC_VERSION}/mpc
 	mv isl-${ISL_VERSION}   gcc-${GCC_VERSION}/isl
+	# gcc 13 emits ".insn 0xc2202573" for RISC-V vlenb read; that syntax needs
+	# binutils 2.36+. Rewrite to ".4byte" which every binutils accepts.
+	sed -i 's|\.insn 0xc2202573|.4byte 0xc2202573|' \
+		gcc-${GCC_VERSION}/libgcc/config/riscv/value-unwind.h
 EOF
 
-# Phase 1: i386-hosted cross-toolchain in ${SYSROOT}, discarded from the
-# final image. Phase 2 (below) uses it to assemble the native rootfs.
-RUN --network=none <<-EOF
+# Phase 1: build cross-toolchains for all supported target arches on i386.
+# Each sysroot lives at /usr/${T}/ and is arch-neutral in the sense that
+# it can be consumed by any host running a clang cross-compiler.
+COPY --chmod=755 <<-'EOF' /build-cross-sysroot.sh
 	set -eux
-	. /env.sh
+	TARGET_ARCH=$1
+	TARGET=${TARGET_ARCH}-linux-musl
+	SYSROOT=/usr/${TARGET}
+	export PATH=${SYSROOT}/bin:${BASE_PATH}
+
 	mkdir -p ${SYSROOT}
 	cd ${SYSROOT}
 	mkdir -pv bin lib lib32 include usr "${TARGET}/bin"
@@ -70,160 +79,96 @@ RUN --network=none <<-EOF
 	ln -sfv ../lib lib
 	ln -sfv ../lib32 lib32
 	ln -sfv ../include include
-EOF
 
-RUN --network=none <<-EOF
-	set -eux
-	. /env.sh
 	cd /musl-${MUSL_VERSION}
 	make clean distclean
-	make \
-		-j$(nproc) \
-		ARCH="${TARGET_ARCH}" \
-		prefix="" \
-		DESTDIR="${SYSROOT}" \
-		install-headers
-EOF
+	make -j$(nproc) ARCH="${TARGET_ARCH}" prefix="" \
+		DESTDIR="${SYSROOT}" install-headers
 
-RUN --network=none <<-EOF
-	set -eux
-	. /env.sh
-	mkdir -p /build-xbinutils
-	cd /build-xbinutils
+	mkdir -p /build-${TARGET_ARCH}-binutils
+	cd /build-${TARGET_ARCH}-binutils
 	/binutils-${BINUTILS_VERSION}/configure \
 		--target="${TARGET}" \
-		--prefix="" \
-		--exec-prefix="" \
-		--sbindir=/bin \
-		--libexecdir=/lib \
-		--datarootdir=/_tmp \
-		--with-sysroot=/ \
-		--with-build-sysroot="${SYSROOT}" \
-		--disable-nls \
-		--disable-multilib \
-		--disable-plugins \
-		--disable-gprofng \
-		--enable-64-bit-bfd \
-		--enable-ld=default \
-		--enable-install-libiberty \
-		--enable-deterministic-archives
-	make \
-		-j$(nproc) \
-		all-binutils \
-		all-gas \
-		all-ld
-	make \
-		-j$(nproc) \
-		DESTDIR="${SYSROOT}" \
-		install-strip-binutils \
-		install-strip-gas \
-		install-strip-ld
-EOF
+		--prefix="" --exec-prefix="" \
+		--sbindir=/bin --libexecdir=/lib --datarootdir=/_tmp \
+		--with-sysroot=/ --with-build-sysroot="${SYSROOT}" \
+		--disable-nls --disable-multilib --disable-plugins \
+		--disable-gprofng --enable-64-bit-bfd --enable-ld=default \
+		--enable-install-libiberty --enable-deterministic-archives
+	make -j$(nproc) all-binutils all-gas all-ld
+	make -j$(nproc) DESTDIR="${SYSROOT}" \
+		install-strip-binutils install-strip-gas install-strip-ld
 
-RUN --network=none <<-EOF
-	set -eux
-	. /env.sh
-	mkdir -p /build-xgcc
-	cd /build-xgcc
+	# RISC-V needs an explicit ISA/ABI. --with-isa-spec=2.2 keeps gcc from
+	# emitting zicsr/zifencei extensions that binutils 2.35's assembler
+	# doesn't recognize (added in binutils 2.37).
+	case "$TARGET_ARCH" in
+		riscv64) EXTRA_GCC_CONF="--with-arch=rv64gc --with-abi=lp64d --with-isa-spec=2.2" ;;
+		*)       EXTRA_GCC_CONF="" ;;
+	esac
+	mkdir -p /build-${TARGET_ARCH}-gcc
+	cd /build-${TARGET_ARCH}-gcc
 	/gcc-${GCC_VERSION}/configure \
-		--prefix="" \
-		--exec-prefix="" \
-		--sbindir=/bin \
-		--libexecdir=/lib \
-		--datarootdir=/_tmp \
+		--prefix="" --exec-prefix="" \
+		--sbindir=/bin --libexecdir=/lib --datarootdir=/_tmp \
 		--target=${TARGET} \
-		--disable-multilib \
-		--disable-bootstrap \
-		--disable-assembly \
-		--disable-libmudflap \
-		--disable-libsanitizer \
-		--disable-gnu-indirect-function \
-		--disable-libmpx \
-		--disable-werror \
-		--enable-languages=c,c++ \
-		--enable-tls \
-		--enable-initfini-array \
-		--enable-libstdcxx-time=rt \
-		--enable-deterministic-archives \
-		--with-build-sysroot=${SYSROOT} \
-		--with-sysroot=/
-	make \
-		-j$(nproc) \
-		all-gcc
-	make \
-		-j$(nproc) \
-		enable_shared=no \
-		all-target-libgcc
-	make \
-		-j$(nproc) \
-		DESTDIR="${SYSROOT}" \
-		install-strip-gcc \
-		install-strip-target-libgcc
-EOF
+		--disable-multilib --disable-bootstrap --disable-assembly \
+		--disable-libmudflap --disable-libsanitizer \
+		--disable-gnu-indirect-function --disable-libmpx --disable-werror \
+		--enable-languages=c,c++ --enable-tls --enable-initfini-array \
+		--enable-libstdcxx-time=rt --enable-deterministic-archives \
+		--with-build-sysroot=${SYSROOT} --with-sysroot=/ \
+		${EXTRA_GCC_CONF}
+	make -j$(nproc) all-gcc
+	make -j$(nproc) enable_shared=no all-target-libgcc
+	make -j$(nproc) DESTDIR="${SYSROOT}" \
+		install-strip-gcc install-strip-target-libgcc
 
-RUN --network=none <<-EOF
-	set -eux
-	. /env.sh
-	mkdir -p /build-xmusl
-	cd /build-xmusl
+	mkdir -p /build-${TARGET_ARCH}-musl
+	cd /build-${TARGET_ARCH}-musl
 	ARCH="${TARGET_ARCH}" \
 	CC="${TARGET}-gcc" \
 	CROSS_COMPILE="${TARGET}-" \
 	LIBCC="${SYSROOT}/lib/gcc/${TARGET}/${GCC_VERSION}/libgcc.a" \
 	/musl-${MUSL_VERSION}/configure \
-		--host="${TARGET}" \
-		--prefix="" \
-		--disable-wrapper
-	make \
-		-j$(nproc) \
-		AR="${TARGET}-ar" \
-		RANLIB="${TARGET}-ranlib"
-	make \
-		-j$(nproc) \
-		AR="${TARGET}-ar" \
-		RANLIB="${TARGET}-ranlib" \
-		DESTDIR="${SYSROOT}" \
-		install-libs
+		--host="${TARGET}" --prefix="" --disable-wrapper
+	make -j$(nproc) AR="${TARGET}-ar" RANLIB="${TARGET}-ranlib"
+	make -j$(nproc) AR="${TARGET}-ar" RANLIB="${TARGET}-ranlib" \
+		DESTDIR="${SYSROOT}" install-libs
 	rm -f "${SYSROOT}"/lib/ld-musl-${TARGET_ARCH}.so.1
-	cp -af \
-		"${SYSROOT}/usr/lib/libc.so" \
+	cp -af "${SYSROOT}/usr/lib/libc.so" \
 		"${SYSROOT}/lib/ld-musl-${TARGET_ARCH}.so.1"
-EOF
 
-# Finish libgcc/libstdc++ now that musl libs exist in the sysroot.
-RUN --network=none <<-EOF
-	set -eux
-	. /env.sh
-	cd /build-xgcc
-	make \
-		-j $(nproc) \
-		-C "${TARGET}/libgcc" \
-		distclean
-	make \
-		-j$(nproc) \
-		enable_shared=yes \
-		all-target-libgcc \
-		all-target-libstdc++-v3
-	make \
-		-j$(nproc) \
-		DESTDIR="${SYSROOT}" \
-		install-strip-target-libgcc \
-		install-strip-target-libstdc++-v3
-EOF
+	# libgcc/libstdc++ finish now that musl libs exist in the sysroot.
+	cd /build-${TARGET_ARCH}-gcc
+	make -j$(nproc) -C "${TARGET}/libgcc" distclean
+	make -j$(nproc) enable_shared=yes \
+		all-target-libgcc all-target-libstdc++-v3
+	make -j$(nproc) DESTDIR="${SYSROOT}" \
+		install-strip-target-libgcc install-strip-target-libstdc++-v3
 
-RUN --network=none <<-EOF
-	set -eux
-	. /env.sh
-	cp -r /linux-${LINUX_VERSION} /linux-xbuild
-	cd /linux-xbuild
+	cp -r /linux-${LINUX_VERSION} /linux-xbuild-${TARGET_ARCH}
+	cd /linux-xbuild-${TARGET_ARCH}
 	LINUX_ARCH=$(echo "${TARGET_ARCH}" \
 		| sed -e 's/aarch64/arm64/' -e 's/riscv64/riscv/')
 	make -j$(nproc) ARCH="${LINUX_ARCH}" headers
 	find usr/include ! -name '*.h' -type f -delete
 	cp -Rv usr/include/* "${SYSROOT}/include/"
-	rm -rf "${SYSROOT}/_tmp" /linux-xbuild
+	rm -rf "${SYSROOT}/_tmp" /linux-xbuild-${TARGET_ARCH}
+
+	# Drop build dirs to keep the layer small.
+	rm -rf /build-${TARGET_ARCH}-binutils /build-${TARGET_ARCH}-gcc /build-${TARGET_ARCH}-musl
 EOF
 
+RUN --network=none <<-EOF
+	set -eux
+	. /env.sh
+	for arch in x86_64 aarch64 riscv64; do
+		sh /build-cross-sysroot.sh "$arch"
+	done
+EOF
+
+# Expose TARGETARCH's cross-toolchain on PATH so phase 2 can use it.
 RUN --network=none <<-EOF
 	set -eux
 	. /env.sh
@@ -352,28 +297,50 @@ RUN --network=none <<-EOF
 	make DESTDIR=/rootfs install
 EOF
 
+# Build a native i386 busybox in xbuild to enumerate applet symlinks — the
+# target-arch busybox we cross-compile below cannot be exec'd during cross
+# builds without qemu-user binfmt on the host. Keep the file named `busybox`
+# so argv[0] matches an applet name (busybox uses argv[0] to dispatch).
+RUN --network=none <<-EOF
+	set -eux
+	cd /busybox-${BUSYBOX_VERSION}
+	make clean
+	make defconfig
+	echo "CONFIG_STATIC=y" >> .config
+	make
+	mkdir -p /host-tools
+	cp busybox /host-tools/busybox
+EOF
+
 RUN --network=none <<-EOF
 	set -eux
 	. /env.sh
 	cd /busybox-${BUSYBOX_VERSION}
+	make clean distclean
 	make CROSS_COMPILE=${TARGET}- defconfig
 	echo "CONFIG_STATIC=y" >> .config
 	make CROSS_COMPILE=${TARGET}-
 	cp busybox /rootfs/usr/bin/busybox
+	# Applet list comes from defconfig, identical across target arches; use
+	# the host-native busybox as the oracle so no target-arch exec is needed.
+	for a in $(/host-tools/busybox --list); do
+		ln -sf busybox /rootfs/usr/bin/$a
+	done
 EOF
 
-# Surface the xbuild sysroot at a fixed path so the sysroot subpackage can
-# COPY it without needing ${TARGET} expansion in a FROM stage.
+# Pack all three target sysroots into /sysroot for the sysroot subpackage.
+# Same content ships on every platform tag so any host can cross-build any
+# target without rebuilding stage2.
 RUN --network=none <<-EOF
 	set -eux
-	. /env.sh
 	mkdir -p /sysroot/usr
-	cp -al ${SYSROOT} /sysroot/usr/${TARGET}
+	for T in x86_64-linux-musl aarch64-linux-musl riscv64-linux-musl; do
+		cp -al /usr/${T} /sysroot/usr/${T}
+	done
 EOF
 
 FROM scratch AS package-stage2
 COPY --from=xbuild /rootfs/ /
-RUN ["/usr/bin/busybox", "--install", "-s", "/usr/bin"]
 
 FROM scratch AS package-stage2-sysroot
 COPY --from=xbuild /sysroot/ /
