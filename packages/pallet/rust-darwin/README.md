@@ -24,6 +24,35 @@ RUN cargo build --release --target=aarch64-apple-darwin
 # arm64 macOS. Ship or codesign on a real Mac.
 ```
 
+## Smoke test
+
+```sh
+mkdir -p /tmp/darwin-smoke && cd /tmp/darwin-smoke
+cat > Cargo.toml <<'TOML'
+[package]
+name = "hello-darwin"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "hello"
+path = "hello.rs"
+TOML
+printf 'fn main(){println!("hello darwin");}\n' > hello.rs
+
+docker run --rm -v /tmp/darwin-smoke:/src -w /src --entrypoint cargo \
+    stagex/pallet-rust-darwin:local \
+    build --release --target=aarch64-apple-darwin
+
+file target/aarch64-apple-darwin/release/hello
+# Mach-O 64-bit arm64 executable, flags:<NOUNDEFS|DYLDLINK|TWOLEVEL|PIE|HAS_TLV_DESCRIPTORS>
+```
+
+Cargo's warning about `xcrun`/MacOSX.sdk is expected — we ship our own SDK
+via the sysroot rustflags, and Cargo hasn't been told to look there. The
+build still succeeds. Swap `aarch64-apple-darwin` for `x86_64-apple-darwin`
+to get an Intel binary.
+
 ## Caveats
 
 - The bundled macOS SDK is
