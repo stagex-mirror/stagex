@@ -14,10 +14,20 @@ COPY <<-'EOF' /etc/profile
 	[[ "$TARGETARCH" == "arm64" ]] \
 		&& ARCH="aarch64" \
 		&& LLVM_TARGET_ARCH="AArch64"
+	[[ "$TARGETARCH" == "riscv64" ]] \
+		&& ARCH="riscv64" \
+		&& LLVM_TARGET_ARCH="RISCV"
 	export ARCH
 	export MAKEFLAGS="-j$(nproc)"
 	export BUILD=${ARCH}-unknown-linux-musl
 	export TARGET=${ARCH}-unknown-linux-musl
+	# Host-arch runtime target. Cross-target runtimes are built out-of-tree
+	# further down (LLVM's multi-target LLVM_RUNTIME_TARGETS races on shared
+	# libcxx header configure paths).
+	export RUNTIME_TARGETS="${ARCH}-linux-musl"
+	# Cross targets get their own cmake runtime builds after main install.
+	# riscv64 deferred until we sort out RISC-V-specific compiler-rt issues.
+	export CROSS_RUNTIME_TARGETS="aarch64-linux-musl x86_64-linux-musl"
 EOF
 SHELL ["/bin/sh","-l","-c"]
 
@@ -38,11 +48,14 @@ RUN --network=none <<-EOF
 	cmake_cache_set() {
 	  CMAKE_ARGS="$CMAKE_ARGS -D$1=$2"
 	}
-	# The runtimes are built with nested `cmake` invocations which aren't proxied the variables
-	# declared here. They need to have their variables set with a prefix of `RUNTIMES_${TARGET}_`.
-	# This is hardcoded to a target of the host as it's the only target the runtimes are built for.
+	# Runtime settings must be prefixed with RUNTIMES_<triple>_ so LLVM's
+	# nested cmake invocation for each target picks them up. Apply to every
+	# RUNTIME_TARGETS entry so all three musl targets get identical runtime
+	# configuration.
 	cmake_runtime_cache_set() {
-	  CMAKE_ARGS="$CMAKE_ARGS -DRUNTIMES_${ARCH}-linux-musl_$1=$2"
+	  for T in $RUNTIME_TARGETS; do
+	    CMAKE_ARGS="$CMAKE_ARGS -DRUNTIMES_${T}_$1=$2"
+	  done
 	}
 
 	# Configure the build itself
@@ -57,11 +70,14 @@ RUN --network=none <<-EOF
 	cmake_cache_set LLVM_INSTALL_BINUTILS_SYMLINKS ON
 	cmake_cache_set CLANG_CONFIG_FILE_SYSTEM_DIR /etc/clang
 
-	# Configure for `musl`
+	# Configure for `musl`. HOST_TRIPLE / TARGET_ARCH pin the clang binary
+	# itself; RUNTIME_TARGETS / BUILTIN_TARGETS list every triple we build
+	# runtime bits for (semicolon-separated for cmake).
 	cmake_cache_set LLVM_HOST_TRIPLE "${ARCH}-linux-musl"
 	cmake_cache_set LLVM_TARGET_ARCH "$LLVM_TARGET_ARCH"
-	cmake_cache_set LLVM_RUNTIME_TARGETS "${ARCH}-linux-musl"
-	cmake_cache_set LLVM_BUILTIN_TARGETS "${ARCH}-linux-musl"
+	RUNTIME_TARGETS_CMAKE=$(echo "$RUNTIME_TARGETS" | tr ' ' ';')
+	cmake_cache_set LLVM_RUNTIME_TARGETS "$RUNTIME_TARGETS_CMAKE"
+	cmake_cache_set LLVM_BUILTIN_TARGETS "$RUNTIME_TARGETS_CMAKE"
 	cmake_runtime_cache_set LIBCXX_HAS_MUSL_LIBC ON
 	cmake_runtime_cache_set COMPILER_RT_DEFAULT_TARGET_ONLY ON
 
@@ -106,6 +122,7 @@ RUN --network=none <<-EOF
 EOF
 
 COPY --from=stagex/core-musl . /
+COPY --from=stagex/bootstrap-stage2-sysroot . /
 
 RUN --network=none <<-EOF
 	export LIBCC="/usr/lib/clang/$MAJOR_VERSION/lib/${TARGET}/libclang_rt.builtins.a"
@@ -122,7 +139,9 @@ RUN --network=none <<-EOF
 		CMAKE_ARGS="$CMAKE_ARGS -D$1=$2"
 	}
 	cmake_runtime_cache_set() {
-		CMAKE_ARGS="$CMAKE_ARGS -DRUNTIMES_${ARCH}-linux-musl_$1=$2"
+		for T in $RUNTIME_TARGETS; do
+			CMAKE_ARGS="$CMAKE_ARGS -DRUNTIMES_${T}_$1=$2"
+		done
 	}
 
 	cmake_cache_set CMAKE_C_COMPILER /usr/bin/clang
@@ -164,7 +183,9 @@ RUN --network=none <<-EOF
 		CMAKE_ARGS="$CMAKE_ARGS -D$1=$2"
 	}
 	cmake_runtime_cache_set() {
-		CMAKE_ARGS="$CMAKE_ARGS -DRUNTIMES_${ARCH}-linux-musl_$1=$2"
+		for T in $RUNTIME_TARGETS; do
+			CMAKE_ARGS="$CMAKE_ARGS -DRUNTIMES_${T}_$1=$2"
+		done
 	}
 
 	# Now that we've already built everything else, we additionally build the sanitizers
@@ -182,7 +203,9 @@ RUN --network=none <<-EOF
 
 	# NSan, for whatever reason, is not being reproducibly built. It's removed here as it
 	# _should_ be unpopular and not a blocker, but ideally this would be solved (TODO).
-	rm /rootfs/usr/lib/clang/$MAJOR_VERSION/lib/${TARGET}/libclang_rt.nsan*
+	for T in $RUNTIME_TARGETS; do
+		rm -f /rootfs/usr/lib/clang/$MAJOR_VERSION/lib/${T}/libclang_rt.nsan*
+	done
 EOF
 
 RUN --network=none <<-EOF
@@ -191,6 +214,92 @@ RUN --network=none <<-EOF
 	ln -sf /usr/bin/ld.lld /rootfs/usr/bin/ld
 	ln -sf /usr/lib/clang/$MAJOR_VERSION/lib/${TARGET}/libclang_rt.builtins.a /rootfs/usr/lib/libclang_rt.builtins.a
 	strip /rootfs/usr/lib/libLLVM.so.$MAJOR_VERSION.1
+EOF
+
+# Cross-target runtimes: build compiler-rt / libunwind / libcxx / libcxxabi
+# for each non-host target as standalone cmake runtime projects. Separate
+# builds avoid the shared-header race that LLVM's LLVM_RUNTIME_TARGETS hits
+# when multiple targets are configured in a single top-level cmake.
+RUN --network=none <<-EOF
+	# Shared cmake args for all runtime passes. Clang canonicalizes T to
+	# <arch>-unknown-linux-musl when computing its per-target runtime
+	# search path, so we tag build artifacts with -unknown- but keep the
+	# sysroot at the no-unknown path (matches bootstrap-stage2-sysroot).
+	COMMON_ARGS='
+		-Wno-dev
+		-DCMAKE_BUILD_TYPE=Release
+		-DCMAKE_INSTALL_PREFIX=/usr
+		-DCMAKE_C_COMPILER=/usr/bin/clang
+		-DCMAKE_CXX_COMPILER=/usr/bin/clang++
+		-DCMAKE_AR=/usr/bin/llvm-ar
+		-DCMAKE_NM=/usr/bin/llvm-nm
+		-DCMAKE_RANLIB=/usr/bin/llvm-ranlib
+		-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY
+		-DLLVM_USE_LINKER=lld
+		-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON
+	'
+	for T in $CROSS_RUNTIME_TARGETS; do
+		if [ "$T" = "${ARCH}-linux-musl" ]; then
+			continue
+		fi
+		TC=$(echo "$T" | sed 's/-linux-musl$/-unknown-linux-musl/')
+
+		# Pass 1: standalone builtins-only build. Using the builtins
+		# CMakeLists directly avoids the runtimes-level orchestration
+		# that drags in libunwind before builtins are ready.
+		cmake \
+			-B build-cross-$T-rt \
+			-S compiler-rt/lib/builtins \
+			$COMMON_ARGS \
+			-DCMAKE_C_COMPILER_TARGET=$TC \
+			-DCMAKE_CXX_COMPILER_TARGET=$TC \
+			-DCMAKE_ASM_COMPILER_TARGET=$TC \
+			-DCMAKE_SYSROOT=/usr/$T \
+			-DCOMPILER_RT_STANDALONE_BUILD=ON \
+			-DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
+			-DCOMPILER_RT_INSTALL_PATH=/usr/lib/clang/$MAJOR_VERSION
+		cmake --build build-cross-$T-rt -v
+		# Install system-wide so pass 2 can find the builtins via clang's
+		# per-target search path.
+		cmake --install build-cross-$T-rt
+
+		# Pass 2: build the remaining runtimes against installed builtins.
+		cmake \
+			-B build-cross-$T \
+			-S runtimes \
+			$COMMON_ARGS \
+			-DCMAKE_C_COMPILER_TARGET=$TC \
+			-DCMAKE_CXX_COMPILER_TARGET=$TC \
+			-DCMAKE_ASM_COMPILER_TARGET=$TC \
+			-DCMAKE_SYSROOT=/usr/$T \
+			-DLLVM_ENABLE_RUNTIMES="libunwind;libcxx;libcxxabi" \
+			-DLIBCXX_HAS_MUSL_LIBC=ON \
+			-DLIBCXX_CXX_ABI=libcxxabi \
+			-DLIBCXX_HARDENING_MODE=fast \
+			-DLIBCXX_HAS_ATOMIC_LIB=OFF \
+			-DLIBCXX_USE_COMPILER_RT=ON \
+			-DLIBCXXABI_USE_COMPILER_RT=ON \
+			-DLIBCXXABI_USE_LLVM_UNWINDER=ON \
+			-DLIBCXXABI_HAS_CXA_THREAD_ATEXIT_IMPL=OFF \
+			-DLIBUNWIND_USE_COMPILER_RT=ON
+		cmake --build build-cross-$T -v
+		cmake --install build-cross-$T
+
+		# libunwind/libcxx/libcxxabi install to /usr/lib/ regardless of
+		# LLVM_ENABLE_PER_TARGET_RUNTIME_DIR — move them into the per-target
+		# dir so successive cross targets don't overwrite each other and so
+		# clang finds them under --target=<T> automatically.
+		TDIR=/usr/lib/clang/$MAJOR_VERSION/lib/${TC}
+		mkdir -p $TDIR
+		for f in libunwind libc++ libc++abi; do
+			mv /usr/lib/${f}.a /usr/lib/${f}.so* $TDIR/ 2>/dev/null || true
+		done
+
+		# Ship this cross target's per-target runtime dir via the subpackage.
+		mkdir -p /rootfs/usr/lib/clang/$MAJOR_VERSION/lib
+		cp -a $TDIR /rootfs/usr/lib/clang/$MAJOR_VERSION/lib/
+		rm -f /rootfs/usr/lib/clang/$MAJOR_VERSION/lib/${TC}/libclang_rt.nsan*
+	done
 EOF
 
 FROM build AS build-llvm-libgcc
@@ -442,3 +551,14 @@ COPY --from=build /rootfs/usr/lib/liblldb*.so* /usr/lib/
 
 FROM stagex/core-filesystem AS package-lldb-devel-static
 COPY --from=build /rootfs/usr/lib/liblldb*.a /usr/lib/
+
+# Per-target compiler runtime bundles for out-of-tree cross compilation.
+# Each ships libunwind/libc++/libc++abi/compiler-rt-builtins for one target
+# under clang's per-target runtime dir. Update the /22/ path on LLVM major
+# version bumps.
+
+FROM stagex/core-filesystem AS package-runtime-cross-x86_64
+COPY --from=build /rootfs/usr/lib/clang/22/lib/x86_64-unknown-linux-musl/. /usr/lib/clang/22/lib/x86_64-unknown-linux-musl/
+
+FROM stagex/core-filesystem AS package-runtime-cross-aarch64
+COPY --from=build /rootfs/usr/lib/clang/22/lib/aarch64-unknown-linux-musl/. /usr/lib/clang/22/lib/aarch64-unknown-linux-musl/
