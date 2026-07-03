@@ -1,0 +1,14 @@
+FROM stagex/pallet-rust
+COPY --from=stagex/core-rust-std-cross-aarch64-apple-darwin . /
+COPY --from=stagex/core-rust-std-cross-x86_64-apple-darwin  . /
+COPY --from=stagex/core-macos-minimal-sdk . /
+
+# Same shape as the aarch64-linux-musl per-target rustflags on pallet-rust:
+# clang linker, target/sysroot passed in as -Clink-arg=, ld64.lld picked by
+# clang for Darwin. -undefined,dynamic_lookup so unresolved libSystem symbols
+# defer to macOS's dyld at load time (the tinygo stub only exports the most
+# common few).
+ENV CARGO_TARGET_AARCH64_APPLE_DARWIN_LINKER=clang \
+    CARGO_TARGET_X86_64_APPLE_DARWIN_LINKER=clang \
+    CARGO_TARGET_AARCH64_APPLE_DARWIN_RUSTFLAGS="-Clink-arg=--target=aarch64-apple-darwin -Clink-arg=--sysroot=/usr/aarch64-apple-darwin -Clink-arg=-fuse-ld=lld -Clink-arg=-Wl,-undefined,dynamic_lookup" \
+    CARGO_TARGET_X86_64_APPLE_DARWIN_RUSTFLAGS="-Clink-arg=--target=x86_64-apple-darwin -Clink-arg=--sysroot=/usr/x86_64-apple-darwin -Clink-arg=-fuse-ld=lld -Clink-arg=-Wl,-undefined,dynamic_lookup"
