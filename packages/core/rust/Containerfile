@@ -590,6 +590,79 @@ RUN --network=none <<-EOF
 		/rust-${VERSION}/usr/lib/rustlib/${CROSS_T}
 EOF
 
+# Darwin cross-stdlibs. Same shape as the musl block above, but the linker
+# is ld64.lld (via clang's --target=<T>-apple-darwin picking the Mach-O
+# flavor) instead of mold — mold doesn't link Mach-O.
+COPY --from=stagex/core-macos-minimal-sdk / /
+
+RUN --network=none <<-EOF
+	set -eux
+	. /etc/profile
+	export PATH=/rust-${VERSION}/usr/bin:$PATH
+	# core/profile force-adds -fuse-ld=mold to every clang invocation via
+	# CCC_OVERRIDE_OPTIONS; mold doesn't link Mach-O, so unset it for the
+	# Darwin builds. Our per-target rustflags below already ask for lld.
+	unset CCC_OVERRIDE_OPTIONS
+
+	for CROSS_T in aarch64-apple-darwin x86_64-apple-darwin; do
+		SYSROOT=/usr/$CROSS_T
+		VAR_TRIPLE=$(echo "$CROSS_T" | tr 'a-z-' 'A-Z_')
+		# cc-rs vars for the stdlib's C parts.
+		eval "export CC_${CROSS_T//-/_}=clang"
+		eval "export CXX_${CROSS_T//-/_}=clang++"
+		eval "export AR_${CROSS_T//-/_}=llvm-ar"
+		eval "export CFLAGS_${CROSS_T//-/_}=\"--target=$CROSS_T --sysroot=$SYSROOT\""
+		eval "export CXXFLAGS_${CROSS_T//-/_}=\"--target=$CROSS_T --sysroot=$SYSROOT\""
+		# rustc invokes clang without --target; per-target rustflags fix that.
+		# -undefined,dynamic_lookup: the tinygo macos-minimal-sdk stub only
+		# exports a handful of libc symbols; rust-std references many more.
+		# Defer symbol resolution to macOS's dyld at load time — standard
+		# Darwin cross-link pattern.
+		eval "export CARGO_TARGET_${VAR_TRIPLE}_LINKER=clang"
+		eval "export CARGO_TARGET_${VAR_TRIPLE}_RUSTFLAGS='-Clink-arg=--target=$CROSS_T -Clink-arg=--sysroot=$SYSROOT -Clink-arg=-fuse-ld=lld -Clink-arg=-Wl,-undefined,dynamic_lookup'"
+
+		cd /rustc-${VERSION}-src
+		rm -f bootstrap.toml
+
+		python3 ./src/bootstrap/configure.py \
+			--build="${TARGET}" \
+			--host="${TARGET}" \
+			--target="${TARGET},${CROSS_T}" \
+			--local-rust-root=/rust-${VERSION}/usr \
+			--tools=cargo,src \
+			--llvm-root="${LLVM_ROOT}" \
+			--llvm-libunwind="system" \
+			--enable-local-rust \
+			--enable-clang \
+			--enable-option-checking \
+			--enable-vendor \
+			--dist-compression-formats=gz \
+			--disable-docs \
+			--python="python3" \
+			--prefix="/rust-${VERSION}/usr" \
+			--sysconfdir="/rust-${VERSION}/etc" \
+			--release-channel="stable" \
+			--set="install.prefix=/rust-${VERSION}" \
+			--set="target.${TARGET}.crt-static=false" \
+			--set="target.${TARGET}.musl-root=/usr" \
+			--set="target.${TARGET}.llvm-config=${LLVM_BINDIR}/llvm-config" \
+			--set="target.${CROSS_T}.cc=clang" \
+			--set="target.${CROSS_T}.cxx=clang++" \
+			--set="target.${CROSS_T}.ar=llvm-ar" \
+			--set="target.${CROSS_T}.ranlib=llvm-ranlib" \
+			--set="target.${CROSS_T}.linker=clang" \
+			--set="target.${CROSS_T}.llvm-config=${LLVM_BINDIR}/llvm-config" \
+			--set="rust.optimize=2" \
+			--set="rust.lld=false" \
+			--set="rust.llvm-tools=false"
+
+		python3 x.py build library --target=${CROSS_T}
+		mkdir -p /rust-${VERSION}/usr/lib/rustlib
+		cp -a build/host/stage2/lib/rustlib/${CROSS_T} \
+			/rust-${VERSION}/usr/lib/rustlib/${CROSS_T}
+	done
+EOF
+
 RUN --network=none <<-EOF
 	set -eux
 	mv /rust-${VERSION} /rootfs
@@ -605,3 +678,9 @@ COPY --from=build /rootfs/ /
 
 FROM stagex/core-filesystem AS package-rust-std-cross-aarch64
 COPY --from=build /rootfs/usr/lib/rustlib/aarch64-unknown-linux-musl/. /usr/lib/rustlib/aarch64-unknown-linux-musl/
+
+FROM stagex/core-filesystem AS package-rust-std-cross-aarch64-apple-darwin
+COPY --from=build /rootfs/usr/lib/rustlib/aarch64-apple-darwin/. /usr/lib/rustlib/aarch64-apple-darwin/
+
+FROM stagex/core-filesystem AS package-rust-std-cross-x86_64-apple-darwin
+COPY --from=build /rootfs/usr/lib/rustlib/x86_64-apple-darwin/. /usr/lib/rustlib/x86_64-apple-darwin/
