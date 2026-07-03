@@ -514,6 +514,82 @@ RUN --network=none <<-EOF
 EOF
 
 RUN --network=none ./build ${VERSION} 1.95.0 cargo,clippy,rustfmt,rust-demangler,src
+
+# Bring in the aarch64 sysroot + LLVM cross-runtime so x.py can build
+# rust-std for aarch64-unknown-linux-musl using the just-installed rustc.
+COPY --from=stagex/bootstrap-stage2-sysroot / /
+COPY --from=stagex/core-runtime-cross-aarch64 / /
+
+RUN --network=none <<-EOF
+	set -eux
+	. /etc/profile
+	CROSS_T=aarch64-unknown-linux-musl
+	export PATH=/rust-${VERSION}/usr/bin:$PATH
+
+	# cc-rs env vars — used by rust's stdlib C parts (compiler_builtins, dlmalloc, etc.).
+	export CC_aarch64_unknown_linux_musl=clang
+	export CXX_aarch64_unknown_linux_musl=clang++
+	export AR_aarch64_unknown_linux_musl=llvm-ar
+	export CFLAGS_aarch64_unknown_linux_musl="--target=aarch64-linux-musl --sysroot=/usr/aarch64-linux-musl"
+	export CXXFLAGS_aarch64_unknown_linux_musl="$CFLAGS_aarch64_unknown_linux_musl"
+
+	# Same linker (clang) for native and cross — pass target/sysroot via
+	# per-target rustflags so clang generates the right emulation for mold
+	# without a per-arch wrapper. mold itself is arch-neutral; clang tells
+	# it -m aarch64linux when --target=aarch64-linux-musl is set.
+	export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_RUSTFLAGS="-Clink-arg=--target=aarch64-linux-musl -Clink-arg=--sysroot=/usr/aarch64-linux-musl"
+
+	cd /rustc-${VERSION}-src
+
+	# Wipe the config the main build left behind — Rust's configure refuses
+	# to overwrite an existing bootstrap.toml.
+	rm -f bootstrap.toml
+
+	# Reconfigure adding the cross target. This is cheap when the artifacts
+	# for the host target already exist — x.py only builds the missing
+	# stdlib for the new target.
+	python3 ./src/bootstrap/configure.py \
+		--build="${TARGET}" \
+		--host="${TARGET}" \
+		--target="${TARGET},${CROSS_T}" \
+		--local-rust-root=/rust-${VERSION}/usr \
+		--tools=cargo,src \
+		--llvm-root="${LLVM_ROOT}" \
+		--llvm-libunwind="system" \
+		--enable-local-rust \
+		--enable-clang \
+		--enable-option-checking \
+		--enable-vendor \
+		--dist-compression-formats=gz \
+		--disable-docs \
+		--python="python3" \
+		--prefix="/rust-${VERSION}/usr" \
+		--sysconfdir="/rust-${VERSION}/etc" \
+		--release-channel="stable" \
+		--set="install.prefix=/rust-${VERSION}" \
+		--set="target.${TARGET}.crt-static=false" \
+		--set="target.${TARGET}.musl-root=/usr" \
+		--set="target.${TARGET}.llvm-config=${LLVM_BINDIR}/llvm-config" \
+		--set="target.${CROSS_T}.crt-static=false" \
+		--set="target.${CROSS_T}.musl-root=/usr/aarch64-linux-musl" \
+		--set="target.${CROSS_T}.cc=clang" \
+		--set="target.${CROSS_T}.cxx=clang++" \
+		--set="target.${CROSS_T}.ar=llvm-ar" \
+		--set="target.${CROSS_T}.ranlib=llvm-ranlib" \
+		--set="target.${CROSS_T}.linker=clang" \
+		--set="target.${CROSS_T}.llvm-config=${LLVM_BINDIR}/llvm-config" \
+		--set="rust.optimize=2" \
+		--set="rust.lld=false" \
+		--set="rust.llvm-tools=false"
+
+	python3 x.py build library --target=${CROSS_T}
+
+	# Copy the just-built cross stdlib into the install prefix so it ships.
+	mkdir -p /rust-${VERSION}/usr/lib/rustlib
+	cp -a build/host/stage2/lib/rustlib/${CROSS_T} \
+		/rust-${VERSION}/usr/lib/rustlib/${CROSS_T}
+EOF
+
 RUN --network=none <<-EOF
 	set -eux
 	mv /rust-${VERSION} /rootfs
@@ -524,5 +600,8 @@ RUN --network=none <<-EOF
 	done
 EOF
 
-FROM stagex/core-filesystem AS package
+FROM stagex/core-filesystem AS package-rust
 COPY --from=build /rootfs/ /
+
+FROM stagex/core-filesystem AS package-rust-std-cross-aarch64
+COPY --from=build /rootfs/usr/lib/rustlib/aarch64-unknown-linux-musl/. /usr/lib/rustlib/aarch64-unknown-linux-musl/
