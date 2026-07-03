@@ -1,0 +1,13 @@
+[package]
+name = "macos-minimal-sdk"
+version = "1.0.0"
+description = "Minimal FOSS SDK for cross-compiling to macOS (x86_64 and arm64)"
+website = "https://github.com/tinygo-org/macos-minimal-sdk"
+license = "APSL-2.0"
+
+[sources.macos-minimal-sdk]
+hash = "a691ffc837bf9f3fab5547e8f0abad811a596b1c29b5a8a8b6d0ab3390417766"
+version = "1.0.0"
+format = "tar.gz"
+file = "macos-minimal-sdk-{version}.tar.gz"
+mirrors = ["https://github.com/tinygo-org/macos-minimal-sdk/archive/refs/heads/main.tar.gz"]

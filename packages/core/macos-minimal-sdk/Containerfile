@@ -1,0 +1,35 @@
+FROM stagex/core-profile AS build
+ARG VERSION
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-perl . /
+
+ADD fetch/macos-minimal-sdk-${VERSION}.tar.gz .
+
+WORKDIR /macos-minimal-sdk-main
+
+RUN --network=none <<-EOF
+	set -eux
+	/usr/bin/make CLANG=/usr/bin/clang
+	# On Darwin, libc, libm, libpthread etc. are all folded into libSystem.
+	# Cross-linkers still emit -lc/-lm/... — add symlinks so the search
+	# resolves to the same stub dylib.
+	for sysroot in sysroot-macos-arm64 sysroot-macos-x86_64; do
+		cd /macos-minimal-sdk-main/$sysroot/usr/lib
+		for lib in c m pthread dl rt util; do
+			ln -sf libSystem.B.dylib lib${lib}.dylib
+		done
+		cd /macos-minimal-sdk-main
+	done
+EOF
+
+# Ship each SDK under a top-level per-triple sysroot dir. Matches the
+# bootstrap-stage2-sysroot layout convention (`/usr/aarch64-linux-musl/`)
+# and makes `clang --sysroot=/usr/<triple>` work directly.
+FROM stagex/core-filesystem AS package
+COPY --from=build /macos-minimal-sdk-main/sysroot-macos-arm64/  /usr/aarch64-apple-darwin/
+COPY --from=build /macos-minimal-sdk-main/sysroot-macos-x86_64/ /usr/x86_64-apple-darwin/
