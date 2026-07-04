@@ -9,6 +9,7 @@ CHECK ?= 0 ## Run build with syntax checking enabled
 NOCACHE ?= 0 ## Run build ignoring all existing cache
 IMPORT ?= 0 ## Import and tag packages after build as ":local"
 RELEASE := 0 ## Set release version for release targets
+MODE := native ## Build mode: native (target-arch build) or cross (host-arch build for target)
 
 include src/global.mk
 include src/macros.mk

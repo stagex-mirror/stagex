@@ -32,6 +32,7 @@ out/{stage}-{name}/index.json: \\
 \t  --tag stagex/{stage}-{name}:{version} \\
 \t  --provenance=false \\
 \t  --build-arg SOURCE_DATE_EPOCH=1 \\
+\t  --build-arg BUILD_MODE=$(MODE) \\
 \t  --build-arg BUILDKIT_MULTI_PLATFORM=1 \\
 \t  --build-arg "BUILDKIT_DOCKERFILE_CHECK=skip=FromPlatformFlagConstDisallowed;error=true" \\
 \t  --output \\
@@ -70,6 +71,7 @@ registry-{stage}-{name}:
 \t  --tag $(REGISTRY_USERNAME)/{stage}-{name}:latest \\
 \t  --provenance=false \\
 \t  --build-arg SOURCE_DATE_EPOCH=1 \\
+\t  --build-arg BUILD_MODE=$(MODE) \\
 \t  --build-arg BUILDKIT_MULTI_PLATFORM=1 \\
 \t  --build-arg "BUILDKIT_DOCKERFILE_CHECK=skip=FromPlatformFlagConstDisallowed;error=true" \\
 \t  --output \\
