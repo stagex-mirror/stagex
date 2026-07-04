@@ -182,8 +182,13 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
                     deps.append(dep.split("/")[1])
               if line.startswith("FROM stagex/"):
                 deps.append(line.split(" ")[1].split("/")[1].strip())
-              if line.startswith("FROM --platform=linux/386 stagex/"):
-                deps.append(line.split(" ")[2].split("/")[1].strip())
+              # Any `FROM --platform=<X> stagex/<pkg>` — the platform value
+              # can be `linux/386` (stage2 xbuild), `$BUILDPLATFORM` (cross
+              # mode), or any other buildkit-legal string.
+              if line.startswith("FROM --platform="):
+                dep = line.split(" ")[2]
+                if dep.startswith("stagex/"):
+                  deps.append(dep.split("/")[1].strip())
 
           package_info = CommonUtils.parse_package_toml_no_deps(package_data)
           package_info.deps = deps

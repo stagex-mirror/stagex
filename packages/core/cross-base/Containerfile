@@ -1,0 +1,11 @@
+# Host-arch stage3 overlaid with all three musl target sysroots. Downstream
+# packages doing `FROM --platform=$BUILDPLATFORM stagex/core-cross-base`
+# get a clang/lld that runs natively on the build host but can emit code
+# for any of the shipped targets. core/profile detects host != target at
+# RUN time and appends --target=/--sysroot= to CFLAGS/CXXFLAGS/LDFLAGS,
+# so build bodies don't need to know they're cross-compiling.
+FROM --platform=$BUILDPLATFORM stagex/bootstrap-stage3 AS build
+COPY --from=stagex/bootstrap-stage2-sysroot / /
+
+FROM scratch AS package
+COPY --from=build / /

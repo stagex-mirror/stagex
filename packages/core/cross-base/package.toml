@@ -1,0 +1,6 @@
+[package]
+name = "cross-base"
+version_from = "bootstrap-stage3"
+description = "Host-arch clang/lld toolchain + all-target musl sysroots for cross-mode builds"
+license = "Apache-2.0 WITH LLVM-exception"
+website = "https://codeberg.org/stagex/stagex"
