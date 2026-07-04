@@ -55,9 +55,27 @@ RUN --network=none <<-EOF
 	rm -rf /make-*
 EOF
 
+# Host-arch oracle: compile busybox with the same defconfig using
+# stage2's amd64/native gcc so we can enumerate applets without ever
+# exec'ing target-arch busybox. Keeps multi-platform stage3 builds
+# qemu-free.
+FROM --platform=$BUILDPLATFORM stagex/bootstrap-stage2 AS busybox-oracle
+ARG BUSYBOX_VERSION
+ADD fetch/busybox-${BUSYBOX_VERSION}.tar.bz2 /
+WORKDIR /busybox-${BUSYBOX_VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	make defconfig
+	echo "CONFIG_STATIC=y" >> .config
+	make
+	mkdir -p /host-tools
+	cp busybox /host-tools/busybox
+EOF
+
 FROM base AS busybox
 ARG TARGETARCH
 ARG BUSYBOX_VERSION
+COPY --from=busybox-oracle /host-tools/busybox /host-tools/busybox
 ADD fetch/busybox-${BUSYBOX_VERSION}.tar.bz2 /
 WORKDIR /busybox-${BUSYBOX_VERSION}
 RUN --network=none <<-EOF
@@ -66,8 +84,11 @@ RUN --network=none <<-EOF
 	make
 	mkdir -p /rootfs/usr/bin
 	cp busybox /rootfs/usr/bin
-	cd /rootfs
-	/usr/bin/busybox --install -s usr/bin
+	# Applet symlinks driven by the host-arch oracle so this stage works
+	# multi-platform without qemu-user.
+	for a in $(/host-tools/busybox --list); do
+		ln -sf busybox /rootfs/usr/bin/$a
+	done
 	rm -rf /busybox-*
 EOF
 
@@ -523,6 +544,7 @@ COPY --from=zlib /rootfs/ /
 COPY --from=llvm-bootstrap /rootfs/ /
 ARG TARGETARCH
 ARG BUSYBOX_VERSION
+COPY --from=busybox-oracle /host-tools/busybox /host-tools/busybox
 ADD fetch/busybox-${BUSYBOX_VERSION}.tar.bz2 /
 WORKDIR /busybox-${BUSYBOX_VERSION}
 SHELL ["/bin/sh","-l","-c"]
@@ -532,8 +554,9 @@ RUN --network=none <<-EOF
 	make CC=clang HOSTCC=clang
 	mkdir -p /rootfs/usr/bin
 	cp busybox /rootfs/usr/bin
-	cd /rootfs
-	/usr/bin/busybox --install -s usr/bin
+	for a in $(/host-tools/busybox --list); do
+		ln -sf busybox /rootfs/usr/bin/$a
+	done
 EOF
 
 FROM scratch AS cc-binutils

@@ -1,6 +1,23 @@
+# Host-arch oracle: build busybox natively with defconfig so we can
+# enumerate applets without exec'ing target-arch busybox in the main
+# stage. Keeps multi-platform core-busybox builds qemu-free.
+FROM --platform=$BUILDPLATFORM stagex/bootstrap-stage3 AS busybox-oracle
+ARG VERSION
+ADD fetch/busybox-${VERSION}.tar.bz2 .
+WORKDIR /busybox-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	make CC=clang HOSTCC=clang defconfig
+	echo "CONFIG_STATIC=y" >> .config
+	make CC=clang HOSTCC=clang
+	mkdir -p /host-tools
+	cp busybox /host-tools/busybox
+EOF
+
 FROM stagex/bootstrap-stage3 AS build
 ARG VERSION
 ARG TARGETARCH
+COPY --from=busybox-oracle /host-tools/busybox /host-tools/busybox
 ADD fetch/busybox-${VERSION}.tar.bz2 .
 WORKDIR /busybox-${VERSION}
 ENV KCONFIG_NOTIMESTAMP=1
@@ -53,9 +70,9 @@ RUN --network=none <<-EOF
 	make HOSTCC=clang CC=clang -j$(nproc)
 	mkdir -p /rootfs/usr/bin
 	cp busybox /rootfs/usr/bin
-	cp busybox /usr/bin
-	cd /rootfs
-	/usr/bin/busybox --install -s usr/bin
+	for a in $(/host-tools/busybox --list); do
+		ln -sf busybox /rootfs/usr/bin/$a
+	done
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
