@@ -1,3 +1,5 @@
+ARG BUILD_MODE=native
+
 # Host-arch oracle: build busybox natively with defconfig so we can
 # enumerate applets without exec'ing target-arch busybox in the main
 # stage. Keeps multi-platform core-busybox builds qemu-free.
@@ -14,7 +16,11 @@ RUN --network=none <<-EOF
 	cp busybox /host-tools/busybox
 EOF
 
-FROM stagex/bootstrap-stage3 AS build
+FROM stagex/bootstrap-stage3 AS base-native
+FROM --platform=$BUILDPLATFORM stagex/core-cross-base AS base-cross
+
+FROM base-${BUILD_MODE} AS build
+ARG BUILD_MODE
 ARG VERSION
 ARG TARGETARCH
 COPY --from=busybox-oracle /host-tools/busybox /host-tools/busybox
@@ -24,6 +30,21 @@ ENV KCONFIG_NOTIMESTAMP=1
 ENV ARCH=$TARGETARCH
 RUN --network=none <<-EOF
 	set -eux
+
+	case "${TARGETARCH}" in
+		amd64)   TARGET_ARCH=x86_64 ;;
+		arm64)   TARGET_ARCH=aarch64 ;;
+		riscv64) TARGET_ARCH=riscv64 ;;
+		*) echo "unsupported TARGETARCH: ${TARGETARCH}" >&2; exit 1 ;;
+	esac
+
+	# Under MODE=cross the RUN executes on the build host's arch;
+	# point clang at the target sysroot so the output binary is
+	# target-arch code. See core/musl for the fallback rationale.
+	CROSS_CC="clang"
+	if [ "${BUILD_MODE}" = "cross" ] && [ "$(uname -m)" != "${TARGET_ARCH}" ]; then
+		CROSS_CC="clang --target=${TARGET_ARCH}-linux-musl --sysroot=/usr/${TARGET_ARCH}-linux-musl --gcc-toolchain=/usr/${TARGET_ARCH}-linux-musl -rtlib=libgcc -unwindlib=none"
+	fi
 	setConfs='
 	    CONFIG_LAST_SUPPORTED_WCHAR=0
 	    CONFIG_STATIC=y
@@ -43,8 +64,8 @@ RUN --network=none <<-EOF
 	    CONFIG_MD5_HWACCEL
 	"
 	fi
-	export HOSTCC=clang CC=clang
-	make HOSTCC=clang CC=clang defconfig
+	export HOSTCC=clang CC="${CROSS_CC}"
+	make HOSTCC=clang CC="${CROSS_CC}" defconfig
 	for conf in $unsetConfs; do
 		sed -i \
 			-e "s!^$conf=.*\$!# $conf is not set!" \
@@ -60,14 +81,14 @@ RUN --network=none <<-EOF
 			echo "$confV" >> .config
 		fi
 	done
-	make HOSTCC=clang CC=clang oldconfig
+	make HOSTCC=clang CC="${CROSS_CC}" oldconfig
 	for conf in $unsetConfs; do
 		! grep -q "^$conf=" .config
 	done
 	for confV in $setConfs; do
 		grep -q "^$confV\$" .config
 	done
-	make HOSTCC=clang CC=clang -j$(nproc)
+	make HOSTCC=clang CC="${CROSS_CC}" -j$(nproc)
 	mkdir -p /rootfs/usr/bin
 	cp busybox /rootfs/usr/bin
 	for a in $(/host-tools/busybox --list); do
