@@ -3,10 +3,14 @@ ARG BUILD_MODE=native
 FROM stagex/bootstrap-stage3 AS base-native
 COPY --from=stagex/core-mimalloc / /
 
+FROM stagex/core-mimalloc AS mimalloc-target
 FROM --platform=$BUILDPLATFORM stagex/core-cross-base AS base-cross
-COPY --from=stagex/core-mimalloc / /
+# mimalloc's mimalloc-secure.o gets linked into libc.a so it must
+# be target-arch code; sourced from the target-tagged stage above.
+COPY --from=mimalloc-target / /
 
 FROM base-${BUILD_MODE} AS build
+ARG BUILD_MODE
 ARG TARGETARCH
 ARG VERSION
 
@@ -28,6 +32,18 @@ RUN --network=none <<-EOF
 	esac
 	export CFLAGS="-Wformat -Werror=format-security -fstack-protector-strong -fstack-clash-protection"
 	export LDFLAGS="-Wl,--as-needed,-O1,--sort-common -Wl,-soname,libc.musl-${ARCH}.so.1"
+
+	# Under MODE=cross the RUN executes on the build host's arch
+	# (via cross-base). Point clang at the target sysroot so it
+	# cross-compiles rather than producing host-arch code with a
+	# target-arch SONAME. Fall back to libgcc/no-unwind because
+	# stage3's LLVM only ships compiler-rt/libunwind for the host
+	# target; stage2-sysroot provides libgcc per target.
+	if [ "${BUILD_MODE}" = "cross" ] && [ "$(uname -m)" != "${ARCH}" ]; then
+		CROSS_FLAGS="--target=${ARCH}-linux-musl --sysroot=/usr/${ARCH}-linux-musl --gcc-toolchain=/usr/${ARCH}-linux-musl -rtlib=libgcc -unwindlib=none"
+		export CFLAGS="${CFLAGS} ${CROSS_FLAGS}"
+		export LDFLAGS="${LDFLAGS} ${CROSS_FLAGS}"
+	fi
 
 	for patch in $(ls . | grep -F ".patch"); do
 		patch -p1 < "$patch"
@@ -86,6 +102,13 @@ RUN --network=none <<-EOF
 	# For whatever reason, this adds `mimalloc`'s object file only to the shared object...
 	export LDFLAGS="$LDFLAGS -Wl,--push-state,--whole-archive,$MIMALLOC_O,--pop-state"
 
+	# Under cross, musl's configure runs the compiler with -dM -E to
+	# probe target arch. Setting CC to include --target= makes clang
+	# advertise the requested arch during that probe, so configure
+	# picks the right per-arch source dirs (src/fenv/aarch64 etc.).
+	if [ "${BUILD_MODE}" = "cross" ] && [ "$(uname -m)" != "${ARCH}" ]; then
+		export CC="clang --target=${ARCH}-linux-musl --sysroot=/usr/${ARCH}-linux-musl"
+	fi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \
