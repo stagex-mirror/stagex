@@ -16,6 +16,7 @@ class TargetGenerator(object):
 .PHONY: {name} {stage}-{name}
 {name}: out/{stage}-{name}/index.json
 {stage}-{name}: out/{stage}-{name}/index.json
+{mode_deps_block}
 out/{stage}-{name}/index.json: \\
 \t{files} {deps}
 \trm -rf out/{stage}-{name} && \\
@@ -138,6 +139,23 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
         if len(package.platforms) > 0:
           platform = ",".join(package.platforms)
 
+        target = f"out/{stage}-{name}/index.json"
+        mode_deps_block = ""
+        if package.mode_aware and (package.deps_native_only or package.deps_cross_only):
+          cross_lines = "".join(
+            f" \\\n\tout/{dep}/index.json" for dep in package.deps_cross_only
+          )
+          native_lines = "".join(
+            f" \\\n\tout/{dep}/index.json" for dep in package.deps_native_only
+          )
+          mode_deps_block = (
+            f"ifeq ($(MODE),cross)\n"
+            f"{target}: {cross_lines}\n"
+            f"else\n"
+            f"{target}: {native_lines}\n"
+            f"endif"
+          )
+
         print(
           TargetGenerator.TARGET_TEMPLATE.format(
             **{
@@ -148,6 +166,7 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
               "deps": "".join(
                 f" \\\n\tout/{dep}/index.json" for dep in package.deps
               ),
+              "mode_deps_block": mode_deps_block,
               "files": "\\\n\t".join(check_output(["git","ls-files","packages/{}/{}".format(stage,package.origin or package.name)],text=True).splitlines()),
               "build_args": TargetGenerator.get_build_args(package),
               "context_args": TargetGenerator.get_context_args(package, stage, package.origin or package.name, False),
@@ -174,26 +193,53 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
             continue
 
           deps: List[str] = list()
+          deps_native_only: List[str] = list()
+          deps_cross_only: List[str] = list()
+          mode_aware: bool = False
+          current_stage: str = ""
+
+          def _classify(dep: str):
+            # `base-native` and `base-cross` are the mode-aware entry stages;
+            # anything referenced there only appears when that mode is
+            # selected, so it isn't a required dep in the other mode.
+            if current_stage == "base-native":
+              deps_native_only.append(dep)
+            elif current_stage == "base-cross":
+              deps_cross_only.append(dep)
+            else:
+              deps.append(dep)
+
           with open(container_file_path, "r") as file:
             for line in file:
+              stripped = line.strip()
+              if stripped.startswith("ARG BUILD_MODE"):
+                mode_aware = True
+              if line.startswith("FROM"):
+                if " AS " in line:
+                  current_stage = line.split(" AS ")[1].strip()
+                else:
+                  current_stage = ""
               if line.startswith("COPY"):
                 first_arg = line.split(" ")[1]
                 if first_arg.startswith("--from"):
                   _, dep = first_arg.split("=")
                   if dep.startswith("stagex/"):
-                    deps.append(dep.split("/")[1])
+                    _classify(dep.split("/")[1])
               if line.startswith("FROM stagex/"):
-                deps.append(line.split(" ")[1].split("/")[1].strip())
+                _classify(line.split(" ")[1].split("/")[1].strip())
               # Any `FROM --platform=<X> stagex/<pkg>` — the platform value
               # can be `linux/386` (stage2 xbuild), `$BUILDPLATFORM` (cross
               # mode), or any other buildkit-legal string.
               if line.startswith("FROM --platform="):
                 dep = line.split(" ")[2]
                 if dep.startswith("stagex/"):
-                  deps.append(dep.split("/")[1].strip())
+                  _classify(dep.split("/")[1].strip())
 
           package_info = CommonUtils.parse_package_toml_no_deps(package_data)
           package_info.deps = deps
+          package_info.mode_aware = mode_aware
+          package_info.deps_native_only = deps_native_only
+          package_info.deps_cross_only = deps_cross_only
           if len(package_info.subpackages):
             for subpackage in package_info.subpackages:
               self.packages[stage][subpackage] = replace(package_info)
@@ -219,7 +265,11 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
   def get_context_args(package: PackageInfo, stage: str, name: str, use_registry: bool) -> str:
     args: List[str] = list()
     args.append(f"--build-context fetch=fetch/{stage}/{name}")
-    for dep in package.deps:
+    # Emit build contexts for every potentially-referenced dep. Buildkit
+    # only wires the ones the selected mode actually references, so the
+    # extras from the unused mode-branch are harmless.
+    all_deps = list(package.deps) + list(package.deps_native_only) + list(package.deps_cross_only)
+    for dep in all_deps:
       if use_registry:
         args.append(f"--build-context stagex/{dep}=docker-image://$(REGISTRY_USERNAME)/{dep}")
       else:

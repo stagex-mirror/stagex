@@ -48,6 +48,12 @@ class PackageInfo(WithVersion):
   subpackages: List[str] = field(default_factory=list)
   sources: MutableMapping[str, SourcesInfo] = field(default_factory=dict)
   deps: List[str] = field(default_factory=list)
+  # Populated when the Containerfile declares `ARG BUILD_MODE`.
+  # `deps` above is the shared list (used in both modes). These two carry
+  # the extra deps referenced only inside `base-native` / `base-cross`.
+  mode_aware: bool = False
+  deps_native_only: List[str] = field(default_factory=list)
+  deps_cross_only: List[str] = field(default_factory=list)
 
 class CommonUtils(object):
   @staticmethod
