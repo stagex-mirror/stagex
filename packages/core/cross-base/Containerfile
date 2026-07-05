@@ -1,12 +1,41 @@
 # Host-arch stage3 overlaid with all three musl target sysroots. Downstream
 # packages doing `FROM --platform=$BUILDPLATFORM stagex/core-cross-base`
 # get a clang/lld that runs natively on the build host but can emit code
-# for any of the shipped targets. Consumer RUN blocks must inject
-# --target/--sysroot themselves when TARGETARCH != host arch; SHELL
-# inheritance from stage3's profile isn't reliable through FROM scratch.
+# for any of the shipped targets. /etc/profile detects host != target
+# at RUN time and points CC/CXX/CFLAGS/LDFLAGS at the target sysroot
+# so consumer build bodies don't need to know they're cross-compiling.
 FROM --platform=$BUILDPLATFORM stagex/bootstrap-stage2-sysroot AS sysroot-host
 FROM --platform=$BUILDPLATFORM stagex/bootstrap-stage3 AS build
 COPY --from=sysroot-host / /
 
+# Override stage3's minimal profile with cross-aware setup. Sourced
+# via `SHELL ["/bin/sh","-l","-c"]` on the package stage, which is
+# baked into the exported image config so downstream FROMs inherit it.
+COPY <<-'EOF' /etc/profile
+	export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+	export MAKEFLAGS="-j$(nproc)"
+	case "${TARGETARCH:-}" in
+		amd64)   ARCH=x86_64 ;;
+		arm64)   ARCH=aarch64 ;;
+		riscv64) ARCH=riscv64 ;;
+		*) ARCH= ;;
+	esac
+	if [ -n "${ARCH}" ]; then
+		export ARCH
+		export TARGET="${ARCH}-linux-musl"
+		# Cross-mode: build host != target. Stage3's LLVM only ships
+		# compiler-rt/libunwind for its host target, so fall back to
+		# the per-target libgcc that stage2-sysroot provides.
+		if [ "${BUILD_MODE:-native}" = "cross" ] && [ "$(uname -m)" != "${ARCH}" ]; then
+			_XFLAGS="--target=${TARGET} --sysroot=/usr/${TARGET} --gcc-toolchain=/usr/${TARGET} -rtlib=libgcc -unwindlib=none"
+			export CC="clang ${_XFLAGS}"
+			export CXX="clang++ ${_XFLAGS}"
+			export CFLAGS="${CFLAGS:-} ${_XFLAGS}"
+			export LDFLAGS="${LDFLAGS:-} ${_XFLAGS}"
+		fi
+	fi
+EOF
+
 FROM scratch AS package
 COPY --from=build / /
+SHELL ["/bin/sh","-l","-c"]
