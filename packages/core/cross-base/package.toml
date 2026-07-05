@@ -4,3 +4,8 @@ version_from = "bootstrap-stage3"
 description = "Host-arch clang/lld toolchain + all-target musl sysroots for cross-mode builds"
 license = "Apache-2.0 WITH LLVM-exception"
 website = "https://codeberg.org/stagex/stagex"
+# Cross-base is a host-arch build environment. Consumers pull it via
+# `FROM --platform=$BUILDPLATFORM stagex/core-cross-base`, so its own
+# published platform must match the build host. Pinned to amd64 for
+# now; add other hosts here when the first non-amd64 build host needs it.
+platforms = ["linux/amd64"]

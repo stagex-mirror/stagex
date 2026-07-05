@@ -16,7 +16,16 @@ WORKDIR /musl-${VERSION}
 ADD *.patch .
 RUN --network=none <<-EOF
 	set -eux
-	ARCH=$(uname -m)
+	# TARGETARCH is set by buildkit to the requested target platform
+	# regardless of native-vs-cross. Under native the qemu-emulated
+	# uname would agree; under cross uname reports the host, so we
+	# derive ARCH from TARGETARCH to stay correct on both paths.
+	case "${TARGETARCH}" in
+		amd64)   ARCH=x86_64 ;;
+		arm64)   ARCH=aarch64 ;;
+		riscv64) ARCH=riscv64 ;;
+		*) echo "unsupported TARGETARCH: ${TARGETARCH}" >&2; exit 1 ;;
+	esac
 	export CFLAGS="-Wformat -Werror=format-security -fstack-protector-strong -fstack-clash-protection"
 	export LDFLAGS="-Wl,--as-needed,-O1,--sort-common -Wl,-soname,libc.musl-${ARCH}.so.1"
 
