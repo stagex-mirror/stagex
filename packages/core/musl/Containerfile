@@ -1,9 +1,16 @@
-FROM stagex/bootstrap-stage3 AS build
+ARG BUILD_MODE=native
+
+FROM stagex/bootstrap-stage3 AS base-native
+COPY --from=stagex/core-mimalloc / /
+
+FROM --platform=$BUILDPLATFORM stagex/core-cross-base AS base-cross
+COPY --from=stagex/core-mimalloc / /
+
+FROM base-${BUILD_MODE} AS build
 ARG TARGETARCH
 ARG VERSION
 
 ADD fetch/musl-${VERSION}.tar.gz .
-COPY --from=stagex/core-mimalloc / /
 
 WORKDIR /musl-${VERSION}
 ADD *.patch .
