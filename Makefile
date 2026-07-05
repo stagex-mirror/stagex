@@ -10,6 +10,7 @@ NOCACHE ?= 0 ## Run build ignoring all existing cache
 IMPORT ?= 0 ## Import and tag packages after build as ":local"
 RELEASE := 0 ## Set release version for release targets
 MODE := native ## Build mode: native (target-arch build) or cross (host-arch build for target)
+BUILD_PLATFORM := linux/amd64 ## Host platform used for build tools under MODE=cross
 
 include src/global.mk
 include src/macros.mk

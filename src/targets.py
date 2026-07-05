@@ -111,6 +111,11 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
 
   def __init__(self):
     self.packages: MutableMapping[str, MutableMapping[str, PackageInfo]] = dict[str, MutableMapping[str, PackageInfo]]()
+    # Populated during init_packages: any package that ever appears as
+    # `FROM --platform=$BUILDPLATFORM stagex/<pkg>` somewhere in the tree.
+    # Under MODE=cross these packages build at the build host's arch so
+    # the consuming stage can pull them via BUILDPLATFORM without qemu.
+    self.host_referenced_deps: set[str] = set()
     self.init_packages("packages")
     self.resolve_versions()
 
@@ -139,22 +144,30 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
         if len(package.platforms) > 0:
           platform = ",".join(package.platforms)
 
+        # If any Containerfile references this package as
+        # `FROM --platform=$BUILDPLATFORM stagex/<pkg>`, it's a build tool
+        # that expects to run at the host's arch. Under MODE=cross we
+        # honor that and pin its build to $(BUILD_PLATFORM); MODE=native
+        # keeps the requested target arch. Deps in the scan set are
+        # stored under the full `<stage>-<name>` form used in
+        # Containerfile FROMs (e.g. `bootstrap-stage3`).
+        if f"{stage}-{name}" in self.host_referenced_deps or name in self.host_referenced_deps:
+          platform = f"$(if $(filter cross,$(MODE)),$(BUILD_PLATFORM),{platform})"
+
+        # All deps stay tracked in make regardless of mode. Buildkit
+        # gets --build-context for every dep so it can resolve either
+        # mode's FROM chain. The host_referenced scan above already
+        # pins bootstrap tools to $(BUILD_PLATFORM) under MODE=cross,
+        # so mode-cross builds never cascade to target-arch bootstrap
+        # rebuilds.
+        merged_extra_deps = list(package.deps_native_only) + list(package.deps_cross_only)
+        deps_block_extra = "".join(
+          f" \\\n\tout/{dep}/index.json" for dep in merged_extra_deps
+        )
         target = f"out/{stage}-{name}/index.json"
-        mode_deps_block = ""
-        if package.mode_aware and (package.deps_native_only or package.deps_cross_only):
-          cross_lines = "".join(
-            f" \\\n\tout/{dep}/index.json" for dep in package.deps_cross_only
-          )
-          native_lines = "".join(
-            f" \\\n\tout/{dep}/index.json" for dep in package.deps_native_only
-          )
-          mode_deps_block = (
-            f"ifeq ($(MODE),cross)\n"
-            f"{target}: {cross_lines}\n"
-            f"else\n"
-            f"{target}: {native_lines}\n"
-            f"endif"
-          )
+        mode_deps_block = (
+          f"{target}: {deps_block_extra}" if deps_block_extra else ""
+        )
 
         print(
           TargetGenerator.TARGET_TEMPLATE.format(
@@ -221,19 +234,40 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
                   current_stage = ""
               if line.startswith("COPY"):
                 first_arg = line.split(" ")[1]
+                copy_platform = None
+                # `COPY --platform=X --from=stagex/...`
+                if first_arg.startswith("--platform="):
+                  copy_platform = first_arg.split("=", 1)[1]
+                  first_arg = line.split(" ")[2]
                 if first_arg.startswith("--from"):
                   _, dep = first_arg.split("=")
                   if dep.startswith("stagex/"):
-                    _classify(dep.split("/")[1])
+                    dep_name = dep.split("/")[1]
+                    _classify(dep_name)
+                    # Only an explicit `--platform=$BUILDPLATFORM` marks
+                    # the dep as host-referenced. Without an explicit
+                    # tag, COPY inherits the current stage's platform,
+                    # but the semantic intent is ambiguous - the dep
+                    # could be host-arch tools or target-arch content.
+                    # Force consumers to be explicit.
+                    if copy_platform == "$BUILDPLATFORM":
+                      self.host_referenced_deps.add(dep_name)
               if line.startswith("FROM stagex/"):
                 _classify(line.split(" ")[1].split("/")[1].strip())
               # Any `FROM --platform=<X> stagex/<pkg>` — the platform value
               # can be `linux/386` (stage2 xbuild), `$BUILDPLATFORM` (cross
               # mode), or any other buildkit-legal string.
               if line.startswith("FROM --platform="):
+                platform_val = line.split(" ")[1].split("=", 1)[1]
                 dep = line.split(" ")[2]
                 if dep.startswith("stagex/"):
-                  _classify(dep.split("/")[1].strip())
+                  dep_name = dep.split("/")[1].strip()
+                  _classify(dep_name)
+                  # A ref via `$BUILDPLATFORM` says: whoever consumes this
+                  # needs it at the build host's arch. Mark it so its own
+                  # build rule can honor that under MODE=cross.
+                  if platform_val == "$BUILDPLATFORM":
+                    self.host_referenced_deps.add(dep_name)
 
           package_info = CommonUtils.parse_package_toml_no_deps(package_data)
           package_info.deps = deps
