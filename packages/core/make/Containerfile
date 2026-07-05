@@ -1,10 +1,24 @@
-FROM stagex/bootstrap-stage3 AS build
+ARG BUILD_MODE=native
+
+FROM stagex/bootstrap-stage3 AS base-native
+FROM --platform=$BUILDPLATFORM stagex/core-cross-base AS base-cross
+
+FROM base-${BUILD_MODE} AS build
+ARG BUILD_MODE
 ARG TARGETARCH
 ARG VERSION
+SHELL ["/bin/sh","-l","-c"]
 ADD fetch/make-${VERSION}.tar.gz .
 WORKDIR /make-${VERSION}
 RUN --network=none <<-EOF
-	./configure \
+	# Under cross, tell autoconf we're cross-compiling so it skips
+	# runtime tests it can't execute (host is amd64, output is arm64).
+	if [ "${BUILD_MODE}" = "cross" ] && [ "$(uname -m)" != "${ARCH}" ]; then
+		HOST_ARG="--host=${TARGET}"
+	else
+		HOST_ARG=""
+	fi
+	./configure ${HOST_ARG} \
 		--prefix=/usr \
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info \
