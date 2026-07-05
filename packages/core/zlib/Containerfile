@@ -7,10 +7,13 @@ COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
 
+FROM stagex/core-musl AS musl-target
 FROM --platform=$BUILDPLATFORM stagex/core-cross-base AS base-cross
-# Overlay core-musl so cross-linked binaries carry the same
-# NEEDED libc.musl-<arch>.so.1 SONAME as native-linked ones.
-COPY --from=stagex/core-musl / /
+# Overlay core-musl so cross-linked binaries carry the same NEEDED
+# libc.musl-<arch>.so.1 SONAME as native-linked ones. Sourced from
+# the target-tagged musl (via the untagged FROM above which defaults
+# to $TARGETPLATFORM) so its libc.so matches what we're emitting.
+COPY --from=musl-target / /
 
 FROM base-${BUILD_MODE} AS build
 ARG TARGETARCH
