@@ -7,17 +7,13 @@ FROM base-${BUILD_MODE} AS build
 ARG BUILD_MODE
 ARG TARGETARCH
 ARG VERSION
+# Login shell sources /etc/profile which sets CC/CXX/CFLAGS/LDFLAGS
+# for cross-mode. Under native it's a no-op besides ARCH/PATH.
+SHELL ["/bin/sh","-l","-c"]
 ADD fetch/mimalloc-${VERSION}.tar.gz .
 WORKDIR /mimalloc-${VERSION}
 RUN --network=none <<-EOF
   set -eux
-
-  case "${TARGETARCH}" in
-    amd64)   ARCH=x86_64 ;;
-    arm64)   ARCH=aarch64 ;;
-    riscv64) ARCH=riscv64 ;;
-    *) echo "unsupported TARGETARCH: ${TARGETARCH}" >&2; exit 1 ;;
-  esac
 
   # For some reason, `mimalloc` contains binary blobs in releases, so we explicitly remove those now
   rm -rf .git bin
@@ -25,7 +21,7 @@ RUN --network=none <<-EOF
   # Required as `mimalloc` compiles in the date, time it was built
   export SOURCE_DATE_EPOCH=1
 
-  export CFLAGS="-Wformat -Werror=format-security"
+  export CFLAGS="${CFLAGS:-} -Wformat -Werror=format-security"
   export CFLAGS="$CFLAGS -O2 -fPIC"
   # Enable basic hardening
   export CFLAGS="$CFLAGS -fstack-protector-strong -fstack-clash-protection"
@@ -35,26 +31,13 @@ RUN --network=none <<-EOF
   # (using the address of a thread-local variable) won't work when building into `musl`.
   export CFLAGS="$CFLAGS -DMI_TLS_PTHREAD=1 -DMI_USE_BUILTIN_THREAD_POINTER=1"
 
-  # Under MODE=cross the RUN executes on the build host's arch;
-  # point clang at the target sysroot so the output object files
-  # are target-arch code that can link into a target-arch libc.a.
-  # Stage3's LLVM only ships compiler-rt/libunwind for the host arch,
-  # so for cross targets we fall back to what stage2-sysroot does
-  # provide: gcc's libgcc and no unwind lib. --gcc-toolchain points
-  # clang at the per-target gcc install so it finds libgcc.a.
-  if [ "${BUILD_MODE}" = "cross" ] && [ "$(uname -m)" != "${ARCH}" ]; then
-    CROSS_FLAGS="--target=${ARCH}-linux-musl --sysroot=/usr/${ARCH}-linux-musl --gcc-toolchain=/usr/${ARCH}-linux-musl -rtlib=libgcc -unwindlib=none"
-    export CC="clang ${CROSS_FLAGS}"
-    export CXX="clang++ ${CROSS_FLAGS}"
-    export CFLAGS="$CFLAGS ${CROSS_FLAGS}"
-  fi
-
   mkdir out
   cd out
 
-  # Under cross the sysroot lacks a full runtime (no libunwind, etc.)
-  # so CMake's link-based compiler probe fails. Fall back to a
-  # static-archive probe which only requires the compiler itself.
+  # Under cross the sysroot lacks a full LLVM runtime (no libunwind
+  # in per-target sysroot), so CMake's link-based compiler probe
+  # fails. Fall back to a static-archive probe which only requires
+  # the compiler itself.
   if [ "${BUILD_MODE}" = "cross" ] && [ "$(uname -m)" != "${ARCH}" ]; then
     CROSS_CMAKE_ARGS="-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY"
   else
