@@ -1,11 +1,27 @@
-FROM stagex/bootstrap-stage3 AS build
+ARG BUILD_MODE=native
+
+FROM stagex/bootstrap-stage3 AS base-native
+FROM --platform=$BUILDPLATFORM stagex/core-cross-base AS base-cross
+
+FROM base-${BUILD_MODE} AS build
+ARG BUILD_MODE
 ARG TARGETARCH
 ARG VERSION
+SHELL ["/bin/sh","-l","-c"]
 ADD fetch/libzstd-${VERSION}.tar.gz .
 WORKDIR /zstd-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
+	# Under cross, cmake's link-based compiler probe needs a runtime
+	# libunwind that stage3's LLVM doesn't ship for cross targets.
+	# Fall back to a static-archive probe (compiler-only).
+	if [ "${BUILD_MODE}" = "cross" ] && [ "$(uname -m)" != "${ARCH}" ]; then
+		CROSS_CMAKE_ARGS="-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY"
+	else
+		CROSS_CMAKE_ARGS=""
+	fi
 	cmake \
+		${CROSS_CMAKE_ARGS} \
 		-B build-cmake \
 		-S build/cmake \
 		-DCMAKE_INSTALL_PREFIX=/usr/ \
