@@ -1,11 +1,26 @@
+ARG BUILD_MODE=native
+
+FROM stagex/bootstrap-stage3 AS base-native
+FROM --platform=$BUILDPLATFORM stagex/bootstrap-stage3 AS base-cross
+# COPY --from=$var isn't allowed in buildkit; wrap the mode-picked
+# base in a fixed stage name so the build stage can COPY from it.
+FROM base-${BUILD_MODE} AS bootstrap
+
 FROM scratch AS build
+ARG BUILD_MODE
+ARG TARGETARCH
 ARG VERSION
-COPY --from=stagex/bootstrap-stage3 . /
+COPY --from=bootstrap . /
+SHELL ["/bin/sh","-l","-c"]
 ADD fetch/linux-${VERSION}.tar.xz .
 WORKDIR /linux-${VERSION}
 RUN <<-EOF
 	set -eux
-	make HOSTCC=clang headers
+	# Kernel's ARCH uses linux/arch/ subdir names, distinct from
+	# the glibc-style names in cross-base's /etc/profile ($ARCH).
+	LINUX_ARCH=$(echo "$ARCH" \
+		| sed -e 's/aarch64/arm64/' -e 's/riscv64/riscv/' -e 's/x86_64/x86/')
+	make HOSTCC=clang ARCH="$LINUX_ARCH" headers
 	mkdir -p /rootfs/usr
 	cp -a usr/include /rootfs/usr/
 	find /rootfs/usr/include/ ! -iname "*.h" -type f -exec rm -v {} \+
