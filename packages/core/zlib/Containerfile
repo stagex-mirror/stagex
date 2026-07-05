@@ -1,11 +1,17 @@
-FROM stagex/bootstrap-stage3 AS build
-ARG TARGETARCH
-ARG VERSION
+ARG BUILD_MODE=native
+
+FROM stagex/bootstrap-stage3 AS base-native
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
+
+FROM --platform=$BUILDPLATFORM stagex/core-cross-base AS base-cross
+
+FROM base-${BUILD_MODE} AS build
+ARG TARGETARCH
+ARG VERSION
 ADD fetch/zlib-${VERSION}.tar.gz .
 WORKDIR /zlib-${VERSION}
 ENV CFLAGS="-fPIC"
