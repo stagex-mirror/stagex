@@ -6,11 +6,6 @@
 # so build bodies don't need to know they're cross-compiling.
 FROM --platform=$BUILDPLATFORM stagex/bootstrap-stage3 AS build
 COPY --from=stagex/bootstrap-stage2-sysroot / /
-# Overlay core-musl so the host-arch libc SONAME matches what
-# native-mode consumer builds see (libc.musl-<arch>.so.1). Without
-# this, cross-linked binaries end up with NEEDED libc.so and drift
-# bit-identity vs native.
-COPY --from=stagex/core-musl / /
 
 FROM scratch AS package
 COPY --from=build / /
