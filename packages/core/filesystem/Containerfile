@@ -1,5 +1,11 @@
+ARG BUILD_MODE=native
+
+FROM stagex/bootstrap-stage3 AS base-native
+FROM --platform=$BUILDPLATFORM stagex/bootstrap-stage3 AS base-cross
+FROM base-${BUILD_MODE} AS bootstrap
+
 FROM scratch AS build
-COPY --from=stagex/bootstrap-stage3 . /
+COPY --from=bootstrap . /
 WORKDIR /rootfs
 RUN <<-EOF
 	install -vdm0750 root
