@@ -31,6 +31,13 @@ COPY <<-'EOF' /etc/profile
 			export CC="clang ${_XFLAGS}"
 			export CXX="clang++ ${_XFLAGS}"
 			export CFLAGS="${CFLAGS:-} ${_XFLAGS}"
+			# CXXFLAGS is picked up by cmake as CMAKE_CXX_FLAGS
+			# (it does NOT inherit from CFLAGS). Downstream C++ builds
+			# that set CMAKE_CXX_COMPILER explicitly override CXX and
+			# lose the cross flags — without CXXFLAGS, C++ compiles
+			# would produce host-arch objects that fail to link into
+			# the target-arch binary.
+			export CXXFLAGS="${CXXFLAGS:-} ${_XFLAGS}"
 			export LDFLAGS="${LDFLAGS:-} ${_XFLAGS}"
 		fi
 	fi
