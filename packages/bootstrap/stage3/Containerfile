@@ -849,6 +849,10 @@ COPY --from=linux-headers /rootfs/ /
 # Build-env only — tier-1 clang needs libstdc++ to run. Not COPYed into /rootfs.
 COPY --from=gcc-runtime /rootfs/ /
 COPY --from=llvm-bootstrap /rootfs/ /
+# Cross-target sysroots (libgcc + musl + linux headers per arch) needed
+# by the cross-runtime pass below to build compiler-rt/libunwind/libcxx/
+# libcxxabi for the non-host targets. Build-env only.
+COPY --from=stagex/bootstrap-stage2-sysroot . /
 ARG TARGETARCH
 ARG LLVM_VERSION
 ADD fetch/llvm-${LLVM_VERSION}.tar.xz /
@@ -949,6 +953,108 @@ RUN --network=none <<-EOF
 	mkdir -p /rootfs/etc/clang
 	echo "-fuse-ld=lld" > /rootfs/etc/clang/clang.cfg
 	echo "-fuse-ld=lld" > /rootfs/etc/clang/clang++.cfg
+EOF
+
+# Cross-target LLVM runtimes: build compiler-rt/libunwind/libcxx/libcxxabi
+# for each non-host target, installed under clang's per-target search path
+# so downstream MODE=cross builds find target-arch libc++/libunwind without
+# needing to bootstrap them per package.
+#
+# Uses the same separate-per-target cmake pattern as core/llvm's
+# cross-runtime pass: sequential loop, isolated build dirs, 2-pass split
+# (builtins-only via compiler-rt/lib/builtins, then runtimes via
+# runtimes/), then manual move of libunwind/libcxx/libcxxabi into the
+# per-target dir. Avoids the shared libcxx header race and cross-arch
+# install-path collisions that LLVM_RUNTIME_TARGETS hits when multiple
+# targets are configured in one top-level cmake.
+#
+# Separate RUN so cache hits on the long tier-2 build above survive
+# edits to this loop.
+RUN --network=none <<-EOF
+	MAJOR_VERSION=$(echo "$LLVM_VERSION" | cut -d'.' -f1)
+	# riscv64 deferred until we sort out its compiler-rt issues.
+	CROSS_RUNTIME_TARGETS="aarch64-linux-musl x86_64-linux-musl"
+
+	# Install tier-2 LLVM to / too — /usr/bin/clang is currently the
+	# tier-1 clang from llvm-bootstrap, which is single-target and can't
+	# cross-compile. Tier-2 is multi-target (LLVM_TARGETS_TO_BUILD covers
+	# every arch we support). Overwrites tier-1 clang at /usr/bin/clang.
+	cmake --install build
+
+	COMMON_ARGS='
+		-Wno-dev
+		-DCMAKE_BUILD_TYPE=Release
+		-DCMAKE_INSTALL_PREFIX=/usr
+		-DCMAKE_C_COMPILER=/usr/bin/clang
+		-DCMAKE_CXX_COMPILER=/usr/bin/clang++
+		-DCMAKE_AR=/usr/bin/llvm-ar
+		-DCMAKE_NM=/usr/bin/llvm-nm
+		-DCMAKE_RANLIB=/usr/bin/llvm-ranlib
+		-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY
+		-DLLVM_USE_LINKER=lld
+		-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON
+	'
+	for T in $CROSS_RUNTIME_TARGETS; do
+		if [ "$T" = "${TARGET}" ]; then
+			continue
+		fi
+		TC=$(echo "$T" | sed 's/-linux-musl$/-unknown-linux-musl/')
+
+		# Pass 1: standalone builtins-only build. Using the builtins
+		# CMakeLists directly avoids the runtimes-level orchestration
+		# that drags in libunwind before builtins are ready.
+		cmake \
+			-B build-cross-$T-rt \
+			-S compiler-rt/lib/builtins \
+			$COMMON_ARGS \
+			-DCMAKE_C_COMPILER_TARGET=$TC \
+			-DCMAKE_CXX_COMPILER_TARGET=$TC \
+			-DCMAKE_ASM_COMPILER_TARGET=$TC \
+			-DCMAKE_SYSROOT=/usr/$T \
+			-DCOMPILER_RT_STANDALONE_BUILD=ON \
+			-DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
+			-DCOMPILER_RT_INSTALL_PATH=/usr/lib/clang/$MAJOR_VERSION
+		cmake --build build-cross-$T-rt -v
+		# Install so pass 2 can find builtins via clang's per-target dir.
+		cmake --install build-cross-$T-rt
+
+		# Pass 2: libunwind/libcxx/libcxxabi against installed builtins.
+		cmake \
+			-B build-cross-$T \
+			-S runtimes \
+			$COMMON_ARGS \
+			-DCMAKE_C_COMPILER_TARGET=$TC \
+			-DCMAKE_CXX_COMPILER_TARGET=$TC \
+			-DCMAKE_ASM_COMPILER_TARGET=$TC \
+			-DCMAKE_SYSROOT=/usr/$T \
+			-DLLVM_ENABLE_RUNTIMES="libunwind;libcxx;libcxxabi" \
+			-DLIBCXX_HAS_MUSL_LIBC=ON \
+			-DLIBCXX_CXX_ABI=libcxxabi \
+			-DLIBCXX_HARDENING_MODE=fast \
+			-DLIBCXX_HAS_ATOMIC_LIB=OFF \
+			-DLIBCXX_USE_COMPILER_RT=ON \
+			-DLIBCXXABI_USE_COMPILER_RT=ON \
+			-DLIBCXXABI_USE_LLVM_UNWINDER=ON \
+			-DLIBCXXABI_HAS_CXA_THREAD_ATEXIT_IMPL=OFF \
+			-DLIBUNWIND_USE_COMPILER_RT=ON
+		cmake --build build-cross-$T -v
+		cmake --install build-cross-$T
+
+		# libunwind/libcxx/libcxxabi install to /usr/lib/ regardless of
+		# LLVM_ENABLE_PER_TARGET_RUNTIME_DIR — move them into the per-target
+		# dir so successive cross targets don't overwrite each other and so
+		# clang finds them under --target=<T> automatically.
+		TDIR=/usr/lib/clang/$MAJOR_VERSION/lib/${TC}
+		mkdir -p $TDIR
+		for f in libunwind libc++ libc++abi; do
+			mv /usr/lib/${f}.a /usr/lib/${f}.so* $TDIR/ 2>/dev/null || true
+		done
+
+		# Ship this cross target's per-target runtime dir with stage3.
+		mkdir -p /rootfs/usr/lib/clang/$MAJOR_VERSION/lib
+		cp -a $TDIR /rootfs/usr/lib/clang/$MAJOR_VERSION/lib/
+		rm -f /rootfs/usr/lib/clang/$MAJOR_VERSION/lib/${TC}/libclang_rt.nsan*
+	done
 EOF
 
 # INSTALL: tier-2 outputs only. Zero libstdc++/libgcc_s/gcc artifacts ship.
