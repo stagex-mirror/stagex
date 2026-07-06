@@ -1,25 +1,45 @@
-FROM scratch AS build
-COPY --from=stagex/bootstrap-stage3 . /
+ARG BUILD_MODE=native
 
+# Native path: target-arch stage3, overlaid with the polished core-musl
+# (matching libc SONAME) and stage2-sysroot (multi-target sysroots used
+# by the cross-target runtime pass further down).
+FROM stagex/bootstrap-stage3 AS base-native
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/bootstrap-stage2-sysroot . /
+
+# Cross path: host-arch clang+lld+multi-target sysroots from cross-base.
+# Target-arch libc/libc++/libunwind live under /usr/<TARGET>/ (from
+# stage2-sysroot) and /usr/lib/clang/22/lib/<TARGET>/ (from stage3's
+# cross-runtime pass), so no target-arch overlay on / is needed here.
+# An overlay would break LLVM's NATIVE sub-cmake, which does a host-arch
+# try_compile that pulls crt from /lib.
+FROM --platform=$BUILDPLATFORM stagex/core-cross-base AS base-cross
+
+FROM base-${BUILD_MODE} AS build
+ARG BUILD_MODE
 ARG VERSION
 ARG TARGETARCH
+# Overrides base's /etc/profile with LLVM-specific vars. Cross-mode
+# target flags are NOT injected into env here — they go through cmake
+# args below instead. Reason: LLVM's cross-compile creates a NATIVE
+# sub-cmake for host-side tools (llvm-min-tblgen), and that sub-cmake
+# inherits env CFLAGS/CXXFLAGS. If those carry --target=<TARGET>, the
+# host tool gets built for the wrong arch and the build fails.
 COPY <<-'EOF' /etc/profile
 	set -eux
 
+	export MAKEFLAGS="-j$(nproc)"
 	export MAJOR_VERSION=$(echo "$VERSION" | cut -d'.' -f1)
 
-	[[ "$TARGETARCH" == "amd64" ]] \
-		&& ARCH="x86_64" \
-		&& LLVM_TARGET_ARCH="X86"
-	[[ "$TARGETARCH" == "arm64" ]] \
-		&& ARCH="aarch64" \
-		&& LLVM_TARGET_ARCH="AArch64"
-	[[ "$TARGETARCH" == "riscv64" ]] \
-		&& ARCH="riscv64" \
-		&& LLVM_TARGET_ARCH="RISCV"
-	export ARCH
-	export MAKEFLAGS="-j$(nproc)"
+	case "${TARGETARCH:-}" in
+		amd64)   ARCH=x86_64;  LLVM_TARGET_ARCH=X86 ;;
+		arm64)   ARCH=aarch64; LLVM_TARGET_ARCH=AArch64 ;;
+		riscv64) ARCH=riscv64; LLVM_TARGET_ARCH=RISCV ;;
+	esac
+	export ARCH LLVM_TARGET_ARCH
 	export BUILD=${ARCH}-unknown-linux-musl
+	# LLVM canonicalizes triples with -unknown- inserted, so the per-target
+	# runtime dir installs under this name (LIBCC path below relies on it).
 	export TARGET=${ARCH}-unknown-linux-musl
 	# Host-arch runtime target. Cross-target runtimes are built out-of-tree
 	# further down (LLVM's multi-target LLVM_RUNTIME_TARGETS races on shared
@@ -57,6 +77,62 @@ RUN --network=none <<-EOF
 	    CMAKE_ARGS="$CMAKE_ARGS -DRUNTIMES_${T}_$1=$2"
 	  done
 	}
+
+	# Under cross-mode: tell cmake we're cross-compiling AND route the
+	# target flags (--target/--sysroot) through cmake args, NOT through
+	# env CFLAGS/CXXFLAGS. LLVM's own cross-compile creates a NATIVE
+	# sub-cmake for host-side tools like llvm-min-tblgen; that sub-cmake
+	# inherits parent env vars but not top-level cmake -D args, so
+	# keeping target flags in cmake args scopes them to the target
+	# build tree only.
+	#
+	# STATIC_LIBRARY try_compile skips the link step stage3's LLVM
+	# can't service for cross targets.
+	#
+	# Default -rtlib=compiler-rt and -unwindlib=libunwind work directly
+	# because bootstrap-stage3 now ships aarch64 compiler-rt/libunwind/
+	# libc++/libc++abi under clang's per-target search dir.
+	#
+	# LLVM's RUNTIMES sub-cmake IS independent of the top-level, so
+	# repeat all the cross settings with the RUNTIMES_<T>_ prefix.
+	if [ "${BUILD_MODE}" = "cross" ] && [ "$(uname -m)" != "${ARCH}" ]; then
+	  cmake_cache_set CMAKE_SYSTEM_NAME Linux
+	  cmake_cache_set CMAKE_SYSTEM_PROCESSOR "$ARCH"
+	  cmake_cache_set CMAKE_CROSSCOMPILING TRUE
+	  cmake_cache_set CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY
+	  cmake_cache_set CMAKE_C_COMPILER_TARGET "${ARCH}-linux-musl"
+	  cmake_cache_set CMAKE_CXX_COMPILER_TARGET "${ARCH}-linux-musl"
+	  cmake_cache_set CMAKE_ASM_COMPILER_TARGET "${ARCH}-linux-musl"
+	  cmake_cache_set CMAKE_SYSROOT "/usr/${ARCH}-linux-musl"
+	  # Pin find_package to the target sysroot so cmake doesn't detect
+	  # host-arch zlib at /usr/lib and leak -I/usr/include into compile
+	  # lines. -I/usr/include prepends host system headers before
+	  # libc++'s, which breaks libc++'s "did we find our own stddef.h"
+	  # include-order sanity check.
+	  cmake_cache_set CMAKE_FIND_ROOT_PATH "/usr/${ARCH}-linux-musl"
+	  cmake_cache_set CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY
+	  cmake_cache_set CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY
+	  cmake_cache_set CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY
+	  cmake_cache_set CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER
+	  # Sysroot has no zlib/zstd so keep them off to avoid feature-detection
+	  # divergence between native and cross builds.
+	  cmake_cache_set LLVM_ENABLE_ZLIB OFF
+	  cmake_cache_set LLVM_ENABLE_ZSTD OFF
+	  cmake_runtime_cache_set CMAKE_SYSTEM_NAME Linux
+	  cmake_runtime_cache_set CMAKE_SYSTEM_PROCESSOR "$ARCH"
+	  cmake_runtime_cache_set CMAKE_CROSSCOMPILING TRUE
+	  cmake_runtime_cache_set CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY
+	  cmake_runtime_cache_set CMAKE_C_COMPILER_TARGET "${ARCH}-linux-musl"
+	  cmake_runtime_cache_set CMAKE_CXX_COMPILER_TARGET "${ARCH}-linux-musl"
+	  cmake_runtime_cache_set CMAKE_ASM_COMPILER_TARGET "${ARCH}-linux-musl"
+	  cmake_runtime_cache_set CMAKE_SYSROOT "/usr/${ARCH}-linux-musl"
+	  # Under CMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY libcxxabi's
+	  # detection can't probe symbol availability via a link and wrongly
+	  # defaults __cxa_thread_atexit_impl to ON; musl doesn't ship it,
+	  # so libc++abi.so fails to link with undefined symbol. Force OFF
+	  # (matches the cross-runtimes pass below).
+	  cmake_runtime_cache_set LIBCXXABI_HAS_CXA_THREAD_ATEXIT_IMPL OFF
+	fi
 
 	# Configure the build itself
 	cmake_cache_set CMAKE_BUILD_TYPE Release
@@ -121,14 +197,14 @@ RUN --network=none <<-EOF
 	echo "$CMAKE_ARGS" > ./cmake_args
 EOF
 
-COPY --from=stagex/core-musl . /
-COPY --from=stagex/bootstrap-stage2-sysroot . /
-
 RUN --network=none <<-EOF
 	export LIBCC="/usr/lib/clang/$MAJOR_VERSION/lib/${TARGET}/libclang_rt.builtins.a"
 
-	export CFLAGS="-fPIC"
-	export CXXFLAGS="$CFLAGS"
+	# Append -fPIC (rather than overwrite) so cross-mode --target/--sysroot
+	# from /etc/profile survive. `${var:+$var }` preserves the empty-CFLAGS
+	# case exactly (no leading space) for MODE=native bit-identity.
+	export CFLAGS="${CFLAGS:+$CFLAGS }-fPIC"
+	export CXXFLAGS="${CXXFLAGS:+$CXXFLAGS }-fPIC"
 
 	#HACK: The only reason we are not using "all" here is because AMDGPU does not build deterministically
 	# Zig hard requires "all" so this also forces a messy patch there as well to remove AMDGPU support as well
@@ -175,8 +251,11 @@ EOF
 RUN --network=none <<-EOF
 	export LIBCC="/usr/lib/clang/$MAJOR_VERSION/lib/${TARGET}/libclang_rt.builtins.a"
 
-	export CFLAGS="-fPIC"
-	export CXXFLAGS="$CFLAGS"
+	# Append -fPIC (rather than overwrite) so cross-mode --target/--sysroot
+	# from /etc/profile survive. `${var:+$var }` preserves the empty-CFLAGS
+	# case exactly (no leading space) for MODE=native bit-identity.
+	export CFLAGS="${CFLAGS:+$CFLAGS }-fPIC"
+	export CXXFLAGS="${CXXFLAGS:+$CXXFLAGS }-fPIC"
 
 	CMAKE_ARGS="$(cat ./cmake_args)"
 	cmake_cache_set() {
@@ -189,9 +268,16 @@ RUN --network=none <<-EOF
 	}
 
 	# Now that we've already built everything else, we additionally build the sanitizers
-	# and lldb.
-	cmake_cache_set LLVM_ENABLE_PROJECTS "clang;lld;lldb"
-	cmake_runtime_cache_set COMPILER_RT_BUILD_SANITIZERS ON
+	# and lldb. Skipped under MODE=cross — LLVM's per-target library search
+	# doesn't reliably find just-built cross libc++ when linking sanitizer
+	# runtimes (e.g. tsan hits -lc++ not found), and lldb has additional
+	# cross-compilation quirks. Cross builds get pass-1's clang+lld without
+	# lldb or sanitizers; the primary goal is a functional target-arch
+	# toolchain, not the full development stack.
+	if [ "${BUILD_MODE}" != "cross" ] || [ "$(uname -m)" = "${ARCH}" ]; then
+		cmake_cache_set LLVM_ENABLE_PROJECTS "clang;lld;lldb"
+		cmake_runtime_cache_set COMPILER_RT_BUILD_SANITIZERS ON
+	fi
 
 	cmake \
 		-B build \
@@ -221,6 +307,13 @@ EOF
 # builds avoid the shared-header race that LLVM's LLVM_RUNTIME_TARGETS hits
 # when multiple targets are configured in a single top-level cmake.
 RUN --network=none <<-EOF
+	# Each iteration below builds for a DIFFERENT target than the main
+	# build. Under MODE=cross the profile leaks --target/--sysroot into
+	# CFLAGS/LDFLAGS pointing at the main target — clear them so each
+	# cross-target's explicit CMAKE_C_COMPILER_TARGET / CMAKE_SYSROOT
+	# wins unambiguously. No-op under MODE=native (CFLAGS empty).
+	unset CFLAGS CXXFLAGS LDFLAGS CC CXX
+
 	# Shared cmake args for all runtime passes. Clang canonicalizes T to
 	# <arch>-unknown-linux-musl when computing its per-target runtime
 	# search path, so we tag build artifacts with -unknown- but keep the
