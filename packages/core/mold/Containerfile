@@ -1,5 +1,6 @@
-FROM scratch AS build
-ARG VERSION
+ARG BUILD_MODE=native
+
+FROM stagex/bootstrap-stage3 AS base-native
 COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-zlib . /
@@ -10,8 +11,36 @@ COPY --from=stagex/core-samurai . /
 COPY --from=stagex/core-cmake . /
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-onetbb . /
-COPY --from=stagex/core-filesystem . /
 COPY --from=stagex/core-linux-headers . /
+
+# cross-base ships stage3's toolchain but not samurai (ninja). Pull it
+# at host arch via a named intermediate stage — `COPY --from=$var` and
+# `COPY --platform=` aren't valid buildkit syntax.
+#
+# Target-arch libraries (onetbb, libzstd, zlib) go into the sysroot,
+# not into /usr/lib. Overlaying an aarch64 libz.so onto /usr/lib/libz.so
+# breaks the host clang (LLVM's libLTO dynamically loads libz). Placing
+# them at /usr/aarch64-linux-musl/usr/{lib,include}/ keeps host tools
+# working and lets clang --sysroot find them at link time.
+FROM --platform=$BUILDPLATFORM stagex/core-samurai AS samurai-host
+FROM stagex/core-onetbb AS onetbb-target
+FROM stagex/core-libzstd AS libzstd-target
+FROM stagex/core-zlib AS zlib-target
+FROM --platform=$BUILDPLATFORM stagex/core-cross-base AS base-cross
+ARG TARGETARCH
+COPY --from=samurai-host . /
+# TARGETARCH is only known at build time, so we can't COPY into a
+# per-arch dir directly. Land the target-arch packages in a staging
+# root and mv them into the arch-specific sysroot in the RUN block.
+COPY --from=onetbb-target /usr /cross-stage/usr
+COPY --from=libzstd-target /usr /cross-stage/usr
+COPY --from=zlib-target /usr /cross-stage/usr
+
+FROM base-${BUILD_MODE} AS build
+ARG BUILD_MODE
+ARG TARGETARCH
+ARG VERSION
+SHELL ["/bin/sh","-l","-c"]
 ADD fetch/mold-${VERSION}.tar.gz .
 WORKDIR /mold-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
@@ -27,7 +56,40 @@ RUN --network=none <<-EOF
 	rm -rf third-party
 	mv used-third-party third-party
 
-	cmake -B build -G Ninja \
+	case "${TARGETARCH}" in
+		amd64)   ARCH=x86_64  ;;
+		arm64)   ARCH=aarch64 ;;
+		riscv64) ARCH=riscv64 ;;
+	esac
+	if [ "${BUILD_MODE}" = "cross" ] && [ "$(uname -m)" != "${ARCH}" ]; then
+		# Relocate the staged target-arch deps into the sysroot so
+		# clang --sysroot and cmake CMAKE_SYSROOT-scoped find_* pick
+		# them up without polluting host /usr/lib. `cp -a` can't overlay
+		# into the sysroot's existing symlinked lib/include dirs; a
+		# tar-pipe merges by dereferencing destination symlinks.
+		mkdir -p /usr/${ARCH}-linux-musl/usr
+		tar -C /cross-stage -cf - . | tar -C /usr/${ARCH}-linux-musl -xf -
+		# TBB was installed with prefix /usr, so its TBBTargets.cmake
+		# hardcodes _IMPORT_PREFIX="/usr" (adds -isystem /usr/include
+		# to consumers, shadowing sysrooted headers) and its
+		# IMPORTED_LOCATION points at /usr/lib/libtbb.so.… . Rewrite
+		# both to the sysrooted paths. realpath collapses lib → lib64
+		# symlinks so the sed runs against a single canonical file.
+		TBB_CFG_DIR=$(realpath /usr/${ARCH}-linux-musl/usr/lib/cmake/TBB)
+		sed -i "s|set(_IMPORT_PREFIX \"/usr\")|set(_IMPORT_PREFIX \"/usr/${ARCH}-linux-musl/usr\")|" \
+			"$TBB_CFG_DIR"/TBBTargets.cmake
+		sed -i "s|\"/usr/lib/|\"/usr/${ARCH}-linux-musl/usr/lib/|g" \
+			"$TBB_CFG_DIR"/TBBTargets-*.cmake
+		CROSS_CMAKE_ARGS="\
+			-DCMAKE_SYSTEM_NAME=Linux \
+			-DCMAKE_SYSTEM_PROCESSOR=${ARCH} \
+			-DCMAKE_CROSSCOMPILING=TRUE \
+			-DCMAKE_SYSROOT=/usr/${ARCH}-linux-musl \
+			-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY"
+	else
+		CROSS_CMAKE_ARGS=""
+	fi
+	cmake ${CROSS_CMAKE_ARGS} -B build -G Ninja \
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DCMAKE_INSTALL_LIBDIR=/usr/lib \
 		-DCMAKE_BUILD_TYPE=Release \
