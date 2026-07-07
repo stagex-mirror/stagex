@@ -1,5 +1,6 @@
-FROM scratch AS build
-ARG VERSION
+ARG BUILD_MODE=native
+
+FROM stagex/bootstrap-stage3 AS base-native
 COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/core-zlib . /
@@ -11,17 +12,52 @@ COPY --from=stagex/core-cmake . /
 COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-libucontext . /
 COPY --from=stagex/core-linux-headers . /
+
+# cross-base has stage3's toolchain (clang, cmake, make, python) but
+# not samurai (ninja). Pull it at host arch via a named intermediate
+# stage — `COPY --from=$var` and `COPY --platform=` aren't valid
+# buildkit syntax.
+FROM --platform=$BUILDPLATFORM stagex/core-samurai AS samurai-host
+FROM --platform=$BUILDPLATFORM stagex/core-cross-base AS base-cross
+COPY --from=samurai-host . /
+
+FROM base-${BUILD_MODE} AS build
+ARG BUILD_MODE
+ARG TARGETARCH
+ARG VERSION
+SHELL ["/bin/sh","-l","-c"]
 ADD fetch/onetbb-${VERSION}.tar.gz .
 WORKDIR /oneTBB-${VERSION}
 ENV LDFLAGS="-Wl,--undefined-version"
 RUN --network=none <<-EOF
 	set -ex
-	cmake -B build -G Ninja \
+	case "${TARGETARCH}" in
+		amd64)   ARCH=x86_64  ;;
+		arm64)   ARCH=aarch64 ;;
+		riscv64) ARCH=riscv64 ;;
+	esac
+	# Under cross:
+	# - CMAKE_SYSTEM_NAME/PROCESSOR/CROSSCOMPILING so TBB's arch
+	#   detection sees the target (aarch64), not the host (amd64) —
+	#   otherwise TBB adds x86-only flags like -mrtm/-mwaitpkg to
+	#   every compile and clang errors out.
+	# - STATIC_LIBRARY try_compile probe (compile-only, no link) since
+	#   host tools can't execute target binaries.
+	if [ "${BUILD_MODE}" = "cross" ] && [ "$(uname -m)" != "${ARCH}" ]; then
+		CROSS_CMAKE_ARGS="\
+			-DCMAKE_SYSTEM_NAME=Linux \
+			-DCMAKE_SYSTEM_PROCESSOR=${ARCH} \
+			-DCMAKE_CROSSCOMPILING=TRUE \
+			-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY"
+	else
+		CROSS_CMAKE_ARGS=""
+	fi
+	cmake ${CROSS_CMAKE_ARGS} -B build -G Ninja \
 		-DCMAKE_INSTALL_PREFIX=/usr/ \
 		-DCMAKE_INSTALL_LIBDIR=/usr/lib \
 		-DTBB4PY_BUILD=OFF \
-    -DTBB_STRICT=OFF \
-    -DTBB_TEST=OFF
+		-DTBB_STRICT=OFF \
+		-DTBB_TEST=OFF
 	cmake --build build
 	DESTDIR="/rootfs" cmake --install build
 EOF
