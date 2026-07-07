@@ -1,5 +1,6 @@
-FROM scratch AS build
-ARG VERSION
+ARG BUILD_MODE=native
+
+FROM stagex/bootstrap-stage3 AS base-native
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-libzstd . /
@@ -8,13 +9,39 @@ COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-perl . /
 COPY --from=stagex/core-linux-headers . /
+
+# openssl's Configure is a perl script; cross-base's stage3 doesn't
+# include perl. Pull it at host arch via a named intermediate stage
+# since `COPY --from=$var` and `COPY --platform=` aren't supported.
+FROM --platform=$BUILDPLATFORM stagex/core-perl AS perl-host
+FROM --platform=$BUILDPLATFORM stagex/core-cross-base AS base-cross
+COPY --from=perl-host . /
+
+FROM base-${BUILD_MODE} AS build
+ARG BUILD_MODE
+ARG TARGETARCH
+ARG VERSION
+SHELL ["/bin/sh","-l","-c"]
 ADD fetch/openssl-${VERSION}.tar.gz .
 WORKDIR /openssl-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 ENV CC='clang -fPIE -pie'
 RUN --network=none <<-EOF
 	set -eux
-	ARCH="$(uname -m)"
+	# Derive ARCH from TARGETARCH, not uname -m — under MODE=cross
+	# uname reports host arch, but we want the target for openssl's
+	# `linux-<ARCH>` Configure target and clang's --target.
+	case "${TARGETARCH}" in
+		amd64)   ARCH=x86_64  ;;
+		arm64)   ARCH=aarch64 ;;
+		riscv64) ARCH=riscv64 ;;
+	esac
+	# Under MODE=cross the profile injects --target/--sysroot into CC
+	# and strips openssl's -fPIE -pie ENV; re-apply here so both flags
+	# and the cross target are set together.
+	if [ "${BUILD_MODE}" = "cross" ] && [ "$(uname -m)" != "${ARCH}" ]; then
+		export CC="clang -fPIE -pie --target=${ARCH}-linux-musl --sysroot=/usr/${ARCH}-linux-musl"
+	fi
 	perl ./Configure \
 		--prefix=/usr \
 		--libdir=lib \
