@@ -1,0 +1,4 @@
+[package]
+name = "aws-ami"
+version = "2026.03.0"
+description = "AWS AMI box — uploads /system.img to S3 and creates a named AMI via OpenTofu"

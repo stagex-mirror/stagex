@@ -1,0 +1,15 @@
+FROM stagex/user-opentofu AS user-opentofu
+FROM stagex/user-aws-cli AS user-aws-cli
+FROM stagex/core-busybox AS core-busybox
+FROM stagex/core-musl AS core-musl
+FROM stagex/core-zlib AS core-zlib
+
+FROM scratch AS package
+COPY --from=core-busybox . /
+COPY --from=core-musl . /
+COPY --from=core-zlib . /
+COPY --from=user-opentofu . /
+COPY --from=user-aws-cli . /
+COPY src/box /usr/bin/box
+COPY src/aws-ami.tf /default/aws-ami.tf
+RUN chmod +x /usr/bin/box

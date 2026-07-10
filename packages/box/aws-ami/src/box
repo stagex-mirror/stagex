@@ -1,0 +1,42 @@
+#!/usr/bin/sh
+# box — uploads /system.img to S3 and creates a named AMI via OpenTofu
+set -eux
+
+# --- Inputs (env vars) ---
+AWS_BUCKET="${AWS_BUCKET:?required: S3 bucket name}"
+AWS_REGION="${AWS_REGION:?required: AWS region}"
+AMI_NAME="${AMI_NAME:?required: name for the resulting AMI}"
+SYSTEM_IMG="/system.img"
+
+# --- Validate input ---
+if [ ! -f "$SYSTEM_IMG" ]; then
+    echo "ERROR: $SYSTEM_IMG not found"
+    exit 1
+fi
+
+echo "Uploading $SYSTEM_IMG to s3://${AWS_BUCKET}/..."
+
+# Upload to S3
+aws s3 cp "$SYSTEM_IMG" "s3://${AWS_BUCKET}/$(basename "$SYSTEM_IMG")" \
+    --region "$AWS_REGION"
+
+# Get image size in bytes
+IMG_SIZE=$(stat -c%s "$SYSTEM_IMG")
+
+# Write OpenTofu variables
+mkdir -p /run
+cat > /run/aws-ami.tfvars <<EOF
+bucket = "${AWS_BUCKET}"
+key = "$(basename "$SYSTEM_IMG")"
+region = "${AWS_REGION}"
+ami_name = "${AMI_NAME}"
+image_size_bytes = ${IMG_SIZE}
+EOF
+
+# Run OpenTofu
+cd /default
+tofu init -input=false
+tofu apply -auto-approve -var-file=/run/aws-ami.tfvars
+
+echo ""
+echo "AMI created: $(tofu output ami_id 2>/dev/null || echo 'check tofu output')"
