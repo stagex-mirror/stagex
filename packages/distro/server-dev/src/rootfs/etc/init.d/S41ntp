@@ -1,0 +1,51 @@
+#!/bin/sh
+DAEMON="ntpd"
+PIDFILE="/var/run/$DAEMON.pid"
+
+[ -f /usr/bin/ntpd ] || exit 0
+
+start() {
+	printf "Starting %s: " "$DAEMON"
+	# Wait for DHCP to complete and network to be ready
+	for i in $(seq 1 30); do
+		if ip route get 1.1.1.1 >/dev/null 2>&1; then
+			break
+		fi
+		sleep 1
+	done
+	# Set time using ntpdate first, then run ntpd in background
+	/usr/bin/ntpd -d -n -p 0.pool.ntp.org -p 1.pool.ntp.org -p 2.pool.ntp.org -p 3.pool.ntp.org 2>/var/log/ntpd.log &
+	echo "$!" > "$PIDFILE"
+	if [ -f "$PIDFILE" ]; then
+		echo "OK"
+	else
+		echo "FAIL"
+	fi
+}
+
+stop() {
+	printf "Stopping %s: " "$DAEMON"
+	if [ -f "$PIDFILE" ]; then
+		kill "$(cat "$PIDFILE")" 2>/dev/null
+		rm -f "$PIDFILE"
+	fi
+	echo "OK"
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart)
+		stop
+		start
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart}"
+		exit 1
+esac
+
+exit $?

@@ -1,0 +1,6 @@
+FROM stagex/pallet-qemu AS package
+COPY --from=stagex/user-openssh AS openssh-client . /
+COPY src/qemu-startup.sh /usr/bin/qemu-startup.sh
+RUN chmod +x /usr/bin/qemu-startup.sh
+
+ENTRYPOINT ["/usr/bin/qemu-startup.sh"]

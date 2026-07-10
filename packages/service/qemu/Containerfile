@@ -1,0 +1,84 @@
+FROM stagex/user-qemu AS user-qemu
+FROM stagex/user-canokey-qemu AS user-canokey-qemu
+FROM stagex/user-swtpm AS user-swtpm
+FROM stagex/user-seabios AS user-seabios
+FROM stagex/user-edk2 AS user-edk2
+FROM stagex/user-grub AS user-grub
+FROM stagex/user-ipxe AS user-ipxe
+FROM stagex/user-libtpms AS user-libtpms
+FROM stagex/user-tpm2-tss AS user-tpm2-tss
+FROM stagex/user-tpm2-tools AS user-tpm2-tools
+FROM stagex/core-llvm AS core-llvm
+FROM stagex/core-zlib AS core-zlib
+FROM stagex/core-openssl AS core-openssl
+FROM stagex/core-curl AS core-curl
+FROM stagex/core-musl AS core-musl
+FROM stagex/core-busybox AS core-busybox
+FROM stagex/core-libffi AS core-libffi
+FROM stagex/core-libzstd AS core-libzstd
+FROM stagex/core-xz AS core-xz
+FROM stagex/user-glib AS user-glib
+FROM stagex/user-json-glib AS user-json-glib
+FROM stagex/user-lzo AS user-lzo
+FROM stagex/user-dtc AS user-dtc
+FROM stagex/user-numactl AS user-numactl
+FROM stagex/user-libaio AS user-libaio
+FROM stagex/user-libseccomp AS user-libseccomp
+FROM stagex/user-libslirp AS user-libslirp
+FROM stagex/user-libusb AS user-libusb
+FROM stagex/user-sdtool AS user-sdtool
+FROM stagex/user-libevent AS user-libevent
+FROM stagex/core-ncurses AS core-ncurses
+FROM stagex/user-tmux AS user-tmux
+FROM stagex/user-util-linux AS user-util-linux
+FROM stagex/core-libunwind AS core-libunwind
+FROM stagex/user-socat AS user-socat
+FROM stagex/user-alsa-lib AS user-alsa-lib
+FROM stagex/user-openssh AS user-openssh
+
+FROM scratch
+COPY --from=core-busybox . /
+COPY --from=core-musl . /
+COPY --from=core-zlib . /
+COPY --from=core-xz . /
+COPY --from=core-libzstd . /
+COPY --from=core-llvm . /
+COPY --from=core-openssl . /
+COPY --from=core-curl . /
+COPY --from=core-libffi . /
+COPY --from=core-libunwind . /
+COPY --from=core-ncurses . /
+COPY --from=user-glib . /
+COPY --from=user-json-glib . /
+COPY --from=user-alsa-lib . /
+COPY --from=user-lzo . /
+COPY --from=user-dtc . /
+COPY --from=user-numactl . /
+COPY --from=user-libaio . /
+COPY --from=user-libseccomp . /
+COPY --from=user-libslirp . /
+COPY --from=user-libusb . /
+COPY --from=user-sdtool . /
+COPY --from=user-libevent . /
+COPY --from=user-tmux . /
+COPY --from=user-util-linux . /
+COPY --from=user-qemu . /
+COPY --from=user-canokey-qemu . /
+COPY --from=user-swtpm . /
+COPY --from=user-seabios . /
+COPY --from=user-edk2 . /
+COPY --from=user-grub . /
+COPY --from=user-ipxe . /
+COPY --from=user-libtpms . /
+COPY --from=user-tpm2-tss . /
+COPY --from=user-tpm2-tools . /
+COPY --from=user-canokey-qemu . /
+COPY --from=user-socat . /
+COPY --from=user-openssh . /
+COPY src/qemu-boot.sh /usr/bin/qemu-boot.sh
+COPY src/qemu-startup.sh /usr/bin/qemu-startup.sh
+COPY src/run /usr/bin/run
+RUN chmod +x /usr/bin/qemu-boot.sh /usr/bin/qemu-startup.sh /usr/bin/run
+
+ENTRYPOINT ["/usr/bin/qemu-startup.sh"]
+

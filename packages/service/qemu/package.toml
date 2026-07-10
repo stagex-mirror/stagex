@@ -1,0 +1,5 @@
+[package]
+name = "qemu"
+version_from = "user-qemu"
+description = "QEMU system emulator with TPM, OVMF, and networking support"
+

@@ -1,0 +1,44 @@
+#!/usr/bin/sh
+# run — access the guest VM
+#
+# Usage:
+#   docker exec -it qemu-server-dev run console   # raw serial console (universal)
+#   docker exec -it qemu-server-dev run ssh       # interactive shell via SSH
+#   docker exec -t  qemu-server-dev run ssh <...> # run command via SSH
+
+set -e
+
+KEY="/ssh_host_key"
+SSH_OPTS="-o StrictHostKeyChecking=no \
+          -o UserKnownHostsFile=/dev/null \
+          -o LogLevel=ERROR \
+          -i $KEY \
+          -p 2222 \
+          root@127.0.0.1"
+CONSOLE_SOCKET="${CONSOLE_SOCKET:-/run/qemu-vm/console.sock}"
+
+if [ "$1" = "console" ]; then
+    exec socat - UNIX-CONNECT:"$CONSOLE_SOCKET"
+elif [ "$1" = "ssh" ]; then
+    # Wait for SSH if not ready yet
+    if ! /bin/nc -z -w 2 127.0.0.1 2222 2>/dev/null; then
+        echo "Waiting for guest SSH ..." >&2
+        for i in $(seq 1 30); do
+            if /bin/nc -z -w 2 127.0.0.1 2222 2>/dev/null; then
+                break
+            fi
+            sleep 1
+        done
+    fi
+    shift
+    if [ $# -eq 0 ]; then
+        # Interactive shell
+        exec ssh $SSH_OPTS
+    else
+        # Run command
+        exec ssh $SSH_OPTS "$@"
+    fi
+else
+    echo "Usage: run {console|ssh} [args...]" >&2
+    exit 1
+fi

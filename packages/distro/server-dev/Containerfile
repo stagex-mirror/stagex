@@ -1,0 +1,278 @@
+FROM stagex/user-alsa-lib AS user-alsa-lib
+FROM stagex/core-bash AS core-bash
+FROM stagex/core-bc AS core-bc
+FROM stagex/core-busybox AS core-busybox
+FROM stagex/user-ccid AS user-ccid
+FROM stagex/user-cpio AS user-cpio
+FROM stagex/core-curl AS core-curl
+FROM stagex/user-dtc AS user-dtc
+FROM stagex/user-eudev AS user-eudev
+FROM stagex/user-flashtools AS user-flashtools
+FROM stagex/core-llvm AS core-llvm
+FROM stagex/user-glib AS user-glib
+FROM stagex/core-gmp AS core-gmp
+FROM stagex/user-grub AS user-grub
+FROM stagex/user-ipxe AS user-ipxe
+FROM stagex/user-jq AS user-jq
+FROM stagex/user-libaio AS user-libaio
+FROM stagex/user-libassuan AS user-libassuan
+FROM stagex/core-libffi AS core-libffi
+FROM stagex/user-libgcrypt AS user-libgcrypt
+FROM stagex/user-libksba AS user-libksba
+FROM stagex/user-libqrencode AS user-libqrencode
+FROM stagex/user-libseccomp AS user-libseccomp
+FROM stagex/user-libslirp AS user-libslirp
+FROM stagex/user-libtpms AS user-libtpms
+FROM stagex/core-libunwind AS core-libunwind
+FROM stagex/user-libusb AS user-libusb
+FROM stagex/core-libzstd AS core-libzstd
+FROM stagex/user-lzo AS user-lzo
+FROM stagex/user-mtools AS user-mtools
+FROM stagex/core-musl AS core-musl
+FROM stagex/user-npth AS user-npth
+FROM stagex/user-numactl AS user-numactl
+FROM stagex/user-opensc AS user-opensc
+FROM stagex/core-openssl AS core-openssl
+FROM stagex/user-pcsc-lite AS user-pcsc-lite
+FROM stagex/user-pcsc-tools AS user-pcsc-tools
+FROM stagex/user-qemu AS user-qemu
+FROM stagex/user-canokey-qemu AS user-canokey-qemu
+FROM stagex/user-sdtool AS user-sdtool
+FROM stagex/user-seabios AS user-seabios
+FROM stagex/user-sops AS user-sops
+FROM stagex/core-zlib AS core-zlib
+FROM stagex/core-sqlite3 AS core-sqlite3
+FROM stagex/user-swtpm AS user-swtpm
+FROM stagex/user-tpm2-tools AS user-tpm2-tools
+FROM stagex/user-tpm2-tss AS user-tpm2-tss
+FROM stagex/user-util-linux AS user-util-linux
+FROM stagex/user-xorriso AS user-xorriso
+FROM stagex/core-xz AS core-xz
+FROM stagex/user-yq AS user-yq
+FROM stagex/user-edk2 AS user-edk2
+FROM stagex/core-ca-certificates AS core-ca-certificates
+FROM stagex/user-linux-server AS user-linux-server
+FROM stagex/user-socat AS user-socat
+FROM stagex/user-dhcpcd AS user-dhcpcd
+FROM stagex/core-ncurses AS core-ncurses
+FROM stagex/user-libevent AS user-libevent
+FROM stagex/user-tmux AS user-tmux
+FROM stagex/user-openssh AS user-openssh
+FROM stagex/user-fuse3 AS user-fuse3
+FROM stagex/user-iptables AS user-iptables
+FROM stagex/user-e2fsprogs AS user-e2fsprogs
+FROM stagex/user-docker AS user-docker
+FROM stagex/user-docker-cli-buildx AS user-docker-cli-buildx
+FROM stagex/user-buildkit AS user-buildkit
+FROM stagex/user-runc AS user-runc
+FROM stagex/user-containerd AS user-containerd
+FROM stagex/user-tini AS user-tini
+FROM stagex/core-filesystem AS core-filesystem
+FROM stagex/core-git AS core-git
+FROM stagex/core-make AS core-make
+
+FROM scratch AS base
+ARG VERSION development
+ARG GIT_TIMESTAMP null
+ARG GIT_AUTHOR null
+ARG GIT_REF null
+ARG GIT_PUBKEY null
+COPY authorized_keys /
+COPY --from=core-busybox . /
+COPY --from=core-musl . /
+COPY --from=core-xz . /
+COPY --from=core-libzstd . /
+COPY --from=core-zlib . /
+COPY --from=user-xorriso . /
+COPY --from=user-cpio . /
+COPY --from=user-mtools . /
+COPY --from=user-grub . /
+
+FROM base AS dev
+COPY --from=core-llvm . /
+COPY --from=core-zlib . /
+COPY --from=user-glib . /
+COPY --from=user-alsa-lib . /
+COPY --from=user-lzo . /
+COPY --from=user-dtc . /
+COPY --from=user-numactl . /
+COPY --from=user-libaio . /
+COPY --from=user-libseccomp . /
+COPY --from=core-libffi . /
+COPY --from=user-libslirp . /
+COPY --from=user-seabios . /
+COPY --from=user-ipxe . /
+COPY --from=user-qemu . /
+COPY --from=user-canokey-qemu . /
+COPY --from=user-swtpm . /
+COPY --from=core-openssl . /
+COPY --from=core-curl . /
+COPY --from=user-libtpms . /
+COPY --from=user-tpm2-tss . /
+COPY --from=user-tpm2-tools . /
+COPY --from=user-edk2 . /
+COPY --from=user-grub . /
+
+FROM base AS build
+ARG USERNAME=user
+ARG HOSTNAME=sxos
+ARG AUTHORIZED_KEYS=empty
+COPY authorized_keys /
+COPY --from=user-openssh . /
+COPY --from=core-openssl . /
+COPY --from=core-filesystem . initramfs
+COPY --from=user-linux-server /bzImage iso/boot/vmlinuz
+COPY --from=core-busybox . initramfs
+COPY --from=user-eudev . initramfs
+COPY --from=core-musl . initramfs
+COPY --from=core-zlib . initramfs
+COPY --from=user-npth . initramfs
+COPY --from=user-libksba . initramfs
+COPY --from=core-bash . initramfs
+COPY --from=user-flashtools . initramfs
+COPY --from=core-curl . initramfs
+COPY --from=user-tpm2-tools . initramfs
+COPY --from=user-tpm2-tss . initramfs
+COPY --from=core-openssl . initramfs
+COPY --from=user-libusb . initramfs
+COPY --from=user-ccid . initramfs
+COPY --from=user-pcsc-lite . initramfs
+COPY --from=user-pcsc-tools . initramfs
+COPY --from=user-libqrencode . initramfs
+COPY --from=core-gmp . initramfs
+COPY --from=core-libunwind . initramfs
+COPY --from=user-opensc . initramfs
+COPY --from=user-util-linux . initramfs
+COPY --from=core-llvm /usr/lib/. initramfs/usr/lib/
+COPY --from=core-sqlite3 . initramfs
+COPY --from=user-libslirp . initramfs
+COPY --from=user-glib . initramfs
+COPY --from=user-numactl . initramfs
+COPY --from=core-libzstd . initramfs
+COPY --from=core-zlib . initramfs
+COPY --from=user-lzo . initramfs
+COPY --from=user-dtc . initramfs
+COPY --from=user-libaio . initramfs
+COPY --from=user-libseccomp . initramfs
+COPY --from=core-libffi . initramfs
+COPY --from=core-libzstd . initramfs
+COPY --from=core-zlib . initramfs
+COPY --from=core-ncurses . initramfs
+COPY --from=user-tmux . initramfs
+COPY --from=user-dhcpcd . initramfs
+COPY --from=user-openssh . initramfs
+COPY --from=core-openssl . initramfs
+COPY --from=core-zlib . initramfs
+COPY src/rootfs/ initramfs
+COPY --from=core-bash . initramfs
+RUN <<-EOF
+	set -eux
+	cd initramfs
+	sed -i 's/\$USERNAME/'$USERNAME'/g' etc/inittab
+	sed -i 's/\$HOSTNAME/'$HOSTNAME'/g' etc/inittab
+	echo "$HOSTNAME" > etc/hostname
+	rm -rf home/user
+	sed -i '/^user:/d' etc/passwd
+	echo "$USERNAME:x:1000:1000:$USERNAME:/home/$USERNAME:/bin/bash" >> etc/passwd
+	sed -i '/^user:/d' etc/group
+	echo "$USERNAME:x:1000:" >> etc/group
+	sed -i '/^docker:/d' etc/group
+	echo "docker:x:993:$USERNAME" >> etc/group
+	mkdir -p home/$USERNAME
+	chown -R 1000:1000 home/$USERNAME
+	if [ "$AUTHORIZED_KEYS" != "empty" ] && [ -s /authorized_keys ]; then
+		mkdir -p home/$USERNAME/.ssh
+		cp /authorized_keys home/$USERNAME/.ssh/authorized_keys
+		chmod 700 home/$USERNAME/.ssh
+		chmod 600 home/$USERNAME/.ssh/authorized_keys
+	fi
+	chown -R 1000:1000 home/$USERNAME
+	# Generate build-time SSH keypair for container→guest access
+	ls -la /usr/bin/ssh-keygen || (find / -name ssh-keygen -type f 2>/dev/null && echo "ssh-keygen not at /usr/bin")
+	/usr/bin/ssh-keygen -t rsa -b 3072 -f ../ssh_host_key -N "" -q
+	mkdir -p root/.ssh
+	cat ../ssh_host_key.pub > root/.ssh/authorized_keys
+	chmod 700 root/.ssh
+	chmod 600 root/.ssh/authorized_keys
+	find . -exec touch -hcd "@0" "{}" +
+	find . -print0 \
+	| sort -z \
+	| cpio \
+		--null \
+		--create \
+		--verbose \
+		--format=newc \
+	| gzip --best \
+	> ../iso/boot/initramfs
+EOF
+
+## Grub (EFI Boot)
+COPY src/config/grub.cfg iso/boot/grub/grub.cfg
+COPY src/config/grub_early.cfg grub_early.cfg
+RUN <<-EOF
+    set -eux
+    mkdir -p efi/boot
+    grub-mkimage \
+        --config="grub_early.cfg" \
+        --prefix="/boot/grub" \
+        --output="efi/boot/bootx64.efi" \
+        --format="x86_64-efi" \
+        --compression="xz" \
+        all_video \
+        disk \
+        part_gpt \
+        part_msdos \
+        linux \
+        boot \
+        echo \
+        normal \
+        configfile \
+        search \
+        search_label \
+        efi_gop \
+        fat \
+        iso9660 \
+        gzio \
+        serial \
+        terminal
+    find efi -exec touch -hcd "@0" "{}" +
+    mformat -i iso/boot/grub/efi.img -C -f 1440 -N 0 ::
+    mcopy -i iso/boot/grub/efi.img -ms efi ::
+    touch -md "@0" iso/boot/grub/efi.img
+EOF
+
+ENV SOURCE_DATE_EPOCH=1
+RUN <<-EOF
+    set -eux
+    dd if=/dev/zero bs=1M count=10 >> user.img
+    mformat -v user -i user.img -N 0 ::
+    find iso -exec touch -hcd "@0" "{}" +
+    xorrisofs \
+        -output sxos.iso \
+        -full-iso9660-filenames \
+        -joliet \
+        -rational-rock \
+        -sysid LINUX \
+        -volid "sxos" \
+        -eltorito-boot boot/grub/efi.img \
+        -no-emul-boot \
+        -eltorito-alt-boot \
+        -e boot/grub/efi.img \
+        -no-emul-boot \
+        -isohybrid-gpt-basdat \
+        -follow-links \
+        -append_partition 3 0xb user.img \
+        iso/
+EOF
+
+FROM stagex/user-openssh AS openssh-client
+
+FROM stagex/service-qemu AS package
+COPY --from=openssh-client . /
+COPY --from=build /sxos.iso /disk.img
+COPY --from=build /ssh_host_key /ssh_host_key
+COPY src/qemu-startup.sh /usr/bin/qemu-startup.sh
+COPY src/run /usr/bin/run
+RUN chmod +x /usr/bin/qemu-startup.sh /usr/bin/run && chmod 600 /ssh_host_key
+ENTRYPOINT ["/usr/bin/qemu-startup.sh"]
+

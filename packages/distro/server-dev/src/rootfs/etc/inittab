@@ -1,0 +1,47 @@
+# /etc/inittab
+
+# Format for each entry: <id>:<runlevels>:<action>:<process>
+#
+# id        == tty to run on, or empty for /dev/console
+# runlevels == ignored
+# action    == one of sysinit, respawn, askfirst, wait, and once
+# process   == program to run
+
+# Startup the system
+::sysinit:/bin/mount -t devtmpfs devtmpfs /dev
+::sysinit:/bin/mkdir -p /proc /run /dev/pts /dev/shm /sys
+::sysinit:/bin/mount -t devpts devpts /dev/pts
+::sysinit:/bin/mount -t sysfs sysfs /sys
+::sysinit:/bin/mount -t cgroup cgroup /sys/fs/cgroup
+::sysinit:/bin/mount -t proc proc /proc
+::sysinit:/bin/mount -o remount,rw /
+::sysinit:/bin/mkdir -p /mnt/config /tmp/ssh-backup
+::sysinit:/bin/cp /etc/ssh/sshd_config /tmp/ssh-backup/ 2>/dev/null || true
+::sysinit:/bin/mount -t ext4 /dev/vdb /mnt/config 2>/dev/null || true
+::sysinit:/bin/cp -rf /mnt/config/etc/* /etc/ 2>/dev/null || true
+::sysinit:/bin/mount -t tmpfs tmpfs /etc/ssh
+::sysinit:/bin/cp /tmp/ssh-backup/sshd_config /etc/ssh/ 2>/dev/null || true
+::sysinit:/bin/cp -rf /mnt/config/home/* /home/ 2>/dev/null || true
+::sysinit:/bin/chown -R lrvick:lrvick /home/lrvick 2>/dev/null || /bin/chown -R user:user /home/lrvick
+::sysinit:/bin/mkdir /var/log
+::sysinit:/bin/chmod 755 /home
+::sysinit:/bin/chown -R $USERNAME /home/$USERNAME
+::sysinit:/bin/hostname -F /etc/hostname
+null::sysinit:/bin/ln -sf /proc/self/fd /dev/fd
+null::sysinit:/bin/ln -sf /proc/self/fd/0 /dev/stdin
+null::sysinit:/bin/ln -sf /proc/self/fd/1 /dev/stdout
+null::sysinit:/bin/ln -sf /proc/self/fd/2 /dev/stderr
+# now run any rc scripts
+::sysinit:/etc/init.d/rcS
+
+# Put a shell on serial, serial2 (telnet), and console
+ttyS0::respawn:-/bin/su - $USERNAME
+ttyS1::respawn:-/bin/su - $USERNAME
+console::respawn:-/bin/su - $USERNAME
+
+# Stuff to do for the 3-finger salute
+::ctrlaltdel:/usr/bin/reboot
+
+# Stuff to do before rebooting
+::shutdown:/etc/init.d/rcK
+::shutdown:/bin/umount -a -r
