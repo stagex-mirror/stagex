@@ -70,49 +70,19 @@ FROM stagex/user-tini AS user-tini
 FROM stagex/core-filesystem AS core-filesystem
 FROM stagex/core-git AS core-git
 FROM stagex/core-make AS core-make
+FROM stagex/box-grub AS box-grub
+FROM stagex/user-openssh AS openssh-client
 
+# --- Shared base with build tools ---
 FROM scratch AS base
-ARG VERSION development
-ARG GIT_TIMESTAMP null
-ARG GIT_AUTHOR null
-ARG GIT_REF null
-ARG GIT_PUBKEY null
-COPY authorized_keys /
 COPY --from=core-busybox . /
 COPY --from=core-musl . /
 COPY --from=core-xz . /
-COPY --from=core-libzstd . /
 COPY --from=core-zlib . /
-COPY --from=user-xorriso . /
 COPY --from=user-cpio . /
-COPY --from=user-mtools . /
-COPY --from=user-grub . /
 
-FROM base AS dev
-COPY --from=core-llvm . /
-COPY --from=core-zlib . /
-COPY --from=user-glib . /
-COPY --from=user-alsa-lib . /
-COPY --from=user-lzo . /
-COPY --from=user-dtc . /
-COPY --from=user-numactl . /
-COPY --from=user-libaio . /
-COPY --from=user-libseccomp . /
-COPY --from=core-libffi . /
-COPY --from=user-libslirp . /
-COPY --from=user-seabios . /
-COPY --from=user-ipxe . /
-COPY --from=user-qemu . /
-COPY --from=user-canokey-qemu . /
-COPY --from=user-swtpm . /
-COPY --from=core-openssl . /
-COPY --from=core-curl . /
-COPY --from=user-libtpms . /
-COPY --from=user-tpm2-tss . /
-COPY --from=user-tpm2-tools . /
-COPY --from=user-edk2 . /
-COPY --from=user-grub . /
-
+# --- Stage 1: build ---
+# Assembles /rootfs with kernel, init, packages, and config
 FROM base AS build
 ARG USERNAME=user
 ARG HOSTNAME=sxos
@@ -120,54 +90,54 @@ ARG AUTHORIZED_KEYS=empty
 COPY authorized_keys /
 COPY --from=user-openssh . /
 COPY --from=core-openssl . /
-COPY --from=core-filesystem . initramfs
-COPY --from=user-linux-server /bzImage iso/boot/vmlinuz
-COPY --from=core-busybox . initramfs
-COPY --from=user-eudev . initramfs
-COPY --from=core-musl . initramfs
-COPY --from=core-zlib . initramfs
-COPY --from=user-npth . initramfs
-COPY --from=user-libksba . initramfs
-COPY --from=core-bash . initramfs
-COPY --from=user-flashtools . initramfs
-COPY --from=core-curl . initramfs
-COPY --from=user-tpm2-tools . initramfs
-COPY --from=user-tpm2-tss . initramfs
-COPY --from=core-openssl . initramfs
-COPY --from=user-libusb . initramfs
-COPY --from=user-ccid . initramfs
-COPY --from=user-pcsc-lite . initramfs
-COPY --from=user-pcsc-tools . initramfs
-COPY --from=user-libqrencode . initramfs
-COPY --from=core-gmp . initramfs
-COPY --from=core-libunwind . initramfs
-COPY --from=user-opensc . initramfs
-COPY --from=user-util-linux . initramfs
-COPY --from=core-llvm /usr/lib/. initramfs/usr/lib/
-COPY --from=core-sqlite3 . initramfs
-COPY --from=user-libslirp . initramfs
-COPY --from=user-glib . initramfs
-COPY --from=user-numactl . initramfs
-COPY --from=core-libzstd . initramfs
-COPY --from=core-zlib . initramfs
-COPY --from=user-lzo . initramfs
-COPY --from=user-dtc . initramfs
-COPY --from=user-libaio . initramfs
-COPY --from=user-libseccomp . initramfs
-COPY --from=core-libffi . initramfs
-COPY --from=core-libzstd . initramfs
-COPY --from=core-zlib . initramfs
-COPY --from=core-ncurses . initramfs
-COPY --from=user-tmux . initramfs
-COPY --from=user-dhcpcd . initramfs
-COPY --from=user-openssh . initramfs
-COPY --from=core-openssl . initramfs
-COPY --from=core-zlib . initramfs
-COPY src/rootfs/ initramfs
-COPY --from=core-bash . initramfs
+COPY --from=core-filesystem . rootfs
+COPY --from=user-linux-server /bzImage rootfs/boot/vmlinuz
+COPY --from=core-busybox . rootfs
+COPY --from=user-eudev . rootfs
+COPY --from=core-musl . rootfs
+COPY --from=core-zlib . rootfs
+COPY --from=user-npth . rootfs
+COPY --from=user-libksba . rootfs
+COPY --from=core-bash . rootfs
+COPY --from=user-flashtools . rootfs
+COPY --from=core-curl . rootfs
+COPY --from=user-tpm2-tools . rootfs
+COPY --from=user-tpm2-tss . rootfs
+COPY --from=core-openssl . rootfs
+COPY --from=user-libusb . rootfs
+COPY --from=user-ccid . rootfs
+COPY --from=user-pcsc-lite . rootfs
+COPY --from=user-pcsc-tools . rootfs
+COPY --from=user-libqrencode . rootfs
+COPY --from=core-gmp . rootfs
+COPY --from=core-libunwind . rootfs
+COPY --from=user-opensc . rootfs
+COPY --from=user-util-linux . rootfs
+COPY --from=core-llvm /usr/lib/. rootfs/usr/lib/
+COPY --from=core-sqlite3 . rootfs
+COPY --from=user-libslirp . rootfs
+COPY --from=user-glib . rootfs
+COPY --from=user-numactl . rootfs
+COPY --from=core-libzstd . rootfs
+COPY --from=core-zlib . rootfs
+COPY --from=user-lzo . rootfs
+COPY --from=user-dtc . rootfs
+COPY --from=user-libaio . rootfs
+COPY --from=user-libseccomp . rootfs
+COPY --from=core-libffi . rootfs
+COPY --from=core-libzstd . rootfs
+COPY --from=core-zlib . rootfs
+COPY --from=core-ncurses . rootfs
+COPY --from=user-tmux . rootfs
+COPY --from=user-dhcpcd . rootfs
+COPY --from=user-openssh . rootfs
+COPY --from=core-openssl . rootfs
+COPY --from=core-zlib . rootfs
+COPY src/rootfs/ rootfs
+COPY --from=core-bash . rootfs
 RUN <<-EOF
 	set -eux
-	cd initramfs
+	cd rootfs
 	sed -i 's/\$USERNAME/'$USERNAME'/g' etc/inittab
 	sed -i 's/\$HOSTNAME/'$HOSTNAME'/g' etc/inittab
 	echo "$HOSTNAME" > etc/hostname
@@ -187,8 +157,6 @@ RUN <<-EOF
 		chmod 600 home/$USERNAME/.ssh/authorized_keys
 	fi
 	chown -R 1000:1000 home/$USERNAME
-	# Generate build-time SSH keypair for container→guest access
-	ls -la /usr/bin/ssh-keygen || (find / -name ssh-keygen -type f 2>/dev/null && echo "ssh-keygen not at /usr/bin")
 	/usr/bin/ssh-keygen -t rsa -b 3072 -f ../ssh_host_key -N "" -q
 	mkdir -p root/.ssh
 	cat ../ssh_host_key.pub > root/.ssh/authorized_keys
@@ -203,76 +171,33 @@ RUN <<-EOF
 		--verbose \
 		--format=newc \
 	| gzip --best \
-	> ../iso/boot/initramfs
+	> ../initramfs
+	find . -print0 \
+	| sort -z \
+	| cpio \
+		--null \
+		--create \
+		--format=newc \
+	| gzip --best \
+	> boot/initramfs
 EOF
 
-## Grub (EFI Boot)
-COPY src/config/grub.cfg iso/boot/grub/grub.cfg
-COPY src/config/grub_early.cfg grub_early.cfg
-RUN <<-EOF
-    set -eux
-    mkdir -p efi/boot
-    grub-mkimage \
-        --config="grub_early.cfg" \
-        --prefix="/boot/grub" \
-        --output="efi/boot/bootx64.efi" \
-        --format="x86_64-efi" \
-        --compression="xz" \
-        all_video \
-        disk \
-        part_gpt \
-        part_msdos \
-        linux \
-        boot \
-        echo \
-        normal \
-        configfile \
-        search \
-        search_label \
-        efi_gop \
-        fat \
-        iso9660 \
-        gzio \
-        serial \
-        terminal
-    find efi -exec touch -hcd "@0" "{}" +
-    mformat -i iso/boot/grub/efi.img -C -f 1440 -N 0 ::
-    mcopy -i iso/boot/grub/efi.img -ms efi ::
-    touch -md "@0" iso/boot/grub/efi.img
-EOF
+# --- Stage 2: box ---
+# Uses box-grub to assemble /rootfs into /disk.img
+FROM base AS box
+COPY --from=box-grub . /
+COPY --from=build /rootfs rootfs
+COPY --from=build /initramfs rootfs/boot/initramfs
+COPY src/config/grub.cfg rootfs/boot/grub/grub.cfg
+RUN /usr/bin/box
 
-ENV SOURCE_DATE_EPOCH=1
-RUN <<-EOF
-    set -eux
-    dd if=/dev/zero bs=1M count=10 >> user.img
-    mformat -v user -i user.img -N 0 ::
-    find iso -exec touch -hcd "@0" "{}" +
-    xorrisofs \
-        -output sxos.iso \
-        -full-iso9660-filenames \
-        -joliet \
-        -rational-rock \
-        -sysid LINUX \
-        -volid "sxos" \
-        -eltorito-boot boot/grub/efi.img \
-        -no-emul-boot \
-        -eltorito-alt-boot \
-        -e boot/grub/efi.img \
-        -no-emul-boot \
-        -isohybrid-gpt-basdat \
-        -follow-links \
-        -append_partition 3 0xb user.img \
-        iso/
-EOF
-
-FROM stagex/user-openssh AS openssh-client
-
+# --- Stage 3: package ---
+# Runtime image that boots the disk image
 FROM stagex/service-qemu AS package
 COPY --from=openssh-client . /
-COPY --from=build /sxos.iso /disk.img
+COPY --from=box /disk.img /disk.img
 COPY --from=build /ssh_host_key /ssh_host_key
 COPY src/qemu-startup.sh /usr/bin/qemu-startup.sh
 COPY src/run /usr/bin/run
 RUN chmod +x /usr/bin/qemu-startup.sh /usr/bin/run && chmod 600 /ssh_host_key
 ENTRYPOINT ["/usr/bin/qemu-startup.sh"]
-
