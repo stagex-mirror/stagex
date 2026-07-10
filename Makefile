@@ -58,7 +58,7 @@ prep-release-branch: ## Prepare a branch for a new release
 help:
 	@./src/help.sh Makefile
 
-IMAGE ?= server-dev
+DISTRO ?= server-busybox-dev
 SSH_KEY ?=
 VNC_PORT ?= 5900
 CONSOLE_PORT ?= 4000
@@ -67,41 +67,61 @@ QEMU_MEMORY ?= 8G
 QEMU_DISK ?= /disk.img
 QEMU_BIOS ?= /usr/share/edk2/OvmfPkg/OVMF.fd
 
+# Strip -dev suffix to find the base distro directory
+DISTRO_BASE = $(subst -dev,,${DISTRO})
+
+# Determine the Containerfile stage to export
+DISTRO_STAGE = $(if $(findstring -dev,${DISTRO}),package-dev,package)
+
 .PHONY: vm
-vm: distro-$(IMAGE) import-distro-$(IMAGE)
-	@if docker inspect --format='{{.State.Running}}' qemu-$(IMAGE) >/dev/null 2>&1 && \
-		docker inspect --format='{{.State.Running}}' qemu-$(IMAGE) | grep -q true; then \
-		echo "Container qemu-$(IMAGE) is already running."; \
+vm:
+	@# Load local dependencies
+	@tar -C out/service-qemu -cf - . | docker load 2>/dev/null
+	@tar -C out/box-grub -cf - . | docker load 2>/dev/null
+	@tar -C out/user-linux-server -cf - . | docker load 2>/dev/null
+	@tar -C out/user-openssh -cf - . | docker load 2>/dev/null
+	@# Build distro targeting the right stage (package or package-dev)
+	@mkdir -p $(CURDIR)/.qemu-run/$(DISTRO)
+	@echo "Building distro $(DISTRO) [stage: $(DISTRO_STAGE)] ..."
+	@/bin/docker build \
+		--target $(DISTRO_STAGE) \
+		--tag stagex/distro-$(DISTRO):local \
+		--provenance=false \
+		--platform linux/amd64 \
+		-f packages/distro/$(DISTRO_BASE)/Containerfile \
+		packages/distro/$(DISTRO_BASE)
+	@if docker inspect --format='{{.State.Running}}' qemu-$(DISTRO) >/dev/null 2>&1 && \
+		docker inspect --format='{{.State.Running}}' qemu-$(DISTRO) | grep -q true; then \
+		echo "Container qemu-$(DISTRO) is already running."; \
 	else \
-		docker rm -f qemu-$(IMAGE) >/dev/null 2>&1 || true; \
-		mkdir -p $(CURDIR)/.qemu-run/$(IMAGE); \
-		echo "Starting distro $(IMAGE) ..."; \
-		docker run -d --name qemu-$(IMAGE) --privileged --network host \
-			-v $(CURDIR)/.qemu-run/$(IMAGE):/run/qemu-vm \
+		docker rm -f qemu-$(DISTRO) >/dev/null 2>&1 || true; \
+		echo "Starting distro $(DISTRO) ..."; \
+		docker run -d --name qemu-$(DISTRO) --privileged --network host \
+			-v $(CURDIR)/.qemu-run/$(DISTRO):/run/qemu-vm \
 			-e CONSOLE_SOCKET=/run/qemu-vm/console.sock \
 			-e QMP_SOCKET=/run/qemu-vm/qmp.sock \
 			-e QEMU_MEMORY=$(QEMU_MEMORY) \
 			-e QEMU_DISK=$(QEMU_DISK) \
 			-e QEMU_BIOS=$(QEMU_BIOS) \
-			stagex/distro-$(IMAGE):local; \
+			stagex/distro-$(DISTRO):local; \
 		sleep 1; \
-		sudo chmod 777 $(CURDIR)/.qemu-run/$(IMAGE)/console.sock 2>/dev/null || true; \
-		sudo chmod 777 $(CURDIR)/.qemu-run/$(IMAGE)/qmp.sock 2>/dev/null || true; \
+		sudo chmod 777 $(CURDIR)/.qemu-run/$(DISTRO)/console.sock 2>/dev/null || true; \
+		sudo chmod 777 $(CURDIR)/.qemu-run/$(DISTRO)/qmp.sock 2>/dev/null || true; \
 	fi
 	@echo "" && \
-	echo "=== VM qemu-$(IMAGE) ===" && \
-	echo "  container:  $$(docker inspect --format='{{.Id}}' qemu-$(IMAGE) | cut -c1-12)" && \
-	echo "  created:    $$(docker inspect --format='{{.Created}}' qemu-$(IMAGE) | cut -d. -f1)" && \
+	echo "=== VM qemu-$(DISTRO) ===" && \
+	echo "  container:  $$(docker inspect --format='{{.Id}}' qemu-$(DISTRO) | cut -c1-12)" && \
+	echo "  created:    $$(docker inspect --format='{{.Created}}' qemu-$(DISTRO) | cut -d. -f1)" && \
 	echo "  memory:     $(QEMU_MEMORY)" && \
 	echo "  disk:       $(QEMU_DISK)" && \
 	echo "  bios:       $(QEMU_BIOS)" && \
-	echo "  kvm:        $$(docker exec qemu-$(IMAGE) test -e /dev/kvm && echo yes || echo no)" && \
+	echo "  kvm:        $$(docker exec qemu-$(DISTRO) test -e /dev/kvm && echo yes || echo no)" && \
 	echo "" && \
 	echo "  Connect:" && \
-	echo "    logs:     docker logs -f qemu-$(IMAGE)" && \
-	echo "    ssh:      docker exec -it qemu-$(IMAGE) run ssh" && \
+	echo "    logs:     docker logs -f qemu-$(DISTRO)" && \
+	echo "    ssh:      docker exec -it qemu-$(DISTRO) run ssh" && \
 	echo "    vnc:      localhost:$(VNC_PORT)" && \
-	echo "    serial:   socat - UNIX-CONNECT:$(CURDIR)/.qemu-run/$(IMAGE)/console.sock" && \
-	echo "    qmp:      socat - UNIX-CONNECT:$(CURDIR)/.qemu-run/$(IMAGE)/qmp.sock" && \
+	echo "    serial:   socat - UNIX-CONNECT:$(CURDIR)/.qemu-run/$(DISTRO)/console.sock" && \
+	echo "    qmp:      socat - UNIX-CONNECT:$(CURDIR)/.qemu-run/$(DISTRO)/qmp.sock" && \
 	echo "    vsock:    guest cid 3 (from host: guestctl --vsock)" && \
 	echo ""
