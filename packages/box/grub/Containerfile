@@ -1,0 +1,20 @@
+FROM stagex/user-grub AS user-grub
+FROM stagex/user-xorriso AS user-xorriso
+FROM stagex/user-cpio AS user-cpio
+FROM stagex/user-mtools AS user-mtools
+FROM stagex/core-busybox AS core-busybox
+FROM stagex/core-musl AS core-musl
+FROM stagex/core-xz AS core-xz
+FROM stagex/core-zlib AS core-zlib
+
+FROM scratch AS package
+COPY --from=core-busybox . /
+COPY --from=core-musl . /
+COPY --from=core-xz . /
+COPY --from=core-zlib . /
+COPY --from=user-grub . /
+COPY --from=user-xorriso . /
+COPY --from=user-cpio . /
+COPY --from=user-mtools . /
+COPY src/grub-box.sh /usr/bin/grub-box
+RUN chmod +x /usr/bin/grub-box

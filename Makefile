@@ -1,4 +1,4 @@
-STAGES := pallet bootstrap core user distro service ## Namespaces to build
+STAGES := pallet bootstrap core user distro service box ## Namespaces to build
 PROGRESS := auto ## Buildkit progress output style
 PLATFORM := linux/amd64 ## Platform we are building for
 BUILDER := $(shell command -v docker) ## Build backend to use
