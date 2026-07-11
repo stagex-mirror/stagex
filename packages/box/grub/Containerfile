@@ -16,5 +16,5 @@ COPY --from=user-grub . /
 COPY --from=user-xorriso . /
 COPY --from=user-cpio . /
 COPY --from=user-mtools . /
-COPY src/grub-box.sh /usr/bin/grub-box
-RUN chmod +x /usr/bin/grub-box
+COPY src/box /usr/bin/box
+RUN chmod +x /usr/bin/box

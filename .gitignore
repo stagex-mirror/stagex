@@ -1,2 +1,39 @@
 # Local state — not tracked
 local/
+
+# Build output
+out
+fetch
+packages/*/*/fetch/*
+packages/*/fetch/*
+
+# Signatures
+/signatures
+
+# Build artifacts
+build.log
+graph.svg
+
+# Archives
+*.TXT
+*.tar
+*.zip
+*.tgz
+*.gz
+*.txt
+*.bz2
+*.lzma
+*.xz
+
+# Misc
+TODO
+__pycache__
+
+# QEMU runtime state
+.qemu-run/
+
+# Generated/temp files at root
+usr/
+qemu-boot.sh
+qemu-startup.sh
+run-verify.sh
