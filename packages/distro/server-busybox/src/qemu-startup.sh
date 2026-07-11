@@ -37,6 +37,11 @@ QEMU_ARGS="$QEMU_ARGS -serial chardev:console"
 QEMU_ARGS="$QEMU_ARGS -serial telnet:0.0.0.0:${CONSOLE_PORT:-4000},server,nowait"
 QEMU_ARGS="$QEMU_ARGS -qmp unix:${QMP_SOCKET:-/run/qemu-qmp.sock},server,wait=off"
 
+# --- Home disk (optional second virtio disk) ---
+if [ -n "${QEMU_HOME:-}" ] && [ -e "${QEMU_HOME}" ]; then
+    QEMU_ARGS="$QEMU_ARGS -drive file=${QEMU_HOME},format=raw,if=virtio,cache=writeback"
+fi
+
 NET_OPTS="user,id=net0,hostfwd=tcp:0.0.0.0:2222-:22"
 if [ -n "${QEMU_NET_HOSTFWD:-}" ]; then
     NET_OPTS="$NET_OPTS,hostfwd=${QEMU_NET_HOSTFWD}"

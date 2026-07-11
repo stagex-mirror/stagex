@@ -1,17 +1,2 @@
-out
-fetch
-packages/*/*/fetch/*
-/signatures
-build.log
-graph.svg
-*.TXT
-*.tar
-*.zip
-*.tgz
-*.gz
-*.txt
-*.bz2
-*.lzma
-*.xz
-TODO
-__pycache__
+# Local state — not tracked
+local/

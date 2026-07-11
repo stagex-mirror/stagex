@@ -1,0 +1,30 @@
+#!/usr/bin/sh
+# box — converts a local folder into an ext2 disk image
+set -eux
+
+SRC_DIR="${HOME_SRC:-/local}"
+OUT_IMG="${HOME_OUT:-/home.img}"
+IMG_SIZE="${HOME_SIZE:-64}"
+
+echo "Creating $OUT_IMG from $SRC_DIR (${IMG_SIZE}M) ..."
+
+# Create empty image
+dd if=/dev/zero of="$OUT_IMG" bs=1M count="$IMG_SIZE"
+
+# Format as ext2 (busybox mkfs.ext2 supports file images with -F)
+busybox mkfs.ext2 -F "$OUT_IMG"
+
+# Mount and copy contents
+mkdir -p /mnt
+mount -o loop "$OUT_IMG" /mnt
+
+# Copy user data
+cp -a "$SRC_DIR"/. /mnt/
+
+# Set permissions
+find /mnt -exec touch -hcd "@0" "{}" +
+
+# Unmount
+umount /mnt
+
+echo "Created: $OUT_IMG ($(du -h "$OUT_IMG" | cut -f1))"

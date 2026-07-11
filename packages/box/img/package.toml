@@ -1,0 +1,4 @@
+[package]
+name = "img"
+version = "2026.03.0"
+description = "box-img — converts a local folder into an ext4 disk image"

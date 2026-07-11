@@ -1,3 +1,4 @@
 PubkeyAuthentication yes
 PermitEmptyPasswords no
-PermitRootLogin no
+PermitRootLogin prohibit-password
+AuthorizedKeysFile /home/%u/.ssh/authorized_keys

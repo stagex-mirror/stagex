@@ -1,2 +1,7 @@
 #!/bin/sh
+# Mount home partition (vdb) if present
+mkdir -p /home
+if [ -e /dev/vdb ]; then
+    mount -o rw /dev/vdb /home
+fi
 exec /bin/init

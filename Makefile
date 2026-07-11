@@ -73,8 +73,27 @@ DISTRO_BASE = $(subst -dev,,${DISTRO})
 # Determine the Containerfile stage to export
 DISTRO_STAGE = $(if $(findstring -dev,${DISTRO}),package-dev,package)
 
+# Home disk image path
+HOME_IMG = $(CURDIR)/out/$(DISTRO)-home.img
+
+# Local home folder (mutable state, .gitignored)
+HOME_LOCAL = $(CURDIR)/local/$(DISTRO)/home
+
 .PHONY: vm
 vm:
+	@# Ensure local home folder exists
+	@mkdir -p $(HOME_LOCAL)/root/.ssh
+	@# Build home disk image from local folder
+	@echo "Building home.img from local/$(DISTRO)/home/ ..."
+	@/bin/docker build --provenance=false --platform linux/amd64 \
+		-f packages/box/img/Containerfile packages/box/img \
+		--load 2>/dev/null
+	@/bin/docker run --rm --privileged \
+		-v $(HOME_LOCAL):/local:ro \
+		-v $(CURDIR)/out:/out \
+		-e HOME_SRC=/local \
+		-e HOME_OUT=/out/$(DISTRO)-home.img \
+		stagex/box-img:2026.03.0
 	@# Load local dependencies
 	@tar -C out/service-qemu -cf - . | docker load 2>/dev/null
 	@tar -C out/box-grub -cf - . | docker load 2>/dev/null
@@ -98,11 +117,13 @@ vm:
 		echo "Starting distro $(DISTRO) ..."; \
 		docker run -d --name qemu-$(DISTRO) --privileged --network host \
 			-v $(CURDIR)/.qemu-run/$(DISTRO):/run/qemu-vm \
+			-v $(HOME_IMG):/home.img \
 			-e CONSOLE_SOCKET=/run/qemu-vm/console.sock \
 			-e QMP_SOCKET=/run/qemu-vm/qmp.sock \
 			-e QEMU_MEMORY=$(QEMU_MEMORY) \
 			-e QEMU_DISK=$(QEMU_DISK) \
 			-e QEMU_BIOS=$(QEMU_BIOS) \
+			-e QEMU_HOME=/home.img \
 			stagex/distro-$(DISTRO):local; \
 		sleep 1; \
 		sudo chmod 777 $(CURDIR)/.qemu-run/$(DISTRO)/console.sock 2>/dev/null || true; \

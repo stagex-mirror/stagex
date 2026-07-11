@@ -1,0 +1,13 @@
+FROM stagex/core-busybox AS core-busybox
+FROM stagex/core-musl AS core-musl
+FROM stagex/core-zlib AS core-zlib
+FROM stagex/core-filesystem AS core-filesystem
+
+FROM scratch AS package
+COPY --from=core-busybox . /
+COPY --from=core-musl . /
+COPY --from=core-zlib . /
+COPY --from=core-filesystem . /
+COPY src/box /usr/bin/box
+RUN chmod +x /usr/bin/box
+ENTRYPOINT ["/usr/bin/box"]
