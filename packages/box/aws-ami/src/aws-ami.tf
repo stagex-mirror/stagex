@@ -75,40 +75,30 @@ resource "aws_ec2_import_image" "this" {
     s3_key    = aws_s3_object.image.id
     format    = "raw"
   }
-}
 
-# --- Create AMI from imported image ---
-resource "aws_ami" "this" {
-  depends_on = [aws_ec2_import_image.this]
-
-  name               = "${var.ami_name}-${local.timestamp}"
-  description        = "StageX AMI: ${var.ami_name} (${local.timestamp})"
-  virtualization_type = "hvm"
-
-  # Use the snapshot from the import
-  # The import creates an EBS snapshot we reference
-  ena_support = true
-
-  tags = {
-    Name      = var.ami_name
-    ManagedBy = "stagex"
-    Box       = "aws-ami"
-    Timestamp = local.timestamp
+  tag_specifications {
+    resource_type = "image"
+    tags = {
+      Name      = var.ami_name
+      ManagedBy = "stagex"
+      Box       = "aws-ami"
+      Timestamp = local.timestamp
+    }
   }
 }
 
 # --- Outputs ---
 output "ami_id" {
   description = "The AMI ID"
-  value       = aws_ami.this.id
+  value       = aws_ec2_import_image.this.image_id
 }
 
 output "ami_arn" {
   description = "The AMI ARN"
-  value       = aws_ami.this.arn
+  value       = "arn:aws:ec2:${var.region}::image/${aws_ec2_import_image.this.image_id}"
 }
 
 output "s3_bucket" {
-  description = "S3 bucket used for the upload"
+  description = "S3 bucket used for the upload (auto-deletes after 1 day)"
   value       = aws_s3_bucket.images.id
 }
