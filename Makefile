@@ -85,15 +85,13 @@ vm:
 	@mkdir -p $(HOME_LOCAL)/root/.ssh
 	@# Build home disk image from local folder
 	@echo "Building home.img from local/$(DISTRO)/home/ ..."
-	@/bin/docker build --provenance=false --platform linux/amd64 \
-		-f packages/box/img/Containerfile packages/box/img \
-		--load 2>/dev/null
+	@$(MAKE) IMPORT=1 box-img >/dev/null 2>&1
 	@/bin/docker run --rm --privileged \
 		-v $(HOME_LOCAL):/local:ro \
 		-v $(CURDIR)/out:/out \
 		-e HOME_SRC=/local \
 		-e HOME_OUT=/out/$(DISTRO)-home.img \
-		stagex/box-img:2026.03.0
+		stagex/box-img:local
 	@# Load local dependencies
 	@tar -C out/service-qemu -cf - . | docker load 2>/dev/null
 	@tar -C out/box-grub -cf - . | docker load 2>/dev/null

@@ -6,6 +6,7 @@ KEY="/ssh_host_key"
 
 # --- Log file for QEMU output (visible via docker logs) ---
 QEMU_LOG="/tmp/qemu.log"
+touch "$QEMU_LOG"
 
 # --- Serial console socket bridge ---
 rm -f "${CONSOLE_SOCKET:-/run/qemu-console.sock}"
@@ -63,4 +64,5 @@ fi
 /usr/bin/qemu-system-x86_64 $QEMU_ARGS > "$QEMU_LOG" 2>&1 &
 
 # --- Keep container alive; QEMU logs flow to docker logs ---
+while [ ! -s "$QEMU_LOG" ]; do sleep 0.1; done
 exec tail -f "$QEMU_LOG"
