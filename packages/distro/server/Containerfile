@@ -202,3 +202,14 @@ COPY src/qemu-startup.sh /usr/bin/qemu-startup.sh
 COPY src/run /usr/bin/run
 RUN chmod +x /usr/bin/qemu-startup.sh /usr/bin/run && chmod 600 /ssh_host_key
 ENTRYPOINT ["/usr/bin/qemu-startup.sh"]
+
+# --- Stage 4: package-dev ---
+# Same as package; -dev variant for consistency with distro naming convention
+FROM stagex/service-qemu AS package-dev
+COPY --from=openssh-client . /
+COPY --from=box /disk.img /disk.img
+COPY --from=build /ssh_host_key /ssh_host_key
+COPY src/qemu-startup.sh /usr/bin/qemu-startup.sh
+COPY src/run /usr/bin/run
+RUN chmod +x /usr/bin/qemu-startup.sh /usr/bin/run && chmod 600 /ssh_host_key
+ENTRYPOINT ["/usr/bin/qemu-startup.sh"]

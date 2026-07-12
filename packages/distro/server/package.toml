@@ -1,5 +1,5 @@
 [package]
-name = "server-dev"
+name = "server"
 version = "2026.03.0"
 description = "Minimal, immutable workstation linux distribution for container-centric development"
 
