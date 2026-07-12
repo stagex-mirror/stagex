@@ -6,6 +6,7 @@ KEY="/ssh_host_key"
 
 # --- Log file for QEMU output (visible via docker logs) ---
 QEMU_LOG="/tmp/qemu.log"
+mkdir -p /run
 
 # --- Serial console socket bridge ---
 rm -f "${CONSOLE_SOCKET:-/run/qemu-console.sock}"
@@ -13,6 +14,7 @@ rm -f "${CONSOLE_SOCKET:-/run/qemu-console.sock}"
     TCP:127.0.0.1:"${CONSOLE_PORT:-4000}" &
 
 # --- QMP socket ---
+    mkdir -p /run/qemu-vm
 rm -f "${QMP_SOCKET:-/run/qemu-vm/qmp.sock}"
 chmod 777 "${QMP_SOCKET:-/run/qemu-qmp.sock}" 2>/dev/null || true
 
