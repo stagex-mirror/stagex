@@ -133,6 +133,11 @@ COPY --from=user-dhcpcd . rootfs
 COPY --from=user-openssh . rootfs
 COPY --from=core-openssl . rootfs
 COPY --from=core-zlib . rootfs
+COPY --from=user-docker . rootfs
+COPY --from=user-docker-cli-buildx . rootfs
+COPY --from=user-buildkit . rootfs
+COPY --from=user-runc . rootfs
+COPY --from=user-containerd . rootfs
 COPY src/rootfs/ rootfs
 COPY --from=core-bash . rootfs
 RUN <<-EOF
