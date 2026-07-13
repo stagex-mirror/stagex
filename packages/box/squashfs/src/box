@@ -1,0 +1,7 @@
+#!/usr/bin/sh
+# box-squashfs — compresses /rootfs into /system.img (squashfs)
+set -eux
+
+mksquashfs /rootfs /system.img -comp gzip -noappend -processors $(nproc 2>/dev/null || echo 1)
+
+echo "system.img created: $(du -h /system.img | cut -f1)"

@@ -1,0 +1,54 @@
+FROM stagex/core-busybox AS core-busybox
+FROM stagex/core-musl AS core-musl
+FROM stagex/core-filesystem AS core-filesystem
+FROM stagex/core-zlib AS core-zlib
+FROM stagex/user-linux-server AS user-linux-server
+FROM stagex/box-cpio AS box-cpio
+FROM stagex/box-grub AS box-grub
+FROM stagex/box-squashfs AS box-squashfs
+FROM stagex/box-gpt AS box-gpt
+
+# --- Stage 1: initramfs rootfs ---
+FROM scratch AS initramfs-rootfs
+COPY --from=core-busybox . /
+COPY --from=core-musl . /
+COPY --from=core-zlib . /
+COPY src/initramfs/init /init
+
+# --- Stage 2: initramfs ---
+FROM box-cpio AS initramfs
+COPY --from=initramfs-rootfs --chown=0:0 . /rootfs
+RUN box initramfs
+
+# --- Stage 3: system rootfs ---
+FROM scratch AS rootfs
+COPY --from=core-busybox . /
+COPY --from=core-musl . /
+COPY --from=core-filesystem . /
+COPY --from=core-zlib . /
+COPY src/init /init
+COPY src/rootfs/etc/ /etc/
+
+# --- Stage 4: system.img ---
+FROM box-squashfs AS system
+COPY --from=rootfs --chown=0:0 . /rootfs
+RUN box
+
+# --- Stage 5: boot.img ---
+FROM system AS boot
+COPY --from=box-grub . /
+COPY --from=user-linux-server /bzImage /vmlinuz
+COPY --from=initramfs /initramfs /initramfs
+COPY src/config/grub.cfg /grub.cfg
+RUN box
+
+# --- Stage 6: disk.img ---
+FROM boot AS disk
+COPY --from=box-gpt . /
+COPY --from=boot /boot.img /boot.img
+COPY --from=system /system.img /system.img
+RUN box
+
+# --- Final: disk image packaged with QEMU runtime ---
+FROM stagex/service-qemu AS package
+COPY --from=disk /disk.img /disk.img

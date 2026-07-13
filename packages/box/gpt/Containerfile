@@ -1,0 +1,17 @@
+FROM stagex/core-busybox AS core-busybox
+FROM stagex/core-musl AS core-musl
+FROM stagex/core-xz AS core-xz
+FROM stagex/core-ncurses AS core-ncurses
+FROM stagex/user-util-linux AS user-util-linux
+FROM stagex/user-dosfstools AS user-dosfstools
+
+FROM scratch AS package
+COPY --from=core-busybox . /
+COPY --from=core-musl . /
+COPY --from=core-xz . /
+COPY --from=core-ncurses . /
+COPY --from=user-util-linux . /
+COPY --from=user-dosfstools . /
+COPY src/box /usr/bin/box
+RUN chmod +x /usr/bin/box
+ENTRYPOINT ["/usr/bin/box"]

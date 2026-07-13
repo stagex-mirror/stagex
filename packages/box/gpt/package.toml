@@ -1,0 +1,4 @@
+[package]
+name = "gpt"
+version = "2026.03.0"
+description = "GPT disk assembler — takes boot.img + system.img, outputs /disk.img"

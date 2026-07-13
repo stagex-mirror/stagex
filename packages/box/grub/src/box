@@ -1,36 +1,42 @@
 #!/usr/bin/sh
-# grub-box.sh — assembles /rootfs into /disk.img with GRUB EFI boot
+# box-grub — assembles kernel + initramfs + GRUB config into /boot.img (FAT32 ESP)
 set -eux
 
 # --- Inputs ---
-ROOTFS_DIR="/rootfs"
-KERNEL="${ROOTFS_DIR}/boot/vmlinuz"
-INITRAMFS="${ROOTFS_DIR}/boot/initramfs"
-GRUB_CFG="${ROOTFS_DIR}/boot/grub/grub.cfg"
-HOSTNAME_FILE="${ROOTFS_DIR}/etc/hostname"
+KERNEL="${KERNEL:-/vmlinuz}"
+GRUB_CFG="${GRUB_CFG:-/grub.cfg}"
+HOSTNAME="${HOSTNAME:-stagex}"
+INITRAMFS="${INITRAMFS:-/initramfs}"
 
 # --- Output ---
-DISK="/disk.img"
+BOOT_IMG="/boot.img"
 
-# --- Prepare ISO layout ---
-ISO="iso"
-rm -rf "$ISO"
-mkdir -p "$ISO/boot/grub" "$ISO/efi/boot"
+# --- Prepare ESP layout ---
+ESP="/esp"
+rm -rf "$ESP"
+mkdir -p "$ESP/EFI/boot" "$ESP/boot/grub"
 
-# Copy kernel and initramfs
-cp "$KERNEL" "$ISO/boot/vmlinuz"
-cp "$INITRAMFS" "$ISO/boot/initramfs"
-
-# Copy grub config
-if [ -f "$GRUB_CFG" ]; then
-    cp "$GRUB_CFG" "$ISO/boot/grub/grub.cfg"
+# Copy kernel
+if [ -f "$KERNEL" ]; then
+    cp "$KERNEL" "$ESP/boot/vmlinuz"
 else
-    cat > "$ISO/boot/grub/grub.cfg" <<EOF
+    echo "WARNING: kernel not found at $KERNEL"
+fi
+
+# Copy initramfs (optional — skip if absent)
+if [ -f "$INITRAMFS" ]; then
+    cp "$INITRAMFS" "$ESP/boot/initramfs"
+fi
+
+# Copy or generate grub config
+if [ -f "$GRUB_CFG" ]; then
+    cp "$GRUB_CFG" "$ESP/boot/grub/grub.cfg"
+else
+    cat > "$ESP/boot/grub/grub.cfg" <<-EOF
 set timeout=2
 menuentry "Linux Stagex" {
     echo "Loading kernel..."
-    linux /boot/vmlinuz init=/init console=tty0 console=ttyS0,115200 console=ttyS1,115200 earlyprintk=serial,ttyS0,115200 ro loglevel=7 hostname=${HOSTNAME_FILE:-sxos}
-    echo "Loading initramfs..."
+    linux /boot/vmlinuz ro init=/init hostname=$HOSTNAME
     initrd /boot/initramfs
     echo "Booting..."
 }
@@ -38,21 +44,21 @@ EOF
 fi
 
 # --- Build GRUB EFI image ---
-cat > grub_early.cfg <<EOF
-search --set=root --fs-uuid sxos
+cat > grub_early.cfg <<-EOF
 configfile /boot/grub/grub.cfg
 EOF
 
 grub-mkimage \
     --config="grub_early.cfg" \
     --prefix="/boot/grub" \
-    --output="$ISO/efi/boot/bootx64.efi" \
+    --output="$ESP/EFI/boot/bootx64.efi" \
     --format="x86_64-efi" \
     --compression="xz" \
     all_video \
     disk \
     part_gpt \
     part_msdos \
+    squash4 \
     linux \
     boot \
     echo \
@@ -62,38 +68,20 @@ grub-mkimage \
     search_label \
     efi_gop \
     fat \
-    iso9660 \
     gzio \
+    zstd \
     serial \
     terminal
 
-# Create EFI fat image for GRUB
-mformat -i "$ISO/boot/grub/efi.img" -C -f 1440 -N 0 ::
-mcopy -i "$ISO/boot/grub/efi.img" -ms "$ISO/efi" ::
+# --- Create boot.img (FAT32) ---
+# Size: 64MB (enough for kernel + GRUB, with headroom)
+dd if=/dev/zero of="$BOOT_IMG" bs=1M count=64
 
-# --- Create user partition ---
-dd if=/dev/zero bs=1M count=10 >> user.img
-mformat -v user -i user.img -N 0 ::
-
-# --- Build ISO (disk image) ---
-xorrisofs \
-    -output "$DISK" \
-    -full-iso9660-filenames \
-    -joliet \
-    -rational-rock \
-    -sysid LINUX \
-    -volid "sxos" \
-    -eltorito-boot boot/grub/efi.img \
-    -no-emul-boot \
-    -eltorito-alt-boot \
-    -e boot/grub/efi.img \
-    -no-emul-boot \
-    -isohybrid-gpt-basdat \
-    -follow-links \
-    -append_partition 3 0xb user.img \
-    "$ISO/"
+mformat -i "$BOOT_IMG" -C -T 131072 ::
+mcopy -i "$BOOT_IMG" -sm "$ESP/EFI" ::EFI
+mcopy -i "$BOOT_IMG" -sm "$ESP/boot" ::boot
 
 # Cleanup
-rm -rf "$ISO" user.img grub_early.cfg
+rm -rf "$ESP" grub_early.cfg
 
-echo "disk.img created: $(du -h "$DISK" | cut -f1)"
+echo "boot.img created: $(du -h "$BOOT_IMG" | cut -f1)"

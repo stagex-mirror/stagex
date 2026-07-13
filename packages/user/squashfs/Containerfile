@@ -1,0 +1,22 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-xz . /
+COPY --from=stagex/core-libzstd . /
+ARG VERSION
+ADD fetch/squashfs-tools-${VERSION}.tar.gz .
+WORKDIR /squashfs-tools-${VERSION}/squashfs-tools
+RUN --network=none <<-EOF
+	set -eux; \
+	sed -i 's/-DLZ4_SUPPORT//' Makefile; \
+	sed -i 's/-DLZO_SUPPORT//' Makefile; \
+	sed -i 's/lz4_wrapper\.o//' Makefile; \
+	sed -i 's/lzo_wrapper\.o//' Makefile; \
+	sed -i 's/-llz4//' Makefile; \
+	sed -i 's/-llzo2//' Makefile; \
+	make; \
+	mkdir -p /rootfs/usr/bin; \
+	cp mksquashfs unsquashfs /rootfs/usr/bin/
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

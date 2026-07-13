@@ -1,0 +1,4 @@
+[package]
+name = "cpio"
+version = "2026.03.0"
+description = "CPIO archive builder — takes /rootfs + filename arg, outputs /<name>"

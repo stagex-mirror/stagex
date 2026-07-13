@@ -1,0 +1,38 @@
+#!/bin/sh
+# initramfs/init — find squashfs system partition, mount, pivot, and hand over
+
+# Mount essential virtual filesystems
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev
+
+# Find the squashfs partition by probing block devices
+# Works across QEMU (sda, vda), bare metal (sda, nvme), cloud (vda, xvd)
+SYSTEM_DEV=""
+for d in /dev/sda2 /dev/vda2 /dev/nvme0n1p2 /dev/xvda2; do
+    if [ -b "$d" ]; then
+        SYSTEM_DEV="$d"
+        break
+    fi
+done
+
+if [ -z "$SYSTEM_DEV" ]; then
+    echo "ERROR: no system partition found"
+    exit 1
+fi
+
+# Mount the squashfs system image
+mount -t squashfs -o ro "$SYSTEM_DEV" /mnt
+
+# Prepare new root
+mkdir -p /mnt/initramfs
+mount -t tmpfs tmpfs /mnt/initramfs
+
+# Pivot into the new root
+pivot_root /mnt /mnt/initramfs
+
+# Clean up old initramfs
+umount -l /initramfs
+
+# Hand over to the real init
+exec /init

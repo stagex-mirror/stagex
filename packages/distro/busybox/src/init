@@ -1,0 +1,36 @@
+#!/bin/sh
+# init — StageX base distro init
+# Dual-mode: live boot (RAM) or persistent (state partition)
+
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev
+
+# Determine boot mode: look for state partition
+STATE_DEV=""
+for d in /dev/sda3 /dev/vda3 /dev/nvme0n1p3; do
+    if blkid "$d" 2>/dev/null | grep -q "TYPE=\"ext4\""; then
+        if blkid -L state "$d" >/dev/null 2>&1; then
+            STATE_DEV="$d"
+            break
+        fi
+    fi
+done
+
+# Mount overlay — persistent or RAM
+if [ -n "$STATE_DEV" ]; then
+    mount -t ext4 -o ro "$STATE_DEV" /mnt/state
+    mkdir -p /mnt/state/overlay /mnt/state/home
+    mount -t overlay overlay -o lowerdir=/,upperdir=/mnt/state/overlay,workdir=/mnt/state/overlay/work /
+    mount -t ext4 -o rw /dev/sda3 /mnt/state
+    mount -t none -o bind /mnt/state/home /home
+else
+    # Live mode: everything in RAM
+    mkdir -p /tmp/overlay /home
+    mount -t tmpfs tmpfs /tmp/overlay
+    mount -t overlay overlay -o lowerdir=/,upperdir=/tmp/overlay,workdir=/tmp/overlay/work /
+    mount -t tmpfs tmpfs /home
+fi
+
+# Start sysvinit
+exec /sbin/init

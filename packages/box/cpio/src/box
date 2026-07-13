@@ -1,0 +1,14 @@
+#!/usr/bin/sh
+# box-cpio — compresses /rootfs into /<name> (newc cpio, gzip)
+set -eux
+
+NAME="${1:?usage: box <name>}"
+
+cd /rootfs
+find . -print0 \
+  | sort -z \
+  | cpio --null --create --verbose --format=newc \
+  | gzip -9 \
+  > "/${NAME}"
+
+echo "${NAME} created: $(du -h "/${NAME}" | cut -f1)"
