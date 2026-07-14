@@ -3,24 +3,34 @@ FROM stagex/core-musl AS core-musl
 FROM stagex/core-filesystem AS core-filesystem
 FROM stagex/core-zlib AS core-zlib
 FROM stagex/user-linux-server AS user-linux-server
-FROM stagex/box-cpio AS box-cpio
 FROM stagex/box-grub AS box-grub
 FROM stagex/box-squashfs AS box-squashfs
 FROM stagex/box-gpt AS box-gpt
+FROM stagex/box-cpio AS box-cpio
 
-# --- Stage 1: initramfs rootfs ---
+# --- Initramfs: busybox-based with full mount support ---
 FROM scratch AS initramfs-rootfs
-COPY --from=core-busybox . /
-COPY --from=core-musl . /
-COPY --from=core-zlib . /
+COPY --from=core-filesystem . /
+COPY --from=core-busybox /bin/busybox /usr/bin/busybox
+COPY --from=core-busybox /bin/sh /usr/bin/sh
+COPY --from=core-busybox /bin/mount /usr/bin/mount
+COPY --from=core-busybox /bin/pivot_root /usr/bin/pivot_root
+COPY --from=core-busybox /bin/switch_root /usr/bin/switch_root
+COPY --from=core-busybox /bin/mkdir /usr/bin/mkdir
+COPY --from=core-busybox /bin/mknod /usr/bin/mknod
+COPY --from=core-busybox /bin/seq /usr/bin/seq
+COPY --from=core-busybox /bin/cat /usr/bin/cat
+COPY --from=core-busybox /bin/sleep /usr/bin/sleep
+COPY --from=core-busybox /bin/umount /usr/bin/umount
+COPY --from=core-busybox /bin/basename /usr/bin/basename
 COPY src/initramfs/init /init
 
-# --- Stage 2: initramfs ---
-FROM box-cpio AS initramfs
+FROM scratch AS initramfs
 COPY --from=initramfs-rootfs --chown=0:0 . /rootfs
+COPY --from=box-cpio . /
 RUN box initramfs
 
-# --- Stage 3: system rootfs ---
+# --- Stage 1: system rootfs ---
 FROM scratch AS rootfs
 COPY --from=core-busybox . /
 COPY --from=core-musl . /
@@ -28,13 +38,18 @@ COPY --from=core-filesystem . /
 COPY --from=core-zlib . /
 COPY src/init /init
 COPY src/rootfs/etc/ /etc/
+COPY src/rootfs/oldroot /oldroot
+# Create mount-point directories for the squashfs image.
+# /proc and /sys are already mounted as virtual FS in the build container,
+# so we only create /dev and /mnt as regular directories here.
+RUN mkdir -p /mnt && touch /mnt/.keep
 
-# --- Stage 4: system.img ---
+# --- Stage 2: system.img ---
 FROM box-squashfs AS system
 COPY --from=rootfs --chown=0:0 . /rootfs
 RUN box
 
-# --- Stage 5: boot.img ---
+# --- Stage 3: boot.img ---
 FROM system AS boot
 COPY --from=box-grub . /
 COPY --from=user-linux-server /bzImage /vmlinuz
@@ -42,7 +57,7 @@ COPY --from=initramfs /initramfs /initramfs
 COPY src/config/grub.cfg /grub.cfg
 RUN box
 
-# --- Stage 6: disk.img ---
+# --- Stage 4: disk.img ---
 FROM boot AS disk
 COPY --from=box-gpt . /
 COPY --from=boot /boot.img /boot.img
@@ -52,3 +67,7 @@ RUN box
 # --- Final: disk image packaged with QEMU runtime ---
 FROM stagex/service-qemu AS package
 COPY --from=disk /disk.img /disk.img
+COPY src/qemu-startup.sh /usr/bin/qemu-startup.sh
+COPY src/run /usr/bin/run
+RUN chmod +x /usr/bin/qemu-startup.sh /usr/bin/run
+ENTRYPOINT ["/usr/bin/qemu-startup.sh"]

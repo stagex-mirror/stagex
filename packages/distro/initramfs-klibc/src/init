@@ -1,0 +1,34 @@
+#!/bin/sh
+mkdir -p /mnt /proc /sys
+
+# Mount tmpfs on /dev (kernel may already have devtmpfs — remount or proceed)
+mount -t tmpfs tmpfs /dev 2>/dev/null || true
+
+# Mount virtual filesystems early (required before pivot_root)
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+
+# Wait for sda
+i=0
+while [ $i -lt 30 ]; do
+    cat /proc/partitions >/dev/null 2>&1 && case "$(cat /proc/partitions)" in
+        *sda*) break ;;
+    esac
+    i=$((i + 1))
+    sleep 1
+done
+
+# Create device node
+mknod /dev/sda2 b 8 2 2>&1 || echo "mknod failed"
+ls /dev/sda* 2>&1 || echo "no sda"
+
+# Mount squashfs root
+mount -t squashfs -o ro /dev/sda2 /mnt 2>&1 || echo "squashfs mount failed"
+
+# Move /proc and /sys
+mount -t proc -o move proc /mnt/proc
+mount -t sysfs -o move sysfs /mnt/sys
+
+# Pivot
+pivot_root /mnt /mnt/oldroot
+exec /init

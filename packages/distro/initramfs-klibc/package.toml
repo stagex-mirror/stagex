@@ -1,0 +1,4 @@
+[package]
+name = "initramfs-klibc"
+version = ""
+description = "klibc-based initramfs — finds squashfs system partition, mounts, pivots, and calls init"

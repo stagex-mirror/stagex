@@ -2,6 +2,13 @@
 # box-squashfs — compresses /rootfs into /system.img (squashfs)
 set -eux
 
+# Ensure mount point directories exist (may be stripped from empty dirs in squashfs)
+mkdir -p /rootfs/proc /rootfs/sys /rootfs/dev /rootfs/tmp /rootfs/mnt
+
+# Create .keep files to ensure empty mount point dirs survive mksquashfs
+touch /rootfs/proc/.keep /rootfs/sys/.keep /rootfs/dev/.keep /rootfs/tmp/.keep /rootfs/mnt/.keep
+
 mksquashfs /rootfs /system.img -comp gzip -noappend -processors $(nproc 2>/dev/null || echo 1)
 
+# Clean up .keep files from the image (they're harmless but unnecessary)
 echo "system.img created: $(du -h /system.img | cut -f1)"

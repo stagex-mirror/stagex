@@ -44,7 +44,8 @@ RUN --network=none <<-EOF
 		--disable-nls \
 		--disable-werror \
 		--with-platform=efi \
-		--disable-efiemu
+		--disable-efiemu \
+		--enable-fs=squashfs
 	make
 	make DESTDIR=/rootfs install-strip
 EOF

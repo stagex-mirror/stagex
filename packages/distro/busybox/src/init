@@ -1,12 +1,17 @@
 #!/bin/sh
 # init — StageX base distro init
-# Dual-mode: live boot (RAM) or persistent (state partition)
 
+# Mount virtual filesystems (dirs exist in squashfs)
 mount -t proc proc /proc
 mount -t sysfs sysfs /sys
 mount -t devtmpfs devtmpfs /dev
 
-# Determine boot mode: look for state partition
+# Create essential device nodes
+mknod -m 666 /dev/null c 1 3
+mknod -m 600 /dev/console c 5 1
+mknod -m 666 /dev/tty c 5 0
+
+# Boot mode detection: look for state partition on third partition
 STATE_DEV=""
 for d in /dev/sda3 /dev/vda3 /dev/nvme0n1p3; do
     if blkid "$d" 2>/dev/null | grep -q "TYPE=\"ext4\""; then
@@ -17,20 +22,14 @@ for d in /dev/sda3 /dev/vda3 /dev/nvme0n1p3; do
     fi
 done
 
-# Mount overlay — persistent or RAM
 if [ -n "$STATE_DEV" ]; then
-    mount -t ext4 -o ro "$STATE_DEV" /mnt/state
-    mkdir -p /mnt/state/overlay /mnt/state/home
-    mount -t overlay overlay -o lowerdir=/,upperdir=/mnt/state/overlay,workdir=/mnt/state/overlay/work /
-    mount -t ext4 -o rw /dev/sda3 /mnt/state
+    mkdir -p /mnt/state
+    mount -t ext4 -o rw "$STATE_DEV" /mnt/state
+    mkdir -p /mnt/state/home
     mount -t none -o bind /mnt/state/home /home
 else
-    # Live mode: everything in RAM
-    mkdir -p /tmp/overlay /home
-    mount -t tmpfs tmpfs /tmp/overlay
-    mount -t overlay overlay -o lowerdir=/,upperdir=/tmp/overlay,workdir=/tmp/overlay/work /
+    # Live mode: /home in RAM
     mount -t tmpfs tmpfs /home
 fi
 
-# Start sysvinit
-exec /sbin/init
+exec /bin/init

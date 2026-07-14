@@ -1,0 +1,6 @@
+#!/bin/sh
+# run — helper for SSH into the guest
+set -eux
+
+exec ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+  -i /ssh_host_key root@localhost -p 2222 "$@"

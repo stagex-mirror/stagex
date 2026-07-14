@@ -58,7 +58,7 @@ prep-release-branch: ## Prepare a branch for a new release
 help:
 	@./src/help.sh Makefile
 
-DISTRO ?= server-busybox-dev
+DISTRO ?= busybox
 SSH_KEY ?=
 VNC_PORT ?= 5900
 CONSOLE_PORT ?= 4000
@@ -94,9 +94,16 @@ vm:
 		stagex/box-img:local
 	@# Load local dependencies
 	@tar -C out/service-qemu -cf - . | docker load 2>/dev/null
+	@tar -C out/box-cpio -cf - . | docker load 2>/dev/null
 	@tar -C out/box-grub -cf - . | docker load 2>/dev/null
+	@tar -C out/box-squashfs -cf - . | docker load 2>/dev/null
+	@tar -C out/box-gpt -cf - . | docker load 2>/dev/null
 	@tar -C out/user-linux-server -cf - . | docker load 2>/dev/null
 	@tar -C out/user-openssh -cf - . | docker load 2>/dev/null
+	@tar -C out/core-busybox -cf - . | docker load 2>/dev/null
+	@tar -C out/core-musl -cf - . | docker load 2>/dev/null
+	@tar -C out/core-filesystem -cf - . | docker load 2>/dev/null
+	@tar -C out/core-zlib -cf - . | docker load 2>/dev/null
 	@# Build distro targeting the right stage (package or package-dev)
 	@mkdir -p $(CURDIR)/.qemu-run/$(DISTRO)
 	@echo "Building distro $(DISTRO) [stage: $(DISTRO_STAGE)] ..."

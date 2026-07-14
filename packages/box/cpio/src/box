@@ -5,7 +5,7 @@ set -eux
 NAME="${1:?usage: box <name>}"
 
 cd /rootfs
-find . -print0 \
+find . -path ./dev -prune -o -print0 \
   | sort -z \
   | cpio --null --create --verbose --format=newc \
   | gzip -9 \

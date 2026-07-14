@@ -23,6 +23,7 @@ ENV INSTALL_MOD_PATH=/rootfs/usr/
 
 COPY --chmod=775 <<-EOF /usr/bin/build-static
 	#!/bin/sh
+	make olddefconfig
 	make bzImage
   mkdir /rootfs
 	cp .config /rootfs/linux.config

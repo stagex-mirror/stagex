@@ -1,0 +1,36 @@
+FROM stagex/pallet-clang-gnu-busybox AS base
+COPY --from=stagex/core-linux-headers . /
+FROM base AS build
+ARG VERSION
+ADD fetch/klibc-${VERSION}.tar.xz .
+WORKDIR /klibc-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
+RUN --network=none <<-EOF
+	set -eux
+	# Install kernel UAPI headers for klibc (full include tree)
+	mkdir -p linux
+	cp -a /usr/include linux/include
+	# Configure klibc for musl and minimal initramfs utilities
+	cat > local.conf << 'CONF'
+	CONFIG_CC="clang"
+	CONFIG_CFLAGS="-Os -static"
+	CONFIG_LDFLAGS="-static"
+	CONF
+	# klcc needs CC in environment or as make arg; HOSTCC for host tools too
+	export CC=clang
+	make -j$(nproc) CC=clang HOSTCC=clang
+	# Install utilities to rootfs
+	mkdir -p /rootfs/usr/bin
+	# Static utilities (klibc progs)
+	for util in mount mkdir mknod ls cat sleep pivot_root; do
+	    cp usr/utils/static/$util /rootfs/usr/bin/
+	done
+	# Shell (dash) — static binary, no shared lib needed in initramfs
+	cp usr/dash/static/sh /rootfs/usr/bin/
+	# Verify
+	echo "=== Installed ==="
+	ls -la /rootfs/usr/bin/
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

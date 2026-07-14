@@ -155,6 +155,7 @@ RUN <<-EOF
 	echo "docker:x:993:$USERNAME" >> etc/group
 	mkdir -p home/$USERNAME
 	chown -R 1000:1000 home/$USERNAME
+	mkdir -p oldroot
 	if [ "$AUTHORIZED_KEYS" != "empty" ] && [ -s /authorized_keys ]; then
 		mkdir -p home/$USERNAME/.ssh
 		cp /authorized_keys home/$USERNAME/.ssh/authorized_keys
