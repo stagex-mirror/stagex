@@ -3,26 +3,16 @@ FROM stagex/core-musl AS core-musl
 FROM stagex/core-filesystem AS core-filesystem
 FROM stagex/core-zlib AS core-zlib
 FROM stagex/user-linux-server AS user-linux-server
+FROM stagex/user-klibc-utils AS user-klibc-utils
 FROM stagex/box-grub AS box-grub
 FROM stagex/box-squashfs AS box-squashfs
 FROM stagex/box-gpt AS box-gpt
 FROM stagex/box-cpio AS box-cpio
 
-# --- Initramfs: busybox-based with full mount support ---
+# --- Initramfs: klibc-based (minimal static utilities + dash shell) ---
 FROM scratch AS initramfs-rootfs
 COPY --from=core-filesystem . /
-COPY --from=core-busybox /bin/busybox /usr/bin/busybox
-COPY --from=core-busybox /bin/sh /usr/bin/sh
-COPY --from=core-busybox /bin/mount /usr/bin/mount
-COPY --from=core-busybox /bin/pivot_root /usr/bin/pivot_root
-COPY --from=core-busybox /bin/switch_root /usr/bin/switch_root
-COPY --from=core-busybox /bin/mkdir /usr/bin/mkdir
-COPY --from=core-busybox /bin/mknod /usr/bin/mknod
-COPY --from=core-busybox /bin/seq /usr/bin/seq
-COPY --from=core-busybox /bin/cat /usr/bin/cat
-COPY --from=core-busybox /bin/sleep /usr/bin/sleep
-COPY --from=core-busybox /bin/umount /usr/bin/umount
-COPY --from=core-busybox /bin/basename /usr/bin/basename
+COPY --from=user-klibc-utils . /
 COPY src/initramfs/init /init
 
 FROM scratch AS initramfs

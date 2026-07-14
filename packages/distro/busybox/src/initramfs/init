@@ -12,18 +12,20 @@ mount -t sysfs sysfs /sys
 mount -t devtmpfs devtmpfs /dev
 
 # Wait for the block device node to appear in /dev
-for i in $(seq 1 15); do
+i=0
+while [ $i -lt 15 ]; do
     if [ -b /dev/sda2 ] || [ -b /dev/vda2 ] || [ -b /dev/hda2 ] || [ -b /dev/nvme0n1p2 ]; then
         break
     fi
+    i=$((i + 1))
     sleep 1
 done
 
 # Find the second partition from the first disk in /sys/block/
 SYSTEM_DEV=""
 for dev in /sys/block/*; do
-    devname=$(basename "$dev")
-    part2="$devname"2
+    devname=${dev##*/}
+    part2="${devname}2"
     if [ -d "$dev/$part2" ]; then
         SYSTEM_DEV="/dev/$part2"
         if [ ! -b "$SYSTEM_DEV" ] && [ -f "$dev/$part2/dev" ]; then
@@ -51,6 +53,10 @@ mount -t squashfs -o ro "$SYSTEM_DEV" /mnt || {
 
 echo "initramfs: switching to new root..."
 
-# Use switch_root with explicit console device
-# /init is the path in the NEW root (squashfs)
-exec /usr/bin/switch_root /mnt /init
+# Use pivot_root to switch to the new root
+# Prepare old root mount point inside the new root
+mkdir -p /mnt/oldroot
+pivot_root /mnt /mnt/oldroot
+
+# Hand over to the real init
+exec /init
