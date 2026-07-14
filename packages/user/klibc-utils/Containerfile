@@ -3,6 +3,7 @@ COPY --from=stagex/core-linux-headers . /
 FROM base AS build
 ARG VERSION
 ADD fetch/klibc-${VERSION}.tar.xz .
+ADD init.c .
 WORKDIR /klibc-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
@@ -30,7 +31,24 @@ RUN --network=none <<-EOF
 	# Verify
 	echo "=== Installed ==="
 	ls -la /rootfs/usr/bin/
+	# --- Build monolithic init ---
+	# Copy init.c into klibc build tree (it was added to context root)
+	cp /init.c .
+	sed -i 's|prefix = "/usr/lib/klibc"|prefix = "./usr"|' klcc/klcc
+	sed -i 's|libdir=/usr/lib/klibc/lib|libdir=./usr/klibc|' klcc/klibc.config
+	./klcc/klcc -Os -static -I./linux/include -c init.c -o init.o
+	clang -Os -static -nostartfiles -m64 \
+	    ./usr/klibc/arch/x86_64/crt0.o init.o \
+	    -o init ./usr/klibc/libc.a
+	cp init /rootfs/init
+	echo "=== Monolith init ==="
+	ls -la /rootfs/init
 EOF
 
+# --- Default package: vanilla utilities + core-filesystem ---
 FROM stagex/core-filesystem AS package
-COPY --from=build /rootfs/ /
+COPY --from=build /rootfs/usr/bin/ /usr/bin/
+
+# --- Subpackage: monolithic init (FROM scratch, single static binary) ---
+FROM scratch AS package-klibc-utils-mono
+COPY --from=build /rootfs/init /init
