@@ -1,0 +1,73 @@
+#!/bin/sh
+# S05cloud-init-drive — seed hostname + ssh keys from a no-cloud config drive
+# Follows no-cloud datasource convention: user-data (cloud-config YAML)
+# on a volume labeled "cidata" (ISO9660 or squashfs).
+
+CONFIG_DRIVE="/mnt/cfg"
+HOSTNAME_FILE="/etc/hostname"
+KEYS_FILE="/root/.ssh/authorized_keys"
+
+set_hostname() {
+	local h
+	# Accept either a file path or a raw string value
+	if [ -f "$1" ]; then
+		h=$(head -1 "$1" | tr -d '\r\n ' | head -c 64)
+	else
+		h=$(printf '%s' "$1" | head -1 | tr -d '\r\n ' | head -c 64)
+	fi
+	[ -n "$h" ] || return 1
+	hostname "$h"
+	echo "$h" > "$HOSTNAME_FILE"
+	return 0
+}
+
+seed_keys() {
+	local src="$1"
+	[ -f "$src" ] || return 1
+	mkdir -p /root/.ssh
+	cat "$src" > "$KEYS_FILE"
+	chmod 600 "$KEYS_FILE"
+	return 0
+}
+
+# Skip if hostname already set
+[ -s "$HOSTNAME_FILE" ] && { printf "Cloud-init (drive): skip\n"; exit 0; }
+
+# Look for a no-cloud config drive (any mountable block device)
+for dev in /dev/sr0 /dev/sda /dev/sdb /dev/xvdf /dev/vdb; do
+	[ -e "$dev" ] || continue
+	mount -o ro "$dev" "$CONFIG_DRIVE" 2>/dev/null && break
+done
+
+if [ $? -ne 0 ]; then
+	printf "Cloud-init (drive): no device\n"
+	exit 0
+fi
+
+# --- Parse no-cloud user-data (cloud-config YAML subset) ---
+UD="$CONFIG_DRIVE/user-data"
+if [ -f "$UD" ]; then
+	# hostname: single-line value
+	H=$(grep -m1 '^[[:space:]]*hostname:' "$UD" | sed 's/^[[:space:]]*hostname:[[:space:]]*//' | tr -d '\r\n ')
+	[ -n "$H" ] && set_hostname "$H"
+
+	# ssh_authorized_keys: block scalar (|) or multi-line list
+	KEYS="$CONFIG_DRIVE/.cloud-keys"
+	grep -q '^[[:space:]]*ssh_authorized_keys:' "$UD" && {
+		# Extract everything after ssh_authorized_keys: until next top-level key
+		sed -n '/^[[:space:]]*ssh_authorized_keys:/,$/p' "$UD" | \
+			sed '1d' | grep -E '^[[:space:]]' | \
+			sed 's/^[[:space:]]*//; s/^[|-][[:space:]]*//' | \
+			tr -d '\r' > "$KEYS"
+		[ -s "$KEYS" ] && seed_keys "$KEYS"
+		rm -f "$KEYS"
+	}
+fi
+
+# Legacy fallback: raw files (non-ISO volumes)
+[ -z "$H" ] && set_hostname "$CONFIG_DRIVE/hostname"
+[ ! -s "$KEYS_FILE" ] && seed_keys "$CONFIG_DRIVE/authorized_keys"
+
+umount "$CONFIG_DRIVE" 2>/dev/null
+
+printf "Cloud-init (drive): ok\n"

@@ -34,6 +34,6 @@ __pycache__
 
 # Generated/temp files at root
 usr/
-qemu-boot.sh
-qemu-startup.sh
-run-verify.sh
+/qemu-boot.sh
+/qemu-startup.sh
+/run-verify.sh

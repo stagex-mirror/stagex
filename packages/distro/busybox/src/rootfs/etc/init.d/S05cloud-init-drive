@@ -1,0 +1,43 @@
+#!/bin/sh
+# S05cloud-init-drive — seed hostname + ssh keys from a config drive (CD-ROM / block)
+
+CONFIG_DRIVE="/mnt/cfg"
+HOSTNAME_FILE="/etc/hostname"
+KEYS_FILE="/root/.ssh/authorized_keys"
+
+set_hostname() {
+	local h
+	h=$(head -1 "$1" | tr -d '\r\n ' | head -c 64)
+	[ -n "$h" ] || return 1
+	hostname "$h"
+	echo "$h" > "$HOSTNAME_FILE"
+	return 0
+}
+
+seed_keys() {
+	local src="$1"
+	[ -f "$src" ] || return 1
+	mkdir -p /root/.ssh
+	cat "$src" > "$KEYS_FILE"
+	chmod 600 "$KEYS_FILE"
+	return 0
+}
+
+# Skip if hostname already set
+[ -s "$HOSTNAME_FILE" ] && { printf "Cloud-init (drive): skip\n"; exit 0; }
+
+for dev in /dev/sr0 /dev/xvdf /dev/vdb; do
+	[ -e "$dev" ] || continue
+	mount -o ro "$dev" "$CONFIG_DRIVE" 2>/dev/null && break
+done
+
+if [ $? -ne 0 ]; then
+	printf "Cloud-init (drive): no device\n"
+	exit 0
+fi
+
+set_hostname "$CONFIG_DRIVE/hostname"
+seed_keys "$CONFIG_DRIVE/authorized_keys"
+umount "$CONFIG_DRIVE" 2>/dev/null
+
+printf "Cloud-init (drive): ok\n"

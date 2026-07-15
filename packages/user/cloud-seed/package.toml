@@ -1,0 +1,12 @@
+[package]
+name = "cloud-seed"
+version = "0.2.0"
+description = "Fetch user-data from a cloud provider and write files described within to the filesystem"
+license = "MIT OR Apache-2.0"
+website = "https://github.com/jbg/cloud-seed"
+
+[sources.cloud-seed]
+hash = "75f9888f41ae73e32dfa01ec6ddd1d0a3dca1548c5799ac8c890270220b8690e"
+format = "tar.gz"
+file = "cloud-seed-{version}.{format}"
+mirrors = ["https://github.com/jbg/cloud-seed/archive/refs/tags/v{version}.{format}"]

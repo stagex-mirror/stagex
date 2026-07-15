@@ -1,4 +1,0 @@
-[package]
-name = "server-busybox"
-version = "2026.03.0"
-description = "Busybox-based distro images — minimal base and extended dev variants"

@@ -1,19 +1,19 @@
 #!/usr/bin/sh
-# qemu-startup.sh — backgrounds QEMU, keeps container alive
+# qemu-startup.sh — Launch QEMU with disk.img, cloud-init, and SSH forwarding
+# Backgrounds QEMU, keeps container alive; logs flow to docker logs.
 
-# --- Use build-time SSH key (embedded in image) ---
 KEY="/ssh_host_key"
-
-# --- Log file for QEMU output (visible via docker logs) ---
 QEMU_LOG="/tmp/qemu.log"
 
 # --- Serial console socket bridge ---
-rm -f "${CONSOLE_SOCKET:-/run/qemu-console.sock}"
-/usr/bin/socat UNIX-LISTEN:"${CONSOLE_SOCKET:-/run/qemu-console.sock}",fork,mode=0777 \
-    TCP:127.0.0.1:"${CONSOLE_PORT:-4000}" &
+if command -v socat >/dev/null 2>&1; then
+    rm -f "${CONSOLE_SOCKET:-/run/qemu-console.sock}"
+    socat UNIX-LISTEN:"${CONSOLE_SOCKET:-/run/qemu-console.sock}",fork,mode=0777 \
+        TCP:127.0.0.1:"${CONSOLE_PORT:-4000}" &
+fi
 
 # --- QMP socket ---
-rm -f "${QMP_SOCKET:-/run/qemu-vm/qmp.sock}"
+rm -f "${QMP_SOCKET:-/run/qemu-qmp.sock}"
 chmod 777 "${QMP_SOCKET:-/run/qemu-qmp.sock}" 2>/dev/null || true
 
 # --- TPM (optional) ---
@@ -37,9 +37,15 @@ QEMU_ARGS="$QEMU_ARGS -serial chardev:console"
 QEMU_ARGS="$QEMU_ARGS -serial telnet:0.0.0.0:${CONSOLE_PORT:-4000},server,nowait"
 QEMU_ARGS="$QEMU_ARGS -qmp unix:${QMP_SOCKET:-/run/qemu-qmp.sock},server,wait=off"
 
+# --- Home disk (optional) ---
+if [ -n "${QEMU_HOME}" ]; then
+    QEMU_ARGS="$QEMU_ARGS -drive file=${QEMU_HOME},format=raw,if=virtio"
+fi
+
 # --- Cloud-init drive (always present, may be empty) ---
 QEMU_ARGS="$QEMU_ARGS -drive file=${QEMU_CLOUD:=/cloud.iso},format=raw,if=ide"
 
+# --- Network: user-mode with SSH port forwarding ---
 NET_OPTS="user,id=net0,hostfwd=tcp:0.0.0.0:2222-:22"
 if [ -n "${QEMU_NET_HOSTFWD:-}" ]; then
     NET_OPTS="$NET_OPTS,hostfwd=${QEMU_NET_HOSTFWD}"
@@ -47,12 +53,14 @@ fi
 QEMU_ARGS="$QEMU_ARGS -netdev $NET_OPTS"
 QEMU_ARGS="$QEMU_ARGS -device e1000,netdev=net0"
 
+# --- TPM device ---
 if [ "${QEMU_TPM:-1}" != "0" ]; then
     QEMU_ARGS="$QEMU_ARGS -chardev socket,id=chrtpm,path=/tmp/vtpm-sock"
     QEMU_ARGS="$QEMU_ARGS -tpmdev emulator,id=tpm0,chardev=chrtpm"
     QEMU_ARGS="$QEMU_ARGS -device tpm-tis,tpmdev=tpm0"
 fi
 
+# --- KVM acceleration (if available) ---
 if [ "${QEMU_KVM:-1}" = "1" ] && [ -e /dev/kvm ]; then
     QEMU_ARGS="$QEMU_ARGS -cpu host -accel kvm"
 fi

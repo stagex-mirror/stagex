@@ -1,3 +1,0 @@
-PubkeyAuthentication yes
-PermitEmptyPasswords no
-PermitRootLogin prohibit-password

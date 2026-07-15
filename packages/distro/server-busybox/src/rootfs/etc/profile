@@ -1,8 +1,0 @@
-export TERM=linux-16color
-export EDITOR=/bin/vi
-export SHELL=/bin/bash
-export PATH="/usr/local/bin:/bin:/sbin:/usr/bin:/usr/sbin"
-export LD_LIBRARY_PATH="/usr/lib:/lib"
-export PS1="[Stageˣ] $ "
-export GNUPGHOME=/.gnupg
-export XDG_RUNTIME_DIR=/tmp

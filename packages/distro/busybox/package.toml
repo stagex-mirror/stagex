@@ -2,3 +2,4 @@
 name = "busybox"
 version = "2026.03.0"
 description = "Minimal immutable distro — squashfs root, GRUB EFI, dual-mode boot (live or persistent)"
+subpackages = ["busybox-offline", "busybox-default", "busybox-dev", "busybox-guest"]

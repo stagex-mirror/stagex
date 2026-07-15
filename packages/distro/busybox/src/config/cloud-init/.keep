@@ -1,0 +1,9 @@
+# cloud-config user-data template (no-cloud datasource)
+# Populated at `make vm` time with actual hostname + SSH key(s).
+#
+# To use a custom key: make vm SSH_KEY=/path/to/key.pub
+#
+# --- user-data (cloud-config YAML) ---
+# hostname: __HOSTNAME__
+# ssh_authorized_keys:
+#   - __SSH_KEY__

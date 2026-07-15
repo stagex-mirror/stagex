@@ -1,9 +1,14 @@
 FROM stagex/core-busybox AS core-busybox
+FROM stagex/core-busybox-init AS busybox-init
 FROM stagex/core-musl AS core-musl
 FROM stagex/core-filesystem AS core-filesystem
 FROM stagex/core-zlib AS core-zlib
+FROM stagex/core-openssl AS core-openssl
 FROM stagex/user-linux-server AS user-linux-server
+FROM stagex/user-linux-offline AS user-linux-offline
+FROM stagex/user-linux-guest AS user-linux-guest
 FROM stagex/user-klibc-utils-mono AS user-klibc-utils-mono
+FROM stagex/user-openssh AS user-openssh
 FROM stagex/box-grub AS box-grub
 FROM stagex/box-squashfs AS box-squashfs
 FROM stagex/box-gpt AS box-gpt
@@ -18,40 +23,138 @@ COPY --from=initramfs-rootfs --chown=0:0 . /rootfs
 COPY --from=box-cpio . /
 RUN box initramfs
 
-# --- Stage 1: system rootfs ---
-FROM scratch AS rootfs
+# ============================================================
+# Stage 1: rootfs variants (offline → default → dev)
+# ============================================================
+
+# --- offline: embedded, no network ---
+FROM scratch AS rootfs-offline
 COPY --from=core-busybox . /
 COPY --from=core-musl . /
 COPY --from=core-filesystem . /
 COPY --from=core-zlib . /
-COPY src/init /init
-COPY src/rootfs/etc/ /etc/
+COPY --from=busybox-init /etc/init.d/rcS /etc/init.d/
+COPY --from=busybox-init /etc/init.d/S01syslogd /etc/init.d/
+COPY --from=busybox-init /etc/init.d/S02modules /etc/init.d/
+COPY --from=busybox-init /etc/init.d/S10udev /etc/init.d/
+COPY --from=busybox-init /etc/init.d/S20urandom /etc/init.d/
+COPY --from=busybox-init /etc/init.d/S05cloud-init-drive /etc/init.d/
+COPY --from=busybox-init /init /init
 COPY src/rootfs/oldroot /oldroot
-RUN mkdir -p /mnt && touch /mnt/.keep
+RUN mkdir -p /mnt /run && touch /mnt/.keep
 
-# --- Stage 2: system.img ---
-FROM box-squashfs AS system
-COPY --from=rootfs --chown=0:0 . /rootfs
+# --- default: offline + network ---
+FROM rootfs-offline AS rootfs-default
+COPY --from=busybox-init /etc/init.d/S40dhcpcd /etc/init.d/
+COPY --from=busybox-init /etc/init.d/S06cloud-init-net /etc/init.d/
+
+# --- dev: default + openssh ---
+FROM rootfs-default AS rootfs-dev
+COPY --from=core-openssl . /
+COPY --from=user-openssh . /
+COPY --from=busybox-init /etc/init.d/S50sshd /etc/init.d/
+
+# --- guest: default + QEMU guest agent ---
+FROM rootfs-default AS rootfs-guest
+COPY --from=stagex/user-qemu /usr/bin/qemu-ga /usr/bin/qemu-ga
+COPY --from=busybox-init /etc/init.d/S21qemu-ga /etc/init.d/
+
+# ============================================================
+# Stage 2: system images
+# ============================================================
+
+FROM box-squashfs AS system-offline
+COPY --from=rootfs-offline --chown=0:0 . /rootfs
 RUN box
 
-# --- Stage 3: boot.img ---
-FROM system AS boot
-COPY --from=box-grub . /
+FROM box-squashfs AS system-default
+COPY --from=rootfs-default --chown=0:0 . /rootfs
+RUN box
+
+FROM box-squashfs AS system-dev
+COPY --from=rootfs-dev --chown=0:0 . /rootfs
+RUN box
+
+FROM box-squashfs AS system-guest
+COPY --from=rootfs-guest --chown=0:0 . /rootfs
+RUN box
+
+# ============================================================
+# Stage 3: boot images (parallel — no dependency on system images)
+# ============================================================
+
+FROM box-grub AS boot-offline
+COPY --from=user-linux-offline /bzImage /vmlinuz
+COPY --from=initramfs /initramfs /initramfs
+COPY src/config/grub.cfg /grub.cfg
+RUN box
+
+FROM box-grub AS boot-default
 COPY --from=user-linux-server /bzImage /vmlinuz
 COPY --from=initramfs /initramfs /initramfs
 COPY src/config/grub.cfg /grub.cfg
 RUN box
 
-# --- Stage 4: disk.img ---
-FROM boot AS disk
-COPY --from=box-gpt . /
-COPY --from=boot /boot.img /boot.img
-COPY --from=system /system.img /system.img
+FROM box-grub AS boot-guest
+COPY --from=user-linux-guest /bzImage /vmlinuz
+COPY --from=initramfs /initramfs /initramfs
+COPY src/config/grub.cfg /grub.cfg
 RUN box
 
-# --- Final: disk image packaged with QEMU runtime ---
-FROM stagex/service-qemu AS package
-COPY --from=disk /disk.img /disk.img
+# ============================================================
+# Stage 4: disk images
+# ============================================================
+
+FROM boot-offline AS disk-offline
+COPY --from=box-gpt . /
+COPY --from=boot-offline /boot.img /boot.img
+COPY --from=system-offline /system.img /system.img
+RUN box
+
+FROM boot-default AS disk-default
+COPY --from=box-gpt . /
+COPY --from=boot-default /boot.img /boot.img
+COPY --from=system-default /system.img /system.img
+RUN box
+
+FROM box-gpt AS disk-dev
+COPY --from=boot-default /boot.img /boot.img
+COPY --from=system-dev /system.img /system.img
+RUN box
+
+FROM boot-guest AS disk-guest
+COPY --from=box-gpt . /
+COPY --from=boot-guest /boot.img /boot.img
+COPY --from=system-guest /system.img /system.img
+RUN box
+
+# ============================================================
+# Stage 5: packages with QEMU runtime
+# ============================================================
+
+FROM stagex/service-qemu AS package-busybox-offline
+COPY --from=disk-offline /disk.img /disk.img
+COPY src/qemu-startup.sh /usr/bin/qemu-startup.sh
+COPY src/run /usr/bin/run
+RUN chmod +x /usr/bin/qemu-startup.sh /usr/bin/run
+ENTRYPOINT ["/usr/bin/qemu-startup.sh"]
+
+FROM stagex/service-qemu AS package-busybox-default
+COPY --from=disk-default /disk.img /disk.img
+COPY src/qemu-startup.sh /usr/bin/qemu-startup.sh
+COPY src/run /usr/bin/run
+RUN chmod +x /usr/bin/qemu-startup.sh /usr/bin/run
+ENTRYPOINT ["/usr/bin/qemu-startup.sh"]
+
+FROM stagex/service-qemu AS package-busybox-dev
+COPY --from=disk-dev /disk.img /disk.img
+COPY src/qemu-startup.sh /usr/bin/qemu-startup.sh
+COPY src/run /usr/bin/run
+RUN chmod +x /usr/bin/qemu-startup.sh /usr/bin/run
+ENTRYPOINT ["/usr/bin/qemu-startup.sh"]
+
+FROM stagex/service-qemu AS package-busybox-guest
+COPY --from=disk-guest /disk.img /disk.img
 COPY src/qemu-startup.sh /usr/bin/qemu-startup.sh
 COPY src/run /usr/bin/run
 RUN chmod +x /usr/bin/qemu-startup.sh /usr/bin/run

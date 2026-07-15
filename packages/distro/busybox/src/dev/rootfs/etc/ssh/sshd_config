@@ -1,0 +1,14 @@
+# StageX busybox-dev sshd_config
+Port 22
+Protocol 2
+PermitRootLogin yes
+PasswordAuthentication yes
+PubkeyAuthentication yes
+AuthorizedKeysFile .ssh/authorized_keys
+PrintMotd no
+TCPKeepAlive yes
+ClientAliveInterval 60
+ClientAliveCountMax 3
+HostKey /run/ssh/ssh_host_rsa_key
+HostKey /run/ssh/ssh_host_ecdsa_key
+HostKey /run/ssh/ssh_host_ed25519_key

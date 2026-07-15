@@ -1,5 +1,5 @@
 #!/bin/sh
-# rcS — minimal init script for StageX busybox distro
+# rcS — StageX busybox distro init script
 
 # Mount remaining filesystems if not already mounted
 mount -t proc proc /proc 2>/dev/null
@@ -8,5 +8,22 @@ mount -t devtmpfs devtmpfs /dev 2>/dev/null
 
 # Hostname
 hostname stagex
+
+# Start all init scripts in /etc/init.d
+for i in /etc/init.d/S??* ;do
+    [ ! -f "$i" ] && continue
+    case "$i" in
+	*.sh)
+	    (
+		trap - INT QUIT TSTP
+		set start
+		. $i
+	    )
+	    ;;
+	*)
+	    $i start
+	    ;;
+    esac
+done
 
 echo "StageX busybox distro booted"

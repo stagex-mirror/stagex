@@ -71,7 +71,7 @@ QEMU_BIOS ?= /usr/share/edk2/OvmfPkg/OVMF.fd
 DISTRO_BASE = $(subst -dev,,${DISTRO})
 
 # Determine the Containerfile stage to export
-DISTRO_STAGE = $(if $(findstring -dev,${DISTRO}),package-dev,package)
+DISTRO_STAGE = package-$(DISTRO)
 
 # Home disk image path
 HOME_IMG = $(CURDIR)/out/$(DISTRO)-home.img
@@ -79,60 +79,91 @@ HOME_IMG = $(CURDIR)/out/$(DISTRO)-home.img
 # Local home folder (mutable state, .gitignored)
 HOME_LOCAL = $(CURDIR)/local/$(DISTRO)/home
 
+# Cloud-init image (squashfs)
+CLOUD_IMG = $(CURDIR)/out/cloud-config.img
+CLOUD_TMP = $(CURDIR)/.qemu-run/cloud-init
+
 .PHONY: vm
 vm:
 	@# Ensure local home folder exists
 	@mkdir -p $(HOME_LOCAL)/root/.ssh
 	@# Build home disk image from local folder
 	@echo "Building home.img from local/$(DISTRO)/home/ ..."
-	@$(MAKE) IMPORT=1 box-img >/dev/null 2>&1
 	@/bin/docker run --rm --privileged \
 		-v $(HOME_LOCAL):/local:ro \
 		-v $(CURDIR)/out:/out \
 		-e HOME_SRC=/local \
 		-e HOME_OUT=/out/$(DISTRO)-home.img \
 		stagex/box-img:local
-	@# Load local dependencies
+	@# Generate cloud-config image with hostname + SSH key
+	@# Generate cloud-config image with no-cloud user-data
+	@sudo rm -rf $(CLOUD_TMP) && mkdir -p $(CLOUD_TMP)
+	@printf 'instance-id: qemu-$(DISTRO)\n' > $(CLOUD_TMP)/meta-data
+	@printf 'hostname: qemu-$(DISTRO)\nssh_authorized_keys:\n' > $(CLOUD_TMP)/user-data
+	@test -s $(SSH_KEY) && printf '  - %s\n' "$(cat $(SSH_KEY))" >> $(CLOUD_TMP)/user-data || \
+		test -s ~/.ssh/id_rsa.pub && printf '  - %s\n' "$(cat ~/.ssh/id_rsa.pub)" >> $(CLOUD_TMP)/user-data || \
+		printf '  - ssh-rsa PLACEHOLDER\n' >> $(CLOUD_TMP)/user-data
+	@echo "Building cloud-config.img ..."
+	@/bin/docker run --rm \
+		-u $(id -u):$(id -g) \
+		-v $(CLOUD_TMP):/rootfs \
+		-v $(CURDIR)/out:/out \
+		stagex/box-squashfs:local \
+		-o /out/cloud-config.img
+	@# Build distro (auto-generated target handles build contexts + import)
+	@echo "Building distro $(DISTRO) ..."
+	@$(MAKE) IMPORT=1 distro-$(DISTRO) >/dev/null 2>&1
+	@# Load QEMU runtime
 	@tar -C out/service-qemu -cf - . | docker load 2>/dev/null
-	@tar -C out/box-cpio -cf - . | docker load 2>/dev/null
-	@tar -C out/box-grub -cf - . | docker load 2>/dev/null
-	@tar -C out/box-squashfs -cf - . | docker load 2>/dev/null
-	@tar -C out/box-gpt -cf - . | docker load 2>/dev/null
-	@tar -C out/user-linux-server -cf - . | docker load 2>/dev/null
-	@tar -C out/user-openssh -cf - . | docker load 2>/dev/null
-	@tar -C out/core-busybox -cf - . | docker load 2>/dev/null
-	@tar -C out/core-musl -cf - . | docker load 2>/dev/null
-	@tar -C out/core-filesystem -cf - . | docker load 2>/dev/null
-	@tar -C out/core-zlib -cf - . | docker load 2>/dev/null
-	@# Build distro targeting the right stage (package or package-dev)
+	@# Launch VM
 	@mkdir -p $(CURDIR)/.qemu-run/$(DISTRO)
-	@echo "Building distro $(DISTRO) [stage: $(DISTRO_STAGE)] ..."
-	@/bin/docker build \
-		--target $(DISTRO_STAGE) \
-		--tag stagex/distro-$(DISTRO):local \
-		--provenance=false \
-		--platform linux/amd64 \
-		-f packages/distro/$(DISTRO_BASE)/Containerfile \
-		packages/distro/$(DISTRO_BASE)
-	@if docker inspect --format='{{.State.Running}}' qemu-$(DISTRO) >/dev/null 2>&1 && \
-		docker inspect --format='{{.State.Running}}' qemu-$(DISTRO) | grep -q true; then \
-		echo "Container qemu-$(DISTRO) is already running."; \
+	@# Determine SSH private key path
+	@SSH_PRIV_KEY="" ; \
+	if [ -n "$(SSH_KEY)" ] && [ -f "$(SSH_KEY)" ]; then \
+		SSH_PRIV_KEY="$(SSH_KEY%.pub)" ; \
+		[ -f "$$SSH_PRIV_KEY" ] || SSH_PRIV_KEY="$(SSH_KEY)" ; \
+	elif [ -f ~/.ssh/id_rsa ]; then \
+		SSH_PRIV_KEY=~/.ssh/id_rsa ; \
 	else \
-		docker rm -f qemu-$(DISTRO) >/dev/null 2>&1 || true; \
-		echo "Starting distro $(DISTRO) ..."; \
-		docker run -d --name qemu-$(DISTRO) --privileged --network host \
-			-v $(CURDIR)/.qemu-run/$(DISTRO):/run/qemu-vm \
-			-v $(HOME_IMG):/home.img \
-			-e CONSOLE_SOCKET=/run/qemu-vm/console.sock \
-			-e QMP_SOCKET=/run/qemu-vm/qmp.sock \
-			-e QEMU_MEMORY=$(QEMU_MEMORY) \
-			-e QEMU_DISK=$(QEMU_DISK) \
-			-e QEMU_BIOS=$(QEMU_BIOS) \
-			-e QEMU_HOME=/home.img \
-			stagex/distro-$(DISTRO):local; \
-		sleep 1; \
-		sudo chmod 777 $(CURDIR)/.qemu-run/$(DISTRO)/console.sock 2>/dev/null || true; \
-		sudo chmod 777 $(CURDIR)/.qemu-run/$(DISTRO)/qmp.sock 2>/dev/null || true; \
+		SSH_PRIV_KEY="" ; \
+	fi ; \
+	if docker inspect --format='{{.State.Running}}' qemu-$(DISTRO) >/dev/null 2>&1 && \
+		docker inspect --format='{{.State.Running}}' qemu-$(DISTRO) | grep -q true; then \
+		echo "Container qemu-$(DISTRO) is already running." ; \
+	else \
+		docker rm -f qemu-$(DISTRO) >/dev/null 2>&1 || true ; \
+		echo "Starting distro $(DISTRO) ..." ; \
+		if [ -n "$$SSH_PRIV_KEY" ] && [ -f "$$SSH_PRIV_KEY" ]; then \
+			docker run -d --name qemu-$(DISTRO) --privileged --network host \
+				-v $(CURDIR)/.qemu-run/$(DISTRO):/run/qemu-vm \
+				-v $(HOME_IMG):/home.img \
+				-v $(CLOUD_IMG):/cloud.img:ro \
+				-v $$SSH_PRIV_KEY:/ssh_host_key:ro \
+				-e CONSOLE_SOCKET=/run/qemu-vm/console.sock \
+				-e QMP_SOCKET=/run/qemu-vm/qmp.sock \
+				-e QEMU_MEMORY=$(QEMU_MEMORY) \
+				-e QEMU_DISK=$(QEMU_DISK) \
+				-e QEMU_BIOS=$(QEMU_BIOS) \
+				-e QEMU_HOME=/home.img \
+				-e QEMU_CLOUD=/cloud.img \
+				stagex/distro-$(DISTRO):local ; \
+		else \
+			docker run -d --name qemu-$(DISTRO) --privileged --network host \
+				-v $(CURDIR)/.qemu-run/$(DISTRO):/run/qemu-vm \
+				-v $(HOME_IMG):/home.img \
+				-v $(CLOUD_IMG):/cloud.img:ro \
+				-e CONSOLE_SOCKET=/run/qemu-vm/console.sock \
+				-e QMP_SOCKET=/run/qemu-vm/qmp.sock \
+				-e QEMU_MEMORY=$(QEMU_MEMORY) \
+				-e QEMU_DISK=$(QEMU_DISK) \
+				-e QEMU_BIOS=$(QEMU_BIOS) \
+				-e QEMU_HOME=/home.img \
+				-e QEMU_CLOUD=/cloud.img \
+				stagex/distro-$(DISTRO):local ; \
+		fi ; \
+		sleep 1 ; \
+		sudo chmod 777 $(CURDIR)/.qemu-run/$(DISTRO)/console.sock 2>/dev/null || true ; \
+		sudo chmod 777 $(CURDIR)/.qemu-run/$(DISTRO)/qmp.sock 2>/dev/null || true ; \
 	fi
 	@echo "" && \
 	echo "=== VM qemu-$(DISTRO) ===" && \
@@ -146,6 +177,7 @@ vm:
 	echo "  Connect:" && \
 	echo "    logs:     docker logs -f qemu-$(DISTRO)" && \
 	echo "    ssh:      docker exec -it qemu-$(DISTRO) run ssh" && \
+	echo "    ssh-host: ssh -p 2222 root@localhost" && \
 	echo "    vnc:      localhost:$(VNC_PORT)" && \
 	echo "    serial:   socat - UNIX-CONNECT:$(CURDIR)/.qemu-run/$(DISTRO)/console.sock" && \
 	echo "    qmp:      socat - UNIX-CONNECT:$(CURDIR)/.qemu-run/$(DISTRO)/qmp.sock" && \
