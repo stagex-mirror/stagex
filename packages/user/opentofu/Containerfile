@@ -5,7 +5,7 @@ WORKDIR /opentofu-${VERSION}
 RUN go mod download
 RUN --network=none <<-EOF
 	set +eux
-	go \
+	CGO_ENABLED=0 go \
 		build \
 		-trimpath \
 		-o tofu \
