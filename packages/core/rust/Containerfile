@@ -59,7 +59,10 @@ COPY <<-'EOF' /etc/profile
 	export LD=mold
 	export CC=clang
 	export CXX=clang++
-	export CCC_OVERRIDE_OPTIONS="${CCC_OVERRIDE_OPTIONS:-} +-fuse-ld=mold"
+
+	# NOTE: Can't strip prefix and use `:-` at the same time.
+	PREVIOUS_OVERRIDE="${CCC_OVERRIDE_OPTIONS:-}"
+	export CCC_OVERRIDE_OPTIONS="#${PREVIOUS_OVERRIDE#\#} +-fuse-ld=mold"
 
 	export LLVM_LIB=${LLVM_ROOT}/lib/${TARGET}
 	export LIBCC="$LLVM_LIB/libclang_rt.builtins.a"
@@ -506,7 +509,7 @@ RUN --network=none ./build 1.95.0 1.94.1 ""
 ADD fetch/rustc-1.96.1-src.tar.gz .
 RUN --network=none ./build 1.96.1 1.95.0 ""
 
-ADD fetch/rustc-1.97.0-src.tar.gz .
+ADD fetch/rustc-1.97.1-src.tar.gz .
 
 # Patch the default for `musl` targets to be dynamically, not statically, linked
 RUN --network=none <<-EOF
