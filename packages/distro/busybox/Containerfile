@@ -45,7 +45,7 @@ RUN mkdir -p /mnt /run && touch /mnt/.keep
 
 # --- default: offline + network ---
 FROM rootfs-offline AS rootfs-default
-COPY --from=busybox-init /etc/init.d/S40dhcpcd /etc/init.d/
+COPY --from=busybox-init /etc/init.d/S03dhcpcd /etc/init.d/
 COPY --from=busybox-init /etc/init.d/S06cloud-init-net /etc/init.d/
 
 # --- dev: default + openssh ---

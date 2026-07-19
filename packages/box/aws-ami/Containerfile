@@ -3,13 +3,30 @@ FROM stagex/user-aws-cli AS user-aws-cli
 FROM stagex/core-busybox AS core-busybox
 FROM stagex/core-musl AS core-musl
 FROM stagex/core-zlib AS core-zlib
+FROM stagex/core-python AS core-python
+FROM stagex/core-ca-certificates AS core-ca-certificates
+FROM stagex/user-py-jmespath AS user-py-jmespath
+FROM stagex/user-py-botocore AS user-py-botocore
+FROM stagex/user-py-s3transfer AS user-py-s3transfer
+FROM stagex/core-py-dateutil AS core-py-dateutil
+FROM stagex/user-py-six AS user-py-six
+FROM stagex/core-py-urllib3 AS core-py-urllib3
 
 FROM scratch AS package
 COPY --from=core-busybox . /
 COPY --from=core-musl . /
 COPY --from=core-zlib . /
 COPY --from=user-opentofu . /
+COPY --from=core-python . /
+COPY --from=core-ca-certificates . /
 COPY --from=user-aws-cli . /
+COPY --from=user-py-jmespath . /
+COPY --from=user-py-botocore . /
+COPY --from=user-py-s3transfer . /
+COPY --from=core-py-dateutil . /
+COPY --from=user-py-six . /
+# Downgrade urllib3 for botocore 1.43.x compatibility (ssl_ import changed in 2.x)
+COPY --from=core-py-urllib3 /usr/lib/python3.14/site-packages/urllib3 /usr/lib/python3.14/site-packages/urllib3
 COPY src/box /usr/bin/box
 COPY src/aws-ami.tf /default/aws-ami.tf
 RUN chmod +x /usr/bin/box

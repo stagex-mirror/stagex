@@ -14,7 +14,7 @@ mount -t devtmpfs devtmpfs /dev
 # Wait for the block device node to appear in /dev
 i=0
 while [ $i -lt 15 ]; do
-    if [ -b /dev/sda2 ] || [ -b /dev/vda2 ] || [ -b /dev/hda2 ] || [ -b /dev/nvme0n1p2 ]; then
+    if [ -b /dev/sda2 ] || [ -b /dev/vda2 ] || [ -b /dev/hda2 ] || [ -b /dev/nvme0n1p2 ] || [ -b /dev/xvda2 ]; then
         break
     fi
     i=$((i + 1))

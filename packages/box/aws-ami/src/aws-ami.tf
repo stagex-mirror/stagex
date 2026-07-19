@@ -1,3 +1,16 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+    time = {
+      source  = "hashicorp/time"
+      version = "~> 0.9"
+    }
+  }
+}
+
 variable "ami_name" {
   description = "Name for the resulting AMI"
   type        = string
@@ -8,55 +21,75 @@ variable "region" {
   type        = string
 }
 
-variable "image_path" {
-  description = "Path to the disk image on the local filesystem"
+variable "disk_image" {
+  description = "Path to the disk image to import"
   type        = string
-  default     = "/system.img"
+  default     = "/disk.img"
 }
 
-variable "bucket_name" {
-  description = "S3 bucket name (will be created if needed)"
-  type        = string
+# --- Provider ---
+provider "aws" {
+  region = var.region
 }
 
-locals {
-  timestamp = regex_replace(timestamp(), "[- TZ:]", "")
-}
-
-# --- S3 bucket for the image ---
+# --- S3 bucket for image upload ---
 resource "aws_s3_bucket" "images" {
-  bucket = "${var.bucket_name}-${local.timestamp}"
+  bucket = "stagex-ami-${replace(var.ami_name, "/", "-")}-${formatdate("YYYYMMDDhhmmss", timestamp())}"
 
   tags = {
-    Name      = "stagex-images-${local.timestamp}"
+    Name      = var.ami_name
     ManagedBy = "stagex"
     Box       = "aws-ami"
   }
 }
 
-resource "aws_s3_bucket_versioning" "images" {
+resource "aws_s3_bucket_public_access_block" "images" {
   bucket = aws_s3_bucket.images.id
-  versioning_configuration {
-    status = "Disabled"
-  }
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
-resource "aws_s3_bucket_lifecycle_configuration" "images" {
-  bucket = aws_s3_bucket.images.id
-  rule {
-    id     = "cleanup"
-    status = "Enabled"
-    expiration {
-      days = 1
+# --- Use existing VM Import role ---
+data "aws_iam_role" "vmimport" {
+  name = "vmimport"
+}
+
+# --- Add policy to VM Import role for this bucket ---
+resource "aws_iam_role_policy" "vmimport" {
+  name = "vmimport-s3-policy-${formatdate("YYYYMMDDhhmmss", timestamp())}"
+  role = data.aws_iam_role.vmimport.id
+
+  policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:*"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:*"
+      ],
+      "Resource": "*"
     }
-  }
+  ]
+}
+POLICY
 }
 
-# --- Upload local image to S3 ---
-resource "aws_s3_object" "image" {
+# --- Upload disk image to S3 ---
+resource "aws_s3_object" "disk" {
   bucket = aws_s3_bucket.images.id
-  key    = basename(var.image_path)
-  source = var.image_path
+  key    = "disk.img"
+  source = var.disk_image
 
   tags = {
     ManagedBy = "stagex"
@@ -64,41 +97,72 @@ resource "aws_s3_object" "image" {
   }
 }
 
-# --- Import image from S3 to EC2 ---
-resource "aws_ec2_import_image" "this" {
-  depends_on = [aws_s3_object.image]
+# --- Wait for IAM policy propagation ---
+resource "time_sleep" "wait_for_iam" {
+  depends_on = [aws_iam_role_policy.vmimport]
+  create_duration = "60s"
+}
 
-  platform = "Linux"
+# --- Import snapshot from S3 ---
+resource "aws_ebs_snapshot_import" "disk" {
+  depends_on = [aws_s3_object.disk, time_sleep.wait_for_iam]
 
-  s3_volume {
-    s3_bucket = aws_s3_bucket.images.id
-    s3_key    = aws_s3_object.image.id
-    format    = "raw"
+  description = var.ami_name
+
+  role_name = data.aws_iam_role.vmimport.name
+
+  tags = {
+    Name      = "${var.ami_name}-snapshot"
+    ManagedBy = "stagex"
+    Box       = "aws-ami"
   }
 
-  tag_specifications {
-    resource_type = "image"
-    tags = {
-      Name      = var.ami_name
-      ManagedBy = "stagex"
-      Box       = "aws-ami"
-      Timestamp = local.timestamp
+  disk_container {
+    format = "RAW"
+    user_bucket {
+      s3_bucket = aws_s3_bucket.images.id
+      s3_key    = aws_s3_object.disk.id
     }
+  }
+}
+
+# --- Register AMI from snapshot ---
+resource "aws_ami" "this" {
+  name        = var.ami_name
+  description = "StageX distro AMI"
+
+  ebs_block_device {
+    snapshot_id = aws_ebs_snapshot_import.disk.id
+    device_name = "/dev/xvda"
+    volume_size = 20
+    volume_type = "gp3"
+  }
+
+  root_device_name    = "/dev/xvda"
+  virtualization_type = "hvm"
+  architecture        = "x86_64"
+  boot_mode           = "uefi"
+  ena_support         = true
+
+  tags = {
+    Name      = var.ami_name
+    ManagedBy = "stagex"
+    Box       = "aws-ami"
   }
 }
 
 # --- Outputs ---
 output "ami_id" {
   description = "The AMI ID"
-  value       = aws_ec2_import_image.this.image_id
+  value       = aws_ami.this.id
 }
 
 output "ami_arn" {
   description = "The AMI ARN"
-  value       = "arn:aws:ec2:${var.region}::image/${aws_ec2_import_image.this.image_id}"
+  value       = "arn:aws:ec2:${var.region}::image/${aws_ami.this.id}"
 }
 
-output "s3_bucket" {
-  description = "S3 bucket used for the upload (auto-deletes after 1 day)"
-  value       = aws_s3_bucket.images.id
+output "snapshot_id" {
+  description = "The EC2 snapshot ID"
+  value       = aws_ebs_snapshot_import.disk.id
 }

@@ -1,35 +1,35 @@
 #!/usr/bin/sh
-# box — creates S3 bucket, uploads /system.img, imports to EC2, returns AMI ID
+# box — uploads disk image to S3, imports as snapshot, registers AMI
 set -eux
 
 # --- Inputs (env vars) ---
-AWS_BUCKET="${AWS_BUCKET:?required: S3 bucket base name}"
-AWS_REGION="${AWS_REGION:?required: AWS region}"
 AMI_NAME="${AMI_NAME:?required: name for the resulting AMI}"
-SYSTEM_IMG="${SYSTEM_IMG:-/system.img}"
+AWS_REGION="${AWS_REGION:?required: AWS region}"
+DISK_IMAGE="${DISK_IMAGE:-/disk.img}"
 
-# --- Validate ---
-if [ ! -f "$SYSTEM_IMG" ]; then
-    echo "ERROR: $SYSTEM_IMG not found"
+echo "=== aws-ami box ==="
+echo "  region:      $AWS_REGION"
+echo "  name:        $AMI_NAME"
+echo "  disk_image:  $DISK_IMAGE"
+echo ""
+
+# Validate disk image exists
+if [ ! -f "$DISK_IMAGE" ]; then
+    echo "ERROR: $DISK_IMAGE not found"
     exit 1
 fi
 
-echo "=== aws-ami box ==="
-echo "  image:  $SYSTEM_IMG"
-echo "  bucket: $AWS_BUCKET"
-echo "  region: $AWS_REGION"
-echo "  name:   $AMI_NAME"
-echo ""
+# Create /run directory if needed
+mkdir -p /run
 
 # Write OpenTofu variables
 cat > /run/aws-ami.tfvars <<EOF
 ami_name   = "${AMI_NAME}"
 region     = "${AWS_REGION}"
-image_path = "${SYSTEM_IMG}"
-bucket_name = "${AWS_BUCKET}"
+disk_image = "${DISK_IMAGE}"
 EOF
 
-# Run OpenTofu (single shot: init + apply)
+# Run OpenTofu
 cd /default
 tofu init -input=false
 tofu apply -auto-approve -var-file=/run/aws-ami.tfvars
