@@ -141,7 +141,6 @@ resource "aws_ami" "this" {
   root_device_name    = "/dev/xvda"
   virtualization_type = "hvm"
   architecture        = "x86_64"
-  boot_mode           = "uefi"
   ena_support         = true
 
   tags = {
