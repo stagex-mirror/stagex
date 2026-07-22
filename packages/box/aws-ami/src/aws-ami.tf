@@ -142,6 +142,7 @@ resource "aws_ami" "this" {
   virtualization_type = "hvm"
   architecture        = "x86_64"
   ena_support         = true
+  boot_mode           = "uefi"
 
   tags = {
     Name      = var.ami_name

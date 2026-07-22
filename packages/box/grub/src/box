@@ -10,6 +10,7 @@ INITRAMFS="${INITRAMFS:-/initramfs}"
 
 # --- Output ---
 BOOT_IMG="/boot.img"
+BOOT_IMG_SIZE="${BOOT_IMG_SIZE:-64}"
 
 # --- Prepare ESP layout ---
 ESP="/esp"
@@ -75,9 +76,9 @@ grub-mkimage \
 
 # --- Create boot.img (FAT32) ---
 # Size: 64MB (enough for kernel + GRUB, with headroom)
-dd if=/dev/zero of="$BOOT_IMG" bs=1M count=64
+dd if=/dev/zero of="$BOOT_IMG" bs=1M count="$BOOT_IMG_SIZE"
 
-mformat -i "$BOOT_IMG" -C -T 131072 ::
+mformat -i "$BOOT_IMG" -C -T $(( BOOT_IMG_SIZE * 2048 )) ::
 mcopy -i "$BOOT_IMG" -sm "$ESP/EFI" ::EFI
 mcopy -i "$BOOT_IMG" -sm "$ESP/boot" ::boot
 

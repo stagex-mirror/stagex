@@ -1,9 +1,12 @@
-FROM stagex/user-klibc-utils-mono AS user-klibc-utils-mono
+FROM stagex/user-klibc-utils AS user-klibc-utils
+FROM stagex/core-filesystem AS core-filesystem
 FROM stagex/box-cpio AS box-cpio
 
-FROM box-cpio AS build
-COPY --from=user-klibc-utils-mono /init /rootfs/init
+FROM box-cpio AS initramfs
+COPY --from=core-filesystem / /rootfs
+COPY --from=user-klibc-utils /usr/bin/ /rootfs/usr/bin/
+COPY src/init /rootfs/init
 RUN box initramfs
 
 FROM scratch AS package
-COPY --from=build /initramfs /
+COPY --from=initramfs /initramfs /

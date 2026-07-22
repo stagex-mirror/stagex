@@ -4,7 +4,6 @@ version = "2.0.14"
 description = "Minimal utilities for initramfs environments (mount, mknod, sh, grep, etc.)"
 license = "GPL-2.0-or-later"
 website = "https://kernel.googlesource.com/pub/scm/libs/klibc/klibc.git"
-subpackages = ["klibc-utils-mono"]
 
 [sources.klibc-utils]
 hash = "281bfb683e196818412af70b8968b7726475a80ff1c4bd67119e6bf5059f9075"

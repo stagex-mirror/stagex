@@ -22,8 +22,10 @@ while [ $i -lt 15 ]; do
 done
 
 # Find the second partition from the first disk in /sys/block/
+# Prefer NVMe on EC2, fall back to other block devices
 SYSTEM_DEV=""
-for dev in /sys/block/*; do
+for dev in /sys/block/nvme*/ /sys/block/sd*/ /sys/block/vd*/ /sys/block/xvd*; do
+    [ -d "$dev" ] || continue
     devname=${dev##*/}
     part2="${devname}2"
     if [ -d "$dev/$part2" ]; then

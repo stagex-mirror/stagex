@@ -1,14 +1,22 @@
 #!/usr/bin/sh
-# box-squashfs — compresses /rootfs into /system.img (squashfs)
+# box-squashfs — compresses a directory into a labeled squashfs image
 set -eux
 
+ROOTFS="${ROOTFS:-/rootfs}"
+OUTPUT="${OUTPUT:-/system.img}"
+LABEL="${LABEL:-}"
+
 # Ensure mount point directories exist (may be stripped from empty dirs in squashfs)
-mkdir -p /rootfs/proc /rootfs/sys /rootfs/dev /rootfs/tmp /rootfs/mnt
+mkdir -p "$ROOTFS/proc" "$ROOTFS/sys" "$ROOTFS/dev" "$ROOTFS/tmp" "$ROOTFS/mnt"
 
 # Create .keep files to ensure empty mount point dirs survive mksquashfs
-touch /rootfs/proc/.keep /rootfs/sys/.keep /rootfs/dev/.keep /rootfs/tmp/.keep /rootfs/mnt/.keep
+touch "$ROOTFS/proc/.keep" "$ROOTFS/sys/.keep" "$ROOTFS/dev/.keep" "$ROOTFS/tmp/.keep" "$ROOTFS/mnt/.keep"
 
-mksquashfs /rootfs /system.img -comp gzip -noappend -processors $(nproc 2>/dev/null || echo 1)
+# Build squashfs image
+if [ -n "$LABEL" ]; then
+	mksquashfs "$ROOTFS" "$OUTPUT" -comp gzip -noappend -processors $(nproc 2>/dev/null || echo 1) -label "$LABEL"
+else
+	mksquashfs "$ROOTFS" "$OUTPUT" -comp gzip -noappend -processors $(nproc 2>/dev/null || echo 1)
+fi
 
-# Clean up .keep files from the image (they're harmless but unnecessary)
-echo "system.img created: $(du -h /system.img | cut -f1)"
+echo "$OUTPUT created: $(du -h "$OUTPUT" | cut -f1)"
