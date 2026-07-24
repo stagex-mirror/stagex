@@ -5,6 +5,7 @@ FROM stagex/core-musl AS core-musl
 FROM stagex/core-zlib AS core-zlib
 FROM stagex/core-openssl AS core-openssl
 FROM stagex/user-openssh AS user-openssh
+FROM stagex/user-dhcpcd AS user-dhcpcd
 FROM stagex/user-linux-server AS user-linux-server
 FROM stagex/user-linux-offline AS user-linux-offline
 FROM stagex/user-linux-guest AS user-linux-guest
@@ -38,6 +39,9 @@ RUN mkdir -p /mnt /run /var/log /etc/keys && touch /mnt/.keep
 FROM rootfs-offline AS rootfs
 COPY --from=busybox-init /etc/init.d/S03dhcpcd /etc/init.d/
 COPY --from=busybox-init /etc/init.d/S06cloud-init-net /etc/init.d/
+COPY --from=user-dhcpcd /usr/sbin/dhcpcd /sbin/dhcpcd
+RUN mkdir -p /var/lib/dhcpcd /run/dhcpcd && \
+	printf '# Accept all DHCP options\n' > /etc/dhcpcd.conf
 
 # --- dev: default + openssh ---
 FROM rootfs AS rootfs-dev

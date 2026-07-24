@@ -1,0 +1,4 @@
+[package]
+name = "aws-ec2"
+version = "2026.03.0"
+description = "Launch EC2 instances from AMI or disk image with SSH-ready detection"

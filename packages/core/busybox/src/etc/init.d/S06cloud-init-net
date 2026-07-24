@@ -1,35 +1,180 @@
 #!/bin/sh
-# S06cloud-init-net — seed hostname + ssh keys from cloud metadata service
+# S06cloud-init-net — seed ssh keys + write_files from cloud metadata service
+# Parses cloud-config YAML subset from EC2 user-data
 
-HOSTNAME_FILE="/etc/hostname"
+HOSTNAME_FILE="/run/hostname"
 KEYS_FILE="/root/.ssh/authorized_keys"
+MD_HOST="169.254.169.254"
+USER_DATA_FILE="/run/user-data"
 
-# Skip if hostname already set by drive script
-[ -s "$HOSTNAME_FILE" ] && { printf "Cloud-init (net): skip\n"; exit 0; }
-
-# Wait for network (up to 10s)
-for i in 1 2 3 4 5 6 7 8 9 10; do
-	ping -c 1 -W 1 169.254.169.254 >/dev/null 2>&1 && break
+# Wait for network (up to 30s)
+for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30; do
+	ping -c 1 -W 1 "$MD_HOST" >/dev/null 2>&1 && break
 	sleep 1
 done
 
-# Fetch hostname from metadata
-h=$(wget -qO- --timeout=3 "http://169.254.169.254/latest/meta-data/hostname" 2>/dev/null | head -c 64)
-if [ -z "$h" ]; then
-	h=$(wget -qO- --timeout=3 "http://169.254.169.254/latest/meta-data/instance-id" 2>/dev/null | head -c 64)
+# Fix routing: 169.254.0.0/16 on dummy/ifb interfaces intercepts metadata
+# Add a specific route via the primary interface (eth0) for the metadata host
+MD_GW=$(ip route show default 2>/dev/null | grep -m1 'dev eth' | awk '{print $3}')
+[ -n "$MD_GW" ] && ip route add $MD_HOST/32 via $MD_GW metric 100 2>/dev/null
+
+# Try IMDSv2 token (PUT via busybox --post-data; fallback to IMDSv1 on 405)
+TOKEN=$(wget -qO- --timeout=3 --post-data='' "http://$MD_HOST/latest/api/token" 2>/dev/null)
+if [ -z "$TOKEN" ]; then
+	printf "S06: using IMDSv1\n"
+	md_get() { wget -qO- --timeout=3 "$1" 2>/dev/null; }
+else
+	printf "S06: using IMDSv2\n"
+	md_get() { wget -qO- --timeout=3 --header="X-aws-ec2-metadata-token: $TOKEN" "$1" 2>/dev/null; }
 fi
 
-if [ -n "$h" ]; then
-	hostname "$h"
-	echo "$h" > "$HOSTNAME_FILE"
+# Fetch hostname from metadata (if not already set)
+[ -s "$HOSTNAME_FILE" ] || {
+	h=$(md_get "http://$MD_HOST/latest/meta-data/hostname" | head -c 64)
+	[ -z "$h" ] && h=$(md_get "http://$MD_HOST/latest/meta-data/instance-id" | head -c 64)
+	[ -n "$h" ] && hostname "$h" && echo "$h" > "$HOSTNAME_FILE"
+}
+
+# Fetch ssh keys (always prefer metadata over embedded)
+mkdir -p /root/.ssh
+# 1) EC2 public-keys endpoint (highest priority)
+keys=$(md_get "http://$MD_HOST/latest/meta-data/public-keys/0/openssh-key")
+[ -n "$keys" ] && printf "S06: loaded public-keys (%d bytes)\n" "$(printf '%s' "$keys" | wc -c)" && echo "$keys" > "$KEYS_FILE"
+
+# 2) Raw user-data (fallback)
+if [ ! -s "$KEYS_FILE" ]; then
+	data=$(md_get "http://$MD_HOST/latest/user-data")
+	[ -n "$data" ] && printf "S06: loaded user-data (%d bytes)\n" "$(printf '%s' "$data" | wc -c)" && echo "$data" > "$KEYS_FILE"
 fi
 
-# Fetch user-data for ssh keys
-data=$(wget -qO- --timeout=3 "http://169.254.169.254/latest/user-data" 2>/dev/null)
-if [ -n "$data" ]; then
-	mkdir -p /root/.ssh
-	echo "$data" > "$KEYS_FILE"
-	chmod 600 "$KEYS_FILE"
+[ -s "$KEYS_FILE" ] && chmod 600 "$KEYS_FILE"
+[ ! -s "$KEYS_FILE" ] && printf "S06: no ssh keys found\n"
+
+# --- Fetch user-data and parse cloud-config YAML ---
+data=$(md_get "http://$MD_HOST/latest/user-data")
+[ -z "$data" ] && { printf "Cloud-init (net): ok\n"; exit 0; }
+echo "$data" > "$USER_DATA_FILE"
+
+# Extract hostname from cloud-config
+H=$(grep -m1 '^[[:space:]]*hostname:' "$USER_DATA_FILE" 2>/dev/null | \
+	sed 's/^[[:space:]]*hostname:[[:space:]]*//' | tr -d '\r\n "')
+[ -n "$H" ] && [ ! -s "$HOSTNAME_FILE" ] && hostname "$H" && echo "$H" > "$HOSTNAME_FILE"
+
+# Extract ssh_authorized_keys from cloud-config (if keys file still empty)
+if [ ! -s "$KEYS_FILE" ]; then
+	sed -n '/^[[:space:]]*ssh_authorized_keys:/,$/p' "$USER_DATA_FILE" 2>/dev/null | \
+		sed '1d' | grep -E '^[[:space:]]' | \
+		sed 's/^[[:space:]]*//; s/^[|-][[:space:]]*//' | \
+		tr -d '\r' > /tmp/cloud-keys 2>/dev/null
+	[ -s /tmp/cloud-keys ] && cat /tmp/cloud-keys > "$KEYS_FILE" && chmod 600 "$KEYS_FILE"
+	[ -s /tmp/cloud-keys ] && printf "S06: loaded ssh_authorized_keys\n"
+	rm -f /tmp/cloud-keys
 fi
+
+# --- Parse write_files from cloud-config ---
+awk '
+BEGIN { in_wf = 0; idx = -1; in_block = 0; block_indent = 0 }
+
+function write_entry(    cmd, dir, tmpfile, i, regex, line) {
+	if (path == "") return
+	tmpfile = "/tmp/cloud-tmp-" idx
+	if (encoding == "b64" || encoding == "base64") {
+		printf "%s", content > tmpfile
+		close(tmpfile)
+	} else {
+		sub(/\n$/, "", content)
+		printf "%s\n", content > tmpfile
+		close(tmpfile)
+	}
+	dir = path; sub(/\/[^\/]*$/, "", dir)
+	if (dir != path) { system("mkdir -p " dir) }
+	if (encoding == "b64" || encoding == "base64") {
+		system("base64 -d < " tmpfile " > " tmpfile ".d")
+		system("mv " tmpfile ".d " path)
+	} else {
+		system("mv " tmpfile " " path)
+	}
+	if (perms != "") system("chmod " perms " " path)
+	if (owner != "") system("chown " owner " " path)
+	printf "S06: wrote %s\n", path
+}
+
+/^[[:space:]]*write_files:/ { in_wf = 1; next }
+!in_wf { next }
+/^[a-zA-Z]/ { in_wf = 0; next }
+
+# New list item
+/^[[:space:]]*-[[:space:]]+path:/ {
+	write_entry()
+	idx++
+	line = $0
+	sub(/^[[:space:]]*-[[:space:]]+path:[[:space:]]*/, "", line)
+	gsub(/^["'"'"']|["'"'"']$/, "", line)
+	path = line
+	content = ""; perms = "0644"; owner = ""; encoding = ""
+	in_block = 0; block_indent = 0
+	next
+}
+
+# Block scalar start: content: |
+in_wf && idx >= 0 && /^[[:space:]]+content:[[:space:]]*\|/ {
+	in_block = 1; content = ""; block_indent = 0; next
+}
+
+# Inside block scalar
+in_wf && in_block {
+	line = $0
+	if (block_indent == 0 && line !~ /^[[:space:]]*$/) {
+		tmp = line; gsub(/[^ ].*/, "", tmp)
+		block_indent = length(tmp)
+	}
+	if (line ~ /^[[:space:]]*$/) { content = content "\n"; next }
+	tmp = line; gsub(/[^ ].*/, "", tmp)
+	if (length(tmp) >= block_indent) {
+		regex = "^"
+		for (i = 0; i < block_indent; i++) regex = regex " "
+		sub(regex, "", line)
+		content = content line "\n"
+		next
+	}
+	# End of block - re-process this line as attribute
+	in_block = 0
+	if (line ~ /^[[:space:]]+permissions:/) {
+		sub(/^[[:space:]]+permissions:[[:space:]]*/, "", line)
+		gsub(/^["'"'"']|["'"'"']$/, "", line); perms = line
+	} else if (line ~ /^[[:space:]]+owner:/) {
+		sub(/^[[:space:]]+owner:[[:space:]]*/, "", line)
+		gsub(/^["'"'"']|["'"'"']$/, "", line); owner = line
+	} else if (line ~ /^[[:space:]]+encoding:/) {
+		sub(/^[[:space:]]+encoding:[[:space:]]*/, "", line)
+		gsub(/^["'"'"']|["'"'"']$/, "", line); encoding = line
+	}
+	next
+}
+
+# Inline content
+in_wf && idx >= 0 && !in_block && /^[[:space:]]+content:/ {
+	line = $0
+	sub(/^[[:space:]]+content:[[:space:]]*/, "", line)
+	gsub(/^["'"'"']|["'"'"']$/, "", line)
+	content = line; next
+}
+
+# Attributes
+in_wf && idx >= 0 && !in_block && /^[[:space:]]+permissions:/ {
+	sub(/^[[:space:]]+permissions:[[:space:]]*/, "")
+	gsub(/^["'"'"']|["'"'"']$/, ""); perms = $0; next
+}
+in_wf && idx >= 0 && !in_block && /^[[:space:]]+owner:/ {
+	sub(/^[[:space:]]+owner:[[:space:]]*/, "")
+	gsub(/^["'"'"']|["'"'"']$/, ""); owner = $0; next
+}
+in_wf && idx >= 0 && !in_block && /^[[:space:]]+encoding:/ {
+	sub(/^[[:space:]]+encoding:[[:space:]]*/, "")
+	gsub(/^["'"'"']|["'"'"']$/, ""); encoding = $0; next
+}
+
+END { write_entry() }
+' "$USER_DATA_FILE" 2>/dev/null
 
 printf "Cloud-init (net): ok\n"

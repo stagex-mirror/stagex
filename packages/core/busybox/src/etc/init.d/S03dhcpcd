@@ -4,13 +4,23 @@ PIDFILE="/var/run/$DAEMON.pid"
 
 [ -f /sbin/dhcpcd ] || exit 0
 
+# Ensure state directories exist
+mkdir -p /var/lib/dhcpcd /run/dhcpcd
+
+# Create dhcpcd user if missing (needed for privsep builds)
+addgroup -S dhcpcd >/dev/null 2>&1 || true
+adduser -S -D -G dhcpcd dhcpcd >/dev/null 2>&1 || true
+
 start() {
 	printf "Starting %s: " "$DAEMON"
 	start-stop-daemon --start --pidfile "$PIDFILE" \
-		--exec "/sbin/$DAEMON" -- -b
+		--exec "/sbin/$DAEMON" -- -b -D
 	status=$?
 	if [ "$status" -eq 0 ]; then
 		echo "OK"
+		# Wait briefly for DHCP lease then show interface state
+		sleep 2
+		cat /proc/net/dev 2>/dev/null || true
 	else
 		echo "FAIL"
 	fi

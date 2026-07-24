@@ -1,0 +1,63 @@
+#!/usr/bin/sh
+# box-aws-ec2 — launch an EC2 instance from AMI
+#
+# Inputs (env vars):
+#   AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY — required
+#   AMI_TFVARS    — path to tfvars file with ami_id (e.g. /input/aws-ami.tfvars)
+#   USER_DATA     — user-data content (SSH key or cloud-config)
+#   REGION        — AWS region (default: us-east-1)
+#   KEY_NAME      — EC2 key pair name (default: tpm-exploration-key)
+#   INSTANCE_TYPE — EC2 instance type (default: m5.large)
+#   SUBNET_ID     — subnet ID
+#   SECURITY_GROUP — security group ID
+#   WAIT_SSH      — wait for SSH readiness (default: true)
+#
+# Outputs: tfvars-compatible lines to stdout (instance_id, public_ip, etc.)
+#
+set -eu
+
+AMI_TFVARS="${AMI_TFVARS:-}"
+REGION="${REGION:-us-east-1}"
+KEY_NAME="${KEY_NAME:-tpm-exploration-key}"
+INSTANCE_TYPE="${INSTANCE_TYPE:-m5.large}"
+SUBNET_ID="${SUBNET_ID:-subnet-0521e4b4404277d91}"
+SECURITY_GROUP="${SECURITY_GROUP:-sg-00b5e3de841fbfe7a}"
+USER_DATA="${USER_DATA:-}"
+WAIT_SSH="${WAIT_SSH:-true}"
+
+# Validate AWS credentials
+if [ -z "${AWS_ACCESS_KEY_ID}" ] || [ -z "${AWS_SECRET_ACCESS_KEY}" ]; then
+    echo "ERROR: AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY required" >&2
+    exit 1
+fi
+
+# Launch instance via Terraform
+TERRAFORM_DIR=$(mktemp -d)
+trap "rm -rf $TERRAFORM_DIR" EXIT
+
+cp /usr/src/aws-ec2.tf "$TERRAFORM_DIR/"
+cd "$TERRAFORM_DIR"
+
+# Initialize
+terraform init -backend=false >/dev/null 2>&1
+
+# Build var-file with all inputs
+cat > /run/ec2.tfvars <<EOF
+region          = "${REGION}"
+key_name        = "${KEY_NAME}"
+instance_type   = "${INSTANCE_TYPE}"
+subnet_id       = "${SUBNET_ID}"
+security_group_id = "${SECURITY_GROUP}"
+user_data       = "${USER_DATA}"
+EOF
+
+# Merge AMI tfvars if provided (ami_id overrides ami_id in ec2.tfvars)
+if [ -n "$AMI_TFVARS" ] && [ -f "$AMI_TFVARS" ]; then
+    cat "$AMI_TFVARS" >> /run/ec2.tfvars
+fi
+
+# Apply
+terraform apply -auto-approve -var-file=/run/ec2.tfvars -no-color >/dev/null 2>&1
+
+# Output as tfvars for downstream consumption
+terraform output

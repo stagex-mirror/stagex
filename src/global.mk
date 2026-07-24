@@ -32,6 +32,9 @@ out/targets.mk: out $(shell find packages/)
 	python3 src/targets.py > $@
 -include out/targets.mk
 
+# Auto-include hand-written targets.mk from each package directory
+-include $(shell find packages/ -name targets.mk 2>/dev/null)
+
 out:
 	mkdir out
 

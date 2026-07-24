@@ -7,11 +7,11 @@ AMI_NAME="${AMI_NAME:?required: name for the resulting AMI}"
 AWS_REGION="${AWS_REGION:?required: AWS region}"
 DISK_IMAGE="${DISK_IMAGE:-/disk.img}"
 
-echo "=== aws-ami box ==="
-echo "  region:      $AWS_REGION"
-echo "  name:        $AMI_NAME"
-echo "  disk_image:  $DISK_IMAGE"
-echo ""
+echo "=== aws-ami box ===" >&2
+echo "  region:      $AWS_REGION" >&2
+echo "  name:        $AMI_NAME" >&2
+echo "  disk_image:  $DISK_IMAGE" >&2
+echo "" >&2
 
 # Validate disk image exists
 if [ ! -f "$DISK_IMAGE" ]; then
@@ -31,5 +31,8 @@ EOF
 
 # Run OpenTofu
 cd /default
-tofu init -input=false
-tofu apply -auto-approve -var-file=/run/aws-ami.tfvars
+tofu init -input=false >/dev/null 2>&1
+tofu apply -auto-approve -var-file=/run/aws-ami.tfvars -no-color >/dev/null 2>&1
+
+# Output tfvars for downstream consumption
+tofu output

@@ -12,6 +12,7 @@ mount -t tmpfs -o mode=755 tmpfs /var/log
 mount -t tmpfs -o mode=755 tmpfs /var/run
 mount -t tmpfs -o mode=1777 tmpfs /var/tmp
 mount -t tmpfs -o mode=700 tmpfs /etc/keys
+mount -t tmpfs -o mode=700 tmpfs /root
 
 # Create essential device nodes
 mknod -m 666 /dev/null c 1 3

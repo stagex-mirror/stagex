@@ -4,7 +4,7 @@
 # on a volume labeled "cidata" (ISO9660 or squashfs).
 
 CONFIG_DRIVE="/mnt/cfg"
-HOSTNAME_FILE="/etc/hostname"
+HOSTNAME_FILE="/run/hostname"
 KEYS_FILE="/root/.ssh/authorized_keys"
 
 set_hostname() {
@@ -62,6 +62,85 @@ if [ -f "$UD" ]; then
 		[ -s "$KEYS" ] && seed_keys "$KEYS"
 		rm -f "$KEYS"
 	}
+
+	# write_files: path, content (inline or block scalar |), permissions, owner, encoding
+	awk '
+BEGIN { in_wf = 0; idx = -1; in_block = 0; block_indent = 0 }
+
+function write_entry(    dir, tmpfile, i, regex) {
+	if (path == "") return
+	tmpfile = "/tmp/cloud-tmp-" idx
+	if (encoding == "b64" || encoding == "base64") {
+		printf "%s", content > tmpfile; close(tmpfile)
+	} else {
+		sub(/\n$/, "", content)
+		printf "%s\n", content > tmpfile; close(tmpfile)
+	}
+	dir = path; sub(/\/[^\/]*$/, "", dir)
+	if (dir != path) system("mkdir -p " dir)
+	if (encoding == "b64" || encoding == "base64") {
+		system("base64 -d < " tmpfile " > " tmpfile ".d")
+		system("mv " tmpfile ".d " path)
+	} else {
+		system("mv " tmpfile " " path)
+	}
+	if (perms != "") system("chmod " perms " " path)
+	if (owner != "") system("chown " owner " " path)
+	printf "S05: wrote %s\n", path
+}
+
+/^[[:space:]]*write_files:/ { in_wf = 1; next }
+!in_wf { next }
+/^[a-zA-Z]/ { in_wf = 0; next }
+/^[[:space:]]*-[[:space:]]+path:/ {
+	write_entry(); idx++; line = $0
+	sub(/^[[:space:]]*-[[:space:]]+path:[[:space:]]*/, "", line)
+	gsub(/^["'"'"']|["'"'"']$/, "", line)
+	path = line; content = ""; perms = "0644"; owner = ""; encoding = ""
+	in_block = 0; block_indent = 0; next
+}
+in_wf && idx >= 0 && /^[[:space:]]+content:[[:space:]]*\|/ {
+	in_block = 1; content = ""; block_indent = 0; next
+}
+in_wf && in_block {
+	line = $0
+	if (block_indent == 0 && line !~ /^[[:space:]]*$/) {
+		tmp = line; gsub(/[^ ].*/, "", tmp); block_indent = length(tmp)
+	}
+	if (line ~ /^[[:space:]]*$/) { content = content "\n"; next }
+	tmp = line; gsub(/[^ ].*/, "", tmp)
+	if (length(tmp) >= block_indent) {
+		regex = "^"; for (i = 0; i < block_indent; i++) regex = regex " "
+		sub(regex, "", line); content = content line "\n"; next
+	}
+	in_block = 0
+	if (line ~ /^[[:space:]]+permissions:/) {
+		sub(/^[[:space:]]+permissions:[[:space:]]*/, "", line)
+		gsub(/^["'"'"']|["'"'"']$/, "", line); perms = line
+	} else if (line ~ /^[[:space:]]+owner:/) {
+		sub(/^[[:space:]]+owner:[[:space:]]*/, "", line)
+		gsub(/^["'"'"']|["'"'"']$/, "", line); owner = line
+	} else if (line ~ /^[[:space:]]+encoding:/) {
+		sub(/^[[:space:]]+encoding:[[:space:]]*/, "", line)
+		gsub(/^["'"'"']|["'"'"']$/, "", line); encoding = line
+	}
+	next
+}
+in_wf && idx >= 0 && !in_block && /^[[:space:]]+content:/ {
+	line = $0; sub(/^[[:space:]]+content:[[:space:]]*/, "", line)
+	gsub(/^["'"'"']|["'"'"']$/, "", line); content = line; next
+}
+in_wf && idx >= 0 && !in_block && /^[[:space:]]+permissions:/ {
+	sub(/^[[:space:]]+permissions:[[:space:]]*/, ""); gsub(/^["'"'"']|["'"'"']$/, ""); perms = $0; next
+}
+in_wf && idx >= 0 && !in_block && /^[[:space:]]+owner:/ {
+	sub(/^[[:space:]]+owner:[[:space:]]*/, ""); gsub(/^["'"'"']|["'"'"']$/, ""); owner = $0; next
+}
+in_wf && idx >= 0 && !in_block && /^[[:space:]]+encoding:/ {
+	sub(/^[[:space:]]+encoding:[[:space:]]*/, ""); gsub(/^["'"'"']|["'"'"']$/, ""); encoding = $0; next
+}
+END { write_entry() }
+' "$UD" 2>/dev/null
 fi
 
 # Legacy fallback: raw files (non-ISO volumes)
