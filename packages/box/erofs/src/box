@@ -8,6 +8,6 @@ OUTPUT="${OUTPUT:-/system.img}"
 # erofs preserves empty dirs natively — no .keep files needed
 
 # Build erofs image with zstd compression (level 1 for speed)
-mkfs.erofs "$OUTPUT" "$ROOTFS"
+mkfs.erofs -z lzma "$OUTPUT" "$ROOTFS"
 
 echo "$OUTPUT created: $(du -h "$OUTPUT" | cut -f1)"
