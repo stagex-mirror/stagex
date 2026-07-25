@@ -1,12 +1,14 @@
 FROM stagex/user-opentofu AS opentofu
 FROM stagex/core-busybox AS core-busybox
 FROM stagex/core-musl AS core-musl
+FROM stagex/core-ca-certificates AS core-ca-certificates
 
 FROM scratch AS package
 COPY --from=core-busybox . /
 COPY --from=core-musl . /
+COPY --from=core-ca-certificates . /
 COPY --from=opentofu /usr/bin/tofu /usr/bin/terraform
 COPY src/box /usr/bin/box
 COPY src/aws-ec2.tf /usr/src/aws-ec2.tf
-RUN chmod +x /usr/bin/box
+RUN chmod +x /usr/bin/box && mkdir -p /run
 ENTRYPOINT ["/usr/bin/box"]

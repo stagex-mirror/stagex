@@ -32,6 +32,7 @@ FROM stagex/core-ncurses AS core-ncurses
 FROM stagex/user-tmux AS user-tmux
 FROM stagex/user-util-linux AS user-util-linux
 FROM stagex/core-libunwind AS core-libunwind
+FROM stagex/user-squashfs AS user-squashfs
 FROM stagex/user-socat AS user-socat
 FROM stagex/user-alsa-lib AS user-alsa-lib
 FROM stagex/user-openssh AS user-openssh
@@ -73,12 +74,14 @@ COPY --from=user-libtpms . /
 COPY --from=user-tpm2-tss . /
 COPY --from=user-tpm2-tools . /
 COPY --from=user-canokey-qemu . /
+COPY --from=user-squashfs . /
 COPY --from=user-socat . /
 COPY --from=user-openssh . /
+COPY src/box /usr/bin/box
 COPY src/qemu-boot.sh /usr/bin/qemu-boot.sh
 COPY src/qemu-startup.sh /usr/bin/qemu-startup.sh
 COPY src/run /usr/bin/run
-RUN chmod +x /usr/bin/qemu-boot.sh /usr/bin/qemu-startup.sh /usr/bin/run
+RUN chmod +x /usr/bin/box /usr/bin/qemu-boot.sh /usr/bin/qemu-startup.sh /usr/bin/run
 
 ENTRYPOINT ["/usr/bin/qemu-startup.sh"]
 

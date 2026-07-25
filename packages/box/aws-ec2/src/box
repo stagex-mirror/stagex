@@ -57,7 +57,7 @@ if [ -n "$AMI_TFVARS" ] && [ -f "$AMI_TFVARS" ]; then
 fi
 
 # Apply
-terraform apply -auto-approve -var-file=/run/ec2.tfvars -no-color >/dev/null 2>&1
+terraform apply -auto-approve -var-file=/run/ec2.tfvars -no-color >/dev/null
 
 # Output as tfvars for downstream consumption
 terraform output

@@ -1,6 +1,9 @@
 #!/usr/bin/sh
 # qemu-startup.sh — backgrounds QEMU, keeps container alive
 
+# --- Ensure runtime directories exist ---
+mkdir -p /run/qemu-vm
+
 # --- Use build-time SSH key (embedded in image) ---
 KEY="/ssh_host_key"
 

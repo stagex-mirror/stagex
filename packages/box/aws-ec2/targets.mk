@@ -1,6 +1,6 @@
 # AWS EC2 deploy target — launches instance from AMI
 
-.PHONY: aws-ec2-deploy aws-ec2-status
+.PHONY: aws-ec2-deploy aws-ec2-status aws-ec2-logs
 
 EC2_KEY_NAME ?= tpm-exploration-key
 EC2_INSTANCE_TYPE ?= m5.large
@@ -49,7 +49,7 @@ aws-ec2-deploy:
 		-e USER_DATA="$$USER_DATA" \
 		-e AMI_TFVARS=/input/aws-ami.tfvars \
 		-v $(EC2_AMI_TFVARS):/input/aws-ami.tfvars:ro \
-		stagex/box-aws-ec2:local /usr/bin/box 2>/dev/null \
+		stagex/box-aws-ec2:local /usr/bin/box \
 		> $(EC2_EC2_TFVARS) && \
 	PUBLIC_IP=$$(grep '^public_ip' $(EC2_EC2_TFVARS) | cut -d'"' -f2) && \
 	INSTANCE_ID=$$(grep '^instance_id' $(EC2_EC2_TFVARS) | cut -d'"' -f2) && \
@@ -60,6 +60,14 @@ aws-ec2-deploy:
 	echo "  ami:        $$AMI_ID" && \
 	echo "" && \
 	echo "  ssh -i $(EC2_SSH_KEY) root@$$PUBLIC_IP"
+
+# Show EC2 instance console output
+aws-ec2-logs:
+	@if [ ! -f "$(EC2_EC2_TFVARS)" ]; then \
+		echo "No EC2 instance deployed — run 'make aws-ec2-deploy'" >&2; exit 1; \
+	fi
+	@INSTANCE_ID=$$(grep '^instance_id' $(EC2_EC2_TFVARS) | cut -d'"' -f2) && \
+	aws ec2 get-console-output --instance-id "$$INSTANCE_ID" --region "$(EC2_REGION)" --query 'Output' --output text 2>/dev/null | base64 -d 2>/dev/null || echo "No console output available yet"
 
 # Show current EC2 instance status
 aws-ec2-status:
@@ -75,3 +83,11 @@ aws-ec2-status:
 	echo "  ami:        $$AMI_ID" && \
 	echo "" && \
 	echo "  ssh -i $(EC2_SSH_KEY) root@$$PUBLIC_IP"
+
+# Show EC2 instance console output
+aws-ec2-logs:
+	@if [ ! -f "$(EC2_EC2_TFVARS)" ]; then \
+		echo "No EC2 instance deployed — run 'make aws-ec2-deploy'" >&2; exit 1; \
+	fi
+	@INSTANCE_ID=$$(grep '^instance_id' $(EC2_EC2_TFVARS) | cut -d'"' -f2) && \
+	aws ec2 get-console-output --instance-id "$$INSTANCE_ID" --region "$(EC2_REGION)" --query 'Output' --output text 2>/dev/null | base64 -d 2>/dev/null || echo "No console output available yet"

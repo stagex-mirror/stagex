@@ -3,7 +3,7 @@
 # Follows no-cloud datasource convention: user-data (cloud-config YAML)
 # on a volume labeled "cidata" (ISO9660 or squashfs).
 
-CONFIG_DRIVE="/mnt/cfg"
+CONFIG_DRIVE="/tmp/cfg"
 HOSTNAME_FILE="/run/hostname"
 KEYS_FILE="/root/.ssh/authorized_keys"
 
@@ -34,8 +34,10 @@ seed_keys() {
 [ -s "$HOSTNAME_FILE" ] && { printf "Cloud-init (drive): skip\n"; exit 0; }
 
 # Look for a no-cloud config drive (any mountable block device)
+mkdir -p "$CONFIG_DRIVE"
 for dev in /dev/sr0 /dev/sda /dev/sdb /dev/xvdf /dev/vdb; do
 	[ -e "$dev" ] || continue
+	mount -t squashfs -o ro "$dev" "$CONFIG_DRIVE" 2>/dev/null && break
 	mount -o ro "$dev" "$CONFIG_DRIVE" 2>/dev/null && break
 done
 
@@ -51,13 +53,13 @@ if [ -f "$UD" ]; then
 	H=$(grep -m1 '^[[:space:]]*hostname:' "$UD" | sed 's/^[[:space:]]*hostname:[[:space:]]*//' | tr -d '\r\n ')
 	[ -n "$H" ] && set_hostname "$H"
 
-	# ssh_authorized_keys: block scalar (|) or multi-line list
-	KEYS="$CONFIG_DRIVE/.cloud-keys"
+	# ssh_authorized_keys: multi-line list
+	KEYS="/tmp/cloud-keys"
 	grep -q '^[[:space:]]*ssh_authorized_keys:' "$UD" && {
 		# Extract everything after ssh_authorized_keys: until next top-level key
-		sed -n '/^[[:space:]]*ssh_authorized_keys:/,$/p' "$UD" | \
-			sed '1d' | grep -E '^[[:space:]]' | \
-			sed 's/^[[:space:]]*//; s/^[|-][[:space:]]*//' | \
+		awk '/^[[:space:]]*ssh_authorized_keys:/{found=1; next} found && /^[[:space:]]/{print} found && /^[a-zA-Z]/{exit}' "$UD" | \
+			sed 's/^[[:space:]]*//' | \
+			sed 's/^[|-][[:space:]]*//' | \
 			tr -d '\r' > "$KEYS"
 		[ -s "$KEYS" ] && seed_keys "$KEYS"
 		rm -f "$KEYS"

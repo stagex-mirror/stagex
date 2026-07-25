@@ -40,7 +40,7 @@ aws-ami-deploy: $(EC2_DISK_IMG)
 		-e DISK_IMAGE=/disk.img \
 		-v $(EC2_DISK_IMG):/disk.img:ro \
 		stagex/box-aws-ami:local /usr/bin/box \
-		> $(EC2_AMI_TFVARS) 2>/dev/null
+		> $(EC2_AMI_TFVARS)
 	@AMI_ID=$$(grep '^ami_id' $(EC2_AMI_TFVARS) | cut -d'"' -f2) && echo "AMI created: $$AMI_ID"
 
 
