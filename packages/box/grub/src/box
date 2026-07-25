@@ -10,7 +10,7 @@ INITRAMFS="${INITRAMFS:-/initramfs}"
 
 # --- Output ---
 BOOT_IMG="/boot.img"
-BOOT_IMG_SIZE="${BOOT_IMG_SIZE:-64}"
+BOOT_IMG_SIZE="${BOOT_IMG_SIZE:-32}"
 
 # --- Prepare ESP layout ---
 ESP="/esp"

@@ -25,13 +25,13 @@ label: gpt
 label-id: ${DISK_GUID}
 device: ${DISK}
 
-${DISK}1 : size=64M, type=C12A7328-F81F-11D2-BA4B-00A0C905CAF0
+${DISK}1 : size=32M, type=C12A7328-F81F-11D2-BA4B-00A0C905CAF0
 ${DISK}2 : type=0FC63DAF-8483-4772-8E79-3D69D8477DE4
 EOF
 
 # Calculate partition offsets
 ESP_OFFSET=1
-SYSTEM_OFFSET=65
+SYSTEM_OFFSET=33
 
 # Copy boot.img to ESP partition
 dd if="$BOOT_IMG" of="$DISK" bs=1M seek="$ESP_OFFSET" conv=notrunc
