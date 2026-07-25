@@ -5,8 +5,8 @@ WORKDIR /sxctl/cmd/sxctl
 RUN go get ./...
 RUN --network=none <<-EOF
 	go build -o sxctl
-	mkdir /rootfs/
-	cp /sxctl/cmd/sxctl/sxctl /rootfs/
+	mkdir -p /rootfs/usr/bin
+	cp /sxctl/cmd/sxctl/sxctl /rootfs/usr/bin/
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
