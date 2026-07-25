@@ -49,10 +49,10 @@ if [ -z "$SYSTEM_DEV" ]; then
     exec /bin/sh
 fi
 
-echo "initramfs: mounting $SYSTEM_DEV as squashfs..."
+echo "initramfs: mounting $SYSTEM_DEV as erofs..."
 
-# Mount the squashfs system image
-mount -t squashfs -o ro "$SYSTEM_DEV" /mnt || {
+# Mount the erofs system image
+mount -t erofs -o ro "$SYSTEM_DEV" /mnt || {
     echo "initramfs: ERROR: failed to mount $SYSTEM_DEV" >&2
     exec /bin/sh
 }

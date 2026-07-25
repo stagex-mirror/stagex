@@ -1,0 +1,14 @@
+[package]
+name = "erofs-utils"
+version = "1.9.2"
+description = "EROFS utilities — mkfs.erofs for compressed read-only filesystems"
+license = "GPL-2.0-only"
+website = "https://github.com/erofs/erofs-utils"
+
+[sources.erofs-utils]
+hash = "d915b45646a928174917c44a2c84ba005b161e84ab732cd5d2560371560b8d13"
+format = "tar.gz"
+file = "erofs-utils-{version}.{format}"
+mirrors = [
+  "https://github.com/erofs/erofs-utils/archive/refs/tags/v{version}.{format}",
+]

@@ -1,0 +1,4 @@
+[package]
+name = "erofs"
+version = "2026.03.0"
+description = "EROFS system image builder — takes /rootfs, outputs /system.img"

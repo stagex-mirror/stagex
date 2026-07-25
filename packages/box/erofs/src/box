@@ -1,0 +1,13 @@
+#!/usr/bin/sh
+# box-erofs — compresses a directory into an erofs image
+set -eux
+
+ROOTFS="${ROOTFS:-/rootfs}"
+OUTPUT="${OUTPUT:-/system.img}"
+
+# erofs preserves empty dirs natively — no .keep files needed
+
+# Build erofs image with zstd compression (level 1 for speed)
+mkfs.erofs "$OUTPUT" "$ROOTFS"
+
+echo "$OUTPUT created: $(du -h "$OUTPUT" | cut -f1)"

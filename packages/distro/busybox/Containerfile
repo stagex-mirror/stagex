@@ -6,12 +6,13 @@ FROM stagex/core-zlib AS core-zlib
 FROM stagex/core-openssl AS core-openssl
 FROM stagex/user-openssh AS user-openssh
 FROM stagex/user-dhcpcd AS user-dhcpcd
+FROM stagex/user-sxctl AS user-sxctl
 FROM stagex/user-linux-server AS user-linux-server
 FROM stagex/user-linux-offline AS user-linux-offline
 FROM stagex/user-linux-guest AS user-linux-guest
 FROM stagex/distro-initramfs-klibc AS distro-initramfs-klibc
 FROM stagex/box-grub AS box-grub
-FROM stagex/box-squashfs AS box-squashfs
+FROM stagex/box-erofs AS box-erofs
 FROM stagex/box-gpt AS box-gpt
 FROM stagex/box-cpio AS box-cpio
 
@@ -43,11 +44,12 @@ COPY --from=user-dhcpcd /usr/sbin/dhcpcd /sbin/dhcpcd
 RUN mkdir -p /var/lib/dhcpcd /run/dhcpcd && \
 	printf '# Accept all DHCP options\n' > /etc/dhcpcd.conf
 
-# --- dev: default + openssh ---
+# --- dev: default + openssh + sxctl ---
 FROM rootfs AS rootfs-dev
 COPY --from=core-openssl . /
 COPY --from=user-openssh . /
 COPY --from=busybox-init /etc/init.d/S50sshd /etc/init.d/
+COPY --from=user-sxctl . /
 
 # --- guest: default + QEMU guest agent ---
 FROM rootfs AS rootfs-guest
@@ -80,19 +82,19 @@ RUN box
 # Stage 3: system images
 # ============================================================
 
-FROM box-squashfs AS system
+FROM box-erofs AS system
 COPY --from=rootfs --chown=0:0 . /rootfs
 RUN box
 
-FROM box-squashfs AS system-offline
+FROM box-erofs AS system-offline
 COPY --from=rootfs-offline --chown=0:0 . /rootfs
 RUN box
 
-FROM box-squashfs AS system-dev
+FROM box-erofs AS system-dev
 COPY --from=rootfs-dev --chown=0:0 . /rootfs
 RUN box
 
-FROM box-squashfs AS system-guest
+FROM box-erofs AS system-guest
 COPY --from=rootfs-guest --chown=0:0 . /rootfs
 RUN box
 
