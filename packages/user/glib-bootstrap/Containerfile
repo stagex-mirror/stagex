@@ -7,10 +7,7 @@ COPY --from=stagex/core-expat . /
 COPY --from=stagex/core-libxml2 . /
 COPY --from=stagex/core-libxslt . /
 COPY --from=stagex/core-gettext . /
-COPY --from=stagex/user-glib-bootstrap . /
-COPY --from=stagex/user-gobject-introspection . /
 COPY --from=stagex/user-rhash . /
-COPY --from=stagex/user-rnc2rng . /
 COPY --from=stagex/user-util-linux . /
 ADD fetch/glib-${VERSION}.tar.xz .
 WORKDIR /glib-${VERSION}
@@ -25,7 +22,7 @@ RUN --network=none <<-EOF
 		-Dman-pages=disabled \
 		-Dlibmount=disabled \
 		-Dtests=false \
-		-Dintrospection=enabled \
+		-Dintrospection=disabled \
 		-Dnls=disabled \
 		. output
 	meson compile -C output

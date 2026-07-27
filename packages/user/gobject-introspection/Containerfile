@@ -1,17 +1,18 @@
 FROM stagex/pallet-clang-meson-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-bison . /
 COPY --from=stagex/core-flex . /
 COPY --from=stagex/core-m4 . /
-COPY --from=stagex/core-perl . /
-COPY --from=stagex/user-libusb . /
-COPY --from=stagex/user-polkit . /
-COPY --from=stagex/user-systemd . /
-ARG VERSION
-ADD fetch/pcsc-lite-${VERSION}.tar.xz .
-WORKDIR /pcsc-lite-${VERSION}
+COPY --from=stagex/core-pcre2 . /
+COPY --from=stagex/user-glib-bootstrap . /
+COPY --from=stagex/user-rnc2rng . /
+ADD fetch/gobject-introspection-${VERSION}.tar.gz .
+WORKDIR /gobject-introspection-${VERSION}
 RUN --network=none <<-EOF
 	meson setup \
+		--default-library=shared \
 		--prefix=/usr \
-		-Dpolkit=false \
+		-Dtests=false \
 		. output
 	meson compile -C output
 	DESTDIR=/rootfs meson install --no-rebuild -C output
