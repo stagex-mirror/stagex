@@ -395,6 +395,17 @@ COPY --chmod=0755 <<-'EOF' build
 
 	# Tune how `rustc` is built for a faster build process.
 	export RUSTFLAGS="-Clinker=clang -Clink-arg=-Wl,-fuse-ld=mold $RUSTFLAGS"
+	# By default, LLVM during LTO promotes local symbols to globals with a unique
+	# suffix based on a hash of the module IR. When the IR differs across builds
+	# (even with identical code and architecture), this breaks determinism.
+	#
+	# The `-use-source-filename-for-promoted-locals` flag ensures that the source
+	# filename is used instead of the IR hash, guaranteeing consistent symbol
+	# names across identical builds.
+	#
+	# Relevant LLVM commit:
+	# https://github.com/llvm/llvm-project/commit/239c831de4d09530ebd4e254f9248764792afa5e
+	export RUSTFLAGS="-Cllvm-args=-use-source-filename-for-promoted-locals $RUSTFLAGS"
 	# For intermediary compilers, which aren't part of the committed output, we're more aggressive.
 	if [ ! "$TARGET_VERSION" = "$VERSION" ]; then
 		# Disable generating/embedding LLVM bitcode within the objects as it won't be used
