@@ -15,7 +15,7 @@ BOOT_IMG_SIZE="${BOOT_IMG_SIZE:-32}"
 # --- Prepare ESP layout ---
 ESP="/esp"
 rm -rf "$ESP"
-mkdir -p "$ESP/EFI/boot" "$ESP/boot/grub"
+mkdir -p "$ESP/EFI/BOOT" "$ESP/boot/grub"
 
 # Copy kernel
 if [ -f "$KERNEL" ]; then
@@ -52,7 +52,7 @@ EOF
 grub-mkimage \
     --config="grub_early.cfg" \
     --prefix="/boot/grub" \
-    --output="$ESP/EFI/boot/bootx64.efi" \
+    --output="$ESP/EFI/BOOT/BOOTX64.EFI" \
     --format="x86_64-efi" \
     --compression="xz" \
     all_video \
