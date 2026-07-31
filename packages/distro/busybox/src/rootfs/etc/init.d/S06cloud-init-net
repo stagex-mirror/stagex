@@ -3,33 +3,62 @@
 
 HOSTNAME_FILE="/etc/hostname"
 KEYS_FILE="/root/.ssh/authorized_keys"
+META="http://169.254.169.254"
 
-# Skip if hostname already set by drive script
-[ -s "$HOSTNAME_FILE" ] && { printf "Cloud-init (net): skip\n"; exit 0; }
+printf "Cloud-init (net): starting\n" >&2
 
-# Wait for network (up to 20s)
-for i in $(seq 1 20); do
-	ping -c 1 -W 1 169.254.169.254 >/dev/null 2>&1 && break
+# Fix routing: dummy/ifb interfaces hijack 169.254.0.0/16 metadata route
+busybox ip link delete dummy0 2>/dev/null || true
+busybox ip link delete ifb0 2>/dev/null || true
+busybox ip link delete ifb1 2>/dev/null || true
+
+printf "Cloud-init (net): removed bogus interfaces\n" >&2
+
+# Wait for network (up to 30s)
+printf "Cloud-init (net): waiting for network..." >&2
+for i in $(seq 1 30); do
+	ping -c 1 -W 1 "$META" >/dev/null 2>&1 && break
 	sleep 1
 done
+printf "ok\n" >&2
 
-# Fetch hostname from metadata
-h=$(wget -qO- --timeout=3 "http://169.254.169.254/latest/meta-data/hostname" 2>/dev/null | head -c 64)
-if [ -z "$h" ]; then
-	h=$(wget -qO- --timeout=3 "http://169.254.169.254/latest/meta-data/instance-id" 2>/dev/null | head -c 64)
+# Fetch hostname if not set (try IMDSv1 first, simpler)
+if [ ! -s "$HOSTNAME_FILE" ]; then
+	h=$(wget -qO- --timeout=5 "$META/latest/meta-data/hostname" 2>/dev/null | head -c 64)
+	if [ -z "$h" ]; then
+		h=$(wget -qO- --timeout=5 "$META/latest/meta-data/instance-id" 2>/dev/null | head -c 64)
+	fi
+	if [ -n "$h" ]; then
+		hostname "$h"
+		echo "$h" > "$HOSTNAME_FILE"
+		printf "Cloud-init (net): hostname=%s\n" "$h" >&2
+	fi
 fi
 
-if [ -n "$h" ]; then
-	hostname "$h"
-	echo "$h" > "$HOSTNAME_FILE"
+# Always try to fetch user-data for ssh keys
+printf "Cloud-init (net): checking keys file...\n" >&2
+if [ ! -s "$KEYS_FILE" ]; then
+	# Try IMDSv1 first (no token), then IMDSv2
+	data=""
+	data=$(wget -qO- --timeout=5 "$META/latest/user-data" 2>/dev/null)
+	if [ -z "$data" ]; then
+		# Try IMDSv2 token
+		TOKEN=$(wget -qO- --timeout=3 --post-data="300" "$META/latest/api/token" 2>/dev/null)
+		if [ -n "$TOKEN" ]; then
+			data=$(wget -qO- --timeout=5 --header="X-aws-ec2-metadata-token: $TOKEN" "$META/latest/user-data" 2>/dev/null)
+		fi
+	fi
+	if [ -n "$data" ]; then
+		mkdir -p /root/.ssh
+		chmod 700 /root/.ssh
+		echo "$data" > "$KEYS_FILE"
+		chmod 600 "$KEYS_FILE"
+		printf "Cloud-init (net): user-data fetched (%d bytes)\n" "${#data}" >&2
+	else
+		printf "Cloud-init (net): no user-data available\n" >&2
+	fi
+else
+	printf "Cloud-init (net): keys file already exists (%d bytes)\n" "$(wc -c < "$KEYS_FILE")" >&2
 fi
 
-# Fetch user-data for ssh keys
-data=$(wget -qO- --timeout=3 "http://169.254.169.254/latest/user-data" 2>/dev/null)
-if [ -n "$data" ]; then
-	mkdir -p /root/.ssh
-	echo "$data" > "$KEYS_FILE"
-	chmod 600 "$KEYS_FILE"
-fi
-
-printf "Cloud-init (net): ok\n"
+printf "Cloud-init (net): done\n" >&2
