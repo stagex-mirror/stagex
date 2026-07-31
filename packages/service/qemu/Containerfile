@@ -36,6 +36,7 @@ FROM stagex/user-squashfs AS user-squashfs
 FROM stagex/user-socat AS user-socat
 FROM stagex/user-alsa-lib AS user-alsa-lib
 FROM stagex/user-openssh AS user-openssh
+FROM stagex/user-xorriso AS user-xorriso
 
 FROM scratch
 COPY --from=core-busybox . /
@@ -77,6 +78,7 @@ COPY --from=user-canokey-qemu . /
 COPY --from=user-squashfs . /
 COPY --from=user-socat . /
 COPY --from=user-openssh . /
+COPY --from=user-xorriso . /
 COPY src/box /usr/bin/box
 COPY src/qemu-boot.sh /usr/bin/qemu-boot.sh
 COPY src/qemu-startup.sh /usr/bin/qemu-startup.sh

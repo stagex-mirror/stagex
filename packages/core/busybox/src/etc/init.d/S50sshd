@@ -1,42 +1,33 @@
 #!/bin/sh
-DAEMON="sshd"
+DAEMON="tinysshd"
 PIDFILE="/var/run/$DAEMON.pid"
-KEYDIR="/etc/keys"
+KEYDIR="/run/tinyssh/keys"
 
-# Ensure dynamic linker can find libraries
-export LD_LIBRARY_PATH="/usr/lib:/lib:${LD_LIBRARY_PATH}"
-ldconfig 2>/dev/null || true
-
-[ -f /usr/bin/ssh-keygen ] || exit 0
-
-umask 077
-
-ensure_keys() {
-	# /etc/keys is tmpfs-mounted at boot — writable by design
+ensure_host_key() {
 	mkdir -p "$KEYDIR"
 	chmod 700 "$KEYDIR"
+	[ -f "$KEYDIR/host_key" ] || /usr/sbin/tinysshd-makekey "$KEYDIR"
+}
 
-	# Use /dev/urandom to avoid blocking on low entropy
-	export SSH_KNOWN_HOSTS=/dev/null
-	[ -f "$KEYDIR/ssh_host_ed25519_key" ] || \
-		/usr/bin/ssh-keygen -t ed25519 -f "$KEYDIR/ssh_host_ed25519_key" -N "" >/dev/null 2>&1
-	[ -f "$KEYDIR/ssh_host_rsa_key" ] || \
-		/usr/bin/ssh-keygen -t rsa -b 3072 -f "$KEYDIR/ssh_host_rsa_key" -N "" >/dev/null 2>&1
+sync_authorized_keys() {
+	# Copy cloud-seeded authorized_keys to tinyssh key directory
+	if [ -s /root/.ssh/authorized_keys ]; then
+		cat /root/.ssh/authorized_keys >> "$KEYDIR/authorized_keys"
+	fi
 }
 
 start() {
-	ensure_keys
+	ensure_host_key
+	sync_authorized_keys
 
-	[ -f "$KEYDIR/ssh_host_ed25519_key" ] || return 1
-	[ -f "$KEYDIR/ssh_host_rsa_key" ] || return 1
+	[ -f "$KEYDIR/host_key" ] || { printf "Starting %s: " "$DAEMON"; echo "FAIL (no host key)"; return 1; }
 
 	printf "Starting %s: " "$DAEMON"
 	start-stop-daemon --start --pidfile "$PIDFILE" \
 		--exec "/usr/sbin/$DAEMON" \
-		-- -o HostKey="$KEYDIR/ssh_host_ed25519_key" \
-		   -o HostKey="$KEYDIR/ssh_host_rsa_key"
+		-- -l -v "$KEYDIR"
 	status=$?
-	if [ "$status" -eq 0 ]; then
+	if [ "$status" = 0 ]; then
 		echo "OK"
 	else
 		echo "FAIL"
@@ -49,7 +40,7 @@ stop() {
 	start-stop-daemon --stop --pidfile "$PIDFILE" \
 		--exec "/usr/sbin/$DAEMON"
 	status=$?
-	if [ "$status" -eq 0 ]; then
+	if [ "$status" = 0 ]; then
 		echo "OK"
 	else
 		echo "FAIL"

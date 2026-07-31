@@ -1,43 +1,48 @@
 #!/bin/sh
-# S05cloud-init-drive — seed hostname + ssh keys from a config drive (CD-ROM / block)
+# S05cloud-init-drive — seed hostname + ssh keys from config drive
 
-CONFIG_DRIVE="/mnt/cfg"
 HOSTNAME_FILE="/etc/hostname"
 KEYS_FILE="/root/.ssh/authorized_keys"
-
-set_hostname() {
-	local h
-	h=$(head -1 "$1" | tr -d '\r\n ' | head -c 64)
-	[ -n "$h" ] || return 1
-	hostname "$h"
-	echo "$h" > "$HOSTNAME_FILE"
-	return 0
-}
-
-seed_keys() {
-	local src="$1"
-	[ -f "$src" ] || return 1
-	mkdir -p /root/.ssh
-	cat "$src" > "$KEYS_FILE"
-	chmod 600 "$KEYS_FILE"
-	return 0
-}
 
 # Skip if hostname already set
 [ -s "$HOSTNAME_FILE" ] && { printf "Cloud-init (drive): skip\n"; exit 0; }
 
-for dev in /dev/sr0 /dev/xvdf /dev/vdb; do
+# Method 1: try ISO config drive on CD-ROM (OpenStack standard)
+mkdir -p /tmp/cfg
+for dev in /dev/sr0 /dev/sr1 /dev/cdrom /dev/hdc /dev/hdd; do
 	[ -e "$dev" ] || continue
-	mount -o ro "$dev" "$CONFIG_DRIVE" 2>/dev/null && break
+	if mount -t iso9660 -o ro "$dev" /tmp/cfg 2>/dev/null; then
+		if [ -f /tmp/cfg/authorized_keys ]; then
+			mkdir -p /root/.ssh
+			cp /tmp/cfg/authorized_keys "$KEYS_FILE"
+			chmod 600 "$KEYS_FILE"
+		fi
+		if [ -f /tmp/cfg/hostname ]; then
+			h=$(head -1 /tmp/cfg/hostname)
+			[ -n "$h" ] && hostname "$h" && printf '%s\n' "$h" > "$HOSTNAME_FILE"
+		fi
+		umount /tmp/cfg 2>/dev/null
+		rmdir /tmp/cfg 2>/dev/null
+		printf "Cloud-init (drive): ok (iso %s)\n" "$dev"
+		exit 0
+	fi
 done
 
-if [ $? -ne 0 ]; then
-	printf "Cloud-init (drive): no device\n"
-	exit 0
-fi
+# Method 2: try raw text config on virtio-blk (fallback)
+for dev in /dev/vdb /dev/xvdb; do
+	[ -e "$dev" ] || continue
+	HEAD=$(dd if="$dev" bs=4 count=1 2>/dev/null | tr -d '\0')
+	case "$HEAD" in
+		ssh-*)
+			DATA=$(dd if="$dev" bs=1024 count=1 2>/dev/null)
+			KEY=$(printf '%s' "$DATA" | head -1)
+			HOSTNAME=$(printf '%s' "$DATA" | sed -n '2p')
+			[ -n "$KEY" ] && mkdir -p /root/.ssh && printf '%s\n' "$KEY" > "$KEYS_FILE" && chmod 600 "$KEYS_FILE"
+			[ -n "$HOSTNAME" ] && hostname "$HOSTNAME" && printf '%s\n' "$HOSTNAME" > "$HOSTNAME_FILE"
+			printf "Cloud-init (drive): ok (raw %s)\n" "$dev"
+			exit 0
+			;;
+	esac
+done
 
-set_hostname "$CONFIG_DRIVE/hostname"
-seed_keys "$CONFIG_DRIVE/authorized_keys"
-umount "$CONFIG_DRIVE" 2>/dev/null
-
-printf "Cloud-init (drive): ok\n"
+printf "Cloud-init (drive): no device\n"

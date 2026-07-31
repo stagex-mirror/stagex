@@ -1,31 +1,30 @@
 #!/usr/bin/sh
-# box — generate cloud-config squashfs image from user-data
-# Used by qemu-start target to create cloud-config before launching QEMU
+# box — generate OpenStack-style ISO config drive + raw text fallback
 set -eu
 
 USER_DATA="${USER_DATA:-}"
 SSH_KEY="${SSH_KEY:-}"
 
-CLOUD_TMP=$(mktemp -d)
-trap "rm -rf $CLOUD_TMP" EXIT
-
 if [ -n "$USER_DATA" ]; then
-    if printf '%s' "$USER_DATA" | grep -q '^ssh-'; then
-        printf '#cloud-config\nhostname: qemu-dev\nssh_authorized_keys:\n' > "$CLOUD_TMP/user-data"
-        printf '  - %s\n' "$USER_DATA" >> "$CLOUD_TMP/user-data"
-    else
-        printf '%s\n' "$USER_DATA" > "$CLOUD_TMP/user-data"
-    fi
+    KEY="$USER_DATA"
+elif [ -n "$SSH_KEY" ] && [ -f "$SSH_KEY" ]; then
+    KEY=$(ssh-keygen -y -f "$SSH_KEY" 2>/dev/null || echo "ssh-rsa PLACEHOLDER")
 else
-    if [ -n "$SSH_KEY" ] && [ -f "$SSH_KEY" ]; then
-        PUB_KEY=$(ssh-keygen -y -f "$SSH_KEY" 2>/dev/null || cat "${SSH_KEY%.pem}.pub" 2>/dev/null || echo "ssh-rsa PLACEHOLDER")
-        printf '#cloud-config\nhostname: qemu-dev\nssh_authorized_keys:\n' > "$CLOUD_TMP/user-data"
-        printf '  - %s\n' "$PUB_KEY" >> "$CLOUD_TMP/user-data"
-    else
-        printf '#cloud-config\nhostname: qemu-dev\nssh_authorized_keys:\n  - ssh-rsa PLACEHOLDER\n' > "$CLOUD_TMP/user-data"
-    fi
+    KEY="ssh-rsa PLACEHOLDER"
 fi
 
-printf 'instance-id: qemu-dev\n' > "$CLOUD_TMP/meta-data"
-rm -f /out/cloud.img
-/usr/bin/mksquashfs "$CLOUD_TMP" /out/cloud.img -quiet -no-progress
+HOSTNAME="qemu-dev"
+
+# ISO config drive (OpenStack noCloud-style)
+CLOUD_TMP=$(mktemp -d)
+trap "rm -rf $CLOUD_TMP" EXIT
+mkdir -p "$CLOUD_TMP/iso"
+printf '%s\n' "$KEY" > "$CLOUD_TMP/iso/authorized_keys"
+printf '%s\n' "$HOSTNAME" > "$CLOUD_TMP/iso/hostname"
+xorriso -as mkisofs -o /out/cloud-iso.img -V config-2 "$CLOUD_TMP/iso" >/dev/null 2>&1
+
+# Raw text fallback (busybox mount workaround)
+{
+    printf '%s\n' "$KEY"
+    printf '%s\n' "$HOSTNAME"
+} > /out/cloud.img

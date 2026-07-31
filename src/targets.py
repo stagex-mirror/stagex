@@ -172,6 +172,7 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
             continue
 
           deps: List[str] = list()
+          has_package_stage = False
           with open(container_file_path, "r") as file:
             for line in file:
               if line.startswith("COPY"):
@@ -179,15 +180,23 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
                 if first_arg.startswith("--from"):
                   _, dep = first_arg.split("=")
                   if dep.startswith("stagex/"):
-                    deps.append(dep.split("/")[1])
+                    deps.append(dep.split("/")[1].strip())
               if line.startswith("FROM stagex/"):
                 deps.append(line.split(" ")[1].split("/")[1].strip())
               if line.startswith("FROM --platform=linux/386 stagex/"):
                 deps.append(line.split(" ")[2].split("/")[1].strip())
+              # Check for a bare "package" stage (not package-*)
+              if " AS package" in line and " AS package-" not in line:
+                has_package_stage = True
 
           package_info = CommonUtils.parse_package_toml_no_deps(package_data)
           package_info.deps = deps
+          package_info.has_package_stage = has_package_stage
           if len(package_info.subpackages):
+            # Only create main package target if Containerfile has a "package" stage
+            if has_package_stage:
+              self.packages[stage][name] = package_info
+            # Always create subpackage targets
             for subpackage in package_info.subpackages:
               self.packages[stage][subpackage] = replace(package_info)
               self.packages[stage][subpackage].origin = package_info.name
@@ -225,6 +234,8 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
     args: List[str] = list()
     if package.origin:
         args.append(f"--target package-{package.name}")
+    elif package.subpackages and package.has_package_stage:
+        args.append("--target package")
 
     if package.version:
         args.append(f"--build-arg VERSION={package.version}")

@@ -1,19 +1,17 @@
 #!/bin/sh
-# rcS — StageX busybox distro init script
 
-# Mount remaining filesystems if not already mounted
-mount -t proc proc /proc 2>/dev/null
-mount -t sysfs sysfs /sys 2>/dev/null
-mount -t devtmpfs devtmpfs /dev 2>/dev/null
-
-# Hostname
-hostname stagex
 
 # Start all init scripts in /etc/init.d
+# executing them in numerical order.
+#
 for i in /etc/init.d/S??* ;do
-    [ ! -f "$i" ] && continue
-    case "$i" in
+
+     # Ignore dangling symlinks (if any).
+     [ ! -f "$i" ] && continue
+
+     case "$i" in
 	*.sh)
+	    # Source shell script for speed.
 	    (
 		trap - INT QUIT TSTP
 		set start
@@ -21,9 +19,9 @@ for i in /etc/init.d/S??* ;do
 	    )
 	    ;;
 	*)
+	    # No sh extension, so fork subprocess.
 	    $i start
 	    ;;
     esac
 done
 
-echo "StageX busybox distro booted"

@@ -3,7 +3,7 @@
 .PHONY: qemu-start qemu-status qemu-stop qemu-logs
 
 QEMU_MEMORY ?= 4G
-QEMU_SSH_KEY ?= ~/.ssh/tpm-exploration.pem
+QEMU_SSH_KEY ?= $(HOME)/.ssh/tpm-exploration.pem
 QEMU_CONTAINER_NAME ?= qemu-dev
 QEMU_USER_DATA_FILE ?=
 
@@ -21,28 +21,33 @@ qemu-start:
 	@USER_DATA="" && \
 	if [ -n "$(QEMU_USER_DATA_FILE)" ] && [ -f "$(QEMU_USER_DATA_FILE)" ]; then \
 		USER_DATA=$$(cat "$(QEMU_USER_DATA_FILE)"); \
-	elif [ -f ~/.ssh/tpm-exploration.pem ]; then \
-		USER_DATA=$$(ssh-keygen -y -f ~/.ssh/tpm-exploration.pem); \
+	elif [ -f "$(QEMU_SSH_KEY)" ]; then \
+		USER_DATA=$$(ssh-keygen -y -f "$(QEMU_SSH_KEY)"); \
 	elif [ -f ~/.ssh/id_rsa.pub ]; then \
 		USER_DATA=$$(cat ~/.ssh/id_rsa.pub); \
 	fi && \
 	echo "Generating cloud-config ..." && \
-	docker run --rm \
+	rm -f $(CURDIR)/out/cloud.img && \
+	docker run --rm --privileged \
 		-e "USER_DATA=$$USER_DATA" \
 		-e "SSH_KEY=$(QEMU_SSH_KEY)" \
-		        -v $(CURDIR)/out:/out \
-		        --entrypoint /usr/bin/box \
-		stagex/service-qemu:local && \
+		-v $(CURDIR)/out:/out \
+		-v $(CURDIR)/packages/service/qemu/src/box:/usr/bin/box \
+		--entrypoint /bin/sh \
+		stagex/service-qemu:local -c 'chmod +x /usr/bin/box && /usr/bin/box' && \
 	docker rm -f $(QEMU_CONTAINER_NAME) >/dev/null 2>&1 || true && \
 	echo "Launching QEMU ..." && \
 	docker run -d --name $(QEMU_CONTAINER_NAME) --privileged --network host \
 		-v $(QEMU_DISK_IMG):/input/disk.img \
 		-v $(CURDIR)/out/cloud.img:/input/cloud.img \
+		-v $(CURDIR)/out/cloud-iso.img:/input/cloud-iso.img \
+		-v $(CURDIR)/packages/service/qemu/src/qemu-startup.sh:/usr/bin/qemu-startup.sh \
 		-e QEMU_MEMORY="$(QEMU_MEMORY)" \
 		-e QEMU_DISK=/input/disk.img \
 		-e QEMU_CLOUD=/input/cloud.img \
-		--entrypoint /usr/bin/qemu-startup.sh \
-		stagex/service-qemu:local && \
+		-e QEMU_CLOUD_ISO=/input/cloud-iso.img \
+		--entrypoint /bin/sh \
+		stagex/service-qemu:local -c 'chmod +x /usr/bin/qemu-startup.sh && exec /usr/bin/qemu-startup.sh' && \
 	echo "Waiting for SSH ..." && \
 	SSH_READY=0 && \
 	for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40; do \

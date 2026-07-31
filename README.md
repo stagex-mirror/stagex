@@ -26,6 +26,7 @@ looking for.
   * [Cryptographic Accountability](#cryptographic-accountability)
   * [Quorum Artifact Signing](#quorum-artifact-signing)
   * [Minimalism](#minimalism)
+* [Distros](#distros)
 * [Background](#background)
 * [Comparison](#comparison)
   * [Notes](#notes)
@@ -222,6 +223,110 @@ for the formal analysis.
 * All images are built FROM scratch containing only the installed package,
   no base distribution bloat
 * Keep package definitions lean and readable with simple CLI and no magic
+
+## Distros
+
+StageX distros are purpose-built Linux distributions composed entirely from
+StageX OCI packages. Each distro targets a specific use case with a curated
+set of components optimized for that role.
+
+| Distro | Purpose | Init | Userspace |
+|--------|---------|------|-----------|
+| **embed** | Minimal embedded systems | busybox | toybox |
+| **serve** | Traditional server workloads | systemd | full |
+| **work** | Desktop and workstation environments | systemd | full |
+| **isolate** | Offline and air-gapped environments | busybox | minimal |
+| **infer** | AI model inference appliance OS | systemd | gpu-ready |
+| **attest** | Hardened remotely attestable workloads | systemd | minimal |
+| **move** | Real-time robotics and machinery | systemd | realtime |
+| **build** | Hardware-signed reproducible build servers | systemd | minimal |
+| **store** | NAS and bulk redundant file storage | systemd | minimal |
+| **play** | Windows compatibility and gaming | systemd | full |
+| **guard** | Firewalls and bastion hosts | busybox | minimal |
+| **boot** | Firmware, bootloader, and initramfs | none | none |
+
+> **Note:** Distros are currently under development. The table above reflects
+the intended design direction, not final implementations.
+
+### embed
+
+The most minimal StageX distro. Optimized for embedded systems where size and
+boot time matter. Uses toybox for a lightweight userspace and busybox for init.
+Target footprint is under 10 MB for the root filesystem.
+
+### serve
+
+A traditional systemd-based server distro. Includes full systemd userspace
+with networking, logging, and service management. Designed for cloud and
+on-premises server deployments where standard Linux expectations apply.
+
+### work
+
+Optimized for desktop and workstation use. Includes a full systemd userspace
+with desktop environment support, audio, graphics, and input subsystems.
+Targeted at developers and end users running StageX as a daily driver.
+
+### isolate
+
+Built for offline and air-gapped environments. Minimal userspace with busybox
+init, no external network dependencies. All required services run locally
+with no cloud or metadata service assumptions. Suitable for embedded edge
+deployments and security-hardened offline systems.
+
+### infer
+
+An appliance OS for AI model inference workloads. GPU-ready with drivers
+and runtime libraries pre-installed. Minimal attack surface beyond what is
+needed to serve inference requests. Designed to run large language models
+and other AI workloads in production.
+
+### attest
+
+Hardened distro for remotely attestable workloads. Minimal userspace with
+systemd, built for confidential compute environments (SGX, SEV-SNP, TDX).
+Includes attestation agents and hardware root-of-trust support. Designed
+for workloads that require cryptographic proof of integrity before execution.
+
+### move
+
+Optimized for real-time robotics and machinery control. Uses a PREEMPT_RT
+patched kernel with deterministic latency guarantees. Includes real-time
+capable systemd and industrial protocol support. Designed for robots,
+CNC machines, and other systems where timing matters more than throughput.
+
+### build
+
+Purpose-built for reproducible build servers. Includes hardware signing
+support (TPM/HSM) for artifact attestation, CI/CD tooling, and hash
+verification infrastructure. Designed to serve as trusted build nodes
+that produce cryptographically verified artifacts.
+
+### store
+
+Optimized for NAS and bulk redundant file storage. Includes ZFS/btrfs
+filesystem support, RAID management, and network file serving (NFS,
+SMB, S3). Designed for distributed storage clusters and offline backup
+systems where data durability matters more than compute power.
+
+### play
+
+Optimized for gaming and Windows compatibility. Includes Wine/Proton,
+Vulkan drivers, and a low-latency audio stack. Designed to run Windows
+games and applications alongside native Linux titles with minimal overhead.
+
+### guard
+
+Minimal firewall and bastion host distro. Includes iptables/nftables,
+OpenVPN/WireGuard, SSH hardening, and intrusion detection. Uses busybox
+init with no unnecessary services. Designed as a network security
+perimeter with the smallest possible attack surface.
+
+### boot
+
+Firmware, bootloader, and initramfs building blocks. Not a standalone
+distro — provides the foundational boot components (UEFI firmware,
+GRUB/systemd-boot, and initramfs images) that other distros depend on.
+Designed to be composed into any distro's boot stage.
 
 ## Background
 

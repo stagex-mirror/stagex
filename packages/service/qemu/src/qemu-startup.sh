@@ -40,8 +40,12 @@ QEMU_ARGS="$QEMU_ARGS -serial chardev:console"
 QEMU_ARGS="$QEMU_ARGS -serial telnet:0.0.0.0:${CONSOLE_PORT:-4000},server,nowait"
 QEMU_ARGS="$QEMU_ARGS -qmp unix:${QMP_SOCKET:-/run/qemu-qmp.sock},server,wait=off"
 
-# --- Cloud-init drive (always present, may be empty) ---
-QEMU_ARGS="$QEMU_ARGS -drive file=${QEMU_CLOUD:=/cloud.iso},format=raw,if=ide"
+# --- Cloud-init config drives ---
+QEMU_ARGS="$QEMU_ARGS -drive file=${QEMU_CLOUD:=/cloud.img},format=raw,if=virtio"
+# ISO via virtio-scsi
+QEMU_ARGS="$QEMU_ARGS -device virtio-scsi-pci,id=scsi0"
+QEMU_ARGS="$QEMU_ARGS -drive file=${QEMU_CLOUD_ISO:=/cloud-iso.img},format=raw,media=cdrom,if=none,id=cd0"
+QEMU_ARGS="$QEMU_ARGS -device scsi-cd,drive=cd0"
 
 NET_OPTS="user,id=net0,hostfwd=tcp:0.0.0.0:2222-:22"
 if [ -n "${QEMU_NET_HOSTFWD:-}" ]; then

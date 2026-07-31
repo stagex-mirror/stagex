@@ -84,10 +84,3 @@ aws-ec2-status:
 	echo "" && \
 	echo "  ssh -i $(EC2_SSH_KEY) root@$$PUBLIC_IP"
 
-# Show EC2 instance console output
-aws-ec2-logs:
-	@if [ ! -f "$(EC2_EC2_TFVARS)" ]; then \
-		echo "No EC2 instance deployed — run 'make aws-ec2-deploy'" >&2; exit 1; \
-	fi
-	@INSTANCE_ID=$$(grep '^instance_id' $(EC2_EC2_TFVARS) | cut -d'"' -f2) && \
-	aws ec2 get-console-output --instance-id "$$INSTANCE_ID" --region "$(EC2_REGION)" --query 'Output' --output text 2>/dev/null | base64 -d 2>/dev/null || echo "No console output available yet"

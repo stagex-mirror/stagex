@@ -17,9 +17,7 @@
 - **Docker BuildKit is content-addressed:** if source files change, only affected stages rebuild automatically (no NOCACHE needed).
 
 ### Subpackages
-- `core-busybox` has subpackage `busybox-init` → target is `core-busybox-init`, not `core-busybox`
-- The `core-busybox-init` image holds init scripts (S03dhcpcd, S06cloud-init-net, etc.)
-- To update init scripts: rebuild `core-busybox-init`, then rebuild dependent distros
+- `core-busybox` busybox-init subpackage removed (scripts moved to distro)
 
 ### EC2 AMI Pipeline
 - Build: `make distro-busybox-dev`
@@ -28,9 +26,28 @@
 - Kernel config option is `CONFIG_ENA_ETHERNET=y` (not `CONFIG_ENA` — renamed in kernel 7.0)
 - Kernel config option `CONFIG_NET_VENDOR_AMAZON=y` must be set for ENA driver
 
-## Current Focus: Networking Debug (lance/distros branch)
-- Cloud-init net script (S06) reaches AWS metadata at 169.254.169.254
-- dhcpcd moved to S03 to start BEFORE cloud-init scripts
-- Wait loop increased from 10s to 20s for slower EC2 boot
-- Kernel has e1000, e1000e, and virtio_net built-in
-- QEMU uses e1000 NIC with user-mode networking + SSH forwarding on port 2222
+## Current Focus: SSH and Config Drive (lance/distros branch)
+
+### Completed
+- **tinyssh migration** — replaced openssh with tinyssh (~100KB vs ~3MB). Uses tcpsvd for TCP listener (tinysshd doesn't daemonize). Key dir at `/run/tinyssh/keys/`, reads `authorized_keys` from there.
+- **busybox-init consolidation** — init scripts moved from `core-busybox-init` subpackage into `packages/distro/busybox/src/rootfs/etc/init.d/`
+- **toybox update** — 0.8.13 → 0.8.14
+- **README distros section** — added planned distro table
+- **tmpfs mounts in init** — /run, /tmp, /var/log, /var/run, /var/tmp, /etc/keys, /root
+
+### Current Blocker: Config Drive (ISO CD-ROM)
+- **OpenStack-style config drive** — ISO9660 CD-ROM with `hostname` and `authorized_keys`, attached via `-drive ... if=none,media=cdrom` + `-device virtio-scsi-pci` + `-device scsi-cd`
+- SSH works end-to-end (tinysshd connects, key exchange succeeds) but auth fails because config drive never mounts
+- **Root cause:** kernel detects CD-ROM (`sr 0:0:0:0: [sr0]`), SR driver registers, major 11 "sr" in `/proc/devices`, but `/sys/block/sr0` never created. Block device registration silently fails.
+- **Verified configs (built kernel):** CONFIG_SCSI=y, CONFIG_BLK_DEV=y, CONFIG_BLK_DEV_SR=y, CONFIG_CDROM=y, CONFIG_ISO9660_FS=y, CONFIG_SCSI_VIRTIO=y, CONFIG_SCSI_LOWLEVEL=y — all correct
+- Tried: IDE CD-ROM, AHCI SATA CD-ROM, virtio-scsi CD-ROM, -cdrom flag, PIIX3 IDE — same result. Not a QEMU args issue.
+- Likely kernel bug/incompatibility in minimal config where SR driver sees device but never creates block device sysfs entry
+
+### Next Steps
+- Switch config drive from ISO CD-ROM to virtio-blk ext4 disk (same file structure, guaranteed working)
+- Or continue debugging kernel (likely need CONFIG_IKCONFIG_PROC working to verify running config)
+
+### QEMU Test
+- `make qemu-start` — starts VM, waits for SSH on port 2222
+- Logs visible via `docker logs qemu-dev` (QEMU serial → container stdout)
+- SSH key: `~/.ssh/tpm-exploration.pem`

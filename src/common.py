@@ -48,6 +48,7 @@ class PackageInfo(WithVersion):
   subpackages: List[str] = field(default_factory=list)
   sources: MutableMapping[str, SourcesInfo] = field(default_factory=dict)
   deps: List[str] = field(default_factory=list)
+  has_package_stage: bool = False
 
 class CommonUtils(object):
   @staticmethod

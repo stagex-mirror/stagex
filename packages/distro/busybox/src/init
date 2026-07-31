@@ -4,7 +4,22 @@
 # Mount virtual filesystems (dirs exist in squashfs)
 mount -t proc proc /proc
 mount -t sysfs sysfs /sys
-mount -t devtmpfs devtmpfs /dev
+# Mount devtmpfs for automatic device node creation (virtio-blk, etc.)
+mount -t devtmpfs -o mode=755 devtmpfs /dev
+mount -t tmpfs -o mode=755 tmpfs /run
+mount -t tmpfs -o mode=1777 tmpfs /tmp
+mount -t tmpfs -o mode=755 tmpfs /var/log
+mount -t tmpfs -o mode=755 tmpfs /var/run
+mount -t tmpfs -o mode=1777 tmpfs /var/tmp
+mount -t tmpfs -o mode=700 tmpfs /etc/keys
+mount -t tmpfs -o mode=700 tmpfs /root
+
+# Mount devpts for pseudo-terminals (required for SSH interactive sessions)
+mkdir -p /dev/pts
+mount -t devpts devpts /dev/pts
+
+# Create runtime directories
+mkdir -p /run/tinyssh /run/ssh
 
 # Create essential device nodes
 mknod -m 666 /dev/null c 1 3
