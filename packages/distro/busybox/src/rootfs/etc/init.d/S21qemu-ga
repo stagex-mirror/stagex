@@ -1,0 +1,30 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          qemu-ga
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:
+# Short-Description: Start QEMU Guest Agent
+### END INIT INFO
+
+case "$1" in
+    start)
+        echo "Starting QEMU Guest Agent"
+	cat /proc/cpuinfo | grep QEMU && qemu-ga &
+    ;;
+    stop)
+        echo "Stopping QEMU Guest Agent"
+        killall qemu-ga
+    ;;
+    restart)
+        "$0" stop
+        "$0" start
+    ;;
+    *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+    ;;
+esac
+
+exit 0
