@@ -5,6 +5,7 @@ FROM stagex/core-zlib AS core-zlib
 FROM stagex/core-openssl AS core-openssl
 FROM stagex/core-curl AS core-curl
 FROM stagex/core-libzstd AS core-libzstd
+FROM stagex/core-python AS core-python
 FROM stagex/user-tinyssh AS user-tinyssh
 FROM stagex/user-dhcpcd AS user-dhcpcd
 FROM stagex/user-sxctl AS user-sxctl
@@ -16,6 +17,8 @@ FROM stagex/user-tpm2-tools AS user-tpm2-tools
 FROM stagex/user-swtpm AS user-swtpm
 FROM stagex/user-sevctl AS user-sevctl
 FROM stagex/user-qemu AS user-qemu
+FROM stagex/user-keylime-agent AS user-keylime-agent
+FROM stagex/user-tpm2-abrmd AS user-tpm2-abrmd
 FROM stagex/distro-initramfs-klibc AS distro-initramfs-klibc
 FROM stagex/box-grub AS box-grub
 FROM stagex/box-erofs AS box-erofs
@@ -35,6 +38,7 @@ COPY --from=core-zlib . /
 COPY --from=core-openssl . /
 COPY --from=core-curl . /
 COPY --from=core-libzstd . /
+COPY --from=core-python . /
 COPY src/rootfs/etc/init.d/rcS /etc/init.d/
 COPY src/rootfs/etc/init.d/S01syslogd /etc/init.d/
 COPY src/rootfs/etc/init.d/S02modules /etc/init.d/
@@ -42,10 +46,12 @@ COPY src/rootfs/etc/init.d/S10udev /etc/init.d/
 COPY src/rootfs/etc/init.d/S20urandom /etc/init.d/
 COPY src/rootfs/etc/init.d/S05cloud-init-drive /etc/init.d/
 COPY src/rootfs/etc/init.d/S50swtpm /etc/init.d/
+COPY src/rootfs/etc/init.d/S51tpm2-abrmd /etc/init.d/
 COPY src/init /init
 COPY src/rootfs/oldroot /oldroot
 COPY --from=user-tpm2-tss . /
 COPY --from=user-tpm2-tools . /
+COPY --from=user-tpm2-abrmd . /
 COPY --from=user-swtpm . /
 COPY --from=user-sevctl . /
 COPY --from=user-qemu . /
@@ -59,6 +65,12 @@ COPY --from=user-dhcpcd /usr/sbin/dhcpcd /sbin/dhcpcd
 COPY --from=user-tinyssh . /
 COPY src/dev/rootfs/etc/init.d/S50sshd /etc/init.d/
 COPY --from=user-sxctl . /
+COPY --from=user-keylime-agent . /
+COPY --from=user-tpm2-abrmd . /
+COPY src/rootfs/etc/init.d/S51tpm2-abrmd /etc/init.d/
+COPY src/rootfs/etc/init.d/S52keylime-agent /etc/init.d/
+COPY src/rootfs/etc/keylime/keylime.conf /etc/keylime/keylime.conf
+COPY src/rootfs/etc/keylime/agent.conf /etc/keylime/agent.conf
 RUN mkdir -p /var/lib/dhcpcd /run/dhcpcd && \
 	printf '# Accept all DHCP options\n' > /etc/dhcpcd.conf
 
