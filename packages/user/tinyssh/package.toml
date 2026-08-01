@@ -1,0 +1,14 @@
+[package]
+name = "tinyssh"
+version = "20260601"
+description = "Minimal SSH server (TSSh) — pubkey auth, no password, ~100KB"
+license = "MIT"
+website = "https://github.com/janmojzis/tinyssh"
+
+[sources.tinyssh]
+hash = "b0a49efb7289718d472e17399aab29c7ef47faceec879d2678c647c5dae47419"
+format = "tar.gz"
+file = "tinyssh-{version}.{format}"
+mirrors = [
+  "https://github.com/janmojzis/tinyssh/archive/refs/tags/{version}.{format}",
+]

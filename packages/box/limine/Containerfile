@@ -1,0 +1,16 @@
+FROM stagex/user-limine AS user-limine
+FROM stagex/user-cpio AS user-cpio
+FROM stagex/core-busybox AS core-busybox
+FROM stagex/core-musl AS core-musl
+FROM stagex/core-xz AS core-xz
+FROM stagex/core-zlib AS core-zlib
+
+FROM scratch AS package
+COPY --from=core-busybox . /
+COPY --from=core-musl . /
+COPY --from=core-xz . /
+COPY --from=core-zlib . /
+COPY --from=user-limine . /
+COPY --from=user-cpio . /
+COPY src/box /usr/bin/box
+RUN chmod +x /usr/bin/box

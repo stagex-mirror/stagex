@@ -1,0 +1,12 @@
+FROM stagex/user-klibc-utils-mono AS user-klibc-utils-mono
+FROM stagex/box-cpio AS box-cpio
+
+# --- Stage 1: initramfs rootfs (single init binary, no extra dirs) ---
+FROM scratch AS initramfs-rootfs
+COPY --from=user-klibc-utils-mono /init /init
+
+# --- Stage 2: initramfs (final — outputs only /initramfs) ---
+FROM scratch AS package
+COPY --from=initramfs-rootfs --chown=0:0 . /rootfs
+COPY --from=box-cpio . /
+RUN box initramfs

@@ -1,0 +1,31 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+ARG VERSION
+COPY --from=stagex/user-libgpg-error . /
+COPY --from=stagex/user-libassuan . /
+COPY --from=stagex/user-gpg . /
+COPY --from=stagex/user-libgcrypt . /
+COPY --from=stagex/user-npth . /
+COPY --from=stagex/user-libksba . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-bash / /
+ADD fetch/gpgme-${VERSION}.tar.bz2 .
+WORKDIR /gpgme-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+
+	./configure \
+		--prefix=/usr \
+		--disable-largefile \
+		--enable-static \
+		CFLAGS="-D_LARGEFILE64_SOURCE -D_LARGEFILE_SOURCE"
+
+	make -j$(nproc)
+
+	mkdir -p /rootfs
+	make DESTDIR=/rootfs install
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

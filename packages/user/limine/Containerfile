@@ -1,0 +1,33 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-xz . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-bash / /
+COPY --from=stagex/user-mtools . /
+COPY --from=stagex/user-nasm . /
+ADD fetch/limine-${VERSION}.tar.xz .
+WORKDIR /limine-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+
+	./configure \
+		--prefix=/usr \
+		--enable-all
+
+	make -j$(nproc)
+
+	# Install to rootfs
+	make DESTDIR=/rootfs install
+
+	# Copy limine binary for building boot images
+	cp /rootfs/usr/bin/limine /usr/bin/limine-build
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
+COPY --from=build /usr/bin/limine-build /usr/bin/limine-build
+COPY --from=build /usr/bin/mformat /usr/bin/mformat
+COPY --from=build /usr/bin/mcopy /usr/bin/mcopy

@@ -1,0 +1,28 @@
+FROM stagex/pallet-cgo AS build
+ARG VERSION
+ENV GOPATH=/cache/go
+ENV GOCACHE=/cache/
+ENV GOWORK=off
+ENV GOPROXY=https://proxy.golang.org,direct
+ENV GOSUMDB=sum.golang.org
+ENV CGO_ENABLED=1
+ENV GOHOSTOS=linux
+ENV GOHOSTARCH=amd64
+COPY --from=stagex/core-gpgme . /
+COPY --from=stagex/user-libgpg-error . /
+COPY --from=stagex/user-libassuan . /
+COPY --from=stagex/core-sqlite3 . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-xz . /
+COPY --from=stagex/core-brotli . /
+ADD fetch/skopeo-${VERSION}.tar.gz .
+WORKDIR /skopeo-${VERSION}
+RUN go get ./...
+RUN <<-EOF
+	set -eu
+	go build -trimpath -v -tags "exclude_graphdriver_btrfs" -ldflags "${GO_LDFLAGS} -X \"github.com/containers/skopeo/build.commit=${VERSION}\" -X \"github.com/containers/skopeo/build.version=${VERSION}\"" ./cmd/skopeo
+	mkdir -p /rootfs/usr/bin/
+	cp skopeo /rootfs/usr/bin/
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

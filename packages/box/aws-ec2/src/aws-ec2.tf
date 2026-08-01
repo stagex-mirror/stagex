@@ -2,7 +2,6 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.0"
     }
   }
 }
@@ -49,9 +48,9 @@ variable "key_name" {
 }
 
 variable "instance_type" {
-  description = "EC2 instance type"
+  description = "EC2 instance type (c6a.* has TPM2 + SEV-SNP)"
   type        = string
-  default     = "m5.large"
+  default     = "c6a.large"
 }
 
 variable "user_data" {
@@ -62,6 +61,12 @@ variable "user_data" {
 
 variable "wait_for_ssh" {
   description = "Whether to wait for SSH port 22 before returning"
+  type        = bool
+  default     = true
+}
+
+variable "enable_sev_snp" {
+  description = "Enable SEV-SNP confidential computing (requires c6a/c7a instance types)"
   type        = bool
   default     = true
 }
@@ -87,6 +92,10 @@ resource "aws_instance" "this" {
   vpc_security_group_ids = [var.security_group_id]
   key_name               = var.key_name
   user_data              = var.user_data
+
+  confidential_computing {
+    enabled = var.enable_sev_snp
+  }
 
   root_block_device {
     volume_size = 20

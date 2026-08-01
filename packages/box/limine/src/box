@@ -1,0 +1,67 @@
+#!/usr/bin/sh
+# box-limine — assembles kernel + initramfs + Limine config into /boot.img (FAT32)
+set -eux
+
+# --- Inputs ---
+KERNEL="${KERNEL:-/vmlinuz}"
+LIMINE_CFG="${LIMINE_CFG:-/limine.cfg}"
+HOSTNAME="${HOSTNAME:-stagex}"
+INITRAMFS="${INITRAMFS:-/initramfs}"
+
+# --- Output ---
+BOOT_IMG="/boot.img"
+BOOT_IMG_SIZE="${BOOT_IMG_SIZE:-32}"
+
+# --- Prepare ESP layout ---
+ESP="/esp"
+rm -rf "$ESP"
+mkdir -p "$ESP/EFI/BOOT" "$ESP/limine"
+
+# Copy kernel + initramfs to ESP root (matches ZilchOS/Alpine CD conventions)
+if [ -f "$KERNEL" ]; then
+    cp "$KERNEL" "$ESP/vmlinuz"
+else
+    echo "WARNING: kernel not found at $KERNEL"
+fi
+if [ -f "$INITRAMFS" ]; then
+    cp "$INITRAMFS" "$ESP/initramfs"
+fi
+
+# Copy or generate limine config to /limine/limine.cfg (official location)
+if [ -f "$LIMINE_CFG" ]; then
+    cp "$LIMINE_CFG" "$ESP/limine/limine.cfg"
+else
+    cat > "$ESP/limine/limine.cfg" <<-EOF
+TIMEOUT=5
+
+:StageX
+    PROTOCOL=linux
+    KERNEL_PATH=boot:///vmlinuz
+    MODULE_PATH=boot:///initramfs
+    CMDLINE="ro root=/dev/xvda2 rootfstype=erofs rootwait init=/init hostname=${HOSTNAME} console=hvc0 console=ttyS0,115200n8"
+EOF
+fi
+
+# Copy Limine bootloader binaries from share directory
+LIMINE_DATADIR="/usr/share/limine"
+cp "$LIMINE_DATADIR/BOOTX64.EFI" "$ESP/EFI/BOOT/"
+cp "$LIMINE_DATADIR/limine-bios.sys" "$ESP/limine/"
+cp "$LIMINE_DATADIR/limine-bios-cd.bin" "$ESP/limine/"
+
+# --- Create boot.img (FAT32) ---
+dd if=/dev/zero of="$BOOT_IMG" bs=1M count="$BOOT_IMG_SIZE"
+
+mformat -i "$BOOT_IMG" -C -T $(( BOOT_IMG_SIZE * 2048 )) ::
+mcopy -i "$BOOT_IMG" -sm "$ESP/EFI" ::EFI
+mcopy -i "$BOOT_IMG" -sm "$ESP/limine" ::limine
+mcopy -i "$BOOT_IMG" -s "$ESP/vmlinuz" ::vmlinuz
+mcopy -i "$BOOT_IMG" -s "$ESP/initramfs" ::initramfs
+
+# Install Limine to the boot image
+limine-build bios-install "$BOOT_IMG" || true
+
+# Cleanup
+rm -rf "$ESP"
+
+echo "boot.img created: $(du -h "$BOOT_IMG" | cut -f1)"
+

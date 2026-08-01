@@ -1,0 +1,50 @@
+#!/bin/sh
+# init — StageX base distro init
+
+# Mount virtual filesystems (dirs exist in squashfs)
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+# Mount devtmpfs for automatic device node creation (virtio-blk, etc.)
+mount -t devtmpfs -o mode=755 devtmpfs /dev
+mount -t tmpfs -o mode=755 tmpfs /run
+mount -t tmpfs -o mode=1777 tmpfs /tmp
+mount -t tmpfs -o mode=755 tmpfs /var/log
+mount -t tmpfs -o mode=755 tmpfs /var/run
+mount -t tmpfs -o mode=1777 tmpfs /var/tmp
+mount -t tmpfs -o mode=700 tmpfs /etc/keys
+mount -t tmpfs -o mode=700 tmpfs /root
+
+# Mount devpts for pseudo-terminals (required for SSH interactive sessions)
+mkdir -p /dev/pts
+mount -t devpts devpts /dev/pts
+
+# Create runtime directories
+mkdir -p /run/tinyssh /run/ssh
+
+# Create essential device nodes
+mknod -m 666 /dev/null c 1 3
+mknod -m 600 /dev/console c 5 1
+mknod -m 666 /dev/tty c 5 0
+
+# Boot mode detection: look for state partition on third partition
+STATE_DEV=""
+for d in /dev/sda3 /dev/vda3 /dev/nvme0n1p3; do
+    if blkid "$d" 2>/dev/null | grep -q "TYPE=\"ext4\""; then
+        if blkid -L state "$d" >/dev/null 2>&1; then
+            STATE_DEV="$d"
+            break
+        fi
+    fi
+done
+
+if [ -n "$STATE_DEV" ]; then
+    mkdir -p /mnt/state
+    mount -t ext4 -o rw "$STATE_DEV" /mnt/state
+    mkdir -p /mnt/state/home
+    mount -t none -o bind /mnt/state/home /home
+else
+    # Live mode: /home in RAM
+    mount -t tmpfs tmpfs /home
+fi
+
+exec /bin/init

@@ -1,0 +1,202 @@
+FROM stagex/core-filesystem AS core-filesystem
+FROM stagex/core-busybox AS core-busybox
+FROM stagex/core-musl AS core-musl
+FROM stagex/core-zlib AS core-zlib
+FROM stagex/core-openssl AS core-openssl
+FROM stagex/core-curl AS core-curl
+FROM stagex/core-libzstd AS core-libzstd
+FROM stagex/user-tinyssh AS user-tinyssh
+FROM stagex/user-dhcpcd AS user-dhcpcd
+FROM stagex/user-sxctl AS user-sxctl
+FROM stagex/user-linux-server AS user-linux-server
+FROM stagex/user-linux-offline AS user-linux-offline
+FROM stagex/user-linux-guest AS user-linux-guest
+FROM stagex/user-tpm2-tss AS user-tpm2-tss
+FROM stagex/user-tpm2-tools AS user-tpm2-tools
+FROM stagex/user-swtpm AS user-swtpm
+FROM stagex/user-sevctl AS user-sevctl
+FROM stagex/user-qemu AS user-qemu
+FROM stagex/distro-initramfs-klibc AS distro-initramfs-klibc
+FROM stagex/box-grub AS box-grub
+FROM stagex/box-erofs AS box-erofs
+FROM stagex/box-gpt AS box-gpt
+FROM stagex/box-cpio AS box-cpio
+
+# ============================================================
+# Stage 1: rootfs variants
+# ============================================================
+
+# --- default (enclave): attestation + virtualization tools, airgap kernel ---
+FROM scratch AS rootfs
+COPY --from=core-filesystem . /
+COPY --from=core-busybox . /
+COPY --from=core-musl . /
+COPY --from=core-zlib . /
+COPY --from=core-openssl . /
+COPY --from=core-curl . /
+COPY --from=core-libzstd . /
+COPY src/rootfs/etc/init.d/rcS /etc/init.d/
+COPY src/rootfs/etc/init.d/S01syslogd /etc/init.d/
+COPY src/rootfs/etc/init.d/S02modules /etc/init.d/
+COPY src/rootfs/etc/init.d/S10udev /etc/init.d/
+COPY src/rootfs/etc/init.d/S20urandom /etc/init.d/
+COPY src/rootfs/etc/init.d/S05cloud-init-drive /etc/init.d/
+COPY src/rootfs/etc/init.d/S50swtpm /etc/init.d/
+COPY src/init /init
+COPY src/rootfs/oldroot /oldroot
+COPY --from=user-tpm2-tss . /
+COPY --from=user-tpm2-tools . /
+COPY --from=user-swtpm . /
+COPY --from=user-sevctl . /
+COPY --from=user-qemu . /
+RUN mkdir -p /mnt /run /var/log /etc/keys && touch /mnt/.keep
+
+# --- dev: default + server kernel + network + tinyssh ---
+FROM rootfs AS rootfs-dev
+COPY src/rootfs/etc/init.d/S03dhcpcd /etc/init.d/
+COPY src/rootfs/etc/init.d/S06cloud-init-net /etc/init.d/
+COPY --from=user-dhcpcd /usr/sbin/dhcpcd /sbin/dhcpcd
+COPY --from=user-tinyssh . /
+COPY src/dev/rootfs/etc/init.d/S50sshd /etc/init.d/
+COPY --from=user-sxctl . /
+RUN mkdir -p /var/lib/dhcpcd /run/dhcpcd && \
+	printf '# Accept all DHCP options\n' > /etc/dhcpcd.conf
+
+# --- guest-offline: standalone minimal guest (no parent) ---
+FROM scratch AS rootfs-guest-offline
+COPY --from=core-filesystem . /
+COPY --from=core-busybox . /
+COPY --from=core-musl . /
+COPY --from=core-zlib . /
+COPY src/rootfs/etc/init.d/rcS /etc/init.d/
+COPY src/rootfs/etc/init.d/S01syslogd /etc/init.d/
+COPY src/rootfs/etc/init.d/S02modules /etc/init.d/
+COPY src/rootfs/etc/init.d/S10udev /etc/init.d/
+COPY src/rootfs/etc/init.d/S20urandom /etc/init.d/
+COPY src/rootfs/etc/init.d/S05cloud-init-drive /etc/init.d/
+COPY src/init /init
+COPY src/rootfs/oldroot /oldroot
+RUN mkdir -p /mnt /run /var/log /etc/keys && touch /mnt/.keep
+
+# --- guest-online: guest-offline + guest kernel + network ---
+FROM rootfs-guest-offline AS rootfs-guest-online
+COPY src/rootfs/etc/init.d/S03dhcpcd /etc/init.d/
+COPY src/rootfs/etc/init.d/S06cloud-init-net /etc/init.d/
+COPY --from=user-dhcpcd /usr/sbin/dhcpcd /sbin/dhcpcd
+RUN mkdir -p /var/lib/dhcpcd /run/dhcpcd && \
+	printf '# Accept all DHCP options\n' > /etc/dhcpcd.conf
+
+# --- guest-online-dev: guest-online + tinyssh ---
+FROM rootfs-guest-online AS rootfs-guest-online-dev
+COPY --from=user-tinyssh . /
+COPY src/dev/rootfs/etc/init.d/S50sshd /etc/init.d/
+
+# ============================================================
+# Stage 2: boot images (parallel — no dependency on system images)
+# ============================================================
+
+FROM box-grub AS boot
+COPY --from=user-linux-offline /bzImage /vmlinuz
+COPY --from=distro-initramfs-klibc /initramfs /initramfs
+COPY src/config/grub.cfg /grub.cfg
+RUN box
+
+FROM box-grub AS boot-dev
+COPY --from=user-linux-server /bzImage /vmlinuz
+COPY --from=distro-initramfs-klibc /initramfs /initramfs
+COPY src/config/grub.cfg /grub.cfg
+RUN box
+
+FROM box-grub AS boot-guest-offline
+COPY --from=user-linux-guest /bzImage /vmlinuz
+COPY --from=distro-initramfs-klibc /initramfs /initramfs
+COPY src/config/grub.cfg /grub.cfg
+RUN box
+
+FROM box-grub AS boot-guest-online
+COPY --from=user-linux-guest /bzImage /vmlinuz
+COPY --from=distro-initramfs-klibc /initramfs /initramfs
+COPY src/config/grub.cfg /grub.cfg
+RUN box
+
+FROM box-grub AS boot-guest-online-dev
+COPY --from=user-linux-guest /bzImage /vmlinuz
+COPY --from=distro-initramfs-klibc /initramfs /initramfs
+COPY src/config/grub.cfg /grub.cfg
+RUN box
+
+# ============================================================
+# Stage 3: system images
+# ============================================================
+
+FROM box-erofs AS system
+COPY --from=rootfs --chown=0:0 . /rootfs
+RUN box
+
+FROM box-erofs AS system-dev
+COPY --from=rootfs-dev --chown=0:0 . /rootfs
+RUN box
+
+FROM box-erofs AS system-guest-offline
+COPY --from=rootfs-guest-offline --chown=0:0 . /rootfs
+RUN box
+
+FROM box-erofs AS system-guest-online
+COPY --from=rootfs-guest-online --chown=0:0 . /rootfs
+RUN box
+
+FROM box-erofs AS system-guest-online-dev
+COPY --from=rootfs-guest-online-dev --chown=0:0 . /rootfs
+RUN box
+
+# ============================================================
+# Stage 4: disk images
+# ============================================================
+
+FROM box-gpt AS disk
+COPY --from=boot /boot.img /boot.img
+COPY --from=system /system.img /system.img
+RUN box
+
+FROM box-gpt AS disk-dev
+COPY --from=boot-dev /boot.img /boot.img
+COPY --from=system-dev /system.img /system.img
+RUN box
+
+FROM box-gpt AS disk-guest-offline
+COPY --from=boot-guest-offline /boot.img /boot.img
+COPY --from=system-guest-offline /system.img /system.img
+RUN box
+
+FROM box-gpt AS disk-guest-online
+COPY --from=boot-guest-online /boot.img /boot.img
+COPY --from=system-guest-online /system.img /system.img
+RUN box
+
+FROM box-gpt AS disk-guest-online-dev
+COPY --from=boot-guest-online-dev /boot.img /boot.img
+COPY --from=system-guest-online-dev /system.img /system.img
+RUN box
+
+# ============================================================
+# Stage 5: packages with QEMU runtime
+# ============================================================
+
+FROM stagex/service-qemu AS package-base
+COPY src/qemu-startup.sh /usr/bin/run
+ENTRYPOINT ["/usr/bin/run"]
+
+FROM package-base AS package
+COPY --from=disk /disk.img /disk.img
+
+FROM package-base AS package-enclave-dev
+COPY --from=disk-dev /disk.img /disk.img
+
+FROM package-base AS package-enclave-guest-offline
+COPY --from=disk-guest-offline /disk.img /disk.img
+
+FROM package-base AS package-enclave-guest-online
+COPY --from=disk-guest-online /disk.img /disk.img
+
+FROM package-base AS package-enclave-guest-online-dev
+COPY --from=disk-guest-online-dev /disk.img /disk.img

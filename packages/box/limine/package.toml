@@ -1,0 +1,14 @@
+[package]
+name = "limine"
+version = "12.5.2"
+description = "Boot image builder using Limine bootloader"
+license = "GPL-3.0"
+website = "https://limine.boot.land"
+
+[sources.limine]
+hash = "37e55eb0e5f026333d303d4cb1e8c647db4b5613bd536c6602ae3fe43806eae2"
+format = "tar.xz"
+file = "limine-{version}.{format}"
+mirrors = [
+  "https://github.com/limine-bootloader/limine/releases/download/v{version}/{file}",
+]

@@ -1,4 +1,5 @@
 FROM stagex/user-opentofu AS opentofu
+FROM stagex/user-opentofu-provider-aws AS opentofu-provider-aws
 FROM stagex/core-busybox AS core-busybox
 FROM stagex/core-musl AS core-musl
 FROM stagex/core-ca-certificates AS core-ca-certificates
@@ -7,8 +8,10 @@ FROM scratch AS package
 COPY --from=core-busybox . /
 COPY --from=core-musl . /
 COPY --from=core-ca-certificates . /
-COPY --from=opentofu /usr/bin/tofu /usr/bin/terraform
+COPY --from=opentofu /usr/bin/tofu /usr/bin/tofu
+COPY --from=opentofu-provider-aws /usr/bin/terraform-provider-aws /usr/local/share/tofu/plugins/registry.terraform.io/hashicorp/aws/6.57.1/linux_amd64/terraform-provider-aws
 COPY src/box /usr/bin/box
 COPY src/aws-ec2.tf /usr/src/aws-ec2.tf
 RUN chmod +x /usr/bin/box && mkdir -p /run
+ENV TOFU_PLUGIN_DIR="/usr/local/share/tofu/plugins"
 ENTRYPOINT ["/usr/bin/box"]

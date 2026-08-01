@@ -5,16 +5,25 @@ WORKDIR /opentofu-${VERSION}
 RUN go mod download
 RUN --network=none <<-EOF
 	set +eux
-	CGO_ENABLED=0 go \
-		build \
-		-trimpath \
-		-o tofu \
-		-v \
-		-ldflags="-X github.com/opentofu/opentofu/version.dev=no" \
-		./cmd/tofu
+	CGO_ENABLED=0 go 		build 		-trimpath 		-o tofu 		-v 		-ldflags="-X github.com/opentofu/opentofu/version.dev=no" 		./cmd/tofu
 	mkdir -p /rootfs/usr/bin/
 	install -vDm755 -t /rootfs/usr/bin tofu
 	install -vDm644 -t /rootfs/usr/share/licenses/opentofu LICENSE
 EOF
+
+FROM build AS build-provider-aws
+ADD fetch/provider-6.57.1.tar.gz .
+WORKDIR terraform-provider-aws-6.57.1
+RUN sed -i 's/^go 1\.26\.5$/go 1.26.4/' go.mod
+RUN go mod download
+RUN --network=none <<-EOF
+	set +eux
+	CGO_ENABLED=0 go 		build 		-trimpath 		-o terraform-provider-aws 		-v 		.
+EOF
+
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs /
+
+FROM package AS package-opentofu-provider-aws
+ARG VERSION
+COPY --from=build-provider-aws /opentofu-${VERSION}/terraform-provider-aws-6.57.1/terraform-provider-aws /usr/bin/terraform-provider-aws

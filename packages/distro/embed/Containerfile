@@ -1,0 +1,141 @@
+FROM stagex/core-filesystem AS core-filesystem
+FROM stagex/core-busybox AS core-busybox
+FROM stagex/core-musl AS core-musl
+FROM stagex/core-zlib AS core-zlib
+FROM stagex/core-openssl AS core-openssl
+FROM stagex/user-tinyssh AS user-tinyssh
+FROM stagex/user-dhcpcd AS user-dhcpcd
+FROM stagex/user-sxctl AS user-sxctl
+FROM stagex/user-linux-server AS user-linux-server
+FROM stagex/user-linux-offline AS user-linux-offline
+FROM stagex/user-linux-guest AS user-linux-guest
+FROM stagex/distro-initramfs-klibc AS distro-initramfs-klibc
+FROM stagex/box-grub AS box-grub
+FROM stagex/box-erofs AS box-erofs
+FROM stagex/box-gpt AS box-gpt
+FROM stagex/box-cpio AS box-cpio
+
+# ============================================================
+# Stage 1: rootfs variants (offline → default → dev)
+# ============================================================
+
+# --- offline: embedded, no network ---
+FROM scratch AS rootfs-offline
+COPY --from=core-busybox . /
+COPY --from=core-musl . /
+COPY --from=core-filesystem . /
+COPY --from=core-zlib . /
+COPY src/rootfs/etc/init.d/rcS /etc/init.d/
+COPY src/rootfs/etc/init.d/S01syslogd /etc/init.d/
+COPY src/rootfs/etc/init.d/S02modules /etc/init.d/
+COPY src/rootfs/etc/init.d/S10udev /etc/init.d/
+COPY src/rootfs/etc/init.d/S20urandom /etc/init.d/
+COPY src/rootfs/etc/init.d/S05cloud-init-drive /etc/init.d/
+COPY src/init /init
+COPY src/rootfs/oldroot /oldroot
+RUN mkdir -p /mnt /run /var/log /etc/keys && touch /mnt/.keep
+
+# --- default: offline base + network ---
+FROM rootfs-offline AS rootfs
+COPY src/rootfs/etc/init.d/S03dhcpcd /etc/init.d/
+COPY src/rootfs/etc/init.d/S06cloud-init-net /etc/init.d/
+COPY --from=user-dhcpcd /usr/sbin/dhcpcd /sbin/dhcpcd
+RUN mkdir -p /var/lib/dhcpcd /run/dhcpcd && \
+	printf '# Accept all DHCP options\n' > /etc/dhcpcd.conf
+
+# --- dev: default + tinyssh + sxctl ---
+FROM rootfs AS rootfs-dev
+COPY --from=user-tinyssh . /
+COPY src/dev/rootfs/etc/init.d/S50sshd /etc/init.d/
+COPY --from=user-sxctl . /
+
+# --- guest: default + QEMU guest agent ---
+FROM rootfs AS rootfs-guest
+COPY --from=stagex/user-qemu /usr/bin/qemu-ga /usr/bin/qemu-ga
+COPY src/rootfs/etc/init.d/S21qemu-ga /etc/init.d/
+
+# ============================================================
+# Stage 2: boot images (parallel — no dependency on system images)
+# ============================================================
+
+FROM box-grub AS boot
+COPY --from=user-linux-server /bzImage /vmlinuz
+COPY --from=distro-initramfs-klibc /initramfs /initramfs
+COPY src/config/grub.cfg /grub.cfg
+RUN box
+
+FROM box-grub AS boot-offline
+COPY --from=user-linux-offline /bzImage /vmlinuz
+COPY --from=distro-initramfs-klibc /initramfs /initramfs
+COPY src/config/grub.cfg /grub.cfg
+RUN box
+
+FROM box-grub AS boot-guest
+COPY --from=user-linux-guest /bzImage /vmlinuz
+COPY --from=distro-initramfs-klibc /initramfs /initramfs
+COPY src/config/grub.cfg /grub.cfg
+RUN box
+
+# ============================================================
+# Stage 3: system images
+# ============================================================
+
+FROM box-erofs AS system
+COPY --from=rootfs --chown=0:0 . /rootfs
+RUN box
+
+FROM box-erofs AS system-offline
+COPY --from=rootfs-offline --chown=0:0 . /rootfs
+RUN box
+
+FROM box-erofs AS system-dev
+COPY --from=rootfs-dev --chown=0:0 . /rootfs
+RUN box
+
+FROM box-erofs AS system-guest
+COPY --from=rootfs-guest --chown=0:0 . /rootfs
+RUN box
+
+# ============================================================
+# Stage 4: disk images
+# ============================================================
+
+FROM box-gpt AS disk
+COPY --from=boot /boot.img /boot.img
+COPY --from=system /system.img /system.img
+RUN box
+
+FROM box-gpt AS disk-offline
+COPY --from=boot-offline /boot.img /boot.img
+COPY --from=system-offline /system.img /system.img
+RUN box
+
+FROM box-gpt AS disk-dev
+COPY --from=boot /boot.img /boot.img
+COPY --from=system-dev /system.img /system.img
+RUN box
+
+FROM box-gpt AS disk-guest
+COPY --from=boot-guest /boot.img /boot.img
+COPY --from=system-guest /system.img /system.img
+RUN box
+
+# ============================================================
+# Stage 5: packages with QEMU runtime
+# ============================================================
+
+FROM stagex/service-qemu AS package-base
+COPY src/qemu-startup.sh /usr/bin/run
+ENTRYPOINT ["/usr/bin/run"]
+
+FROM package-base AS package
+COPY --from=disk /disk.img /disk.img
+
+FROM package-base AS package-embed-offline
+COPY --from=disk-offline /disk.img /disk.img
+
+FROM package-base AS package-embed-dev
+COPY --from=disk-dev /disk.img /disk.img
+
+FROM package-base AS package-embed-guest
+COPY --from=disk-guest /disk.img /disk.img

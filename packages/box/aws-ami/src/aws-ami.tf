@@ -143,6 +143,7 @@ resource "aws_ami" "this" {
   architecture        = "x86_64"
   ena_support         = true
   boot_mode           = "uefi"
+  tpm_support         = "v2.0"
 
   tags = {
     Name      = var.ami_name

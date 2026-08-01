@@ -1,0 +1,57 @@
+#!/bin/sh
+DAEMON="tinysshd"
+PIDFILE="/var/run/$DAEMON.pid"
+KEYDIR="/run/tinyssh/keys"
+
+ensure_host_key() {
+	[ -f "$KEYDIR/ed25519.pk" ] || /usr/sbin/tinysshd-makekey "$KEYDIR"
+}
+
+sync_authorized_keys() {
+	# Copy cloud-seeded authorized_keys to tinyssh key directory
+	if [ -s /root/.ssh/authorized_keys ]; then
+		cat /root/.ssh/authorized_keys >> "$KEYDIR/authorized_keys"
+	fi
+}
+
+start() {
+	ensure_host_key
+	sync_authorized_keys
+
+	[ -f "$KEYDIR/ed25519.pk" ] || { printf "Starting %s: " "$DAEMON"; echo "FAIL (no host key)"; return 1; }
+
+	# Use tcpsvd to listen; tinysshd handles one connection at a time (no daemonization)
+	printf "Starting %s: " "$DAEMON"
+	nohup embed tcpsvd -vE 0.0.0.0 22 /usr/sbin/$DAEMON -v "$KEYDIR" </dev/null >/var/log/tinysshd.log 2>&1 &
+	echo $! > "$PIDFILE"
+	echo "OK"
+	return 0
+}
+
+stop() {
+	printf "Stopping %s: " "$DAEMON"
+	if [ -f "$PIDFILE" ]; then
+		kill "$(cat "$PIDFILE")" 2>/dev/null
+		rm -f "$PIDFILE"
+	fi
+	echo "OK"
+	return 0
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart)
+		stop
+		start
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart}"
+		exit 1
+esac
+
+exit $?

@@ -3,11 +3,12 @@
 #
 # Inputs (env vars):
 #   AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY — required
+#   AMI_ID        — AMI ID to launch (direct override)
 #   AMI_TFVARS    — path to tfvars file with ami_id (e.g. /input/aws-ami.tfvars)
 #   USER_DATA     — user-data content (SSH key or cloud-config)
 #   REGION        — AWS region (default: us-east-1)
 #   KEY_NAME      — EC2 key pair name (default: tpm-exploration-key)
-#   INSTANCE_TYPE — EC2 instance type (default: m5.large)
+#   INSTANCE_TYPE — EC2 instance type (default: t4g.micro)
 #   SUBNET_ID     — subnet ID
 #   SECURITY_GROUP — security group ID
 #   WAIT_SSH      — wait for SSH readiness (default: true)
@@ -16,10 +17,12 @@
 #
 set -eu
 
+AMI_ID="${AMI_ID:-}"
 AMI_TFVARS="${AMI_TFVARS:-}"
 REGION="${REGION:-us-east-1}"
 KEY_NAME="${KEY_NAME:-tpm-exploration-key}"
-INSTANCE_TYPE="${INSTANCE_TYPE:-m5.large}"
+INSTANCE_TYPE="${INSTANCE_TYPE:-c6a.large}"
+ENABLE_SEV_SNP="${ENABLE_SEV_SNP:-true}"
 SUBNET_ID="${SUBNET_ID:-subnet-0521e4b4404277d91}"
 SECURITY_GROUP="${SECURITY_GROUP:-sg-00b5e3de841fbfe7a}"
 USER_DATA="${USER_DATA:-}"
@@ -39,25 +42,28 @@ cp /usr/src/aws-ec2.tf "$TERRAFORM_DIR/"
 cd "$TERRAFORM_DIR"
 
 # Initialize
-terraform init -backend=false >/dev/null 2>&1
+tofu init -backend=false -upgrade >/dev/null 2>&1
 
 # Build var-file with all inputs
 cat > /run/ec2.tfvars <<EOF
-region          = "${REGION}"
-key_name        = "${KEY_NAME}"
-instance_type   = "${INSTANCE_TYPE}"
-subnet_id       = "${SUBNET_ID}"
+region            = "${REGION}"
+key_name          = "${KEY_NAME}"
+instance_type     = "${INSTANCE_TYPE}"
+enable_sev_snp    = ${ENABLE_SEV_SNP}
+subnet_id         = "${SUBNET_ID}"
 security_group_id = "${SECURITY_GROUP}"
-user_data       = "${USER_DATA}"
+user_data         = "${USER_DATA}"
 EOF
 
-# Merge AMI tfvars if provided (ami_id overrides ami_id in ec2.tfvars)
-if [ -n "$AMI_TFVARS" ] && [ -f "$AMI_TFVARS" ]; then
+# Add ami_id from AMI_ID env var (highest priority) or AMI_TFVARS file
+if [ -n "$AMI_ID" ]; then
+    echo "ami_id       = \"${AMI_ID}\"" >> /run/ec2.tfvars
+elif [ -n "$AMI_TFVARS" ] && [ -f "$AMI_TFVARS" ]; then
     cat "$AMI_TFVARS" >> /run/ec2.tfvars
 fi
 
 # Apply
-terraform apply -auto-approve -var-file=/run/ec2.tfvars -no-color >/dev/null
+tofu apply -auto-approve -var-file=/run/ec2.tfvars -no-color >/dev/null
 
 # Output as tfvars for downstream consumption
-terraform output
+tofu output

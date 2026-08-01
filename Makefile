@@ -58,7 +58,7 @@ prep-release-branch: ## Prepare a branch for a new release
 help:
 	@./src/help.sh Makefile
 
-DISTRO ?= busybox
+DISTRO ?= embed
 SSH_KEY ?=
 VNC_PORT ?= 5900
 CONSOLE_PORT ?= 4000
