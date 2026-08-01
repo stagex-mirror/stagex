@@ -60,7 +60,7 @@ website = "https://kron.fi"
 
 [people.vad]
 name = "Michal Rostecki"
-location = "DE-BE / PL-41"
+location = "DE-BE"
 matrix = ["@vad:unredacted.org", "@vad.sol:matrix.org"]
 email = ["vad.sol@proton.me"]
 fediverse = "@vad@defcon.social"
