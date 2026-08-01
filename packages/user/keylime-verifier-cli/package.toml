@@ -1,0 +1,6 @@
+[package]
+name = "keylime-verifier-cli"
+version = "0.1.0"
+description = "CLI tool to verify Keylime enclave attestation"
+homepage = "https://github.com/stagex/stagex"
+license = "Apache-2.0"
