@@ -1,12 +1,12 @@
 [package]
 name = "protoc-gen-go-grpc"
-version = "1.81.1"
+version = "1.83.0"
 description = "Go gRPC code generator for Protocol Buffers"
 license = "Apache-2.0"
 website = "https://grpc.io"
 
 [sources.protoc-gen-go-grpc]
-hash = "cf93868b1243053559399325cdcd369948c4cefaefae35ac66b9630070c7a0a6"
+hash = "67bdac92e080387e3656046109d0e3297dce45bf0838ef4c59dd546003eb5d4b"
 format = "tar.gz"
 file = "protoc-gen-go-grpc-{version}.{format}"
 mirrors = [ "https://github.com/grpc/grpc-go/archive/refs/tags/v{version}.{format}",]
