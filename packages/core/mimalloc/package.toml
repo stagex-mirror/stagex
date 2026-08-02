@@ -1,11 +1,11 @@
 [package]
 name = "mimalloc"
-version = "2.3.2"
+version = "3.4.4"
 description = "mimalloc is a compact general purpose allocator with excellent performance"
 website = "http://www.github.com/microsoft/mimalloc"
 license = "MIT"
 
 [sources.mimalloc]
-hash = "c5ec406ac34006c751200e7e778f88e2a9070819e3f1d4ebbde4f4554ecf0d0b"
+hash = "8ba991a7266983bd5eefc36e140c24734f720fd9b1fd79ddaeff44ea85d16760"
 file = "mimalloc-{version}.tar.gz"
-mirrors = ["https://github.com/microsoft/mimalloc/archive/refs/tags/v{version}.tar.gz",]
+mirrors = [ "https://github.com/microsoft/mimalloc/archive/refs/tags/v{version}.tar.gz",]
