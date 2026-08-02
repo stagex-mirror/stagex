@@ -1,12 +1,12 @@
 [package]
 name = "py-setuptools"
-version = "82.0.1"
+version = "83.0.0"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 website = "https://pypi.org/project/setuptools/"
 license = "MIT"
 
 [sources.py-setuptools]
-hash = "7d872682c5d01cfde07da7bccc7b65469d3dca203318515ada1de5eda35efbf9"
+hash = "025bccbbf0fa05b6192bc64ae1e7b16e001fd6d6d4d5de03c97b1c1ade523bef"
 format = "tar.gz"
 file = "py-setuptools-{version}.{format}"
 mirrors = [ "https://pypi.io/packages/source/s/setuptools/setuptools-{version}.{format}",]
