@@ -1,12 +1,12 @@
 [package]
 name = "py-awscrt"
-version = "0.32.2"
+version = "0.36.1"
 description = "Python bindings for the AWS Common Runtime"
 license = "Apache-2.0"
 website = "https://github.com/awslabs/aws-crt-python"
 
 [sources.py-awscrt]
-hash = "a4f48805e8a66237923f03b7b692d213994cff42d1ff08125d1d60c74fcaf872"
+hash = "bd1f86b092b57a9ec1f95138224007946eecdf944df1e08fd99f75b64fe2ad20"
 format = "tar.gz"
 file = "py-awscrt-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/a/awscrt/awscrt-{version}.{format}",]
