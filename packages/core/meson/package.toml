@@ -1,12 +1,12 @@
 [package]
 name = "meson"
-version = "1.11.1"
+version = "1.11.2"
 description = "Fast and user friendly build system"
 license = "Apache-2.0"
 website = "https://mesonbuild.com/"
 
 [sources.meson]
-hash = "6788ae299979643f8d841bcaf64352558436cae45a0355148a3aeeccf7913866"
+hash = "698feae069cef3ecd4d7aaf281d7df359bdfcf555a9a1564383d3b913fa8a736"
 format = "tar.gz"
 file = "meson-{version}.{format}"
 mirrors = [ "https://github.com/mesonbuild/meson/releases/download/{version}/{file}",]
