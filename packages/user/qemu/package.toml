@@ -1,12 +1,12 @@
 [package]
 name = "qemu"
-version = "11.0.1"
+version = "11.0.3"
 description = "Generic and open source machine emulator and virtualizer"
 license = "GPL-2.0-only"
 website = "https://www.qemu.org"
 
 [sources.qemu]
-hash = "0d235f5820278d914a3155ec27af8e4258d697ea892895570807d69c0cb8cd64"
+hash = "da5fcffc32762820568b828ed430a728864d34d50b6d2f30358597760cbb0523"
 format = "tar.xz"
 file = "qemu-{version}.{format}"
 mirrors = [ "https://download.qemu.org/{file}",]
