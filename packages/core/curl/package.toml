@@ -1,12 +1,12 @@
 [package]
 name = "curl"
-version = "8.20.0"
+version = "8.21.0"
 description = "Command line tool and library for transferring data with URLs"
 license = "curl"
 website = "https://curl.se/"
 
 [sources.curl]
-hash = "63fe2dc148ba0ceae89922ef838f7e5c946272c2e78b7c59fab4b79d3ce2b896"
+hash = "aa1b66a70eace83dc624508745646c08ae561de512ab403adffb93ac87fc72e6"
 format = "tar.xz"
 file = "curl-{version}.{format}"
 mirrors = [ "https://curl.se/download/{file}",]
