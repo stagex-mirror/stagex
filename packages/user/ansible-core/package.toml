@@ -1,12 +1,12 @@
 [package]
 name = "ansible-core"
-version = "2.21.0"
+version = "2.21.2"
 description = "core components of ansible: A configuration-management, deployment, task-execution, and multinode orchestration framework"
 website = "https:/ansible.com"
 license = "GPL-3.0-or-later"
 
 [sources.ansible-core]
-hash = "edabd2768625a0b5a0695b87c060596a16578d2d9c82c9e470f277da65b8f669"
+hash = "96407120145cbcdb94ecddf1c3ab2b20c5f34bbc91bc9a62e42a6dac51e8f20a"
 format = "tar.gz"
 file = "ansible-core-{version}.{format}"
 mirrors = [ "https://github.com/ansible/ansible/archive/refs/tags/v{version}.{format}",]
