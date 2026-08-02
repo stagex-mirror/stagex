@@ -1,12 +1,12 @@
 [package]
 name = "py-argcomplete"
-version = "3.6.3"
+version = "3.7.0"
 description = "Easy, extensible command line tab completion of arguments for your Python script"
 website = "https://github.com/kislyuk/argcomplete"
 license = "Apache-2.0"
 
 [sources.py-argcomplete]
-hash = "c733a0bae9e0382db134d3379095b6d1d7a76c48a9ee79e89ee784885f14b6d7"
+hash = "8fb73040e0837624491fb159ba3ae1b0b954de60fd5cde427346a08f7d7cee35"
 format = "tar.gz"
 file = "py-argcomplete-{version}.{format}"
 mirrors = [ "https://github.com/kislyuk/argcomplete/archive/refs/tags/v{version}.{format}",]
