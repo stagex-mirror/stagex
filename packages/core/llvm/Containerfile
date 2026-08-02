@@ -201,6 +201,7 @@ RUN --network=none <<-EOF
 	cmake_cache_set LLVM_ENABLE_PER_TARGET_RUNTIME_DIR ON
 	cmake_cache_set LLVM_BUILD_LLVM_DYLIB ON
 	cmake_cache_set LLVM_LINK_LLVM_DYLIB ON
+	cmake_cache_set LLVM_ENABLE_RTTI ON
 
 	echo "$CMAKE_ARGS" > ./cmake_args
 
