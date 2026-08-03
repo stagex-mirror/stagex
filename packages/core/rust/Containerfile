@@ -354,7 +354,6 @@ EOF
 
 WORKDIR /
 
-ENV CONFIGURE_FLAGS=
 COPY --chmod=0755 <<-'EOF' build
 	set -eux
 	TARGET_VERSION=${1}
@@ -450,9 +449,7 @@ COPY --chmod=0755 <<-'EOF' build
 
 	if [ ! "${TARGET_VERSION}" = "${VERSION}" ]; then
 		# We only build the first-stage Rust compiler, as sufficient for further bootstrapping.
-		#
 		# We specifically choose `library`, as in, the Rust standard library, as what to build up to.
-		#
 		# For more context on the changes made, see
 		# https:/blog.rust-lang.org/inside-rust/2025/05/29/redesigning-the-initial-bootstrap-sequence.
 		python3 x.py build --stage 1 library
@@ -513,6 +510,9 @@ RUN --network=none <<-EOF
 	done
 EOF
 
+# Build additional std library targets for bare-metal compilation
+# Uses CONFIGURE_FLAGS to append extra targets to the final build only
+ENV CONFIGURE_FLAGS=" --target x86_64-unknown-none --set=target.x86_64-unknown-none.crt-static=true"
 RUN --network=none ./build ${VERSION} 1.95.0 cargo,clippy,rustfmt,rust-demangler,src
 RUN --network=none <<-EOF
 	set -eux

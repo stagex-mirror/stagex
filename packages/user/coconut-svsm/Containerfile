@@ -7,6 +7,7 @@ COPY --from=stagex/core-cmake . /
 COPY --from=stagex/core-rust . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-mold . /
+COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-openssl . /
 ADD fetch/coconut-svsm-v${VERSION}.tar.gz .
 ADD fetch/igvm-igvm-v0.4.0.tar.gz .
@@ -14,9 +15,7 @@ ADD fetch/packit-98411fde7ddb76061159b4abbf0487a9adba469b.tar.gz .
 ADD fetch/openssl-67b5686b4419b4cb8caa502711c41815f5279751.tar.gz .
 ADD fetch/tpm-20-ref-3b1f0e623f244abe2015df9e3ba86de5c9118524.tar.gz .
 
-# Install the bare-metal target needed for coconut-svsm UEFI firmware
-RUN rustup target add x86_64-unknown-none
-
+# x86_64-unknown-none target is built as part of core-rust (CONFIGURE_FLAGS)
 WORKDIR /igvm-igvm-v0.4.0
 RUN make -f igvm_c/Makefile install PREFIX=/usr/local
 
@@ -39,21 +38,21 @@ RUN --network=none <<-'EOF'
     cp -a /tpm-20-ref-3b1f0e623f244abe2015df9e3ba86de5c9118524 libtcgtpm/deps/tpm-20-ref
 EOF
 
-# Build SVSM with vendored dependencies
+# Vendor all Cargo dependencies including git-only crates (safe-mmio, virtio-drivers)
+RUN cargo vendor vendor
+
 ENV RUST_BACKTRACE=1
 ENV SOURCE_DATE_EPOCH=1
 
-RUN cargo build --release --target x86_64-unknown-none --offline 2>&1 && \
-    cargo build --release --target x86_64-unknown-none --offline || \
-    echo "WARN: coconut-svsm build may require additional config; using pre-built IGVM if available"
+RUN --network=none <<-'EOF'
+    cargo build --release --target x86_64-unknown-none --offline && \
+    ls -la bin/
+EOF
 
-# Check if build succeeded, if not try cargo xbuild
-RUN if [ ! -f bin/coconut-qemu.igvm ]; then \
-        echo "ERROR: coconut-qemu.igvm not found" && ls bin/ 2>/dev/null && exit 1; \
-    fi
-
-RUN mkdir -p /rootfs/usr/bin /rootfs/usr/share/coconut-svsm && \
+RUN --network=none <<-'EOF'
+    mkdir -p /rootfs/usr/share/coconut-svsm
     cp bin/coconut-qemu.igvm /rootfs/usr/share/coconut-svsm/svsm.igvm
+EOF
 
 FROM stagex/core-filesystem AS package-coconut-svsm
 COPY --from=build /rootfs/ /
