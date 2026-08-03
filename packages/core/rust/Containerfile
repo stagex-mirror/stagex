@@ -353,8 +353,8 @@ RUN --network=none <<-EOF
 EOF
 
 WORKDIR /
-ENV CONFIGURE_FLAGS=
 
+ENV CONFIGURE_FLAGS=
 COPY --chmod=0755 <<-'EOF' build
 	set -eux
 	TARGET_VERSION=${1}
@@ -450,7 +450,9 @@ COPY --chmod=0755 <<-'EOF' build
 
 	if [ ! "${TARGET_VERSION}" = "${VERSION}" ]; then
 		# We only build the first-stage Rust compiler, as sufficient for further bootstrapping.
+		#
 		# We specifically choose `library`, as in, the Rust standard library, as what to build up to.
+		#
 		# For more context on the changes made, see
 		# https:/blog.rust-lang.org/inside-rust/2025/05/29/redesigning-the-initial-bootstrap-sequence.
 		python3 x.py build --stage 1 library
@@ -511,9 +513,7 @@ RUN --network=none <<-EOF
 	done
 EOF
 
-# Build additional std library targets for bare-metal compilation (SEV-SNP)
-# Only applies CONFIGURE_FLAGS to the final build via inline env, not bootstrap stages
-RUN --network=none CONFIGURE_FLAGS=" --target x86_64-unknown-none --set=target.x86_64-unknown-none.crt-static=true" ./build ${VERSION} 1.95.0 cargo,clippy,rustfmt,rust-demangler,src
+RUN --network=none ./build ${VERSION} 1.95.0 cargo,clippy,rustfmt,rust-demangler,src
 RUN --network=none <<-EOF
 	set -eux
 	mv /rust-${VERSION} /rootfs
@@ -521,6 +521,33 @@ RUN --network=none <<-EOF
 	find /rootfs -type f -name "*.a" -delete
 	find /rootfs -type f -name "manifest-*" | while IFS="\n" read -r manifest; do
 		sort -o "$manifest" "$manifest"
+	done
+EOF
+
+# Build std/core/alloc libraries for bare-metal targets (x86_64-unknown-none)
+# These enable downstream packages to compile no_std code for UEFI firmware,
+# SEV-SNP SVSM, and other bare-metal environments
+RUN --network=none <<-'EOF'
+	set -eux
+	export PATH="/rootfs/usr/bin:${PATH}"
+	export RUST_SYSROOT="/rootfs"
+	export LD_LIBRARY_PATH="/rootfs/lib:/rootfs/usr/lib:${LD_LIBRARY_PATH:-}"
+
+	# Build the Rust standard library for the bare-metal target
+	./rustc-${VERSION}-src/x.py build \
+		--stage 1 \
+		--target x86_64-unknown-none \
+		--config "target.x86_64-unknown-none.crt-static=true" \
+		library/std library/core library/alloc
+
+	# Copy the built libraries into the sysroot
+	for lib in std core alloc; do
+		src="/rustc-${VERSION}-src/build/x86_64-unknown-none/stage1-std/${lib}"
+		dst="/rootfs/lib/rustlib/x86_64-unknown-none/lib"
+		if [ -d "$src" ]; then
+			mkdir -p "$dst"
+			cp -a "${src}/." "${dst}/"
+		fi
 	done
 EOF
 

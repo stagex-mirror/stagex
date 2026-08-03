@@ -15,7 +15,7 @@ ADD fetch/packit-98411fde7ddb76061159b4abbf0487a9adba469b.tar.gz .
 ADD fetch/openssl-67b5686b4419b4cb8caa502711c41815f5279751.tar.gz .
 ADD fetch/tpm-20-ref-3b1f0e623f244abe2015df9e3ba86de5c9118524.tar.gz .
 
-# x86_64-unknown-none target is built as part of core-rust (CONFIGURE_FLAGS)
+# x86_64-unknown-none target is built into core-rust as a std library
 WORKDIR /igvm-igvm-v0.4.0
 RUN make -f igvm_c/Makefile install PREFIX=/usr/local
 
@@ -45,7 +45,7 @@ ENV RUST_BACKTRACE=1
 ENV SOURCE_DATE_EPOCH=1
 
 RUN --network=none <<-'EOF'
-    cargo build --release --target x86_64-unknown-none --offline && \
+    cargo build --release --target x86_64-unknown-none --offline 2>&1 | tail -30
     ls -la bin/
 EOF
 
