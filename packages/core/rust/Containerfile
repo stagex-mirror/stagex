@@ -510,10 +510,9 @@ RUN --network=none <<-EOF
 	done
 EOF
 
-# Build additional std library targets for bare-metal compilation
-# Uses CONFIGURE_FLAGS to append extra targets to the final build only
-ENV CONFIGURE_FLAGS=" --target x86_64-unknown-none --set=target.x86_64-unknown-none.crt-static=true"
-RUN --network=none ./build ${VERSION} 1.95.0 cargo,clippy,rustfmt,rust-demangler,src
+# Build additional std library targets for bare-metal compilation (SEV-SNP)
+# Only applies CONFIGURE_FLAGS to the final build via inline env, not bootstrap stages
+RUN --network=none CONFIGURE_FLAGS=" --target x86_64-unknown-none --set=target.x86_64-unknown-none.crt-static=true" ./build ${VERSION} 1.95.0 cargo,clippy,rustfmt,rust-demangler,src
 RUN --network=none <<-EOF
 	set -eux
 	mv /rust-${VERSION} /rootfs
