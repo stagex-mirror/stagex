@@ -4,6 +4,7 @@ version = "2026.07-devel"
 description = "Secure VM Service Module for AMD SEV-SNP confidential VMs"
 license = "Apache-2.0"
 website = "https://github.com/coconut-svsm/svsm"
+subpackages = ["coconut-svsm"]
 
 [sources.coconut-svsm]
 hash = "f276f851f7f42039de69e0f343e1740d8854089623d75a29b50237bb93e6f254"
