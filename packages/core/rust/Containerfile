@@ -353,6 +353,7 @@ RUN --network=none <<-EOF
 EOF
 
 WORKDIR /
+ENV CONFIGURE_FLAGS=
 
 COPY --chmod=0755 <<-'EOF' build
 	set -eux
