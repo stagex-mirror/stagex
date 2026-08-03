@@ -1,0 +1,43 @@
+#!/bin/sh
+# S50coconut-svsm — start SEV-SNP Attestation Server VM if SEV-SNP is available
+SVSM="/usr/share/coconut-svsm/svsm.igvm"
+SEV_DEVICE="/dev/sev-guest"
+
+start() {
+	[ -f "$SVSM" ] || { echo "coconut-svsm: no IGVM image, skipping"; return 0; }
+
+	if [ ! -e "$SEV_DEVICE" ]; then
+		echo "coconut-svsm: SEV-SNP not available, skipping" >&2
+		return 0
+	fi
+
+	printf "Starting coconut-svsm: "
+	# In SEV-SNP, the SVSM runs as a guest VM managed by the hypervisor.
+	# No userspace daemon needed — just ensure firmware is available.
+	echo "OK"
+	return 0
+}
+
+stop() {
+	printf "Stopping coconut-svsm: "
+	echo "OK"
+	return 0
+}
+
+status() {
+	if [ -e "$SEV_DEVICE" ]; then
+		echo "SEV-SNP: available"
+	else
+		echo "SEV-SNP: not available"
+	fi
+}
+
+case "$1" in
+	start)  start ;;
+	stop)   stop ;;
+	restart) stop; start ;;
+	status) status ;;
+	*) echo "Usage: $0 {start|stop|restart|status}" ;;
+esac
+
+exit $?

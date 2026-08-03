@@ -19,6 +19,7 @@ FROM stagex/user-swtpm AS user-swtpm
 FROM stagex/user-sevctl AS user-sevctl
 FROM stagex/user-qemu AS user-qemu
 FROM stagex/user-keylime-agent AS user-keylime-agent
+FROM stagex/user-coconut-svsm AS user-coconut-svsm
 FROM stagex/distro-initramfs-klibc AS distro-initramfs-klibc
 FROM stagex/box-grub AS box-grub
 FROM stagex/box-erofs AS box-erofs
@@ -69,6 +70,14 @@ COPY src/dev/rootfs/etc/init.d/S50sshd /etc/init.d/
 COPY --from=user-sxctl . /
 RUN mkdir -p /var/lib/dhcpcd /run/dhcpcd && \
 	printf '# Accept all DHCP options\n' > /etc/dhcpcd.conf
+
+# --- sev-snp: dev rootfs with coconut-svsm instead of swtpm ---
+FROM rootfs-dev AS rootfs-sev-snp
+COPY src/rootfs/etc/init.d/S52keylime-agent /etc/init.d/
+COPY src/rootfs/etc/keylime/keylime.conf /etc/keylime/keylime.conf
+COPY src/rootfs/etc/keylime/agent.conf /etc/keylime/agent.conf
+COPY src/rootfs/etc/init.d/S50coconut-svsm /etc/init.d/
+COPY --from=user-coconut-svsm . /
 
 # --- guest-offline: standalone minimal guest (no parent) ---
 FROM scratch AS rootfs-guest-offline
@@ -145,6 +154,10 @@ FROM box-erofs AS system-dev
 COPY --from=rootfs-dev --chown=0:0 . /rootfs
 RUN box
 
+FROM box-erofs AS system-sev-snp
+COPY --from=rootfs-sev-snp --chown=0:0 . /rootfs
+RUN box
+
 FROM box-erofs AS system-guest-offline
 COPY --from=rootfs-guest-offline --chown=0:0 . /rootfs
 RUN box
@@ -169,6 +182,11 @@ RUN box
 FROM box-gpt AS disk-dev
 COPY --from=boot-dev /boot.img /boot.img
 COPY --from=system-dev /system.img /system.img
+RUN box
+
+FROM box-gpt AS disk-sev-snp
+COPY --from=boot-dev /boot.img /boot.img
+COPY --from=system-sev-snp /system.img /system.img
 RUN box
 
 FROM box-gpt AS disk-guest-offline
@@ -199,6 +217,9 @@ COPY --from=disk-dev /disk.img /disk.img
 
 FROM package-base AS package-enclave-dev
 COPY --from=disk-dev /disk.img /disk.img
+
+FROM package-base AS package-enclave-sev-snp
+COPY --from=disk-sev-snp /disk.img /disk.img
 
 FROM package-base AS package-enclave-guest-offline
 COPY --from=disk-guest-offline /disk.img /disk.img
