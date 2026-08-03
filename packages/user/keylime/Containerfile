@@ -1,40 +1,27 @@
-FROM stagex/pallet-clang-gnu-busybox AS build
+FROM stagex/pallet-rust AS build
 ARG VERSION
-COPY --from=stagex/core-python . /
 COPY --from=stagex/core-openssl . /
-COPY --from=stagex/core-gettext . /
-COPY --from=stagex/core-glib . /
-COPY --from=stagex/core-dbus . /
-COPY --from=stagex/core-pip . /
+COPY --from=stagex/core-ca-certificates . /
+COPY --from=stagex/core-libunwind . /
 COPY --from=stagex/user-tpm2-tss . /
-COPY --from=stagex/user-tpm2-tools . /
-ADD fetch/keylime-${VERSION}.tar.gz .
-WORKDIR /keylime-${VERSION}
-RUN --network=none <<-EOF
-	pip3 install --target=/rootfs/usr/lib/python3.12/site-packages .
+ADD fetch/rust-keylime-${VERSION}.tar.gz .
+ADD patches/*.patch /rust-keylime-${VERSION}/patches/
+WORKDIR /rust-keylime-${VERSION}
+
+# Apply patches
+RUN patch -p1 < patches/0001-add-skip-registration-standalone-mode.patch
+
+# Fetch dependencies (needs network)
+RUN cargo fetch
+
+# Build the binary (offline)
+RUN --network=none <<-'EOF'
+	cargo build --release --bin keylime_agent --target x86_64-unknown-linux-musl --offline && \
+	strip target/x86_64-unknown-linux-musl/release/keylime_agent && \
+	cp target/x86_64-unknown-linux-musl/release/keylime_agent /usr/bin/keylime_agent && \
+	ls -lh /usr/bin/keylime_agent
 EOF
 
-# ============================================================
-# Stage 1: base package (shared library + config)
-# ============================================================
-
-FROM stagex/core-filesystem AS package
-COPY --from=build /rootfs/usr/lib/python3.12/site-packages /usr/lib/python3.12/site-packages
-RUN mkdir -p /etc/keylime /var/lib/keylime /var/log/keylime /run/keylime && \
-	addgroup -S keylime && adduser -S -D -H keylime -G keylime -h /var/lib/keylime
-
-# ============================================================
-# Stage 2: subpackages
-# ============================================================
-
-FROM package AS package-agent
-COPY --from=build /rootfs/usr/lib/python3.12/site-packages /usr/lib/python3.12/site-packages
-
-FROM package AS package-verifier
-COPY --from=build /rootfs/usr/lib/python3.12/site-packages /usr/lib/python3.12/site-packages
-
-FROM package AS package-registrar
-COPY --from=build /rootfs/usr/lib/python3.12/site-packages /usr/lib/python3.12/site-packages
-
-FROM package AS package-tools
-COPY --from=build /rootfs/usr/lib/python3.12/site-packages /usr/lib/python3.12/site-packages
+FROM stagex/core-filesystem AS package-keylime-agent
+COPY --from=build /usr/bin/keylime_agent /usr/bin/keylime_agent
+COPY --from=stagex/core-libunwind . /

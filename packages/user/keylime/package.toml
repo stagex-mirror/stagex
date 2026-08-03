@@ -1,13 +1,13 @@
 [package]
 name = "keylime"
-version = "7.12.1"
-description = "Keylime - TPM-based system integrity measurement and verification platform"
-homepage = "https://github.com/keylime/keylime"
+version = "0.2.10"
+description = "Keylime TPM attestation agent (Rust implementation)"
+homepage = "https://github.com/keylime/rust-keylime"
 license = "Apache-2.0"
-subpackages = ["keylime-agent", "keylime-verifier", "keylime-registrar", "keylime-tools"]
+subpackages = ["keylime-agent"]
 
-[sources.keylime]
+[sources.rust-keylime]
 format = "tar.gz"
-file = "keylime-{version}.{format}"
-hash = "4d12fc3a36caa29fa1e275bd7795ae907e91bc1c1c2bd7f64415dfa933982385"
-mirrors = [ "https://github.com/keylime/keylime/archive/refs/tags/v{version}/{file}",]
+file = "rust-keylime-{version}.tar.gz"
+hash = "2130040768f4dcd1255a68188e8b0a864e8ebd29a3716304c84878c5f1f48991"
+mirrors = ["https://github.com/keylime/rust-keylime/archive/refs/tags/v{version}/{file}"]

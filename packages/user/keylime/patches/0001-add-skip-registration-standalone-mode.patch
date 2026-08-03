@@ -1,0 +1,79 @@
+diff --git a/keylime-agent.conf b/keylime-agent.conf
+index a9d8220..eae3210 100644
+--- a/keylime-agent.conf
++++ b/keylime-agent.conf
+@@ -60,6 +60,8 @@ contact_port = 9002
+ # variable.
+ registrar_ip = "127.0.0.1"
+ registrar_port = 8890
++# Set to true to skip registrar registration (standalone mode)
++skip_registration = false
+ 
+ # The TLS port of the registrar server which agent communicates with when
+ # registrar_tls_enabled is set to true.
+diff --git a/keylime-agent/src/main.rs b/keylime-agent/src/main.rs
+index 280a1ac..ffc067e 100644
+--- a/keylime-agent/src/main.rs
++++ b/keylime-agent/src/main.rs
+@@ -633,22 +633,26 @@ async fn main() -> Result<()> {
+     use keylime::error::Error;
+     use keylime::registrar_client::RegistrarClientError;
+ 
+-    match keylime::agent_registration::register_agent(aa, &mut ctx).await {
+-        Ok(()) => (),
+-        Err(Error::RegistrarClient(
+-            RegistrarClientError::RegistrationForbidden { message },
+-        )) => {
+-            error!("Failed to register agent: Registration forbidden - {message}");
+-            error!("This indicates a security rejection (403 Forbidden), likely due to TPM identity mismatch or UUID spoofing attempt.");
+-            error!("The existing agent record must be deleted before re-registering with a different TPM.");
+-            return Err(Error::RegistrarClient(
++    if config.skip_registration {
++        warn!("Skipping registrar registration (skip_registration=true) — running in standalone mode");
++    } else {
++        match keylime::agent_registration::register_agent(aa, &mut ctx).await {
++            Ok(()) => (),
++            Err(Error::RegistrarClient(
+                 RegistrarClientError::RegistrationForbidden { message },
+-            ));
+-        }
+-        Err(e) => {
+-            error!("Failed to register agent after retrying: {e:?}");
+-            error!("Exiting due to registration failure.");
+-            return Err(e);
++            )) => {
++                error!("Failed to register agent: Registration forbidden - {message}");
++                error!("This indicates a security rejection (403 Forbidden), likely due to TPM identity mismatch or UUID spoofing attempt.");
++                error!("The existing agent record must be deleted before re-registering with a different TPM.");
++                return Err(Error::RegistrarClient(
++                    RegistrarClientError::RegistrationForbidden { message },
++                ));
++            }
++            Err(e) => {
++                error!("Failed to register agent after retrying: {e:?}");
++                error!("Exiting due to registration failure.");
++                return Err(e);
++            }
+         }
+     }
+ 
+diff --git a/keylime/src/config/base.rs b/keylime/src/config/base.rs
+index eb6cee9..744c06a 100644
+--- a/keylime/src/config/base.rs
++++ b/keylime/src/config/base.rs
+@@ -141,6 +141,7 @@ pub struct AgentConfig {
+     pub port: u32,
+     pub registrar_ip: String,
+     pub registrar_port: u32,
++    pub skip_registration: bool,
+     pub registrar_tls_port: u32,
+     pub registrar_tls_enabled: bool,
+     pub registrar_tls_ca_cert: String,
+@@ -320,6 +321,7 @@ impl Default for AgentConfig {
+             port: DEFAULT_PORT,
+             registrar_ip: DEFAULT_REGISTRAR_IP.to_string(),
+             registrar_port: DEFAULT_REGISTRAR_PORT,
++            skip_registration: false,
+             registrar_tls_port: DEFAULT_REGISTRAR_TLS_PORT,
+             registrar_tls_enabled: DEFAULT_REGISTRAR_TLS_ENABLED,
+             registrar_tls_ca_cert: "default".to_string(),

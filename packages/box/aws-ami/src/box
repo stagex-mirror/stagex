@@ -1,4 +1,4 @@
-#!/usr/bin/sh
+#!/bin/sh
 # box — uploads disk image to S3, imports as snapshot, registers AMI
 set -eux
 
@@ -32,7 +32,9 @@ EOF
 # Run OpenTofu
 cd /default
 tofu init -input=false >/dev/null 2>&1
-tofu apply -auto-approve -var-file=/run/aws-ami.tfvars -no-color >/dev/null 2>&1
+
+# Apply (suppress all output)
+tofu apply -auto-approve -var-file=/run/aws-ami.tfvars -no-color >/dev/null 2>/dev/null
 
 # Output tfvars for downstream consumption
-tofu output
+tofu output -no-color

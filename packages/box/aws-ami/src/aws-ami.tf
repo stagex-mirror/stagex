@@ -4,10 +4,6 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
-    time = {
-      source  = "hashicorp/time"
-      version = "~> 0.9"
-    }
   }
 }
 
@@ -27,9 +23,79 @@ variable "disk_image" {
   default     = "/disk.img"
 }
 
+variable "vmimport_role_name" {
+  description = "Name of VM Import IAM role (created if missing)"
+  type        = string
+  default     = "vmimport"
+}
+
 # --- Provider ---
 provider "aws" {
   region = var.region
+}
+
+# --- Check if vmimport role already exists ---
+data "aws_iam_role" "existing" {
+  name = var.vmimport_role_name
+}
+
+locals {
+  use_existing_role = try(data.aws_iam_role.existing.name, null) != null
+  role_name         = local.use_existing_role ? data.aws_iam_role.existing.name : aws_iam_role.this[0].name
+}
+
+# --- Create VM Import role if it does not exist ---
+resource "aws_iam_role" "this" {
+  count = local.use_existing_role ? 0 : 1
+
+  name = var.vmimport_role_name
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Service = "vmie.amazonaws.com"
+      }
+      Action = "sts:AssumeRole"
+      Condition = {
+        StringEquals = {
+          "sts:ExternalId" = "vmimport"
+        }
+      }
+    }]
+  })
+
+  tags = {
+    ManagedBy = "stagex"
+    Box       = "aws-ami"
+  }
+}
+
+# --- Attach policy to the role we're using ---
+# If using existing role: add inline policy
+# If we created the role: add managed policy attachment
+resource "aws_iam_role_policy" "this" {
+  count = local.use_existing_role ? 1 : 0
+
+  name = "vmimport-s3-policy-${formatdate("YYYYMMDDhhmmss", timestamp())}"
+  role = data.aws_iam_role.existing.name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["s3:*"]
+        Resource = "*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["ec2:*"]
+        Resource = "*"
+      }
+    ]
+  })
 }
 
 # --- S3 bucket for image upload ---
@@ -52,39 +118,6 @@ resource "aws_s3_bucket_public_access_block" "images" {
   restrict_public_buckets = true
 }
 
-# --- Use existing VM Import role ---
-data "aws_iam_role" "vmimport" {
-  name = "vmimport"
-}
-
-# --- Add policy to VM Import role for this bucket ---
-resource "aws_iam_role_policy" "vmimport" {
-  name = "vmimport-s3-policy-${formatdate("YYYYMMDDhhmmss", timestamp())}"
-  role = data.aws_iam_role.vmimport.id
-
-  policy = <<POLICY
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "s3:*"
-      ],
-      "Resource": "*"
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "ec2:*"
-      ],
-      "Resource": "*"
-    }
-  ]
-}
-POLICY
-}
-
 # --- Upload disk image to S3 ---
 resource "aws_s3_object" "disk" {
   bucket = aws_s3_bucket.images.id
@@ -97,9 +130,10 @@ resource "aws_s3_object" "disk" {
   }
 }
 
-# --- Wait for IAM policy propagation ---
+# --- Wait for IAM policy propagation if we added one ---
 resource "time_sleep" "wait_for_iam" {
-  depends_on = [aws_iam_role_policy.vmimport]
+  count         = local.use_existing_role ? 1 : 0
+  depends_on    = [aws_iam_role_policy.this]
   create_duration = "60s"
 }
 
@@ -109,7 +143,8 @@ resource "aws_ebs_snapshot_import" "disk" {
 
   description = var.ami_name
 
-  role_name = data.aws_iam_role.vmimport.name
+  # role_name must be simple name (not ARN) for VM Import
+  role_name = local.role_name
 
   tags = {
     Name      = "${var.ami_name}-snapshot"
@@ -166,4 +201,9 @@ output "ami_arn" {
 output "snapshot_id" {
   description = "The EC2 snapshot ID"
   value       = aws_ebs_snapshot_import.disk.id
+}
+
+output "vmimport_role_name" {
+  description = "The VM Import IAM role name used"
+  value       = local.role_name
 }

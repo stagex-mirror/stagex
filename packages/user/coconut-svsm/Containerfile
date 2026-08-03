@@ -1,0 +1,55 @@
+FROM stagex/pallet-rust AS build
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-cmake . /
+ARG VERSION
+ARG TARGETARCH
+ADD fetch/coconut-svsm-v${VERSION}.tar.gz .
+ADD fetch/igvm-igvm-v0.4.0.tar.gz .
+ADD fetch/packit-98411fde7ddb76061159b4abbf0487a9adba469b.tar.gz .
+ADD fetch/openssl-67b5686b4419b4cb8caa502711c41815f5279751.tar.gz .
+ADD fetch/tpm-20-ref-3b1f0e623f244abe2015df9e3ba86de5c9118524.tar.gz .
+
+# Add bare-metal target
+RUN rustup target add x86_64-unknown-none
+
+# Build IGVM C library (build-only dependency for packaging)
+WORKDIR /igvm-igvm-v0.4.0
+RUN make -f igvm_c/Makefile install PREFIX=/usr/local
+
+WORKDIR /coconut-svsm-v${VERSION}
+
+# Replace git submodules with pre-extracted tarballs
+RUN --network=none <<-EOF
+    set -eux
+
+    # packit submodule
+    rm -rf packit
+    cp -a /packit-98411fde7ddb76061159b4abbf0487a9adba469b packit
+
+    # libtcgtpm openssl submodule (bare-metal build, cannot use system openssl)
+    rm -rf libtcgtpm/deps/openssl
+    cp -a /openssl-67b5686b4419b4cb8caa502711c41815f5279751 libtcgtpm/deps/openssl
+
+    # libtcgtpm TPM reference implementation submodule
+    rm -rf libtcgtpm/deps/tpm-20-ref
+    cp -a /tpm-20-ref-3b1f0e623f244abe2015df9e3ba86de5c9118524 libtcgtpm/deps/tpm-20-ref
+EOF
+
+# Vendor all Cargo dependencies including git-only crates (safe-mmio, virtio-drivers)
+RUN cargo vendor vendor
+
+ENV RUST_BACKTRACE=1
+ENV SOURCE_DATE_EPOCH=1
+
+RUN --network=none <<-EOF
+    # Build SVSM with vendored dependencies
+    cargo xbuild --release --offline configs/qemu-target.json
+
+    # Package the IGVM binary
+    mkdir -p /rootfs/usr/bin /rootfs/usr/share/coconut-svsm
+    cp bin/coconut-qemu.igvm /rootfs/usr/share/coconut-svsm/svsm.igvm
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

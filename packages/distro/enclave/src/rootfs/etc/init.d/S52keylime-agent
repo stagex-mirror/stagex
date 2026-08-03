@@ -1,23 +1,20 @@
 #!/bin/sh
-# S52keylime-agent — start Keylime TPM attestation agent
+# S52keylime-agent — start Rust Keylime TPM attestation agent
 DAEMON="keylime_agent"
-CONFIG="/etc/keylime/keylime.conf"
-AGENT_CONF="/etc/keylime/agent.conf"
+CONFIG="/etc/keylime/agent.conf"
 PIDFILE="/run/keylime/keylime-agent.pid"
 LOGFILE="/var/log/keylime/keylime-agent.log"
 
 start() {
-	[ -f "$CONFIG" ] || { printf "Starting keylime-agent: "; echo "FAIL (no config)"; return 1; }
-	[ -f "$AGENT_CONF" ] || { printf "Starting keylime-agent: "; echo "FAIL (no agent config)"; return 1; }
+	[ -x "/usr/bin/$DAEMON" ] || { printf "Starting keylime-agent: "; echo "FAIL (binary not found)"; return 1; }
 
-	mkdir -p /run/keylime /var/log/keylime
-	chown root:root /run/keylime /var/log/keylime
+	mkdir -p /run/keylime /var/log/keylime /var/lib/keylime
 
 	printf "Starting keylime-agent: "
-	nohup /usr/bin/python3 -m keylime.agent \
-		-c "$CONFIG" \
-		--agent-config "$AGENT_CONF" \
-		>> "$LOGFILE" 2>&1 &
+	# agent.conf has run_as="" so it won't try to drop privileges
+	# keylime_dir=/run/keylime ensures writable storage on read-only rootfs
+	KEYLIME_AGENT_KEYLIME_DIR=/run/keylime \
+	nohup /usr/bin/$DAEMON >> "$LOGFILE" 2>&1 &
 	echo $! > "$PIDFILE"
 	echo "OK"
 	return 0

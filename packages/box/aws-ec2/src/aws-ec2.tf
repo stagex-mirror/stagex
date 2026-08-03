@@ -93,10 +93,6 @@ resource "aws_instance" "this" {
   key_name               = var.key_name
   user_data              = var.user_data
 
-  confidential_computing {
-    enabled = var.enable_sev_snp
-  }
-
   root_block_device {
     volume_size = 20
     volume_type = "gp3"

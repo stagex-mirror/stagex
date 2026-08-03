@@ -1,0 +1,31 @@
+[package]
+name = "coconut-svsm"
+version = "2026.07-devel"
+description = "Secure VM Service Module for AMD SEV-SNP confidential VMs"
+license = "Apache-2.0"
+website = "https://github.com/coconut-svsm/svsm"
+
+[sources.coconut-svsm]
+hash = "f276f851f7f42039de69e0f343e1740d8854089623d75a29b50237bb93e6f254"
+file = "coconut-svsm-v{version}.tar.gz"
+mirrors = ["https://github.com/coconut-svsm/svsm/archive/refs/tags/v{version}.tar.gz"]
+
+[sources.packit]
+hash = "e7451dd11ca7b4512493a515bcc234e39c1983173a68e2e3e2c2d7dfc731225a"
+file = "packit-98411fde7ddb76061159b4abbf0487a9adba469b.tar.gz"
+mirrors = ["https://github.com/coconut-svsm/packit/archive/98411fde7ddb76061159b4abbf0487a9adba469b.tar.gz"]
+
+[sources.openssl]
+hash = "f7c4a5e19fa02056e2bff4240bf474a3935207eb8fce6ee56175350acc6e2c32"
+file = "openssl-67b5686b4419b4cb8caa502711c41815f5279751.tar.gz"
+mirrors = ["https://github.com/openssl/openssl/archive/67b5686b4419b4cb8caa502711c41815f5279751.tar.gz"]
+
+[sources.tpm-20-ref]
+hash = "bdcf5c5d5e161f828e3813ea9ffe9772db7d7826b1d90e89415730e99b4f0ab5"
+file = "tpm-20-ref-3b1f0e623f244abe2015df9e3ba86de5c9118524.tar.gz"
+mirrors = ["https://github.com/TrustedComputingGroup/TPM/archive/3b1f0e623f244abe2015df9e3ba86de5c9118524.tar.gz"]
+
+[sources.igvm]
+hash = "1ee7b61769254a59de1011ca3fe0b6a17cc8e8412a4f564d77c324a160b4eccf"
+file = "igvm-igvm-v0.4.0.tar.gz"
+mirrors = ["https://github.com/microsoft/igvm/archive/refs/tags/igvm-v0.4.0.tar.gz"]

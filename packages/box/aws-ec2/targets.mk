@@ -1,9 +1,9 @@
 # AWS EC2 deploy target — launches instance from AMI
 
-.PHONY: aws-ec2-deploy aws-ec2-status aws-ec2-logs
+.PHONY: aws-ec2-deploy aws-ec2-status aws-ec2-logs aws-keylime-test aws-destroy
 
 EC2_KEY_NAME ?= tpm-exploration-key
-EC2_INSTANCE_TYPE ?= m5.large
+EC2_INSTANCE_TYPE ?= c6a.large
 EC2_SUBNET_ID ?= subnet-0521e4b4404277d91
 EC2_SECURITY_GROUP ?= sg-00b5e3de841fbfe7a
 EC2_SSH_KEY ?= ~/.ssh/tpm-exploration.pem
@@ -22,7 +22,7 @@ define check_aws_creds
 	fi
 endef
 
-# Deploy EC2 instance from AMI
+# Deploy EC2 instance from AMI (requires aws-ami-deploy first)
 aws-ec2-deploy:
 	@$(check_aws_creds)
 	@if [ ! -f "$(EC2_AMI_TFVARS)" ]; then \
@@ -84,3 +84,46 @@ aws-ec2-status:
 	echo "" && \
 	echo "  ssh -i $(EC2_SSH_KEY) root@$$PUBLIC_IP"
 
+# Test keylime agent on deployed EC2 instance (standalone mode)
+aws-keylime-test:
+	@if [ ! -f "$(EC2_EC2_TFVARS)" ]; then \
+		echo "No EC2 instance deployed — run 'make aws-ec2-deploy' first" >&2; exit 1; \
+	fi
+	@$(check_aws_creds)
+	@PUBLIC_IP=$$(grep '^public_ip' $(EC2_EC2_TFVARS) | cut -d'"' -f2) && \
+	echo "Testing keylime-agent on $$PUBLIC_IP ..." && \
+	SSH_READY=0 && \
+	for i in $$(seq 30); do \
+		if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3 -i $(EC2_SSH_KEY) root@$$PUBLIC_IP 'echo ready' >/dev/null 2>&1; then \
+			SSH_READY=1; break; \
+		fi; \
+		echo "  Waiting for SSH... ($$i/30)"; sleep 3; \
+	done && \
+	if [ "$$SSH_READY" = "0" ]; then \
+		echo "ERROR: SSH not ready after 90s" >&2; exit 1; \
+	fi && \
+	echo "=== Keylime Test ===" && \
+	echo "" && \
+	echo "[1/4] Checking keylime-agent binary ..." && \
+	ssh -o StrictHostKeyChecking=no -i $(EC2_SSH_KEY) root@$$PUBLIC_IP 'ls -lh /usr/bin/keylime_agent' && \
+	echo "" && \
+	echo "[2/4] Checking TPM2 ..." && \
+	ssh -o StrictHostKeyChecking=no -i $(EC2_SSH_KEY) root@$$PUBLIC_IP 'tpm2_getcap handles-persistent 2>/dev/null' && \
+	echo "" && \
+	echo "[3/4] Reading PCR 7 ..." && \
+	ssh -o StrictHostKeyChecking=no -i $(EC2_SSH_KEY) root@$$PUBLIC_IP 'tpm2_pcrread sha256:7' && \
+	echo "" && \
+	echo "[4/4] Starting keylime-agent (standalone, no registrar) ..." && \
+	ssh -o StrictHostKeyChecking=no -i $(EC2_SSH_KEY) root@$$PUBLIC_IP 'pkill -9 keylime_agent 2>/dev/null; sleep 2; rm -f /run/keylime/agent_data.json; mkdir -p /run/keylime/secure /var/log/keylime; nohup /usr/bin/keylime_agent >> /var/log/keylime/keylime-agent.log 2>&1 &' && \
+	sleep 15 && \
+	echo "Checking agent status ..." && \
+	ssh -o StrictHostKeyChecking=no -i $(EC2_SSH_KEY) root@$$PUBLIC_IP 'ps aux | grep keylime_agent | grep -v grep && curl -s --connect-timeout 3 http://localhost:9002/ && echo "" || echo "Agent not yet responding on HTTP"' && \
+	echo "" && \
+	echo "=== Keylime test complete ===" && \
+	echo "" && \
+	echo "Agent is running in standalone mode (skip_registration=true)" && \
+	echo "API available at http://$$PUBLIC_IP:9002" && \
+	echo "" && \
+	echo "For remote attestation, clients can query:" && \
+	echo "  curl http://$$PUBLIC_IP:9002/quotes" && \
+	echo "  curl http://$$PUBLIC_IP:9002/allowlisting-policies"

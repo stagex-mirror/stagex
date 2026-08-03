@@ -1,10 +1,10 @@
 # AWS AMI deploy target — imports disk image as AMI
 
-.PHONY: aws-ami-deploy
+.PHONY: aws-ami-deploy aws-ami-status
 
 # Default distro for EC2
-EC2_DISTRO ?= busybox-dev
-EC2_AMI_NAME ?= stagex-ec2-$(shell date +%Y%m%d-%H%M%S)
+EC2_DISTRO ?= enclave-dev
+EC2_AMI_NAME ?= stagex-$(EC2_DISTRO)-$(shell date +%Y%m%d-%H%M%S)
 EC2_REGION ?= us-east-1
 
 # Disk image path (extracted from distro build)
@@ -32,6 +32,8 @@ $(EC2_DISK_IMG):
 aws-ami-deploy: $(EC2_DISK_IMG)
 	@$(check_aws_creds)
 	@echo "Importing AMI from $(EC2_DISK_IMG) ..."
+	@echo "  AMI name: $(EC2_AMI_NAME)"
+	@echo "  Region: $(EC2_REGION)"
 	@docker run --rm \
 		-e AWS_ACCESS_KEY_ID="$(AWS_ACCESS_KEY_ID)" \
 		-e AWS_SECRET_ACCESS_KEY="$(AWS_SECRET_ACCESS_KEY)" \
@@ -40,7 +42,21 @@ aws-ami-deploy: $(EC2_DISK_IMG)
 		-e DISK_IMAGE=/disk.img \
 		-v $(EC2_DISK_IMG):/disk.img:ro \
 		stagex/box-aws-ami:local /usr/bin/box \
-		> $(EC2_AMI_TFVARS)
-	@AMI_ID=$$(grep '^ami_id' $(EC2_AMI_TFVARS) | cut -d'"' -f2) && echo "AMI created: $$AMI_ID"
+		> $(EC2_AMI_TFVARS) && \
+	AMI_ID=$$(grep '^ami_id' $(EC2_AMI_TFVARS) | cut -d'"' -f2) && \
+	echo "" && \
+	echo "=== AMI Created ===" && \
+	echo "  ami_id:      $$AMI_ID" && \
+	echo "  ami_arn:     $$(grep '^ami_arn' $(EC2_AMI_TFVARS) | cut -d'"' -f2)" && \
+	echo "  snapshot_id: $$(grep '^snapshot_id' $(EC2_AMI_TFVARS) | cut -d'"' -f2)"
 
-
+# Show current AMI status
+aws-ami-status:
+	@if [ ! -f "$(EC2_AMI_TFVARS)" ]; then \
+		echo "No AMI tfvars found — run 'make aws-ami-deploy' first" >&2; exit 1; \
+	fi
+	@AMI_ID=$$(grep '^ami_id' $(EC2_AMI_TFVARS) | cut -d'"' -f2) && \
+	echo "=== AMI ===" && \
+	echo "  ami_id:      $$AMI_ID" && \
+	echo "  state:       $$(aws ec2 describe-images --image-id $$AMI_ID --query 'Images[0].State' --output text 2>/dev/null || echo unknown)" && \
+	echo "  tpm_support: $$(aws ec2 describe-images --image-id $$AMI_ID --query 'Images[0].TpmSupport' --output text 2>/dev/null || echo unknown)"
