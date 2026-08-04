@@ -360,6 +360,7 @@ COPY --chmod=0755 <<-'EOF' build
 	TARGET_VERSION=${1}
 	BUILD_VERSION=${2}
 	TOOLS=${3:-cargo}
+	EXTRA_TARGETS=${4:-}
 	PREFIX=/rust-${TARGET_VERSION}/usr
 	BUILD_PREFIX=/rust-${BUILD_VERSION}/usr
 	ln -sf /usr/bin/clang /usr/bin/cc
@@ -424,7 +425,7 @@ COPY --chmod=0755 <<-'EOF' build
 	python3 ./src/bootstrap/configure.py \
 		--build="${TARGET}" \
 		--host="${TARGET}" \
-		--target="${TARGET}" \
+		--target="${TARGET}${EXTRA_TARGETS:+,${EXTRA_TARGETS}}" \
 		--local-rust-root="${BUILD_PREFIX}" \
 		--tools="${TOOLS}" \
 		--llvm-root="${LLVM_ROOT}" \
@@ -447,6 +448,7 @@ COPY --chmod=0755 <<-'EOF' build
 		--set="rust.lld=false" \
 		--set="rust.llvm-tools=false" \
 		$CONFIGURE_FLAGS
+		${EXTRA_TARGETS:+--set="target.${EXTRA_TARGETS}.crt-static=true" --set="target.${EXTRA_TARGETS}.llvm-config=${LLVM_BINDIR}/llvm-config"}
 
 	if [ ! "${TARGET_VERSION}" = "${VERSION}" ]; then
 		# We only build the first-stage Rust compiler, as sufficient for further bootstrapping.
@@ -513,7 +515,8 @@ RUN --network=none <<-EOF
 	done
 EOF
 
-RUN --network=none ./build ${VERSION} 1.95.0 cargo,clippy,rustfmt,rust-demangler,src
+# Build std library for x86_64-unknown-none (bare-metal target for SEV-SNP)
+RUN --network=none ./build ${VERSION} 1.95.0 cargo,clippy,rustfmt,rust-demangler,src x86_64-unknown-none
 RUN --network=none <<-EOF
 	set -eux
 	mv /rust-${VERSION} /rootfs
