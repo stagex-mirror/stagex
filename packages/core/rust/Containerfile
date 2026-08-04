@@ -483,6 +483,8 @@ COPY --chmod=0755 <<-'EOF' build
 	[ "${TARGET_VERSION}" == "${VERSION}" ] || rm -rf rustc-${TARGET_VERSION}-src /rust-${BUILD_VERSION}
 EOF
 
+# Ensure CONFIGURE_FLAGS is always set for the build script
+ENV CONFIGURE_FLAGS=
 ADD fetch/rustc-1.91.1-src.tar.gz .
 RUN --network=none ./build 1.91.1 1.90.0 ""
 
@@ -509,10 +511,7 @@ RUN --network=none <<-EOF
 		sed -i s/"crt_static_default = true"/"crt_static_default = false"/ "$file"
 	done
 EOF
-
-# Build additional std library targets for bare-metal compilation
-# Uses CONFIGURE_FLAGS to append extra targets to the final build only
-ENV CONFIGURE_FLAGS=" --target x86_64-unknown-none --set=target.x86_64-unknown-none.crt-static=true"
+ENV CONFIGURE_FLAGS=
 RUN --network=none ./build ${VERSION} 1.95.0 cargo,clippy,rustfmt,rust-demangler,src
 RUN --network=none <<-EOF
 	set -eux
