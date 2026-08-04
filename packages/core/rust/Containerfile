@@ -524,10 +524,8 @@ RUN --network=none <<-EOF
 EOF
 
 # Build std library for x86_64-unknown-none (bare-metal target for SEV-SNP/SVSM)
-FROM stagex/core-busybox AS package-libstd-x86_64-none
+FROM build AS package-libstd-x86_64-none
 ARG VERSION
-COPY --from=build /rootfs/ /
-COPY --from=build /rustc-${VERSION}-src /rustc-${VERSION}-src
 WORKDIR /rustc-${VERSION}-src
 RUN --network=none <<-'EOF'
 	set -eux
@@ -536,9 +534,10 @@ RUN --network=none <<-'EOF'
 	export LD_LIBRARY_PATH="/usr/lib:${LD_LIBRARY_PATH:-}"
 	export CC_x86_64_unknown_none="clang --target=x86_64-unknown-none"
 
-		./x.py build --stage 1 --target x86_64-unknown-none \
-			--config target.x86_64-unknown-none.crt-static=true \
-			library/std library/core library/alloc
+	./x.py build --stage 1 --target x86_64-unknown-none \
+		--config target.x86_64-unknown-none.crt-static=true \
+		library/std library/core library/alloc
+
 	mkdir -p /rootfs/lib/rustlib/x86_64-unknown-none/lib
 	cp -a build/x86_64-unknown-none/stage1-std/x86_64-unknown-none/release/deps/. /rootfs/lib/rustlib/x86_64-unknown-none/lib/
 	find /rootfs/lib/rustlib/x86_64-unknown-none -type f | head -20
