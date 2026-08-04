@@ -354,7 +354,6 @@ EOF
 
 WORKDIR /
 
-ENV CONFIGURE_FLAGS=
 COPY --chmod=0755 <<-'EOF' build
 	set -eux
 	TARGET_VERSION=${1}
@@ -450,9 +449,7 @@ COPY --chmod=0755 <<-'EOF' build
 
 	if [ ! "${TARGET_VERSION}" = "${VERSION}" ]; then
 		# We only build the first-stage Rust compiler, as sufficient for further bootstrapping.
-		#
 		# We specifically choose `library`, as in, the Rust standard library, as what to build up to.
-		#
 		# For more context on the changes made, see
 		# https:/blog.rust-lang.org/inside-rust/2025/05/29/redesigning-the-initial-bootstrap-sequence.
 		python3 x.py build --stage 1 library
@@ -513,6 +510,9 @@ RUN --network=none <<-EOF
 	done
 EOF
 
+# Build additional std library targets for bare-metal compilation
+# Uses CONFIGURE_FLAGS to append extra targets to the final build only
+ENV CONFIGURE_FLAGS=" --target x86_64-unknown-none --set=target.x86_64-unknown-none.crt-static=true"
 RUN --network=none ./build ${VERSION} 1.95.0 cargo,clippy,rustfmt,rust-demangler,src
 RUN --network=none <<-EOF
 	set -eux
@@ -524,14 +524,8 @@ RUN --network=none <<-EOF
 	done
 EOF
 
-FROM stagex/core-filesystem AS package
-COPY --from=build /rootfs/ /
-# Merge in the bare-metal std library built by package-libstd-x86_64-none
-COPY --from=package-libstd-x86_64-none /rootfs/lib/rustlib/x86_64-unknown-none/lib /lib/rustlib/x86_64-unknown-none/lib
-
 # Build std library for x86_64-unknown-none (bare-metal target for SEV-SNP/SVSM)
-# Separate stage preserves docker cache for the expensive bootstrap build
-FROM stagex/core-filesystem AS package-libstd-x86_64-none
+FROM stagex/core-busybox AS package-libstd-x86_64-none
 ARG VERSION
 COPY --from=build /rootfs/ /
 COPY --from=build /rustc-${VERSION}-src /rustc-${VERSION}-src
@@ -543,11 +537,14 @@ RUN --network=none <<-'EOF'
 	export LD_LIBRARY_PATH="/usr/lib:${LD_LIBRARY_PATH:-}"
 	export CC_x86_64_unknown_none="clang --target=x86_64-unknown-none"
 
-	./x.py build --stage 1 --target x86_64-unknown-none \
-		--config target.x86_64-unknown-none.crt-static=true \
-		library/std library/core library/alloc
-
+		./x.py build --stage 1 --target x86_64-unknown-none \
+			--config target.x86_64-unknown-none.crt-static=true \
+			library/std library/core library/alloc
 	mkdir -p /rootfs/lib/rustlib/x86_64-unknown-none/lib
 	cp -a build/x86_64-unknown-none/stage1-std/x86_64-unknown-none/release/deps/. /rootfs/lib/rustlib/x86_64-unknown-none/lib/
 	find /rootfs/lib/rustlib/x86_64-unknown-none -type f | head -20
 EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
+COPY --from=package-libstd-x86_64-none /rootfs/lib/rustlib/x86_64-unknown-none /lib/rustlib/x86_64-unknown-none
