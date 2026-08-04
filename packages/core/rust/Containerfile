@@ -579,3 +579,31 @@ FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
 # Merge in the bare-metal std library
 COPY --from=package-libstd-x86_64-none /rootfs/lib/rustlib/x86_64-unknown-none /lib/rustlib/x86_64-unknown-none
+
+# Build std library for x86_64-unknown-none (bare-metal target)
+FROM stagex/core-filesystem AS package-libstd-x86_64-none
+ARG VERSION
+COPY --from=build /rootfs/ /
+WORKDIR /rustc-${VERSION}-src/library
+RUN --network=none <<-'EOF'
+	set -eux
+	export PATH="/usr/bin:${PATH}"
+	export RUST_SYSROOT="/usr"
+	export LD_LIBRARY_PATH="/usr/lib:${LD_LIBRARY_PATH:-}"
+	export CC_x86_64_unknown_none="clang --target=x86_64-unknown-none"
+	export RUSTFLAGS="-Clinker=clang -Clink-arg=-fuse-ld=lld -Ctarget-feature=+crt-static"
+
+	# Build only the rmeta (metadata) for std/core/alloc for bare-metal target
+	# This is sufficient for cargo to find and link against
+	python3 ./x.py build --stage 1 --target x86_64-unknown-none \
+		--config target.x86_64-unknown-none.crt-static=true \
+		library/std library/core library/alloc
+
+	mkdir -p /rootfs/lib/rustlib/x86_64-unknown-none/lib
+	cp -a build/x86_64-unknown-none/stage1-std/x86_64-unknown-none/release/deps/. /rootfs/lib/rustlib/x86_64-unknown-none/lib/
+	find /rootfs/lib/rustlib/x86_64-unknown-none -type f | head -10
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
+COPY --from=package-libstd-x86_64-none /rootfs/lib/rustlib/x86_64-unknown-none /lib/rustlib/x86_64-unknown-none
