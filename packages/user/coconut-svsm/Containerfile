@@ -9,6 +9,17 @@ COPY --from=stagex/core-binutils . /
 COPY --from=stagex/core-mold . /
 COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-openssl . /
+COPY --from=stagex/user-cbindgen . /
+COPY --from=stagex/core-bash . /
+COPY --from=stagex/core-grep . /
+COPY --from=stagex/core-ncurses . /
+COPY --from=stagex/core-gettext . /
+RUN \
+  # Drop-in nproc shim that always returns 1 — libtcgtpm Makefile ignores outer -j1 and spawns nproc clang processes, exhausting memory
+  mkdir -p /usr/local/bin && printf '#!/bin/sh\necho 1\n' > /usr/local/bin/nproc && chmod +x /usr/local/bin/nproc && PATH=/usr/local/bin:$PATH nproc && \
+  # Minimal gcc shim: maps gcc→clang with -Wno-error for .s files that ignore C flags
+  printf '#!/bin/sh\nexec /usr/bin/clang -Wno-error=unused-command-line-argument "$@"\n' > /usr/bin/gcc && chmod +x /usr/bin/gcc
+ENV CC_x86_64-unknown-none="clang --target=x86_64-unknown-none -Wno-error=unused-command-line-argument"
 ADD fetch/coconut-svsm-v${VERSION}.tar.gz .
 ADD fetch/igvm-igvm-v0.4.0.tar.gz .
 ADD fetch/packit-98411fde7ddb76061159b4abbf0487a9adba469b.tar.gz .
@@ -16,42 +27,32 @@ ADD fetch/openssl-67b5686b4419b4cb8caa502711c41815f5279751.tar.gz .
 ADD fetch/tpm-20-ref-3b1f0e623f244abe2015df9e3ba86de5c9118524.tar.gz .
 
 # x86_64-unknown-none target is built into core-rust as a std library
+# Vendor igvm crate dependencies (needs network access for crates.io)
 WORKDIR /igvm-igvm-v0.4.0
-RUN make -f igvm_c/Makefile install PREFIX=/usr/local
-
-WORKDIR /coconut-svsm-v${VERSION}
+RUN cargo vendor vendor > .cargo/config.toml
 
 # Replace git submodules with pre-extracted tarballs
+WORKDIR /svsm-${VERSION}
 RUN --network=none <<-'EOF'
-    set -eux
-
-    # packit submodule
-    rm -rf packit
-    cp -a /packit-98411fde7ddb76061159b4abbf0487a9adba469b packit
-
-    # libtcgtpm openssl submodule (bare-metal build, cannot use system openssl)
-    rm -rf libtcgtpm/deps/openssl
-    cp -a /openssl-67b5686b4419b4cb8caa502711c41815f5279751 libtcgtpm/deps/openssl
-
-    # libtcgtpm TPM reference implementation submodule
-    rm -rf libtcgtpm/deps/tpm-20-ref
-    cp -a /tpm-20-ref-3b1f0e623f244abe2015df9e3ba86de5c9118524 libtcgtpm/deps/tpm-20-ref
+    rm -rf packit libtcgtpm/deps/openssl libtcgtpm/deps/tpm-20-ref
+    mv /packit-98411fde7ddb76061159b4abbf0487a9adba469b packit
+    mv /openssl-67b5686b4419b4cb8caa502711c41815f5279751 libtcgtpm/deps/openssl
+    mv /TPM-3b1f0e623f244abe2015df9e3ba86de5c9118524 libtcgtpm/deps/tpm-20-ref
 EOF
 
-# Vendor all Cargo dependencies including git-only crates (safe-mmio, virtio-drivers)
-RUN cargo vendor vendor
-
-ENV RUST_BACKTRACE=1
+# Vendor svsm Cargo dependencies including git-only crates (safe-mmio, virtio-drivers)
+RUN cargo vendor vendor > /tmp/vc.toml && cat /tmp/vc.toml >> .cargo/config.toml
 ENV SOURCE_DATE_EPOCH=1
 
+# Build igvm_c library, then build svsm kernel and IGVM image
 RUN --network=none <<-'EOF'
-    cargo build --release --target x86_64-unknown-none --offline 2>&1 | tail -30
-    ls -la bin/
-EOF
-
-RUN --network=none <<-'EOF'
-    mkdir -p /rootfs/usr/share/coconut-svsm
-    cp bin/coconut-qemu.igvm /rootfs/usr/share/coconut-svsm/svsm.igvm
+	set -eux
+	# Fix: igvm_c Makefile includes igvm.h in $^ which clang rejects as a source file
+	sed -i 's/\$^/$(filter-out %.h,$^)/g' /igvm-igvm-v0.4.0/igvm_c/Makefile
+	make -C /igvm-igvm-v0.4.0 -f igvm_c/Makefile -j1 build install PREFIX=/usr/
+	make -j1 RELEASE=1 OFFLINE=1 bin/coconut-qemu.igvm > /tmp/build.log 2>&1 || (cat /tmp/build.log && exit 1)
+	mkdir -p /rootfs/usr/share/coconut-svsm
+	cp bin/coconut-qemu.igvm /rootfs/usr/share/coconut-svsm/svsm.igvm
 EOF
 
 FROM stagex/core-filesystem AS package-coconut-svsm
