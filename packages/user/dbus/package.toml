@@ -1,0 +1,12 @@
+[package]
+name = "dbus"
+version = "1.13.6"
+description = "D-Bus inter-process messaging system"
+homepage = "https://dbus.freedesktop.org"
+license = "Apache-2.0"
+
+[sources.dbus]
+format = "tar.gz"
+file = "dbus-{version}.{format}"
+hash = "b533693232d36d608a09f70c15440c1816319bac3055433300d88019166c1ae4"
+mirrors = [ "https://dbus.freedesktop.org/releases/dbus/{file}",]
