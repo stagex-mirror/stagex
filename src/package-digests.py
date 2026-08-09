@@ -26,7 +26,7 @@ def main():
     sys.exit(1)
 
   image_name = sys.argv[1]
-  filepath = f"out/{image_name}/index.json"
+  filepath = f"out/oci/{image_name}/index.json"
   digests = extract_digests(image_name, filepath)
   for digest in digests:
     print(digest)

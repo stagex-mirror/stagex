@@ -33,10 +33,10 @@ REGISTRY=${1:-stagex}
 FPR="$2"
 PACKAGE_NAME=$3
 
-INDEX_ID=$(jq -r '.manifests[].digest | sub ("sha256:";"")' out/"${PACKAGE_NAME}"/index.json)
-MANIFEST_ID=$(jq -r '.manifests[].digest | sub ("sha256:";"")' out/"${PACKAGE_NAME}"/blobs/sha256/"${INDEX_ID}")
+INDEX_ID=$(jq -r '.manifests[].digest | sub ("sha256:";"")' out/oci/"${PACKAGE_NAME}"/index.json)
+MANIFEST_ID=$(jq -r '.manifests[].digest | sub ("sha256:";"")' out/oci/"${PACKAGE_NAME}"/blobs/sha256/"${INDEX_ID}")
 DIR="signatures/${REGISTRY}/${PACKAGE_NAME}@sha256=${MANIFEST_ID}"
-TAG=$(jq -r '.manifests[].annotations."org.opencontainers.image.ref.name"' out/"${PACKAGE_NAME}"/index.json)
+TAG=$(jq -r '.manifests[].annotations."org.opencontainers.image.ref.name"' out/oci/"${PACKAGE_NAME}"/index.json)
 
 if [ ! -d "signatures/$REGISTRY" ]; then
   git clone "$SIGNATURES" "signatures" # Clone repo to make signatures

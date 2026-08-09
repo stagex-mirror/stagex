@@ -10,8 +10,8 @@ from typing import Tuple
 
 digests: MutableMapping[str, List[Tuple[str, str]]] = dict[str, List[Tuple[str, str]]]()
 
-for filename in glob("out/**/index.json", recursive=True):
-    fullname = filename.split("/")[1]
+for filename in glob("out/oci/**/index.json", recursive=True):
+    fullname = filename.split("/")[2]
     stage = fullname.split("-")[0]
     name = "-".join(fullname.split("-")[1:])
     if stage not in digests:
@@ -22,7 +22,7 @@ for filename in glob("out/**/index.json", recursive=True):
     digest = data["manifests"][0]["digest"].split(":")[1]
 
     # Get manifest digest from index
-    with open(f"out/{fullname}/blobs/sha256/{digest}") as file:
+    with open(f"out/oci/{fullname}/blobs/sha256/{digest}") as file:
       data = json.load(file)
 
     try:

@@ -29,6 +29,12 @@ verify: signatures ## Verify local build against committed digests
 	@$(call verify, pallet)
 	@$(call verify, user)
 
+oci-all: ## Convert all rootfs to OCI layouts
+	@$(MAKE) oci-bootstrap
+	@$(MAKE) oci-core
+	@$(MAKE) oci-pallet
+	@$(MAKE) oci-user
+
 .PHONY: lint-containerfiles
 lint-containerfiles: ## Validate Containerfile stage-naming conventions
 	@python3 src/lint-containerfiles.py $(PKG)

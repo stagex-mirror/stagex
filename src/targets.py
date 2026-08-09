@@ -14,12 +14,11 @@ from subprocess import check_output
 class TargetGenerator(object):
   TARGET_TEMPLATE = """
 .PHONY: {name} {stage}-{name}
-{name}: out/{stage}-{name}/index.json
-{stage}-{name}: out/{stage}-{name}/index.json
-out/{stage}-{name}/index.json: \\
+{name}: out/rootfs/{stage}-{name}/manifest.txt
+{stage}-{name}: out/rootfs/{stage}-{name}/manifest.txt
+out/rootfs/{stage}-{name}/manifest.txt: \\
 \t{files} {deps}
-\trm -rf out/{stage}-{name} && \\
-\tmkdir -p out/{stage}-{name} && \\
+\trm -rf out/rootfs/{stage}-{name} && \\
 \tmkdir -p fetch/{stage}/{origin} && \\
 \tpython3 src/fetch.py {origin} && \\
 \t rm -rf packages/{stage}/{origin}/fetch && \\
@@ -35,7 +34,7 @@ out/{stage}-{name}/index.json: \\
 \t  --build-arg BUILDKIT_MULTI_PLATFORM=1 \\
 \t  --build-arg "BUILDKIT_DOCKERFILE_CHECK=skip=FromPlatformFlagConstDisallowed;error=true" \\
 \t  --output \\
-\t    name={stage}-{name},type=oci,rewrite-timestamp=true,force-compression=true,annotation.containerd.io/distribution.source.docker.io=stagex/{stage}-{name},annotation.org.opencontainers.image.version={version},annotation.org.opencontainers.image.created=1970-01-01T00:00:01Z,tar=true,dest=- \\
+\t    type=local,dest=out/rootfs/{stage}-{name} \\
 \t  {context_args} \\
 \t  {build_args} \\
 \t  $(EXTRA_ARGS) \\
@@ -44,8 +43,8 @@ out/{stage}-{name}/index.json: \\
 \t  --platform={platform_arg} \\
 \t  --progress=$(PROGRESS) \\
 \t  -f packages/{stage}/{origin}/Containerfile \\
-\t  packages/{stage}/{origin} \\
-\t| tar -C out/{stage}-{name} -mx
+\t  packages/{stage}/{origin} && \\
+\t(cd out/rootfs/{stage}-{name} && find . -type f ! -name manifest.txt -exec sha256sum {{}} + | sort -k2) > out/rootfs/{stage}-{name}/manifest.txt
 \t
 \t$(if $(filter $(IMPORT),1),$(call import,{stage},{name},{version}),)
 
@@ -84,14 +83,25 @@ registry-{stage}-{name}:
 \t  -f packages/{stage}/{origin}/Containerfile \\
 \t  packages/{stage}/{origin}
 
+.PHONY: oci-{stage}-{name}
+oci-{stage}-{name}: out/oci/{stage}-{name}/index.json
+
+out/oci/{stage}-{name}/index.json: out/rootfs/{stage}-{name}/manifest.txt
+\trm -rf out/oci/{stage}-{name} && \\
+\tbash src/mkoci.sh \\
+\t  out/rootfs/{stage}-{name} \\
+\t  out/oci/{stage}-{name} \\
+\t  stagex/{stage}-{name} \\
+\t  {version}
+
 .PHONY: publish-{stage}-{name}
-publish-{stage}-{name}: out/{stage}-{name}/index.json
+publish-{stage}-{name}: oci-{stage}-{name}
 \t [ "$(RELEASE)" != "0" ] || {{ echo "Error: RELEASE is not set"; exit 1; }}
-\t index_digest="$$(jq -r '.manifests[0].digest | split(":")[1]' out/{stage}-{name}/index.json)"; \\
-\t digest="$$(jq -r '.manifests[0].digest | split(":")[1]' out/{stage}-{name}/blobs/sha256/$${{index_digest}})"; \\
+\t index_digest="$$(jq -r '.manifests[0].digest | split(":")[1]' out/oci/{stage}-{name}/index.json)"; \\
+\t digest="$$(jq -r '.manifests[0].digest | split(":")[1]' out/oci/{stage}-{name}/blobs/sha256/$${{index_digest}})"; \\
 \t signum="$$(ls -1 signatures/stagex/{stage}-{name}@sha256=$${{digest}} | wc -l )"; \\
 \t [ $${{signum}} -ge 2 ] || {{ echo "Error: Minimum signatures not met for {stage}-{name}"; exit 1; }}; \\
-\t env -C out/{stage}-{name} tar -cf - . | docker load
+\t env -C out/oci/{stage}-{name} tar -cf - . | docker load
 \t docker tag stagex/{stage}-{name}:{version} stagex/{stage}-{name}:latest
 \t docker tag stagex/{stage}-{name}:latest stagex/{stage}-{name}:sx$(RELEASE)
 \t docker tag stagex/{stage}-{name}:{version} quay.io/stagex/{stage}-{name}:latest
@@ -110,6 +120,17 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
     self.packages: MutableMapping[str, MutableMapping[str, PackageInfo]] = dict[str, MutableMapping[str, PackageInfo]]()
     self.init_packages("packages")
     self.resolve_versions()
+
+    for stage, stage_packages in self.packages.items():
+      print(f"\n\n.PHONY: oci-{stage}\noci-{stage}:", end="")
+      for name, _ in stage_packages.items():
+        print(f" \\\n\t oci-{name}", end="")
+
+    print("\n\n.PHONY: oci-all\noci-all:", end="")
+
+    for stage, stage_packages in self.packages.items():
+      for name, _ in stage_packages.items():
+        print(f" \\\n\t oci-{name}", end="")
 
     for stage, stage_packages in self.packages.items():
       print(f"\n\n.PHONY: {stage}\n{stage}:", end="")
@@ -144,12 +165,12 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
               "origin": package.origin or package.name,
               "version": package.version or "latest",
               "deps": "".join(
-                f" \\\n\tout/{dep}/index.json" for dep in package.deps
+                f" \\\n\tout/rootfs/{dep}/manifest.txt" for dep in package.deps
               ),
               "files": "\\\n\t".join(check_output(["git","ls-files","packages/{}/{}".format(stage,package.origin or package.name)],text=True).splitlines()),
               "build_args": TargetGenerator.get_build_args(package),
-              "context_args": TargetGenerator.get_context_args(package, stage, package.origin or package.name, False),
-              "context_args_registry": TargetGenerator.get_context_args(package, stage, package.origin or package.name, True),
+              "context_args": self.get_context_args(package, stage, package.origin or package.name, False),
+              "context_args_registry": self.get_context_args(package, stage, package.origin or package.name, True),
               "platform_arg": platform
             }
           )
@@ -208,16 +229,37 @@ publish-{stage}-{name}: out/{stage}-{name}/index.json
           self.packages[stage][package_name].version = self.packages[target_stage][target_name].version
 
 
-  @staticmethod
-  def get_context_args(package: PackageInfo, stage: str, name: str, use_registry: bool) -> str:
+  def get_context_args(self, package: PackageInfo, stage: str, name: str, use_registry: bool) -> str:
     args: List[str] = list()
     args.append(f"--build-context fetch=fetch/{stage}/{name}")
     for dep in package.deps:
       if use_registry:
         args.append(f"--build-context stagex/{dep}=docker-image://$(REGISTRY_USERNAME)/{dep}")
       else:
-        args.append(f"--build-context stagex/{dep}=oci-layout://./out/{dep}")
+        # Find the dependency's platform to construct correct subdirectory path
+        dep_stage, dep_platform = self.get_dep_platform(dep)
+        if dep_platform == "$(PLATFORM)":
+          # Use Make substitution for Make-variable platforms
+          args.append(f"--build-context stagex/{dep}=out/rootfs/{dep}/$(subst /,_,$(PLATFORM))")
+        elif dep_platform:
+          dep_dir = dep_platform.replace("/", "_")
+          args.append(f"--build-context stagex/{dep}=out/rootfs/{dep}/{dep_dir}")
+        else:
+          args.append(f"--build-context stagex/{dep}=out/rootfs/{dep}")
     return " \\\n\t  ".join(args)
+
+  def get_dep_platform(self, dep_name: str) -> tuple[str, str]:
+    """Find a dependency's stage and platform. Returns (stage, platform) or (None, None)."""
+    # dep_name is like "bootstrap-stage0", split into stage="bootstrap", name="stage0"
+    dep_stage, dep_pkg_name = dep_name.split("-", 1)
+    for stage, stage_packages in self.packages.items():
+      for pkg_name, pkg in stage_packages.items():
+        if pkg_name == dep_pkg_name and stage == dep_stage:
+          platform = "$(PLATFORM)"
+          if len(pkg.platforms) > 0:
+            platform = pkg.platforms[0]  # Use first platform for single-platform builds
+          return stage, platform
+    return None, None
 
   @staticmethod
   def get_build_args(package: PackageInfo) -> str:
