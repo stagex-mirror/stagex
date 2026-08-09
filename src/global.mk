@@ -3,7 +3,6 @@ export TZ=UTC
 export LANG=C.UTF-8
 export LC_ALL=C
 export SOURCE_DATE_EPOCH=1
-export BUILDKIT_MULTI_PLATFORM=1
 export DOCKER_BUILDKIT=1
 
 ifeq ($(NOCACHE), 1)
@@ -40,9 +39,9 @@ out:
 
 .PHONY: content-%
 content-%: %
-	ls -R out/$<
-	tar -tvf $$(find out/$< -type f -printf '%s %p\n' | sort -nr | head -n1 | awk '{ print $$2 }') | less
+	ls -R out/rootfs/$<
+	tar -tvf $$(find out/rootfs/$< -type f -printf '%s %p\n' | sort -nr | head -n1 | awk '{ print $$2 }') | less
 
 .PHONY: digests-%
-digests-%: %
+digests-%: oci-%
 	@./src/package-digests.py $<

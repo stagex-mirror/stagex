@@ -9,6 +9,8 @@ COPY <<-'EOF' /etc/profile
 		&& ARCH="x86_64"
 	[[ "$TARGETARCH" == "arm64" ]] \
 		&& ARCH="aarch64"
+	[[ "$TARGETARCH" == "riscv64" ]] \
+		&& ARCH="riscv64"
 	export ARCH
 	export MAKEFLAGS="-j$(nproc)"
 	export BUILD=i386-unknown-linux-musl
@@ -81,6 +83,8 @@ RUN --network=none <<-EOF
 	LINUX_ARCH="$ARCH"
 	[[ "$TARGETARCH" == "arm64" ]] \
 		&& LINUX_ARCH="$TARGETARCH"
+	[[ "$TARGETARCH" == "riscv64" ]] \
+		&& LINUX_ARCH="riscv"
 	make ARCH="$LINUX_ARCH" headers
 	find usr/include -name '.*' -delete
 	rm usr/include/Makefile

@@ -175,7 +175,8 @@ RUN --network=none <<-EOF
 
 	#HACK: The only reason we are not using "all" here is because AMDGPU does not build deterministically
 	# Zig hard requires "all" so this also forces a messy patch there as well to remove AMDGPU support as well
-	export LLVM_TARGETS_TO_BUILD="AArch64;ARM;AVR;BPF;Hexagon;Lanai;LoongArch;Mips;MSP430;NVPTX;PowerPC;RISCV;Sparc;SPIRV;SystemZ;VE;WebAssembly;X86;XCore"
+	# AMDGPU is needed for mesa radeonsi driver
+	export LLVM_TARGETS_TO_BUILD="AArch64;ARM;AVR;BPF;Hexagon;Lanai;LoongArch;Mips;MSP430;NVPTX;PowerPC;RISCV;Sparc;SPIRV;SystemZ;VE;WebAssembly;X86;XCore;AMDGPU"
 
 	CMAKE_ARGS="$(cat ./cmake_args)"
 	cmake_cache_set() {

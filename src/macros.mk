@@ -17,7 +17,7 @@ define import
 	$(eval STAGE := $(1))
 	$(eval NAME := $(2))
 	$(eval VERSION := $(3))
-	tar -C out/$(STAGE)-$(NAME) -cf - . | docker load
+	tar -C out/oci/$(STAGE)-$(NAME) -cf - . | docker load
 	docker tag \
 		stagex/$(STAGE)-$(NAME):$(VERSION) \
 		stagex/$(STAGE)-$(NAME):local

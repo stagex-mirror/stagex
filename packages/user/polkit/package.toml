@@ -1,0 +1,12 @@
+[package]
+name = "polkit"
+version = "127"
+description = "A toolkit for managing system-wide policies (e.g. D-Bus session access)"
+license = "LGPL-2.1-or-later"
+website = "https://www.freedesktop.org/software/polkit/"
+
+[sources.polkit]
+hash = "9b7bc16f086479dcc626c575976568ba4a85d34297a750d8ab3d2e57f6d8b988"
+format = "tar.gz"
+file = "polkit-{version}.{format}"
+mirrors = ["https://github.com/polkit-org/polkit/archive/refs/tags/{version}.{format}"]
