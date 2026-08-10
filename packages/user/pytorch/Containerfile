@@ -1,0 +1,125 @@
+FROM stagex/pallet-python AS sources
+COPY --from=stagex/pallet-clang-gnu-busybox . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/user-ninja . /
+COPY --from=stagex/user-llvm-openmp . /
+COPY --from=stagex/user-py-typing-extensions . /
+COPY --from=stagex/user-py-yaml . /
+COPY --from=stagex/user-py-requests . /
+COPY --from=stagex/user-py-six . /
+COPY --from=stagex/user-py-jinja2 . /
+COPY --from=stagex/user-py-markupsafe . /
+COPY --from=stagex/user-py-filelock . /
+COPY --from=stagex/user-py-fsspec . /
+COPY --from=stagex/user-py-networkx . /
+COPY --from=stagex/user-py-sympy . /
+ARG VERSION
+ADD fetch/pytorch-${VERSION}.tar.gz /
+ADD fetch/pytorch-setuptools-80.9.0.tar.gz /vendor/setuptools/
+ADD fetch/pytorch-pybind11-f5fbe867d2d26e4a0a9177a51f6e568868ad3dc8.tar.gz /vendor/pybind11/
+ADD fetch/pytorch-cpuinfo-f858c30bcb16f8effd5ff46996f0514539e17abc.tar.gz /vendor/cpuinfo/
+ADD fetch/pytorch-protobuf-d1eca4e4b421cd2997495c4b4e65cea6be4e9b8a.tar.gz /vendor/protobuf/
+ADD fetch/pytorch-onnx-e709452ef2bbc1d113faf678c24e6d3467696e83.tar.gz /vendor/onnx/
+ADD fetch/pytorch-sleef-5a1d179df9cf652951b59010a2d2075372d67f68.tar.gz /vendor/sleef/
+ADD fetch/pytorch-fmt-407c905e45ad75fc29bf0f9bb7c5c2fd3475976f.tar.gz /vendor/fmt/
+ADD fetch/pytorch-eigen-5.0.0.tar.gz /vendor/eigen/
+ADD fetch/pytorch-pocketfft-0fa0ef591e38c2758e3184c6c23e497b9f732ffa.tar.gz /vendor/pocketfft/
+ADD fetch/pytorch-FP16-4dfe081cf6bcd15db339cf2680b9281b8451eeb3.tar.gz /vendor/FP16/
+ADD fetch/pytorch-psimd-072586a71b55b7f8c584153d223e95687148a900.tar.gz /vendor/psimd/
+ADD fetch/pytorch-flatbuffers-a2cd1ea3b6d3fee220106b5fed3f7ce8da9eb757.tar.gz /vendor/flatbuffers/
+ADD fetch/pytorch-nlohmann-55f93686c01528224f448c19128836e7df245f72.tar.gz /vendor/nlohmann/
+ADD fetch/pytorch-kineto-7a731b6ae01cfc2b1fc75d83a91f84e682e43fd7.tar.gz /vendor/kineto/
+
+WORKDIR /pytorch-${VERSION}
+COPY patches/prepare-offline.py /tmp/
+RUN --network=none <<-EOF
+	set -eux
+	python /tmp/prepare-offline.py
+	# GitHub tag archives preserve gitlinks as empty directories. Populate only
+	# the exact pinned inputs used by the feature-reduced CPU build.
+	cp -a /vendor/pybind11/pybind11-f5fbe867d2d26e4a0a9177a51f6e568868ad3dc8/. third_party/pybind11/
+	cp -a /vendor/cpuinfo/cpuinfo-f858c30bcb16f8effd5ff46996f0514539e17abc/. third_party/cpuinfo/
+	cp -a /vendor/protobuf/protobuf-d1eca4e4b421cd2997495c4b4e65cea6be4e9b8a/. third_party/protobuf/
+	cp -a /vendor/onnx/onnx-e709452ef2bbc1d113faf678c24e6d3467696e83/. third_party/onnx/
+	cp -a /vendor/sleef/sleef-5a1d179df9cf652951b59010a2d2075372d67f68/. third_party/sleef/
+	cp -a /vendor/fmt/fmt-407c905e45ad75fc29bf0f9bb7c5c2fd3475976f/. third_party/fmt/
+	mkdir -p third_party/eigen
+	cp -a /vendor/eigen/eigen-5.0.0/. third_party/eigen/
+	cp -a /vendor/pocketfft/pocketfft-0fa0ef591e38c2758e3184c6c23e497b9f732ffa/. third_party/pocketfft/
+	cp -a /vendor/FP16/FP16-4dfe081cf6bcd15db339cf2680b9281b8451eeb3/. third_party/FP16/
+	cp -a /vendor/psimd/psimd-072586a71b55b7f8c584153d223e95687148a900/. third_party/psimd/
+	cp -a /vendor/flatbuffers/flatbuffers-a2cd1ea3b6d3fee220106b5fed3f7ce8da9eb757/. third_party/flatbuffers/
+	cp -a /vendor/nlohmann/json-55f93686c01528224f448c19128836e7df245f72/. third_party/nlohmann/
+	cp -a /vendor/kineto/kineto-7a731b6ae01cfc2b1fc75d83a91f84e682e43fd7/. third_party/kineto/
+
+	# Fail during source preparation, rather than letting CMake invoke any of
+	# PyTorch's optional online checkout helpers.
+	test "$(cat third_party/eigen_pin.txt)" = 5.0.0
+	test -f third_party/pybind11/include/pybind11/pybind11.h
+	test -f third_party/fmt/CMakeLists.txt
+	test -f third_party/sleef/CMakeLists.txt
+	test -f third_party/pocketfft/pocketfft_hdronly.h
+	test -f third_party/FP16/include/fp16.h
+	test -f third_party/psimd/include/psimd.h
+	test -f third_party/flatbuffers/include/flatbuffers/flatbuffers.h
+	test -f third_party/nlohmann/single_include/nlohmann/json.hpp
+	test -f third_party/kineto/libkineto/include/ActivityType.h
+	# StageX core has setuptools 82, newer than PyTorch's strict <82 bound.
+	# Build and install the separately pinned compatible backend without pip.
+	cd /vendor/setuptools/setuptools-80.9.0
+	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+	site_packages=$(python -c 'import sysconfig; print(sysconfig.get_path("purelib"))')
+	rm -rf "$site_packages/setuptools" "$site_packages"/setuptools-*.dist-info \
+		"$site_packages/_distutils_hack" "$site_packages/distutils-precedence.pth"
+	python -m installer -d / .dist/setuptools-*.whl
+	python -m installer -d /rootfs .dist/setuptools-*.whl
+	python -c 'import setuptools; assert setuptools.__version__ == "80.9.0"'
+EOF
+
+FROM sources AS build-pytorch
+ENV PYTORCH_BUILD_VERSION=${VERSION}+cpu \
+	PYTORCH_BUILD_NUMBER=1 \
+	PYTORCH_OFFLINE_SUBMODULES="third_party/pybind11:third_party/cpuinfo:third_party/protobuf:third_party/onnx:third_party/sleef:third_party/fmt:third_party/pocketfft:third_party/FP16:third_party/psimd:third_party/flatbuffers:third_party/nlohmann:third_party/kineto" \
+	BUILD_TEST=0 \
+	USE_CUDA=0 \
+	USE_CUDNN=0 \
+	USE_NCCL=0 \
+	USE_DISTRIBUTED=0 \
+	USE_KINETO=0 \
+	USE_NUMPY=0 \
+	USE_MKLDNN=0 \
+	USE_FBGEMM=0 \
+	USE_XNNPACK=0 \
+	USE_NNPACK=0 \
+	USE_PYTORCH_QNNPACK=0 \
+	USE_OPENMP=1 \
+	USE_ITT=0 \
+	BLAS=Eigen \
+	CMAKE_GENERATOR=Ninja \
+	CC=clang \
+	CXX=clang++ \
+	MAX_JOBS=8 \
+	SOURCE_DATE_EPOCH=1
+RUN --network=none <<-EOF
+	set -eux
+	python setup.py bdist_wheel
+	python -m installer dist/torch-*.whl
+	(cd /tmp && python -c 'import os; from importlib.metadata import version; import torch; expected = os.environ["PYTORCH_BUILD_VERSION"]; assert torch.__version__ == expected; assert version("torch") == expected; assert torch.backends.openmp.is_available(); x = torch.tensor([1.0, 2.0]); assert torch.equal(x + 1, torch.tensor([2.0, 3.0])); print(torch.__version__)')
+	python -m installer -d /rootfs dist/torch-*.whl
+	find /rootfs -type d -name __pycache__ -exec rm -rf '{}' +
+	install -vDm644 -t /rootfs/usr/share/licenses/pytorch LICENSE
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=stagex/core-libunwind . /
+COPY --from=stagex/core-libcxx . /
+COPY --from=stagex/core-libcxxabi . /
+COPY --from=stagex/user-llvm-openmp . /
+COPY --from=stagex/user-py-typing-extensions . /
+COPY --from=stagex/user-py-jinja2 . /
+COPY --from=stagex/user-py-markupsafe . /
+COPY --from=stagex/user-py-filelock . /
+COPY --from=stagex/user-py-fsspec . /
+COPY --from=stagex/user-py-networkx . /
+COPY --from=stagex/user-py-sympy . /
+COPY --from=build-pytorch /rootfs/ /

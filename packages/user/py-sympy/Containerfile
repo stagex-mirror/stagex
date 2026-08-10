@@ -1,0 +1,15 @@
+FROM stagex/pallet-python AS build
+ARG VERSION
+ADD fetch/py-sympy-${VERSION}.tar.gz .
+WORKDIR /sympy-${VERSION}
+RUN --network=none <<-EOF
+	set -eu
+	python setup.py bdist_wheel --dist-dir .dist
+	python -m installer -d /rootfs .dist/*.whl
+	install -vDm644 LICENSE /rootfs/usr/share/licenses/py-sympy/LICENSE
+	find /rootfs -type d -name __pycache__ -exec rm -rf '{}' +
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=stagex/user-py-mpmath . /
+COPY --from=build /rootfs/ /

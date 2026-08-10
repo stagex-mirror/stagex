@@ -1,0 +1,11 @@
+[package]
+name = "llvm-openmp"
+version = "22.1.5"
+description = "LLVM OpenMP runtime library"
+license = "Apache-2.0 WITH LLVM-exception"
+website = "https://openmp.llvm.org"
+
+[sources.llvm-openmp]
+hash = "7972b87b705a003ce70ab55f9f0fb495d156887cba0eb296d284731139118e2c"
+file = "llvm-openmp-{version}.tar.xz"
+mirrors = ["https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/llvm-project-{version}.src.tar.xz"]

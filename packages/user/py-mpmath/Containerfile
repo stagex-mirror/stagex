@@ -1,0 +1,14 @@
+FROM stagex/pallet-python AS build
+ARG VERSION
+ADD fetch/py-mpmath-${VERSION}.tar.gz .
+WORKDIR /mpmath-${VERSION}
+RUN --network=none <<-EOF
+	set -eu
+	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+	python -m installer -d /rootfs .dist/*.whl
+	install -vDm644 LICENSE /rootfs/usr/share/licenses/py-mpmath/LICENSE
+	find /rootfs -type d -name __pycache__ -exec rm -rf '{}' +
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

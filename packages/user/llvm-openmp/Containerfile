@@ -1,0 +1,22 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+ARG VERSION
+ADD fetch/llvm-openmp-${VERSION}.tar.xz /
+WORKDIR /llvm-project-${VERSION}.src
+RUN --network=none <<-EOF
+	set -eux
+	cmake -S openmp -B build-openmp -G Ninja -Wno-dev \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_C_COMPILER=clang \
+		-DCMAKE_CXX_COMPILER=clang++ \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DLIBOMP_ENABLE_SHARED=ON \
+		-DLIBOMP_OMPT_SUPPORT=OFF \
+		-DOPENMP_ENABLE_LIBOMPTARGET=OFF
+	cmake --build build-openmp
+	DESTDIR=/rootfs cmake --install build-openmp
+	test -f /rootfs/usr/lib/libomp.so
+	install -vDm644 openmp/LICENSE.TXT /rootfs/usr/share/licenses/llvm-openmp/LICENSE
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

@@ -1,0 +1,79 @@
+FROM stagex/pallet-python AS sources
+COPY --from=stagex/pallet-clang-gnu-busybox . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/user-patch . /
+COPY --from=stagex/user-ninja . /
+COPY --from=stagex/user-py-jinja2 . /
+COPY --from=stagex/user-py-setuptools-rust . /
+COPY --from=stagex/user-py-semantic-version . /
+COPY --from=stagex/user-py-typing-extensions . /
+COPY --from=stagex/user-numactl . /
+COPY --from=stagex/user-llvm-openmp . /
+ARG VERSION
+ADD fetch/vllm-${VERSION}.tar.gz /
+ADD fetch/vllm-setuptools-80.9.0.tar.gz /vendor/setuptools/
+ADD fetch/vllm-onednn-3.10.tar.gz /vendor/onednn/
+ADD fetch/vllm-onednn-9c5be1cc59e368aebf0909e6cf20f981ea61462a.tar.gz /vendor/onednn-aarch64/
+ADD fetch/vllm-acl-52.6.0.tar.gz /vendor/acl/
+
+WORKDIR /vllm-${VERSION}
+COPY patches/offline-reduced-build.patch /tmp/
+RUN --network=none <<-EOF
+	set -eux
+	patch -Np1 -i /tmp/offline-reduced-build.patch
+	# Install the upstream-compatible backend without pip or build isolation.
+	cd /vendor/setuptools/setuptools-80.9.0
+	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+	site_packages=$(python -c 'import sysconfig; print(sysconfig.get_path("purelib"))')
+	rm -rf "$site_packages/setuptools" "$site_packages"/setuptools-*.dist-info \
+		"$site_packages/_distutils_hack" "$site_packages/distutils-precedence.pth"
+	python -m installer .dist/setuptools-80.9.0-*.whl
+	python -c 'import setuptools; assert setuptools.__version__ == "80.9.0"'
+	# Assert every CMake tree used by the reduced builds exists before entering
+	# either network-isolated wheel build.
+	test -f /vendor/onednn/oneDNN-3.10/CMakeLists.txt
+	test -f /vendor/onednn-aarch64/oneDNN-9c5be1cc59e368aebf0909e6cf20f981ea61462a/CMakeLists.txt
+	test -f /vendor/acl/ComputeLibrary-52.6.0/CMakeLists.txt
+
+EOF
+FROM sources AS build-vllm
+COPY --from=stagex/user-pytorch . /
+ENV VLLM_TARGET_DEVICE=cpu \
+	VLLM_VERSION_OVERRIDE=0.26.0 \
+	SETUPTOOLS_SCM_PRETEND_VERSION=0.26.0 \
+	FETCHCONTENT_FULLY_DISCONNECTED=ON \
+	CC=clang \
+	CXX=clang++ \
+	MAX_JOBS=2 \
+	SOURCE_DATE_EPOCH=1
+RUN --network=none <<-EOF
+	set -eux
+	case "$(uname -m)" in
+		aarch64)
+			export FETCHCONTENT_SOURCE_DIR_ONEDNN=/vendor/onednn-aarch64/oneDNN-9c5be1cc59e368aebf0909e6cf20f981ea61462a
+			export ACL_ROOT_DIR=/vendor/acl/ComputeLibrary-52.6.0
+			;;
+		*) export FETCHCONTENT_SOURCE_DIR_ONEDNN=/vendor/onednn/oneDNN-3.10 ;;
+	esac
+	export CMAKE_ARGS='-DVLLM_BUILD_OPTIONAL_EXTERNAL_PROJECTS=OFF -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++'
+	python setup.py bdist_wheel
+EOF
+COPY smoke.py /tmp/vllm-smoke.py
+RUN --network=none <<-EOF
+	set -eux
+	python -m installer dist/vllm-*.whl
+	(cd /tmp && python /tmp/vllm-smoke.py)
+	python -m installer -d /rootfs dist/vllm-*.whl
+	install -vDm644 -t /rootfs/usr/share/licenses/vllm LICENSE
+	find /rootfs -type d -name __pycache__ -exec rm -rf '{}' +
+	# Python sources contain backend modules named "cuda", but the default
+	# artifact must contain no CUDA toolkit/runtime tree or CUDA shared objects.
+	test ! -e /rootfs/usr/local/cuda
+	! find /rootfs/usr/lib -maxdepth 1 \( -type f -o -type l \) | grep -Ei 'cudart|cublas|nvrtc|libcuda'
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=stagex/user-pytorch . /
+COPY --from=stagex/user-numactl . /
+COPY --from=stagex/user-llvm-openmp . /
+COPY --from=build-vllm /rootfs/ /

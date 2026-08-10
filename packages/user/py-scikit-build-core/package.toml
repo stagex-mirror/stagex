@@ -1,0 +1,11 @@
+[package]
+name = "py-scikit-build-core"
+version = "0.11.6"
+description = "Build backend for CMake-based Python extension projects"
+license = "Apache-2.0"
+website = "https://github.com/scikit-build/scikit-build-core"
+
+[sources.py-scikit-build-core]
+hash = "5982ccd839735be99cfd3b92a8847c6c196692f476c215da84b79d2ad12f9f1b"
+file = "py-scikit-build-core-{version}.tar.gz"
+mirrors = ["https://files.pythonhosted.org/packages/source/s/scikit_build_core/scikit_build_core-{version}.tar.gz"]

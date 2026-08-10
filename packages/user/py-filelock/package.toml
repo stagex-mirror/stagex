@@ -1,0 +1,12 @@
+[package]
+name = "py-filelock"
+version = "3.8.2"
+description = "Platform-independent file locking library"
+license = "Unlicense"
+website = "https://pypi.org/project/filelock/"
+
+[sources.py-filelock]
+hash = "7565f628ea56bfcd8e54e42bdc55da899c85c1abfe1b5bcfd147e9188cebb3b2"
+format = "tar.gz"
+file = "py-filelock-{version}.{format}"
+mirrors = [ "https://files.pythonhosted.org/packages/source/f/filelock/filelock-{version}.{format}",]

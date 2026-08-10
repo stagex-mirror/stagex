@@ -1,0 +1,12 @@
+[package]
+name = "py-sympy"
+version = "1.14.0"
+description = "Computer algebra system for Python"
+license = "BSD-3-Clause"
+website = "https://pypi.org/project/sympy/"
+
+[sources.py-sympy]
+hash = "d3d3fe8df1e5a0b42f0e7bdf50541697dbe7d23746e894990c030e2b05e72517"
+format = "tar.gz"
+file = "py-sympy-{version}.{format}"
+mirrors = [ "https://files.pythonhosted.org/packages/source/s/sympy/sympy-{version}.{format}",]

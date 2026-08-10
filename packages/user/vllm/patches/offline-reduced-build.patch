@@ -1,0 +1,127 @@
+From: StageX <stagex@stagex.tools>
+Subject: build core extensions entirely from supplied source trees
+
+Disable optional Rust and CUDA accelerator add-ons whose independent source and
+runtime dependency graphs are not packaged yet. Keep the Python frontend and
+core CPU/CUDA native extensions. Also permit StageX Clang plus a source-built
+LLVM OpenMP runtime for the CPU backend, and use Clang's supported umbrella
+header for the x86 monitor/mwait intrinsics.
+
+--- a/requirements/cpu.txt	2026-07-27 08:57:50.000000000 +0800
++++ b/requirements/cpu.txt	2026-08-08 23:00:00.000000000 +0000
+@@ -4 +4 @@
+-setuptools==77.0.3 # this version can reuse CMake build dir
++setuptools==80.9.0 # shared with the source-built StageX PyTorch package
+@@ -21,2 +21,2 @@
+-# Intel Extension for PyTorch, only for x86_64 CPUs
+-intel-openmp==2024.2.1; platform_machine == "x86_64"
++# StageX composes its separately source-built LLVM OpenMP runtime into the OCI
++# artifact instead of representing the system runtime as a Python distribution.
+--- a/cmake/cpu_extension.cmake	2026-07-27 08:57:50.000000000 +0800
++++ b/cmake/cpu_extension.cmake	2026-08-06 10:33:08.560147391 +0800
+@@ -54,2 +54,7 @@
+-        # Fall back to system / toolchain libgomp
+-        find_library(OPEN_MP NAMES gomp REQUIRED)
++        # Fall back to the system/toolchain runtime. StageX uses Clang's
++        # separately source-built libomp; GNU builds retain libgomp support.
++        if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
++            find_library(OPEN_MP NAMES omp REQUIRED)
++        else()
++            find_library(OPEN_MP NAMES gomp REQUIRED)
++        endif()
+@@ -125,3 +130,4 @@
+-    if (NOT (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND
+-            CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 12.3))
+-        message(FATAL_ERROR "X86 backend requires gcc/g++ >= 12.3")
++    if (NOT ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND
++              CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 12.3) OR
++             CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
++        message(FATAL_ERROR "X86 backend requires gcc/g++ >= 12.3 or Clang")
+--- a/CMakeLists.txt	2026-07-27 08:57:50.000000000 +0800
++++ b/CMakeLists.txt	2026-08-06 10:33:08.560147391 +0800
+@@ -1399,0 +1400,3 @@
++option(VLLM_BUILD_OPTIONAL_EXTERNAL_PROJECTS
++  "Build optional Triton/FlashAttention/DeepGEMM accelerator projects" ON)
++
+@@ -1401 +1404,2 @@
+-if(VLLM_GPU_LANG STREQUAL "CUDA" OR VLLM_GPU_LANG STREQUAL "HIP")
++if(VLLM_BUILD_OPTIONAL_EXTERNAL_PROJECTS AND
++   (VLLM_GPU_LANG STREQUAL "CUDA" OR VLLM_GPU_LANG STREQUAL "HIP"))
+@@ -1406 +1410 @@
+-if (VLLM_GPU_LANG STREQUAL "CUDA")
++if(VLLM_BUILD_OPTIONAL_EXTERNAL_PROJECTS AND VLLM_GPU_LANG STREQUAL "CUDA")
+--- a/setup.py	2026-07-27 08:57:50.000000000 +0800
++++ b/setup.py	2026-08-06 10:33:08.560147391 +0800
+@@ -1120,3 +1119,0 @@
+-    # Optional since this doesn't get built (produce an .so file). This is just
+-    # copying the relevant .py files from the source repository.
+-    ext_modules.append(CMakeExtension(name="vllm.triton_kernels", optional=True))
+@@ -1131,34 +1127,0 @@
+-if _is_cuda():
+-    ext_modules.append(CMakeExtension(name="vllm.vllm_flash_attn._vllm_fa2_C"))
+-    if USE_PRECOMPILED_EXTENSIONS or (
+-        CUDA_HOME and get_nvcc_cuda_version() >= Version("12.3")
+-    ):
+-        # FA3 requires CUDA 12.3 or later
+-        ext_modules.append(CMakeExtension(name="vllm.vllm_flash_attn._vllm_fa3_C"))
+-    # FA4 CuteDSL - Python-only component for FA4's cute DSL support
+-    # Optional since this doesn't produce a .so file, just copies Python files
+-    ext_modules.append(
+-        CMakeExtension(name="vllm.vllm_flash_attn._vllm_fa4_cutedsl_C", optional=True)
+-    )
+-    if USE_PRECOMPILED_EXTENSIONS or (
+-        CUDA_HOME and get_nvcc_cuda_version() >= Version("12.9")
+-    ):
+-        # FlashMLA requires CUDA 12.9 or later
+-        # Optional since this doesn't get built (produce an .so file) when
+-        # not targeting a hopper system
+-        ext_modules.append(CMakeExtension(name="vllm._flashmla_C", optional=True))
+-        ext_modules.append(
+-            CMakeExtension(name="vllm._flashmla_extension_C", optional=True)
+-        )
+-    if envs.VLLM_USE_PRECOMPILED or (
+-        CUDA_HOME and get_nvcc_cuda_version() >= Version("12.3")
+-    ):
+-        # DeepGEMM requires CUDA 12.3+ (SM90/SM100)
+-        # Optional since it won't build on unsupported architectures
+-        ext_modules.append(CMakeExtension(name="vllm._deep_gemm_C", optional=True))
+-        ext_modules.append(CMakeExtension(name="vllm._qutlass_C", optional=True))
+-    # fmha_sm100 is a Python/CuTe-DSL package installed into vllm.third_party.
+-    ext_modules.append(CMakeExtension(name="vllm.fmha_sm100", optional=True))
+-    # tml-fa4 is copied into an isolated vllm.third_party package.
+-    ext_modules.append(CMakeExtension(name="vllm.tml_fa4", optional=True))
+-
+@@ -1253,5 +1216,3 @@
+-# Rust artifacts, built via setuptools-rust and installed into the package
+-# directory alongside the Python modules.
+-rust_extensions = rust_build.rust_extensions(
+-    optional=not should_require_rust_frontend()
+-)
++# Rust artifacts are optional. StageX uses the default Python frontend until
++# the independent Cargo dependency graph is separately source-packaged.
++rust_extensions = []
+--- a/csrc/spinloop.cpp	2026-07-27 08:57:50.000000000 +0800
++++ b/csrc/spinloop.cpp	2026-08-09 01:42:00.000000000 +0000
+@@ -7,7 +7,7 @@
+
+ #if defined(__i386__) || defined(__x86_64__)
+   #include <cpuid.h>
+-  #include <mwaitxintrin.h>
++  #include <x86intrin.h>
+ #endif
+
+ #if defined(CLOCK_MONOTONIC_RAW)
+--- a/csrc/cpu/cpu_types_x86.hpp	2026-07-27 08:57:50.000000000 +0800
++++ b/csrc/cpu/cpu_types_x86.hpp	2026-08-09 02:08:00.000000000 +0000
+@@ -533,8 +533,10 @@
+             _mm512_bslli_epi128(_mm512_cvtepu16_epi32(v.reg), 2))) {}
+
+   explicit FP32Vec16(const BF16Vec32& v, int upper) {
+-    __m256i v_half_i = _mm512_extracti32x8_epi32(v.reg, upper);
++    __m256i v_half_i = upper
++                            ? _mm512_extracti32x8_epi32(v.reg, 1)
++                            : _mm512_extracti32x8_epi32(v.reg, 0);
+     reg = _mm512_cvtph_ps(v_half_i);
+   }
+
+   explicit FP32Vec16(const FP16Vec16& v) : reg(_mm512_cvtph_ps(v.reg)) {}

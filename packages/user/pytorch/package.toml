@@ -1,0 +1,100 @@
+[package]
+name = "pytorch"
+version = "2.11.0"
+description = "Tensor library and dynamic neural network framework"
+license = "BSD-3-Clause"
+website = "https://pytorch.org"
+
+
+# Upstream tag v2.11.0 resolves to commit
+# 70d99e998b4955e0049d13a98d77ae1b14db1f45. GitHub source archives do not
+# contain submodule contents, so every submodule enabled by this deliberately
+# reduced build is supplied as a separately hashed source below.
+[sources.pytorch]
+hash = "52872a6bbdc42334b00051d88a92f801cfd9be730abdd2b37a2d08996f53bb29"
+file = "pytorch-{version}.tar.gz"
+mirrors = ["https://github.com/pytorch/pytorch/archive/refs/tags/v{version}.tar.gz"]
+
+# PyTorch accepts setuptools >=70.1,<82 and vLLM requires setuptools <81.
+# Reuse one compatible version in the exported CPU inference package stack.
+[sources.pytorch-setuptools]
+hash = "f36b47402ecde768dbfafc46e8e4207b4360c654f1f3bb84475f0a28628fb19c"
+file = "pytorch-setuptools-80.9.0.tar.gz"
+mirrors = ["https://files.pythonhosted.org/packages/source/s/setuptools/setuptools-80.9.0.tar.gz"]
+
+# third_party/pybind11 @ f5fbe867d2d26e4a0a9177a51f6e568868ad3dc8
+[sources.pytorch-pybind11]
+hash = "2b57710b0c1f64eef81825042754cf517839d9a546addd7e5eb1c342f57cf308"
+file = "pytorch-pybind11-f5fbe867d2d26e4a0a9177a51f6e568868ad3dc8.tar.gz"
+mirrors = ["https://codeload.github.com/pybind/pybind11/tar.gz/f5fbe867d2d26e4a0a9177a51f6e568868ad3dc8"]
+
+# third_party/cpuinfo @ f858c30bcb16f8effd5ff46996f0514539e17abc
+[sources.pytorch-cpuinfo]
+hash = "30c390d5ac7c59ae1c0a8a1aefb9bb70cb4d482bd15e8de706f5c8bf60357fa6"
+file = "pytorch-cpuinfo-f858c30bcb16f8effd5ff46996f0514539e17abc.tar.gz"
+mirrors = ["https://codeload.github.com/pytorch/cpuinfo/tar.gz/f858c30bcb16f8effd5ff46996f0514539e17abc"]
+
+# third_party/protobuf @ d1eca4e4b421cd2997495c4b4e65cea6be4e9b8a
+[sources.pytorch-protobuf]
+hash = "4579f7792b5ac9a2db2ad60409565f694a52b202078efbd36de066b6f2232992"
+file = "pytorch-protobuf-d1eca4e4b421cd2997495c4b4e65cea6be4e9b8a.tar.gz"
+mirrors = ["https://codeload.github.com/protocolbuffers/protobuf/tar.gz/d1eca4e4b421cd2997495c4b4e65cea6be4e9b8a"]
+
+# third_party/onnx @ e709452ef2bbc1d113faf678c24e6d3467696e83
+[sources.pytorch-onnx]
+hash = "3001af7fb316cefd02c3b586139167d43eb3cf79b78aed47645831593dfbd015"
+file = "pytorch-onnx-e709452ef2bbc1d113faf678c24e6d3467696e83.tar.gz"
+mirrors = ["https://codeload.github.com/onnx/onnx/tar.gz/e709452ef2bbc1d113faf678c24e6d3467696e83"]
+
+# third_party/sleef @ 5a1d179df9cf652951b59010a2d2075372d67f68
+[sources.pytorch-sleef]
+hash = "afd1b92010ae7918e20eec3e5bb270b7ca4828b5cb19e4d820a0a4558a04ce63"
+file = "pytorch-sleef-5a1d179df9cf652951b59010a2d2075372d67f68.tar.gz"
+mirrors = ["https://codeload.github.com/shibatch/sleef/tar.gz/5a1d179df9cf652951b59010a2d2075372d67f68"]
+
+# third_party/fmt @ 407c905e45ad75fc29bf0f9bb7c5c2fd3475976f
+[sources.pytorch-fmt]
+hash = "2bc1fe4a5b6d5d6a614239b4ca1d520e66e152a02d3d262684d26dfd6ab3438a"
+file = "pytorch-fmt-407c905e45ad75fc29bf0f9bb7c5c2fd3475976f.tar.gz"
+mirrors = ["https://codeload.github.com/fmtlib/fmt/tar.gz/407c905e45ad75fc29bf0f9bb7c5c2fd3475976f"]
+
+# Not a git submodule: v2.11.0 pins Eigen 5.0.0 in third_party/eigen_pin.txt.
+[sources.pytorch-eigen]
+hash = "315c881e19e17542a7d428c5aa37d113c89b9500d350c433797b730cd449c056"
+file = "pytorch-eigen-5.0.0.tar.gz"
+mirrors = ["https://gitlab.com/libeigen/eigen/-/archive/5.0.0/eigen-5.0.0.tar.gz"]
+
+# third_party/pocketfft @ 0fa0ef591e38c2758e3184c6c23e497b9f732ffa
+# PocketFFT is mandatory whenever MKL is disabled.
+[sources.pytorch-pocketfft]
+hash = "1cfd0494ac6fe88e034579cb655b0ef9731b39a0432558e50fe41c4abd6d8684"
+file = "pytorch-pocketfft-0fa0ef591e38c2758e3184c6c23e497b9f732ffa.tar.gz"
+mirrors = ["https://codeload.github.com/mreineck/pocketfft/tar.gz/0fa0ef591e38c2758e3184c6c23e497b9f732ffa"]
+
+# Unconditional reduced-build inputs from PyTorch's pinned gitlinks.
+[sources.pytorch-FP16]
+hash = "90f20492621d5ed80b442aa682ff92d7ccf333ac8fac4a10e7e02afb159f3c13"
+file = "pytorch-FP16-4dfe081cf6bcd15db339cf2680b9281b8451eeb3.tar.gz"
+mirrors = ["https://codeload.github.com/Maratyszcza/FP16/tar.gz/4dfe081cf6bcd15db339cf2680b9281b8451eeb3"]
+
+[sources.pytorch-psimd]
+hash = "f6c4dab91ae9a03b3019e7cab0572743afd0e1b6e75b97fcca50259c737c924e"
+file = "pytorch-psimd-072586a71b55b7f8c584153d223e95687148a900.tar.gz"
+mirrors = ["https://codeload.github.com/Maratyszcza/psimd/tar.gz/072586a71b55b7f8c584153d223e95687148a900"]
+
+[sources.pytorch-flatbuffers]
+hash = "02db3e64fc74127f119ad2770068534e5b7b4731f6f79a5e8a30b2221ca4d744"
+file = "pytorch-flatbuffers-a2cd1ea3b6d3fee220106b5fed3f7ce8da9eb757.tar.gz"
+mirrors = ["https://codeload.github.com/google/flatbuffers/tar.gz/a2cd1ea3b6d3fee220106b5fed3f7ce8da9eb757"]
+
+[sources.pytorch-nlohmann]
+hash = "67f4cdd9ca930c9c1e130af4a437c7fc98fab77a2846fc2d2a14b4943831f8ef"
+file = "pytorch-nlohmann-55f93686c01528224f448c19128836e7df245f72.tar.gz"
+mirrors = ["https://codeload.github.com/nlohmann/json/tar.gz/55f93686c01528224f448c19128836e7df245f72"]
+
+# third_party/kineto @ 7a731b6ae01cfc2b1fc75d83a91f84e682e43fd7
+# The disabled Kineto backend still exposes ActivityType.h to profiler stubs.
+[sources.pytorch-kineto]
+hash = "67d31d9bff154c0790fc71470799cecc61a2fcda53f9743ce4fa4302b75a48da"
+file = "pytorch-kineto-7a731b6ae01cfc2b1fc75d83a91f84e682e43fd7.tar.gz"
+mirrors = ["https://codeload.github.com/pytorch/kineto/tar.gz/7a731b6ae01cfc2b1fc75d83a91f84e682e43fd7"]

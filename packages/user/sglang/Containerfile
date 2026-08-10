@@ -1,0 +1,73 @@
+FROM stagex/pallet-python AS sources
+COPY --from=stagex/pallet-clang-gnu-busybox . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/core-py-pathspec . /
+COPY --from=stagex/user-ninja . /
+COPY --from=stagex/user-numactl . /
+COPY --from=stagex/user-llvm-openmp . /
+COPY --from=stagex/user-py-scikit-build-core . /
+COPY --from=stagex/user-py-setuptools-rust . /
+COPY --from=stagex/user-py-semantic-version . /
+COPY --from=stagex/user-pytorch . /
+ARG VERSION
+ADD fetch/sglang-${VERSION}.tar.gz /
+WORKDIR /sglang-${VERSION}
+COPY patches/cpu-kernel-stagex.patch /tmp/
+RUN --network=none <<-EOF
+	set -eux
+	patch -Np1 -i /tmp/cpu-kernel-stagex.patch
+	cp LICENSE python/LICENSE
+	cp LICENSE sgl-kernel/LICENSE
+EOF
+
+FROM sources AS build-sglang
+ENV SETUPTOOLS_SCM_PRETEND_VERSION=${VERSION} \
+	SGLANG_BUILD_RUST_EXTS=none \
+	SOURCE_DATE_EPOCH=1
+RUN --network=none <<-EOF
+	set -eux
+	# The release archive has no Git metadata. The exact package version is
+	# supplied above, and the optional Rust gRPC/multimodal extensions are
+	# deliberately disabled until their complete Cargo closure is packaged.
+	cp python/pyproject_cpu.toml python/pyproject.toml
+	cd python
+	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+	python -m installer -d /rootfs .dist/sglang_cpu-*.whl
+	site_packages=/rootfs$(python -c 'import sysconfig; print(sysconfig.get_path("purelib"))')
+	PYTHONPATH="$site_packages" python -c 'from importlib.metadata import distribution, version; assert version("sglang-cpu") == "'"${VERSION}"'"; scripts = {entry.name: entry.value for entry in distribution("sglang-cpu").entry_points if entry.group == "console_scripts"}; assert scripts.get("sglang") == "sglang.cli.main:main"'
+	test -x /rootfs/usr/bin/sglang
+	python -m compileall -q -f "$site_packages/sglang"
+	find /rootfs -type d -name __pycache__ -exec rm -rf '{}' +
+	install -vDm644 -t /rootfs/usr/share/licenses/sglang ../LICENSE
+EOF
+
+FROM sources AS build-sglang-kernel-cpu
+ENV CMAKE_GENERATOR=Ninja \
+	CMAKE_ARGS="-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++" \
+	CMAKE_BUILD_PARALLEL_LEVEL=2 \
+	SOURCE_DATE_EPOCH=1
+RUN --network=none <<-EOF
+	set -eux
+	cp sgl-kernel/pyproject_cpu.toml sgl-kernel/pyproject.toml
+	cd sgl-kernel
+	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+EOF
+COPY smoke.py /tmp/sglang-smoke.py
+RUN --network=none <<-EOF
+	set -eux
+	cd sgl-kernel
+	python -m installer .dist/sglang_kernel_cpu-*.whl
+	(cd /tmp && python /tmp/sglang-smoke.py)
+	python -m installer -d /rootfs .dist/sglang_kernel_cpu-*.whl
+	find /rootfs -type d -name __pycache__ -exec rm -rf '{}' +
+	install -vDm644 -t /rootfs/usr/share/licenses/sglang-kernel-cpu LICENSE
+EOF
+
+# The default target composes the CPU frontend, CPU kernel, and CPU-only
+# PyTorch variant. It does not copy CUDA, ROCm, or another accelerator runtime.
+FROM stagex/core-filesystem AS package
+COPY --from=stagex/user-pytorch . /
+COPY --from=stagex/user-numactl . /
+COPY --from=stagex/user-llvm-openmp . /
+COPY --from=build-sglang-kernel-cpu /rootfs/ /
+COPY --from=build-sglang /rootfs/ /

@@ -1,0 +1,15 @@
+[package]
+name = "sglang"
+version = "0.5.16"
+description = "Fast serving framework for large language models"
+license = "Apache-2.0"
+website = "https://github.com/sgl-project/sglang"
+
+
+# v0.5.16 resolves to fdebc938f7f4d16fe6b9f55dcd9a767cf0899ea1.
+# The frontend and CPU kernel are built against the adjacent StageX PyTorch
+# 2.11.0+cpu wheel so SGLang and vLLM share a single source-built libtorch ABI.
+[sources.sglang]
+hash = "28003e0c210319d06f783333a3c99770c47129fd064f0f057634737e3d5268b6"
+file = "sglang-{version}.tar.gz"
+mirrors = ["https://github.com/sgl-project/sglang/archive/refs/tags/v{version}.tar.gz"]

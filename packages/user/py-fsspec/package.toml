@@ -1,0 +1,12 @@
+[package]
+name = "py-fsspec"
+version = "2023.12.2"
+description = "Filesystem interfaces for Python"
+license = "BSD-3-Clause"
+website = "https://pypi.org/project/fsspec/"
+
+[sources.py-fsspec]
+hash = "8548d39e8810b59c38014934f6b31e57f40c1b20f911f4cc2b85389c7e9bf0cb"
+format = "tar.gz"
+file = "py-fsspec-{version}.{format}"
+mirrors = [ "https://files.pythonhosted.org/packages/source/f/fsspec/fsspec-{version}.{format}",]

@@ -1,0 +1,38 @@
+[package]
+name = "vllm"
+version = "0.26.0"
+description = "High-throughput and memory-efficient inference and serving engine for LLMs"
+license = "Apache-2.0"
+website = "https://github.com/vllm-project/vllm"
+
+
+# Stable v0.26.0 is commit 568afb3a13806beb53bb2e6bd518269357b237c0 and
+# is the newest stable release whose build metadata pins PyTorch 2.11.0.
+[sources.vllm]
+hash = "c1ded7e5af7e7fd27c6abcce1ecfaf795bc927a0f747f10f1e5a7a13f2c4a6a9"
+file = "vllm-{version}.tar.gz"
+mirrors = ["https://github.com/vllm-project/vllm/archive/refs/tags/v{version}.tar.gz"]
+
+# vLLM requires setuptools >=77,<81. Reuse the same verified release sdist as
+# the source-built StageX PyTorch package.
+[sources.vllm-setuptools]
+hash = "f36b47402ecde768dbfafc46e8e4207b4360c654f1f3bb84475f0a28628fb19c"
+file = "vllm-setuptools-80.9.0.tar.gz"
+mirrors = ["https://files.pythonhosted.org/packages/source/s/setuptools/setuptools-80.9.0.tar.gz"]
+
+# CPU FetchContent input. x86_64/Power/RISC-V use v3.10; AArch64 uses the
+# upstream commit below plus Arm Compute Library v52.6.0.
+[sources.vllm-onednn]
+hash = "ba5834a1fdbb6d1c1b1c065dfd789438e7aa42c03fc52d92c02af85d78d1c75c"
+file = "vllm-onednn-3.10.tar.gz"
+mirrors = ["https://github.com/oneapi-src/oneDNN/archive/refs/tags/v3.10.tar.gz"]
+
+[sources.vllm-onednn-aarch64]
+hash = "b15611c536b32c119b5acc600b69f5971ff3276badaf434c2790c1f59585bf98"
+file = "vllm-onednn-9c5be1cc59e368aebf0909e6cf20f981ea61462a.tar.gz"
+mirrors = ["https://codeload.github.com/oneapi-src/oneDNN/tar.gz/9c5be1cc59e368aebf0909e6cf20f981ea61462a"]
+
+[sources.vllm-acl]
+hash = "fa2aee62b237283c9a9dff5dc4c5052bb34313d09b510fb97dd63baf6964cb8e"
+file = "vllm-acl-52.6.0.tar.gz"
+mirrors = ["https://github.com/ARM-software/ComputeLibrary/archive/refs/tags/v52.6.0.tar.gz"]
