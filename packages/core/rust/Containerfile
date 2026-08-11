@@ -36,6 +36,9 @@ COPY <<-'EOF' /etc/profile
 	if [ "$TARGETARCH" = "arm64" ]; then
 		export ARCH="aarch64"
 	fi
+	if [ "$TARGETARCH" = "riscv64" ]; then
+		export ARCH="riscv64"
+	fi
 	export TARGET=${ARCH}-unknown-linux-musl
 	export MAKEFLAGS="-j$(nproc)"
 	export LLVM_ROOT="/usr/lib/llvm${LLVM_VERSION}"
@@ -59,7 +62,10 @@ COPY <<-'EOF' /etc/profile
 	export LD=mold
 	export CC=clang
 	export CXX=clang++
-	export CCC_OVERRIDE_OPTIONS="${CCC_OVERRIDE_OPTIONS:-} +-fuse-ld=mold"
+
+	# NOTE: Can't strip prefix and use `:-` at the same time.
+	PREVIOUS_OVERRIDE="${CCC_OVERRIDE_OPTIONS:-}"
+	export CCC_OVERRIDE_OPTIONS="#${PREVIOUS_OVERRIDE#\#} +-fuse-ld=mold"
 
 	export LLVM_LIB=${LLVM_ROOT}/lib/${TARGET}
 	export LIBCC="$LLVM_LIB/libclang_rt.builtins.a"
@@ -354,6 +360,7 @@ EOF
 
 WORKDIR /
 
+ENV CONFIGURE_FLAGS=
 COPY --chmod=0755 <<-'EOF' build
 	set -eux
 	TARGET_VERSION=${1}
@@ -391,6 +398,17 @@ COPY --chmod=0755 <<-'EOF' build
 
 	# Tune how `rustc` is built for a faster build process.
 	export RUSTFLAGS="-Clinker=clang -Clink-arg=-Wl,-fuse-ld=mold $RUSTFLAGS"
+	# By default, LLVM during LTO promotes local symbols to globals with a unique
+	# suffix based on a hash of the module IR. When the IR differs across builds
+	# (even with identical code and architecture), this breaks determinism.
+	#
+	# The `-use-source-filename-for-promoted-locals` flag ensures that the source
+	# filename is used instead of the IR hash, guaranteeing consistent symbol
+	# names across identical builds.
+	#
+	# Relevant LLVM commit:
+	# https://github.com/llvm/llvm-project/commit/239c831de4d09530ebd4e254f9248764792afa5e
+	export RUSTFLAGS="-Cllvm-args=-use-source-filename-for-promoted-locals $RUSTFLAGS"
 	# For intermediary compilers, which aren't part of the committed output, we're more aggressive.
 	if [ ! "$TARGET_VERSION" = "$VERSION" ]; then
 		# Disable generating/embedding LLVM bitcode within the objects as it won't be used
@@ -449,7 +467,9 @@ COPY --chmod=0755 <<-'EOF' build
 
 	if [ ! "${TARGET_VERSION}" = "${VERSION}" ]; then
 		# We only build the first-stage Rust compiler, as sufficient for further bootstrapping.
+		#
 		# We specifically choose `library`, as in, the Rust standard library, as what to build up to.
+		#
 		# For more context on the changes made, see
 		# https:/blog.rust-lang.org/inside-rust/2025/05/29/redesigning-the-initial-bootstrap-sequence.
 		python3 x.py build --stage 1 library
@@ -483,8 +503,6 @@ COPY --chmod=0755 <<-'EOF' build
 	[ "${TARGET_VERSION}" == "${VERSION}" ] || rm -rf rustc-${TARGET_VERSION}-src /rust-${BUILD_VERSION}
 EOF
 
-# Ensure CONFIGURE_FLAGS is always set for the build script
-ENV CONFIGURE_FLAGS=
 ADD fetch/rustc-1.91.1-src.tar.gz .
 RUN --network=none ./build 1.91.1 1.90.0 ""
 
@@ -514,7 +532,7 @@ RUN --network=none <<-EOF
 		sed -i s/"crt_static_default = true"/"crt_static_default = false"/ "$file"
 	done
 EOF
-ENV CONFIGURE_FLAGS=
+
 RUN --network=none ./build ${VERSION} 1.96.1 cargo,clippy,rustfmt,rust-demangler,src
 RUN --network=none <<-EOF
 	set -eux
@@ -526,30 +544,5 @@ RUN --network=none <<-EOF
 	done
 EOF
 
-# Build std library for x86_64-unknown-none (bare-metal target for SEV-SNP/SVSM)
-FROM build AS build-rust-libstd-x86_64-none
-ARG VERSION
-WORKDIR /rustc-${VERSION}-src
-RUN --network=none <<-'EOF'
-	set -eux
-	export PATH="/usr/bin:${PATH}"
-	export LD_LIBRARY_PATH="/usr/lib:${LD_LIBRARY_PATH:-}"
-	export CC_x86_64_unknown_none="clang --target=x86_64-unknown-none"
-
-	# Rust 1.96.0's x.py --config flag takes a file path, not key=value.
-	# Append target-specific settings to bootstrap.toml (created by configure.py) instead.
-	echo "" >> bootstrap.toml
-	echo "[target.x86_64-unknown-none]" >> bootstrap.toml
-	echo "crt-static = true" >> bootstrap.toml
-
-	python3 x.py build --stage 1 --target x86_64-unknown-none \
-		library/std library/core library/alloc
-
-	mkdir -p /rootfs/lib/rustlib/x86_64-unknown-none/lib
-	cp -a build/x86_64-unknown-none/stage1-std/x86_64-unknown-none/release/deps/. /rootfs/lib/rustlib/x86_64-unknown-none/lib/
-	find /rootfs/lib/rustlib/x86_64-unknown-none -type f | head -20
-EOF
-
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
-COPY --from=build-rust-libstd-x86_64-none /rootfs/lib/rustlib/x86_64-unknown-none /lib/rustlib/x86_64-unknown-none
