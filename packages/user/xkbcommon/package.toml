@@ -1,0 +1,15 @@
+[package]
+name = "xkbcommon"
+version = "1.13.1"
+description = "X Keyboard Configuration library"
+license = "MIT"
+website = "https://xkbcommon.org"
+
+[sources.xkbcommon]
+hash = "aeb951964c2f7ecc08174cb5517962d157595e9e3f38fc4a130b91dc2f9fec18"
+format = "tar.gz"
+file = "xkbcommon-{version}.{format}"
+mirrors = ["https://github.com/xkbcommon/libxkbcommon/archive/refs/tags/{file}"]
+
+[build]
+depends = []

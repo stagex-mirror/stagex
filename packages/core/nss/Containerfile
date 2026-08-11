@@ -1,0 +1,29 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+COPY --from=stagex/core-nspr . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-zlib . /
+ARG VERSION
+ADD fetch/nss-${VERSION}-with-nspr-4.39.tar.gz .
+WORKDIR /nss-${VERSION}/nss
+ENV CFLAGS="-O2 -fPIC -ffile-prefix-map=/nss-${VERSION}=."
+ENV CXXFLAGS="-O2 -fPIC -ffile-prefix-map=/nss-${VERSION}=."
+ENV NSPR_INCLUDE_DIR="/usr/include/nspr"
+ENV NSPR_LIB_DIR="/usr/lib"
+ENV BUILD_OPT="1"
+ENV NSS_ENABLE_WERROR="0"
+ENV NSS_ENABLE_ECC="1"
+ENV NSS_DISABLE_GTESTS="1"
+ENV USE_64="1"
+RUN --network=none <<-EOF
+	make \
+		OS_TEST=x86_64 \
+		CCC=clang++ \
+		USE_64=1 \
+		-j$(nproc)
+	DESTDIR=/rootfs make install \
+		OS_TEST=x86_64 \
+		USE_64=1
+	install -Dm644 COPYING /rootfs/usr/share/licenses/nss/COPYING
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

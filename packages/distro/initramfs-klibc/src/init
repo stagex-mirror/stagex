@@ -2,14 +2,19 @@
 # initramfs/init — find squashfs system partition, mount, switch_root, and hand over
 
 export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+exec 1>/dev/console 2>&1
+
+echo "initramfs: starting"
 
 # Create mount points
 mkdir -p /mnt /proc /sys /dev
 
 # Mount essential virtual filesystems in initramfs
-mount -t proc proc /proc
-mount -t sysfs sysfs /sys
-mount -t devtmpfs devtmpfs /dev
+mount -t proc proc /proc || { echo "initramfs: failed to mount proc"; exit 1; }
+mount -t sysfs sysfs /sys || { echo "initramfs: failed to mount sysfs"; exit 1; }
+mount -t devtmpfs devtmpfs /dev || { echo "initramfs: failed to mount devtmpfs"; exit 1; }
+
+echo "initramfs: waiting for block devices..."
 
 # Wait for the block device node to appear in /dev
 i=0

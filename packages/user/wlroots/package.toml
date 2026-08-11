@@ -1,0 +1,15 @@
+[package]
+name = "wlroots"
+version = "0.20.1"
+description = "Compositor library for Wayland"
+license = "MIT"
+website = "https://gitlab.freedesktop.org/wlroots/wlroots"
+
+[sources.wlroots]
+hash = "a8541187baecaa2620938afacde88266cb7efa5928cb09d579d8efb07bc4901b"
+format = "tar.gz"
+file = "wlroots-{version}.{format}"
+mirrors = ["https://gitlab.freedesktop.org/wlroots/wlroots/-/releases/{version}/downloads/{file}"]
+
+[build]
+depends = []

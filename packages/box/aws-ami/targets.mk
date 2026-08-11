@@ -5,7 +5,7 @@
 # Default distro for EC2
 EC2_DISTRO ?= enclave-dev
 EC2_AMI_NAME ?= stagex-$(EC2_DISTRO)-$(shell date +%Y%m%d-%H%M%S)
-EC2_REGION ?= us-east-1
+EC2_REGION ?= us-east-2
 
 # Disk image path (extracted from distro build)
 EC2_DISK_IMG := $(CURDIR)/out/disk.img

@@ -1,0 +1,21 @@
+[package]
+name = "pipewire"
+version = "1.6.6"
+description = "Multimedia server for audio and video"
+license = "ISC"
+website = "https://pipewire.org"
+
+[sources.pipewire]
+hash = "2fdf073869bd171d29a92dc6857979864b53e3dc1a79ac76c15db78e5b12d9f8"
+format = "tar.bz2"
+file = "pipewire-{version}.{format}"
+mirrors = ["https://gitlab.freedesktop.org/pipewire/pipewire/-/archive/{version}/{file}"]
+
+[sources.wireplumber]
+hash = "2807a9d1e97075ba10f8b7b8156e31175817d620fa7fc84442b5474123eff5db"
+format = "tar.bz2"
+file = "wireplumber-0.5.14.{format}"
+mirrors = ["https://gitlab.freedesktop.org/pipewire/wireplumber/-/archive/0.5.14/{file}"]
+
+[build]
+depends = []

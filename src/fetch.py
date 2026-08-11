@@ -80,12 +80,13 @@ class ResourceFetcher(object):
         try:
           ResourceFetcher.download(url, filepath)
           print(f"\nFinished downloading: {file}")
-        except:
-          error = (file, source_info.hash, url, "download")
+        except Exception as e:
+          error = (file, source_info.hash, url, "download", str(e))
           print(f"Failed downloading from mirror: {url}")
+          print(f"  Reason: {e}")
           continue
         if not ResourceFetcher.verify(filepath, source_info.hash):
-          error = (file, source_info.hash, url, "verify_download")
+          error = (file, source_info.hash, url, "verify_download", "hash mismatch")
           print(f"Failed verifying downloaded file, from mirror: {url}")
           continue
         error = None
@@ -157,17 +158,20 @@ if __name__ == "__main__":
       for file_name in file_list:
         if file_name == "package.toml":
           package_files.append(os.path.join(base_dir, file_name))
-  pool = ThreadPoolExecutor()
-  if pool._max_workers >= 2:
-      thrds = pool._max_workers - 1
-  else:
-      thrds = 1
+  # Cap threads to avoid overwhelming mirrors; default to 8, override with FETCH_THREADS env var
+  thrds = int(os.environ.get("FETCH_THREADS", "8"))
   rfetchers = [ResourceFetcher(path) for path in package_files]
   with ThreadPoolExecutor(max_workers=thrds) as executor:
       futures = [executor.submit(fetcher.fetch_resource) for fetcher in rfetchers]
       pkgs = [f.result() for f in futures]
       print()
       if any(pkgs):
-        for fail in pkgs:
-          print(f"\nFailed: {fail}")
+        for fail_group in pkgs:
+          if fail_group:
+            for file, expected_hash, url, phase, reason in fail_group:
+              print(f"\nFailed: {file}")
+              print(f"  Phase: {phase}")
+              print(f"  Mirror: {url}")
+              print(f"  Reason: {reason}")
+              print(f"  Expected hash: {expected_hash}")
         exit(1)

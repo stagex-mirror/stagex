@@ -1,0 +1,15 @@
+[package]
+name = "libxcursor"
+version = "1.2.3"
+description = "X11 cursor management library"
+license = "MIT"
+website = "https://www.x.org"
+
+[sources.libxcursor]
+hash = "74e72da27e61cc2cfd2e267c14f500ea47775850048ee0b00362a55c9b60ee9b"
+format = "tar.gz"
+file = "libXcursor-{version}.{format}"
+mirrors = ["https://www.x.org/releases/individual/lib/{file}"]
+
+[build]
+depends = []

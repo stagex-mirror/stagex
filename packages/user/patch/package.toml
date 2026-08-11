@@ -9,4 +9,4 @@ website = "https://savannah.gnu.org/projects/patch/"
 hash = "f87cee69eec2b4fcbf60a396b030ad6aa3415f192aa5f7ee84cad5e11f7f5ae3"
 format = "tar.xz"
 file = "patch-{version}.{format}"
-mirrors = [ "https://ftpmirror.gnu.org/gnu/patch/{file}", "https://mirrors.kernel.org/gnu/patch/{file}"]
+mirrors = [ "https://mirrors.kernel.org/gnu/patch/{file}", "https://ftpmirror.gnu.org/gnu/patch/{file}"]

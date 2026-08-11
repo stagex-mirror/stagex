@@ -1,0 +1,15 @@
+[package]
+name = "cairo"
+version = "1.18.4"
+description = "2D graphics library with support for multiple output devices"
+license = "MIT"
+website = "https://www.cairographics.org/"
+
+[sources.cairo]
+hash = "445ed8208a6e4823de1226a74ca319d3600e83f6369f99b14265006599c32ccb"
+format = "tar.xz"
+file = "cairo-{version}.{format}"
+mirrors = ["https://www.cairographics.org/releases/{file}"]
+
+[build]
+depends = []

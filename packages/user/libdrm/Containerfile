@@ -1,0 +1,32 @@
+FROM stagex/pallet-clang-meson-busybox AS build
+ARG VERSION
+COPY --from=stagex/user-hwdata . /
+COPY --from=stagex/user-libpciaccess . /
+COPY --from=stagex/core-python . /
+ADD fetch/libdrm-${VERSION}.tar.xz .
+WORKDIR /libdrm-${VERSION}
+ENV CFLAGS="-O2 -fPIC -ffile-prefix-map=/libdrm-${VERSION}=."
+RUN --network=none <<-EOF
+	meson setup \
+		--prefix=/usr \
+		-Dlibdir=lib \
+		-Dintel=enabled \
+		-Dnouveau=enabled \
+		-Damdgpu=enabled \
+		-Dfreedreno=enabled \
+		-Detnaviv=enabled \
+		-Domap=enabled \
+		-Dradeon=enabled \
+		-Dtegra=enabled \
+		-Dvc4=enabled \
+		-Dvmwgfx=enabled \
+		-Dexynos=enabled \
+		-Dman-pages=disabled \
+		-Dvalgrind=disabled \
+		-Dcairo-tests=disabled \
+		. build
+	meson compile -C build
+	DESTDIR=/rootfs meson install -C build
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

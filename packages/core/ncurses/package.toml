@@ -9,5 +9,5 @@ website = "https://invisible-island.net/ncurses/"
 hash = "355b4cbbed880b0381a04c46617b7656e362585d52e9cf84a67e2009b749ff11"
 format = "tar.gz"
 file = "ncurses-{version}.{format}"
-mirrors = [ "https://ftpmirror.gnu.org/gnu/ncurses/{file}",
-           "https://mirrors.kernel.org/gnu/ncurses/{file}", ] 
+mirrors = [ "https://mirrors.kernel.org/gnu/ncurses/{file}",
+           "https://ftpmirror.gnu.org/gnu/ncurses/{file}", ] 

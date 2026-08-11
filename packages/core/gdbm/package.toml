@@ -9,4 +9,4 @@ website = "https://www.gnu.org/software/gdbm/"
 hash = "6a24504a14de4a744103dcb936be976df6fbe88ccff26065e54c1c47946f4a5e"
 format = "tar.gz"
 file = "gdbm-{version}.{format}"
-mirrors = [ "https://ftpmirror.gnu.org/gnu/gdbm/{file}", "https://mirrors.kernel.org/gnu/gdbm/{file}"] 
+mirrors = [ "https://mirrors.kernel.org/gnu/gdbm/{file}", "https://ftpmirror.gnu.org/gnu/gdbm/{file}"] 

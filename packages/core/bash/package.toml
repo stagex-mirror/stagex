@@ -9,4 +9,4 @@ license = "GPL-3.0-or-later"
 hash = "0d5cd86965f869a26cf64f4b71be7b96f90a3ba8b3d74e27e8e9d9d5550f31ba"
 format = "tar.gz"
 file = "bash-{version}.{format}"
-mirrors = [ "https://ftpmirror.gnu.org/gnu/bash/{file}", "https://mirrors.kernel.org/gnu/bash/{file}"]
+mirrors = [ "https://mirrors.kernel.org/gnu/bash/{file}", "https://ftpmirror.gnu.org/gnu/bash/{file}"]

@@ -9,4 +9,4 @@ website = "https://www.gnu.org/software/texinfo/"
 hash = "51f74eb0f51cfa9873b85264dfdd5d46e8957ec95b88f0fb762f63d9e164c72e"
 format = "tar.xz"
 file = "texinfo-{version}.{format}"
-mirrors = [ "https://ftpmirror.gnu.org/gnu/texinfo/{file}", "https://mirrors.kernel.org/gnu/texinfo/{file}"] 
+mirrors = [ "https://mirrors.kernel.org/gnu/texinfo/{file}", "https://ftpmirror.gnu.org/gnu/texinfo/{file}"] 

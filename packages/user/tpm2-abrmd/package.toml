@@ -1,6 +1,6 @@
 [package]
 name = "tpm2-abrmd"
-version = "5.5"
+version = "3.0.0"
 description = "TPM 2.0 Access Broker and Resource Manager"
 homepage = "https://github.com/tpm2-software/tpm2-abrmd"
 license = "BSD-2-Clause"
@@ -8,5 +8,5 @@ license = "BSD-2-Clause"
 [sources.tpm2-abrmd]
 format = "tar.gz"
 file = "tpm2-abrmd-{version}.{format}"
-hash = "d5558cd419c8d46bdc958064cb97f963d1ea793866414c025906ec15033512ed"
+hash = "7f5951375c7cae8698db7bf64e8c7068bed20be645e67f3a9ad8c2bd62a1c57f"
 mirrors = [ "https://github.com/tpm2-software/tpm2-abrmd/archive/refs/tags/{version}/{file}",]

@@ -1,4 +1,14 @@
 FROM stagex/pallet-go AS build
+ARG GOPROXY
+ENV GOPROXY=${GOPROXY}
+ARG GOSUMDB
+ENV GOSUMDB=${GOSUMDB}
+ARG GOPATH
+ENV GOPATH=${GOPATH}
+ARG GOBIN
+ENV GOBIN=${GOBIN}
+ARG PATH
+ENV PATH=${PATH}
 ARG VERSION
 ADD fetch/opentofu-${VERSION}.tar.gz .
 WORKDIR /opentofu-${VERSION}
@@ -12,6 +22,10 @@ RUN --network=none <<-EOF
 EOF
 
 FROM build AS build-provider-aws
+ARG GOPROXY
+ENV GOPROXY=${GOPROXY}
+ARG GOSUMDB
+ENV GOSUMDB=${GOSUMDB}
 ADD fetch/provider-6.57.1.tar.gz .
 WORKDIR terraform-provider-aws-6.57.1
 RUN sed -i 's/^go 1\.26\.5$/go 1.26.4/' go.mod

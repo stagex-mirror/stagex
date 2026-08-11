@@ -14,25 +14,25 @@ mirrors = ["https://musl.libc.org/releases/{file}"]
 version = "13.1.0"
 hash = "61d684f0aa5e76ac6585ad8898a2427aade8979ed5e7f85492286c4dfc13ee86"
 file = "gcc-{version}.tar.xz"
-mirrors = ["https://ftpmirror.gnu.org/gnu/gcc/gcc-{version}/{file}", "https://mirrors.kernel.org/gnu/gcc/gcc-{version}/{file}"]
+mirrors = ["https://mirrors.kernel.org/gnu/gcc/gcc-{version}/{file}", "https://ftpmirror.gnu.org/gnu/gcc/gcc-{version}/{file}"]
 
 [sources.gmp]
 version = "6.2.1"
 hash = "eae9326beb4158c386e39a356818031bd28f3124cf915f8c5b1dc4c7a36b4d7c"
 file = "gmp-{version}.tar.bz2"
-mirrors = ["https://gcc.gnu.org/pub/gcc/infrastructure/{file}", "https://ftpmirror.gnu.org/gnu/gmp/{file}", "https://mirrors.kernel.org/gnu/gmp/{file}"]
+mirrors = ["https://gcc.gnu.org/pub/gcc/infrastructure/{file}", "https://mirrors.kernel.org/gnu/gmp/{file}", "https://ftpmirror.gnu.org/gnu/gmp/{file}"]
 
 [sources.mpfr]
 version = "4.1.0"
 hash = "feced2d430dd5a97805fa289fed3fc8ff2b094c02d05287fd6133e7f1f0ec926"
 file = "mpfr-{version}.tar.bz2"
-mirrors = ["https://gcc.gnu.org/pub/gcc/infrastructure/{file}", "https://ftpmirror.gnu.org/gnu/mpfr/{file}", "https://mirrors.kernel.org/gnu/mpfr/{file}"]
+mirrors = ["https://gcc.gnu.org/pub/gcc/infrastructure/{file}", "https://mirrors.kernel.org/gnu/mpfr/{file}", "https://ftpmirror.gnu.org/gnu/mpfr/{file}"]
 
 [sources.mpc]
 version = "1.2.1"
 hash = "17503d2c395dfcf106b622dc142683c1199431d095367c6aacba6eec30340459"
 file = "mpc-{version}.tar.gz"
-mirrors = ["https://gcc.gnu.org/pub/gcc/infrastructure/{file}", "https://ftpmirror.gnu.org/gnu/mpc/{file}", "https://mirrors.kernel.org/gnu/mpc/{file}"]
+mirrors = ["https://gcc.gnu.org/pub/gcc/infrastructure/{file}", "https://mirrors.kernel.org/gnu/mpc/{file}", "https://ftpmirror.gnu.org/gnu/mpc/{file}"]
 
 [sources.isl]
 version = "0.24"
@@ -50,7 +50,7 @@ mirrors = ["https://mirrors.edge.kernel.org/pub/linux/kernel/v6.x/{file}"]
 version = "2.45"
 hash = "c50c0e7f9cb188980e2cc97e4537626b1672441815587f1eab69d2a1bfbef5d2"
 file = "binutils-{version}.tar.xz"
-mirrors = ["https://mirrors.kernel.org/gnu/binutils/{file}"]
+mirrors = ["https://ftpmirror.gnu.org/gnu/binutils/{file}"]
 
 [sources.busybox]
 version = "1.35.0"
@@ -62,7 +62,7 @@ mirrors = ["https://busybox.net/downloads/{file}"]
 version = "4.4"
 hash = "581f4d4e872da74b3941c874215898a7d35802f03732bdccee1d4a7979105d18"
 file = "make-{version}.tar.gz"
-mirrors = ["https://ftpmirror.gnu.org/gnu/make/{file}", "https://mirrors.kernel.org/gnu/make/{file}"]
+mirrors = ["https://mirrors.kernel.org/gnu/make/{file}", "https://ftpmirror.gnu.org/gnu/make/{file}"]
 
 [sources.cmake]
 version = "3.31.5"

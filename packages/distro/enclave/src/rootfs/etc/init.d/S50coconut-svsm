@@ -1,26 +1,37 @@
 #!/bin/sh
-# S50coconut-svsm — start SEV-SNP Attestation Server VM if SEV-SNP is available
+# S50coconut-svsm — detect SEV-SNP and verify SVSM TPM availability
 SVSM="/usr/share/coconut-svsm/svsm.igvm"
 SEV_DEVICE="/dev/sev-guest"
+TPM_DEVICE="/dev/tpmrm0"
 
 start() {
 	[ -f "$SVSM" ] || { echo "coconut-svsm: no IGVM image, skipping"; return 0; }
 
 	if [ ! -e "$SEV_DEVICE" ]; then
-		echo "coconut-svsm: SEV-SNP not available, skipping" >&2
+		echo "coconut-svsm: SEV-SNP not available ($SEV_DEVICE missing), skipping" >&2
 		return 0
 	fi
 
-	printf "Starting coconut-svsm: "
-	# In SEV-SNP, the SVSM runs as a guest VM managed by the hypervisor.
-	# No userspace daemon needed — just ensure firmware is available.
-	echo "OK"
+	printf "coconut-svsm: SEV-SNP detected"
+
+	# Wait up to 5 seconds for SVSM TPM device to appear (kernel tpm_svsm driver)
+	for i in 1 2 3 4 5; do
+		[ -e "$TPM_DEVICE" ] && break
+		sleep 1
+	done
+
+	if [ -e "$TPM_DEVICE" ]; then
+		printf ", $TPM_DEVICE available"
+	else
+		printf ", WARNING: $TPM_DEVICE not found" >&2
+	fi
+
+	echo ""
 	return 0
 }
 
 stop() {
-	printf "Stopping coconut-svsm: "
-	echo "OK"
+	# SVSM is firmware-managed; nothing to stop
 	return 0
 }
 
@@ -29,6 +40,11 @@ status() {
 		echo "SEV-SNP: available"
 	else
 		echo "SEV-SNP: not available"
+	fi
+	if [ -e "$TPM_DEVICE" ]; then
+		echo "SVSM TPM: $TPM_DEVICE available"
+	else
+		echo "SVSM TPM: $TPM_DEVICE not available"
 	fi
 }
 

@@ -35,6 +35,14 @@
 - **README distros section** — added planned distro table
 - **tmpfs mounts in init** — /run, /tmp, /var/log, /var/run, /var/tmp, /etc/keys, /root
 
+### Completed: TPM2/SEV-SNP Attestation (July 30 - Aug 5, lance/distros)
+- **TPM2 attestation on AWS EC2** — Successfully verified on c6a.large. PCR 7 matches between local QEMU and AWS: `65CAF8DD1E0EA7A6347B635D2B379C93B9A1351EDC2AFC3ECDA700E534EB3068`. AWS NitroTPM v2.0 via `/dev/tpmrm0`.
+- **rust-keylime agent** — Replaced Python keylime with rust-keylime v0.2.10 (8.7MB binary). Added `skip_registration` patch for standalone mode. Keylime serves TPM2 quotes over HTTP port 9002. `src/verify-enclave` script for remote verification.
+- **coconut-svsm** — Added as `enclave-sev-snp` distro variant replacing swtpm with coconut-svsm for SEV-SNP e-vTPM. S50coconut-svsm init script detects `/dev/sev-guest`.
+- **core-rust bare-metal target** — Added `x86_64-unknown-none` std library (subpackage `libstd-x86_64-none`). Enables coconut-svsm to compile no_std without rustup. Build stage uses `FROM build AS build-rust-libstd-x86_64-none` to preserve cache.
+- **cbindgen** — Added as `user-cbindgen` (packages/user/cbindgen/).
+- **AWS EC2 box** — Updated to OpenTofu with built-in AWS provider. Added `enable_tpm = true` and `enable_sev_snp = true`. Fixed AMI creation (`role_name="vmimport"`). Automated pipeline: `make aws-ami-deploy` → `make aws-ec2-deploy` → `make aws-keylime-test`.
+
 ### Current Blocker: Config Drive (ISO CD-ROM)
 - **OpenStack-style config drive** — ISO9660 CD-ROM with `hostname` and `authorized_keys`, attached via `-drive ... if=none,media=cdrom` + `-device virtio-scsi-pci` + `-device scsi-cd`
 - SSH works end-to-end (tinysshd connects, key exchange succeeds) but auth fails because config drive never mounts

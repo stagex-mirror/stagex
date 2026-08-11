@@ -9,4 +9,4 @@ website = "https://www.gnu.org/software/sed/"
 hash = "b8e72182b2ec96a3574e2998c47b7aaa64cc20ce000d8e9ac313cc07cecf28c7"
 format = "tar.xz"
 file = "sed-{version}.{format}"
-mirrors = [ "https://ftpmirror.gnu.org/gnu/sed/{file}", "https://mirrors.kernel.org/gnu/sed/{file}"] 
+mirrors = [ "https://mirrors.kernel.org/gnu/sed/{file}", "https://ftpmirror.gnu.org/gnu/sed/{file}"] 

@@ -9,4 +9,4 @@ license = "GPL-2.0-or-later AND LGPL-2.0-or-later"
 hash = "f81f5860666b0bc7d84baddefa60d1cb9fa6fceb2398cc3baca6afaa60266675"
 format = "tar.xz"
 file = "libtool-{version}.{format}"
-mirrors = [ "https://ftpmirror.gnu.org/gnu/libtool/{file}", "https://mirrors.kernel.org/gnu/libtool/{file}"] 
+mirrors = [ "https://mirrors.kernel.org/gnu/libtool/{file}", "https://ftpmirror.gnu.org/gnu/libtool/{file}"] 

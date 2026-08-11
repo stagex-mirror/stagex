@@ -1,0 +1,15 @@
+[package]
+name = "libdisplay-info"
+version = "0.3.0"
+description = "Display info parsing library"
+license = "MIT"
+website = "https://gitlab.freedesktop.org/emersion/libdisplay-info"
+
+[sources.libdisplay-info]
+hash = "915cc6713b7b2e173a90f9db248fb8994f9668171fecc1e9fded5e36bb34d890"
+format = "tar.bz2"
+file = "libdisplay-info-{version}.{format}"
+mirrors = ["https://gitlab.freedesktop.org/emersion/libdisplay-info/-/archive/{version}/{file}"]
+
+[build]
+depends = []

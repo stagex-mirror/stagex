@@ -1,0 +1,15 @@
+[package]
+name = "seatd"
+version = "0.9.3"
+description = "Seat management daemon and libseat library"
+license = "MIT"
+website = "https://git.sr.ht/~kennylevinsen/seatd"
+
+[sources.seatd]
+hash = "302564d54d8e28191fadfd734f2675ecb0c9e0615a58011b89ef15dfa4dbaa96"
+format = "tar.gz"
+file = "seatd-{version}.{format}"
+mirrors = ["https://git.sr.ht/~kennylevinsen/seatd/archive/{version}.tar.gz"]
+
+[build]
+depends = []

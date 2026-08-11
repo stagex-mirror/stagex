@@ -1,0 +1,15 @@
+[package]
+name = "nspr"
+version = "4.39"
+description = "Netscape Portable Runtime library"
+license = "MPL-2.0"
+website = "https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSPR"
+
+[sources.nspr]
+hash = "bbd02ee87a55676063a63e5bc819e0227de2666b47307b2a0134414cdf42368e"
+format = "tar.gz"
+file = "nspr-{version}.{format}"
+mirrors = ["https://ftp.mozilla.org/pub/nspr/releases/v{version}/src/{file}"]
+
+[build]
+depends = []

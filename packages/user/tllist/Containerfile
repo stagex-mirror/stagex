@@ -1,0 +1,12 @@
+FROM stagex/pallet-clang-meson-busybox AS build
+ARG VERSION
+ADD fetch/tllist-${VERSION}.tar.gz .
+WORKDIR /tllist
+ENV CFLAGS="-O2 -fPIC -ffile-prefix-map=/tllist=${VERSION}=."
+RUN --network=none <<-EOF
+	meson setup --prefix=/usr build
+	meson compile -C build
+	DESTDIR=/rootfs meson install -C build
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

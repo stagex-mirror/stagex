@@ -6,7 +6,7 @@ license = "CC0-1.0"
 website = "https://codeberg.org/heiko/rsop"
 
 [sources.rsop]
-hash = "f79b119ac2d88b84301de3e248656153dbed4a5ab9478e0b456d874b64a8eed5"
+hash = "e953e7d14dad5ffc272ec608819a7d09010f185825b5f9c608f6b0331b332220"
 format = "tar.gz"
 file = "rsop-v{version}.{format}"
 mirrors = ["https://codeberg.org/heiko/rsop/archive/rsop/v{version}.{format}"]

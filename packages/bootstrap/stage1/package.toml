@@ -35,16 +35,16 @@ mirrors = [
 hash = "6b217a064c6d06603d50a3ad05129aef9435367810c10894210b8dad965d2306"
 file = "autoconf-2.53.tar.bz2"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/autoconf/{file}",
   "https://mirrors.kernel.org/gnu/autoconf/{file}",
+  "https://ftpmirror.gnu.org/gnu/autoconf/{file}",
 ]
 
 [sources.coreutils_50]
 hash = "c25b36b8af6e0ad2a875daf4d6196bd0df28a62be7dd252e5f99a4d5d7288d95"
 file = "coreutils-5.0.tar.bz2"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/coreutils/{file}",
   "https://mirrors.kernel.org/gnu/coreutils/{file}",
+  "https://ftpmirror.gnu.org/gnu/coreutils/{file}",
 ]
 
 [sources.curl_850]
@@ -56,16 +56,16 @@ mirrors = ["https://curl.se/download/{file}"]
 hash = "e40b8f018c1da64edd1cc9a6fce5fa63b2e707e404e20cad91fbae337c98a5b7"
 file = "make-4.2.1.tar.gz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/make/{file}",
   "https://mirrors.kernel.org/gnu/make/{file}",
+  "https://ftpmirror.gnu.org/gnu/make/{file}",
 ]
 
 [sources.tar_134]
 hash = "63bebd26879c5e1eea4352f0d03c991f966aeb3ddeb3c7445c902568d5411d28"
 file = "tar-1.34.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/tar/{file}",
   "https://mirrors.kernel.org/gnu/tar/{file}",
+  "https://ftpmirror.gnu.org/gnu/tar/{file}",
 ]
 
 [sources.gnulib_30820c]
@@ -83,7 +83,7 @@ mirrors = [
 [sources.kbd_115]
 hash = "92f59ecaa85fe2746ef1830ac01eef84c394a413f7c7326b8d0a5c819e87502f"
 file = "kbd-1.15.tar.xz"
-mirrors = ["https://mirrors.kernel.org/pub/linux/utils/kbd/{file}"]
+mirrors = ["https://ftpmirror.gnu.org/pub/linux/utils/kbd/{file}"]
 
 [sources.flex_2533]
 hash = "c40385e142989c91989413f3c5a31282b2ffdca16b69cd3ecfde537b8a474921"
@@ -97,8 +97,8 @@ mirrors = [
 hash = "988403c1542d15ad044600b909997ba3079b10e03224c61188117f3676b02caa"
 file = "texinfo-6.7.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/texinfo/{file}",
   "https://mirrors.kernel.org/gnu/texinfo/{file}",
+  "https://ftpmirror.gnu.org/gnu/texinfo/{file}",
 ]
 
 [sources.gnulib_b81ec69]
@@ -117,32 +117,32 @@ mirrors = [
 hash = "ae9a5789e23459e59606e6714723f2d3ffc31c03174191ef0d015bdf06007450"
 file = "binutils-2.41.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/binutils/{file}",
   "https://mirrors.kernel.org/gnu/binutils/{file}",
+  "https://ftpmirror.gnu.org/gnu/binutils/{file}",
 ]
 
 [sources.automake_196]
 hash = "8eccaa98e1863d10e4a5f861d8e2ec349a23e88cb12ad10f6b6f79022ad2bb8d"
 file = "automake-1.9.6.tar.bz2"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/automake/{file}",
   "https://mirrors.kernel.org/gnu/automake/{file}",
+  "https://ftpmirror.gnu.org/gnu/automake/{file}",
 ]
 
 [sources.autoconf_271]
 hash = "f14c83cfebcc9427f2c3cea7258bd90df972d92eb26752da4ddad81c87a0faa4"
 file = "autoconf-2.71.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/autoconf/{file}",
   "https://mirrors.kernel.org/gnu/autoconf/{file}",
+  "https://ftpmirror.gnu.org/gnu/autoconf/{file}",
 ]
 
 [sources.findutils_4233]
 hash = "813cd9405aceec5cfecbe96400d01e90ddad7b512d3034487176ce5258ab0f78"
 file = "findutils-4.2.33.tar.gz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/findutils/{file}",
   "https://mirrors.kernel.org/gnu/findutils/{file}",
+  "https://ftpmirror.gnu.org/gnu/findutils/{file}",
 ]
 
 [sources.gnulib_8e128e]
@@ -269,8 +269,8 @@ mirrors = ["http://ftp.unicode.org/Public/15.0.0/ucd/CaseFolding.txt"]
 hash = "90e5e93cc724e4ebe12ede80df1634063c7a855692685919bfe60b556c9bd09e"
 file = "diffutils-3.10.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/diffutils/{file}",
   "https://mirrors.kernel.org/gnu/diffutils/{file}",
+  "https://ftpmirror.gnu.org/gnu/diffutils/{file}",
 ]
 
 [sources.gnulib_5d2fe24]
@@ -289,8 +289,8 @@ mirrors = [
 hash = "e8a6eb9d28ddcba8ffef3fa211653239e9bf239aba6a01a6b7cfc7ceaec69cbd"
 file = "autoconf-archive-2021.02.19.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/autoconf-archive/{file}",
   "https://mirrors.kernel.org/gnu/autoconf-archive/{file}",
+  "https://ftpmirror.gnu.org/gnu/autoconf-archive/{file}",
 ]
 
 [sources.v1001]
@@ -304,8 +304,8 @@ mirrors = [
 hash = "af6ba39142220687c500f79b4aa2f181d9b24e4f8d8ec497cea4ba26c64bedaf"
 file = "automake-1.15.1.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/automake/{file}",
   "https://mirrors.kernel.org/gnu/automake/{file}",
+  "https://ftpmirror.gnu.org/gnu/automake/{file}",
 ]
 
 [sources.python_256]
@@ -347,8 +347,8 @@ mirrors = ["http://ftp.unicode.org/Public/4.1.0/ucd/EastAsianWidth.txt"]
 hash = "4f7f217f057ce655ff22559ad221a0fd8ef84ad1fc5fcb6990cecc333aa1635d"
 file = "libtool-2.4.7.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/libtool/{file}",
   "https://mirrors.kernel.org/gnu/libtool/{file}",
+  "https://ftpmirror.gnu.org/gnu/libtool/{file}",
 ]
 
 [sources.gnulib_a521820]
@@ -367,8 +367,8 @@ mirrors = [
 hash = "f757158a04889b265203eecd8ca92568e2a67c3b9062fa6bff7a0a6efd2244ac"
 file = "autoconf-2.55.tar.bz2"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/autoconf/{file}",
   "https://mirrors.kernel.org/gnu/autoconf/{file}",
+  "https://ftpmirror.gnu.org/gnu/autoconf/{file}",
 ]
 
 [sources.dist_35_236orig]
@@ -380,8 +380,8 @@ mirrors = ["http://deb.debian.org/debian/pool/main/d/dist/{file}"]
 hash = "d5f2489c4056a31528e3ada4adacc23d498532b0af1a980f2f76158162b139d6"
 file = "diffutils-2.7.tar.gz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/diffutils/{file}",
   "https://mirrors.kernel.org/gnu/diffutils/{file}",
+  "https://ftpmirror.gnu.org/gnu/diffutils/{file}",
 ]
 
 [sources.shadow_4143]
@@ -395,8 +395,8 @@ mirrors = [
 hash = "033ee656d98cfc04a826eab27eed6e6a276d15bbb980a7cd71d00f30227aaaa8"
 file = "mes-0.27.tar.gz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/mes/{file}",
   "https://mirrors.kernel.org/gnu/mes/{file}",
+  "https://ftpmirror.gnu.org/gnu/mes/{file}",
 ]
 
 [sources.nyacc_1002_lb1]
@@ -412,24 +412,24 @@ mirrors = [
 hash = "4f46d1f9380c8a3506280750f630e9fc915cb1a435b724be56b499d016368718"
 file = "automake-1.11.2.tar.bz2"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/automake/{file}",
   "https://mirrors.kernel.org/gnu/automake/{file}",
+  "https://ftpmirror.gnu.org/gnu/automake/{file}",
 ]
 
 [sources.gawk_304]
 hash = "5cc35def1ff4375a8b9a98c2ff79e95e80987d24f0d42fdbb7b7039b3ddb3fb0"
 file = "gawk-3.0.4.tar.gz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/gawk/{file}",
   "https://mirrors.kernel.org/gnu/gawk/{file}",
+  "https://ftpmirror.gnu.org/gnu/gawk/{file}",
 ]
 
 [sources.gzip_124]
 hash = "1ca41818a23c9c59ef1d5e1d00c0d5eaa2285d931c0fb059637d7c0cc02ad967"
 file = "gzip-1.2.4.tar.gz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/gzip/{file}",
   "https://mirrors.kernel.org/gnu/gzip/{file}",
+  "https://ftpmirror.gnu.org/gnu/gzip/{file}",
 ]
 
 [sources.heirloom_devtools_070527]
@@ -443,8 +443,8 @@ mirrors = [
 hash = "7454eb6935db17c6655576c2e1b0fabefd38b4d0936e0f87f48cd062ce91a057"
 file = "gzip-1.13.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/gzip/{file}",
   "https://mirrors.kernel.org/gnu/gzip/{file}",
+  "https://ftpmirror.gnu.org/gnu/gzip/{file}",
 ]
 
 [sources.gnulib_5651802]
@@ -470,8 +470,8 @@ mirrors = [
 hash = "ff2bf7656c4d1c6fdda3b8bebb21f09153a736bcba169aaf65eab25fa113bf3a"
 file = "automake-1.16.3.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/automake/{file}",
   "https://mirrors.kernel.org/gnu/automake/{file}",
+  "https://ftpmirror.gnu.org/gnu/automake/{file}",
 ]
 
 [sources.python_3816]
@@ -580,24 +580,24 @@ mirrors = ["https://www.ietf.org/rfc/{file}"]
 hash = "588546b945bba4b70b6a3a616e80b4ab466e3f33024a352fc2198112cdbb3ae2"
 file = "gperf-3.1.tar.gz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/gperf/{file}",
   "https://mirrors.kernel.org/gnu/gperf/{file}",
+  "https://ftpmirror.gnu.org/gnu/gperf/{file}",
 ]
 
 [sources.autoconf_257]
 hash = "e1035aa2c21fae2a934d1ab56c774ce9d22717881dab8a1a5b16d294fb793489"
 file = "autoconf-2.57.tar.bz2"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/autoconf/{file}",
   "https://mirrors.kernel.org/gnu/autoconf/{file}",
+  "https://ftpmirror.gnu.org/gnu/autoconf/{file}",
 ]
 
 [sources.bison_342]
 hash = "27d05534699735dc69e86add5b808d6cb35900ad3fd63fa82e3eb644336abfa0"
 file = "bison-3.4.2.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/bison/{file}",
   "https://mirrors.kernel.org/gnu/bison/{file}",
+  "https://ftpmirror.gnu.org/gnu/bison/{file}",
 ]
 
 [sources.gnulib_672663a]
@@ -616,16 +616,16 @@ mirrors = [
 hash = "13720965b5f4fc3a0d4b61dd37e7565c741da9a5be24edc2ae00182fc1b3588c"
 file = "bash-5.2.15.tar.gz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/bash/{file}",
   "https://mirrors.kernel.org/gnu/bash/{file}",
+  "https://ftpmirror.gnu.org/gnu/bash/{file}",
 ]
 
 [sources.autoconf_259]
 hash = "f0cde70a8f135098a6a3e85869f2e1cc3f141beea766fa3d6636e086cd8b90a7"
 file = "autoconf-2.59.tar.bz2"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/autoconf/{file}",
   "https://mirrors.kernel.org/gnu/autoconf/{file}",
+  "https://ftpmirror.gnu.org/gnu/autoconf/{file}",
 ]
 
 [sources.python_237]
@@ -711,31 +711,31 @@ mirrors = ["http://ixpeering.dl.sourceforge.net/project/lzmautils/{file}"]
 hash = "e98ab43bb839c31696a4202e5b6ff388b391659ef2387cf9365019fad17e1adc"
 file = "automake-1.10.3.tar.bz2"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/automake/{file}",
   "https://mirrors.kernel.org/gnu/automake/{file}",
+  "https://ftpmirror.gnu.org/gnu/automake/{file}",
 ]
 
 [sources.patch_259]
 hash = "ecb5c6469d732bcf01d6ec1afe9e64f1668caba5bfdb103c28d7f537ba3cdb8a"
 file = "patch-2.5.9.tar.gz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/patch/{file}",
   "https://mirrors.kernel.org/gnu/patch/{file}",
+  "https://ftpmirror.gnu.org/gnu/patch/{file}",
 ]
 
 [sources.grep_24]
 hash = "a32032bab36208509466654df12f507600dfe0313feebbcd218c32a70bf72a16"
 file = "grep-2.4.tar.gz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/grep/{file}",
   "https://mirrors.kernel.org/gnu/grep/{file}",
+  "https://ftpmirror.gnu.org/gnu/grep/{file}",
 ]
 
 [sources.bzip2_108]
 hash = "47fd74b2ff83effad0ddf62074e6fad1f6b4a77a96e121ab421c20a216371a1f"
 file = "bzip2-1.0.8.tar.xz"
 mirrors = [
-  "https://mirrors.kernel.org/slackware/slackware-14.0/patches/source/bzip2/{file}",
+  "https://ftpmirror.gnu.org/slackware/slackware-14.0/patches/source/bzip2/{file}",
 ]
 
 [sources.python_201]
@@ -761,7 +761,7 @@ mirrors = ["https://download.savannah.gnu.org/releases/tinycc/{file}"]
 [sources.util_linux_2191]
 hash = "d12e0f1be0257eadca6a2653acfb4792571c9f7189ed642873363f9b6797bb51"
 file = "util-linux-2.19.1.tar.xz"
-mirrors = ["https://mirrors.kernel.org/pub/linux/utils/util-linux/v2.19/{file}"]
+mirrors = ["https://ftpmirror.gnu.org/pub/linux/utils/util-linux/v2.19/{file}"]
 
 [sources.flex_2511]
 hash = "bc79b890f35ca38d66ff89a6e3758226131e51ccbd10ef78d5ff150b7bd73689"
@@ -775,8 +775,8 @@ mirrors = [
 hash = "ac610bda97abe0d9f6b7c963255a11dcb196c25e337c61f94e4778d632f1d8fd"
 file = "patch-2.7.6.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/patch/{file}",
   "https://mirrors.kernel.org/gnu/patch/{file}",
+  "https://ftpmirror.gnu.org/gnu/patch/{file}",
 ]
 
 [sources.gnulib_e017871]
@@ -812,8 +812,8 @@ mirrors = [
 hash = "f8a13466b48faa3ba99fe17a069e71c9ab006d9b1cfabe699f8c60a47d5bb49a"
 file = "autogen-5.18.16.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/autogen/rel5.18.16/{file}",
   "https://mirrors.kernel.org/gnu/autogen/rel5.18.16/{file}",
+  "https://ftpmirror.gnu.org/gnu/autogen/rel5.18.16/{file}",
 ]
 
 [sources.autogen_51816gz]
@@ -842,8 +842,8 @@ mirrors = [
 hash = "fd4829912cddd12f84181c3451cc752be224643e87fac497b69edddadc49b4f2"
 file = "gmp-6.2.1.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/gmp/{file}",
   "https://mirrors.kernel.org/gnu/gmp/{file}",
+  "https://ftpmirror.gnu.org/gnu/gmp/{file}",
 ]
 
 [sources.libarchive_352]
@@ -865,14 +865,14 @@ mirrors = ["http://distfiles.macports.org/pkgconfig/{file}"]
 hash = "a88f3ddaa7c89cf4c34284385be41ca85e9135369c333fdfa232f3bf48223213"
 file = "m4-1.4.7.tar.bz2"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/m4/{file}",
   "https://mirrors.kernel.org/gnu/m4/{file}",
+  "https://ftpmirror.gnu.org/gnu/m4/{file}",
 ]
 
 [sources.linux_414336]
 hash = "0820fdb7971c6974338081c11fbf2dc869870501e7bdcac4d0ed58ba1f57b61c"
 file = "linux-4.14.336.tar.xz"
-mirrors = ["https://mirrors.kernel.org/pub/linux/kernel/v4.x/{file}"]
+mirrors = ["https://ftpmirror.gnu.org/pub/linux/kernel/v4.x/{file}"]
 
 [sources.libmd_110]
 hash = "1bd6aa42275313af3141c7cf2e5b964e8b1fd488025caf2f971f43b00776b332"
@@ -895,14 +895,14 @@ mirrors = [
 hash = "a4adadf76b496a6bc50795702253ecfcb6f0d159b68038f31a5362009340bca2"
 file = "help2man-1.36.4.tar.gz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/help2man/{file}",
   "https://mirrors.kernel.org/gnu/help2man/{file}",
+  "https://ftpmirror.gnu.org/gnu/help2man/{file}",
 ]
 
 [sources.libunistring_0910]
 hash = "eb8fb2c3e4b6e2d336608377050892b54c3c983b646c561836550863003c05d7"
 file = "libunistring-0.9.10.tar.xz"
-mirrors = ["https://ftpmirror.gnu.org/gnu/libunistring/{file}"]
+mirrors = ["https://mirrors.kernel.org/gnu/libunistring/{file}"]
 
 [sources.gnulib_52a06cb3]
 hash = "009989b81c0bebc5f6550636ed653fbcb237dafc2af5c706f3522087ca571e4d"
@@ -920,8 +920,8 @@ mirrors = [
 hash = "b10d7e9e354be72aee4e4911cf19dd27b5c527d4e7200857365b5fcdeea0dffb"
 file = "bison-2.3.tar.bz2"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/bison/{file}",
   "https://mirrors.kernel.org/gnu/bison/{file}",
+  "https://ftpmirror.gnu.org/gnu/bison/{file}",
 ]
 
 [sources.gnulib_b28236b]
@@ -940,8 +940,8 @@ mirrors = [
 hash = "d20fcbb537e02dcf1383197ba05bd0734ef7bf5db06bdb241eb69b7d16b73192"
 file = "gettext-0.21.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/gettext/{file}",
   "https://mirrors.kernel.org/gnu/gettext/{file}",
+  "https://ftpmirror.gnu.org/gnu/gettext/{file}",
 ]
 
 [sources.gnulib_7daa86f]
@@ -965,8 +965,8 @@ mirrors = ["https://musl.libc.org/releases/{file}"]
 hash = "b79ea44af91b93d17cd3fe80bdae6ed43770678a9a5ae192ccea803ebb657ee1"
 file = "grub-2.06.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/grub/{file}",
   "https://mirrors.kernel.org/gnu/grub/{file}",
+  "https://ftpmirror.gnu.org/gnu/grub/{file}",
 ]
 
 [sources.gnulib_d271f86]
@@ -1054,16 +1054,16 @@ mirrors = ["http://ftp.unicode.org/Public/9.0.0/ucd/CaseFolding.txt"]
 hash = "17503d2c395dfcf106b622dc142683c1199431d095367c6aacba6eec30340459"
 file = "mpc-1.2.1.tar.gz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/mpc/{file}",
   "https://mirrors.kernel.org/gnu/mpc/{file}",
+  "https://ftpmirror.gnu.org/gnu/mpc/{file}",
 ]
 
 [sources.make_382]
 hash = "e2c1a73f179c40c71e2fe8abf8a8a0688b8499538512984da4a76958d0402966"
 file = "make-3.82.tar.bz2"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/make/{file}",
   "https://mirrors.kernel.org/gnu/make/{file}",
+  "https://ftpmirror.gnu.org/gnu/make/{file}",
 ]
 
 [sources.perl_5003]
@@ -1084,7 +1084,7 @@ mirrors = ["http://www.cpan.org/src/5.0/{file}"]
 [sources.coreutils_610]
 hash = "8b05bba1b2726a164e444c314e3f359604b58216be704bed8f2e028449cc6204"
 file = "coreutils-6.10.tar.lzma"
-mirrors = ["https://mirrors.kernel.org/gnu/coreutils/{file}"]
+mirrors = ["https://ftpmirror.gnu.org/gnu/coreutils/{file}"]
 
 [sources.python_337]
 hash = "85f60c327501c36bc18c33370c14d472801e6af2f901dafbba056f61685429fe"
@@ -1203,23 +1203,23 @@ mirrors = [
 hash = "95396f88fc719a1bf8bd463809119526fef44a42ab9eb708335c2cb79bc801c6"
 file = "bc-1.07.1.tar.xz"
 mirrors = [
-  "https://mirrors.kernel.org/slackware/slackware64-15.0/source/ap/bc/{file}",
+  "https://ftpmirror.gnu.org/slackware/slackware64-15.0/source/ap/bc/{file}",
 ]
 
 [sources.bison_341]
 hash = "27159ac5ebf736dffd5636fd2cd625767c9e437de65baa63cb0de83570bd820d"
 file = "bison-3.4.1.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/bison/{file}",
   "https://mirrors.kernel.org/gnu/bison/{file}",
+  "https://ftpmirror.gnu.org/gnu/bison/{file}",
 ]
 
 [sources.m4_1419]
 hash = "63aede5c6d33b6d9b13511cd0be2cac046f2e70fd0a07aa9573a04a82783af96"
 file = "m4-1.4.19.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/m4/{file}",
   "https://mirrors.kernel.org/gnu/m4/{file}",
+  "https://ftpmirror.gnu.org/gnu/m4/{file}",
 ]
 
 [sources.gnulib_3639c57]
@@ -1238,7 +1238,7 @@ mirrors = [
 hash = "102c80e6da527c6b8eebd5195cd05fc71808d60735d73e8bb503a5e294475007"
 file = "ed-1.4.tar.xz"
 mirrors = [
-  "https://mirrors.kernel.org/slackware/slackware-13.37/source/a/ed/{file}",
+  "https://ftpmirror.gnu.org/slackware/slackware-13.37/source/a/ed/{file}",
 ]
 
 [sources.byacc_20240109]
@@ -1258,32 +1258,32 @@ mirrors = [
 hash = "ca9c16d3d11d0ff8c69d79dc0b47267e1329a69b39b799895604ed447d3ca90b"
 file = "gawk-5.3.0.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/gawk/{file}",
   "https://mirrors.kernel.org/gnu/gawk/{file}",
+  "https://ftpmirror.gnu.org/gnu/gawk/{file}",
 ]
 
 [sources.automake_17]
 hash = "6633ee1202375e3c8798a92e1b7f46894f78d541aeea7f49654503fdc0b28835"
 file = "automake-1.7.tar.bz2"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/automake/{file}",
   "https://mirrors.kernel.org/gnu/automake/{file}",
+  "https://ftpmirror.gnu.org/gnu/automake/{file}",
 ]
 
 [sources.automake_163]
 hash = "0dbafacaf21e135cab35d357a14bdcd981d2f2d00e1387801be8091a31b7bb81"
 file = "automake-1.6.3.tar.bz2"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/automake/{file}",
   "https://mirrors.kernel.org/gnu/automake/{file}",
+  "https://ftpmirror.gnu.org/gnu/automake/{file}",
 ]
 
 [sources.autoconf_254]
 hash = "a74aea954f36c7beeb6cc47b96a408c3e04e7ad635f614e65250dbcd8ec0bd28"
 file = "autoconf-2.54.tar.bz2"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/autoconf/{file}",
   "https://mirrors.kernel.org/gnu/autoconf/{file}",
+  "https://ftpmirror.gnu.org/gnu/autoconf/{file}",
 ]
 
 [sources.fiwix_150_lb1]
@@ -1309,16 +1309,16 @@ mirrors = [
 hash = "f57d86c70620271bfceb7a9be0c81744a033f08adc7ceba832c9917ab3e691b7"
 file = "guile-3.0.7.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/guile/{file}",
   "https://mirrors.kernel.org/gnu/guile/{file}",
+  "https://ftpmirror.gnu.org/gnu/guile/{file}",
 ]
 
 [sources.guile_309]
 hash = "1a2625ac72b2366e95792f3fe758fd2df775b4044a90a4a9787326e66c0d750d"
 file = "guile-3.0.9.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/guile/{file}",
   "https://mirrors.kernel.org/gnu/guile/{file}",
+  "https://ftpmirror.gnu.org/gnu/guile/{file}",
 ]
 
 [sources.gnulib_901694b9]
@@ -1349,16 +1349,16 @@ mirrors = [
 hash = "c9297d5bcd7cb43f3dfc2fed5389e948c9312fd962ef6a4ce455cff963ebe4f1"
 file = "gcc-10.4.0.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/gcc/gcc-10.4.0/{file}",
-  "https://mirrors.kernel.org/gnu/gcc/gcc-13.1.0/{file}",
+  "https://mirrors.kernel.org/gnu/gcc/gcc-10.4.0/{file}",
+  "https://ftpmirror.gnu.org/gnu/gcc/gcc-13.1.0/{file}",
 ]
 
 [sources.sed_409]
 hash = "c365874794187f8444e5d22998cd5888ffa47f36def4b77517a808dec27c0600"
 file = "sed-4.0.9.tar.gz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/sed/{file}",
   "https://mirrors.kernel.org/gnu/sed/{file}",
+  "https://ftpmirror.gnu.org/gnu/sed/{file}",
 ]
 
 [sources.openssl_3013orig]
@@ -1372,8 +1372,8 @@ mirrors = [
 hash = "4681bcbb9c9298c506f6405a7deb62c54fc3b339d3239a8f36a5df83daaec94f"
 file = "autoconf-2.52.tar.bz2"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/autoconf/{file}",
   "https://mirrors.kernel.org/gnu/autoconf/{file}",
+  "https://ftpmirror.gnu.org/gnu/autoconf/{file}",
 ]
 
 [sources.v2022]
@@ -1393,16 +1393,16 @@ mirrors = [
 hash = "32d977213320b8ae76c71175305301197f2b0e04e72d70694bc3d3e2ae6c7248"
 file = "autoconf-2.64.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/autoconf/{file}",
   "https://mirrors.kernel.org/gnu/autoconf/{file}",
+  "https://ftpmirror.gnu.org/gnu/autoconf/{file}",
 ]
 
 [sources.mpfr_410]
 hash = "0c98a3f1732ff6ca4ea690552079da9c597872d30e96ec28414ee23c95558a7f"
 file = "mpfr-4.1.0.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/mpfr/{file}",
   "https://mirrors.kernel.org/gnu/mpfr/{file}",
+  "https://ftpmirror.gnu.org/gnu/mpfr/{file}",
 ]
 
 [sources.libffi_33]
@@ -1493,8 +1493,8 @@ mirrors = [
 hash = "92e61c6dc3a0a449e62d72a38185fda550168a86702dea07125ebd3ec3996282"
 file = "gcc-4.7.4.tar.bz2"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/gcc/gcc-4.7.4/{file}",
   "https://mirrors.kernel.org/gnu/gcc/gcc-4.7.4/{file}",
+  "https://ftpmirror.gnu.org/gnu/gcc/gcc-4.7.4/{file}",
 ]
 
 [sources.perl5004_05]
@@ -1506,8 +1506,8 @@ mirrors = ["https://www.cpan.org/src/5.0/{file}"]
 hash = "d81839fa4d566dbef7c286fdca9b430d3530983fff6d389fac0f08baf27e4c3a"
 file = "libtool-2.2.4.tar.lzma"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/libtool/{file}",
   "https://mirrors.kernel.org/gnu/libtool/{file}",
+  "https://ftpmirror.gnu.org/gnu/libtool/{file}",
 ]
 
 [sources.python_315]
@@ -1546,56 +1546,56 @@ mirrors = [
 hash = "93a2ceab963618b021db153f0c881a2de82455c1dc7422be436fcd5c554085a1"
 file = "autoconf-2.61.tar.bz2"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/autoconf/{file}",
   "https://mirrors.kernel.org/gnu/autoconf/{file}",
+  "https://ftpmirror.gnu.org/gnu/autoconf/{file}",
 ]
 
 [sources.tar_112]
 hash = "c6c37e888b136ccefab903c51149f4b7bd659d69d4aea21245f61053a57aa60a"
 file = "tar-1.12.tar.gz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/tar/{file}",
   "https://mirrors.kernel.org/gnu/tar/{file}",
+  "https://ftpmirror.gnu.org/gnu/tar/{file}",
 ]
 
 [sources.binutils_230]
 hash = "6e46b8aeae2f727a36f0bd9505e405768a72218f1796f0d09757d45209871ae6"
 file = "binutils-2.30.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/binutils/{file}",
   "https://mirrors.kernel.org/gnu/binutils/{file}",
+  "https://ftpmirror.gnu.org/gnu/binutils/{file}",
 ]
 
 [sources.gcc_1310]
 hash = "61d684f0aa5e76ac6585ad8898a2427aade8979ed5e7f85492286c4dfc13ee86"
 file = "gcc-13.1.0.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/gcc/gcc-13.1.0/{file}",
   "https://mirrors.kernel.org/gnu/gcc/gcc-13.1.0/{file}",
+  "https://ftpmirror.gnu.org/gnu/gcc/gcc-13.1.0/{file}",
 ]
 
 [sources.grep_37]
 hash = "5c10da312460aec721984d5d83246d24520ec438dd48d7ab5a05dbc0d6d6823c"
 file = "grep-3.7.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/grep/{file}",
   "https://mirrors.kernel.org/gnu/grep/{file}",
+  "https://ftpmirror.gnu.org/gnu/grep/{file}",
 ]
 
 [sources.gcc_core_404]
 hash = "e9bf58c761a4f988311aef6b41f12fd5c7e51d09477468fb73826aecc1be32e7"
 file = "gcc-core-4.0.4.tar.bz2"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/gcc/gcc-4.0.4/{file}",
   "https://mirrors.kernel.org/gnu/gcc/gcc-4.0.4/{file}",
+  "https://ftpmirror.gnu.org/gnu/gcc/gcc-4.0.4/{file}",
 ]
 
 [sources.automake_185]
 hash = "84c93aaa3c3651a9e7474b721b0e6788318592509e7de604bafe4ea8049dc410"
 file = "automake-1.8.5.tar.bz2"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/automake/{file}",
   "https://mirrors.kernel.org/gnu/automake/{file}",
+  "https://ftpmirror.gnu.org/gnu/automake/{file}",
 ]
 
 [sources.libbsd_0118]
@@ -1607,8 +1607,8 @@ mirrors = ["https://libbsd.freedesktop.org/releases/{file}"]
 hash = "f79b0cfea71b37a8eeec8490db6c5f7ae7719c35587f21edb0617f370eeff633"
 file = "sed-4.8.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/sed/{file}",
   "https://mirrors.kernel.org/gnu/sed/{file}",
+  "https://ftpmirror.gnu.org/gnu/sed/{file}",
 ]
 
 [sources.gnulib_d279bc]
@@ -1627,14 +1627,14 @@ mirrors = [
 hash = "64ebcec9f8ac5b2487125a86a7760d2591ac9e1d3dbd59489633f9de62a57684"
 file = "autoconf-2.69.tar.xz"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/autoconf/{file}",
   "https://mirrors.kernel.org/gnu/autoconf/{file}",
+  "https://ftpmirror.gnu.org/gnu/autoconf/{file}",
 ]
 
 [sources.automake_178]
 hash = "2dddc3b51506e702647ccc6757e15c05323fa67245d2d53e81ed36a832f9be42"
 file = "automake-1.7.8.tar.bz2"
 mirrors = [
-  "https://ftpmirror.gnu.org/gnu/automake/{file}",
   "https://mirrors.kernel.org/gnu/automake/{file}",
+  "https://ftpmirror.gnu.org/gnu/automake/{file}",
 ]

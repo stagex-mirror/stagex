@@ -8,5 +8,5 @@ website = "https://www.gnu.org/software/binutils/"
 [sources.binutils]
 hash = "d75a94f4d73e7a4086f7513e67e439e8fcdcbb726ffe63f4661744e6256b2cf2"
 file = "binutils-{version}.tar.xz"
-mirrors = [ "https://ftpmirror.gnu.org/gnu/binutils/{file}", "https://mirrors.kernel.org/gnu/binutils/{file}"]
+mirrors = [ "https://mirrors.kernel.org/gnu/binutils/{file}", "https://ftpmirror.gnu.org/gnu/binutils/{file}"]
 

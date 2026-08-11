@@ -9,4 +9,4 @@ website = "https://www.gnu.org/software/groff/"
 hash = "74e2819795b6aff431aeac983d63a9c8968eeaba2a2eba7df8ba4c7b41e7cfd8"
 format = "tar.gz"
 file = "groff-{version}.{format}"
-mirrors = [ "https://ftpmirror.gnu.org/gnu/groff/{file}", "https://mirrors.kernel.org/gnu/groff/{file}"]
+mirrors = [ "https://mirrors.kernel.org/gnu/groff/{file}", "https://ftpmirror.gnu.org/gnu/groff/{file}"]

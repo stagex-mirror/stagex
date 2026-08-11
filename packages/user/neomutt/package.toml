@@ -1,0 +1,15 @@
+[package]
+name = "neomutt"
+version = "20260504"
+description = "A text-mode email client with enhanced features"
+license = "GPL-2.0"
+website = "https://neomutt.org"
+
+[sources.neomutt]
+hash = "93fd8344c12cd857f084f8d7cc1187479f79036ab9725cfdbc81c0cc845f1615"
+format = "tar.gz"
+file = "neomutt-{version}.{format}"
+mirrors = ["https://github.com/neomutt/neomutt/archive/refs/tags/{version}.{format}"]
+
+[build]
+depends = []

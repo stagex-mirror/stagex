@@ -102,6 +102,13 @@ resource "aws_instance" "this" {
     http_tokens = "optional"
   }
 
+  dynamic "cpu_options" {
+    for_each = var.enable_sev_snp ? [1] : []
+    content {
+      amd_sev_snp = "enabled"
+    }
+  }
+
   tags = {
     Name      = var.ami_name
     ManagedBy = "stagex"

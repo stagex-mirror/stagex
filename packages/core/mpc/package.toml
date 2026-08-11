@@ -9,4 +9,4 @@ license = "LGPL-3.0-or-later"
 hash = "17503d2c395dfcf106b622dc142683c1199431d095367c6aacba6eec30340459"
 format = "tar.gz"
 file = "mpc-{version}.{format}"
-mirrors = ["https://gcc.gnu.org/pub/gcc/infrastructure/{file}", "https://ftpmirror.gnu.org/gnu/gmp/{file}", "https://mirrors.kernel.org/gnu/gmp/{file}"]
+mirrors = ["https://gcc.gnu.org/pub/gcc/infrastructure/{file}", "https://mirrors.kernel.org/gnu/gmp/{file}", "https://ftpmirror.gnu.org/gnu/gmp/{file}"]

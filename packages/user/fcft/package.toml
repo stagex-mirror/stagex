@@ -1,0 +1,15 @@
+[package]
+name = "fcft"
+version = "3.3.3"
+description = "Font rendering library"
+license = "MIT"
+website = "https://codeberg.org/dnkl/fcft"
+
+[sources.fcft]
+hash = "bb298772d625e7d917373d541456f34f1957a9e22b16f17f64158b2c3816563c"
+format = "tar.gz"
+file = "fcft-{version}.{format}"
+mirrors = ["https://codeberg.org/dnkl/fcft/releases/download/{version}/{file}"]
+
+[build]
+depends = []

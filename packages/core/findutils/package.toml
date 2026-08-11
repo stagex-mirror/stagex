@@ -9,4 +9,4 @@ website = "https://www.gnu.org/software/findutils/"
 hash = "1387e0b67ff247d2abde998f90dfbf70c1491391a59ddfecb8ae698789f0a4f5"
 format = "tar.xz"
 file = "findutils-{version}.{format}"
-mirrors = [ "https://ftpmirror.gnu.org/gnu/findutils/{file}", "https://mirrors.kernel.org/gnu/findutils/{file}"] 
+mirrors = [ "https://mirrors.kernel.org/gnu/findutils/{file}", "https://ftpmirror.gnu.org/gnu/findutils/{file}"] 

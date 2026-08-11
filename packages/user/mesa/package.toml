@@ -1,0 +1,15 @@
+[package]
+name = "mesa"
+version = "26.0.4"
+description = "Open source 3D graphics library with Vulkan, OpenGL, EGL, and DRI drivers"
+license = "MIT"
+website = "https://www.mesa3d.org"
+
+[sources.mesa]
+hash = "6d91541e086f29bb003602d2c81070f2be4c0693a90b181ca91e46fa3953fe78"
+format = "tar.xz"
+file = "mesa-{version}.{format}"
+mirrors = ["https://mesa.freedesktop.org/archive/{file}"]
+
+[build]
+depends = []

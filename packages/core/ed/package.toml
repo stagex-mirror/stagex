@@ -9,4 +9,4 @@ website = "https://www.gnu.org/software/ed/"
 hash = "56e107ddc2f29dad6690376c15bf9751509e1ee3b8241710e44edbe5c3a158cc"
 format = "tar.lz"
 file = "ed-{version}.{format}"
-mirrors = [ "https://ftpmirror.gnu.org/gnu/ed/{file}", "https://mirrors.kernel.org/gnu/ed/{file}"] 
+mirrors = [ "https://mirrors.kernel.org/gnu/ed/{file}", "https://ftpmirror.gnu.org/gnu/ed/{file}"] 

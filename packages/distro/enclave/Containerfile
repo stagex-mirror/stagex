@@ -20,6 +20,8 @@ FROM stagex/user-sevctl AS user-sevctl
 FROM stagex/user-qemu AS user-qemu
 FROM stagex/user-keylime-agent AS user-keylime-agent
 FROM stagex/user-coconut-svsm AS user-coconut-svsm
+FROM stagex/user-tpm2-abrmd AS user-tpm2-abrmd
+FROM stagex/user-dbus AS user-dbus
 FROM stagex/distro-initramfs-klibc AS distro-initramfs-klibc
 FROM stagex/box-grub AS box-grub
 FROM stagex/box-erofs AS box-erofs
@@ -46,10 +48,7 @@ COPY src/rootfs/etc/init.d/S02modules /etc/init.d/
 COPY src/rootfs/etc/init.d/S10udev /etc/init.d/
 COPY src/rootfs/etc/init.d/S20urandom /etc/init.d/
 COPY src/rootfs/etc/init.d/S05cloud-init-drive /etc/init.d/
-COPY src/rootfs/etc/init.d/S50swtpm /etc/init.d/
-COPY src/rootfs/etc/init.d/S52keylime-agent /etc/init.d/
-COPY src/rootfs/etc/keylime/keylime.conf /etc/keylime/keylime.conf
-COPY src/rootfs/etc/keylime/agent.conf /etc/keylime/agent.conf
+COPY src/rootfs/etc/init.d/S50swtpm /etc/init.d
 COPY src/init /init
 COPY src/rootfs/oldroot /oldroot
 COPY --from=user-tpm2-tss . /
@@ -60,24 +59,27 @@ COPY --from=user-qemu . /
 COPY --from=user-keylime-agent . /
 RUN mkdir -p /mnt /run /var/log /etc/keys /etc/keylime /var/lib/keylime /var/log/keylime /run/keylime && touch /mnt/.keep
 
-# --- dev: default + server kernel + network + tinyssh ---
+# --- dev: default + server kernel + network + tinyssh + full attestation stack ---
 FROM rootfs AS rootfs-dev
 COPY src/rootfs/etc/init.d/S03dhcpcd /etc/init.d/
 COPY src/rootfs/etc/init.d/S06cloud-init-net /etc/init.d/
-COPY --from=user-dhcpcd /usr/sbin/dhcpcd /sbin/dhcpcd
-COPY --from=user-tinyssh . /
-COPY src/dev/rootfs/etc/init.d/S50sshd /etc/init.d/
-COPY --from=user-sxctl . /
-RUN mkdir -p /var/lib/dhcpcd /run/dhcpcd && \
-	printf '# Accept all DHCP options\n' > /etc/dhcpcd.conf
-
-# --- sev-snp: dev rootfs with coconut-svsm instead of swtpm ---
-FROM rootfs-dev AS rootfs-sev-snp
 COPY src/rootfs/etc/init.d/S52keylime-agent /etc/init.d/
 COPY src/rootfs/etc/keylime/keylime.conf /etc/keylime/keylime.conf
 COPY src/rootfs/etc/keylime/agent.conf /etc/keylime/agent.conf
 COPY src/rootfs/etc/init.d/S50coconut-svsm /etc/init.d/
+COPY src/rootfs/etc/init.d/S51tpm2-abrmd /etc/init.d/
+COPY --from=user-dhcpcd /usr/sbin/dhcpcd /sbin/dhcpcd
+COPY --from=user-tinyssh . /
+COPY src/dev/rootfs/etc/init.d/S50sshd /etc/init.d/
+COPY --from=user-sxctl . /
+COPY --from=user-dbus . /
+COPY --from=user-tpm2-abrmd . /
 COPY --from=user-coconut-svsm . /
+RUN mkdir -p /var/lib/dhcpcd /run/dhcpcd && \
+	printf '# Accept all DHCP options\n' > /etc/dhcpcd.conf
+
+# --- sev-snp: same as dev (kernel has CONFIG_TCG_SVSM) ---
+FROM rootfs-dev AS rootfs-sev-snp
 
 # --- guest-offline: standalone minimal guest (no parent) ---
 FROM scratch AS rootfs-guest-offline

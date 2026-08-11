@@ -4,6 +4,12 @@ COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-bash . /
 COPY --from=stagex/core-gettext . /
 COPY --from=stagex/core-python . /
+COPY --from=stagex/core-autoconf . /
+COPY --from=stagex/core-automake . /
+COPY --from=stagex/core-libtool . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-pcre2 . /
+COPY --from=stagex/user-autoconf-archive . /
 COPY --from=stagex/user-glib . /
 COPY --from=stagex/user-dbus . /
 COPY --from=stagex/user-tpm2-tss . /
@@ -11,13 +17,12 @@ COPY --from=stagex/user-systemd . /
 ADD fetch/tpm2-abrmd-${VERSION}.tar.gz .
 WORKDIR /tpm2-abrmd-${VERSION}
 RUN --network=none <<-EOF
-	NOCONFIGURE=1 ./autogen.sh
+	autoreconf -fi
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \
 		--localstatedir=/var \
-		--with-socket-dir=/run/tpm2-abrmd \
-		--enable-maintainer-mode=no
+		--with-socket-dir=/run/tpm2-abrmd
 	make
 	make DESTDIR=/rootfs install
 EOF

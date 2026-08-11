@@ -1,0 +1,22 @@
+FROM stagex/pallet-clang-meson-busybox AS build
+COPY --from=stagex/user-systemd . /
+ARG VERSION
+ADD fetch/seatd-${VERSION}.tar.gz .
+WORKDIR /seatd-${VERSION}
+ENV CFLAGS="-O2 -fPIC -ffile-prefix-map=/seatd-${VERSION}=."
+ENV CFLAGS="${CFLAGS} -Wno-sign-compare"
+RUN --network=none <<-EOF
+	meson setup \
+		--prefix=/usr \
+		-Dlibdir=lib \
+		-Dlibseat-logind=systemd \
+		-Dserver=enabled \
+		-Dman-pages=disabled \
+		-Dexamples=disabled \
+		. build
+	meson compile -C build
+	DESTDIR=/rootfs meson install -C build
+	install -Dm644 LICENSE /rootfs/usr/share/licenses/seatd/LICENSE
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

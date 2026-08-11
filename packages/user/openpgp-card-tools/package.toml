@@ -6,7 +6,7 @@ license = "Apache-2.0 OR MIT"
 website = "https://codeberg.org/openpgp-card/openpgp-card-tools"
 
 [sources.openpgp-card-tools]
-hash = "f21ea3b67cf051fc74dd8a7f11ee4d9445f416ad566e479140bb51f28ce6ab75"
+hash = "00a4b67af5998aeb778a606a753e70225103c099d5b0eb9903aa0e0383f51aee"
 format = "tar.gz"
 file = "openpgp-card-tools-{version}.{format}"
 mirrors = [ "https://codeberg.org/openpgp-card/openpgp-card-tools/archive/v{version}.{format}",]

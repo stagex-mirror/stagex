@@ -1,0 +1,12 @@
+[package]
+name = "cbindgen"
+version = "0.29.4"
+description = "Tool to generate C bindings for Rust code"
+license = "MPL-2.0"
+website = "https://github.com/eqrion/cbindgen"
+
+[sources.cbindgen]
+hash = "9b5757e915cf8be523d3aca282b9b5651bafa112e14bf1ba488562ba282807d6"
+format = "tar.gz"
+file = "cbindgen-{version}.{format}"
+mirrors = ["https://github.com/eqrion/cbindgen/archive/refs/tags/v{version}.{format}"]

@@ -1,0 +1,27 @@
+FROM stagex/pallet-clang-meson-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-expat . /
+ADD fetch/dbus-${VERSION}.tar.xz .
+WORKDIR /dbus-${VERSION}
+ENV CFLAGS="-O2 -fPIC -ffile-prefix-map=/dbus-${VERSION}=."
+RUN --network=none <<-EOF
+	meson setup \
+		--prefix=/usr \
+		-Dlibdir=lib \
+		-Ddoxygen_docs=disabled \
+		-Dducktype_docs=disabled \
+		-Dxml_docs=disabled \
+		-Dinstalled_tests=false \
+		-Dmodular_tests=disabled \
+		-Dsystemd=disabled \
+		-Dx11_autolaunch=disabled \
+		-Dselinux=disabled \
+		-Dapparmor=disabled \
+		-Dvalgrind=disabled \
+		. build
+	meson compile -C build
+	DESTDIR=/rootfs meson install -C build
+	install -Dm644 COPYING /rootfs/usr/share/licenses/dbus/COPYING
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

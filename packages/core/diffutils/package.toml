@@ -9,4 +9,4 @@ website = "https://www.gnu.org/software/diffutils/"
 hash = "7c8b7f9fc8609141fdea9cece85249d308624391ff61dedaf528fcb337727dfd"
 format = "tar.xz"
 file = "diffutils-{version}.{format}"
-mirrors = [ "https://ftpmirror.gnu.org/gnu/diffutils/{file}", "https://mirrors.kernel.org/gnu/diffutils/{file}"] 
+mirrors = [ "https://mirrors.kernel.org/gnu/diffutils/{file}", "https://ftpmirror.gnu.org/gnu/diffutils/{file}"] 

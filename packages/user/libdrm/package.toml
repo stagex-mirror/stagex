@@ -1,0 +1,15 @@
+[package]
+name = "libdrm"
+version = "2.4.134"
+description = "Direct Rendering Manager drivers library"
+license = "MIT"
+website = "https://dri.freedesktop.org/libdrm/"
+
+[sources.libdrm]
+hash = "ac5e74d157830eb8bee44c6a6bf3ad49774ef0dd2a72bdad74a8f20308b52a95"
+format = "tar.xz"
+file = "libdrm-{version}.{format}"
+mirrors = ["https://dri.freedesktop.org/libdrm/{file}"]
+
+[build]
+depends = []

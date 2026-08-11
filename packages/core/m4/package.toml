@@ -9,4 +9,4 @@ website = "https://www.gnu.org/software/m4/"
 hash = "38ae59f7a30bf9c108193cc5c25fbb06014f21e230c7ede2eff614f7b7c37ed8"
 format = "tar.gz"
 file = "m4-{version}.{format}"
-mirrors = [ "https://ftpmirror.gnu.org/gnu/m4/{file}", "https://mirrors.kernel.org/gnu/m4/{file}"] 
+mirrors = [ "https://mirrors.kernel.org/gnu/m4/{file}", "https://ftpmirror.gnu.org/gnu/m4/{file}"] 

@@ -9,4 +9,4 @@ website = "https://www.gnu.org/software/xorriso/"
 hash = "0381798b7bb4f162578b4f31fe30bfe53608b5077075967f8df2facfab4c90f9"
 format = "tar.gz"
 file = "xorriso-{version}.{format}"
-mirrors = [ "https://ftpmirror.gnu.org/gnu/xorriso/{file}", "https://mirrors.kernel.org/gnu/xorriso/{file}"]
+mirrors = [ "https://mirrors.kernel.org/gnu/xorriso/{file}", "https://ftpmirror.gnu.org/gnu/xorriso/{file}"]

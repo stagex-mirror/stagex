@@ -8,4 +8,4 @@ website = "https://www.gnu.org/software/coreutils/"
 [sources.coreutils]
 hash = "394024eda0a5955217ceda9cd1201e65dc8fa3aa29c2951135a49521d57c3cc3"
 file = "coreutils-{version}.tar.xz"
-mirrors = [ "https://ftp.gnu.org/gnu/coreutils/{file}",]
+mirrors = [ "https://mirrors.kernel.org/gnu/coreutils/{file}", "https://ftp.gnu.org/gnu/coreutils/{file}", "https://cdn.kernel.org/gnu/coreutils/{file}"]

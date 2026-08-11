@@ -1,0 +1,12 @@
+[package]
+name = "harfbuzz"
+version = "14.2.0"
+description = "Text shaping engine"
+license = "MIT"
+website = "https://harfbuzz.github.io"
+
+[sources.harfbuzz]
+hash = "94017020f96d025bb66ae91574e4cf334bcad23e8175a8a40565b3721bc2eaff"
+format = "tar.xz"
+file = "harfbuzz-{version}.{format}"
+mirrors = ["https://github.com/harfbuzz/harfbuzz/releases/download/{version}/{file}"]

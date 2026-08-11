@@ -1,0 +1,26 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-ncurses . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-sqlite3 . /
+COPY --from=stagex/core-zlib . /
+ADD fetch/neomutt-${VERSION}.tar.gz .
+WORKDIR /neomutt-${VERSION}
+ENV CFLAGS="-O2 -fPIC -ffile-prefix-map=/neomutt-${VERSION}=."
+RUN --network=none <<-EOF
+	./configure \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--with-ssl=/usr \
+		--with-sqlite=/usr \
+		--with-zlib=/usr \
+		--disable-pgp \
+		--disable-nls \
+		--disable-doc \
+		--disable-idn2
+	make -j$(nproc)
+	DESTDIR=/rootfs make install
+	install -Dm644 LICENSE.md /rootfs/usr/share/licenses/neomutt/LICENSE.md
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
