@@ -17,7 +17,7 @@ class TargetGenerator(object):
 {name}: out/rootfs/{stage}-{name}/manifest.txt
 {stage}-{name}: out/rootfs/{stage}-{name}/manifest.txt
 out/rootfs/{stage}-{name}/manifest.txt: \\
-\t{files} {deps}
+\t{files} {deps} {core_profile_oci_dep}
 \trm -rf out/rootfs/{stage}-{name} && \\
 \tmkdir -p fetch/{stage}/{origin} && \\
 \tpython3 src/fetch.py {origin} && \\
@@ -167,6 +167,10 @@ publish-{stage}-{name}: oci-{stage}-{name}
           origin = package.origin or package.name
           self.generate_import_env(stage, name, origin)
 
+        # core-profile always uses OCI to preserve SHELL directive inheritance
+        # All other packages depend on core-profile-oci to ensure it's built first
+        core_profile_oci_dep = "out/oci/core-profile/index.json" if not (stage == "core" and name == "profile") else ""
+
         print(
           TargetGenerator.TARGET_TEMPLATE.format(
             **{
@@ -182,7 +186,8 @@ publish-{stage}-{name}: oci-{stage}-{name}
               "dep_env_args": self.get_dep_env_args(package),
               "context_args": self.get_context_args(package, stage, package.origin or package.name, False),
               "context_args_registry": self.get_context_args(package, stage, package.origin or package.name, True),
-              "platform_arg": platform
+              "platform_arg": platform,
+              "core_profile_oci_dep": core_profile_oci_dep
             }
           )
         )
@@ -256,6 +261,10 @@ publish-{stage}-{name}: oci-{stage}-{name}
       if use_registry:
         args.append(f"--build-context stagex/{dep}=docker-image://$(REGISTRY_USERNAME)/{dep}")
       else:
+        # core-profile always uses OCI to preserve SHELL directive inheritance
+        if dep == "core-profile":
+          args.append(f"--build-context stagex/{dep}=oci-layout://./out/oci/{dep}")
+          continue
         # Find the dependency's platform to construct correct subdirectory path
         dep_stage, dep_platform = self.get_dep_platform(dep)
         if dep_platform == "$(PLATFORM)":
@@ -399,11 +408,15 @@ publish-{stage}-{name}: oci-{stage}-{name}
         f.write(f"{var}={value}\n")
 
   def get_dep_env_args(self, package: PackageInfo) -> str:
-    """Generate --build-arg flags from dependencies' import.env files."""
+    """Generate --build-arg flags from dependencies' import.env files (recursively)."""
     args: List[str] = []
     seen_vars: set[str] = set()
+    visited: set[str] = set()
     
-    for dep in package.deps:
+    def collect_env(dep: str):
+      if dep in visited:
+        return
+      visited.add(dep)
       env_file = f"out/rootfs/{dep}/import.env"
       try:
         with open(env_file, "r") as f:
@@ -414,15 +427,24 @@ publish-{stage}-{name}: oci-{stage}-{name}
             var, _, value = line.partition("=")
             var = var.strip()
             value = value.strip()
-            # First dep wins for duplicate vars
             if var in seen_vars:
               continue
             seen_vars.add(var)
-            # Escape $ for Make, then double-quote for shell
             value = value.replace("$", "$$")
             args.append(f"--build-arg {var}=\"{value}\"")
       except FileNotFoundError:
         pass
+      # Recursively collect from this dep's dependencies
+      parts = dep.rsplit("-", 1)
+      if len(parts) == 2:
+        dep_stage, dep_name = parts
+        if dep_stage in self.packages and dep_name in self.packages[dep_stage]:
+          dep_pkg = self.packages[dep_stage][dep_name]
+          for sub_dep in dep_pkg.deps:
+            collect_env(sub_dep)
+    
+    for dep in package.deps:
+      collect_env(dep)
     
     return " \\\n\t  ".join(args)
 

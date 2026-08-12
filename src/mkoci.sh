@@ -51,6 +51,8 @@ printf '{"created":"%s","architecture":"%s","os":"linux","config":{},"rootfs":{"
     > "$CONFIG_FILE"
 CONFIG_DIGEST="sha256:$(sha256sum "$CONFIG_FILE" | cut -d' ' -f1)"
 CONFIG_SIZE=$(wc -c < "$CONFIG_FILE")
+# Rename to digest-based name for OCI compliance
+mv "$CONFIG_FILE" "$OCI_DIR/blobs/sha256/${CONFIG_DIGEST#sha256:}"
 
 # Build image manifest
 MANIFEST_FILE="$OCI_DIR/blobs/sha256/manifest.json"
@@ -59,17 +61,25 @@ printf '{"schemaVersion":2,"mediaType":"application/vnd.oci.image.manifest.v1+js
     > "$MANIFEST_FILE"
 MANIFEST_DIGEST="sha256:$(sha256sum "$MANIFEST_FILE" | cut -d' ' -f1)"
 MANIFEST_SIZE=$(wc -c < "$MANIFEST_FILE")
+# Rename to digest-based name for OCI compliance
+mv "$MANIFEST_FILE" "$OCI_DIR/blobs/sha256/${MANIFEST_DIGEST#sha256:}"
 
 # Build platform index (intermediate index, matches BuildKit multi-platform structure)
 PLATFORM_INDEX="$OCI_DIR/blobs/sha256/platform-index.json"
 printf '{"schemaVersion":2,"mediaType":"application/vnd.oci.image.index.v1+json","manifests":[{"mediaType":"application/vnd.oci.image.manifest.v1+json","digest":"%s","size":%s,"platform":{"architecture":"%s","os":"linux"}}]}' \
     "$MANIFEST_DIGEST" "$MANIFEST_SIZE" "$ARCHITECTURE" \
     > "$PLATFORM_INDEX"
+PLATFORM_INDEX_SIZE=$(wc -c < "$PLATFORM_INDEX")
 PLATFORM_DIGEST="sha256:$(sha256sum "$PLATFORM_INDEX" | cut -d' ' -f1)"
+# Rename to digest-based name for OCI compliance
+mv "$PLATFORM_INDEX" "$OCI_DIR/blobs/sha256/${PLATFORM_DIGEST#sha256:}"
+
+# Rename layer to digest-based name
+mv "$OCI_DIR/blobs/sha256/layer.tar.gz" "$OCI_DIR/blobs/sha256/${LAYER_GZ_DIGEST#sha256:}"
 
 # Build index.json
 printf '{"schemaVersion":2,"mediaType":"application/vnd.oci.image.index.v1+json","manifests":[{"mediaType":"application/vnd.oci.image.index.v1+json","digest":"%s","size":%s,"annotations":{"io.containerd.image.name":"%s:%s","org.opencontainers.image.created":"%s","org.opencontainers.image.ref.name":"%s"}}]}' \
-    "$PLATFORM_DIGEST" "$(wc -c < "$PLATFORM_INDEX")" "$IMAGE_NAME" "$VERSION" "$CREATED" "$VERSION" \
+    "$PLATFORM_DIGEST" "$PLATFORM_INDEX_SIZE" "$IMAGE_NAME" "$VERSION" "$CREATED" "$VERSION" \
     > "$OCI_DIR/index.json"
 
 echo "OCI layout created: $OCI_DIR"
