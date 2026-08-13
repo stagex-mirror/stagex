@@ -184,7 +184,7 @@ def inject(containerfile_path, stage, name):
     final_merged = dict(current_merged)
 
     output = []
-    for line in lines:
+    for i, line in enumerate(lines):
         output.append(line)
         stripped = line.strip()
 
@@ -213,6 +213,9 @@ def inject(containerfile_path, stage, name):
         indent = len(line) - len(line.lstrip())
         pad = " " * indent
 
+        # Inject ARG TARGETARCH so login shells can reference it
+        output.append(f"{pad}ARG TARGETARCH\n")
+
         # Inject ENV directives
         for env_entry in current_merged["env"]:
             output.append(f"{pad}ENV {env_entry}\n")
@@ -221,8 +224,11 @@ def inject(containerfile_path, stage, name):
         if current_merged["shell"]:
             output.append(f"{pad}SHELL {format_shell_json(current_merged['shell'])}\n")
 
-        # Reset ENTRYPOINT (clear inherited entrypoint for build stages)
-        output.append(f"{pad}ENTRYPOINT []\n")
+        # Reset ENTRYPOINT only if parent chain sets one AND remaining lines don't define their own
+        if current_merged["entrypoint"]:
+            remaining = "".join(lines[i + 1:])
+            if "ENTRYPOINT " not in remaining:
+                output.append(f"{pad}ENTRYPOINT []\n")
 
         # Inject WORKDIR (skip if it references unresolved variables)
         if current_merged["workingdir"] and "${" not in current_merged["workingdir"]:

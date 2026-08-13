@@ -34,4 +34,21 @@ done
 # This ensures reproducible builds regardless of when files were created
 find "$ROOTFS" -depth -exec touch -h -d "1970-01-01 00:00:01" {} +
 
+# Remove stale intermediate-stage artifacts from type=local output with BUILDKIT_MULTI_PLATFORM=1
+# Busybox rootfs (and other deps) contain stale "rootfs/" and "out/" dirs from their own builds;
+# when copied into downstream build stages these cause "mv out/ /rootfs" to move out/ INTO /rootfs/
+# instead of renaming it, producing /out/etc/... instead of /etc/...
+if [ -d "$ROOTFS/rootfs" ]; then
+  if [ -z "$(ls -A "$ROOTFS/rootfs" 2>/dev/null)" ] || [ -d "$ROOTFS/rootfs/out" ]; then
+    # If rootfs/ is empty or only contains out/, remove it
+    rm -rf "$ROOTFS/rootfs"
+    echo "Removed stale rootfs/"
+  fi
+fi
+if [ -d "$ROOTFS/out" ] && { [ -d "$ROOTFS/usr" ] || [ -d "$ROOTFS/etc" ]; }; then
+  # Root-level usr/ or etc/ means content is already at root; out/ is a stale build-stage artifact
+  rm -rf "$ROOTFS/out"
+  echo "Removed stale out/"
+fi
+
 echo "Done."
