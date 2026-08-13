@@ -18,13 +18,14 @@ class TargetGenerator(object):
 {stage}-{name}: out/rootfs/{stage}-{name}/manifest.txt
 
 # Injected Containerfile with parent metadata (ENV, SHELL, ENTRYPOINT, WORKDIR)
-out/cache/containerfiles/{stage}-{name}.Containerfile: \\
-\t{files} {dep_metadata} src/inject-metadata.py
-\tmkdir -p out/cache/containerfiles && \\
-\tpython3 src/inject-metadata.py {stage} {name} {origin} > $@
+# metadata.json is the sentinel; injected Containerfile is a side effect
+out/rootfs/{stage}-{name}/metadata.json: \\
+\t{files} src/inject-metadata.py
+\tmkdir -p out/rootfs/{stage}-{name} out/cache/containerfiles && \\
+\tpython3 src/inject-metadata.py {stage} {name} {origin} > out/cache/containerfiles/{stage}-{name}.Containerfile
 
 out/rootfs/{stage}-{name}/manifest.txt: \\
-\tout/cache/containerfiles/{stage}-{name}.Containerfile {deps} {core_profile_oci_dep}
+\tout/rootfs/{stage}-{name}/metadata.json {deps} {core_profile_oci_dep}
 \trm -rf out/rootfs/{stage}-{name} && \\
 \tmkdir -p fetch/{stage}/{origin} && \\
 \tpython3 src/fetch.py {origin} && \\
@@ -51,9 +52,6 @@ out/rootfs/{stage}-{name}/manifest.txt: \\
 \t  --progress=$(PROGRESS) \\
 \t  -f out/cache/containerfiles/{stage}-{name}.Containerfile \\
 \t  packages/{stage}/{origin} && \\
-\tbash src/extract-metadata.sh \\
-\t  stagex/{stage}-{name}:{version} \\
-\t  out/rootfs/{stage}-{name}/metadata.json && \\
 \tfor plat in out/rootfs/{stage}-{name}/linux_*; do \\
 \t  [ -d "$$plat" ] && bash src/fixrootfs.sh "$$plat"; \\
 \tdone && \\
@@ -106,6 +104,7 @@ out/oci/{stage}-{name}/index.json: out/rootfs/{stage}-{name}/manifest.txt
 \t  out/oci/{stage}-{name} \\
 \t  stagex/{stage}-{name} \\
 \t  {version} \\
+\t  {platform_arg} \\
 \t  out/rootfs/{stage}-{name}/metadata.json
 
 .PHONY: publish-{stage}-{name}
@@ -184,9 +183,6 @@ publish-{stage}-{name}: oci-{stage}-{name}
               "version": package.version or "latest",
               "deps": "".join(
                 f" \\\n\tout/rootfs/{dep}/manifest.txt" for dep in package.deps
-              ),
-              "dep_metadata": "".join(
-                f" \\\n\tout/rootfs/{dep}/metadata.json" for dep in package.deps
               ),
               "files": "\\\n\t".join(check_output(["find","packages/{}/{}".format(stage,package.origin or package.name),"-type","f","-not","-path","*/fetch/*"],text=True).splitlines()),
               "build_args": TargetGenerator.get_build_args(package),

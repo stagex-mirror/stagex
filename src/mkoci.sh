@@ -16,6 +16,8 @@ OCI_DIR="${2}"
 IMAGE_NAME="${3}"
 VERSION="${4}"
 ARCHITECTURE="${5:-$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/;s/riscv64/riscv64/;s/armv7l/arm/;s/armv6l/arm/;s/i[3456]86/386/')}"
+# Handle "linux/amd64" format — extract just the arch
+ARCHITECTURE="${ARCHITECTURE#*/}"
 METADATA_FILE="${6:-}"
 CREATED="${OCI_CREATED:-1970-01-01T00:00:01Z}"
 EPOCH="${SOURCE_DATE_EPOCH:-1}"
@@ -50,11 +52,11 @@ rm -f "$LAYER_TAR"
 CONFIG_SECTION="{}"
 if [ -n "$METADATA_FILE" ] && [ -f "$METADATA_FILE" ]; then
   CONFIG_SECTION=$(jq -c '{
-    Env: .env // [],
-    Shell: .shell // null,
-    Entrypoint: .entrypoint // null,
-    Cmd: .cmd // null,
-    WorkingDir: .workingdir // null
+    Env: (if .env then .env else [] end),
+    Shell: (if .shell then .shell else null end),
+    Entrypoint: (if .entrypoint then .entrypoint else null end),
+    Cmd: (if .cmd then .cmd else null end),
+    WorkingDir: (if .workingdir then .workingdir else null end)
   }' "$METADATA_FILE")
 fi
 
