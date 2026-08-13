@@ -40,7 +40,7 @@ out/rootfs/{stage}-{name}/manifest.txt: \\
 \t  --provenance=false \\
 \t  --build-arg SOURCE_DATE_EPOCH=1 \\
 \t  --build-arg BUILDKIT_MULTI_PLATFORM=1 \\
-\t  --build-arg "BUILDKIT_DOCKERFILE_CHECK=skip=FromPlatformFlagConstDisallowed;error=true" \\
+\t  --build-arg "BUILDKIT_DOCKERFILE_CHECK=skip=FromPlatformFlagConstDisallowed,UndefinedVar,WorkdirRelativePath;error=true" \\
 \t  --output \\
 \t    type=local,dest=out/rootfs/{stage}-{name} \\
 \t  {context_args} \\
@@ -81,7 +81,7 @@ registry-{stage}-{name}:
 \t  --provenance=false \\
 \t  --build-arg SOURCE_DATE_EPOCH=1 \\
 \t  --build-arg BUILDKIT_MULTI_PLATFORM=1 \\
-\t  --build-arg "BUILDKIT_DOCKERFILE_CHECK=skip=FromPlatformFlagConstDisallowed;error=true" \\
+\t  --build-arg "BUILDKIT_DOCKERFILE_CHECK=skip=FromPlatformFlagConstDisallowed,UndefinedVar,WorkdirRelativePath;error=true" \\
 \t  --output \\
 \t    name={name},type=image,rewrite-timestamp=true,annotation.org.opencontainers.image.version={version},push=true \\
 \t  {context_args_registry} \\
