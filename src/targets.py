@@ -26,7 +26,7 @@ out/rootfs/{stage}-{name}/metadata.json: \\
 
 out/rootfs/{stage}-{name}/manifest.txt: \\
 \tout/rootfs/{stage}-{name}/metadata.json {deps} {core_profile_oci_dep}
-\trm -rf out/rootfs/{stage}-{name} && \\
+\trm -rf out/rootfs/{stage}-{name}/linux_* && \\
 \tmkdir -p fetch/{stage}/{origin} && \\
 \tpython3 src/fetch.py {origin} && \\
 \t rm -rf packages/{stage}/{origin}/fetch && \\

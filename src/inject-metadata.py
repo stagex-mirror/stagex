@@ -141,7 +141,10 @@ def format_shell_json(value):
 
 
 def write_metadata(stage, name, merged, rootfs_dir="out/rootfs"):
-    """Write metadata.json for mkoci.sh to embed in OCI images."""
+    """Write metadata.json for mkoci.sh to embed in OCI images.
+
+    Only writes if content changed, to avoid invalidating make cache.
+    """
     meta = {
         "env": merged["env"],
         "shell": json.loads(merged["shell"]) if merged["shell"] else None,
@@ -149,11 +152,17 @@ def write_metadata(stage, name, merged, rootfs_dir="out/rootfs"):
         "cmd": None,
         "workingdir": merged["workingdir"],
     }
+    new_content = json.dumps(meta, indent=2) + "\n"
     path = os.path.join(rootfs_dir, f"{stage}-{name}", "metadata.json")
     os.makedirs(os.path.dirname(path), exist_ok=True)
+    try:
+        with open(path) as f:
+            if f.read() == new_content:
+                return
+    except FileNotFoundError:
+        pass
     with open(path, "w") as f:
-        json.dump(meta, f, indent=2)
-        f.write("\n")
+        f.write(new_content)
 
 
 def inject(containerfile_path, stage, name):
