@@ -16,8 +16,15 @@ class TargetGenerator(object):
 .PHONY: {name} {stage}-{name}
 {name}: out/rootfs/{stage}-{name}/manifest.txt
 {stage}-{name}: out/rootfs/{stage}-{name}/manifest.txt
+
+# Injected Containerfile with parent metadata (ENV, SHELL, ENTRYPOINT, WORKDIR)
+out/cache/containerfiles/{stage}-{name}.Containerfile: \\
+\t{files} {dep_metadata} src/inject-metadata.py
+\tmkdir -p out/cache/containerfiles && \\
+\tpython3 src/inject-metadata.py {stage} {name} {origin} > $@
+
 out/rootfs/{stage}-{name}/manifest.txt: \\
-\t{files} {deps} {core_profile_oci_dep}
+\tout/cache/containerfiles/{stage}-{name}.Containerfile {deps} {core_profile_oci_dep}
 \trm -rf out/rootfs/{stage}-{name} && \\
 \tmkdir -p fetch/{stage}/{origin} && \\
 \tpython3 src/fetch.py {origin} && \\
@@ -36,15 +43,17 @@ out/rootfs/{stage}-{name}/manifest.txt: \\
 \t  --output \\
 \t    type=local,dest=out/rootfs/{stage}-{name} \\
 \t  {context_args} \\
-\t  {dep_env_args} \\
 \t  {build_args} \\
 \t  $(EXTRA_ARGS) \\
 \t  $(NOCACHE_FLAG) \\
 \t  $(CHECK_FLAG) \\
 \t  --platform={platform_arg} \\
 \t  --progress=$(PROGRESS) \\
-\t  -f packages/{stage}/{origin}/Containerfile \\
+\t  -f out/cache/containerfiles/{stage}-{name}.Containerfile \\
 \t  packages/{stage}/{origin} && \\
+\tbash src/extract-metadata.sh \\
+\t  stagex/{stage}-{name}:{version} \\
+\t  out/rootfs/{stage}-{name}/metadata.json && \\
 \tfor plat in out/rootfs/{stage}-{name}/linux_*; do \\
 \t  [ -d "$$plat" ] && bash src/fixrootfs.sh "$$plat"; \\
 \tdone && \\
@@ -96,7 +105,8 @@ out/oci/{stage}-{name}/index.json: out/rootfs/{stage}-{name}/manifest.txt
 \t  out/rootfs/{stage}-{name} \\
 \t  out/oci/{stage}-{name} \\
 \t  stagex/{stage}-{name} \\
-\t  {version}
+\t  {version} \\
+\t  out/rootfs/{stage}-{name}/metadata.json
 
 .PHONY: publish-{stage}-{name}
 publish-{stage}-{name}: oci-{stage}-{name}
@@ -161,12 +171,6 @@ publish-{stage}-{name}: oci-{stage}-{name}
         if len(package.platforms) > 0:
           platform = ",".join(package.platforms)
 
-        # Generate import.env for this package (parsed from its Containerfile)
-        # Skip bootstrap packages - their ENV vars are build-specific
-        if stage != "bootstrap":
-          origin = package.origin or package.name
-          self.generate_import_env(stage, name, origin)
-
         # core-profile always uses OCI to preserve SHELL directive inheritance
         # All other packages depend on core-profile-oci to ensure it's built first
         core_profile_oci_dep = "out/oci/core-profile/index.json" if not (stage == "core" and name == "profile") else ""
@@ -181,9 +185,11 @@ publish-{stage}-{name}: oci-{stage}-{name}
               "deps": "".join(
                 f" \\\n\tout/rootfs/{dep}/manifest.txt" for dep in package.deps
               ),
+              "dep_metadata": "".join(
+                f" \\\n\tout/rootfs/{dep}/metadata.json" for dep in package.deps
+              ),
               "files": "\\\n\t".join(check_output(["find","packages/{}/{}".format(stage,package.origin or package.name),"-type","f","-not","-path","*/fetch/*"],text=True).splitlines()),
               "build_args": TargetGenerator.get_build_args(package),
-              "dep_env_args": self.get_dep_env_args(package),
               "context_args": self.get_context_args(package, stage, package.origin or package.name, False),
               "context_args_registry": self.get_context_args(package, stage, package.origin or package.name, True),
               "platform_arg": platform,
@@ -289,164 +295,6 @@ publish-{stage}-{name}: oci-{stage}-{name}
             platform = pkg.platforms[0]  # Use first platform for single-platform builds
           return stage, platform
     return None, None
-
-  def parse_containerfile_env(self, containerfile_path: str) -> dict[str, str]:
-    """Parse ENV directives from a Containerfile's package stage chain.
-    
-    Returns ENV vars that would be active in the 'package' stage (the rootfs we provide).
-    Tracks FROM...AS stage names and inherits ENV through the stage chain.
-    """
-    env_vars: dict[str, str] = {}
-    current_stage: str = ""
-    stage_envs: dict[str, dict[str, str]] = {}
-    stage_parents: dict[str, str] = {}
-    package_stage: str | None = None
-    
-    try:
-      with open(containerfile_path, "r") as f:
-        for line in f:
-          stripped = line.strip()
-          
-          # Track FROM...AS stage definitions
-          if stripped.startswith("FROM "):
-            parts = stripped.split()
-            current_stage = ""
-            for i, part in enumerate(parts):
-              if part == "AS" and i + 1 < len(parts):
-                current_stage = parts[i + 1]
-                break
-            # Store parent of previous stage
-            if stage_envs and not current_stage:
-              prev_stage = list(stage_envs.keys())[-1]
-              stage_parents[prev_stage] = ""
-            elif current_stage and stage_envs:
-              prev_stage = list(stage_envs.keys())[-1]
-              stage_parents[current_stage] = prev_stage
-            
-            # Check if this is the package stage
-            if current_stage == "package" or (current_stage and current_stage.startswith("package-")):
-              package_stage = current_stage
-            
-            # Initialize env for this stage (inherits from parent)
-            if current_stage and current_stage in stage_parents:
-              parent = stage_parents[current_stage]
-              stage_envs[current_stage] = dict(stage_envs.get(parent, {}))
-            else:
-              stage_envs[current_stage] = {}
-          
-          # Parse ENV directives
-          elif stripped.startswith("ENV ") and current_stage in stage_envs:
-            env_part = stripped[4:].strip()
-            if "=" not in env_part:
-              continue
-            key, _, value = env_part.partition("=")
-            key = key.strip()
-            value = value.strip().strip('"').strip("'")
-            stage_envs[current_stage][key] = env_vars[key] = value
-    
-    except FileNotFoundError:
-      pass
-    
-    # Return ENV from the package stage (or last stage if no explicit package stage)
-    if package_stage and package_stage in stage_envs:
-      return stage_envs[package_stage]
-    if stage_envs:
-      return stage_envs[list(stage_envs.keys())[-1]]
-    return env_vars
-
-  def filter_env_vars(self, env_vars: dict[str, str]) -> dict[str, str]:
-    """Filter out Docker build-time variables and build-local vars from ENV."""
-    # Docker's special build-time args - they resolve differently per build
-    docker_vars = {
-      "TARGETARCH", "TARGETPLATFORM", "TARGETVARIANT",
-      "HOSTARCH", "HOSTPLATFORM", "BUILDPLATFORM",
-      "BUILDARG", "BUILDKIT_CONTEXT", "BUILDKIT_DOCKERFILE",
-    }
-    # Build-local vars that should NOT be inherited by dependents
-    build_local_vars = {
-      "CC", "CXX", "CPP", "FC", "LD", "AR", "RANLIB",
-      "CFLAGS", "CXXFLAGS", "CPPFLAGS", "LDFLAGS", "FFLAGS",
-      "PKG_CONFIG_PATH", "CONFIGURE_FLAGS", "MAKEFLAGS",
-      "DESTDIR", "PREFIX", "BINDIR", "LIBDIR", "INCDIR",
-    }
-    filtered: dict[str, str] = {}
-    for var, value in env_vars.items():
-      # Skip Docker special vars and build-local vars
-      if var in docker_vars or var in build_local_vars:
-        continue
-      # Skip vars that reference Docker special args
-      for dv in docker_vars:
-        if "${" + dv + "}" in value or "$" + dv in value:
-          # Value depends on Docker build-time arg, skip it
-          break
-      else:
-        filtered[var] = value
-    return filtered
-
-  def generate_import_env(self, stage: str, name: str, origin: str):
-    """Generate import.env file for a package from its Containerfile."""
-    containerfile = f"packages/{stage}/{origin}/Containerfile"
-    env_vars = self.parse_containerfile_env(containerfile)
-    env_vars = self.filter_env_vars(env_vars)
-    if not env_vars:
-      return
-    # Expand variable references (${VAR} or $VAR) in values
-    expanded: dict[str, str] = {}
-    for var, value in env_vars.items():
-      # Iteratively expand references to already-known vars
-      for _ in range(3):
-        new_value = value
-        for ref_var, ref_val in expanded.items():
-          new_value = new_value.replace("${" + ref_var + "}", ref_val)
-          new_value = new_value.replace("$" + ref_var, ref_val)
-        value = new_value
-      expanded[var] = value
-    import_env_path = f"out/rootfs/{stage}-{name}/import.env"
-    os.makedirs(os.path.dirname(import_env_path), exist_ok=True)
-    with open(import_env_path, "w") as f:
-      for var, value in expanded.items():
-        f.write(f"{var}={value}\n")
-
-  def get_dep_env_args(self, package: PackageInfo) -> str:
-    """Generate --build-arg flags from dependencies' import.env files (recursively)."""
-    args: List[str] = []
-    seen_vars: set[str] = set()
-    visited: set[str] = set()
-    
-    def collect_env(dep: str):
-      if dep in visited:
-        return
-      visited.add(dep)
-      env_file = f"out/rootfs/{dep}/import.env"
-      try:
-        with open(env_file, "r") as f:
-          for line in f:
-            line = line.strip()
-            if not line or "=" not in line:
-              continue
-            var, _, value = line.partition("=")
-            var = var.strip()
-            value = value.strip()
-            if var in seen_vars:
-              continue
-            seen_vars.add(var)
-            value = value.replace("$", "$$")
-            args.append(f"--build-arg {var}=\"{value}\"")
-      except FileNotFoundError:
-        pass
-      # Recursively collect from this dep's dependencies
-      parts = dep.rsplit("-", 1)
-      if len(parts) == 2:
-        dep_stage, dep_name = parts
-        if dep_stage in self.packages and dep_name in self.packages[dep_stage]:
-          dep_pkg = self.packages[dep_stage][dep_name]
-          for sub_dep in dep_pkg.deps:
-            collect_env(sub_dep)
-    
-    for dep in package.deps:
-      collect_env(dep)
-    
-    return " \\\n\t  ".join(args)
 
   @staticmethod
   def get_build_args(package: PackageInfo) -> str:
