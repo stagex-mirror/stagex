@@ -44,7 +44,18 @@ def parse_directives(containerfile_path):
 
 
 def get_containerfile_path(dep_name, packages_root="packages"):
-    """Get Containerfile path for a dep name like 'pallet-cgo'."""
+    """Get Containerfile path for a dep name like 'pallet-clang-gnu-busybox'.
+
+    Tries known stage prefixes to handle multi-hyphen package names.
+    """
+    stages = ["bootstrap", "core", "user", "box", "pallet"]
+    for stage in stages:
+        if dep_name.startswith(stage + "-"):
+            pkg_name = dep_name[len(stage) + 1:]
+            path = os.path.join(packages_root, stage, pkg_name, "Containerfile")
+            if os.path.isfile(path):
+                return path
+    # Fallback: split on last hyphen
     parts = dep_name.rsplit("-", 1)
     if len(parts) != 2:
         return None
