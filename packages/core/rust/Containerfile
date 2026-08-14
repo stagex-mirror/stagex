@@ -382,6 +382,14 @@ COPY --chmod=0755 <<-'EOF' build
 			echo '{ "files": {} }' > "./vendor/$crate/.cargo-checksum.json"
 		fi
 	done
+	# Bare-metal/wasm std dependencies live in library/vendor; wipe their checksums too
+	if [ -d ./library/vendor ]; then
+		for crate in $(ls ./library/vendor); do
+			if [ -f "./library/vendor/$crate/.cargo-checksum.json" ]; then
+				echo '{ "files": {} }' > "./library/vendor/$crate/.cargo-checksum.json"
+			fi
+		done
+	fi
 	# Remove all checksums from existing lockfiles as they've now been invalidated.
 	for file in $(find . -type f -name "Cargo.lock"); do
 		cp "$file" "${file}.bak"
@@ -547,7 +555,9 @@ EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
 # Build std library for x86_64-unknown-none (bare-metal target for SEV-SNP/SVSM)
-FROM build AS package-libstd-x86_64-none
+# Runs inside the full `build` stage (has the rustc source + toolchain), writing
+# the cross stdlib to /rootfs/lib/rustlib/x86_64-unknown-none.
+FROM build AS rust-libstd-x86_64-none
 ARG VERSION
 WORKDIR /rustc-${VERSION}-src
 RUN --network=none <<-'RUNEOF'
@@ -558,13 +568,27 @@ RUN --network=none <<-'RUNEOF'
 	export CC_x86_64_unknown_none="clang --target=x86_64-unknown-none"
 
 	./x.py build --stage 1 --target x86_64-unknown-none \
-		--config target.x86_64-unknown-none.crt-static=true \
+		--set target.x86_64-unknown-none.crt-static=true \
 		library/std library/core library/alloc
 
 	mkdir -p /rootfs/lib/rustlib/x86_64-unknown-none/lib
-	cp -a build/x86_64-unknown-none/stage1-std/x86_64-unknown-none/release/deps/. /rootfs/lib/rustlib/x86_64-unknown-none/lib/
+	# Cross-target stage1 stdlib is installed into the stage1 sysroot as
+	# <host>/stage1/lib/rustlib/<target>/lib/. Locate and copy it, guarding
+	# against an empty find (which would expand to "/." and copy the root).
+	SYSROOT_LIB=$(find build -type d \
+		-path "*/stage1/lib/rustlib/x86_64-unknown-none/lib" | head -1)
+	if [ -z "$SYSROOT_LIB" ] || [ ! -d "$SYSROOT_LIB" ]; then
+		echo "ERROR: x86_64-unknown-none stdlib sysroot not found under build/" >&2
+		find build -maxdepth 8 -type d -name "lib" -path "*x86_64-unknown-none*" | head || true
+		exit 1
+	fi
+	cp -aL "$SYSROOT_LIB"/. /rootfs/lib/rustlib/x86_64-unknown-none/lib/
 	find /rootfs/lib/rustlib/x86_64-unknown-none -type f | head -20
 RUNEOF
 
+# Thin export stage: only the bare-metal stdlib is shipped, never the full toolchain
+FROM stagex/core-filesystem AS package-rust-libstd-x86_64-none
+COPY --from=rust-libstd-x86_64-none /rootfs/lib/rustlib/x86_64-unknown-none /lib/rustlib/x86_64-unknown-none
+
 FROM package AS package-final
-COPY --from=package-libstd-x86_64-none /rootfs/lib/rustlib/x86_64-unknown-none /lib/rustlib/x86_64-unknown-none
+COPY --from=package-rust-libstd-x86_64-none /usr/lib/rustlib/x86_64-unknown-none /usr/lib/rustlib/x86_64-unknown-none

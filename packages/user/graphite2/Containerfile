@@ -1,21 +1,34 @@
-FROM stagex/pallet-clang-gnu-busybox AS build
+FROM stagex/pallet-clang-cmake-busybox AS build
 ARG VERSION
-COPY --from=stagex/core-cmake . /
-ADD fetch/graphite2-${VERSION}.tar.gz .
-RUN mv graphite2-${VERSION}* graphite2
+ADD fetch/graphite-${VERSION}.tar.gz .
+RUN mv graphite-${VERSION}* graphite2
 WORKDIR /graphite2
 ENV SOURCE_DATE_EPOCH=1
 ENV CFLAGS="-O2 -fPIC -ffile-prefix-map=/graphite2=."
 RUN --network=none <<-EOF
+	# LLVM-native: drop GCC-era -nodefaultlibs and -lgcc/s so clang links
+	# compiler-rt and libc++ automatically (musl has no libgcc)
+	sed -i \
+		-e 's/-nodefaultlibs //g' \
+		-e 's/target_link_libraries(graphite2 c gcc_s)$/target_link_libraries(graphite2 c)/' \
+		-e 's/target_link_libraries(graphite2 c gcc)$/target_link_libraries(graphite2 c)/' \
+		src/CMakeLists.txt
+	# gr2fonttest is an out-of-tree helper that needs libstdc++/libgcc_s; skip it.
+	# The shipped artifact is the libgraphite2 rendering library itself.
+	sed -i '/install(TARGETS gr2fonttest/d' gr2fonttest/CMakeLists.txt
 	cmake \
+		-G Ninja \
+		-DCMAKE_C_COMPILER=clang \
+		-DCMAKE_CXX_COMPILER=clang \
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DCMAKE_INSTALL_LIBDIR=lib \
 		-DENABLE_TESTS=OFF \
 		-DENABLE_BENCHMARK=OFF \
+		-DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
 		.
-	make -j$(nproc)
-	DESTDIR=/rootfs make install
-	install -Dm644 LICENSE.txt /rootfs/usr/share/licenses/graphite2/LICENSE.txt
+	cmake --build . --target graphite2 -j $(nproc)
+	DESTDIR=/rootfs cmake --install .
+	install -Dm644 LICENSE /rootfs/usr/share/licenses/graphite2/LICENSE.txt
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

@@ -32,6 +32,8 @@ ENV TARGET_ARCH=X64
 ENV CFLAGS="-Wno-unknown-warning-option -Wno-unneeded-internal-declaration"
 ADD patches/*.patch .
 RUN --network=none <<-EOF
+	# BaseTools host tools (VfrCompile etc.) invoke g++ directly; clang++ is stand-in
+	ln -s /usr/bin/clang++ /usr/bin/g++
 	patch -p1 < 0008-BaseTools-do-not-build-BrotliCompress-RH-only.patch
 	# Fix nasm 3.01: push in 64-bit mode always pushes qword, not dword
 	sed -i \
