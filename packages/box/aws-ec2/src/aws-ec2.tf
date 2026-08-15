@@ -32,13 +32,13 @@ variable "region" {
 variable "subnet_id" {
   description = "Subnet ID"
   type        = string
-  default     = "subnet-0521e4b4404277d91"
+  default     = "subnet-0d2a9fba54fb287f3"
 }
 
 variable "security_group_id" {
   description = "Security group ID"
   type        = string
-  default     = "sg-00b5e3de841fbfe7a"
+  default     = "sg-0ef827fb6200b34a1"
 }
 
 variable "key_name" {

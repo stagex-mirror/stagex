@@ -4,8 +4,9 @@
 
 EC2_KEY_NAME ?= tpm-exploration-key
 EC2_INSTANCE_TYPE ?= c6a.large
-EC2_SUBNET_ID ?= subnet-0521e4b4404277d91
-EC2_SECURITY_GROUP ?= sg-00b5e3de841fbfe7a
+EC2_SUBNET_ID ?= subnet-0d2a9fba54fb287f3
+EC2_SECURITY_GROUP ?= sg-0ef827fb6200b34a1
+EC2_ENABLE_SEV_SNP ?= true
 EC2_SSH_KEY ?= ~/.ssh/tpm-exploration.pem
 EC2_USER_DATA_FILE ?=
 
@@ -46,6 +47,7 @@ aws-ec2-deploy:
 		-e INSTANCE_TYPE="$(EC2_INSTANCE_TYPE)" \
 		-e SUBNET_ID="$(EC2_SUBNET_ID)" \
 		-e SECURITY_GROUP="$(EC2_SECURITY_GROUP)" \
+		-e ENABLE_SEV_SNP="$(EC2_ENABLE_SEV_SNP)" \
 		-e USER_DATA="$$USER_DATA" \
 		-e AMI_TFVARS=/input/aws-ami.tfvars \
 		-v $(EC2_AMI_TFVARS):/input/aws-ami.tfvars:ro \
