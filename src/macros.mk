@@ -13,14 +13,17 @@ define verify
 endef
 
 # Import an OCI image locally, tagged at :local
+# docker load of an OCI layout does not reliably apply the
+# io.containerd.image.name annotation as a tag (produces a dangling image),
+# so capture the loaded image ID and tag it explicitly.
 define import
 	$(eval STAGE := $(1))
 	$(eval NAME := $(2))
 	$(eval VERSION := $(3))
-	tar -C out/oci/$(STAGE)-$(NAME) -cf - . | docker load
-	docker tag \
-		stagex/$(STAGE)-$(NAME):$(VERSION) \
-		stagex/$(STAGE)-$(NAME):local
+	IMG_ID=$$(tar -C out/oci/$(STAGE)-$(NAME) -cf - . | docker load 2>&1 | sed -n 's/.*Loaded image ID: sha256:\([0-9a-f]*\).*/\1/p') && \
+	if [ -z "$$IMG_ID" ]; then echo "ERROR: docker load produced no image ID for $(STAGE)-$(NAME)" >&2; exit 1; fi && \
+	docker tag $$IMG_ID stagex/$(STAGE)-$(NAME):$(VERSION) && \
+	docker tag stagex/$(STAGE)-$(NAME):$(VERSION) stagex/$(STAGE)-$(NAME):local
 endef
 
 # Push an image
