@@ -323,12 +323,10 @@ def write_metadata(stage, name, merged, rootfs_dir="out/rootfs"):
     new_content = json.dumps(meta, indent=2) + "\n"
     path = os.path.join(rootfs_dir, f"{stage}-{name}", "metadata.json")
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    try:
-        with open(path) as f:
-            if f.read() == new_content:
-                return
-    except FileNotFoundError:
-        pass
+    # Always write so the mtime is refreshed. metadata.json is the make
+    # sentinel for this recipe; if we skipped the write when content was
+    # unchanged, the mtime would stay older than src/inject-metadata.py and
+    # make would re-run the recipe on every invocation.
     with open(path, "w") as f:
         f.write(new_content)
 
