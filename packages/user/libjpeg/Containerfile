@@ -1,0 +1,17 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+ARG VERSION
+COPY --from=stagex/user-nasm . /
+ADD fetch/libjpeg-turbo-${VERSION}.tar.gz .
+WORKDIR /libjpeg-turbo-${VERSION}
+RUN --network=none <<-EOF
+	cmake \
+		-B build \
+		-G Ninja \
+		-DCMAKE_BUILD_TYPE=MinSizeRel \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib
+	cmake --build build
+	DESTDIR=/rootfs cmake --install build
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

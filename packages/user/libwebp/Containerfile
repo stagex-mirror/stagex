@@ -1,0 +1,28 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-libpng . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/user-libjpeg . /
+COPY --from=stagex/user-giflib . /
+ADD fetch/libwebp-${VERSION}.tar.gz .
+WORKDIR /libwebp-${VERSION}
+RUN --network=none <<-EOF
+	cmake \
+		-B build \
+		-G Ninja \
+		-DCMAKE_BUILD_TYPE=MinSizeRel \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DBUILD_SHARED_LIBS=ON \
+		-DWEBP_BUILD_ANIM_UTILS=ON \
+		-DWEBP_BUILD_CWEBP=ON \
+		-DWEBP_BUILD_DWEBP=ON \
+		-DWEBP_BUILD_GIF2WEBP=ON \
+		-DWEBP_BUILD_IMG2WEBP=ON \
+		-DWEBP_BUILD_WEBPINFO=ON \
+		-DWEBP_BUILD_WEBPMUX=ON
+	cmake --build build
+	DESTDIR=/rootfs cmake --install build
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

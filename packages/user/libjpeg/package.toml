@@ -1,0 +1,12 @@
+[package]
+name = "libjpeg"
+version = "3.2.0"
+description = "JPEG image codec with SIMD acceleration"
+license = "BSD-3-Clause AND IJG"
+website = "https://libjpeg-turbo.org"
+
+[sources.libjpeg]
+hash = "6f30092cef9fb839779646608f4ee14ae3cbac989c47fa05e841b0841f09878e"
+format = "tar.gz"
+file = "libjpeg-turbo-{version}.{format}"
+mirrors = [ "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/{version}/{file}",]

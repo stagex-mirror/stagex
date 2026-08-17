@@ -1,0 +1,12 @@
+[package]
+name = "libxpm"
+version = "3.5.19"
+description = "X Pixmap library"
+license = "MIT AND GPL-2.0-or-later"
+website = "https://www.x.org"
+
+[sources.libxpm]
+hash = "ad3576d689221a39dc728f0e0dc02ca7bb6a0d724c9a77fd1bfa1e9af83be900"
+format = "tar.xz"
+file = "libXpm-{version}.{format}"
+mirrors = [ "https://www.x.org/releases/individual/lib/{file}",]

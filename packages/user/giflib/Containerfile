@@ -1,0 +1,10 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+ARG VERSION
+ADD fetch/giflib-${VERSION}.tar.gz .
+WORKDIR /giflib-${VERSION}
+RUN --network=none <<-EOF
+	make CFLAGS="-O2 -fPIC" PREFIX=/usr
+	make install DESTDIR=/rootfs PREFIX=/usr LIBDIR=/usr/lib
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

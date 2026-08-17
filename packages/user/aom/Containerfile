@@ -1,0 +1,23 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+ARG VERSION
+COPY --from=stagex/user-nasm . /
+COPY --from=stagex/core-perl . /
+ADD fetch/libaom-${VERSION}.tar.gz .
+WORKDIR /libaom-${VERSION}
+RUN --network=none <<-EOF
+	cmake \
+		-B build \
+		-G Ninja \
+		-DCMAKE_BUILD_TYPE=MinSizeRel \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DBUILD_SHARED_LIBS=ON \
+		-DENABLE_EXAMPLES=OFF \
+		-DENABLE_TOOLS=ON \
+		-DENABLE_TESTS=OFF \
+		-DENABLE_DOCS=OFF
+	cmake --build build
+	DESTDIR=/rootfs cmake --install build
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

@@ -1,0 +1,17 @@
+FROM stagex/pallet-clang-meson-busybox AS build
+ARG VERSION
+COPY --from=stagex/user-nasm . /
+ADD fetch/dav1d-${VERSION}.tar.xz .
+WORKDIR /dav1d-${VERSION}
+RUN --network=none <<-EOF
+	meson setup \
+		--prefix=/usr \
+		-Denable_tools=true \
+		-Denable_examples=false \
+		-Denable_tests=false \
+		. output
+	meson compile -C output
+	DESTDIR=/rootfs meson install --no-rebuild -C output
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

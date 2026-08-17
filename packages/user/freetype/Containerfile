@@ -1,0 +1,27 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-libpng . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-brotli . /
+COPY --from=stagex/core-bzip2 . /
+COPY --from=stagex/user-harfbuzz . /
+ADD fetch/freetype-${VERSION}.tar.xz .
+WORKDIR /freetype-${VERSION}
+RUN --network=none <<-EOF
+	cmake \
+		-B build \
+		-G Ninja \
+		-DCMAKE_BUILD_TYPE=MinSizeRel \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DBUILD_SHARED_LIBS=ON \
+		-DFT_REQUIRE_PNG=ON \
+		-DFT_REQUIRE_ZLIB=ON \
+		-DFT_REQUIRE_BROTLI=ON \
+		-DFT_REQUIRE_BZIP2=ON \
+		-DFT_ENABLE_HARFBUZZ=ON
+	cmake --build build
+	DESTDIR=/rootfs cmake --install build
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

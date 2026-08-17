@@ -1,0 +1,25 @@
+FROM stagex/pallet-clang-cmake-busybox AS build
+ARG VERSION
+COPY --from=stagex/user-aom . /
+COPY --from=stagex/user-dav1d . /
+ADD fetch/libavif-${VERSION}.tar.gz .
+WORKDIR /libavif-${VERSION}
+RUN --network=none <<-EOF
+	cmake \
+		-B build \
+		-G Ninja \
+		-DCMAKE_BUILD_TYPE=MinSizeRel \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DBUILD_SHARED_LIBS=ON \
+		-DAVIF_CODEC_AOM=SYSTEM \
+		-DAVIF_CODEC_DAV1D=SYSTEM \
+		-DAVIF_LIBYUV=OFF \
+		-DAVIF_BUILD_APPS=OFF \
+		-DAVIF_BUILD_TESTS=OFF \
+		-DAVIF_ENABLE_WERROR=OFF
+	cmake --build build
+	DESTDIR=/rootfs cmake --install build
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

@@ -1,0 +1,13 @@
+[package]
+name = "aom"
+version = "3.14.1"
+description = "AV1 codec library from the Alliance for Open Media"
+license = "BSD-2-Clause"
+website = "https://aomedia.org"
+
+[sources.aom]
+hash = "44bf90dbd23e734d50e70a8c41c285193922938bd0d3bc2ee56764d181d55ef5"
+git_sha = "03087864cf4bea6abb0d28f95cf7843511413d8f"
+format = "tar.gz"
+file = "libaom-{version}.tar.gz"
+mirrors = [ "https://storage.googleapis.com/aom-releases/{file}" ]
