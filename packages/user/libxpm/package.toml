@@ -2,7 +2,7 @@
 name = "libxpm"
 version = "3.5.19"
 description = "X Pixmap library"
-license = "MIT AND GPL-2.0-or-later"
+license = "MIT"
 website = "https://www.x.org"
 
 [sources.libxpm]

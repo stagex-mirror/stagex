@@ -2,7 +2,7 @@
 name = "freetype"
 version = "2.14.3"
 description = "Font rendering engine"
-license = "FTL AND GPL-2.0-or-later"
+license = "FTL OR GPL-2.0-or-later"
 website = "https://freetype.org"
 
 [sources.freetype]
