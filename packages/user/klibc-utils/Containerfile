@@ -21,7 +21,7 @@ RUN --network=none <<-EOF
 	# Install to rootfs — static utilities + dash shell + klibc shared lib
 	mkdir -p /rootfs/usr/bin /rootfs/usr/lib/klibc/x86_64-linux-gnu
 	# Static utilities (klibc progs) — no shared lib needed
-	for util in mount mkdir mknod ls cat sleep pivot_root; do
+	for util in mount mkdir mknod ls cat sleep pivot_root dd sync insmod; do
 	    cp usr/utils/static/$util /rootfs/usr/bin/
 	done
 	# Shell (dash) — static binary, no shared lib needed in initramfs

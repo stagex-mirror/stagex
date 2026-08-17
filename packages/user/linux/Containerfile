@@ -7,6 +7,8 @@ COPY --from=stagex/core-findutils . /
 COPY --from=stagex/core-binutils . /
 COPY --from=stagex/user-elfutils . /
 COPY --from=stagex/user-kmod . /
+COPY --from=stagex/core-gawk . /
+COPY --from=stagex/core-tar . /
 ARG VERSION
 ADD fetch/linux-${VERSION}.tar.gz .
 ENV SOURCE_DATE_EPOCH=1

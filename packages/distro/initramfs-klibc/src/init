@@ -14,7 +14,52 @@ mount -t proc proc /proc || { echo "initramfs: failed to mount proc"; exit 1; }
 mount -t sysfs sysfs /sys || { echo "initramfs: failed to mount sysfs"; exit 1; }
 mount -t devtmpfs devtmpfs /dev || { echo "initramfs: failed to mount devtmpfs"; exit 1; }
 
+# --- Boot progress marker (persistent, on ESP partition 1) ---
+# The serial console is unavailable on SEV-SNP guests, so write a marker to
+# the last 4096 bytes of the ESP (FAT, free space) at each stage. After a
+# clean poweroff the EBS persists; read the marker back to localize the failure.
+# mark() locates the ESP and writes at its true tail (computed from the
+# partition size in sysfs) so it works for any ESP size.
+mark() {
+    mi_esp=""
+    mi_sz=""
+    if [ -b /dev/nvme0n1p1 ]; then mi_esp=/dev/nvme0n1p1; mi_sz=$(cat /sys/block/nvme0n1/nvme0n1p1/size 2>/dev/null)
+    elif [ -b /dev/sda1 ]; then mi_esp=/dev/sda1; mi_sz=$(cat /sys/block/sda/sda1/size 2>/dev/null)
+    elif [ -b /dev/vda1 ]; then mi_esp=/dev/vda1; mi_sz=$(cat /sys/block/vda/vda1/size 2>/dev/null)
+    elif [ -b /dev/xvda1 ]; then mi_esp=/dev/xvda1; mi_sz=$(cat /sys/block/xvda/xvda1/size 2>/dev/null)
+    elif [ -b /dev/hda1 ]; then mi_esp=/dev/hda1; mi_sz=$(cat /sys/block/hda/hda1/size 2>/dev/null)
+    fi
+    if [ -z "$mi_esp" ]; then
+        for mi_d in /sys/block/nvme* /sys/block/sd* /sys/block/vd* /sys/block/xvd*; do
+            [ -d "$mi_d" ] || continue
+            mi_n=${mi_d##*/}
+            case "$mi_n" in
+                nvme*) mi_p1="${mi_n}p1" ;;
+                *)     mi_p1="${mi_n}1" ;;
+            esac
+            if [ -d "$mi_d/$mi_p1" ] && [ -f "$mi_d/$mi_p1/dev" ]; then
+                mi_mm=$(cat "$mi_d/$mi_p1/dev")
+                mknod "/dev/$mi_p1" b "${mi_mm%:*}" "${mi_mm#*:}" 2>/dev/null
+                mi_esp="/dev/$mi_p1"
+                mi_sz=$(cat "$mi_d/$mi_p1/size" 2>/dev/null)
+                break
+            fi
+        done
+    fi
+    [ -n "$mi_esp" ] || return 0
+    case "$mi_sz" in
+        ''|*[!0-9]*) mi_seek=8191 ;;
+        *) mi_seek=$(( mi_sz / 8 - 1 )) ;;
+    esac
+    printf 'STAGEXBOOT %s\n' "$1" | dd of="$mi_esp" bs=4096 seek="$mi_seek" conv=notrunc 2>/dev/null
+    sync 2>/dev/null
+    return 0
+}
+
+mark "initramfs-start"
+
 echo "initramfs: waiting for block devices..."
+mark "waiting-for-dev"
 
 # Wait for the block device node to appear in /dev
 i=0
@@ -51,23 +96,31 @@ done
 
 if [ -z "$SYSTEM_DEV" ]; then
     echo "initramfs: ERROR: no system partition found" >&2
+    mark "fail-no-sys-part"
     exec /bin/sh
 fi
+
+mark "found-sys-part $SYSTEM_DEV"
 
 echo "initramfs: mounting $SYSTEM_DEV as erofs..."
 
 # Mount the erofs system image
 mount -t erofs -o ro "$SYSTEM_DEV" /mnt || {
     echo "initramfs: ERROR: failed to mount $SYSTEM_DEV" >&2
+    mark "fail-mount-erofs"
     exec /bin/sh
 }
+
+mark "mounted-erofs"
 
 echo "initramfs: switching to new root..."
 
 # Use pivot_root to switch to the new root
 # Prepare old root mount point inside the new root
 mkdir -p /mnt/oldroot
-pivot_root /mnt /mnt/oldroot
+pivot_root /mnt /mnt/oldroot || { mark "fail-pivot"; exec /bin/sh; }
+
+mark "before-exec-init"
 
 # Hand over to the real init
 exec /init

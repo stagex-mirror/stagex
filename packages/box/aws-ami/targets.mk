@@ -9,6 +9,11 @@ EC2_REGION ?= us-east-2
 
 # Disk image path (extracted from distro build)
 EC2_DISK_IMG := $(CURDIR)/out/disk.img
+# Built disk.img this extraction must track. Depends on the distro manifest
+# (real mtime; the disk.img itself carries a deterministic epoch-1 mtime from
+# the OCI layout and would never compare "newer"). Re-extract whenever the
+# distro build is newer, so a stale out/disk.img never reaches the AMI.
+DISTRO_DISK_SRC := $(CURDIR)/out/rootfs/distro-$(EC2_DISTRO)/manifest.txt
 # AMI tfvars file — produced by box-aws-ami, consumed by box-aws-ec2
 EC2_AMI_TFVARS := $(CURDIR)/out/aws-ami.tfvars
 
@@ -21,7 +26,7 @@ define check_aws_creds
 endef
 
 # Extract disk image from distro container
-$(EC2_DISK_IMG):
+$(EC2_DISK_IMG): $(DISTRO_DISK_SRC)
 	@echo "Extracting disk.img from distro-$(EC2_DISTRO) ..."
 	@docker create --name ec2-disk-tmp stagex/distro-$(EC2_DISTRO):local >/dev/null 2>&1
 	@docker cp ec2-disk-tmp:/disk.img $(EC2_DISK_IMG) >/dev/null 2>&1

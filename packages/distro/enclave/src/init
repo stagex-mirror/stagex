@@ -1,11 +1,33 @@
 #!/bin/sh
 # init — StageX base distro init
 
+# Boot progress marker (persistent, on ESP partition 1) — see initramfs/init.
+# Locates the ESP on each call (device nodes exist after devtmpfs mount) and
+# writes at the partition's true tail (size from sysfs, any ESP size).
+mark() {
+    for mi_d in /dev/nvme0n1p1 /dev/sda1 /dev/vda1 /dev/xvda1; do
+        if [ -b "$mi_d" ]; then
+            mi_n=${mi_d##*/}
+            mi_disk=${mi_n%?}
+            mi_sz=$(cat /sys/block/$mi_disk/$mi_n/size 2>/dev/null)
+            case "$mi_sz" in
+                ''|*[!0-9]*) mi_seek=8191 ;;
+                *) mi_seek=$(( mi_sz / 8 - 1 )) ;;
+            esac
+            printf 'STAGEXBOOT %s\n' "$1" | dd of="$mi_d" bs=4096 seek="$mi_seek" conv=notrunc 2>/dev/null
+            sync 2>/dev/null
+            return 0
+        fi
+    done
+    return 0
+}
+
 # Mount virtual filesystems (dirs exist in squashfs)
 mount -t proc proc /proc
 mount -t sysfs sysfs /sys
 # Mount devtmpfs for automatic device node creation (virtio-blk, etc.)
 mount -t devtmpfs -o mode=755 devtmpfs /dev
+mark "init-start"
 mount -t tmpfs -o mode=755 tmpfs /run
 mount -t tmpfs -o mode=1777 tmpfs /tmp
 mount -t tmpfs -o mode=755 tmpfs /var/log
@@ -47,4 +69,5 @@ else
     mount -t tmpfs tmpfs /home
 fi
 
+mark "init-before-exec-bininit"
 exec /bin/init

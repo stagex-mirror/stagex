@@ -1,5 +1,30 @@
 #!/bin/sh
 
+# Boot progress marker (persistent, on ESP partition 1) — see initramfs/init
+ESP_DEV=""
+for d in /dev/nvme0n1p1 /dev/sda1 /dev/vda1 /dev/xvda1; do
+    [ -b "$d" ] && { ESP_DEV="$d"; break; }
+done
+# Write at the ESP's true tail (size from sysfs) so any ESP size works.
+ESP_SEEK=8191
+if [ -n "$ESP_DEV" ]; then
+    mi_n=${ESP_DEV##*/}
+    mi_disk=${mi_n%?}
+    ESP_SIZE=$(cat /sys/block/$mi_disk/$mi_n/size 2>/dev/null)
+    case "$ESP_SIZE" in
+        ''|*[!0-9]*) : ;;
+        *) ESP_SEEK=$(( ESP_SIZE / 8 - 1 )) ;;
+    esac
+fi
+mark() {
+    [ -n "$ESP_DEV" ] && [ -b "$ESP_DEV" ] || return 0
+    printf 'STAGEXBOOT %s\n' "$1" | dd of="$ESP_DEV" bs=4096 seek="$ESP_SEEK" conv=notrunc 2>/dev/null
+    sync 2>/dev/null
+    return 0
+}
+
+mark "rcS-start esp=$ESP_DEV"
+
 # Start all init scripts in /etc/init.d
 # executing them in numerical order.
 #
@@ -7,6 +32,8 @@ for i in /etc/init.d/S??* ;do
 
      # Ignore dangling symlinks (if any).
      [ ! -f "$i" ] && continue
+
+     mark "rcS-run ${i##*/}"
 
      case "$i" in
 	*.sh)
@@ -24,3 +51,4 @@ for i in /etc/init.d/S??* ;do
     esac
 done
 
+mark "rcS-done"
