@@ -76,7 +76,7 @@ QEMU_BIOS ?= /usr/share/edk2/OvmfPkg/OVMF.fd
 # AWS EC2 deploy shortcuts (full pipeline)
 .PHONY: deploy-ec2
 deploy-ec2:
-	@$(MAKE) IMPORT=1 distro-$(EC2_DISTRO) >/dev/null 2>&1
+	@$(MAKE) IMPORT=1 distro-$(EC2_DISTRO)-img >/dev/null 2>&1
 	@$(MAKE) aws-ami-deploy
 	@$(MAKE) aws-ec2-deploy
 
@@ -87,8 +87,8 @@ ec2-ssh:
 # Strip -dev suffix to find the base distro directory
 DISTRO_BASE = $(subst -dev,,${DISTRO})
 
-# Determine the Containerfile stage to export
-DISTRO_STAGE = package-$(DISTRO)
+# Determine the Containerfile stage to export (disk image lives in -img)
+DISTRO_STAGE = package-$(DISTRO)-img
 
 # Home disk image path
 HOME_IMG = $(CURDIR)/out/$(DISTRO)-home.img

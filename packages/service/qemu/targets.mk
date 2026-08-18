@@ -16,7 +16,7 @@ QEMU_STATE := $(CURDIR)/out/vm.state
 # Launch QEMU qemu from disk image
 qemu-start:
 	@if [ ! -f "$(QEMU_DISK_IMG)" ]; then \
-		echo "ERROR: No disk.img found — run 'make distro-$(EC2_DISTRO)' first" >&2; exit 1; \
+		echo "ERROR: No disk.img found — run 'make distro-$(EC2_DISTRO)-img' first" >&2; exit 1; \
 	fi
 	@USER_DATA="" && \
 	if [ -n "$(QEMU_USER_DATA_FILE)" ] && [ -f "$(QEMU_USER_DATA_FILE)" ]; then \

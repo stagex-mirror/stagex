@@ -86,10 +86,28 @@ busybox mkfs.vfat -F 32 -S 512 -s $(( BOOT_IMG_SIZE * 2048 )) "$BOOT_IMG" >/dev/
 # Pre-create the GRUB env block (SEV-SNP boot marker target, see grub.cfg)
 grub-editenv "$ESP/boot/env" create
 
-mcopy -i "$BOOT_IMG" -sm "$ESP/EFI" ::EFI
-mcopy -i "$BOOT_IMG" -sm "$ESP/boot" ::boot
+if [ "${TREE_ONLY:-0}" = "1" ]; then
+    # Leave the ESP tree in place: /boot = the ESP's boot/ tree, /efi = the
+    # ESP's EFI/ tree. For distros that pack boot.img later from the live
+    # layout (box-disk).
+    rm -rf /boot /efi
+    mv "$ESP/boot" /boot
+    mv "$ESP/EFI" /efi
+    rm -rf "$ESP" grub_early.cfg
+    echo "ESP tree left at /boot + /efi"
+else
+    # --- Create boot.img (FAT32) ---
+    # Size: 512MB (UEFI spec minimum for x64 is 100MB; 512MB matches AWS AMIs)
+    dd if=/dev/zero of="$BOOT_IMG" bs=1M count="$BOOT_IMG_SIZE"
 
-# Cleanup
-rm -rf "$ESP" grub_early.cfg
+    # mformat picks FAT16 for this size; force FAT32 like a standard 512MB ESP
+    busybox mkfs.vfat -F 32 -S 512 -s $(( BOOT_IMG_SIZE * 2048 )) "$BOOT_IMG" >/dev/null
 
-echo "boot.img created: $(du -h "$BOOT_IMG" | cut -f1)"
+    mcopy -i "$BOOT_IMG" -sm "$ESP/EFI" ::EFI
+    mcopy -i "$BOOT_IMG" -sm "$ESP/boot" ::boot
+
+    # Cleanup
+    rm -rf "$ESP"
+    rm -f grub_early.cfg
+    echo "boot.img created: $(du -h "$BOOT_IMG" | cut -f1)"
+fi

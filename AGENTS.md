@@ -43,6 +43,13 @@
 - **cbindgen** — Added as `user-cbindgen` (packages/user/cbindgen/).
 - **AWS EC2 box** — Updated to OpenTofu with built-in AWS provider. Added `enable_tpm = true` and `enable_sev_snp = true`. Fixed AMI creation (`role_name="vmimport"`). Automated pipeline: `make aws-ami-deploy` → `make aws-ec2-deploy` → `make aws-keylime-test`.
 
+### Distro package layout (Aug 18 refactor, lance/distros)
+- Distro subpackages split three ways per variant: **default** = live layout (rootfs contents + boot partition flattened at `/boot` [vmlinuz, initramfs, grub/, env] + `/efi` [BOOTX64.EFI]); `docker run` gives a shell on the booted filesystem. **`-img`** = scratch + `/disk.img` (box-disk repacks the live layout: `/boot`+`/efi` → FAT32 boot.img, rest → erofs system.img, GPT-assembled). **`-vm`** = service-qemu + `/disk.img`.
+- `box-disk` (packages/box/disk) is the superset assembler: delegates erofs packing to `box-erofs` and GPT assembly to `box-gpt` (both installed as /usr/bin/box-erofs, /usr/bin/box-gpt from the box images).
+- `box-grub` with `TREE_ONLY=1` leaves the ESP tree at /boot + /efi instead of packing a FAT image (embed distro still uses the default packing path).
+- Consumers of disk.img use the `-img` subpackage: `make distro-enclave-dev-img`, `out/rootfs/distro-enclave-dev-img/linux_amd64/disk.img`; aws-ami extracts via plain `cp` from the local export (the -img image has no command, so `docker create` on it fails).
+- erofs images are NOT bit-deterministic across builds (internal NIDs/layout differ), so the PCR 11 pin changes per build; the binding stays valid because local disk.img and the live partition come from the same build. Kernel/initramfs/cmdline pins are stable across repacks.
+
 ### Completed: SEV-SNP/TPM2 Byte-Level Binding (Aug 15-18, lance/distros)
 - **VERDICT: BOUND** — `src/verify-binding` proves SNP + TPM2 attestations describe the same kernel/initrd/cmdline/rootfs on live us-east-2 c6a.large (SEV-SNP + NitroTPM).
 - **TPM channel (byte level):** TCG 2.0 crypto-agile event log (dumped from `/dev/mem` at `TPMEventLog=` addr) parsed by `src/elscan.rs`; PCR9 "Linux initrd" + "LOADED_IMAGE::LoadOptions" events are emitted by the kernel's own EFI stub (so their digests == SHA256/384 of our exact initramfs/cmdline); GRUB `tpm` module (added to `packages/box/grub/src/box` module list) measures vmlinuz into the log; full PCR9 replay from zero == live EK-quoted PCR 9.

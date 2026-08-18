@@ -1,0 +1,29 @@
+FROM stagex/core-busybox AS core-busybox
+FROM stagex/core-musl AS core-musl
+FROM stagex/core-xz AS core-xz
+FROM stagex/core-zlib AS core-zlib
+FROM stagex/core-libzstd AS core-libzstd
+FROM stagex/core-ncurses AS core-ncurses
+FROM stagex/user-mtools AS user-mtools
+FROM stagex/user-util-linux AS user-util-linux
+FROM stagex/user-dosfstools AS user-dosfstools
+FROM stagex/user-erofs-utils AS user-erofs-utils
+FROM stagex/box-erofs AS box-erofs
+FROM stagex/box-gpt AS box-gpt
+
+FROM scratch AS package
+COPY --from=core-busybox . /
+COPY --from=core-musl . /
+COPY --from=core-xz . /
+COPY --from=core-zlib . /
+COPY --from=core-libzstd . /
+COPY --from=core-ncurses . /
+COPY --from=user-mtools . /
+COPY --from=user-util-linux . /
+COPY --from=user-dosfstools . /
+COPY --from=user-erofs-utils . /
+COPY --from=box-erofs /usr/bin/box /usr/bin/box-erofs
+COPY --from=box-gpt /usr/bin/box /usr/bin/box-gpt
+COPY src/box /usr/bin/box
+RUN chmod +x /usr/bin/box /usr/bin/box-erofs /usr/bin/box-gpt
+ENTRYPOINT ["/usr/bin/box"]

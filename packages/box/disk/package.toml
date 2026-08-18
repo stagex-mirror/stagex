@@ -1,0 +1,4 @@
+[package]
+name = "disk"
+version = "2026.03.0"
+description = "Full disk assembler — takes a live layout (rootfs + /boot + /efi), assembles boot.img + system.img via box-erofs/box-gpt, outputs /disk.img"

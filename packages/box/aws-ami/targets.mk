@@ -7,13 +7,14 @@ EC2_DISTRO ?= enclave-dev
 EC2_AMI_NAME ?= stagex-$(EC2_DISTRO)-$(shell date +%Y%m%d-%H%M%S)
 EC2_REGION ?= us-east-2
 
-# Disk image path (extracted from distro build)
+# Built disk image path (extracted from the distro's -img subpackage)
 EC2_DISK_IMG := $(CURDIR)/out/disk.img
-# Built disk.img this extraction must track. Depends on the distro manifest
-# (real mtime; the disk.img itself carries a deterministic epoch-1 mtime from
-# the OCI layout and would never compare "newer"). Re-extract whenever the
-# distro build is newer, so a stale out/disk.img never reaches the AMI.
-DISTRO_DISK_SRC := $(CURDIR)/out/rootfs/distro-$(EC2_DISTRO)/manifest.txt
+# Built disk.img this extraction must track. Depends on the -img subpackage
+# manifest (real mtime; the disk.img itself carries a deterministic epoch-1
+# mtime from the OCI layout and would never compare "newer"). Re-extract
+# whenever the distro build is newer, so a stale out/disk.img never reaches
+# the AMI.
+DISTRO_DISK_SRC := $(CURDIR)/out/rootfs/distro-$(EC2_DISTRO)-img/manifest.txt
 # AMI tfvars file — produced by box-aws-ami, consumed by box-aws-ec2
 EC2_AMI_TFVARS := $(CURDIR)/out/aws-ami.tfvars
 
@@ -26,11 +27,12 @@ define check_aws_creds
 endef
 
 # Extract disk image from distro container
+# Extract disk image from the distro's exported rootfs (the -img subpackage
+# image is scratch + /disk.img with no command, so copy the local export
+# instead of docker cp'ing from a container)
 $(EC2_DISK_IMG): $(DISTRO_DISK_SRC)
-	@echo "Extracting disk.img from distro-$(EC2_DISTRO) ..."
-	@docker create --name ec2-disk-tmp stagex/distro-$(EC2_DISTRO):local >/dev/null 2>&1
-	@docker cp ec2-disk-tmp:/disk.img $(EC2_DISK_IMG) >/dev/null 2>&1
-	@docker rm ec2-disk-tmp >/dev/null 2>&1
+	@echo "Extracting disk.img from distro-$(EC2_DISTRO)-img ..."
+	@cp out/rootfs/distro-$(EC2_DISTRO)-img/linux_amd64/disk.img $(EC2_DISK_IMG)
 	@echo "  disk.img: $$(ls -lh $(EC2_DISK_IMG) | awk '{print $$5}')"
 
 # Import disk image as AMI via box-aws-ami, capture tfvars output
