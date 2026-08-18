@@ -1,0 +1,5 @@
+[package]
+name = "snptpm-agent"
+version = "0.1.0"
+description = "Dual attestation agent: unified TPM2 + SEV-SNP interface"
+license = "ISC"

@@ -1,59 +1,85 @@
 #!/bin/sh
-# verify-enclave — verify a remote enclave via Keylime agent
+# verify-enclave — dual-attest a remote enclave (TPM2 + SEV-SNP)
 #
-# Usage: verify-enclave <agent-ip> [--port 8891]
+# Usage: verify-enclave <agent-ip> [--port 9003]
 #
-# Connects to the remote Keylime agent, retrieves attestation data,
-# and reports PCR values and TPM identity.
+# Primary source: snptpm-agent (port 9003) /attest endpoint, which returns
+# both TPM2 PCRs and the SEV-SNP attestation report in one call.
+# Falls back to the Keylime agent (port 9002) for TPM2-only if snptpm-agent
+# is not running.
+#
+# The combined attestation is equivalent to what coconut-svsm's e-vTPM
+# provides on bare-metal/QEMU: a single interface proving both
+#   (1) system measurement (TPM2 PCR quote) and
+#   (2) guest isolation (SEV-SNP attestation report)
+# On AWS, these come from independent hardware: NitroTPM + SNP.
 
-AGENT_IP="${1:?Usage: verify-enclave <agent-ip>}"
-AGENT_PORT="${PORT:-8891}"
-AGENT_URL="http://${AGENT_IP}:${AGENT_PORT}"
+AGENT_IP="${1:?Usage: verify-enclave <agent-ip> [--port 9003]}"
+SNIPTPM_PORT="${PORT:-9003}"
+SNIPTPM_URL="http://${AGENT_IP}:${SNIPTPM_PORT}"
 
-echo "=== Keylime Enclave Verification ==="
-echo "Target: ${AGENT_URL}"
+echo "=== Enclave Dual Attestation (TPM2 + SEV-SNP) ==="
+echo "Target: ${SNIPTPM_URL}"
 echo
 
-# Get agent identity and TPM info
-echo "--- Agent Identity ---"
-curl -sf "${AGENT_URL}/v1/identity" 2>/dev/null | python3 -c "
+# --- Primary: snptpm-agent /attest (combined) ---
+ATTEST_JSON=$(curl -sf --max-time 10 "${SNIPTPM_URL}/attest" 2>/dev/null)
+
+if [ -n "$ATTEST_JSON" ]; then
+	echo "--- Combined Attestation (snptpm-agent /attest) ---"
+	printf '%s\n' "$ATTEST_JSON" | python3 -c "
 import sys, json
 try:
     data = json.load(sys.stdin)
-    for key in ['uuid', 'tpm_policy', 'boot_time']:
-        if key in data:
-            print(f'{key}: {data[key]}')
-except:
-    print(json.dumps(json.load(sys.stdin), indent=2))
-" 2>/dev/null || echo "Failed to get identity"
+except Exception:
+    print('  (unparseable response)')
+    sys.exit(0)
 
-echo
-echo "--- PCR Values ---"
-curl -sf "${AGENT_URL}/v1/tpm/pcrs" 2>/dev/null | python3 -c "
+tpm = data.get('tpm', 'error')
+snp = data.get('snp', 'error')
+
+print('  [TPM2]')
+if isinstance(tpm, str) and tpm.startswith('error:'):
+    print(f'    {tpm}')
+else:
+    for line in str(tpm).splitlines():
+        line = line.strip()
+        if line:
+            print(f'    {line}')
+
+print('  [SEV-SNP]')
+if isinstance(snp, str) and snp.startswith('error:'):
+    print(f'    {snp}')
+elif isinstance(snp, str) and snp:
+    # show first 128 hex chars + length
+    print(f'    report: {snp[:128]}...')
+    print(f'    length: {len(snp)} hex chars ({len(snp)//2} bytes)')
+else:
+    print('    (none)')
+" 2>/dev/null
+else
+	echo "--- snptpm-agent not reachable, falling back to Keylime agent ---"
+	KEYLIME_URL="http://${AGENT_IP}:9002"
+
+	echo "  [TPM2] (via Keylime agent)"
+	curl -sf --max-time 10 "${KEYLIME_URL}/v1/tpm/pcrs" 2>/dev/null | python3 -c "
 import sys, json
 try:
     data = json.load(sys.stdin)
     if 'pcr_values' in data:
-        for pcr, value in sorted(data['pcr_values'].items()):
+        for pcr, value in sorted(data['pcr_values'].items(), key=lambda x: int(x[0])):
             if value and value != '00'*32:
-                print(f'PCR {pcr}: {value}')
+                print(f'    PCR {pcr}: {value}')
 except:
-    print(json.dumps(json.load(sys.stdin), indent=2))
-" 2>/dev/null || echo "Failed to get PCRs"
+    print('    (failed to retrieve PCRs)')
+" 2>/dev/null || echo "    (Keylime agent not reachable either)"
+
+	echo "  [SEV-SNP]"
+	echo "    (unavailable: snptpm-agent not running)"
+fi
 
 echo
-echo "--- TPM Properties ---"
-curl -sf "${AGENT_URL}/v1/tpm/properties" 2>/dev/null | python3 -c "
-import sys, json
-try:
-    data = json.load(sys.stdin)
-    for key in ['tpm_version', 'tpm_manufacturer']:
-        if key in data:
-            print(f'{key}: {data[key]}')
-except:
-    print(json.dumps(json.load(sys.stdin), indent=2))
-" 2>/dev/null || echo "Failed to get TPM properties"
-
+echo "=== Expected PCR 7 (QEMU / EC2 baseline) ==="
+echo "  65CAF8DD1E0EA7A6347B635D2B379C93B9A1351EDC2AFC3ECDA700E534EB3068"
 echo
 echo "=== Verification Complete ==="
-echo "Compare PCR 7 with expected: 65CAF8DD1E0EA7A6347B635D2B379C93B9A1351EDC2AFC3ECDA700E534EB3068"

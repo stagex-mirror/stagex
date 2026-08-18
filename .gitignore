@@ -3,9 +3,14 @@ local/
 
 # Build output
 out
+out-old
+.build-temp
 fetch
 packages/*/*/fetch/*
 packages/*/fetch/*
+
+# Local reference extractions
+linux-7.0/
 
 # Signatures
 /signatures

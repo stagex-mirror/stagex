@@ -20,6 +20,8 @@ FROM stagex/user-sevctl AS user-sevctl
 FROM stagex/user-qemu AS user-qemu
 FROM stagex/user-keylime-agent AS user-keylime-agent
 FROM stagex/user-coconut-svsm AS user-coconut-svsm
+FROM stagex/user-snpguest AS user-snpguest
+FROM stagex/user-snptpm-agent AS user-snptpm-agent
 FROM stagex/user-tpm2-abrmd AS user-tpm2-abrmd
 FROM stagex/user-dbus AS user-dbus
 FROM stagex/distro-initramfs-klibc AS distro-initramfs-klibc
@@ -43,6 +45,7 @@ COPY --from=core-curl . /
 COPY --from=core-libzstd . /
 COPY --from=core-libunwind . /
 COPY src/rootfs/etc/init.d/rcS /etc/init.d/
+COPY src/rootfs/etc/init.d/S54tpm-rootfs /etc/init.d/
 COPY src/rootfs/etc/init.d/S01syslogd /etc/init.d/
 COPY src/rootfs/etc/init.d/S02modules /etc/init.d/
 COPY src/rootfs/etc/init.d/S10udev /etc/init.d/
@@ -75,6 +78,9 @@ COPY --from=user-sxctl . /
 COPY --from=user-dbus . /
 COPY --from=user-tpm2-abrmd . /
 COPY --from=user-coconut-svsm . /
+COPY --from=user-snpguest . /
+COPY --from=user-snptpm-agent . /
+COPY src/rootfs/etc/init.d/S53snptpm-agent /etc/init.d/
 RUN mkdir -p /var/lib/dhcpcd /run/dhcpcd && \
 	printf '# Accept all DHCP options\n' > /etc/dhcpcd.conf
 

@@ -61,6 +61,7 @@ grub-mkimage \
     part_msdos \
     squash4 \
     linux \
+    tpm \
     boot \
     echo \
     normal \
