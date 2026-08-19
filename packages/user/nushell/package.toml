@@ -3,10 +3,10 @@ name = "nushell"
 description = "A new type of shell"
 license = "MIT"
 website = "https://www.nushell.sh/"
-version = "0.113.1"
+version = "0.115.0"
 
 [sources.nushell]
-hash = "d2b514b9ec7c1cc5930025528987d730cadcaa0f063227691c837516093328fd"
+hash = "09859dde0207804abdd6f574c5b2f0946041555418bb6d3c44d4b9f86c7efd78"
 format = "tar.gz"
 file = "nushell-{version}.{format}"
 mirrors = [ "https://github.com/nushell/nushell/archive/refs/tags/{version}.{format}"]
