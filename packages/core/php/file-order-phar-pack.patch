@@ -1,4 +1,3 @@
-diff --git a/ext/phar/Makefile.frag b/ext/phar/Makefile.frag
 --- a/ext/phar/Makefile.frag
 +++ b/ext/phar/Makefile.frag
 @@ -45,7 +45,7 @@
