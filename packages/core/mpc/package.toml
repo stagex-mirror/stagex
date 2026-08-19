@@ -1,12 +1,12 @@
 [package]
 name = "mpc"
-version = "1.2.1"
+version = "1.4.1"
 description = "Multiprecision C library"
 website = "http://www.multiprecision.org/"
 license = "LGPL-3.0-or-later"
 
 [sources.mpc]
-hash = "17503d2c395dfcf106b622dc142683c1199431d095367c6aacba6eec30340459"
-format = "tar.gz"
+hash = "91204cd32f164bd3b7c992d4a6a8ce6519511aadab30f78b6982d0bf8d73e931"
+format = "tar.xz"
 file = "mpc-{version}.{format}"
-mirrors = ["https://gcc.gnu.org/pub/gcc/infrastructure/{file}", "https://ftpmirror.gnu.org/gnu/gmp/{file}", "https://mirrors.kernel.org/gnu/gmp/{file}"]
+mirrors = ["https://ftp.gnu.org/gnu/mpc/{file}", "https://ftpmirror.gnu.org/gnu/mpc/{file}"]

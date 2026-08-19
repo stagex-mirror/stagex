@@ -1,12 +1,12 @@
 [package]
 name = "cmake"
-version = "4.3.3"
+version = "4.4.2"
 description = "Cross-platform open-source build system generator"
 license = "BSD-3-Clause"
 website = "https://cmake.org/"
 
 [sources.cmake]
-hash = "cba4bb7a44edf2877bb6f059932896383babe435b3a8c3b5df48b4aa41c9bb85"
+hash = "1db9e61e60b6e0874c86386340b910382f3c5e75b9fbfb44d122063129a2789d"
 format = "tar.gz"
 file = "cmake-{version}.{format}"
 mirrors = [ "https://cmake.org/files/v{version_major_minor}/{file}",]
