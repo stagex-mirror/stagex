@@ -1,12 +1,12 @@
 [package]
 name = "attr"
-version = "2.5.2"
+version = "2.6.0"
 description = "Commands for manipulating extended attributes on filesystems"
 license = "GPL-2.0-or-later AND LGPL-2.1-or-later"
 website = "https://savannah.nongnu.org/projects/attr"
 
 [sources.attr]
-hash = "39bf67452fa41d0948c2197601053f48b3d78a029389734332a6309a680c6c87"
+hash = "d42fa374513180bb48cb11a46696f488240e5124ff1e6ad88b0abff706985612"
 format = "tar.gz"
 file = "attr-{version}.{format}"
 mirrors = [ "https://download.savannah.nongnu.org/releases/attr/{file}","https://sources.voidlinux.org/attr-{version}/{file}"]

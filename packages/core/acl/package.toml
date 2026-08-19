@@ -1,12 +1,12 @@
 [package]
 name = "acl"
-version = "2.3.2"
+version = "2.4.0"
 description = "Commands for manipulating POSIX access control lists"
 license = "GPL-2.0-or-later AND LGPL-2.1-or-later"
 website = "https://savannah.nongnu.org/projects/acl"
 
 [sources.acl]
-hash = "5f2bdbad629707aa7d85c623f994aa8a1d2dec55a73de5205bac0bf6058a2f7c"
+hash = "73c853c3d44e1f693e5a96a986f1bd19d3d0dac2c7d453e796177774bc4e5f6a"
 format = "tar.gz"
 file = "acl-{version}.{format}"
 mirrors = [ "https://download.savannah.nongnu.org/releases/acl/{file}","https://sources.voidlinux.org/acl-{version}/{file}"]
