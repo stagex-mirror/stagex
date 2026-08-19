@@ -1,11 +1,11 @@
 [package]
 name = "hiredis"
-version = "1.4.0"
+version = "1.4.1"
 description = "Minimalistic C client library for Redis"
 license = "BSD-3-Clause"
 website = "https://github.com/redis/hiredis"
 
 [sources.hiredis]
-hash = "5fa6e719e59cd4f8ae435c52a18ac4035d135251f9ee54e7a045bccf59107ed8"
+hash = "ca3180359a8b1275838a45415851f8cd5c411e27bdbf18f4823012e45507d2e4"
 file = "hiredis-{version}.tar.gz"
 mirrors = [ "https://github.com/redis/hiredis/archive/v{version}.tar.gz"]
