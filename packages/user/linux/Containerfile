@@ -23,6 +23,10 @@ ENV INSTALL_MOD_PATH=/rootfs/usr/
 
 COPY --chmod=775 <<-EOF /usr/bin/build-static
 	#!/bin/sh
+	# Migrate the committed .config to this kernel version (fills new
+	# symbols with defaults, drops removed ones) so static configs track
+	# minor kernel bumps.
+	make olddefconfig
 	make bzImage
   mkdir /rootfs
 	cp .config /rootfs/linux.config
