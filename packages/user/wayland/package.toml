@@ -1,12 +1,12 @@
 [package]
 name = "wayland"
-version = "1.25.0"
+version = "1.26.0"
 description = "A computer display server protocol"
 license = "MIT"
 website = "https://wayland.freedesktop.org"
 
 [sources.wayland]
-hash = "cb5a85adac2d0009214949bce3b87088ccec48c58109300bb6273182a1201198"
+hash = "5d92753c046c6dbd528a6f47edbab599a017d415aed8088875d8c36f39189b60"
 
 format = "tar.gz"
 file = "wayland-{version}.{format}"
