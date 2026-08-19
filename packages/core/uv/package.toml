@@ -1,12 +1,12 @@
 [package]
 name = "uv"
-version = "0.11.19"
+version = "0.12.5"
 description = "Python package manager written in Rust"
 license = "Apache-2.0 OR MIT"
 website = "https://github.com/astral-sh/uv"
 
 [sources.uv]
-hash = "316a5fb9fca079064265a8007979e0057b68317b6a6693e15554d3d9112cce9c"
+hash = "e349c9eb85876921895330f6fee5f01f109d5ec06dcd3b475fb7b4b8de75eac6"
 format = "tar.gz"
 file = "{version}.{format}"
 mirrors = ["https://github.com/astral-sh/uv/archive/refs/tags/{file}"]
