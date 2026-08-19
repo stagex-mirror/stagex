@@ -1,12 +1,12 @@
 [package]
 name = "edk2"
-version = "202508"
+version = "202605"
 description = "UEFI firmware development environment"
 license = "BSD-2-Clause-Patent"
 website = "https://github.com/tianocore/edk2"
 
 [sources.edk2]
-hash = "ea373d69f8e2b8c1e63e958e538e4a7b493a71a3680ad709df1733f2780608ec"
+hash = "871ffdc477ccb64fc82ea6169d8de262a661888bf21b41f70fab62e825648bce"
 format = "tar.gz"
 file = "edk2-{version}.{format}"
 mirrors = [ "https://github.com/tianocore/edk2/archive/refs/tags/edk2-stable{version}.{format}",]
