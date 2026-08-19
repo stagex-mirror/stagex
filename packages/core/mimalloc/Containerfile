@@ -21,11 +21,6 @@ RUN --network=none <<-EOF
   # (using the address of a thread-local variable) won't work when building into `musl`.
   export CFLAGS="$CFLAGS -DMI_TLS_PTHREAD=1 -DMI_USE_BUILTIN_THREAD_POINTER=1"
 
-  # musl does not define `__USE_ISOC11`, so mimalloc's aligned_alloc override
-  # would be disabled and return NULL, crashing LLVM/CMake builds.
-  # Same approach as Alpine's aports/testing/mimalloc3 APKBUILD (mimalloc issue #597).
-  export CFLAGS="$CFLAGS -D__USE_ISOC11"
-
   mkdir out
   cd out
 
