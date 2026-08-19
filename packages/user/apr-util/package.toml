@@ -1,12 +1,12 @@
 [package]
 name = "apr-util"
-version = "1.6.3"
+version = "1.6.5"
 description = "Apache Portable Runtime utility library"
 license = "Apache-2.0"
 website = "https://apr.apache.org"
 
 [sources.apr-util]
-hash = "a41076e3710746326c3945042994ad9a4fcac0ce0277dd8fea076fec3c9772b5"
+hash = "96de1dd6f6a0476d2d2e7964926d8c1ddc3bb0e210e1b1812d3ba5a454a392e2"
 format = "tar.bz2"
 file = "apr-util-{version}.{format}"
 mirrors = [
