@@ -10,7 +10,7 @@ COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-gmp . /
 COPY --from=stagex/core-mpfr . /
-ADD fetch/mpc-${VERSION}.tar.xz .
+ADD fetch/mpc-${VERSION}.tar.gz .
 WORKDIR /mpc-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
