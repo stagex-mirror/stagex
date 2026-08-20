@@ -10,17 +10,14 @@ WORKDIR /wheel-${VERSION}
 RUN --network=none <<-EOF
 	set -eu
 	# wheel >= 0.48 no longer ships setup.py; it builds via the
-	# flit_core PEP 517 backend. Build the wheel, then install it by
-	# unpacking (the installer package itself depends on wheel, so it
-	# cannot be used here without a bootstrap cycle).
+	# flit_core PEP 517 backend. Build it, then unpack the resulting
+	# wheel into site-packages - this is the standard no-pip bootstrap
+	# (the installer package itself depends on wheel, so it can't be
+	# used here without a bootstrap cycle).
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 	sitedir="$(python3 -c 'import site;print(site.getsitepackages()[0])')"
 	mkdir -p "/rootfs${sitedir}"
-	python3 - <<-PY
-		import glob, zipfile
-		for w in glob.glob('.dist/*.whl'):
-			zipfile.ZipFile(w).extractall('/rootfs${sitedir}')
-	PY
+	for w in .dist/*.whl; do python -m zipfile -e "$w" "/rootfs${sitedir}"; done
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
 FROM stagex/core-filesystem AS package
