@@ -1,0 +1,36 @@
+#!/bin/sh
+# init-loop — unikernel initramfs init
+#
+# The erofs system image (the entire OS) is embedded as /system inside this
+# initramfs. The kernel unpacks this cpio into a tmpfs (RAM), so the OS is
+# already in memory. Loop-mount /system and pivot_root onto it; no disk
+# partition is required.
+exec 1>/dev/console 2>&1
+export PATH=/bin:/usr/bin
+
+# Mount points (the cpio only carries /init, /bin, /system)
+mkdir -p /proc /sys /dev /mnt
+
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev
+
+# Attach the embedded erofs to a loop device, then mount it (the whole OS,
+# already in RAM)
+losetup /dev/loop0 /system || {
+	echo "uk-init: ERROR: losetup /system failed" >&2
+	exec /bin/sh
+}
+mount -t erofs -o ro /dev/loop0 /mnt || {
+	echo "uk-init: ERROR: failed to mount erofs" >&2
+	exec /bin/sh
+}
+
+# pivot_root onto the erofs (oldroot is pre-created inside the image)
+pivot_root /mnt /mnt/oldroot || {
+	echo "uk-init: ERROR: pivot_root failed" >&2
+	exec /bin/sh
+}
+
+# Hand over to the real init (inside the erofs)
+exec /init

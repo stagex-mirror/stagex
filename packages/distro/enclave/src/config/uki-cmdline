@@ -1,0 +1,1 @@
+ro root=/dev/xvda2 rootfstype=erofs rootwait init=/init console=tty0 console=ttyS0,115200n8 earlyprintk=ttyS0,115200 debug loglevel=8 net.ifnames=0 biosdevname=0 modprobe.blacklist=bonding hostname=stagex

@@ -1,43 +1,52 @@
-#!/usr/bin/sh
-# box-gpt — assembles boot.img + system.img into GPT disk.img
+#!/bin/sh
+# box-gpt — assembles boot.img (+ optional system.img) into GPT disk.img
+#
+# Normal:   boot.img (ESP) + system.img (erofs) → 2-partition GPT
+# ESP-only: boot.img (ESP) only → 1-partition GPT. Used by the unikernel
+#           scheme, where the OS lives in the UKI's initrd (in RAM) so no
+#           system partition is needed and disk storage is optional.
 set -eux
 
 BOOT_IMG="${BOOT_IMG:-/boot.img}"
-SYSTEM_IMG="${SYSTEM_IMG:-/system.img}"
+SYSTEM_IMG="${SYSTEM_IMG:-}"
 DISK="${DISK:-/disk.img}"
 
 # Deterministic disk GUID → PARTUUID = <disk-GUID>-0002
 DISK_GUID="72c48e5a-b7a4-4b16-8a86-87c14f9e8d20"
-SYSTEM_PARTUUID="${DISK_GUID}-0002"
 
-# Calculate total size with alignment padding (add 16MB for GPT overhead)
-BOOT_SIZE=$(du -k "$BOOT_IMG" | cut -f1)
-SYSTEM_SIZE=$(du -k "$SYSTEM_IMG" | cut -f1)
-TOTAL_KB=$((BOOT_SIZE + 1024 + SYSTEM_SIZE + 1024 + 2048 + 16384))
-TOTAL_MB=$(( (TOTAL_KB + 1023) / 1024 ))
+# ESP is always partition 1 at 1MB (LBA 2048); sized by box-disk to fit the UKI
+ESP_MB=$(( ( $(stat -c %s "$BOOT_IMG") + 1048575 ) / 1048576 ))
 
-# Create empty disk
-dd if=/dev/zero of="$DISK" bs=1M count="$TOTAL_MB"
-
-# Create GPT partition table with deterministic disk GUID using sfdisk
-sfdisk "$DISK" <<EOF
+if [ -n "$SYSTEM_IMG" ]; then
+	# Normal: ESP + erofs system partition
+	SYSTEM_SIZE=$(du -k "$SYSTEM_IMG" | cut -f1)
+	TOTAL_KB=$(( ESP_MB*1024 + 1024 + SYSTEM_SIZE + 1024 + 2048 ))
+	TOTAL_MB=$(( (TOTAL_KB + 1023) / 1024 ))
+	dd if=/dev/zero of="$DISK" bs=1M count="$TOTAL_MB"
+	sfdisk "$DISK" <<EOF
 label: gpt
 label-id: ${DISK_GUID}
 device: ${DISK}
 
-${DISK}1 : size=512M, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B
+${DISK}1 : size=${ESP_MB}M, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B
 ${DISK}2 : type=0FC63DAF-8483-4772-8E79-3D69D8477DE4
 EOF
+	dd if="$BOOT_IMG" of="$DISK" bs=1M seek=1 conv=notrunc
+	dd if="$SYSTEM_IMG" of="$DISK" bs=1M seek=$((ESP_MB+1)) conv=notrunc
+	echo "system PARTUUID: ${DISK_GUID}-0002"
+else
+	# ESP-only (unikernel): the OS is in the UKI initrd, disk is just the ESP
+	# + 1MiB tail for the alternate GPT header
+	TOTAL_MB=$(( ESP_MB + 2 ))
+	dd if=/dev/zero of="$DISK" bs=1M count="$TOTAL_MB"
+	sfdisk "$DISK" <<EOF
+label: gpt
+label-id: ${DISK_GUID}
+device: ${DISK}
 
-# Calculate partition offsets
-ESP_OFFSET=1
-SYSTEM_OFFSET=513
-
-# Copy boot.img to ESP partition
-dd if="$BOOT_IMG" of="$DISK" bs=1M seek="$ESP_OFFSET" conv=notrunc
-
-# Copy system.img to system partition
-dd if="$SYSTEM_IMG" of="$DISK" bs=1M seek="$SYSTEM_OFFSET" conv=notrunc
+${DISK}1 : size=${ESP_MB}M, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B
+EOF
+	dd if="$BOOT_IMG" of="$DISK" bs=1M seek=1 conv=notrunc
+fi
 
 echo "disk.img created: $(du -h "$DISK" | cut -f1)"
-echo "system PARTUUID: $SYSTEM_PARTUUID"

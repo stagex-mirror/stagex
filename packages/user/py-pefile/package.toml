@@ -1,0 +1,12 @@
+[package]
+name = "py-pefile"
+version = "2024.8.26"
+description = "Pure-Python library for parsing and analyzing PE and COFF files"
+license = "MIT"
+website = "https://github.com/ernw/pefile"
+
+[sources.py-pefile]
+hash = "3ff6c5d8b43e8c37bb6e6dd5085658d658a7a0bdcd20b6a07b1fcfc1c4e9d632"
+format = "tar.gz"
+file = "pefile-{version}.{format}"
+mirrors = [ "https://files.pythonhosted.org/packages/03/4f/2750f7f6f025a1507cd3b7218691671eecfd0bbebebe8b39aa0fe1d360b8/pefile-{version}.{format}",]

@@ -29,20 +29,48 @@ Layers of proof
    the last 1MiB-aligned boundary).
 
 3. SEV-SNP report (isolation channel).
-   Report structure, policy, measured guest state, report_data nonce.
+   Report structure (v3/v4/v5 ABI layout), policy, VMPL, launch measurement
+   (SHA-384), and the report_data nonce. With --snp-nonce, the report's
+   report_data must echo back the 64-byte nonce we supplied — an anti-replay
+   freshness proof that the report was generated in response to this request.
 
 4. Structural binding (always).
    Both channels are deterministic functions of the same single disk image
    (verified stable across boots), anchored by independent roots of trust
    (TPM EK signature, AMD ARK signature). The SNP launch measurement binds
-   the OVMF firmware; the event log shows that firmware (and our kernel's
-   EFI stub, which only our kernel contains) is what extended the TPM.
+   the OVMF firmware; the event log shows that firmware (and the stub in
+   the UKI, which only our build contains) is what extended the TPM.
 
-Usage:
+UKI mode (--uki)
+----------------
+Images that boot a Unified Kernel Image directly from firmware (no GRUB,
+systemd-stub as the PE entry point, assembled with ukify):
+  - [2] the UKI's PE sections (".linux", ".initrd", ".cmdline") must byte-
+        equal our local kernel/initramfs/cmdline;
+  - [3] PCR 4 log-replay == live PCR 4.  OVMF's PCR4 events on the firmware
+        fallback path are boot-path markers (constant action strings and the
+        boot option's device path), NOT a hash of the UKI file; the byte
+        level UKI binding is carried by [2] + [4];
+  - [4] PCR 11: the stub measures each UKI section (name+NUL, then section
+        data, in stub enum order) into PCR11 — the predicted digests from
+        our LOCAL UKI must equal the PCR11 events in the live log, and
+        replay + extend(SHA256(system partition)) must equal live PCR 11;
+  - [4b] PCR 9 kernel measurements: "LOADED_IMAGE::LoadOptions" digest
+        == SHA256(UTF-16LE(.cmdline)+NUL), and "Linux initrd" digest
+        == SHA256 of the stub's combined initrd (ALIGN4(.initrd) plus the
+        stub's .extra cpio for each of .pcrsig/.pcrpkey/.osrel/.profile);
+  - [5] every other PCR in the event log replays to its live value.
+Usage (legacy GRUB images):
   verify-binding --log el.bin --pcrs pcrread.txt --snp snp_report.bin \
       --initrd /path/to/initramfs --cmdline "BOOT_IMAGE=/boot/vmlinuz ..." \
       [--kernel /path/to/bzImage] [--disk /path/to/disk.img] \
       [--part-start 1050624 --part-size 147456]
+Usage (UKI images):
+  verify-binding --log el.bin --pcrs pcrread.txt --snp snp_report.bin \
+      [--snp-nonce nonce.bin] --uki /path/to/BOOTX64.EFI \
+      --kernel /path/to/bzImage --initrd /path/to/initramfs \
+      --cmdline "ro root=..." [--disk /path/to/disk.img] \
+      [--part-start N --part-size M]
 """
 import argparse
 import hashlib
@@ -63,6 +91,21 @@ def r32(d, o):
 def parse_event_log(data):
     """Parse a TCG 2.0 crypto-agile event log from a raw /dev/mem dump.
 
+    Format (include/linux/tpm_eventlog.h + TCG Platform TPM Profile 2.0):
+    the dump begins with struct linux_efi_tpm_eventlog, but stream
+    alignment has been observed to be off, so the parser locates the Spec ID
+    signature by scanning and derives the first event from it:
+      FIRST event (Spec ID) = struct tcg_pcr_event:
+        u32 pcr_idx (0), u32 event_type (3), u8 digest[20] (zeros),
+        u32 event_size, event = signature[16] "Spec ID Event03\0" +
+        u32 platform_class + minor/major/errata/uintnsize (4 bytes) +
+        u32 num_algs + { u16 alg_id, u16 digest_size }[num_algs]
+      SUBSEQUENT events = struct tcg_pcr_event2_head:
+        u32 pcr_idx, u32 event_type, u32 count,
+        per digest: u16 alg_id + digest_size bytes (from Spec ID table),
+        u32 event_size, u8 event[event_size]
+      Terminated by an all-zero event header.
+
     Returns (algs, events) where algs = {alg_id: digest_size} and events is
     a list of dicts {offset, pcr, type, digests: {alg_id: bytes}, data}.
     """
@@ -82,47 +125,49 @@ def parse_event_log(data):
     spec = data[start + 32:start + 32 + spec_size]
     num_algs = r32(spec, 24)
     if 28 + 4 * num_algs > len(spec):
-        raise ValueError("spec id alg table truncated")
+        raise ValueError("Spec ID alg table truncated")
     algs = {}
-    for k in range(num_algs):
-        algs[r16(spec, 28 + 4 * k)] = r16(spec, 28 + 4 * k + 2)
+    for i in range(num_algs):
+        algs[r16(spec, 28 + 4 * i)] = r16(spec, 30 + 4 * i)
 
     events = []
     off = start + 32 + spec_size
-    while off + 12 <= len(data):
-        pcr, etype, count = r32(data, off), r32(data, off + 4), r32(data, off + 8)
+    while off + 16 <= len(data):
+        pcr = r32(data, off)
+        etype = r32(data, off + 4)
+        count = r32(data, off + 8)
         if pcr == 0 and etype == 0 and count == 0:
-            if off + 16 <= len(data) and r32(data, off + 12) == 0:
+            if r32(data, off + 12) == 0:
                 break
             break
-        if count != len(algs):
+        if pcr > 23 or count != num_algs:
             break
         di = off + 12
         digests = {}
-        ok = True
+        valid = True
         for _ in range(count):
+            if di + 2 > len(data):
+                valid = False
+                break
             aid = r16(data, di)
             di += 2
-            if aid not in algs:
-                ok = False
+            size = algs.get(aid)
+            if size is None or di + size > len(data):
+                valid = False
                 break
-            sz = algs[aid]
-            if di + sz > len(data):
-                ok = False
-                break
-            digests[aid] = bytes(data[di:di + sz])
-            di += sz
-        if not ok:
+            digests[aid] = data[di:di + size]
+            di += size
+        if not valid:
             break
-        ev_size = r32(data, di)
-        if di + 4 + ev_size > len(data) or ev_size > 8 * 1024 * 1024:
+        data_len = r32(data, di)
+        di += 4
+        if di + data_len > len(data):
             break
-        events.append({
-            "offset": off, "pcr": pcr, "type": etype,
-            "digests": digests, "data": bytes(data[di + 4:di + 4 + ev_size]),
-        })
-        off = di + 4 + ev_size
-
+        edata = data[di:di + data_len]
+        di += data_len
+        events.append({"offset": off, "pcr": pcr, "type": etype,
+                       "digests": digests, "data": edata})
+        off = di
     return algs, events
 
 
@@ -149,11 +194,33 @@ def partition2_geometry(disk_path, part_start=None, part_size=None):
     return start_lba * 512, (end_lba - start_lba) * 512
 
 
+def hash_disk_region(disk_path, start_byte, size_bytes):
+    h = hashlib.sha256()
+    with open(disk_path, "rb") as f:
+        f.seek(start_byte)
+        remaining = size_bytes
+        while remaining > 0:
+            chunk = f.read(min(1 << 20, remaining))
+            if not chunk:
+                break
+            h.update(chunk)
+            remaining -= len(chunk)
+    return h.digest()
+
+
 def tpm_extend(pcr, data, fn=hashlib.sha256):
     h = fn()
     h.update(pcr)
     h.update(data)
     return h.digest()
+
+
+def replay_pcr(events, pcr):
+    val = b"\x00" * 32
+    for e in events:
+        if e["pcr"] == pcr and 0x000B in e["digests"]:
+            val = tpm_extend(val, e["digests"][0x000B])
+    return val
 
 
 def parse_pcrs_file(path):
@@ -179,14 +246,21 @@ def parse_snp_report(path):
     with open(path, "rb") as f:
         data = f.read()
     rep = {"size": len(data)}
-    if len(data) >= 0x120:
-        rep["version"] = struct.unpack_from("<I", data, 0x10)[0]
-        rep["policy"] = struct.unpack_from("<Q", data, 0x18)[0]
-        rep["build_commit"] = data[0x20:0x40]
-        rep["build_timestamp"] = struct.unpack_from("<Q", data, 0x40)[0]
+    # SEV-SNP attestation report (AMD SEV-SNP firmware ABI, v3/v4/v5):
+    #   0x00 version(u32)   0x04 guest_svn(u32)   0x08 policy(u32)
+    #   0x0C family_id[16]  0x1C image_id[16]     0x2C vmpl(u32)
+    #   0x30 sig_algo(u32)  0x40 plat_info(u32)   0x50 report_data[64]
+    #   0x90 measurement[48] (SHA-384 launch measurement)
+    #   0x2A0 signature (512B, ECDSA P-384)  -> 1184 bytes total
+    if len(data) >= 0xC0:
+        rep["version"] = struct.unpack_from("<I", data, 0x00)[0]
+        rep["guest_svn"] = struct.unpack_from("<I", data, 0x04)[0]
+        rep["policy"] = struct.unpack_from("<I", data, 0x08)[0]
+        rep["vmpl"] = struct.unpack_from("<I", data, 0x2C)[0]
+        rep["sig_algo"] = struct.unpack_from("<I", data, 0x34)[0]
+        rep["plat_info"] = struct.unpack_from("<I", data, 0x40)[0]
+        rep["report_data"] = data[0x50:0x90]
         rep["measurement"] = data[0x90:0xC0]
-        rep["host_data"] = data[0xC0:0xE0]
-        rep["report_data"] = data[0xE0:0x120]
     return rep
 
 
@@ -194,48 +268,321 @@ def hexb(b):
     return b.hex()
 
 
-def main():
-    ap = argparse.ArgumentParser(description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--log", required=True, help="raw event log dump (el.bin)")
-    ap.add_argument("--pcrs", required=True, help="tpm2_pcrread output file")
-    ap.add_argument("--snp", required=True, help="SNP attestation report binary")
-    ap.add_argument("--initrd", required=True, help="local initramfs file")
-    ap.add_argument("--cmdline", required=True, help="exact /proc/cmdline string")
-    ap.add_argument("--kernel", help="local bzImage file")
-    ap.add_argument("--disk", help="local disk image (for PCR11 rootfs check)")
-    ap.add_argument("--part-start", type=int, help="system partition start, in 512-byte sectors (from /sys)")
-    ap.add_argument("--part-size", type=int, help="system partition size, in 512-byte sectors (from /sys)")
-    args = ap.parse_args()
+def parse_uki_sections(data):
+    """Extract PE sections from a UKI file by name.
 
-    ok_all = True
-    notes = []
+    Returns {section_name: bytes} where the bytes are the section's
+    in-memory image: VirtualSize bytes, zero-padded when VirtualSize
+    exceeds SizeOfRawData.  This is exactly what the stub measures
+    (PeSectionVector.memory_size = VirtualSize) and serves to the kernel.
+    """
+    if r32(data, 0) != 0x5A4D:
+        raise ValueError("not a PE file (no DOS header)")
+    pe_off = r32(data, 0x3C)
+    if data[pe_off:pe_off + 4] != b"PE\x00\x00":
+        raise ValueError("no PE signature")
+    coff = pe_off + 4
+    num_sec = r16(data, coff + 2)
+    opt_size = r16(data, coff + 16)
+    sec_off = coff + 20 + opt_size
+    sections = {}
+    for i in range(num_sec):
+        o = sec_off + i * 40
+        name = data[o:o + 8].rstrip(b"\x00").decode("utf-8", "replace")
+        vsize = r32(data, o + 8)
+        raw_size = r32(data, o + 16)
+        raw_ptr = r32(data, o + 20)
+        raw = data[raw_ptr:raw_ptr + raw_size]
+        if vsize <= len(raw):
+            sections[name] = raw[:vsize]
+        else:
+            sections[name] = raw + b"\x00" * (vsize - len(raw))
+    return sections
 
-    print("=" * 64)
-    print("  SEV-SNP / TPM2 BINDING VERIFICATION")
-    print("=" * 64)
 
-    with open(args.log, "rb") as f:
-        log = f.read()
-    with open(args.initrd, "rb") as f:
-        initrd = f.read()
-    if args.kernel:
-        with open(args.kernel, "rb") as f:
-            kernel = f.read()
-    pcrs = parse_pcrs_file(args.pcrs)
-    snp = parse_snp_report(args.snp)
+# The stub's canonical section measurement order (systemd uki.h; do not
+# reorder).  .pcrsig is intentionally not measured by the stub.
+UKI_SECTION_ORDER = [".linux", ".osrel", ".cmdline", ".initrd", ".ucode",
+                     ".splash", ".dtb", ".uname", ".sbat", ".pcrsig",
+                     ".pcrpkey", ".profile", ".dtbauto", ".hwids", ".efifw"]
+UKI_MEASURED = [s for s in UKI_SECTION_ORDER if s != ".pcrsig"]
+# Sections the stub wraps in a .extra/<file> cpio appended to the combined
+# initrd (generate_embedded_initrds), in the order extend_initrds merges.
+UKI_INITRD_CPIO = [(".pcrsig", "tpm2-pcr-signature.json"),
+                   (".pcrpkey", "tpm2-pcr-public-key.pem"),
+                   (".osrel", "os-release"),
+                   (".profile", "profile")]
 
-    # ------------------------------------------------------------------
-    print("\n[1] UEFI event log (TCG 2.0 crypto agile)")
+
+def pad4(b):
+    return b + b"\x00" * (-len(b) % 4)
+
+
+def _cpio_word(v):
+    return format(v, "08x").encode("ascii")
+
+
+def stub_cpio(filename, contents):
+    """Reproduce the stub's pack_cpio_literal for .extra/<filename>.
+
+    newc cpio: dir ".extra" (inode 1), file ".extra/<filename>" (inode 2),
+    trailer.  mtime=0, nlink=1, uid/gid=0 (see systemd src/boot/cpio.c).
+    """
+    h = (b"070701" + _cpio_word(1) + _cpio_word(0o0555 | 0o040000)
+         + _cpio_word(0) + _cpio_word(0) + _cpio_word(1) + _cpio_word(0)
+         + _cpio_word(0) + _cpio_word(0) + _cpio_word(0) + _cpio_word(0)
+         + _cpio_word(0) + _cpio_word(len(".extra") + 1) + _cpio_word(0))
+    out = pad4(h + b".extra\x00")
+    name = b".extra/" + filename.encode("ascii")
+    h = (b"070701" + _cpio_word(2) + _cpio_word(0o0444 | 0o100000)
+         + _cpio_word(0) + _cpio_word(0) + _cpio_word(1) + _cpio_word(0)
+         + _cpio_word(len(contents)) + _cpio_word(0) + _cpio_word(0)
+         + _cpio_word(0) + _cpio_word(0) + _cpio_word(len(name) + 1)
+         + _cpio_word(0))
+    out += pad4(h + name + b"\x00") + pad4(contents)
+    # 13-field trailer: 11 zeros, nlink=1, namesize=11, check=0
+    out += (b"070701" + b"00000000" * 4 + b"00000001" + b"00000000" * 6
+            + b"0000000B" + b"00000000" + b"TRAILER!!!\x00\x00\x00\x00")
+    return out
+
+
+def predict_combined_initrd(secs):
+    """Reproduce the stub's combine_initrds output from UKI sections.
+
+    Order (extend_initrds): .ucode, .initrd, then the .extra cpios for
+    .pcrsig/.pcrpkey/.osrel/.profile; each entry 4-byte aligned.
+    """
+    parts = []
+    for name in (".ucode", ".initrd"):
+        if name in secs:
+            parts.append(secs[name])
+    for name, filename in UKI_INITRD_CPIO:
+        if name in secs:
+            parts.append(stub_cpio(filename, secs[name]))
+    if not parts:
+        raise ValueError("UKI has no initrd sections")
+    out = b""
+    for p in parts:
+        out += pad4(p)
+    return out
+
+
+def gpt_measurement(disk_path):
+    """Reproduce OVMF's Tcg2MeasureGptTable PCR5 measurement of a disk.
+
+    Layout (edk2 DxeTpm2MeasureBootLib): EFI_PARTITION_TABLE_HEADER (92
+    bytes) + UINT32 NumberOfPartitions + UINT32 (zero) + the valid
+    (non-zero type GUID) partition entries in order.  Returns the SHA256
+    digest OVMF extended into PCR5, or None if the disk has no GPT.
+    """
+    import struct as st
+    with open(disk_path, "rb") as f:
+        f.seek(512)
+        h = f.read(92)
+        if h[:8] != b"EFI PART":
+            return None
+        partent_lba = st.unpack_from("<Q", h, 72)[0]
+        npart = st.unpack_from("<I", h, 80)[0]
+        esize = st.unpack_from("<I", h, 84)[0]
+        if npart * esize > 1 << 20:
+            return None
+        f.seek(partent_lba * 512)
+        entries = f.read(npart * esize)
+    valid = [entries[i * esize:(i + 1) * esize] for i in range(npart)
+             if entries[i * esize:(i + 1) * esize][:16] != b"\x00" * 16]
+    data = h + st.pack("<II", len(valid), 0) + b"".join(valid)
+    return hashlib.sha256(data).digest()
+
+
+def predict_pcr11_digests(secs):
+    """Predict the stub's PCR11 extend sequence from UKI sections.
+
+    For each present measured section, in stub enum order: SHA256 of the
+    ASCII section name (NUL included), then SHA256 of the section data.
+    """
+    out = []
+    for name in UKI_MEASURED:
+        if name in secs:
+            out.append((name, "name",
+                        hashlib.sha256(name.encode("ascii") + b"\x00").digest()))
+            out.append((name, "data", hashlib.sha256(secs[name]).digest()))
+    return out
+
+
+def check_uki(args, events, pcrs, initrd, kernel, uki, notes):
+    ok = True
+
+    print("\n[2] UKI section decomposition (PE sections -> local artifacts)")
     try:
-        algs, events = parse_event_log(log)
-        print(f"    parsed {len(events)} events; algs: "
-              + ", ".join(f"0x{a:04x}({s})" for a, s in algs.items()))
+        secs = parse_uki_sections(uki)
     except ValueError as e:
         print(f"    FATAL: {e}")
         sys.exit(1)
+    print("    sections: "
+          + ", ".join(f"{n}({len(d)})" for n, d in secs.items()))
 
-    # (a) initrd digest
+    def section_check(name, local, label):
+        nonlocal ok
+        if local is None:
+            print(f"    {label}: (no local artifact provided, skipped)")
+            return
+        sec = secs.get(name)
+        if sec is None:
+            print(f"    {label}: FATAL: no {name} section in UKI")
+            sys.exit(1)
+        m = sec == local
+        print(f"    {label}: {len(local):,} bytes  "
+              f"{'MATCH' if m else 'MISMATCH (sha256 '
+              + hashlib.sha256(sec).hexdigest()[:16] + ' vs '
+              + hashlib.sha256(local).hexdigest()[:16] + ')'}")
+        ok &= m
+
+    section_check(".linux", kernel, "kernel   (.linux)")
+    section_check(".initrd", initrd, "initramfs (.initrd)")
+    if args.cmdline:
+        section_check(".cmdline", args.cmdline.encode(), "cmdline  (.cmdline)")
+    elif ".cmdline" in secs:
+        print("    cmdline  (.cmdline): present "
+              f"({secs['.cmdline']!r}) — no local cmdline provided to compare")
+
+    print("\n[3] PCR 4 = OVMF boot path (log replay -> live)")
+    print("    (OVMF's firmware-fallback PCR4 events are boot-path markers")
+    print("     - constant action strings and the boot option device path -")
+    print("     not a hash of the UKI file; the byte level UKI binding is")
+    print("     carried by [2] section decomposition + [4] PCR11)")
+    pcr4 = replay_pcr(events, 4)
+    live4 = pcrs.get(4)
+    m = live4 is not None and pcr4.hex() == live4
+    print(f"    replay sha256: {hexb(pcr4)}")
+    print(f"    live   sha256: {live4 or '???'}  {'MATCH' if m else 'MISMATCH'}")
+    ok &= m
+
+    print("\n    PCR 5 GPT table (OVMF Tcg2MeasureGptTable, bound to local disk)")
+    print("    (live PCR5 also carries an unlogged OVMF boot-order extend,")
+    print("     so it is checked by its logged GPT event, not blind replay)")
+    gptd = gpt_measurement(args.disk) if args.disk else None
+    if gptd is None:
+        print("    (no GPT on local disk; skipped)")
+    else:
+        gevs = [e for e in events if e["pcr"] == 5
+                and e["data"][:8] == b"EFI PART" and 0x000B in e["digests"]]
+        if not gevs:
+            print("    FATAL: no GPT event in PCR5 of the log")
+            ok = False
+        else:
+            g = gevs[0]["digests"][0x000B]
+            m = g == gptd
+            print(f"    log    sha256: {hexb(g)}")
+            print(f"    local  sha256: {hexb(gptd)}  {'MATCH' if m else 'MISMATCH'}")
+            ok &= m
+
+    print("\n[4] PCR 11 = stub section measurements + rootfs extend")
+    pred = predict_pcr11_digests(secs)
+    log11 = [e["digests"][0x000B] for e in events
+             if e["pcr"] == 11 and 0x000B in e["digests"]]
+    if len(pred) != len(log11):
+        print(f"    FATAL: predicted {len(pred)} PCR11 section digests but the log "
+              f"carries {len(log11)}")
+        ok = False
+    else:
+        for (name, kind, dig), logdig in zip(pred, log11):
+            mm = dig == logdig
+            print(f"    {name:9s} {kind:4s}: log "
+                  f"{logdig.hex()[:16]}...  {'MATCH' if mm else 'MISMATCH (predicted '
+                  + dig.hex()[:16] + '...)'}")
+            ok &= mm
+
+    if args.disk:
+        print("\n    rootfs binding (replay + extend SHA256(system partition))")
+        try:
+            start_byte, size_bytes = partition2_geometry(
+                args.disk, args.part_start, args.part_size)
+        except ValueError as e:
+            notes.append(f"cannot determine partition geometry: {e}")
+            start_byte = None
+        if start_byte is not None:
+            src = ("live /sys geometry" if args.part_start is not None
+                   else "deterministic box-gpt layout")
+            print(f"    geometry ({src}): offset {start_byte:,} len {size_bytes:,}")
+            pcr11 = replay_pcr(events, 11)
+            pcr11 = tpm_extend(pcr11, hash_disk_region(args.disk, start_byte, size_bytes))
+            live11 = pcrs.get(11)
+            m = live11 is not None and pcr11.hex() == live11
+            print(f"    replay sha256: {hexb(pcr11)}")
+            print(f"    live   sha256: {live11 or '???'}  {'MATCH' if m else 'MISMATCH'}")
+            if live11 is None or live11 == "0" * 64:
+                notes.append("live PCR11 is zero — the stub or the S54 rootfs extend failed at boot")
+            else:
+                ok &= m
+    elif args.no_part:
+        # unikernel: no system partition, S54 extends nothing — PCR11 must
+        # equal the plain replay of the stub's section measurements
+        print("\n    rootfs binding (unikernel: replay == live, no partition extend)")
+        pcr11 = replay_pcr(events, 11)
+        live11 = pcrs.get(11)
+        m = live11 is not None and pcr11.hex() == live11
+        print(f"    replay sha256: {hexb(pcr11)}")
+        print(f"    live   sha256: {live11 or '???'}  {'MATCH' if m else 'MISMATCH'}")
+        if live11 is None or live11 == "0" * 64:
+            notes.append("live PCR11 is zero — the stub did not measure UKI sections at boot")
+        else:
+            ok &= m
+
+    print("\n[4b] PCR 9 kernel measurements (predicted from UKI sections)")
+    ev9 = [e for e in events if e["pcr"] == 9]
+
+    def pcr9_event(tag, expect):
+        nonlocal ok
+        # kernel uses TCG client-tagged events: 8-byte tag id + tag + NUL
+        hits = [e for e in ev9
+                if e["data"].endswith(tag + b"\x00") and 0x000B in e["digests"]]
+        if not hits:
+            print(f"    {tag!r}: FATAL: no such PCR9 event in log")
+            ok = False
+            return
+        dig = hits[0]["digests"][0x000B]
+        m = dig == expect
+        print(f"    {tag!r}: log {dig.hex()[:16]}...  "
+              f"{'MATCH' if m else 'MISMATCH (predicted '
+              + expect.hex()[:16] + '...)'}")
+        ok &= m
+
+    if ".cmdline" in secs:
+        # LoadOptions is a CHAR16* (UTF-16LE) with a 2-byte NUL terminator
+        loadopts = hashlib.sha256(
+            secs[".cmdline"].decode("utf-8").encode("utf-16-le") + b"\x00\x00"
+        ).digest()
+        pcr9_event(b"LOADED_IMAGE::LoadOptions", loadopts)
+    try:
+        combined = predict_combined_initrd(secs)
+        pcr9_event(b"Linux initrd", hashlib.sha256(combined).digest())
+    except ValueError as e:
+        print(f"    'Linux initrd': (cannot predict: {e})")
+
+    print("\n[5] full event-log replay (all other PCRs -> live)")
+    # PCR4 (boot path), PCR5 (GPT + unlogged boot-order) and PCR11 (rootfs)
+    # are handled by their dedicated checks above.
+    log_pcrs = sorted({e["pcr"] for e in events} - {4, 5, 11})
+    for pcr in log_pcrs:
+        val = replay_pcr(events, pcr)
+        live = pcrs.get(pcr)
+        m = live is not None and val.hex() == live
+        print(f"    PCR {pcr:2d}: replay {hexb(val)[:16]}... live "
+              f"{(live or '???')[:16]}...  {'MATCH' if m else 'MISMATCH'}")
+        ok &= m
+    for pcr, live in sorted(pcrs.items()):
+        # all-zeros (never extended) and all-ones (TPM reset value) are
+        # expected for PCRs that have no events in the log
+        if (pcr not in log_pcrs and pcr not in (4, 5, 11)
+                and live not in ("0" * 64, "f" * 64)):
+            print(f"    PCR {pcr:2d}: live {(live or '???')[:16]}... not in log  UNEXPECTED")
+            ok = False
+    return ok
+
+
+def check_legacy(args, events, pcrs, initrd, kernel, notes):
+    ok = True
+
     print("\n[2] initrd byte binding (PCR9 'Linux initrd' event)")
     initrd_events = [e for e in events if e["data"].endswith(b"Linux initrd\x00")]
     if not initrd_events:
@@ -250,9 +597,8 @@ def main():
     print(f"    local  sha256: {hexb(local256)}  {'MATCH' if m256 else 'MISMATCH'}")
     print(f"    event sha384: {hexb(ev['digests'].get(0x000C, b''))}")
     print(f"    local  sha384: {hexb(local384)}  {'MATCH' if m384 else 'MISMATCH'}")
-    ok_all &= m256 and m384
+    ok &= m256 and m384
 
-    # (b) cmdline LoadOptions digest
     print("\n[3] cmdline binding (PCR9 'LOADED_IMAGE::LoadOptions' event)")
     lo_events = [e for e in events
                  if e["data"].endswith(b"LOADED_IMAGE::LoadOptions\x00")]
@@ -263,11 +609,10 @@ def main():
         m = ev["digests"].get(0x000B) == local
         print(f"    event  sha256: {hexb(ev['digests'].get(0x000B, b''))}")
         print(f"    local  sha256: {hexb(local)}  {'MATCH' if m else 'MISMATCH'}")
-        ok_all &= m
+        ok &= m
     else:
         notes.append("no LoadOptions event found")
 
-    # (c) kernel file digest (images with GRUB tpm module)
     if args.kernel:
         print("\n[4] kernel image byte binding (GRUB tpm module file events)")
         kernel_events = [e for e in events
@@ -278,26 +623,21 @@ def main():
             m = ev["digests"].get(0x000B) == local
             print(f"    event  sha256: {hexb(ev['digests'].get(0x000B, b''))}")
             print(f"    local  sha256: {hexb(local)}  {'MATCH' if m else 'MISMATCH'}")
-            ok_all &= m
+            ok &= m
         else:
             print("    (no kernel file event — image predates GRUB tpm module)")
             print("    kernel binding is indirect: the 'Linux initrd' and")
             print("    'LOADED_IMAGE::LoadOptions' events are produced only by")
             print("    the Linux EFI stub, i.e. by code inside this bzImage.")
 
-    # (d) replay PCR9
     print("\n[5] PCR 9 replay (log -> live TPM value)")
-    pcr9 = b"\x00" * 32
-    for e in events:
-        if e["pcr"] == 9 and 0x000B in e["digests"]:
-            pcr9 = tpm_extend(pcr9, e["digests"][0x000B])
+    pcr9 = replay_pcr(events, 9)
     live9 = pcrs.get(9)
     m = live9 is not None and pcr9.hex() == live9
     print(f"    replayed sha256: {hexb(pcr9)}")
     print(f"    live     sha256: {live9 or '???'}  {'MATCH' if m else 'MISMATCH'}")
-    ok_all &= m
+    ok &= m
 
-    # (e) PCR11 rootfs
     if args.disk:
         print("\n[6] rootfs binding (PCR 11 = SHA256(system partition))")
         try:
@@ -310,17 +650,8 @@ def main():
             src = ("live /sys geometry" if args.part_start is not None
                    else "deterministic box-gpt layout")
             print(f"    geometry ({src}): offset {start_byte:,} len {size_bytes:,}")
-            h = hashlib.sha256()
-            with open(args.disk, "rb") as f:
-                f.seek(start_byte)
-                remaining = size_bytes
-                while remaining > 0:
-                    chunk = f.read(min(1 << 20, remaining))
-                    if not chunk:
-                        break
-                    h.update(chunk)
-                    remaining -= len(chunk)
-            pcr11 = tpm_extend(b"\x00" * 32, h.digest())
+            pcr11 = tpm_extend(b"\x00" * 32,
+                               hash_disk_region(args.disk, start_byte, size_bytes))
             live11 = pcrs.get(11)
             m = live11 is not None and pcr11.hex() == live11
             print(f"    replayed sha256: {hexb(pcr11)}")
@@ -328,26 +659,115 @@ def main():
             if live11 is None or live11 == "0" * 64:
                 notes.append("live PCR11 is zero — image predates S54tpm-rootfs, or the extend failed at boot")
             else:
-                ok_all &= m
+                ok &= m
+    return ok
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--log", required=True, help="raw event log dump (el.bin)")
+    ap.add_argument("--pcrs", required=True, help="tpm2_pcrread output file")
+    ap.add_argument("--snp", required=True, help="SNP attestation report binary")
+    ap.add_argument("--snp-nonce",
+                    help="64-byte report_data nonce we supplied — if given, the "
+                         "report must echo it back (anti-replay freshness check)")
+    ap.add_argument("--uki", help="local UKI (BOOTX64.EFI) file — enables UKI mode")
+    ap.add_argument("--initrd", help="local initramfs file")
+    ap.add_argument("--cmdline", help="exact kernel command line string")
+    ap.add_argument("--kernel", help="local bzImage file")
+    ap.add_argument("--disk", help="local disk image (for PCR11 rootfs check)")
+    ap.add_argument("--no-part", action="store_true",
+                    help="ESP-only (unikernel) disk: no system partition, PCR11 checked by plain replay")
+    ap.add_argument("--part-start", type=int, help="system partition start, in 512-byte sectors (from /sys)")
+    ap.add_argument("--part-size", type=int, help="system partition size, in 512-byte sectors (from /sys)")
+    args = ap.parse_args()
+
+    if not args.uki and not (args.initrd and args.cmdline):
+        ap.error("either --uki (UKI mode) or --initrd + --cmdline (legacy mode) is required")
+
+    ok_all = True
+    notes = []
+
+    print("=" * 64)
+    print("  SEV-SNP / TPM2 BINDING VERIFICATION")
+    print("=" * 64)
+
+    with open(args.log, "rb") as f:
+        log = f.read()
+    initrd = kernel = uki = None
+    if args.initrd:
+        with open(args.initrd, "rb") as f:
+            initrd = f.read()
+    if args.kernel:
+        with open(args.kernel, "rb") as f:
+            kernel = f.read()
+    if args.uki:
+        with open(args.uki, "rb") as f:
+            uki = f.read()
+    pcrs = parse_pcrs_file(args.pcrs)
+    snp = parse_snp_report(args.snp)
+
+    # ------------------------------------------------------------------
+    print("\n[1] UEFI event log (TCG 2.0 crypto agile)")
+    try:
+        algs, events = parse_event_log(log)
+        print(f"    parsed {len(events)} events; algs: "
+              + ", ".join(f"0x{a:04x}({s})" for a, s in algs.items()))
+    except ValueError as e:
+        print(f"    FATAL: {e}")
+        sys.exit(1)
+
+    if args.uki:
+        ok_all &= check_uki(args, events, pcrs, initrd, kernel, uki, notes)
+    else:
+        ok_all &= check_legacy(args, events, pcrs, initrd, kernel, notes)
 
     # ------------------------------------------------------------------
     print("\n[7] SEV-SNP report")
-    print(f"    size: {snp['size']} bytes (968-byte report + trailer)")
-    print(f"    policy: 0x{snp.get('policy', 0):x}"
-          f"{' (debug disabled)' if snp.get('policy', 1) == 0 else ''}")
-    print(f"    build_commit: {hexb(snp.get('build_commit', b''))[:64]}")
-    print(f"    build_timestamp: {snp.get('build_timestamp', 0)}")
-    print(f"    measured guest state: {hexb(snp.get('measurement', b''))[:64]}...")
-    print(f"    report_data (nonce):  {hexb(snp.get('report_data', b''))[:32]}...")
+    ver = snp.get("version", 0)
+    if ver:
+        pol = snp.get("policy", 0)
+        print(f"    size: {snp['size']} bytes "
+              f"(672-byte report + 512-byte signature)")
+        print(f"    version: {ver}   guest_svn: {snp.get('guest_svn', 0)}   "
+              f"vmpl: {snp.get('vmpl', 0)}   sig_algo: {snp.get('sig_algo', 0)}")
+        print(f"    policy: 0x{pol:x}"
+              f"{' (debug ALLOWED)' if pol & 1 else ' (debug disabled)'}")
+        print(f"    plat_info: 0x{snp.get('plat_info', 0):x}")
+        print(f"    launch measurement (SHA-384): "
+              f"{hexb(snp.get('measurement', b''))}")
+        rd = snp.get("report_data", b"")
+        if args.snp_nonce:
+            with open(args.snp_nonce, "rb") as f:
+                nonce = f.read()
+            match = (rd == nonce)
+            ok_all &= match
+            print(f"    report_data (nonce):  {hexb(rd)[:32]}... "
+                  + ("MATCH — report echoes our nonce (fresh, not a replay)"
+                     if match else
+                     "MISMATCH — report data != supplied nonce"))
+        else:
+            print(f"    report_data (nonce):  {hexb(rd)[:32]}...")
+    else:
+        print(f"    size: {snp['size']} bytes "
+              f"(dummy/zeroed report — no SNP fields parsed; QEMU has no SNP)")
 
     # ------------------------------------------------------------------
     print("\n[8] structural binding")
     print("    - SNP launch measurement identifies the OVMF firmware image")
     print("      (independent anchor: AMD ARK signature).")
-    print("    - The event log shows that firmware, GRUB, and the kernel's")
-    print("      own EFI stub extended the TPM (independent anchor: TPM EK")
-    print("      signature); the stub events exist only because OUR kernel")
-    print("      ran on this boot.")
+    if args.uki:
+        print("    - The event log shows that firmware and the UKI's own stub")
+        print("      extended the TPM (independent anchor: TPM EK signature);")
+        print("      PCR4 = OVMF boot path, PCR5 = GPT table,")
+        print("      PCR9 = kernel initrd/cmdline, PCR11 = section")
+        print("      decomposition + rootfs.")
+    else:
+        print("    - The event log shows that firmware, GRUB, and the kernel's")
+        print("      own EFI stub extended the TPM (independent anchor: TPM EK")
+        print("      signature); the stub events exist only because OUR kernel")
+        print("      ran on this boot.")
     print("    - All PCRs are deterministic functions of the one disk image")
     print("      (stable across boots), so the same image is what the SNP")
     print("      report and the TPM quote both describe.")

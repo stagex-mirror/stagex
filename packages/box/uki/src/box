@@ -1,0 +1,49 @@
+#!/bin/sh
+# box-uki — assemble a Unified Kernel Image (firmware-direct, no bootloader)
+#
+# A pure function of its three boot objects:
+#
+# Inputs:
+#   /vmlinuz    — bzImage kernel (PE/EFI stub enabled)
+#   /initramfs  — initramfs image
+#   /cmdline    — kernel command line (single line)
+#   OSREL       — optional path to os-release (embedded as .osrel section;
+#                 when unset, ukify falls back to the image's own
+#                 /etc/os-release)
+#
+# Output:
+#   the final EFI layout — /efi/EFI/BOOT/BOOTX64.EFI (OUT= to override),
+#   i.e. the complete ESP tree, containing only the UKI. This is what
+#   firmware boots: \EFI\BOOT\BOOTX64.EFI is the UEFI fallback path.
+#
+# The stub PE is the firmware entry point: OVMF boots the UKI directly from
+# the ESP fallback path (PCR4 gets OVMF boot-path markers, not a file hash).
+# The stub then measures each section (".linux"/kernel, ".initrd",
+# ".cmdline", ".osrel", ...) into PCR11 and hands over to the kernel via
+# the EFI handover protocol.
+set -eux
+
+STUB="${STUB:-/usr/lib/systemd/boot/efi/linuxx64.efi.stub}"
+LINUX="${LINUX:-/vmlinuz}"
+INITRD="${INITRD:-/initramfs}"
+CMDLINE="${CMDLINE:-/cmdline}"
+OSREL="${OSREL:-}"
+OUT="${OUT:-/efi/EFI/BOOT/BOOTX64.EFI}"
+
+mkdir -p "$(dirname "$OUT")"
+
+OSREL_ARGS=""
+if [ -n "$OSREL" ]; then
+	OSREL_ARGS="--os-release @$OSREL"
+fi
+
+# shellcheck disable=SC2086
+ukify build \
+	--stub "$STUB" \
+	--linux "$LINUX" \
+	--initrd "$INITRD" \
+	--cmdline "$(cat "$CMDLINE")" \
+	$OSREL_ARGS \
+	--output "$OUT"
+
+echo "UKI created: $(du -h "$OUT" | cut -f1)"

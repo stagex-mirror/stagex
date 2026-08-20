@@ -24,8 +24,6 @@ FROM stagex/user-snpguest AS user-snpguest
 FROM stagex/user-snptpm-agent AS user-snptpm-agent
 FROM stagex/user-tpm2-abrmd AS user-tpm2-abrmd
 FROM stagex/user-dbus AS user-dbus
-FROM stagex/distro-initramfs-klibc AS distro-initramfs-klibc
-FROM stagex/box-grub AS box-grub
 FROM stagex/box-disk AS box-disk
 FROM stagex/box-cpio AS box-cpio
 
@@ -115,113 +113,100 @@ COPY --from=user-tinyssh . /
 COPY src/dev/rootfs/etc/init.d/S50sshd /etc/init.d/
 
 # ============================================================
-# Stage 2: boot trees (ESP contents, not packed — box-disk packs)
+# Stage 2: boot objects (inputs to box-uki, not packed yet)
+#
+# Firmware-direct UKI: the live layout carries the boot objects in /boot
+# (vmlinuz + cmdline). The initramfs is NOT stored here — in the unikernel
+# scheme box-disk derives it: it packs the OS as erofs and wraps it in a
+# cpio that loop-mounts it, so the erofs system image becomes the initramfs
+# and the whole OS runs from memory.
 # ============================================================
 
-FROM box-grub AS boot
-ENV TREE_ONLY=1
-COPY --from=user-linux-offline /bzImage /vmlinuz
-COPY --from=distro-initramfs-klibc /initramfs /initramfs
-COPY src/config/grub.cfg /grub.cfg
-RUN box
+FROM scratch AS boot
+COPY --from=user-linux-offline /bzImage /boot/vmlinuz
+COPY src/config/uki-cmdline-uk /boot/cmdline
 
-FROM box-grub AS boot-dev
-ENV TREE_ONLY=1
-COPY --from=user-linux-server /bzImage /vmlinuz
-COPY --from=distro-initramfs-klibc /initramfs /initramfs
-COPY src/config/grub.cfg /grub.cfg
-RUN box
+FROM scratch AS boot-dev
+COPY --from=user-linux-server /bzImage /boot/vmlinuz
+COPY src/config/uki-cmdline-uk /boot/cmdline
 
-FROM box-grub AS boot-guest-offline
-ENV TREE_ONLY=1
-COPY --from=user-linux-guest /bzImage /vmlinuz
-COPY --from=distro-initramfs-klibc /initramfs /initramfs
-COPY src/config/grub.cfg /grub.cfg
-RUN box
+FROM scratch AS boot-guest-offline
+COPY --from=user-linux-guest /bzImage /boot/vmlinuz
+COPY src/config/uki-cmdline-uk /boot/cmdline
 
-FROM box-grub AS boot-guest-online
-ENV TREE_ONLY=1
-COPY --from=user-linux-guest /bzImage /vmlinuz
-COPY --from=distro-initramfs-klibc /initramfs /initramfs
-COPY src/config/grub.cfg /grub.cfg
-RUN box
+FROM scratch AS boot-guest-online
+COPY --from=user-linux-guest /bzImage /boot/vmlinuz
+COPY src/config/uki-cmdline-uk /boot/cmdline
 
-FROM box-grub AS boot-guest-online-dev
-ENV TREE_ONLY=1
-COPY --from=user-linux-guest /bzImage /vmlinuz
-COPY --from=distro-initramfs-klibc /initramfs /initramfs
-COPY src/config/grub.cfg /grub.cfg
-RUN box
+FROM scratch AS boot-guest-online-dev
+COPY --from=user-linux-guest /bzImage /boot/vmlinuz
+COPY src/config/uki-cmdline-uk /boot/cmdline
 
 # ============================================================
 # Stage 3: live layouts — the default package
 #
-# The pre-packed rootfs contents with the boot partition mounted at
-# /boot (kernel/initramfs/grub config) and /efi (BOOTX64.EFI tree).
-# Running this as a container shows the same filesystem a live boot
-# produces, for testing and debugging.
+# The pre-packed rootfs contents plus /boot with the boot objects (vmlinuz,
+# cmdline) — no initramfs, since box-disk derives it from the erofs in the
+# unikernel scheme. Running this as a container shows the same filesystem a
+# live boot produces, for testing and debugging.
 # ============================================================
 
 FROM rootfs AS package-enclave
 COPY --from=boot /boot /boot
-COPY --from=boot /efi /efi
 CMD ["/bin/sh"]
 
 FROM rootfs-dev AS package-enclave-dev
 COPY --from=boot-dev /boot /boot
-COPY --from=boot-dev /efi /efi
 CMD ["/bin/sh"]
 
 FROM rootfs-sev-snp AS package-enclave-sev-snp
 COPY --from=boot-dev /boot /boot
-COPY --from=boot-dev /efi /efi
 CMD ["/bin/sh"]
 
 FROM rootfs-guest-offline AS package-enclave-guest-offline
 COPY --from=boot-guest-offline /boot /boot
-COPY --from=boot-guest-offline /efi /efi
 CMD ["/bin/sh"]
 
 FROM rootfs-guest-online AS package-enclave-guest-online
 COPY --from=boot-guest-online /boot /boot
-COPY --from=boot-guest-online /efi /efi
 CMD ["/bin/sh"]
 
 FROM rootfs-guest-online-dev AS package-enclave-guest-online-dev
 COPY --from=boot-guest-online-dev /boot /boot
-COPY --from=boot-guest-online-dev /efi /efi
 CMD ["/bin/sh"]
 
 # ============================================================
-# Stage 4: disk images — -img subpackages
+# Stage 4: disk images — -img subpackages (unikernel)
 #
-# box-disk assembles boot.img from /boot + /efi and system.img from
-# the rest of the live layout, then GPT-combines them into disk.img.
+# box-disk (UNIKERNEL=1) packs the OS as erofs, wraps it in a cpio that
+# loop-mounts it (the erofs becomes the initramfs), builds the UKI with that
+# as the .initrd, and emits a GPT with only the ESP. The OS runs from memory;
+# the disk is just the firmware boot target (storage optional).
 # ============================================================
 
 FROM box-disk AS img-enclave
 COPY --from=package-enclave . /live
-RUN box
+RUN UNIKERNEL=1 box
 
 FROM box-disk AS img-enclave-dev
 COPY --from=package-enclave-dev . /live
-RUN box
+RUN UNIKERNEL=1 box
 
 FROM box-disk AS img-enclave-sev-snp
 COPY --from=package-enclave-sev-snp . /live
-RUN box
+RUN UNIKERNEL=1 box
 
 FROM box-disk AS img-enclave-guest-offline
 COPY --from=package-enclave-guest-offline . /live
-RUN box
+RUN UNIKERNEL=1 box
 
 FROM box-disk AS img-enclave-guest-online
 COPY --from=package-enclave-guest-online . /live
-RUN box
+RUN UNIKERNEL=1 box
 
 FROM box-disk AS img-enclave-guest-online-dev
 COPY --from=package-enclave-guest-online-dev . /live
-RUN box
+RUN UNIKERNEL=1 box
 
 FROM scratch AS package-enclave-img
 COPY --from=img-enclave /disk.img /disk.img

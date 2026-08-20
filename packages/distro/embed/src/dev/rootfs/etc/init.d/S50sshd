@@ -22,7 +22,7 @@ start() {
 
 	# Use tcpsvd to listen; tinysshd handles one connection at a time (no daemonization)
 	printf "Starting %s: " "$DAEMON"
-	nohup embed tcpsvd -vE 0.0.0.0 22 /usr/sbin/$DAEMON -v "$KEYDIR" </dev/null >/var/log/tinysshd.log 2>&1 &
+	nohup busybox tcpsvd -vE 0.0.0.0 22 /usr/sbin/$DAEMON -v "$KEYDIR" </dev/null >/var/log/tinysshd.log 2>&1 &
 	echo $! > "$PIDFILE"
 	echo "OK"
 	return 0

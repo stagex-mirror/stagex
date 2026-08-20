@@ -8,8 +8,10 @@ FROM stagex/user-mtools AS user-mtools
 FROM stagex/user-util-linux AS user-util-linux
 FROM stagex/user-dosfstools AS user-dosfstools
 FROM stagex/user-erofs-utils AS user-erofs-utils
+FROM stagex/box-uki AS box-uki
 FROM stagex/box-erofs AS box-erofs
 FROM stagex/box-gpt AS box-gpt
+FROM stagex/user-klibc-utils AS user-klibc-utils
 
 FROM scratch AS package
 COPY --from=core-busybox . /
@@ -22,8 +24,14 @@ COPY --from=user-mtools . /
 COPY --from=user-util-linux . /
 COPY --from=user-dosfstools . /
 COPY --from=user-erofs-utils . /
+COPY --from=box-uki . /
+COPY --from=box-uki /usr/bin/box /usr/bin/box-uki
 COPY --from=box-erofs /usr/bin/box /usr/bin/box-erofs
 COPY --from=box-gpt /usr/bin/box /usr/bin/box-gpt
+# Static klibc utils for the unikernel initramfs (kept under /klibc so they
+# don't shadow box-disk's own busybox applets)
+COPY --from=user-klibc-utils /usr/bin/ /klibc/
+COPY src/init-loop /usr/local/init-loop
 COPY src/box /usr/bin/box
-RUN chmod +x /usr/bin/box /usr/bin/box-erofs /usr/bin/box-gpt
+RUN chmod +x /usr/bin/box /usr/bin/box-uki /usr/bin/box-erofs /usr/bin/box-gpt /usr/local/init-loop
 ENTRYPOINT ["/usr/bin/box"]

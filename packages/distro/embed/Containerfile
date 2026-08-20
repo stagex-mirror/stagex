@@ -6,13 +6,12 @@ FROM stagex/core-openssl AS core-openssl
 FROM stagex/user-tinyssh AS user-tinyssh
 FROM stagex/user-dhcpcd AS user-dhcpcd
 FROM stagex/user-sxctl AS user-sxctl
+FROM stagex/user-qemu AS user-qemu
 FROM stagex/user-linux-server AS user-linux-server
 FROM stagex/user-linux-offline AS user-linux-offline
 FROM stagex/user-linux-guest AS user-linux-guest
 FROM stagex/distro-initramfs-klibc AS distro-initramfs-klibc
-FROM stagex/box-grub AS box-grub
-FROM stagex/box-erofs AS box-erofs
-FROM stagex/box-gpt AS box-gpt
+FROM stagex/box-disk AS box-disk
 FROM stagex/box-cpio AS box-cpio
 
 # ============================================================
@@ -51,91 +50,112 @@ COPY --from=user-sxctl . /
 
 # --- guest: default + QEMU guest agent ---
 FROM rootfs AS rootfs-guest
-COPY --from=stagex/user-qemu /usr/bin/qemu-ga /usr/bin/qemu-ga
+COPY --from=user-qemu /usr/bin/qemu-ga /usr/bin/qemu-ga
 COPY src/rootfs/etc/init.d/S21qemu-ga /etc/init.d/
 
 # ============================================================
-# Stage 2: boot images (parallel — no dependency on system images)
+# Stage 2: boot objects (the three inputs to box-uki, not packed yet)
+#
+# Firmware-direct UKI: the live layout carries the three boot objects in
+# /boot. box-disk passes them to box-uki, which assembles the UKI
+# (kernel + initramfs + cmdline inside) — the complete ESP tree, nothing
+# else. No bootloader, no separate files on the ESP.
 # ============================================================
 
-FROM box-grub AS boot
-COPY --from=user-linux-server /bzImage /vmlinuz
-COPY --from=distro-initramfs-klibc /initramfs /initramfs
-COPY src/config/grub.cfg /grub.cfg
-RUN box
+FROM scratch AS boot
+COPY --from=user-linux-server /bzImage /boot/vmlinuz
+COPY --from=distro-initramfs-klibc /initramfs /boot/initramfs
+COPY src/config/uki-cmdline /boot/cmdline
 
-FROM box-grub AS boot-offline
-COPY --from=user-linux-offline /bzImage /vmlinuz
-COPY --from=distro-initramfs-klibc /initramfs /initramfs
-COPY src/config/grub.cfg /grub.cfg
-RUN box
+FROM scratch AS boot-offline
+COPY --from=user-linux-offline /bzImage /boot/vmlinuz
+COPY --from=distro-initramfs-klibc /initramfs /boot/initramfs
+COPY src/config/uki-cmdline /boot/cmdline
 
-FROM box-grub AS boot-guest
-COPY --from=user-linux-guest /bzImage /vmlinuz
-COPY --from=distro-initramfs-klibc /initramfs /initramfs
-COPY src/config/grub.cfg /grub.cfg
-RUN box
+FROM scratch AS boot-guest
+COPY --from=user-linux-guest /bzImage /boot/vmlinuz
+COPY --from=distro-initramfs-klibc /initramfs /boot/initramfs
+COPY src/config/uki-cmdline /boot/cmdline
 
 # ============================================================
-# Stage 3: system images
+# Stage 3: live layouts — the default package
+#
+# The pre-packed rootfs contents plus /boot with the three boot objects
+# (vmlinuz, initramfs, cmdline). box-disk passes those to box-uki to build
+# the UKI (the entire ESP) and packs the rest into the erofs system
+# partition. Running this as a container shows the same filesystem a live
+# boot produces, for testing and debugging.
 # ============================================================
 
-FROM box-erofs AS system
-COPY --from=rootfs --chown=0:0 . /rootfs
-RUN box
+FROM rootfs AS package-embed
+COPY --from=boot /boot /boot
+CMD ["/bin/sh"]
 
-FROM box-erofs AS system-offline
-COPY --from=rootfs-offline --chown=0:0 . /rootfs
-RUN box
+FROM rootfs-offline AS package-embed-offline
+COPY --from=boot-offline /boot /boot
+CMD ["/bin/sh"]
 
-FROM box-erofs AS system-dev
-COPY --from=rootfs-dev --chown=0:0 . /rootfs
-RUN box
+FROM rootfs-dev AS package-embed-dev
+COPY --from=boot /boot /boot
+CMD ["/bin/sh"]
 
-FROM box-erofs AS system-guest
-COPY --from=rootfs-guest --chown=0:0 . /rootfs
-RUN box
-
-# ============================================================
-# Stage 4: disk images
-# ============================================================
-
-FROM box-gpt AS disk
-COPY --from=boot /boot.img /boot.img
-COPY --from=system /system.img /system.img
-RUN box
-
-FROM box-gpt AS disk-offline
-COPY --from=boot-offline /boot.img /boot.img
-COPY --from=system-offline /system.img /system.img
-RUN box
-
-FROM box-gpt AS disk-dev
-COPY --from=boot /boot.img /boot.img
-COPY --from=system-dev /system.img /system.img
-RUN box
-
-FROM box-gpt AS disk-guest
-COPY --from=boot-guest /boot.img /boot.img
-COPY --from=system-guest /system.img /system.img
-RUN box
+FROM rootfs-guest AS package-embed-guest
+COPY --from=boot-guest /boot /boot
+CMD ["/bin/sh"]
 
 # ============================================================
-# Stage 5: packages with QEMU runtime
+# Stage 4: disk images — -img subpackages
+#
+# box-disk takes the full live layout, runs box-uki on the three /boot
+# objects to build the UKI ESP, packs it into the FAT32 boot partition,
+# packs the rest into the erofs system partition (box-erofs), and
+# GPT-combines them into disk.img (box-gpt).
+# ============================================================
+
+FROM box-disk AS img-embed
+COPY --from=package-embed . /live
+RUN box
+
+FROM box-disk AS img-embed-offline
+COPY --from=package-embed-offline . /live
+RUN box
+
+FROM box-disk AS img-embed-dev
+COPY --from=package-embed-dev . /live
+RUN box
+
+FROM box-disk AS img-embed-guest
+COPY --from=package-embed-guest . /live
+RUN box
+
+FROM scratch AS package-embed-img
+COPY --from=img-embed /disk.img /disk.img
+
+FROM scratch AS package-embed-offline-img
+COPY --from=img-embed-offline /disk.img /disk.img
+
+FROM scratch AS package-embed-dev-img
+COPY --from=img-embed-dev /disk.img /disk.img
+
+FROM scratch AS package-embed-guest-img
+COPY --from=img-embed-guest /disk.img /disk.img
+
+# ============================================================
+# Stage 5: -vm subpackages — QEMU runtime around the disk image
 # ============================================================
 
 FROM stagex/service-qemu AS package-base
 COPY src/qemu-startup.sh /usr/bin/run
 ENTRYPOINT ["/usr/bin/run"]
 
-FROM package-base AS package
-COPY --from=disk /disk.img /disk.img
+FROM package-base AS package-embed-vm
+COPY --from=package-embed-img /disk.img /disk.img
 
-FROM package-base AS package-embed-offline
-COPY --from=disk-offline /disk.img /disk.img
+FROM package-base AS package-embed-offline-vm
+COPY --from=package-embed-offline-img /disk.img /disk.img
 
-FROM package-base AS package-embed-dev
-COPY --from=disk-dev /disk.img /disk.img
+FROM package-base AS package-embed-dev-vm
+COPY --from=package-embed-dev-img /disk.img /disk.img
 
-FROM package-base AS package-embed-guest
-COPY --from=disk-guest /disk.img /disk.img
+FROM package-base AS package-embed-guest-vm
+COPY --from=package-embed-guest-img /disk.img /disk.img

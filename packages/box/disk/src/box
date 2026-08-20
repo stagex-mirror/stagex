@@ -1,39 +1,100 @@
 #!/bin/sh
-# box-disk — assembles a full GPT disk from a live layout
+# box-disk — assemble a bootable disk image from a live layout
 #
-# Input: a live layout directory (LIVE, default /live) containing the
-# rootfs contents plus the boot partition contents:
-#   /boot  — kernel, initramfs, grub config (the ESP's boot/ tree)
-#   /efi   — BOOTX64.EFI tree (the ESP's EFI/ tree)
+# Normal mode (default):
+#   Input:  live layout with /boot/{vmlinuz, initramfs, cmdline}
+#   Output: disk.img = GPT { ESP(UKI), erofs system }
 #
-# Output: /disk.img
-#   partition 1: FAT32 ESP   — /efi -> ::EFI, /boot -> ::boot
-#   partition 2: erofs root  — the live layout minus /boot and /efi
+# Unikernel mode (UNIKERNEL=1):
+#   Input:  live layout with /boot/{vmlinuz, cmdline} (no initramfs)
+#   The erofs system image becomes the initramfs: box-disk packs the OS as
+#   erofs, wraps it in a cpio { static klibc utils, /init (loop-mount),
+#   /system = the erofs }, and uses that as the UKI's .initrd. The kernel
+#   unpacks it into RAM, /init loop-mounts /system and pivots. Output is a
+#   GPT with only the ESP (no system partition) — the OS runs from memory,
+#   so disk storage is optional.
 #
-# Inner assembly is delegated: erofs packing runs box-erofs, GPT
-# assembly runs box-gpt (both installed alongside this script).
+# Inner assembly is delegated: box-uki builds the UKI (ESP contents),
+# box-erofs packs the erofs system image, box-gpt assembles the GPT disk.
 set -eux
 
 LIVE="${LIVE:-/live}"
 BOOT_IMG="${BOOT_IMG:-/boot.img}"
 SYSTEM_IMG="${SYSTEM_IMG:-/system.img}"
 DISK="${DISK:-/disk.img}"
-BOOT_IMG_SIZE="${BOOT_IMG_SIZE:-512}"
+ESP="${ESP:-/esp}"
 
-# --- boot.img: FAT32 ESP from /efi + /boot ---
-dd if=/dev/zero of="$BOOT_IMG" bs=1M count="$BOOT_IMG_SIZE"
-busybox mkfs.vfat -F 32 -S 512 -s $(( BOOT_IMG_SIZE * 2048 )) "$BOOT_IMG" >/dev/null
-mcopy -i "$BOOT_IMG" -sm "$LIVE/efi" ::EFI
-mcopy -i "$BOOT_IMG" -sm "$LIVE/boot" ::boot
+OSREL_ARG=""
+[ -f "$LIVE/etc/os-release" ] && OSREL_ARG="$LIVE/etc/os-release"
 
-# --- system.img: erofs of the live layout minus the boot partition ---
-rm -rf /rootfs
-cp -a "$LIVE" /rootfs
-rm -rf /rootfs/boot /rootfs/efi
-ROOTFS=/rootfs OUTPUT="$SYSTEM_IMG" box-erofs
+# Build the ESP (FAT) holding the UKI, sized exactly to the UKI.
+# Always FAT32 with 4 KiB clusters: the legacy AWS-bootable ESP was FAT32,
+# while FAT16 ESPs with 16 KiB clusters do not boot on AWS Nitro UEFI.
+# The volume is padded to FAT32's minimum of 65525 clusters (~256 MiB).
+# Image = reserved + 2 FATs + data clusters, rounded up to MiB. $1 = initrd
+# path, $2 = cmdline path.
+build_esp() {
+	rm -rf "$ESP"
+	LINUX="$LIVE/boot/vmlinuz" \
+	INITRD="$1" \
+	CMDLINE="$2" \
+	OSREL="$OSREL_ARG" \
+	OUT="$ESP/EFI/BOOT/BOOTX64.EFI" \
+	box-uki
 
-# --- disk.img: GPT assembly ---
+	UKI_BYTES=$(stat -c %s "$ESP/EFI/BOOT/BOOTX64.EFI")
+	FATTYPE=32
+	CLUS_SEC=8
+	MIN_CLUSTERS=65525
+	CLUSTERS=$(( (UKI_BYTES + CLUS_SEC * 512 - 1) / (CLUS_SEC * 512) ))
+	[ "$CLUSTERS" -lt "$MIN_CLUSTERS" ] && CLUSTERS=$MIN_CLUSTERS
+	FATSEC=$(( (4 + 13 * CLUSTERS + 6143) / 6144 ))
+	TOTAL_SEC=$(( 32 + 2 * FATSEC + CLUSTERS * CLUS_SEC ))
+	BOOT_MB=$(( (TOTAL_SEC * 512 + 1048575) / 1048576 ))
+	[ "$BOOT_MB" -lt 16 ] && BOOT_MB=16
+
+	dd if=/dev/zero of="$BOOT_IMG" bs=1M count="$BOOT_MB"
+	mkfs.fat -F "$FATTYPE" -s "$CLUS_SEC" -i 0x53544147 "$BOOT_IMG" >/dev/null
+	mcopy -i "$BOOT_IMG" -sm "$ESP/EFI" ::/
+}
+
+# Pack the live layout (minus /boot) as the erofs system image.
+build_erofs() {
+	rm -rf /rootfs
+	cp -a "$LIVE" /rootfs
+	rm -rf /rootfs/boot
+	ROOTFS=/rootfs OUTPUT="$SYSTEM_IMG" box-erofs
+}
+
+if [ "${UNIKERNEL:-0}" = "1" ]; then
+	# --- unikernel: the erofs system image becomes the initramfs ---
+	build_erofs
+
+	# Assemble the initramfs root: static klibc utils + /init + /system
+	rm -rf /uki-root
+	mkdir -p /uki-root/bin
+	for u in mount mkdir mknod ls cat sleep pivot_root dd sync losetup; do
+		cp "/klibc/$u" "/uki-root/bin/$u"
+	done
+	cp /klibc/sh /uki-root/bin/sh
+	cp /usr/local/init-loop /uki-root/init
+	cp "$SYSTEM_IMG" /uki-root/system
+	( cd /uki-root && find . | LC_ALL=C sort \
+		| busybox cpio -o -H newc 2>/dev/null ) | gzip -9 > /initramfs
+
+	build_esp /initramfs "$LIVE/boot/cmdline"
+
+	# GPT with only the ESP (no system partition)
+	BOOT_IMG="$BOOT_IMG" SYSTEM_IMG= DISK="$DISK" box-gpt
+
+	rm -rf /rootfs /uki-root "$ESP"
+	echo "unikernel disk.img created: $(du -h "$DISK" | cut -f1)"
+	exit 0
+fi
+
+# --- normal: UKI (kernel + initramfs) + ESP + erofs system ---
+build_esp "$LIVE/boot/initramfs" "$LIVE/boot/cmdline"
+build_erofs
 BOOT_IMG="$BOOT_IMG" SYSTEM_IMG="$SYSTEM_IMG" DISK="$DISK" box-gpt
-
-rm -rf /rootfs
+rm -rf /rootfs "$ESP"
 echo "disk.img created: $(du -h "$DISK" | cut -f1)"

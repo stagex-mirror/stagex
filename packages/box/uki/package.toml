@@ -1,0 +1,4 @@
+[package]
+name = "uki"
+version = "2026.03.0"
+description = "Unified Kernel Image assembler — combines systemd-stub + kernel + initramfs + cmdline into a single firmware-bootable PE via systemd ukify"

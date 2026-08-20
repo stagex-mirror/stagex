@@ -1,0 +1,16 @@
+FROM stagex/core-busybox AS core-busybox
+FROM stagex/core-musl AS core-musl
+FROM stagex/core-python AS core-python
+FROM stagex/user-py-pefile AS user-py-pefile
+FROM stagex/user-systemd AS user-systemd
+
+FROM scratch AS package
+COPY --from=core-busybox . /
+COPY --from=core-musl . /
+COPY --from=core-python . /
+COPY --from=user-py-pefile . /
+COPY --from=user-systemd /usr/bin/ukify /usr/bin/ukify
+COPY --from=user-systemd /usr/lib/systemd/boot/efi/linuxx64.efi.stub /usr/lib/systemd/boot/efi/linuxx64.efi.stub
+COPY src/box /usr/bin/box
+RUN chmod +x /usr/bin/box /usr/bin/ukify
+ENTRYPOINT ["/usr/bin/box"]
