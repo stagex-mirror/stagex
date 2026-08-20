@@ -12,7 +12,7 @@ file = "gcc-{version}.{format}"
 mirrors = [ "https://ftpmirror.gnu.org/gnu/gcc/gcc-{version}/{file}", "https://mirrors.kernel.org/gnu/gcc/gcc-{version}/{file}",]
 
 [sources.aports]
-hash = "fa59c1beef8995f27c4d71c1df227587189315d3e6faff1bb4306e61b0c530eb"
+hash = "f7ecc4754608f4e1cc0beef2a96900910ff84af75421879f175c8adb353a541c"
 file = "aports-{version}.tar.gz"
 version = "7fa6e7fd3465c5ff89cc33a56d20bf4d59105aaf"
 mirrors = [ "https://gitlab.alpinelinux.org/alpine/aports/-/archive/{version}/aports-{version}.tar.gz" ]
