@@ -1,12 +1,12 @@
 [package]
 name = "yq"
-version = "4.53.4"
+version = "4.53.5"
 description = "Lightweight and portable command-line YAML processor"
 license = "MIT"
 website = "https://github.com/mikefarah/yq"
 
 [sources.yq]
-hash = "49ddc4cad1682c46d55d5775f5381ea4daa25833665e98883d4a9483d3159e17"
+hash = "9fec7ab556ec94c356240fcf1ba2ee083aaba2c89e72e325e628676bf1059d8d"
 format = "tar.gz"
 file = "yq-{version}.{format}"
 mirrors = [ "https://github.com/mikefarah/yq/archive/refs/tags/v{version}.{format}",]
