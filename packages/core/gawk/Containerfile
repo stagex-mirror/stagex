@@ -4,24 +4,25 @@ COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-make . /
 COPY --from=stagex/core-zlib . /
-COPY --from=stagex/core-gmp . /
-COPY --from=stagex/core-mpfr . /
 COPY --from=stagex/core-llvm . /
 COPY --from=stagex/core-mold . /
 COPY --from=stagex/core-onetbb . /
 COPY --from=stagex/core-libzstd . /
 ADD fetch/gawk-${VERSION}.tar.xz .
+ADD align-fix.patch .
 WORKDIR /gawk-${VERSION}
 RUN --network=none <<-EOF
 	set -ex
+	# gawk 5.4.1 NODE-alignment bug fix (upstream gawk-5.4-stable,
+	# by Arnold Robbins): fixes the gcc options.cc 0W- corruption that
+	# appears when gawk is built WITHOUT MPFR/GMP.
+	patch -p1 < align-fix.patch
 	./configure \
 		--prefix=/usr \
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info \
 		--disable-nls \
-		--disable-pma \
-		--with-gmp \
-		--with-mpfr
+		--disable-pma
 	make -j "$(nproc)"
 EOF
 RUN --network=none make DESTDIR="/rootfs" install
