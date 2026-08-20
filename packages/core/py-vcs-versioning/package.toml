@@ -1,0 +1,12 @@
+[package]
+name = "py-vcs-versioning"
+version = "2.3.1"
+description = "Versioning a Python project based on SCM metadata (split out of setuptools-scm)"
+license = "MIT"
+website = "https://github.com/pypa/vcs-versioning"
+
+[sources.py-vcs-versioning]
+hash = "806635bd0ea653c96af98a70624be758d408a989f2cd0b390e63474d99f96b63"
+format = "tar.gz"
+file = "vcs_versioning-{version}.tar.gz"
+mirrors = [ "https://files.pythonhosted.org/packages/source/v/vcs-versioning/{file}",]
