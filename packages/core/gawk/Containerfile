@@ -9,8 +9,8 @@ COPY --from=stagex/core-mold . /
 COPY --from=stagex/core-onetbb . /
 COPY --from=stagex/core-libzstd . /
 ADD fetch/gawk-${VERSION}.tar.xz .
-ADD align-fix.patch .
 WORKDIR /gawk-${VERSION}
+ADD align-fix.patch .
 RUN --network=none <<-EOF
 	set -ex
 	# gawk 5.4.1 NODE-alignment bug fix (upstream gawk-5.4-stable,
