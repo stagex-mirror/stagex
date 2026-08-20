@@ -1,7 +1,8 @@
-FROM stagex/core-python AS build
+FROM scratch AS build
 ARG VERSION
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-python . /
 COPY --from=stagex/core-py-flit . /
 COPY --from=stagex/core-py-gpep517 . /
 COPY --from=stagex/core-zlib . /
@@ -11,9 +12,9 @@ RUN --network=none <<-EOF
 	set -eu
 	# wheel >= 0.48 no longer ships setup.py; it builds via the
 	# flit_core PEP 517 backend. Build it, then unpack the resulting
-	# wheel into site-packages - this is the standard no-pip bootstrap
-	# (the installer package itself depends on wheel, so it can't be
-	# used here without a bootstrap cycle).
+	# wheel into site-packages - the standard no-pip bootstrap (the
+	# installer package itself depends on wheel, so it can't be used
+	# here without a bootstrap cycle).
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 	sitedir="$(python3 -c 'import site;print(site.getsitepackages()[0])')"
 	mkdir -p "/rootfs${sitedir}"
