@@ -1,12 +1,12 @@
 [package]
 name = "py-gpep517"
-version = "19"
+version = "20"
 description = "Minimal backend script for PEP 517 build systems"
 license = "MIT"
 website = "https://github.com/projg2/gpep517"
 
 [sources.py-gpep517]
-hash = "17879b79edbb5a21d3dca6cfae997bda8e4c99254caf16616a6ae70d15a43c09"
+hash = "b1573c544199af49ea5d75882a4262d84bacd8b37d999bc3ad2577cb5565f479"
 format = "tar.gz"
 file = "py-gpep517-{version}.{format}"
 mirrors = [ "https://github.com/projg2/gpep517/archive/v{version}/v{version}.{format}",]
