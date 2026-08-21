@@ -1,12 +1,12 @@
 [package]
 name = "py-setuptools-scm"
-version = "9.2.2"
+version = "10.2.1"
 description = "Python package version management based on SCM tags"
 license = "MIT"
 website = "https://github.com/pypa/setuptools-scm"
 
 [sources.py-setuptools-scm]
-hash = "1c674ab4665686a0887d7e24c03ab25f24201c213e82ea689d2f3e169ef7ef57"
+hash = "4fa7dd82cf8c800df59c9a288c90299b1657ff1ecfc3f5cc00287c5dbf5e27a9"
 format = "tar.gz"
 file = "py-setuptools-scm-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/s/setuptools-scm/setuptools_scm-{version}.{format}",]
