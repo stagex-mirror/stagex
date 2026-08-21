@@ -1,0 +1,31 @@
+#!/bin/sh
+# S04dhcpcd-watchdog — keep the DHCP client alive so the lease is renewed.
+#
+# The 7.0 kernel can raise a spurious #GP on dhcpcd (observed at boot when
+# parsing a DHCPv6/IPv6 address). A dead client means the 3600s DHCP lease
+# is never renewed and the instance goes offline the moment the lease
+# expires. This watchdog restarts dhcpcd (IPv4 only) if it ever dies, so a
+# single client crash can't take the network down.
+#
+# Runs as a detached background loop so rcS proceeds to the remaining
+# init scripts (cloud-init, TPM/attestation agents).
+PIDFILE="/var/run/dhcpcd.pid"
+DAEMON="/sbin/dhcpcd"
+INTERVAL=60
+
+(
+	while :; do
+		sleep "$INTERVAL"
+		pid=$(cat "$PIDFILE" 2>/dev/null)
+		if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+			continue
+		fi
+		# dhcpcd is not running: clear a stale pidfile and restart it.
+		rm -f "$PIDFILE" 2>/dev/null
+		start-stop-daemon --start --pidfile "$PIDFILE" \
+			--exec "$DAEMON" -- -4 -b -D
+	done
+) &
+
+printf "Starting dhcpcd-watchdog: OK\n"
+exit 0

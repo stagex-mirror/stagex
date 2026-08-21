@@ -62,6 +62,7 @@ RUN mkdir -p /mnt /run /var/log /etc/keys /etc/keylime /var/lib/keylime /var/log
 # --- dev: default + server kernel + network + tinyssh + full attestation stack ---
 FROM rootfs AS rootfs-dev
 COPY src/rootfs/etc/init.d/S03dhcpcd /etc/init.d/
+COPY src/rootfs/etc/init.d/S04dhcpcd-watchdog /etc/init.d/
 COPY src/rootfs/etc/init.d/S06cloud-init-net /etc/init.d/
 COPY src/rootfs/etc/init.d/S52keylime-agent /etc/init.d/
 COPY src/rootfs/etc/keylime/keylime.conf /etc/keylime/keylime.conf
@@ -103,6 +104,7 @@ RUN mkdir -p /mnt /run /var/log /etc/keys && touch /mnt/.keep
 # --- guest-online: guest-offline + guest kernel + network ---
 FROM rootfs-guest-offline AS rootfs-guest-online
 COPY src/rootfs/etc/init.d/S03dhcpcd /etc/init.d/
+COPY src/rootfs/etc/init.d/S04dhcpcd-watchdog /etc/init.d/
 COPY --from=user-dhcpcd /usr/sbin/dhcpcd /sbin/dhcpcd
 RUN mkdir -p /var/lib/dhcpcd /run/dhcpcd && \
 	printf '# Accept all DHCP options\n' > /etc/dhcpcd.conf

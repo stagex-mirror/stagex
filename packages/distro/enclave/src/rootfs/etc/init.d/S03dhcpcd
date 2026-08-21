@@ -13,8 +13,12 @@ adduser -S -D -G dhcpcd dhcpcd >/dev/null 2>&1 || true
 
 start() {
 	printf "Starting %s: " "$DAEMON"
+	# -4 = IPv4 only. The 7.0 kernel raises a spurious #GP when dhcpcd
+	# parses a DHCPv6/IPv6 address at boot, killing the client before it
+	# can renew the 3600s lease (instance goes offline at lease expiry).
+	# Restricting to IPv4 avoids the faulting code path.
 	start-stop-daemon --start --pidfile "$PIDFILE" \
-		--exec "/sbin/$DAEMON" -- -b -D
+		--exec "/sbin/$DAEMON" -- -4 -b -D
 	status=$?
 	if [ "$status" -eq 0 ]; then
 		echo "OK"
