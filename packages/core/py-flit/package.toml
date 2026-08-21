@@ -1,12 +1,12 @@
 [package]
 name = "py-flit"
-version = "3.12.0"
+version = "4.0.2"
 description = "Simplified packaging of Python modules"
 license = "BSD-3-Clause"
 website = "https://github.com/pypa/flit"
 
 [sources.py-flit]
-hash = "1c80f34dd96992e7758b40423d2809f48f640ca285d0b7821825e50745ec3740"
+hash = "232bc4317279e8952eca9fb3f5e000d8395d693b39c105b99f619ce461e1da85"
 format = "tar.gz"
 file = "py-flit-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/f/flit/flit-{version}.{format}",]
