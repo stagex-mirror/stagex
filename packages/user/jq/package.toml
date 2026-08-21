@@ -1,12 +1,12 @@
 [package]
 name = "jq"
-version = "1.8.1"
+version = "1.8.2"
 description = "Lightweight and flexible command-line JSON processor"
 license = "MIT"
 website = "https://jqlang.github.io/jq/"
 
 [sources.jq]
-hash = "2be64e7129cecb11d5906290eba10af694fb9e3e7f9fc208a311dc33ca837eb0"
+hash = "71b8d6e8f5fe81f6c6d0d110e3892251f6ce76ed095abd315e26e6e1193af3af"
 format = "tar.gz"
 file = "jq-{version}.{format}"
 mirrors = [ "https://github.com/jqlang/jq/releases/download/jq-{version}/{file}",]
