@@ -1,12 +1,12 @@
 [package]
 name = "python"
-version = "3.14.5"
+version = "3.14.7"
 description = "The Python programming language"
 license = "PSF-2.0"
 website = "https://python.org/"
 
 [sources.python]
-hash = "7e32597b99e5d9a39abed35de4693fa169df3e5850d4c334337ffd6a19a36db6"
+hash = "3b48dac8fb59f62eaa67ac83c1eb12bda1b7a08406dd286e252c11a66be27f81"
 format = "tar.xz"
 file = "python-{version}.{format}"
 mirrors = [ "https://www.python.org/ftp/python/{version}/Python-{version}.{format}",]
