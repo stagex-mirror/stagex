@@ -1,12 +1,12 @@
 [package]
 name = "php-mongodb"
-version = "2.2.1"
+version = "2.4.0"
 description = " The Official MongoDB PHP driver"
 website = "https://www.php.net/mongodb"
 license = "Apache-2.0"
 
 [sources.php-mongodb]
-hash = "b923617bec3cde420d80bf78aeb05002be3c0e930b93adaacaa5c2e0c25adb42"
+hash = "08d0d298f0e4c6190a4f8c1f1e23cfbf5d64a1063370b35368bd53012025afa8"
 format = "tgz"
 file = "mongodb-{version}.{format}"
 mirrors = [ "https://pecl.php.net/get/{file}",]
