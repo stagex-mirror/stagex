@@ -1,13 +1,13 @@
 [package]
 name = "solidity"
-version = "0.8.35"
+version = "0.8.36"
 description = "Statically-typed programming language for developing smart contracts for the Ethereum Virtual Machine."
 license = "GPL-3.0-only"
 website = "https://soliditylang.org"
 
 [sources.solidity]
-hash = "8764c1a52b7e144cfe3341a0198c4449568dc1db163ab29bfa0d8ec35fbbd37f"
+hash = "253c64da6be9e75cc63a75ed184c01fb926bb76108f7922d9fab685f3922afa1"
 git_sha = "47b9dedda00ef23974eca07c06c97cc1c80088b4"
 format = "tar.gz"
 file = "v{version}.{format}"
-mirrors = [ "https://github.com/ethereum/solidity/archive/refs/tags/{file}", ]
+mirrors = [ "https://github.com/ethereum/solidity/archive/refs/tags/{file}",]
