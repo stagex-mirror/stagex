@@ -7,6 +7,8 @@ EC2_INSTANCE_TYPE ?= c6a.large
 EC2_SUBNET_ID ?= subnet-0d2a9fba54fb287f3
 EC2_SECURITY_GROUP ?= sg-0ef827fb6200b34a1
 EC2_ENABLE_SEV_SNP ?= true
+EC2_DATA_VOLUME_SIZE ?= 0
+EC2_DATA_DELETE_ON_TERM ?= true
 EC2_SSH_KEY ?= ~/.ssh/tpm-exploration.pem
 EC2_USER_DATA_FILE ?=
 
@@ -23,11 +25,13 @@ define check_aws_creds
 	fi
 endef
 
-# Deploy EC2 instance from AMI (requires aws-ami-deploy first)
-aws-ec2-deploy:
+# Deploy EC2 instance from AMI. Depends on aws-ami-deploy (defined in
+# packages/box/aws-ami/targets.mk, included into the same make) so a
+# single `make aws-ec2-deploy` chains: fresh distro -> AMI import -> launch.
+aws-ec2-deploy: aws-ami-deploy
 	@$(check_aws_creds)
 	@if [ ! -f "$(EC2_AMI_TFVARS)" ]; then \
-		echo "ERROR: No AMI tfvars found — run 'make aws-ami-deploy' first" >&2; exit 1; \
+		echo "ERROR: No AMI tfvars found — aws-ami-deploy did not complete" >&2; exit 1; \
 	fi
 	@AMI_ID=$$(grep '^ami_id' $(EC2_AMI_TFVARS) | cut -d'"' -f2) && \
 	echo "Deploying EC2 instance from AMI $$AMI_ID ..." && \
@@ -48,6 +52,8 @@ aws-ec2-deploy:
 		-e SUBNET_ID="$(EC2_SUBNET_ID)" \
 		-e SECURITY_GROUP="$(EC2_SECURITY_GROUP)" \
 		-e ENABLE_SEV_SNP="$(EC2_ENABLE_SEV_SNP)" \
+		-e DATA_VOLUME_SIZE="$(EC2_DATA_VOLUME_SIZE)" \
+		-e DATA_DELETE_ON_TERM="$(EC2_DATA_DELETE_ON_TERM)" \
 		-e USER_DATA="$$USER_DATA" \
 		-e AMI_TFVARS=/input/aws-ami.tfvars \
 		-v $(EC2_AMI_TFVARS):/input/aws-ami.tfvars:ro \

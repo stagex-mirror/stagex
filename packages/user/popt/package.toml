@@ -1,0 +1,12 @@
+[package]
+name = "popt"
+version = "1.19"
+description = "Getopt-like library with support for configuration files"
+license = "MIT"
+website = "https://github.com/rpm-software-management/popt"
+
+[sources.popt]
+hash = "c25a4838fc8e4c1c8aacb8bd620edb3084a3d63bf8987fdad3ca2758c63240f9"
+format = "tar.gz"
+file = "popt-{version}.{format}"
+mirrors = [ "https://ftp.osuosl.org/pub/rpm/popt/releases/popt-1.x/popt-{version}.{format}" ]

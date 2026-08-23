@@ -184,7 +184,7 @@ publish-{stage}-{name}: oci-{stage}-{name}
               "deps": "".join(
                 f" \\\n\tout/rootfs/{dep}/manifest.txt" for dep in package.deps
               ),
-              "files": "\\\n\t".join(check_output(["find","packages/{}/{}".format(stage,package.origin or package.name),"-type","f","-not","-path","*/fetch/*"],text=True).splitlines()),
+              "files": "\\\n\t".join(line.replace(" ", "\\ ") for line in check_output(["find","packages/{}/{}".format(stage,package.origin or package.name),"-type","f","-not","-path","*/fetch/*"],text=True).splitlines()),
               "build_args": TargetGenerator.get_build_args(package),
               "context_args": self.get_context_args(package, stage, package.origin or package.name, False),
               "context_args_registry": self.get_context_args(package, stage, package.origin or package.name, True),

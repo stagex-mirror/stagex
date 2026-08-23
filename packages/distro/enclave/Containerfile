@@ -11,8 +11,6 @@ FROM stagex/user-tinyssh AS user-tinyssh
 FROM stagex/user-dhcpcd AS user-dhcpcd
 FROM stagex/user-sxctl AS user-sxctl
 FROM stagex/user-linux-server AS user-linux-server
-FROM stagex/user-linux-offline AS user-linux-offline
-FROM stagex/user-linux-guest AS user-linux-guest
 FROM stagex/user-tpm2-tss AS user-tpm2-tss
 FROM stagex/user-tpm2-tools AS user-tpm2-tools
 FROM stagex/user-swtpm AS user-swtpm
@@ -24,6 +22,14 @@ FROM stagex/user-snpguest AS user-snpguest
 FROM stagex/user-snptpm-agent AS user-snptpm-agent
 FROM stagex/user-tpm2-abrmd AS user-tpm2-abrmd
 FROM stagex/user-dbus AS user-dbus
+FROM stagex/user-cryptsetup AS user-cryptsetup
+FROM stagex/user-popt AS user-popt
+FROM stagex/user-device-mapper AS user-device-mapper
+FROM stagex/user-json-c AS user-json-c
+FROM stagex/user-argon2 AS user-argon2
+FROM stagex/user-libaio AS user-libaio
+FROM stagex/user-e2fsprogs AS user-e2fsprogs
+FROM stagex/user-util-linux AS user-util-linux
 FROM stagex/box-disk AS box-disk
 FROM stagex/box-cpio AS box-cpio
 
@@ -31,7 +37,7 @@ FROM stagex/box-cpio AS box-cpio
 # Stage 1: rootfs variants
 # ============================================================
 
-# --- default (enclave): attestation + virtualization tools, airgap kernel ---
+# --- default (enclave): attestation + virtualization tools ---
 FROM scratch AS rootfs
 COPY --from=core-filesystem . /
 COPY --from=core-busybox . /
@@ -64,6 +70,7 @@ FROM rootfs AS rootfs-dev
 COPY src/rootfs/etc/init.d/S03dhcpcd /etc/init.d/
 COPY src/rootfs/etc/init.d/S04dhcpcd-watchdog /etc/init.d/
 COPY src/rootfs/etc/init.d/S06cloud-init-net /etc/init.d/
+COPY src/rootfs/etc/init.d/S15home /etc/init.d/
 COPY src/rootfs/etc/init.d/S52keylime-agent /etc/init.d/
 COPY src/rootfs/etc/keylime/keylime.conf /etc/keylime/keylime.conf
 COPY src/rootfs/etc/keylime/agent.conf /etc/keylime/agent.conf
@@ -75,44 +82,20 @@ COPY src/dev/rootfs/etc/init.d/S50sshd /etc/init.d/
 COPY --from=user-sxctl . /
 COPY --from=user-dbus . /
 COPY --from=user-tpm2-abrmd . /
+COPY --from=user-cryptsetup . /
+COPY --from=user-popt . /
+COPY --from=user-device-mapper . /
+COPY --from=user-json-c . /
+COPY --from=user-argon2 . /
+COPY --from=user-libaio . /
+COPY --from=user-e2fsprogs . /
+COPY --from=user-util-linux . /
 COPY --from=user-coconut-svsm . /
 COPY --from=user-snpguest . /
 COPY --from=user-snptpm-agent . /
 COPY src/rootfs/etc/init.d/S53snptpm-agent /etc/init.d/
 RUN mkdir -p /var/lib/dhcpcd /run/dhcpcd && \
 	printf '# Accept all DHCP options\n' > /etc/dhcpcd.conf
-
-# --- sev-snp: same as dev (kernel has CONFIG_TCG_SVSM) ---
-FROM rootfs-dev AS rootfs-sev-snp
-
-# --- guest-offline: standalone minimal guest (no parent) ---
-FROM scratch AS rootfs-guest-offline
-COPY --from=core-filesystem . /
-COPY --from=core-busybox . /
-COPY --from=core-musl . /
-COPY --from=core-zlib . /
-COPY src/rootfs/etc/init.d/rcS /etc/init.d/
-COPY src/rootfs/etc/init.d/S01syslogd /etc/init.d/
-COPY src/rootfs/etc/init.d/S02modules /etc/init.d/
-COPY src/rootfs/etc/init.d/S10udev /etc/init.d/
-COPY src/rootfs/etc/init.d/S20urandom /etc/init.d/
-COPY src/rootfs/etc/init.d/S05cloud-init-drive /etc/init.d/
-COPY src/init /init
-COPY src/rootfs/oldroot /oldroot
-RUN mkdir -p /mnt /run /var/log /etc/keys && touch /mnt/.keep
-
-# --- guest-online: guest-offline + guest kernel + network ---
-FROM rootfs-guest-offline AS rootfs-guest-online
-COPY src/rootfs/etc/init.d/S03dhcpcd /etc/init.d/
-COPY src/rootfs/etc/init.d/S04dhcpcd-watchdog /etc/init.d/
-COPY --from=user-dhcpcd /usr/sbin/dhcpcd /sbin/dhcpcd
-RUN mkdir -p /var/lib/dhcpcd /run/dhcpcd && \
-	printf '# Accept all DHCP options\n' > /etc/dhcpcd.conf
-
-# --- guest-online-dev: guest-online + tinyssh ---
-FROM rootfs-guest-online AS rootfs-guest-online-dev
-COPY --from=user-tinyssh . /
-COPY src/dev/rootfs/etc/init.d/S50sshd /etc/init.d/
 
 # ============================================================
 # Stage 2: boot objects (inputs to box-uki, not packed yet)
@@ -124,24 +107,8 @@ COPY src/dev/rootfs/etc/init.d/S50sshd /etc/init.d/
 # and the whole OS runs from memory.
 # ============================================================
 
-FROM scratch AS boot
-COPY --from=user-linux-offline /bzImage /boot/vmlinuz
-COPY src/config/uki-cmdline-uk /boot/cmdline
-
 FROM scratch AS boot-dev
 COPY --from=user-linux-server /bzImage /boot/vmlinuz
-COPY src/config/uki-cmdline-uk /boot/cmdline
-
-FROM scratch AS boot-guest-offline
-COPY --from=user-linux-guest /bzImage /boot/vmlinuz
-COPY src/config/uki-cmdline-uk /boot/cmdline
-
-FROM scratch AS boot-guest-online
-COPY --from=user-linux-guest /bzImage /boot/vmlinuz
-COPY src/config/uki-cmdline-uk /boot/cmdline
-
-FROM scratch AS boot-guest-online-dev
-COPY --from=user-linux-guest /bzImage /boot/vmlinuz
 COPY src/config/uki-cmdline-uk /boot/cmdline
 
 # ============================================================
@@ -153,28 +120,8 @@ COPY src/config/uki-cmdline-uk /boot/cmdline
 # live boot produces, for testing and debugging.
 # ============================================================
 
-FROM rootfs AS package-enclave
-COPY --from=boot /boot /boot
-CMD ["/bin/sh"]
-
 FROM rootfs-dev AS package-enclave-dev
 COPY --from=boot-dev /boot /boot
-CMD ["/bin/sh"]
-
-FROM rootfs-sev-snp AS package-enclave-sev-snp
-COPY --from=boot-dev /boot /boot
-CMD ["/bin/sh"]
-
-FROM rootfs-guest-offline AS package-enclave-guest-offline
-COPY --from=boot-guest-offline /boot /boot
-CMD ["/bin/sh"]
-
-FROM rootfs-guest-online AS package-enclave-guest-online
-COPY --from=boot-guest-online /boot /boot
-CMD ["/bin/sh"]
-
-FROM rootfs-guest-online-dev AS package-enclave-guest-online-dev
-COPY --from=boot-guest-online-dev /boot /boot
 CMD ["/bin/sh"]
 
 # ============================================================
@@ -186,47 +133,12 @@ CMD ["/bin/sh"]
 # the disk is just the firmware boot target (storage optional).
 # ============================================================
 
-FROM box-disk AS img-enclave
-COPY --from=package-enclave . /live
-RUN UNIKERNEL=1 box
-
 FROM box-disk AS img-enclave-dev
 COPY --from=package-enclave-dev . /live
 RUN UNIKERNEL=1 box
 
-FROM box-disk AS img-enclave-sev-snp
-COPY --from=package-enclave-sev-snp . /live
-RUN UNIKERNEL=1 box
-
-FROM box-disk AS img-enclave-guest-offline
-COPY --from=package-enclave-guest-offline . /live
-RUN UNIKERNEL=1 box
-
-FROM box-disk AS img-enclave-guest-online
-COPY --from=package-enclave-guest-online . /live
-RUN UNIKERNEL=1 box
-
-FROM box-disk AS img-enclave-guest-online-dev
-COPY --from=package-enclave-guest-online-dev . /live
-RUN UNIKERNEL=1 box
-
-FROM scratch AS package-enclave-img
-COPY --from=img-enclave /disk.img /disk.img
-
 FROM scratch AS package-enclave-dev-img
 COPY --from=img-enclave-dev /disk.img /disk.img
-
-FROM scratch AS package-enclave-sev-snp-img
-COPY --from=img-enclave-sev-snp /disk.img /disk.img
-
-FROM scratch AS package-enclave-guest-offline-img
-COPY --from=img-enclave-guest-offline /disk.img /disk.img
-
-FROM scratch AS package-enclave-guest-online-img
-COPY --from=img-enclave-guest-online /disk.img /disk.img
-
-FROM scratch AS package-enclave-guest-online-dev-img
-COPY --from=img-enclave-guest-online-dev /disk.img /disk.img
 
 # ============================================================
 # Stage 5: -vm subpackages — QEMU runtime around the disk image
@@ -236,20 +148,5 @@ FROM stagex/service-qemu AS package-base
 COPY src/qemu-startup.sh /usr/bin/run
 ENTRYPOINT ["/usr/bin/run"]
 
-FROM package-base AS package-enclave-vm
-COPY --from=package-enclave-img /disk.img /disk.img
-
 FROM package-base AS package-enclave-dev-vm
 COPY --from=package-enclave-dev-img /disk.img /disk.img
-
-FROM package-base AS package-enclave-sev-snp-vm
-COPY --from=package-enclave-sev-snp-img /disk.img /disk.img
-
-FROM package-base AS package-enclave-guest-offline-vm
-COPY --from=package-enclave-guest-offline-img /disk.img /disk.img
-
-FROM package-base AS package-enclave-guest-online-vm
-COPY --from=package-enclave-guest-online-img /disk.img /disk.img
-
-FROM package-base AS package-enclave-guest-online-dev-vm
-COPY --from=package-enclave-guest-online-dev-img /disk.img /disk.img

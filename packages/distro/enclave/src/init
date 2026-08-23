@@ -35,6 +35,7 @@ mount -t tmpfs -o mode=755 tmpfs /var/run
 mount -t tmpfs -o mode=1777 tmpfs /var/tmp
 mount -t tmpfs -o mode=700 tmpfs /etc/keys
 mount -t tmpfs -o mode=700 tmpfs /root
+mount -t tmpfs -o mode=755 tmpfs /home
 
 # Mount devpts for pseudo-terminals (required for SSH interactive sessions)
 mkdir -p /dev/pts

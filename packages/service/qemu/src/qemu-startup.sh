@@ -33,6 +33,10 @@ fi
 QEMU_ARGS="-m ${QEMU_MEMORY:-8G}"
 QEMU_ARGS="$QEMU_ARGS -machine q35,kernel-irqchip=split"
 QEMU_ARGS="$QEMU_ARGS -drive file=${QEMU_DISK:=/disk.img},format=raw,if=virtio"
+# Optional second data disk (LUKS /home volume candidate; appears as /dev/vdb)
+if [ -n "${QEMU_DATA_DISK:-}" ] && [ -f "${QEMU_DATA_DISK}" ]; then
+    QEMU_ARGS="$QEMU_ARGS -drive file=${QEMU_DATA_DISK},format=raw,if=virtio"
+fi
 QEMU_ARGS="$QEMU_ARGS -bios ${QEMU_BIOS:=/usr/share/edk2/OvmfPkg/OVMF.fd}"
 QEMU_ARGS="$QEMU_ARGS -display none"
 QEMU_ARGS="$QEMU_ARGS -chardev stdio,id=console"

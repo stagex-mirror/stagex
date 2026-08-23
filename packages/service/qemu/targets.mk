@@ -6,6 +6,7 @@ QEMU_MEMORY ?= 4G
 QEMU_SSH_KEY ?= $(HOME)/.ssh/tpm-exploration.pem
 QEMU_CONTAINER_NAME ?= qemu-dev
 QEMU_USER_DATA_FILE ?=
+QEMU_DATA_DISK ?=
 
 # Disk image path — produced by distro build
 QEMU_DISK_IMG := $(CURDIR)/out/disk.img
@@ -46,6 +47,7 @@ qemu-start:
 		-e QEMU_DISK=/input/disk.img \
 		-e QEMU_CLOUD=/input/cloud.img \
 		-e QEMU_CLOUD_ISO=/input/cloud-iso.img \
+		$(if $(QEMU_DATA_DISK),-v $(QEMU_DATA_DISK):/input/data.img -e QEMU_DATA_DISK=/input/data.img) \
 		--entrypoint /bin/sh \
 		stagex/service-qemu:local -c 'chmod +x /usr/bin/qemu-startup.sh && exec /usr/bin/qemu-startup.sh' && \
 	echo "Waiting for SSH ..." && \

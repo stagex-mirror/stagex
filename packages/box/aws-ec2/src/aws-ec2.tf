@@ -71,6 +71,18 @@ variable "enable_sev_snp" {
   default     = true
 }
 
+variable "data_volume_size" {
+  description = "Size in GiB of an extra gp3 data volume (0 = no data volume)"
+  type        = number
+  default     = 0
+}
+
+variable "data_volume_delete_on_termination" {
+  description = "Delete the data volume when the instance terminates"
+  type        = bool
+  default     = true
+}
+
 # --- Provider ---
 provider "aws" {
   region = var.region
@@ -96,6 +108,16 @@ resource "aws_instance" "this" {
   root_block_device {
     volume_size = 20
     volume_type = "gp3"
+  }
+
+  dynamic "ebs_block_device" {
+    for_each = var.data_volume_size > 0 ? [1] : []
+    content {
+      device_name                    = "/dev/sdf"
+      volume_size                    = var.data_volume_size
+      volume_type                    = "gp3"
+      delete_on_termination          = var.data_volume_delete_on_termination
+    }
   }
 
   metadata_options {

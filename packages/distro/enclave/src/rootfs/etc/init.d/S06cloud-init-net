@@ -53,6 +53,8 @@ if [ ! -s "$KEYS_FILE" ]; then
 		chmod 700 /root/.ssh
 		echo "$data" > "$KEYS_FILE"
 		chmod 600 "$KEYS_FILE"
+		# Keep the raw user-data for S15home (home user name + keys).
+		printf '%s\n' "$data" > /run/userdata
 		printf "Cloud-init (net): user-data fetched (%d bytes)\n" "${#data}" >&2
 	else
 		printf "Cloud-init (net): no user-data available\n" >&2

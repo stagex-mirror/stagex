@@ -1,0 +1,22 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/user-libaio . /
+COPY --from=stagex/user-util-linux . /
+ADD fetch/LVM2.2.03.42.tgz .
+WORKDIR /LVM2.2.03.42
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--prefix=/usr \
+		--mandir=/usr/share/man \
+		--disable-dependency-tracking \
+		--disable-nls \
+		--disable-readline \
+		--enable-pkgconfig \
+		--disable-blkdeactivate
+	make device-mapper
+	make DESTDIR=/rootfs install_device-mapper
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

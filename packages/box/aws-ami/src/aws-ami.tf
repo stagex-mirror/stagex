@@ -78,7 +78,10 @@ resource "aws_iam_role" "this" {
 resource "aws_iam_role_policy" "this" {
   count = local.use_existing_role ? 1 : 0
 
-  name = "vmimport-s3-policy-${formatdate("YYYYMMDDhhmmss", timestamp())}"
+  # Fixed name so repeated runs converge on the same policy instead of
+  # stacking a new inline policy (s3:*/ec2:*) on the role every time and
+  # eventually blowing IAM's 10KB per-role inline policy limit.
+  name = "vmimport-s3-policy"
   role = data.aws_iam_role.existing.name
 
   policy = jsonencode({

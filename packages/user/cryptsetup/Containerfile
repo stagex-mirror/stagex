@@ -1,0 +1,30 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+ARG VERSION
+COPY --from=stagex/core-bash . /
+COPY --from=stagex/core-ncurses . /
+COPY --from=stagex/core-coreutils . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-argp-standalone . /
+COPY --from=stagex/user-popt . /
+COPY --from=stagex/user-json-c . /
+COPY --from=stagex/user-argon2 . /
+COPY --from=stagex/user-util-linux . /
+COPY --from=stagex/user-device-mapper . /
+ADD fetch/cryptsetup-${VERSION}.tar.xz .
+WORKDIR /cryptsetup-${VERSION}
+RUN --network=none <<-EOF
+	set -eux
+	./configure \
+		--prefix=/usr \
+		--sbindir=/usr/sbin \
+		--disable-static \
+		--enable-libargon2 \
+		--with-crypto_backend=openssl \
+		--disable-asciidoc \
+		--disable-external-tokens \
+		--disable-ssh-token
+	make -j "$(nproc)"
+	make DESTDIR=/rootfs install
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
