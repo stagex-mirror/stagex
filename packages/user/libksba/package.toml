@@ -1,12 +1,12 @@
 [package]
 name = "libksba"
-version = "1.7.0"
+version = "1.8.1"
 description = "CMS and X.509 access library for GnuPG"
 license = "LGPL-2.1-or-later AND GPL-2.0-or-later"
 website = "https://gnupg.org/software/libksba/"
 
 [sources.libksba]
-hash = "e1d3a5745911f5a663fddecf526541c4241052a9e4cafbc92dc7f4096c7efdac"
+hash = "c2f84393011827219ae117131dba8e7684c2bed0961eed11b0642c2acba440b5"
 format = "tar.bz2"
 file = "libksba-{version}.{format}"
 mirrors = [ "https://gnupg.org/ftp/gcrypt/libksba/{file}",]
