@@ -1,12 +1,12 @@
 [package]
 name = "py-hatchling"
-version = "1.29.0"
+version = "1.32.0"
 description = "Extensible, standards compliant build backend used by Hatch"
 website = "https://github.com/pypa/hatch/tree/master/backend"
 license = "MIT"
 
 [sources.py-hatchling]
-hash = "793c31816d952cee405b83488ce001c719f325d9cda69f1fc4cd750527640ea6"
+hash = "0bdbde4a52b06c37e3eca395f85a762bf0ef06fe374fd8ae429dc6be10230f5f"
 format = "tar.gz"
 file = "py-hatchling-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/h/hatchling/hatchling-{version}.{format}",]
