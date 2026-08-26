@@ -1,12 +1,12 @@
 [package]
 name = "libseccomp"
-version = "2.6.0"
+version = "2.6.1"
 description = "High-level interface to the Linux seccomp filter"
 license = "LGPL-2.1-only"
 website = "https://github.com/seccomp/libseccomp"
 
 [sources.libseccomp]
-hash = "83b6085232d1588c379dc9b9cae47bb37407cf262e6e74993c61ba72d2a784dc"
+hash = "501f66c667225d53791b97e1d7cf85ab764c297d04881f60f38f451c4b0ee1be"
 format = "tar.gz"
 file = "libseccomp-{version}.{format}"
 mirrors = [ "https://github.com/seccomp/libseccomp/releases/download/v{version}/{file}",]
