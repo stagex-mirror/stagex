@@ -1,12 +1,12 @@
 [package]
 name = "openldap"
-version = "2.6.13"
+version = "2.7.0"
 description = "Open source LDAP suite of applications and development tools"
 license = "OLDAP-2.8"
 website = "https://www.openldap.org"
 
 [sources.openldap]
-hash = "d693b49517a42efb85a1a364a310aed16a53d428d1b46c0d31ef3fba78fcb656"
+hash = "9e86f37da375aa948a1b478dd76fe87b02090e47c21facae19223588e3407922"
 format = "tgz"
 file = "openldap-{version}.{format}"
 mirrors = [ "https://www.openldap.org/software/download/OpenLDAP/openldap-release/{file}",]
