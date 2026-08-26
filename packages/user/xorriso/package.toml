@@ -1,12 +1,12 @@
 [package]
 name = "xorriso"
-version = "1.5.8.pl01"
+version = "1.5.8.pl02"
 description = "Tool for creating, loading, and manipulating ISO 9660 filesystem images"
 license = "GPL-2.0-or-later"
 website = "https://www.gnu.org/software/xorriso/"
 
 [sources.xorriso]
-hash = "0381798b7bb4f162578b4f31fe30bfe53608b5077075967f8df2facfab4c90f9"
+hash = "66bdabedf0963b6116a4a5faf8b3ee3ef571c243e1b4bc8ace4cf638500fc587"
 format = "tar.gz"
 file = "xorriso-{version}.{format}"
-mirrors = [ "https://ftpmirror.gnu.org/gnu/xorriso/{file}", "https://mirrors.kernel.org/gnu/xorriso/{file}"]
+mirrors = [ "https://ftpmirror.gnu.org/gnu/xorriso/{file}", "https://mirrors.kernel.org/gnu/xorriso/{file}",]
