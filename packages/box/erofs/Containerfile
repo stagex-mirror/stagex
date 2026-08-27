@@ -3,6 +3,7 @@ FROM stagex/core-musl AS core-musl
 FROM stagex/core-xz AS core-xz
 FROM stagex/core-libzstd AS core-libzstd
 FROM stagex/core-zlib AS core-zlib
+FROM stagex/core-tar AS core-tar
 FROM stagex/user-erofs-utils AS user-erofs-utils
 FROM stagex/user-util-linux AS user-util-linux
 
@@ -14,6 +15,10 @@ COPY --from=core-xz . /
 COPY --from=core-libzstd . /
 COPY --from=user-util-linux . /
 COPY --from=user-erofs-utils . /
+# GNU tar as tar.gnu: box needs --null -T - for sorted archive order
+# (busybox tar has no file-list input). Not as plain `tar` — BuildKit COPY
+# follows destination symlinks and would clobber /usr/bin/busybox.
+COPY --from=core-tar /usr/bin/tar /usr/bin/tar.gnu
 COPY src/box /usr/bin/box
 RUN chmod +x /usr/bin/box
 ENTRYPOINT ["/usr/bin/box"]

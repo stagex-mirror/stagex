@@ -10,7 +10,7 @@ FROM stagex/core-python AS core-python
 FROM stagex/user-tinyssh AS user-tinyssh
 FROM stagex/user-dhcpcd AS user-dhcpcd
 FROM stagex/user-sxctl AS user-sxctl
-FROM stagex/user-linux-server AS user-linux-server
+FROM stagex/user-linux-enclave AS user-linux-enclave
 FROM stagex/user-tpm2-tss AS user-tpm2-tss
 FROM stagex/user-tpm2-tools AS user-tpm2-tools
 FROM stagex/user-swtpm AS user-swtpm
@@ -30,6 +30,7 @@ FROM stagex/user-argon2 AS user-argon2
 FROM stagex/user-libaio AS user-libaio
 FROM stagex/user-e2fsprogs AS user-e2fsprogs
 FROM stagex/user-util-linux AS user-util-linux
+FROM stagex/core-ncurses AS core-ncurses
 FROM stagex/box-disk AS box-disk
 FROM stagex/box-cpio AS box-cpio
 
@@ -48,6 +49,7 @@ COPY --from=core-curl . /
 COPY --from=core-libzstd . /
 COPY --from=core-libunwind . /
 COPY src/rootfs/etc/init.d/rcS /etc/init.d/
+COPY src/rootfs/etc/inittab /etc/inittab
 COPY src/rootfs/etc/init.d/S54tpm-rootfs /etc/init.d/
 COPY src/rootfs/etc/init.d/S01syslogd /etc/init.d/
 COPY src/rootfs/etc/init.d/S02modules /etc/init.d/
@@ -90,6 +92,7 @@ COPY --from=user-argon2 . /
 COPY --from=user-libaio . /
 COPY --from=user-e2fsprogs . /
 COPY --from=user-util-linux . /
+COPY --from=core-ncurses . /
 COPY --from=user-coconut-svsm . /
 COPY --from=user-snpguest . /
 COPY --from=user-snptpm-agent . /
@@ -108,7 +111,7 @@ RUN mkdir -p /var/lib/dhcpcd /run/dhcpcd && \
 # ============================================================
 
 FROM scratch AS boot-dev
-COPY --from=user-linux-server /bzImage /boot/vmlinuz
+COPY --from=user-linux-enclave /bzImage /boot/vmlinuz
 COPY src/config/uki-cmdline-uk /boot/cmdline
 
 # ============================================================

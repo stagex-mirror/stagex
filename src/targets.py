@@ -36,7 +36,7 @@ out/rootfs/{stage}-{name}/manifest.txt: \\
 \t$(BUILDER) \\
 \t  build \\
 \t  --ulimit nofile=2048:16384 \\
-\t  --tag stagex/{stage}-{name}:{version} \\
+\t  --tag stagex/{stage}-{name}:{version_tag} \\
 \t  --provenance=false \\
 \t  --build-arg SOURCE_DATE_EPOCH=1 \\
 \t  --build-arg BUILDKIT_MULTI_PLATFORM=1 \\
@@ -76,7 +76,7 @@ registry-{stage}-{name}:
 \t$(BUILDER) \\
 \t  build \\
 \t  --ulimit nofile=2048:16384 \\
-\t  --tag $(REGISTRY_USERNAME)/{stage}-{name}:{version} \\
+\t  --tag $(REGISTRY_USERNAME)/{stage}-{name}:{version_tag} \\
 \t  --tag $(REGISTRY_USERNAME)/{stage}-{name}:latest \\
 \t  --provenance=false \\
 \t  --build-arg SOURCE_DATE_EPOCH=1 \\
@@ -115,15 +115,15 @@ publish-{stage}-{name}: oci-{stage}-{name}
 \t signum="$$(ls -1 signatures/stagex/{stage}-{name}@sha256=$${{digest}} | wc -l )"; \\
 \t [ $${{signum}} -ge 2 ] || {{ echo "Error: Minimum signatures not met for {stage}-{name}"; exit 1; }}; \\
 \t env -C out/oci/{stage}-{name} tar -cf - . | docker load
-\t docker tag stagex/{stage}-{name}:{version} stagex/{stage}-{name}:latest
+\t docker tag stagex/{stage}-{name}:{version_tag} stagex/{stage}-{name}:latest
 \t docker tag stagex/{stage}-{name}:latest stagex/{stage}-{name}:sx$(RELEASE)
-\t docker tag stagex/{stage}-{name}:{version} quay.io/stagex/{stage}-{name}:latest
-\t docker tag stagex/{stage}-{name}:{version} quay.io/stagex/{stage}-{name}:{version}
+\t docker tag stagex/{stage}-{name}:{version_tag} quay.io/stagex/{stage}-{name}:latest
+\t docker tag stagex/{stage}-{name}:{version_tag} quay.io/stagex/{stage}-{name}:{version_tag}
 \t docker tag stagex/{stage}-{name}:latest quay.io/stagex/{stage}-{name}:sx$(RELEASE)
-\t$(call push-image,stagex/{stage}-{name}:{version})
+\t$(call push-image,stagex/{stage}-{name}:{version_tag})
 \t$(call push-image,stagex/{stage}-{name}:sx$(RELEASE))
 \t$(call push-image,stagex/{stage}-{name}:latest)
-\t$(call push-image,quay.io/stagex/{stage}-{name}:{version})
+\t$(call push-image,quay.io/stagex/{stage}-{name}:{version_tag})
 \t$(call push-image,quay.io/stagex/{stage}-{name}:sx$(RELEASE))
 \t$(call push-image,quay.io/stagex/{stage}-{name}:latest)
 
@@ -181,6 +181,7 @@ publish-{stage}-{name}: oci-{stage}-{name}
               "name": name,
               "origin": package.origin or package.name,
               "version": package.version or "latest",
+              "version_tag": (package.version or "latest").replace("+", "-"),
               "deps": "".join(
                 f" \\\n\tout/rootfs/{dep}/manifest.txt" for dep in package.deps
               ),

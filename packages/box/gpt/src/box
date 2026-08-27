@@ -11,8 +11,13 @@ BOOT_IMG="${BOOT_IMG:-/boot.img}"
 SYSTEM_IMG="${SYSTEM_IMG:-}"
 DISK="${DISK:-/disk.img}"
 
-# Deterministic disk GUID → PARTUUID = <disk-GUID>-0002
+# Deterministic disk GUID. The per-partition unique GUIDs are ALSO pinned
+# (uuid= below) — sfdisk otherwise randomizes them, which changes the GPT
+# partition entries (and their CRCs) on every build. Partitions are located
+# by device name (vda2 / root=/dev/xvda2), not PARTUUID, so pinning is safe.
 DISK_GUID="72c48e5a-b7a4-4b16-8a86-87c14f9e8d20"
+PART1_GUID="11111111-2222-3333-4444-555555555551"
+PART2_GUID="11111111-2222-3333-4444-555555555552"
 
 # ESP is always partition 1 at 1MB (LBA 2048); sized by box-disk to fit the UKI
 ESP_MB=$(( ( $(stat -c %s "$BOOT_IMG") + 1048575 ) / 1048576 ))
@@ -28,12 +33,12 @@ label: gpt
 label-id: ${DISK_GUID}
 device: ${DISK}
 
-${DISK}1 : size=${ESP_MB}M, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B
-${DISK}2 : type=0FC63DAF-8483-4772-8E79-3D69D8477DE4
+${DISK}1 : size=${ESP_MB}M, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B, uuid=${PART1_GUID}
+${DISK}2 : type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, uuid=${PART2_GUID}
 EOF
 	dd if="$BOOT_IMG" of="$DISK" bs=1M seek=1 conv=notrunc
 	dd if="$SYSTEM_IMG" of="$DISK" bs=1M seek=$((ESP_MB+1)) conv=notrunc
-	echo "system PARTUUID: ${DISK_GUID}-0002"
+	echo "system PARTUUID: ${PART2_GUID}"
 else
 	# ESP-only (unikernel): the OS is in the UKI initrd, disk is just the ESP
 	# + 1MiB tail for the alternate GPT header
@@ -44,7 +49,7 @@ label: gpt
 label-id: ${DISK_GUID}
 device: ${DISK}
 
-${DISK}1 : size=${ESP_MB}M, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B
+${DISK}1 : size=${ESP_MB}M, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B, uuid=${PART1_GUID}
 EOF
 	dd if="$BOOT_IMG" of="$DISK" bs=1M seek=1 conv=notrunc
 fi

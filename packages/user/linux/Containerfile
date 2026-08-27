@@ -56,6 +56,12 @@ FROM base AS build-linux-server
 ADD server.config .config
 RUN build-static
 
+FROM base AS build-linux-enclave
+ADD enclave.config .config
+ADD patches/randstruct-pinned-seed.patch .
+ADD src/randstruct.seed scripts/basic/randstruct.seed
+RUN patch -p1 < randstruct-pinned-seed.patch && build-static
+
 FROM base AS build-linux-guest
 ADD guest.config .config
 RUN build-static
@@ -87,6 +93,9 @@ COPY --from=build-linux-offline /rootfs/ /
 
 FROM stagex/core-filesystem AS package-linux-server
 COPY --from=build-linux-server /rootfs/ /
+
+FROM stagex/core-filesystem AS package-linux-enclave
+COPY --from=build-linux-enclave /rootfs/ /
 
 FROM stagex/core-filesystem AS package-linux-guest
 COPY --from=build-linux-guest /rootfs/ /

@@ -7,7 +7,42 @@ OUTPUT="${OUTPUT:-/system.img}"
 
 # erofs preserves empty dirs natively — no .keep files needed
 
-# Build erofs image with zstd compression (level 1 for speed)
-mkfs.erofs -z lzma "$OUTPUT" "$ROOTFS"
+# Build-time determinism (reproducible images). Without these, mkfs.erofs
+# embeds the current wall-clock time (superblock build_time + every file
+# mtime) and a random filesystem UUID, so the image bytes differ on every
+# build. SOURCE_DATE_EPOCH (reproducible-builds.org spec, natively supported
+# by erofs-utils >= 1.6) pins build_time; --ignore-mtime drops per-file
+# mtimes; -U pins the UUID to a fixed constant (like box-gpt's DISK_GUID).
+#
+# Inode order is the other variable: on DIRECTORY input mkfs.erofs walks
+# directories in readdir() order, so inode assignment depends on how the
+# source tree happened to be materialized (overlayfs layer state, cache
+# replay). Feeding it a TAR instead pins the input order to the archive's
+# entry order (--sort=path, the default for tarballs); the tar below is
+# built from a byte-sorted find, so inode order is a pure function of the
+# file list. --force-uid/--force-gid pin ownership regardless of the source
+# fs's uid/gid mapping. MT worker count does NOT affect output (verified:
+# workers 1/2/8/384 -> identical bytes), so no worker pinning is needed.
+# (xattrs are not in play: the rootfs carries none, and tar input would
+# drop them anyway.)
+: "${SOURCE_DATE_EPOCH:=1}"
+export SOURCE_DATE_EPOCH
+FS_UUID="8c1f0a2e-4b6d-4e8f-9a3c-5d7b9e1f2c4a"
+
+# Deterministic input order: byte-sorted NUL file list fed to GNU tar via
+# -T -. (busybox tar has no file-list input — `tar -cf - .` would ignore any
+# piped list and recurse in readdir() order, defeating the pin.) GNU tar
+# ships as /usr/bin/tar.gnu in the box-disk context: BuildKit COPY follows
+# destination symlinks, so installing it as plain `tar` would clobber
+# /usr/bin/busybox (target of the busybox `tar` applet symlink). tar input
+# also drops the source fs's xattrs, which mkfs.erofs 1.9.2 cannot canonicalize.
+ROOTFS_TAR="/rootfs.erofs.tar"
+( cd "$ROOTFS" && find . -print0 | LC_ALL=C sort -z | \
+	/usr/bin/tar.gnu --null --no-recursion -T - -cf - ) > "$ROOTFS_TAR"
+
+# Build erofs image with lzma compression
+mkfs.erofs --tar=f --sort=path --ignore-mtime --force-uid=0 --force-gid=0 \
+	-z lzma -U "$FS_UUID" "$OUTPUT" "$ROOTFS_TAR"
+rm -f "$ROOTFS_TAR"
 
 echo "$OUTPUT created: $(du -h "$OUTPUT" | cut -f1)"
