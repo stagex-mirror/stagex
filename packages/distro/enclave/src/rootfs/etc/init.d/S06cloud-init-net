@@ -51,20 +51,12 @@ if [ ! -s "$KEYS_FILE" ]; then
 	if [ -n "$data" ]; then
 		mkdir -p /root/.ssh
 		chmod 700 /root/.ssh
-		# Only key lines belong in authorized_keys (user-data also carries
-		# the #stagex-provenance block).
+		# Only key lines belong in authorized_keys (user-data is the SSH key;
+		# the filter is defensive in case anything else is ever appended).
 		printf '%s\n' "$data" | grep -E '^(ssh-|ecdsa-|sk-|comment=)' > "$KEYS_FILE"
 		chmod 600 "$KEYS_FILE"
 		# Keep the raw user-data for S15home (home user name + keys).
 		printf '%s\n' "$data" > /run/userdata
-		# Extract the build-provenance block (a plain SPDX 2.3 document)
-		# between the marker lines; the markers are #-comments, so the
-		# extracted file stays a valid SPDX document.
-		prov=$(printf '%s\n' "$data" | sed -n '/^#stagex-provenance-begin$/,/^#stagex-provenance-end$/p' | sed '1d;$d')
-		if [ -n "$prov" ]; then
-			printf '%s\n' "$prov" > /run/provenance
-			printf "Cloud-init (net): provenance block extracted (%d bytes)\n" "$(wc -c < /run/provenance)" >&2
-		fi
 		printf "Cloud-init (net): user-data fetched (%d bytes)\n" "${#data}" >&2
 	else
 		printf "Cloud-init (net): no user-data available\n" >&2

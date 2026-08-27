@@ -33,7 +33,7 @@ out/rootfs/{stage}-{name}/manifest.txt: \\
 \t mkdir -p packages/{stage}/{origin}/fetch && \\
 \t ( [ -z "$$(ls -A fetch/{stage}/{origin})" ] || \\
 \t   cp -lR fetch/{stage}/{origin}/* packages/{stage}/{origin}/fetch ) && \\
-\t$(BUILDER) \\
+\t{provenance_step}$(BUILDER) \\
 \t  build \\
 \t  --ulimit nofile=2048:16384 \\
 \t  --tag stagex/{stage}-{name}:{version_tag} \\
@@ -190,6 +190,12 @@ publish-{stage}-{name}: oci-{stage}-{name}
               "context_args": self.get_context_args(package, stage, package.origin or package.name, False),
               "context_args_registry": self.get_context_args(package, stage, package.origin or package.name, True),
               "platform_arg": platform,
+              "provenance_step": (
+                "python3 src/provenance.py %s-%s --embed > packages/%s/%s/provenance.spdx && \\\n\t"
+                % (stage, name, stage, package.origin or package.name)
+                if package.provenance
+                else ""
+              ),
               "core_profile_oci_dep": core_profile_oci_dep
             }
           )

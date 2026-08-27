@@ -240,9 +240,6 @@ setup_user() {
 	chmod 700 "/home/$home_user/.ssh"
 	[ -f "/home/$home_user/.ssh/authorized_keys" ] && \
 		chmod 600 "/home/$home_user/.ssh/authorized_keys"
-	# Persist the build-provenance block (decoded from user-data at boot)
-	# onto the data volume so it outlives the tmpfs.
-	[ -s /run/provenance ] && cp /run/provenance /home/provenance 2>/dev/null || true
 	printf "S15home: user %s ready (home=%s)\n" "$home_user" "/home/$home_user"
 }
 

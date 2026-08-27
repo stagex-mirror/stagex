@@ -43,10 +43,6 @@ aws-ec2-deploy: aws-ami-deploy
 	elif [ -f ~/.ssh/id_rsa.pub ]; then \
 		USER_DATA=$$(cat ~/.ssh/id_rsa.pub); \
 	fi && \
-	PROV=$$(python3 src/provenance.py distro-$(EC2_DISTRO)-img) && \
-	python3 src/provenance.py distro-$(EC2_DISTRO)-img --raw > out/provenance-distro-$(EC2_DISTRO)-img.spdx && \
-	echo "Embedding provenance (SPDX 2.3, $$(echo "$$PROV" | wc -c) bytes payload, full doc -> out/provenance-distro-$(EC2_DISTRO)-img.spdx)" && \
-	USER_DATA="$$USER_DATA$$(printf '\n#stagex-provenance-begin\n%s\n#stagex-provenance-end' "$$PROV")" && \
 	docker run --rm \
 		-e AWS_ACCESS_KEY_ID="$(AWS_ACCESS_KEY_ID)" \
 		-e AWS_SECRET_ACCESS_KEY="$(AWS_SECRET_ACCESS_KEY)" \

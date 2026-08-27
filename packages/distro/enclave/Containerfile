@@ -97,6 +97,10 @@ COPY --from=user-coconut-svsm . /
 COPY --from=user-snpguest . /
 COPY --from=user-snptpm-agent . /
 COPY src/rootfs/etc/init.d/S53snptpm-agent /etc/init.d/
+# Full SPDX build-provenance document (git origin/branch/commit + every
+# dependency's name/version/digest), generated into the build context by the
+# build and baked into the image; installed at /provenance.spdx.
+COPY provenance.spdx /provenance.spdx
 RUN mkdir -p /var/lib/dhcpcd /run/dhcpcd && \
 	printf '# Accept all DHCP options\n' > /etc/dhcpcd.conf
 

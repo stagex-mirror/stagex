@@ -2,6 +2,10 @@
 name = "enclave"
 version = "2026.03.0"
 description = "Minimal immutable distro — erofs root, UKI firmware-direct boot (live layout, disk image, or QEMU VM)"
+# Bake the full SPDX build-provenance document (git origin/branch/commit +
+# every dependency's name/version/digest) into the image at build time; it
+# is installed at /provenance.spdx in the rootfs.
+provenance = true
 subpackages = [
   "enclave-dev",
   "enclave-dev-img",

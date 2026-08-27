@@ -1,34 +1,28 @@
 #!/usr/bin/env python3
 """provenance.py - compute the build-provenance document for an image target.
 
-Usage: python3 src/provenance.py [target] [--raw]
+Usage: python3 src/provenance.py [target] [--raw|--embed]
 
 Default target: distro-enclave-dev-img.
 
-Default mode prints a compact SPDX 2.3 (SPDXTagValue) document capturing:
-  - the stagex source package: origin URL (credentials stripped), branch,
-    commit, dirty flag
-  - the image package: disk.img sha256, injected-Containerfile sha256,
-    package count
-  - Merkle-root packages over the target's transitive make dependency
-    closure (N packages):
-      rootfsset  chained sha256 over (pkg, rootfs-manifest sha256)
-      srcset     chained sha256 over (pkg, source-sentinel chain sha256)
-                 where the sentinel chain covers the package's
-                 Containerfile, package.toml, scripts and patches
-      ociset     chained sha256 over (pkg, OCI index.json sha256)
+The document records where an image came from: the stagex source
+package (origin URL with credentials stripped, branch, commit, dirty
+flag) and, for every package in the target's transitive make dependency
+closure, its name, version, and digests (sha256 of the package's
+rootfs manifest, plus chained source-sentinel and OCI digests), along
+with the DEPENDS_ON relationships of the make dependency graph.
 
-The full per-package table (200+ random-hex lines, incompressible) does
-not fit the 16 KB EC2 user-data limit, so the closure is bound by its
-Merkle roots in user-data; `--raw` prints the complete SPDX document
-(one Package per make package, with the DEPENDS_ON relationships of the
-make dependency graph) for local records and SPDX tooling.
+--embed / --raw print the complete SPDX 2.3 (SPDXTagValue) document
+(one Package per make package). The build generates this into the
+distro's build context and COPYs it into the rootfs, where it is packed
+into disk.img and installed at /provenance.spdx in the image. It is a
+deterministic function of (commit, branch, origin, dependency digests),
+so baking it in keeps the disk bit-reproducible. --raw is the same
+document for local records and SPDX tooling.
 
-The payload is embedded into EC2 user-data at launch time (see
-packages/box/aws-ec2/targets.mk, between #stagex-provenance-begin/end
-markers — SPDX treats #-lines as comments, so the markers keep the
-decoded /run/provenance file a valid SPDX document) and is written to
-/run/provenance by S06cloud-init-net in the guest.
+The default (no flag) mode prints a compact document that binds the
+closure by chained-sha256 Merkle roots (rootfsset/srcset/ociset) instead
+of listing every package, for consumers with a small payload budget.
 
 The document is quote-free by design (hex, paths, git refs, SPDX
 keywords) so it can be interpolated into shell variables and HCL
@@ -64,6 +58,19 @@ def git(*args):
     ).strip()
   except Exception:
     return ""
+
+
+def created_timestamp():
+  # Deterministic: derived from SOURCE_DATE_EPOCH (pinned in the build)
+  # rather than the wall clock, so the document is byte-stable across
+  # rebuilds. The current time is not part of a build's identity.
+  epoch = os.environ.get("SOURCE_DATE_EPOCH", "1")
+  try:
+    return datetime.fromtimestamp(int(epoch), tz=timezone.utc).strftime(
+      "%Y-%m-%dT%H:%M:%SZ"
+    )
+  except Exception:
+    return "1970-01-01T00:00:01Z"
 
 
 def spdx_id(name):
@@ -162,9 +169,14 @@ def package_version(sources_map, pkg):
 def main():
   target = "distro-enclave-dev-img"
   raw = False
+  embed = False
   for arg in sys.argv[1:]:
     if arg == "--raw":
       raw = True
+    elif arg == "--embed":
+      # Full document, embedded into the image at build time.
+      raw = True
+      embed = True
     else:
       target = arg
   deps, sources = parse_targets()
@@ -207,7 +219,7 @@ def main():
   cf = "out/cache/containerfiles/%s.Containerfile" % target
   cf_sha = sha256_file(cf) if os.path.isfile(cf) else ""
 
-  now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+  now = created_timestamp()
   img_id = spdx_id(target)
 
   header = [
@@ -246,11 +258,22 @@ def main():
   ]
   if disk_sha:
     image_pkg.append("PackageChecksum: SHA256: %s" % disk_sha)
-  image_pkg.append(
-    "PackageComment: packages=%d containerfile=%s; rootfsset/srcset/ociset are "
-    "chained sha256 Merkle roots over the make dependency closure"
-    % (len(closure), cf_sha or "-")
-  )
+  if raw:
+    image_pkg.append(
+      "PackageComment: packages=%d containerfile=%s; complete per-package "
+      "dependency graph (name, version, digest); %s"
+      % (
+        len(closure),
+        cf_sha or "-",
+        "embedded in image at build time" if embed else "SPDX record",
+      )
+    )
+  else:
+    image_pkg.append(
+      "PackageComment: packages=%d containerfile=%s; rootfsset/srcset/ociset "
+      "are chained sha256 Merkle roots over the make dependency closure"
+      % (len(closure), cf_sha or "-")
+    )
 
   set_pkgs = []
   for name, value, comment in [

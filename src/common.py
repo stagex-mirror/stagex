@@ -49,6 +49,10 @@ class PackageInfo(WithVersion):
   sources: MutableMapping[str, SourcesInfo] = field(default_factory=dict)
   deps: List[str] = field(default_factory=list)
   has_package_stage: bool = False
+  # When true, the build generates the full SPDX build-provenance document
+  # into this package's build context and the Containerfile COPYs it into
+  # the rootfs (baked into the image at build time, /provenance.spdx).
+  provenance: bool = False
 
 class CommonUtils(object):
   @staticmethod
@@ -88,6 +92,7 @@ class CommonUtils(object):
     origin: str = None
     platforms: list = toml_dict["package"].get("platforms",[])
     subpackages: list = toml_dict["package"].get("subpackages",[])
+    provenance: bool = toml_dict["package"].get("provenance", False)
     sources_toml: Mapping[str, Mapping[str, str | List[str]]] = toml_dict.get("sources", None)
     source_info: MutableMapping[str, SourcesInfo] = dict[str, SourcesInfo]()
     if sources_toml is not None:
@@ -99,4 +104,4 @@ class CommonUtils(object):
           file=source_description.get("file", ""),
           mirrors=source_description["mirrors"],
           version=source_description.get("version", ""))
-    return PackageInfo(name=name, origin=origin, subpackages=subpackages, version=version, version_from=version_from, platforms=platforms, sources=source_info, deps=list())
+    return PackageInfo(name=name, origin=origin, subpackages=subpackages, version=version, version_from=version_from, platforms=platforms, sources=source_info, deps=list(), provenance=provenance)

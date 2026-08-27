@@ -8,6 +8,7 @@ out-old
 fetch
 packages/*/*/fetch/*
 packages/*/fetch/*
+packages/*/*/provenance.spdx
 
 # Local reference extractions
 linux-7.0/

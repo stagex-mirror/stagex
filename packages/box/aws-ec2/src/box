@@ -47,9 +47,9 @@ cd "$TERRAFORM_DIR"
 tofu init -backend=false -upgrade >/dev/null 2>&1
 
 # Build var-file with all inputs
-# USER_DATA may span multiple lines (SSH key + provenance block); HCL
-# string literals cannot contain raw newlines, so write it to a file
-# and interpolate it with file().
+# USER_DATA (the SSH key, or a custom EC2_USER_DATA_FILE) may span multiple
+# lines; HCL string literals cannot contain raw newlines, so write it to a
+# file and interpolate it with file().
 printf '%s' "$USER_DATA" > /run/userdata
 cat > /run/ec2.tfvars <<EOF
 region            = "${REGION}"
