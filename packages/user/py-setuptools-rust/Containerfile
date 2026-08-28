@@ -1,6 +1,7 @@
 FROM stagex/pallet-python AS build
 ARG VERSION
 COPY --from=stagex/core-py-setuptools-scm . /
+COPY --from=stagex/core-py-vcs-versioning . /
 ADD fetch/py-setuptools-rust-${VERSION}.tar.gz .
 WORKDIR /setuptools-rust-${VERSION}
 ENV SETUPTOOLS_SCM_PRETEND_VERSION=${VERSION}

@@ -1,12 +1,12 @@
 [package]
 name = "forgejo-cli"
-version = "0.5.0"
+version = "0.6.0"
 description = "Command-line interface for Forgejo"
 license = "MIT"
 website = "https://codeberg.org/forgejo-contrib/forgejo-cli"
 
 [sources.forgejo-cli]
-hash = "028ebcbd744301fbfd144cd9bc5ff0a27e02d99b02c8abafb20742299715c556"
+hash = "8b91194cb1886f253261a4567ee6f83aa34b05a9637644793f88b40b7110322a"
 format = "tar.gz"
 file = "forgejo-cli-v{version}.{format}"
 mirrors = [

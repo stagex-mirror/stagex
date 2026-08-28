@@ -6,9 +6,12 @@ COPY --from=stagex/core-libedit . /
 COPY --from=stagex/user-libnftnl . /
 COPY --from=stagex/user-libmnl . /
 COPY --from=stagex/user-jansson . /
+COPY --from=stagex/core-bash . /
 ADD fetch/nftables-${VERSION}.tar.xz .
 WORKDIR /nftables-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
+	export CONFIG_SHELL=/usr/bin/bash
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \
@@ -17,8 +20,9 @@ RUN --network=none <<-EOF
 		--with-cli=editline \
 		--with-json \
 		--enable-static
-	make
-	make install DESTDIR=/rootfs
+	make -j1 MAKE_STAMP="${SOURCE_DATE_EPOCH}"
+	make -j1 MAKE_STAMP="${SOURCE_DATE_EPOCH}" install DESTDIR=/rootfs
+	find /rootfs -name "*.so*" -exec llvm-strip --strip-debug {} +
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

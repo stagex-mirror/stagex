@@ -1,13 +1,12 @@
 [package]
 name = "libcap-ng"
-version = "0.9.3"
+version = "0.9.5"
 description = "Alternate POSIX capabilities library"
 license = "LGPL-2.1-or-later"
 website = "https://github.com/stevegrubb/libcap-ng"
 
 [sources.libcap-ng]
-hash = "fe11ebbb55904763b3532f19069f13ec319042634620180a03bd4653d301563e"
+hash = "a2b4211f59b231d607c61ea2a13e9ecb38f446fe769b44e12da939d5af6d978a"
 format = "tar.gz"
 file = "libcap-ng-{version}.{format}"
-mirrors = [ "https://github.com/stevegrubb/libcap-ng/archive/refs/tags/v{version}.{format}" ]
-
+mirrors = [ "https://github.com/stevegrubb/libcap-ng/archive/refs/tags/v{version}.{format}",]

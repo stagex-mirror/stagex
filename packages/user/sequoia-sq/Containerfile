@@ -1,19 +1,20 @@
 FROM stagex/pallet-rust AS build
 COPY --from=stagex/core-gmp . /
 COPY --from=stagex/core-sqlite3 . /
-COPY --from=stagex/user-nettle . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-pkgconf . /
 COPY --from=stagex/user-capnproto . /
 ARG VERSION
 ADD fetch/sq-${VERSION}.tar.gz .
 WORKDIR /sequoia-sq-v${VERSION}
-ADD patches/*.patch .
 ENV RUSTFLAGS='-C codegen-units=1'
 RUN <<-EOF
-	patch -p1 < 0001-Update-nettle-sys-to-fix-building-with-LLVM-clang-22.patch
 	cargo fetch
 EOF
 RUN --network=none <<-EOF
   cargo build \
+    --no-default-features \
+    --features crypto-openssl \
     --frozen \
     --release \
     --target $(uname -m)-unknown-linux-musl
