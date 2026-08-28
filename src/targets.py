@@ -57,10 +57,10 @@ out/rootfs/{stage}-{name}/manifest.txt: \\
 \tdone && \\
 \t(cd out/rootfs/{stage}-{name} && find . -type f ! -name manifest.txt -exec sha256sum {{}} + | sort -k2) > out/rootfs/{stage}-{name}/manifest.txt
 \t
-\t$(if $(filter $(IMPORT),1),$(call import,{stage},{name},{version}),)
+\t$(if $(filter $(IMPORT),1),$(MAKE) import-{stage}-{name},)
 
 .PHONY: import-{stage}-{name}
-import-{stage}-{name}:
+import-{stage}-{name}: oci-{stage}-{name}
 \t$(call import,{stage},{name},{version})
 
 # use: make registry-{stage}-{name} BUILDER="docker buildx" REGISTRY_USERNAME=127.0.0.1:5005/stagex
