@@ -1,12 +1,12 @@
 [package]
 name = "gcc"
-version = "15.2.0"
+version = "15.3.0"
 description = "The GNU Compiler Collection"
 license="GPL-2.0-or-later AND LGPL-2.1-or-later"
 website="https://gcc.gnu.org"
 
 [sources.gcc]
-hash = "438fd996826b0c82485a29da03a72d71d6e3541a83ec702df4271f6fe025d24e"
+hash = "fa59c1beef8995f27c4d71c1df227587189315d3e6faff1bb4306e61b0c530eb"
 format = "tar.xz"
 file = "gcc-{version}.{format}"
 mirrors = [ "https://ftpmirror.gnu.org/gnu/gcc/gcc-{version}/{file}", "https://mirrors.kernel.org/gnu/gcc/gcc-{version}/{file}",]

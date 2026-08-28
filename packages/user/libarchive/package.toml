@@ -1,12 +1,12 @@
 [package]
 name = "libarchive"
-version = "3.8.7"
+version = "3.8.9"
 description = "Multi-format archive and compression library"
 license = "BSD-2-Clause"
 website = "https://www.libarchive.org"
 
 [sources.libarchive]
-hash = "d3a8ba457ae25c27c84fd2830a2efdcc5b1d40bf585d4eb0d35f47e99e5d4774"
+hash = "888c934f9d95648ecb9163dc8e23ab80a476ecb81a8f1154704a227b5b676dde"
 format = "tar.xz"
 file = "libarchive-{version}.{format}"
-mirrors = [ "https://libarchive.org/downloads/{file}", "https://ftp.fau.de/macports/distfiles/libarchive/{file}"]
+mirrors = [ "https://libarchive.org/downloads/{file}", "https://ftp.fau.de/macports/distfiles/libarchive/{file}",]

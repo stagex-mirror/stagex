@@ -5,10 +5,20 @@ ADD fetch/linux-${VERSION}.tar.xz .
 WORKDIR /linux-${VERSION}
 RUN <<-EOF
 	set -eux
+	# `make headers` produces a sanitised UAPI/asm include tree in usr/include,
+	# but it omits some user-space ABI headers (linux/magic.h, linux/xattr.h,
+	# ...). Install the whole UAPI include tree too, running each header through
+	# scripts/headers_install.sh (the same sanitiser `make headers_install`
+	# uses) so internal `#include <linux/compiler.h>` refs are stripped - this
+	# is required for musl builds (e.g. oneTBB includes <linux/futex.h>).
 	make headers
 	mkdir -p /rootfs/usr
 	cp -a usr/include /rootfs/usr/
-	find /rootfs/usr/include/ ! -iname "*.h" -type f -exec rm -v {} \+
+	for f in $(cd include/uapi && find . -name '*.h' -type f); do
+	  mkdir -p "/rootfs/usr/include/$(dirname "$f")"
+	  scripts/headers_install.sh "include/uapi/$f" "/rootfs/usr/include/$f"
+	done
+	find /rootfs/usr/include/ ! -iname "*.h" -type f -exec rm -f {} \+
 	rm -rf /rootfs/usr/include/drm
 EOF
 FROM stagex/core-filesystem AS package

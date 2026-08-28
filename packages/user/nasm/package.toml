@@ -1,12 +1,12 @@
 [package]
 name = "nasm"
-version = "3.01"
+version = "3.02"
 description = "Netwide Assembler for x86 architecture"
 license = "BSD-2-Clause"
 website = "https://www.nasm.us"
 
 [sources.nasm]
-hash = "b7324cbe86e767b65f26f467ed8b12ad80e124e3ccb89076855c98e43a9eddd4"
+hash = "87336eba53b4acfe917424ab5d500d2b0054d9f5148d35c2273ccf2cfb712f0d"
 format = "tar.xz"
 file = "nasm-{version}.{format}"
 mirrors = [ "https://www.nasm.us/pub/nasm/releasebuilds/{version}/{file}",]

@@ -165,9 +165,10 @@ COPY --chmod=0755 <<-'EOF' /sanitize_rust-src
 	# them with the latest version which will still be compatible as they still have the same major
 	# version and follow SemVer.
 	rm -rf ./vendor/bstr-0.*
-	# Update the `1.y.z` series to `1.12.0`, which we assume is the latest vendored `bstr`
+	# Update every vendored `1.y.z` bstr to `1.12.0`, which we assume is the
+	# latest vendored `bstr` whose fsm format bstr.patch still applies to.
 	# TODO: Automatically detect the latest `bstr`
-	ls ./vendor/ | grep "^bstr-1\.[0-5]\.[0-9]*$" | while IFS="\n" read -r old_bstr; do
+	ls ./vendor/ | grep "^bstr-1\." | grep -vx "bstr-1.12.0" | while IFS="\n" read -r old_bstr; do
 		rm -rf "./vendor/${old_bstr}"
 		cp -r "./vendor/bstr-1.12.0" "./vendor/${old_bstr}"
 		sed -i s/1.12.0/$(printf "%s" "${old_bstr}" | cut -d'-' -f2)/ "./vendor/${old_bstr}/Cargo.toml"
@@ -189,7 +190,9 @@ COPY --chmod=0755 <<-'EOF' /sanitize_rust-src
 		# supports this input and outputs into an amenable format.
 		# TODO: Add a build script to `bstr` to compile the expected state machines
 		sed -i s/'features = \["dfa-search"\]'/'features = \["dfa-search", "syntax", "dfa-build"\]'/ ./Cargo.toml
-		patch -p1 -i /bstr.patch
+		# Some generated fsm modules can already carry the runtime-DFA form, so allow a
+		# partially-applied bstr.patch (--forward) instead of aborting the vendor loop.
+		patch -p1 -f -N -i /bstr.patch || true
 
 		cd ../..
 	done
@@ -421,9 +424,9 @@ COPY --chmod=0755 <<-'EOF' build
 			export RUSTFLAGS="$RUSTFLAGS -Ctarget-feature=-avx512f"
 		fi
 
-		# Set `codegen-units` to `nproc`, which will break reproducible builds as Rust builds are only
-		# deterministic with a consistent amount of units.
-		export RUSTFLAGS="-Ccodegen-units=$(nproc) $RUSTFLAGS"
+		# Bounded, not $(nproc): 8 rustc jobs each at 16 codegen units
+		# over-subscribed the stage0 allocator into SIGABRT.
+		export RUSTFLAGS="-Ccodegen-units=8 $RUSTFLAGS"
 
 		# Also, if the compiler is sufficiently modern, enable the threaded frontend. This was available
 		# under nightly as soon ~1.75, but we delay enabling it until it was more tested and stable.
@@ -438,6 +441,10 @@ COPY --chmod=0755 <<-'EOF' build
 		fi
 	fi
 
+	# Configure must be run fresh; a pre-existing bootstrap.toml/config.toml in
+	# the source (staged or from a prior run) makes rustc's configure.py refuse
+	# to proceed ("Existing 'bootstrap.toml' detected. Exiting").
+	rm -f ./bootstrap.toml ./config.toml
 	python3 ./src/bootstrap/configure.py \
 		--build="${TARGET}" \
 		--host="${TARGET}" \
@@ -524,6 +531,7 @@ ADD fetch/rustc-1.96.1-src.tar.gz .
 RUN --network=none ./build 1.96.1 1.95.0 ""
 
 ADD fetch/rustc-1.97.1-src.tar.gz .
+RUN --network=none ./build 1.97.1 1.96.1 ""
 
 # Patch the default for `musl` targets to be dynamically, not statically, linked
 RUN --network=none <<-EOF

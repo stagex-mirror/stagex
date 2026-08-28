@@ -1,12 +1,12 @@
 [package]
 name = "gpg"
-version = "2.5.20"
+version = "2.5.21"
 description = "GNU Privacy Guard encryption and signing tool"
 license = "GPL-3.0-or-later"
 website = "https://gnupg.org"
 
 [sources.gpg]
-hash = "6461266e99c308419a379abe6c356d54c214136c4589bd65951091138989ffc6"
+hash = "e3af2c8caa46a66a9329fa7c6880af260451914d819595beabc2c26597b31352"
 format = "tar.bz2"
 file = "gpg-{version}.{format}"
 mirrors = [ "https://gnupg.org/ftp/gcrypt/gnupg/gnupg-{version}.{format}",]

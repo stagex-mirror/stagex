@@ -1,12 +1,12 @@
 [package]
 name = "swtpm"
-version = "0.10.1"
+version = "0.10.2"
 description = "Libtpms-based TPM emulator with socket, character device, and Linux CUSE interface"
 website = "https://github.com/stefanberger/swtpm"
 license = "BSD-3-Clause"
 
 [sources.swtpm]
-hash = "f8da11cadfed27e26d26c5f58a7b8f2d14d684e691927348906b5891f525c684"
+hash = "f61cf6f1e9bbcb4cefb30b70cafaf1c4df54c6961e65cfa63830e8ad0e220134"
 format = "tar.gz"
 file = "swtpm-{version}.{format}"
 mirrors = [ "https://github.com/stefanberger/swtpm/archive/v{version}.{format}",]

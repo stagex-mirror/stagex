@@ -3,8 +3,12 @@ COPY --from=stagex/core-fmt . /
 ARG VERSION
 ADD fetch/libcap-ng-${VERSION}.tar.gz .
 WORKDIR /libcap-ng-${VERSION}
+ADD patches/*.patch .
 RUN --network=none <<-EOF
 	set -eux
+	# libcap-ng 0.9.x's utils/gcc-attributes.h includes <sys/cdefs.h> (glibc-only)
+	# but already stubs all its macros; guard the include so musl uses the stubs.
+	patch -p1 < ./musl-cdefs-stub.patch
 	./autogen.sh
 	./configure \
 		--prefix=/usr \

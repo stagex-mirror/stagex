@@ -13,9 +13,21 @@ COPY --from=stagex/core-autoconf . /
 COPY --from=stagex/core-m4 . /
 COPY --from=stagex/core-perl . /
 ADD fetch/bash-${VERSION}.tar.gz .
+ADD fetch/bash53-001 ./
+ADD fetch/bash53-002 ./
+ADD fetch/bash53-003 ./
+ADD fetch/bash53-004 ./
+ADD fetch/bash53-005 ./
+ADD fetch/bash53-006 ./
+ADD fetch/bash53-007 ./
+ADD fetch/bash53-008 ./
+ADD fetch/bash53-009 ./
 WORKDIR /bash-${VERSION}
 RUN --network=none <<-EOF
 	set -eux
+
+	# GNU bash 5.3 security/functionality patches (patchlevel 1-9)
+	for p in /bash53-00[1-9]; do patch -Np0 < "$p"; done
 
 	rm ./configure
 	autoconf -f

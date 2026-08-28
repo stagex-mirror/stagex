@@ -9,6 +9,9 @@ COPY --from=stagex/core-git . /
 COPY --from=stagex/core-curl . /
 COPY --from=stagex/core-pcre2 . /
 COPY --from=stagex/core-make . /
+COPY --from=stagex/core-flex . /
+COPY --from=stagex/core-bison . /
+COPY --from=stagex/core-m4 . /
 COPY --from=stagex/core-gettext . /
 COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/user-py-docutils . /
@@ -75,8 +78,6 @@ RUN --network=none <<-EOF
 		--disable-gtk \
 		--disable-bpf \
 		--disable-capstone \
-		--disable-glusterfs \
-		--disable-debug-info \
 		--disable-opengl \
 		--disable-bsd-user \
 		--disable-linux-user \

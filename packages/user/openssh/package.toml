@@ -1,12 +1,12 @@
 [package]
 name = "openssh"
-version = "10.3p1"
+version = "10.5p1"
 description = "OpenSSH connectivity tools for remote login with the SSH protocol"
 license = "ISC AND BSD-2-Clause AND MIT"
 website = "https://www.openssh.com"
 
 [sources.openssh]
-hash = "56682a36bb92dcf4b4f016fd8ec8e74059b79a8de25c15d670d731e7d18e45f4"
+hash = "d44d28a839ea9daf969cc69150fde59910b2b39361dad81a3bd6cbd19218db11"
 format = "tar.gz"
 file = "openssh-{version}.{format}"
 mirrors = [ "https://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/{file}",]

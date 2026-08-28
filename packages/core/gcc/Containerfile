@@ -109,7 +109,7 @@ RUN --network=none <<-EOF
     --with-system-zlib \
     --with-system-zstd \
     --with-linker-hash-style=gnu \
-		--with-gxx-include-dir=/usr/include/c++/15.2.0 \
+		--with-gxx-include-dir=/usr/include/c++/15.3.0 \
 		--with-gxx-libcxx-include-dir=/usr/include/c++/v1 \
     libat_cv_have_ifunc=no
 	make -j "$(nproc)"

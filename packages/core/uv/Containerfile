@@ -30,7 +30,6 @@ RUN --network=none <<-EOF
 		--release \
 		--target "${ARCH}-unknown-linux-musl" \
 		--no-default-features \
-		--features uv-distribution/static \
 		--bin uv
 	mkdir -p /rootfs/usr/bin
 	cp target/${ARCH}-unknown-linux-musl/release/uv /rootfs/usr/bin/uv

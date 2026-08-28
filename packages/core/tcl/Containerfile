@@ -19,6 +19,10 @@ RUN --network=none <<-EOF
 		--mandir=/usr/share/man \
 		--localstatedir=/var \
 		--enable-64bit
+	# The freshly built tclsh lives in the build dir and must locate its own
+	# libtcl*.so to run the in-tree `configure-packages` step; musl does not
+	# search the build dir by default.
+	export LD_LIBRARY_PATH="/tcl${VERSION}/unix:$LD_LIBRARY_PATH"
 	make -j "$(nproc)"
 	make DESTDIR=/rootfs install install-private-headers
 EOF

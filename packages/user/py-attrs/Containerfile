@@ -1,6 +1,7 @@
 FROM stagex/pallet-python AS build
 ARG VERSION
 COPY --from=stagex/core-py-setuptools-scm . /
+COPY --from=stagex/core-py-vcs-versioning . /
 COPY --from=stagex/core-py-pathspec . /
 COPY --from=stagex/core-py-pluggy . /
 COPY --from=stagex/core-py-hatchling . /

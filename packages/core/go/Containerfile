@@ -54,11 +54,20 @@ RUN --network=none <<-EOF
 	bash -- make.bash -v=1 -d
 EOF
 
+ADD fetch/go1.26.5.src.tar.gz /go1_26_5
+WORKDIR /go1_26_5/go
+ENV GOROOT_BOOTSTRAP=/go1_24_6/go
+RUN --network=none <<-EOF
+	set -eux
+	cd src
+	bash -- make.bash -v=1 -d
+EOF
+
 ARG VERSION
 ARG TARGETARCH
 ADD fetch/go${VERSION}.src.tar.gz /
 WORKDIR /go
-ENV GOROOT_BOOTSTRAP=/go1_24_6/go
+ENV GOROOT_BOOTSTRAP=/go1_26_5/go
 ENV GOARCH=${TARGETARCH}
 RUN --network=none <<-EOF
 	set -eux

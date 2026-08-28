@@ -1,12 +1,12 @@
 [package]
 name = "doxygen"
-version = "1.17.0"
+version = "1.18.0"
 description = "Documentation system for C++, C, Java, and other languages"
 license = "GPL-2.0-only"
 website = "https://www.doxygen.nl"
 
 [sources.doxygen]
-hash = "fa4c3dd78785abc11ccc992bc9c01e7a8c3120fe14b8a8dfd7cefa7014530814"
+hash = "a1deed70a6785bbec95a2b2a9e419dc7f7b223a9d74a8644ae611c8e2dcdd354"
 format = "tar.gz"
 file = "doxygen-{version}.{format}"
 mirrors = [ "https://doxygen.nl/files/doxygen-{version}.src.{format}",]

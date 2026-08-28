@@ -1,16 +1,16 @@
 [package]
 name = "docker"
-version = "29.5.3"
+version = "29.7.2"
 description = "Container platform for building, shipping, and running applications"
 license = "Apache-2.0"
 website = "https://www.docker.com"
 
 [sources.docker]
-hash = "460e3c95fbf86414e88e7cb58551df061c206592bc66680fec75c5cdd551e3bd"
+hash = "3a93a88bff41ffa6f4dca9f4ed9fc05e7fdb08e0f9014cf1d8177f85ecbc0683"
 file = "docker-{version}.tar.gz"
 mirrors = [ "https://github.com/moby/moby/archive/refs/tags/docker-v{version}.tar.gz",]
 
 [sources.cli]
-hash = "7608d82f33ce0ebbbed5bf8f6997319375c30a46d325496f3e8974c9a0c8ce6b"
+hash = "225b7ab2a15f5230b482df8461069cd4bce38891266fb9898d4188d0a3cbf54a"
 file = "docker-cli-{version}.tar.gz"
 mirrors = [ "https://github.com/docker/cli/archive/refs/tags/v{version}.tar.gz",]

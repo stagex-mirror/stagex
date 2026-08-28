@@ -6,9 +6,11 @@ COPY --from=stagex/core-libedit . /
 COPY --from=stagex/user-libnftnl . /
 COPY --from=stagex/user-libmnl . /
 COPY --from=stagex/user-jansson . /
+COPY --from=stagex/core-bash . /
 ADD fetch/nftables-${VERSION}.tar.xz .
 WORKDIR /nftables-${VERSION}
 RUN --network=none <<-EOF
+	export CONFIG_SHELL=/usr/bin/bash
 	./configure \
 		--prefix=/usr \
 		--sysconfdir=/etc \

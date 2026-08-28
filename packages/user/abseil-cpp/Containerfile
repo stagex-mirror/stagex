@@ -6,7 +6,7 @@ RUN <<-EOF
 	cmake \
 		-B build \
 		-G Ninja \
-		-WMAKE_CXX_STANDARD=17 \
+		-DCMAKE_CXX_STANDARD=17 \
 		-DCMAKE_BUILD_TYPE=MinSizeRel \
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DCMAKE_INSTALL_LIBDIR=lib \
