@@ -18,7 +18,10 @@ RUN --network=none <<-EOF
 		--localstatedir=/var \
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info \
-		gl_cv_func_getcwd_path_max="no, but it is partly working"
+		gl_cv_func_getcwd_path_max="no, but it is partly working" \
+		gl_cv_func_fstatat_zero_flag=yes \
+		gl_cv_func_fstatat_null_file=yes \
+		gl_cv_func_lstat_dereferences_slashed_symlink=no
 	make -j "$(nproc)"
 	make DESTDIR="/rootfs" install
 EOF
