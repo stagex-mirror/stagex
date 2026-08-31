@@ -3,7 +3,7 @@ ARG VERSION
 ADD fetch/mdbook-${VERSION}.tar.gz .
 WORKDIR /mdBook-${VERSION}
 ENV RUST_BACKTRACE=1
-ENV RUSTFLAGS='-C codegen-units=1 -C target-feature=+crt-static'
+ENV RUSTFLAGS='-C codegen-units=1 -C target-feature=+crt-static -C strip=debuginfo'
 RUN cargo fetch
 RUN --network=none <<-EOF
 	cargo build \
