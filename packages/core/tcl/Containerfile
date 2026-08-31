@@ -25,6 +25,8 @@ RUN --network=none <<-EOF
 	export LD_LIBRARY_PATH="/tcl${VERSION}/unix:$LD_LIBRARY_PATH"
 	make -j "$(nproc)"
 	make DESTDIR=/rootfs install install-private-headers
+	# Strip DWARF from the shared lib; its debug sections are not reproducible.
+	find /rootfs -name "*.so" -exec llvm-strip --strip-debug {} +
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
