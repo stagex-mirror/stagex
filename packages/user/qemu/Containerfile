@@ -109,6 +109,7 @@ RUN --network=none <<-EOF
 	rm -f /rootfs/usr/bin/qemu-system-or1k
 	rm -f /rootfs/usr/bin/qemu-system-ppc
 	rm -f /rootfs/usr/bin/qemu-system-ppc64
+	rm -f /rootfs/usr/bin/qemu-system-hexagon
 	rm -f /rootfs/usr/bin/qemu-system-riscv32
 	rm -f /rootfs/usr/bin/qemu-system-riscv64
 	rm -f /rootfs/usr/bin/qemu-system-rx
