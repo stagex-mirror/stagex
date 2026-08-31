@@ -19,8 +19,8 @@ RUN --network=none <<-EOF
 		--with-cli=editline \
 		--with-json \
 		--enable-static
-	make
-	make install DESTDIR=/rootfs
+	make -j1
+	make -j1 install DESTDIR=/rootfs
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
