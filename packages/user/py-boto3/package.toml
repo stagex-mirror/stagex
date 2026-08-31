@@ -1,12 +1,12 @@
 [package]
 name = "py-boto3"
-version = "1.43.81"
+version = "1.43.84"
 description = "The AWS SDK for Python"
 website = "https://github.com/boto/boto3"
 license = "Apache-2.0"
 
 [sources.py-boto3]
-hash = "a2dbba5a0542bff50d94bd10a161ff4874dfb34be136b9021ddb3fe38e76cba7"
+hash = "fe8aff1b7e8fb8116c593d1455e3ae3cbf43ebcf86c9de81944cd512f46fcfa4"
 format = "tar.gz"
 file = "py-boto3-{version}.{format}"
 mirrors = [ "https://github.com/boto/boto3/archive/{version}/boto3-{version}.{format}",]

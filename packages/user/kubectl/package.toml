@@ -1,12 +1,12 @@
 [package]
 name = "kubectl"
-version = "1.36.4"
+version = "1.37.0"
 description = "A command line tool for communicating with a Kubernetes API server"
 license = "Apache-2.0"
 website = "https://kubernetes.io/"
 
 [sources.kubectl]
-hash = "86a216801ddba7098a50c6f3b3fe5fbc28ba34ea5b1daa66d81c2d5307c301ac"
+hash = "956ddae3b12acc08a715aea0411a168a36d5989b3e7185deeb6bf46b7dac19cf"
 format = "tar.gz"
 file = "kubectl-{version}.{format}"
 mirrors = [ "https://github.com/kubernetes/kubernetes/archive/refs/tags/v{version}.{format}",]
