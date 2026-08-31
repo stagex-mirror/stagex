@@ -14,6 +14,11 @@ RUN --network=none <<-EOF
     python -m installer -d /rootfs .dist/cryptography-*.whl
     install -vDm644 -t /rootfs/usr/share/licenses/py-cryptography LICENSE LICENSE.APACHE LICENSE.BSD
     find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$|/RECORD$)" | xargs rm -rf
+    # The cargo-cyclonedx SBOM embeds a real build timestamp and a random UUID,
+    # so strip it to keep the image reproducible.
+    rm -rf /rootfs/usr/lib/python*/site-packages/cryptography-*.dist-info/sboms
+    # Strip DWARF from the rust extension; its debug sections are not reproducible.
+    find /rootfs -name "*.abi3.so" -exec llvm-strip --strip-debug {} +
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

@@ -17,6 +17,8 @@ RUN --network=none <<-EOF
 	python setup.py install --root=/rootfs --optimize=1
 	install -vDm644 -t /rootfs/usr/share/licenses/py-gssapi/LICENSE LICENSE.txt
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+	# Cython-built DWARF is not reproducible; strip it from shared libs.
+	find /rootfs -name "*.so" -exec llvm-strip --strip-debug {} +
 EOF
 
 FROM stagex/core-filesystem AS package
