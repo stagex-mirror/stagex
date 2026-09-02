@@ -21,6 +21,8 @@ RUN --network=none <<-EOF
 		--enable-static
 	make -j1
 	make -j1 install DESTDIR=/rootfs
+	# Strip DWARF from the shared lib; its debug sections are not reproducible.
+	find /rootfs -name "*.so*" -exec llvm-strip --strip-debug {} +
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
