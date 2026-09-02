@@ -9,7 +9,7 @@ COPY --from=stagex/core-libzstd . /
 COPY --from=stagex/user-libbpf . /
 ADD fetch/rustnet-v${VERSION}.tar.gz .
 WORKDIR /rustnet-${VERSION}
-ENV RUSTFLAGS="-C codegen-units=1 -C target-feature=+crt-static -C link-arg=-fuse-ld=mold -C link-arg=-lzstd -C link-arg=-Wl,--sort-common -C link-arg=-Wl,--allow-multiple-definition -C link-arg=-Wl,--build-id=none -C strip=symbols"
+ENV RUSTFLAGS="-C codegen-units=1 -C target-cpu=x86-64 -C target-feature=+crt-static -C link-arg=-fuse-ld=mold -C link-arg=-lzstd -C link-arg=-Wl,--sort-common -C link-arg=-Wl,--allow-multiple-definition -C link-arg=-Wl,--build-id=none -C strip=symbols"
 ENV LIBBPF_SYS_USE_SYSTEM_LIBBPF=1
 ENV LIBBPF_SYS_USE_SYSTEM_ZSTD=1
 ENV CARGO_INCREMENTAL=0
