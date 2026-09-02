@@ -1,12 +1,12 @@
 [package]
 name = "hygg"
-version = "0.1.21"
+version = "0.1.26"
 description = "Minimalistic Vim-like TUI document reader"
 license = "MIT"
 website = "https://github.com/kruseio/hygg"
 
 [sources.hygg]
-hash = "c0f3005bf97940881d695b7e8bde55318daf4de48c927cb4a9150d3b86ccb181"
+hash = "5b8dd7b23b05ab2c0767f9fa2f5cc8c6d4bf2c5b2a0f4c0943c2017e8d2d949f"
 format = "tar.gz"
 file = "hygg-{version}.{format}"
 mirrors = ["https://github.com/kruseio/hygg/archive/refs/tags/{version}.{format}"]
