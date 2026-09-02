@@ -22,7 +22,7 @@ RUN --network=none <<-EOF
 	set -eux
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
 	python -m installer -d /rootfs .dist/*.whl
-	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$|/RECORD$)" | xargs rm -rf
 	# Cython-built DWARF is not reproducible; strip it from shared libs.
 	find /rootfs -name "*.so" -exec llvm-strip --strip-debug {} +
 EOF
