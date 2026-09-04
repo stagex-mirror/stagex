@@ -9,18 +9,28 @@
 #
 # The daemon opens /dev/tpm0 (or /dev/tpmrm0) directly — no abrmd/dbus
 # required — and shells out to snpguest for the SEV-SNP report.
-# State (TLS identity + TPM keys) lives in /var/lib/bootproof.
+# State (TLS identity + TPM keys) lives in /home/bootproof (LUKS ext4,
+# persistent) or /run/bootproof (fallback).
 
 DAEMON="/usr/bin/bootproof"
 PIDFILE="/run/bootproof.pid"
 LOGFILE="/var/log/bootproof.log"
-STATEDIR="/var/lib/bootproof"
 LISTEN="0.0.0.0:443"
+
+# State (TLS identity + TPM keys) must persist for pin stability.
+# /home is the LUKS ext4 volume (writable, persistent); fall back to /run
+# (tmpfs, identity regenerated each boot) if /home is not mounted writable.
+STATEDIR=""
+if [ -d /home ] && [ -w /home ]; then
+	STATEDIR="/home/bootproof"
+else
+	STATEDIR="/run/bootproof"
+fi
 
 start() {
 	[ -x "$DAEMON" ] || { printf "Starting bootproof: "; echo "FAIL (binary not found)"; return 1; }
 
-	mkdir -p "$STATEDIR" /var/log
+	mkdir -p "$STATEDIR" /var/log 2>/dev/null
 
 	# NitroTPM can transiently enter a failure state right after boot;
 	# retry a few times before declaring failure (do not block boot long).
