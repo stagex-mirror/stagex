@@ -8,11 +8,11 @@
 # Unikernel mode (UNIKERNEL=1):
 #   Input:  live layout with /boot/{vmlinuz, cmdline} (no initramfs)
 #   The erofs system image becomes the initramfs: box-disk packs the OS as
-#   erofs, wraps it in a cpio { static klibc utils, /init (loop-mount),
-#   /system = the erofs }, and uses that as the UKI's .initrd. The kernel
-#   unpacks it into RAM, /init loop-mounts /system and pivots. Output is a
-#   GPT with only the ESP (no system partition) — the OS runs from memory,
-#   so disk storage is optional.
+#   erofs, wraps it in a cpio { /init (nit), /system = the erofs }, and uses
+#   that as the UKI's .initrd. The kernel unpacks it into RAM; /init (nit)
+#   loop-mounts /system, pivots, then stays PID 1 running /etc/inittab.
+#   Output is a GPT with only the ESP (no system partition) — the OS runs
+#   from memory, so disk storage is optional.
 #
 # Inner assembly is delegated: box-uki builds the UKI (ESP contents),
 # box-erofs packs the erofs system image, box-gpt assembles the GPT disk.
@@ -105,14 +105,16 @@ if [ "${UNIKERNEL:-0}" = "1" ]; then
 	# --- unikernel: the erofs system image becomes the initramfs ---
 	build_erofs
 
-	# Assemble the initramfs root: static klibc utils + /init + /system
+	# Assemble the initramfs root: nit (the static Rust init) as /init +
+	# /system. nit does what the old dash + 5-klibc-utils init-loop did
+	# (losetup /system, mount erofs, pivot_root) and then stays PID 1,
+	# running /etc/inittab (sysinit rcS, respawn getty) via its built-in
+	# supervisor — so the initramfs cpio carries no shell and no utils.
+	# The nit.* kernel-cmdline options (uki-cmdline-uk) select this:
+	# nit.unpack=/system nit.mode=spawn.
 	rm -rf /uki-root
-	mkdir -p /uki-root/bin
-	for u in mount mkdir mknod ls cat sleep pivot_root dd sync losetup; do
-		cp "/klibc/$u" "/uki-root/bin/$u"
-	done
-	cp /klibc/sh /uki-root/bin/sh
-	cp /usr/local/init-loop /uki-root/init
+	mkdir -p /uki-root
+	cp /nit/init /uki-root/init
 	cp "$SYSTEM_IMG" /uki-root/system
 	# Deterministic initramfs: cpio stores each entry's mtime, and `cp` set
 	# them to "now". Normalize every mtime to SOURCE_DATE_EPOCH so the cpio is

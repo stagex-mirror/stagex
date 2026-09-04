@@ -1,12 +1,16 @@
 [package]
 name = "nit"
-version = "00b5957d6e4849d397d1c398e8ebd7f2c29572db"
-description = "25% smaller than init"
-license = "ISC"
-website = "https://codeberg.org/stagex/nit"
+# Pinned to a commit of https://codeberg.org/lrvick/nit (branch
+# spawn-supervisor): the unikernel init that both loop-mounts the erofs
+# system image and runs as PID 1 (inittab sysinit/respawn/shutdown).
+# Fetched as a source archive from the codeberg.org commit.
+version = "7ee07e3"
+description = "Rust unikernel init: erofs unpack + pivot, then PID-1 supervision (replaces klibc initramfs init and busybox init)"
+license = "MIT"
+website = "https://codeberg.org/lrvick/nit"
 
 [sources.nit]
-hash = "79555b0fd11f53d786be95b24ecd617d3b0fba95f95937cdd5bf400a2463536a"
+hash = "e566c5f2d73d58d9830ab7b148cc153bde60689dc48ca79d489a956bae56b870"
 format = "tar.gz"
 file = "nit-{version}.{format}"
-mirrors = ["https://git.distrust.co/public/nit/archive/{version}.{format}"]
+mirrors = ["https://codeberg.org/lrvick/nit/archive/{version}.{format}"]
