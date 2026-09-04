@@ -1,0 +1,43 @@
+#!/bin/sh
+# S04rust-dhcp-watchdog — keep the DHCP client alive so the lease renews.
+#
+# A dead DHCP client means the 3600s VPC lease is never renewed and the
+# instance goes offline the moment it expires. This watchdog restarts
+# dhcp-client (rust-dhcp, IPv4-only) if it ever dies, so a single client
+# crash can't take the network down.
+#
+# Runs as a detached background loop so rcS proceeds to the remaining
+# init scripts (cloud-init, TPM/attestation agents).
+PIDFILE="/var/run/dhcp-client.pid"
+DAEMON="/usr/bin/dhcp-client"
+LOGFILE="/var/log/dhcp-client.log"
+INTERVAL=60
+
+detect_iface() {
+	[ -d /sys/class/net/eth0 ] && { echo eth0; return 0; }
+	for i in /sys/class/net/*; do
+		n=${i##*/}
+		[ "$n" = lo ] && continue
+		echo "$n"
+		return 0
+	done
+}
+
+(
+	while :; do
+		sleep "$INTERVAL"
+		pid=$(cat "$PIDFILE" 2>/dev/null)
+		if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+			continue
+		fi
+		# Client is not running: clear a stale pidfile and restart it.
+		rm -f "$PIDFILE" 2>/dev/null
+		iface=$(detect_iface) || continue
+		nohup $DAEMON "$iface" >> "$LOGFILE" 2>&1 &
+		echo $! > "$PIDFILE"
+		echo "rust-dhcp-watchdog: restarted $DAEMON on $iface (pid $(cat $PIDFILE))"
+	done
+) &
+
+printf "Starting rust-dhcp-watchdog: OK\n"
+exit 0

@@ -1,0 +1,70 @@
+#!/bin/sh
+# S03rust-dhcp — IPv4 DHCP client (rust-dhcp)
+#
+# Replaces dhcpcd: a static Rust DHCP client (dhcp-client) that runs
+# IPv4 DORA, does T1/T2 renewal in-process, and applies the lease
+# (address, default route, DNS) via rtnetlink netlink. It brings the
+# interface up itself. Being IPv4-only by design, it never touches the
+# kernel DHCPv6/IPv6 address parse path that raised the spurious #GP on
+# dhcpcd at boot (the old 60-min-offline bug) — that workaround is now
+# obsolete.
+#
+# Graceful stop is SIGTERM (releases the lease and clears the config).
+# No pidfile is written by the client itself; we track the PID here so
+# S04rust-dhcp-watchdog can detect a dead client and restart it.
+DAEMON="dhcp-client"
+PIDFILE="/var/run/dhcp-client.pid"
+LOGFILE="/var/log/dhcp-client.log"
+
+detect_iface() {
+	[ -d /sys/class/net/eth0 ] && { echo eth0; return 0; }
+	for i in /sys/class/net/*; do
+		n=${i##*/}
+		[ "$n" = lo ] && continue
+		echo "$n"
+		return 0
+	done
+	return 1
+}
+
+start() {
+	iface=$(detect_iface)
+	if [ -z "$iface" ]; then
+		printf "Starting %s: " "$DAEMON"; echo "FAIL (no network interface)"
+		return 1
+	fi
+
+	printf "Starting %s: " "$DAEMON"
+	nohup /usr/bin/$DAEMON "$iface" >> "$LOGFILE" 2>&1 &
+	echo $! > "$PIDFILE"
+
+	# Wait briefly for the lease, then show the interface state.
+	sleep 3
+	cat /proc/net/dev 2>/dev/null || true
+	echo "OK (pid $(cat "$PIDFILE"), iface $iface)"
+	return 0
+}
+
+stop() {
+	printf "Stopping %s: " "$DAEMON"
+	pid=$(cat "$PIDFILE" 2>/dev/null)
+	if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+		kill "$pid" 2>/dev/null
+		while kill -0 "$pid" 2>/dev/null; do sleep 0.1; done
+		echo "OK"
+		return 0
+	fi
+	rm -f "$PIDFILE" 2>/dev/null
+	echo "OK (not running)"
+	return 0
+}
+
+case "$1" in
+	start)   start ;;
+	stop)    stop ;;
+	restart) stop; start ;;
+	*) echo "Usage: $0 {start|stop|restart}"
+	   exit 1
+esac
+
+exit $?
