@@ -9,6 +9,7 @@ COPY --from=stagex/user-jansson . /
 COPY --from=stagex/core-bash . /
 ADD fetch/nftables-${VERSION}.tar.xz .
 WORKDIR /nftables-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	export CONFIG_SHELL=/usr/bin/bash
 	./configure \
@@ -19,8 +20,11 @@ RUN --network=none <<-EOF
 		--with-cli=editline \
 		--with-json \
 		--enable-static
-	make -j1
-	make -j1 install DESTDIR=/rootfs
+	# nftables bakes MAKE_STAMP=$(date +%s) into nftversion.h's nftbuildstamp[].
+	# busybox `date` ignores SOURCE_DATE_EPOCH, so pin the stamp explicitly or
+	# every rebuild embeds the wall-clock build time (non-reproducible).
+	make -j1 MAKE_STAMP="${SOURCE_DATE_EPOCH}"
+	make -j1 MAKE_STAMP="${SOURCE_DATE_EPOCH}" install DESTDIR=/rootfs
 	# Strip DWARF from the shared lib; its debug sections are not reproducible.
 	find /rootfs -name "*.so*" -exec llvm-strip --strip-debug {} +
 EOF
