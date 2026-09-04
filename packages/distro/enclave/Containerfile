@@ -6,18 +6,14 @@ FROM stagex/core-openssl AS core-openssl
 FROM stagex/core-curl AS core-curl
 FROM stagex/core-libzstd AS core-libzstd
 FROM stagex/core-libunwind AS core-libunwind
-FROM stagex/core-python AS core-python
 FROM stagex/user-tinyssh AS user-tinyssh
 FROM stagex/user-dhcpcd AS user-dhcpcd
 FROM stagex/user-sxctl AS user-sxctl
 FROM stagex/user-linux-enclave AS user-linux-enclave
 FROM stagex/user-tpm2-tss AS user-tpm2-tss
 FROM stagex/user-tpm2-tools AS user-tpm2-tools
-FROM stagex/user-swtpm AS user-swtpm
 FROM stagex/user-sevctl AS user-sevctl
-FROM stagex/user-qemu AS user-qemu
-FROM stagex/user-keylime-agent AS user-keylime-agent
-FROM stagex/user-coconut-svsm AS user-coconut-svsm
+FROM stagex/user-bootproof AS user-bootproof
 FROM stagex/user-snpguest AS user-snpguest
 FROM stagex/user-snptpm-agent AS user-snptpm-agent
 FROM stagex/user-tpm2-abrmd AS user-tpm2-abrmd
@@ -51,21 +47,16 @@ COPY --from=core-libunwind . /
 COPY src/rootfs/etc/init.d/rcS /etc/init.d/
 COPY src/rootfs/etc/inittab /etc/inittab
 COPY src/rootfs/etc/init.d/S54tpm-rootfs /etc/init.d/
-COPY src/rootfs/etc/init.d/S01syslogd /etc/init.d/
 COPY src/rootfs/etc/init.d/S02modules /etc/init.d/
 COPY src/rootfs/etc/init.d/S10udev /etc/init.d/
 COPY src/rootfs/etc/init.d/S20urandom /etc/init.d/
 COPY src/rootfs/etc/init.d/S05cloud-init-drive /etc/init.d/
-COPY src/rootfs/etc/init.d/S50swtpm /etc/init.d
 COPY src/init /init
 COPY src/rootfs/oldroot /oldroot
 COPY --from=user-tpm2-tss . /
 COPY --from=user-tpm2-tools . /
-COPY --from=user-swtpm . /
 COPY --from=user-sevctl . /
-COPY --from=user-qemu . /
-COPY --from=user-keylime-agent . /
-RUN mkdir -p /mnt /run /var/log /etc/keys /etc/keylime /var/lib/keylime /var/log/keylime /run/keylime && touch /mnt/.keep
+RUN mkdir -p /mnt /run /var/log /etc/keys /run/bootproof && touch /mnt/.keep
 
 # --- dev: default + server kernel + network + tinyssh + full attestation stack ---
 FROM rootfs AS rootfs-dev
@@ -73,17 +64,14 @@ COPY src/rootfs/etc/init.d/S03dhcpcd /etc/init.d/
 COPY src/rootfs/etc/init.d/S04dhcpcd-watchdog /etc/init.d/
 COPY src/rootfs/etc/init.d/S06cloud-init-net /etc/init.d/
 COPY src/rootfs/etc/init.d/S15home /etc/init.d/
-COPY src/rootfs/etc/init.d/S52keylime-agent /etc/init.d/
-COPY src/rootfs/etc/keylime/keylime.conf /etc/keylime/keylime.conf
-COPY src/rootfs/etc/keylime/agent.conf /etc/keylime/agent.conf
-COPY src/rootfs/etc/init.d/S50coconut-svsm /etc/init.d/
 COPY src/rootfs/etc/init.d/S51tpm2-abrmd /etc/init.d/
+COPY src/dev/rootfs/etc/init.d/S50sshd /etc/init.d/
 COPY --from=user-dhcpcd /usr/sbin/dhcpcd /sbin/dhcpcd
 COPY --from=user-tinyssh . /
-COPY src/dev/rootfs/etc/init.d/S50sshd /etc/init.d/
 COPY --from=user-sxctl . /
 COPY --from=user-dbus . /
 COPY --from=user-tpm2-abrmd . /
+COPY --from=user-bootproof . /
 COPY --from=user-cryptsetup . /
 COPY --from=user-popt . /
 COPY --from=user-device-mapper . /
@@ -93,10 +81,10 @@ COPY --from=user-libaio . /
 COPY --from=user-e2fsprogs . /
 COPY --from=user-util-linux . /
 COPY --from=core-ncurses . /
-COPY --from=user-coconut-svsm . /
 COPY --from=user-snpguest . /
 COPY --from=user-snptpm-agent . /
 COPY src/rootfs/etc/init.d/S53snptpm-agent /etc/init.d/
+COPY src/rootfs/etc/init.d/S55bootproof /etc/init.d/
 # Full SPDX build-provenance document (git origin/branch/commit + every
 # dependency's name/version/digest), generated into the build context by the
 # build and baked into the image; installed at /provenance.spdx.

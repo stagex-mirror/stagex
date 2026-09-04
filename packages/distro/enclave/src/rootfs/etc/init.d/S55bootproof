@@ -1,0 +1,62 @@
+#!/bin/sh
+# S55bootproof — start the bootproof attestation daemon (dual channel)
+#
+# Runs `bootproof attest`: TLS node API (default 0.0.0.0:443) exposing
+# the nonce-challenge attestation bundle with TPM2 (NitroTPM) + SEV-SNP
+# channels. Paired with the host-side client:
+#
+#   bootproof verify <ip> --direct --trust --pin
+#
+# The daemon opens /dev/tpm0 (or /dev/tpmrm0) directly — no abrmd/dbus
+# required — and shells out to snpguest for the SEV-SNP report.
+# State (TLS identity + TPM keys) lives in /var/lib/bootproof.
+
+DAEMON="/usr/bin/bootproof"
+PIDFILE="/run/bootproof.pid"
+LOGFILE="/var/log/bootproof.log"
+STATEDIR="/var/lib/bootproof"
+LISTEN="0.0.0.0:443"
+
+start() {
+	[ -x "$DAEMON" ] || { printf "Starting bootproof: "; echo "FAIL (binary not found)"; return 1; }
+
+	mkdir -p "$STATEDIR" /var/log
+
+	# NitroTPM can transiently enter a failure state right after boot;
+	# retry a few times before declaring failure (do not block boot long).
+	i=0
+	while [ $i -lt 6 ]; do
+		if [ -e /dev/tpm0 ] || [ -e /dev/tpmrm0 ]; then
+			break
+		fi
+		i=$((i + 1))
+		sleep 5
+	done
+	if [ ! -e /dev/tpm0 ] && [ ! -e /dev/tpmrm0 ]; then
+		printf "Starting bootproof: "; echo "FAIL (no TPM device)"
+		return 1
+	fi
+
+	printf "Starting bootproof: "
+	nohup "$DAEMON" attest --listen "$LISTEN" --state "$STATEDIR" >> "$LOGFILE" 2>&1 &
+	echo $! > "$PIDFILE"
+	echo "OK (pid $(cat "$PIDFILE"), $LISTEN)"
+}
+
+stop() {
+	printf "Stopping bootproof: "
+	if [ -f "$PIDFILE" ]; then
+		kill "$(cat "$PIDFILE")" 2>/dev/null
+		rm -f "$PIDFILE"
+	fi
+	echo "OK"
+}
+
+case "$1" in
+	start)   start ;;
+	stop)    stop ;;
+	restart) stop; start ;;
+	*) echo "Usage: $0 {start|stop|restart}" ;;
+esac
+
+exit $?
