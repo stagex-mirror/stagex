@@ -1,0 +1,19 @@
+FROM stagex/pallet-rust AS build
+ARG VERSION
+ARG TARGETARCH
+ADD fetch/rust-dhcp-${VERSION}.tar.gz .
+WORKDIR /rust-dhcp-${VERSION}
+ENV RUSTFLAGS='-C codegen-units=1 -C target-feature=+crt-static'
+RUN cargo fetch
+RUN --network=none <<-EOF
+  set -eux
+  ARCH=$(uname -m)
+  cargo build \
+    --frozen \
+    --release \
+    --target "${ARCH}-unknown-linux-musl" \
+    -p dhcp-client
+  install -vDm755 target/${ARCH}-unknown-linux-musl/release/client /rootfs/usr/bin/dhcp-client
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

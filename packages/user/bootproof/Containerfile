@@ -1,0 +1,21 @@
+FROM stagex/pallet-rust AS build
+ARG VERSION
+ARG TARGETARCH
+ADD fetch/bootproof-${VERSION}.tar.gz .
+WORKDIR /bootproof
+ENV RUSTFLAGS='-C codegen-units=1 -C target-feature=+crt-static'
+RUN cargo fetch
+RUN --network=none <<-EOF
+  set -eux
+  ARCH=$(uname -m)
+  cargo build \
+    --frozen \
+    --release \
+    --target "${ARCH}-unknown-linux-musl" \
+    -p bootproof \
+    -p bootproofd
+  install -vDm755 target/${ARCH}-unknown-linux-musl/release/bootproof /rootfs/usr/bin/bootproof
+  install -vDm755 target/${ARCH}-unknown-linux-musl/release/bootproofd /rootfs/usr/bin/bootproofd
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

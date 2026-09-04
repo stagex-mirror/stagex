@@ -1,0 +1,12 @@
+[package]
+name = "rust-dhcp"
+version = "a93c24f65f9e37fa19f5dd9e8cd7bc453ad81b13"
+description = "Rust DHCP client daemon (RFC 2131/5227): DORA, T1/T2 renewal, netlink config"
+license = "MIT"
+website = "https://github.com/ludi317/rust-dhcp"
+
+[sources.rust-dhcp]
+hash = "b4bad63d81425b153363af5f2188be8a10c6a0d307a06025e5ccc0d1a014a9d3"
+format = "tar.gz"
+file = "rust-dhcp-{version}.{format}"
+mirrors = ["https://github.com/ludi317/rust-dhcp/archive/{version}.{format}"]
