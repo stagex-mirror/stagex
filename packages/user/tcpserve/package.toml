@@ -1,5 +1,0 @@
-[package]
-name = "tcpserve"
-version = "0.1.0"
-description = "Minimal serial TCP listener: bind a port, run a command with each connection as stdin/stdout (replaces busybox tcpsvd)"
-license = "ISC"
