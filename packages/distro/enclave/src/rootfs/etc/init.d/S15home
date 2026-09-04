@@ -91,7 +91,8 @@ tpm_retry() {
 	return 1
 }
 
-# Pick a direct TPM TCTI (abrmd starts later, in S51).
+# Use the direct device TCTI (no tpm2-abrmd in this image; the kernel
+# RM on /dev/tpmrm0 handles concurrency if needed).
 if [ -c /dev/tpm0 ]; then
 	export TCTI="device:/dev/tpm0"
 elif [ -c /dev/tpmrm0 ]; then

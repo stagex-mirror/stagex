@@ -8,7 +8,6 @@ FROM stagex/core-libzstd AS core-libzstd
 FROM stagex/core-libunwind AS core-libunwind
 FROM stagex/user-tinyssh AS user-tinyssh
 FROM stagex/user-dhcpcd AS user-dhcpcd
-FROM stagex/user-sxctl AS user-sxctl
 FROM stagex/user-linux-enclave AS user-linux-enclave
 FROM stagex/user-tpm2-tss AS user-tpm2-tss
 FROM stagex/user-tpm2-tools AS user-tpm2-tools
@@ -16,8 +15,6 @@ FROM stagex/user-sevctl AS user-sevctl
 FROM stagex/user-bootproof AS user-bootproof
 FROM stagex/user-snpguest AS user-snpguest
 FROM stagex/user-snptpm-agent AS user-snptpm-agent
-FROM stagex/user-tpm2-abrmd AS user-tpm2-abrmd
-FROM stagex/user-dbus AS user-dbus
 FROM stagex/user-cryptsetup AS user-cryptsetup
 FROM stagex/user-popt AS user-popt
 FROM stagex/user-device-mapper AS user-device-mapper
@@ -64,13 +61,9 @@ COPY src/rootfs/etc/init.d/S03dhcpcd /etc/init.d/
 COPY src/rootfs/etc/init.d/S04dhcpcd-watchdog /etc/init.d/
 COPY src/rootfs/etc/init.d/S06cloud-init-net /etc/init.d/
 COPY src/rootfs/etc/init.d/S15home /etc/init.d/
-COPY src/rootfs/etc/init.d/S51tpm2-abrmd /etc/init.d/
 COPY src/dev/rootfs/etc/init.d/S50sshd /etc/init.d/
 COPY --from=user-dhcpcd /usr/sbin/dhcpcd /sbin/dhcpcd
 COPY --from=user-tinyssh . /
-COPY --from=user-sxctl . /
-COPY --from=user-dbus . /
-COPY --from=user-tpm2-abrmd . /
 COPY --from=user-bootproof . /
 COPY --from=user-cryptsetup . /
 COPY --from=user-popt . /

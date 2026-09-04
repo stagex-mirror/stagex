@@ -7,7 +7,7 @@
 # against the local disk image's partition, giving a byte-level link from
 # the TPM quote to the exact root filesystem that /init executed.
 #
-# Runs late (S54, after S10udev + S51tpm2-abrmd): the rootfs partition is
+# Runs late (S54, after S10udev): the rootfs partition is
 # read-only erofs, so measuring it later is cryptographically equivalent to
 # measuring it at mount, and late runs avoid races with device-node creation
 # and the TPM resource manager.
