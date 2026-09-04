@@ -25,6 +25,12 @@ mark() {
 
 mark "rcS-start esp=$ESP_DEV"
 
+# Loopback must be up: nothing else brings it up on this minimal system,
+# and every in-guest service (ssh, bootproof, tpm tools) needs 127.0.0.1.
+# (A DOWN loopback silently breaks all in-guest connectivity — it masquerades
+# as a network/daemon failure.)
+ip link set lo up 2>/dev/null || ifconfig lo up 2>/dev/null || true
+
 # Start all init scripts in /etc/init.d
 # executing them in numerical order.
 #
