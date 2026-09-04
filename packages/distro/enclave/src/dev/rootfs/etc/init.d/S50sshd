@@ -20,9 +20,12 @@ start() {
 
 	[ -f "$KEYDIR/ed25519.pk" ] || { printf "Starting %s: " "$DAEMON"; echo "FAIL (no host key)"; return 1; }
 
-	# Use tcpsvd to listen; tinysshd handles one connection at a time (no daemonization)
+	# tcpserve owns :22 and feeds each accepted connection to one
+	# tinysshd process as stdin/stdout (tinysshd has no port of its own).
+	# Connections are served serially — one at a time — which is fine for
+	# the enclave. Replaces busybox tcpsvd.
 	printf "Starting %s: " "$DAEMON"
-	nohup busybox tcpsvd -vE 0.0.0.0 22 /usr/sbin/$DAEMON -v "$KEYDIR" </dev/null >/var/log/tinysshd.log 2>&1 &
+	nohup /usr/bin/tcpserve 0.0.0.0 22 /usr/sbin/$DAEMON -v "$KEYDIR" </dev/null >/var/log/tinysshd.log 2>&1 &
 	echo $! > "$PIDFILE"
 	echo "OK"
 	return 0
@@ -34,6 +37,8 @@ stop() {
 		kill "$(cat "$PIDFILE")" 2>/dev/null
 		rm -f "$PIDFILE"
 	fi
+	# An in-flight connection's tinysshd child would be orphaned; kill it too.
+	pkill -f "/usr/sbin/$DAEMON" 2>/dev/null
 	echo "OK"
 	return 0
 }

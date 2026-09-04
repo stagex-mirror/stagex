@@ -15,6 +15,7 @@ FROM stagex/user-sevctl AS user-sevctl
 FROM stagex/user-bootproof AS user-bootproof
 FROM stagex/user-snpguest AS user-snpguest
 FROM stagex/user-snptpm-agent AS user-snptpm-agent
+FROM stagex/user-tcpserve AS user-tcpserve
 FROM stagex/user-cryptsetup AS user-cryptsetup
 FROM stagex/user-popt AS user-popt
 FROM stagex/user-device-mapper AS user-device-mapper
@@ -48,7 +49,6 @@ COPY src/rootfs/etc/init.d/S02modules /etc/init.d/
 COPY src/rootfs/etc/init.d/S10udev /etc/init.d/
 COPY src/rootfs/etc/init.d/S20urandom /etc/init.d/
 COPY src/rootfs/etc/init.d/S05cloud-init-drive /etc/init.d/
-COPY src/init /init
 COPY src/rootfs/oldroot /oldroot
 COPY --from=user-tpm2-tss . /
 COPY --from=user-tpm2-tools . /
@@ -76,6 +76,7 @@ COPY --from=user-util-linux . /
 COPY --from=core-ncurses . /
 COPY --from=user-snpguest . /
 COPY --from=user-snptpm-agent . /
+COPY --from=user-tcpserve /usr/bin/tcpserve /usr/bin/tcpserve
 COPY src/rootfs/etc/init.d/S53snptpm-agent /etc/init.d/
 COPY src/rootfs/etc/init.d/S55bootproof /etc/init.d/
 # Full SPDX build-provenance document (git origin/branch/commit + every
