@@ -1,0 +1,17 @@
+[package]
+name = "sshdt"
+# Pinned to commit 4f7d8f5 (tag v0.2.0) of
+# https://github.com/prabirshrestha/sshdt: a self-contained SSH server on
+# russh that listens on a port directly (no tcpsvd front-end), authenticates
+# by public key against authorized_keys, and provides PTY shell / SFTP /
+# ssh -L forwarding. Replaces busybox tcpsvd + tinysshd in the enclave.
+version = "4f7d8f5111bbeb35b1f6165c7e311998e4009a4b"
+description = "Rust SSH server daemon on russh: pubkey auth, PTY shell, SFTP, direct-tcpip forwarding"
+license = "MIT OR Apache-2.0"
+website = "https://github.com/prabirshrestha/sshdt"
+
+[sources.sshdt]
+hash = "9db3766afe3cd18a4354f5fcf7167211888aee614e943be43756ac270bb13dfb"
+format = "tar.gz"
+file = "sshdt-{version}.{format}"
+mirrors = ["https://github.com/prabirshrestha/sshdt/archive/{version}.{format}"]

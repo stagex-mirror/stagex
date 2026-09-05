@@ -1,28 +1,59 @@
 #!/bin/sh
-DAEMON="tinysshd"
-PIDFILE="/var/run/$DAEMON.pid"
-KEYDIR="/run/tinyssh/keys"
+# S50sshd — start the enclave SSH server (sshdt)
+#
+# sshdt (Rust, russh) listens on 0.0.0.0:22 directly — no tcpsvd front-end.
+# Public-key auth only, against the cloud-init-seeded
+# /root/.ssh/authorized_keys. sshdt auto-accepts anonymous (`none`) auth
+# when NO key is configured, so this script is fail-closed: it refuses to
+# start unless a key is present, and waits briefly for cloud-init (S05/S06)
+# to seed one. Host key is per-boot (regenerated in the /run/ssh tmpfs).
 
-ensure_host_key() {
-	[ -f "$KEYDIR/ed25519.pk" ] || /usr/sbin/tinysshd-makekey "$KEYDIR"
+DAEMON="sshdt"
+PIDFILE="/var/run/$DAEMON.pid"
+LOGFILE="/var/log/$DAEMON.log"
+HOSTKEY="/run/ssh/host_ed25519"
+AUTHORIZED="/root/.ssh/authorized_keys"
+CONF="/run/ssh/sshdt.conf"
+
+write_conf() {
+	# Port 22, all interfaces. Pubkey only: no password, no anonymous
+	# (`none`) fallback even if the key file is ever empty.
+	printf '%s\n' \
+		"Port 22" \
+		"ListenAddress 0.0.0.0" \
+		"HostKey $HOSTKEY" \
+		"AuthorizedKeysFile $AUTHORIZED" \
+		"PasswordAuthentication no" \
+		> "$CONF"
 }
 
-sync_authorized_keys() {
-	# Copy cloud-seeded authorized_keys to tinyssh key directory
-	if [ -s /root/.ssh/authorized_keys ]; then
-		cat /root/.ssh/authorized_keys >> "$KEYDIR/authorized_keys"
-	fi
+wait_for_key() {
+	# The key file must exist and hold at least one key line. Cloud-init
+	# seeds it synchronously before this script (S05 drive / S06 net), but
+	# a slow metadata fetch can lose the race on first boot.
+	i=0
+	while [ $i -lt 30 ]; do
+		[ -s "$AUTHORIZED" ] && grep -qE '^(ssh-|ecdsa-|sk-|comment=)' "$AUTHORIZED" && return 0
+		i=$((i + 1))
+		sleep 3
+	done
+	return 1
 }
 
 start() {
-	ensure_host_key
-	sync_authorized_keys
-
-	[ -f "$KEYDIR/ed25519.pk" ] || { printf "Starting %s: " "$DAEMON"; echo "FAIL (no host key)"; return 1; }
-
-	# Use tcpsvd to listen; tinysshd handles one connection at a time (no daemonization)
 	printf "Starting %s: " "$DAEMON"
-	nohup busybox tcpsvd -vE 0.0.0.0 22 /usr/sbin/$DAEMON -v "$KEYDIR" </dev/null >/var/log/tinysshd.log 2>&1 &
+
+	if ! wait_for_key; then
+		# No key: sshdt would accept anonymous connections. Stay closed.
+		echo "FAIL (no authorized key; refusing to run open)"
+		return 1
+	fi
+
+	mkdir -p /run/ssh /var/log
+	chmod 700 /run/ssh
+	write_conf
+
+	nohup "$DAEMON" -f "$CONF" -E "$LOGFILE" </dev/null >/dev/null 2>&1 &
 	echo $! > "$PIDFILE"
 	echo "OK"
 	return 0
@@ -35,7 +66,6 @@ stop() {
 		rm -f "$PIDFILE"
 	fi
 	echo "OK"
-	return 0
 }
 
 case "$1" in

@@ -6,7 +6,7 @@ FROM stagex/core-openssl AS core-openssl
 FROM stagex/core-curl AS core-curl
 FROM stagex/core-libzstd AS core-libzstd
 FROM stagex/core-libunwind AS core-libunwind
-FROM stagex/user-tinyssh AS user-tinyssh
+FROM stagex/user-sshdt AS user-sshdt
 FROM stagex/user-rust-dhcp AS user-rust-dhcp
 FROM stagex/user-linux-enclave AS user-linux-enclave
 FROM stagex/user-tpm2-tss AS user-tpm2-tss
@@ -48,14 +48,13 @@ COPY src/rootfs/etc/init.d/S02modules /etc/init.d/
 COPY src/rootfs/etc/init.d/S10udev /etc/init.d/
 COPY src/rootfs/etc/init.d/S20urandom /etc/init.d/
 COPY src/rootfs/etc/init.d/S05cloud-init-drive /etc/init.d/
-COPY src/init /init
 COPY src/rootfs/oldroot /oldroot
 COPY --from=user-tpm2-tss . /
 COPY --from=user-tpm2-tools . /
 COPY --from=user-sevctl . /
 RUN mkdir -p /mnt /run /var/log /etc/keys /run/bootproof && touch /mnt/.keep
 
-# --- dev: default + server kernel + network + tinyssh + full attestation stack ---
+# --- dev: default + server kernel + network + sshdt + full attestation stack ---
 FROM rootfs AS rootfs-dev
 COPY src/rootfs/etc/init.d/S03rust-dhcp /etc/init.d/
 COPY src/rootfs/etc/init.d/S04rust-dhcp-watchdog /etc/init.d/
@@ -63,7 +62,7 @@ COPY src/rootfs/etc/init.d/S06cloud-init-net /etc/init.d/
 COPY src/rootfs/etc/init.d/S15home /etc/init.d/
 COPY src/dev/rootfs/etc/init.d/S50sshd /etc/init.d/
 COPY --from=user-rust-dhcp /usr/bin/dhcp-client /usr/bin/dhcp-client
-COPY --from=user-tinyssh . /
+COPY --from=user-sshdt . /
 COPY --from=user-bootproof . /
 COPY --from=user-cryptsetup . /
 COPY --from=user-popt . /

@@ -3,6 +3,9 @@ ARG VERSION
 ARG TARGETARCH
 ADD fetch/nit-${VERSION}.tar.gz .
 WORKDIR /nit
+# Static by necessity: nit is the initramfs init (cpio /init), executed by
+# the kernel before any rootfs is mounted — there is no musl dynamic loader
+# in memory at that point. (Every other in-rootfs Rust binary is dynamic.)
 ENV RUSTFLAGS='-C codegen-units=1 -C target-feature=+crt-static'
 RUN cargo fetch
 RUN --network=none <<-EOF

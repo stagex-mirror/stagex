@@ -3,7 +3,10 @@ ARG VERSION
 ARG TARGETARCH
 ADD fetch/bootproof-${VERSION}.tar.gz .
 WORKDIR /bootproof
-ENV RUSTFLAGS='-C codegen-units=1 -C target-feature=+crt-static'
+# Dynamic: pallet-rust's musl target defaults to dynamic linking (the
+# toolchain patches crt_static_default off). Links against the shared musl
+# runtime (core-musl + core-libunwind) already shipped in the rootfs.
+ENV RUSTFLAGS='-C codegen-units=1'
 RUN cargo fetch
 RUN --network=none <<-EOF
   set -eux

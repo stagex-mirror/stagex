@@ -1,8 +1,8 @@
 FROM stagex/pallet-rust AS build
 ARG VERSION
 ARG TARGETARCH
-ADD fetch/rust-dhcp-${VERSION}.tar.gz .
-WORKDIR /rust-dhcp-${VERSION}
+ADD fetch/sshdt-${VERSION}.tar.gz .
+WORKDIR /sshdt-${VERSION}
 # Dynamic: pallet-rust's musl target defaults to dynamic linking (the
 # toolchain patches crt_static_default off). Links against the shared musl
 # runtime (core-musl + core-libunwind) already shipped in the rootfs.
@@ -15,8 +15,8 @@ RUN --network=none <<-EOF
     --frozen \
     --release \
     --target "${ARCH}-unknown-linux-musl" \
-    -p dhcp-client
-  install -vDm755 target/${ARCH}-unknown-linux-musl/release/client /rootfs/usr/bin/dhcp-client
+    -p sshdt
+  install -vDm755 target/${ARCH}-unknown-linux-musl/release/sshdt /rootfs/usr/bin/sshdt
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

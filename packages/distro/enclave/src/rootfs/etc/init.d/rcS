@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Boot progress marker (persistent, on ESP partition 1) — see initramfs/init
+# Boot progress marker (persistent, on ESP partition 1) — see nit (initramfs init)
 ESP_DEV=""
 for d in /dev/nvme0n1p1 /dev/sda1 /dev/vda1 /dev/xvda1; do
     [ -b "$d" ] && { ESP_DEV="$d"; break; }
