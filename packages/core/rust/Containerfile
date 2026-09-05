@@ -377,6 +377,13 @@ COPY --chmod=0755 <<-'EOF' build
 
 	/sanitize_rust-src .
 
+	# Backport of upstream rustc#161450 (rust-lang/rust#129094): the encoding
+	# of syntax contexts was non-deterministic (iterating an unordered set),
+	# which made crate metadata and the crate-hash/SVH differ between otherwise
+	# identical builds. Remap syntax contexts to a deterministic encoding index
+	# so the toolchain produces reproducible metadata/binary output.
+	patch -p1 -f -N -i /hygiene-129094-fix.patch || true
+
 	# Remove all outstanding `cargo-checksum` files as we removed files they may or may not commit to
 	for crate in $(ls ./vendor); do
 		if [ -f "./vendor/$crate/.cargo-checksum.json" ]; then
