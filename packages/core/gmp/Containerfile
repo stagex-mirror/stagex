@@ -17,6 +17,7 @@ ADD fetch/gmp-${VERSION}.tar.xz .
 WORKDIR /gmp-${VERSION}
 RUN --network=none <<EOF
 	set -eux
+	sed -i '/^  riscv64-\*-\*)/,/^    ;;/s|cclist="gcc"|cclist="gcc cc"\n    cc_cflags="-O2"|' configure
 	./configure \
 		--prefix=/usr \
 		--build=$(uname -m)-linux-musl
