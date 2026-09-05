@@ -62,7 +62,7 @@ RUN --network=none <<-EOF
 
 	# Configure for `musl`
 	cmake_cache_set LLVM_HOST_TRIPLE "${ARCH}-linux-musl"
-	cmake_cache_set LLVM_TARGET_ARCH "$LLVM_TARGET_ARCH"
+	cmake_cache_set LLVM_TARGET_ARCH "${ARCH}"
 	cmake_cache_set LLVM_RUNTIME_TARGETS "${ARCH}-linux-musl"
 	cmake_cache_set LLVM_BUILTIN_TARGETS "${ARCH}-linux-musl"
 	cmake_runtime_cache_set LIBCXX_HAS_MUSL_LIBC ON
