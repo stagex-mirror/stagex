@@ -1,3 +1,5 @@
 ::sysinit:/etc/init.d/rcS
-::respawn:/bin/getty 115200 ttyS0
+# No getty: the only interactive surface is sshdt on :22 (fail-closed,
+# key-only). The serial line stays a kernel log console (cmdline
+# console=ttyS0) with no login prompt on it.
 ::shutdown:/bin/umount -a -r
