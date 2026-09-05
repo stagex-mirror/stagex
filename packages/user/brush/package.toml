@@ -1,0 +1,18 @@
+[package]
+name = "brush"
+# Pinned to commit a250b84 of https://github.com/reubeno/brush: a
+# Rust-implemented POSIX/bash-compatible shell. The brush binary is
+# installed at /usr/bin/brush with /usr/bin/sh symlinked to it
+# (core-filesystem has /bin -> usr/bin, so /bin/sh == /usr/bin/sh),
+# replacing busybox ash as the interpreter for rcS, the S??* init
+# scripts, and sshdt login sessions.
+version = "a250b84eb56e4b7a36db4ac169c2938d194b998d"
+description = "Rust POSIX shell (brush) installed as /bin/sh, with /usr/bin/brush as an alias"
+license = "MIT"
+website = "https://github.com/reubeno/brush"
+
+[sources.brush]
+hash = "236d66277d66513ea770e36aa42b7772f215ce4fb0af73e231a1e47883454333"
+format = "tar.gz"
+file = "brush-{version}.{format}"
+mirrors = ["https://github.com/reubeno/brush/archive/{version}.{format}"]

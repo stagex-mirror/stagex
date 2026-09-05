@@ -7,6 +7,7 @@ FROM stagex/core-curl AS core-curl
 FROM stagex/core-libzstd AS core-libzstd
 FROM stagex/core-libunwind AS core-libunwind
 FROM stagex/user-sshdt AS user-sshdt
+FROM stagex/user-brush AS user-brush
 FROM stagex/user-rust-dhcp AS user-rust-dhcp
 FROM stagex/user-linux-enclave AS user-linux-enclave
 FROM stagex/user-tpm2-tss AS user-tpm2-tss
@@ -63,6 +64,7 @@ COPY src/rootfs/etc/init.d/S15home /etc/init.d/
 COPY src/dev/rootfs/etc/init.d/S50sshd /etc/init.d/
 COPY --from=user-rust-dhcp /usr/bin/dhcp-client /usr/bin/dhcp-client
 COPY --from=user-sshdt . /
+COPY --from=user-brush . /
 COPY --from=user-bootproof . /
 COPY --from=user-cryptsetup . /
 COPY --from=user-popt . /

@@ -1,0 +1,26 @@
+FROM stagex/pallet-rust AS build
+ARG VERSION
+ARG TARGETARCH
+ADD fetch/brush-${VERSION}.tar.gz .
+WORKDIR /brush-${VERSION}
+# Dynamic: pallet-rust's musl target defaults to dynamic linking (the
+# toolchain patches crt_static_default off). Links against the shared
+# musl runtime (core-musl + core-libunwind) already shipped in the
+# rootfs.
+ENV RUSTFLAGS='-C codegen-units=1'
+RUN cargo fetch
+RUN --network=none <<-EOF
+  set -eux
+  ARCH=$(uname -m)
+  cargo build \
+    --frozen \
+    --release \
+    --target "${ARCH}-unknown-linux-musl" \
+    -p brush
+  # The brush binary is the system shell: /usr/bin/sh is a symlink to
+  # it (core-filesystem has /bin -> usr/bin, so /bin/sh resolves here).
+  install -vDm755 target/${ARCH}-unknown-linux-musl/release/brush /rootfs/usr/bin/brush
+  ln -s brush /rootfs/usr/bin/sh
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
