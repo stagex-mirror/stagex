@@ -1,0 +1,5 @@
+PATH=/usr/sbin:/usr/bin:/sbin:/bin
+HOME=/root
+TERM=linux
+SHELL=/bin/sh
+RUST_LOG=info

@@ -1,0 +1,29 @@
+FROM stagex/pallet-rust AS build
+ARG VERSION
+ARG TARGETARCH
+ADD fetch/execd-${VERSION}.tar.gz .
+WORKDIR /execd
+# Dynamic, like the other in-rootfs Rust binaries (rust-dhcp, sshdt, ...):
+# pallet-rust's musl target defaults to dynamic linking, and the shared musl
+# runtime (core-musl + core-libunwind) is already shipped in the rootfs.
+# (nit is the exception — it is static because the kernel execs it before
+# any rootfs exists. execd runs after the pivot, so it can be dynamic.)
+#
+# execd is the unikernel init's replacement supervisor: nit calls it
+# directly via `nit.mode=exec nit.target=/usr/bin/execd`. Its reaper parent
+# is PID 1 (liveness floor + signal guard), so nothing else here matters for
+# correctness — just a working musl build.
+ENV RUSTFLAGS='-C codegen-units=1'
+RUN cargo fetch
+RUN --network=none <<-EOF
+  set -eux
+  ARCH=$(uname -m)
+  cargo build \
+    --frozen \
+    --release \
+    --target "${ARCH}-unknown-linux-musl" \
+    -p execd
+  install -vDm755 target/${ARCH}-unknown-linux-musl/release/execd /rootfs/usr/bin/execd
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

@@ -1,0 +1,26 @@
+[package]
+name = "execd"
+# Pinned to commit 8c76ab3 (branch main) of
+# https://codeberg.org/lrvick/execd: a Rust HCL unit supervisor. Loads HCL
+# unit files from /etc/execd/units/, resolves the depends DAG, runs oneshot
+# units to completion (command/args or a `script` shell body via /bin/sh -c),
+# keeps standard units alive under a restart policy, and gates dependents on
+# health checks (provided_sockets / provided_files). PID-1 safe: main forks —
+# the parent is the child-reaper (with a liveness floor so PID 1 can never
+# exit and a SIGHUP/SIGINT/SIGTERM guard), the child runs the tokio
+# controller, which never aborts over a failed unit and holds the box open
+# when all supervision ends. nit calls it directly via
+# `nit.mode=exec nit.target=/usr/bin/execd`, replacing the rcS S??* loop.
+# 5cb1e3c additionally treats a missing /proc/net/<family> file (no
+# CONFIG_INET6 / CONFIG_UNIX) as "no sockets of that type" instead of an
+# error, so dependency health checks cannot stall the DAG on such kernels.
+version = "6b0b9be8ce3fbab6191d6646a53b8c7ba2bad1c3"
+description = "Rust HCL unit supervisor: depends DAG, oneshot/standard units, restart policy, socket/file health"
+license = "MIT"
+website = "https://codeberg.org/lrvick/execd"
+
+[sources.execd]
+hash = "71b1827d03b6570020281920401d969a053e9c87b7c6fbbc584b3ab5e0870b07"
+format = "tar.gz"
+file = "execd-{version}.{format}"
+mirrors = ["https://codeberg.org/lrvick/execd/archive/{version}.{format}"]

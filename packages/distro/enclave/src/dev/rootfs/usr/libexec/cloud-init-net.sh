@@ -1,5 +1,13 @@
 #!/bin/sh
-# S06cloud-init-net — seed hostname + ssh keys from cloud metadata service
+# cloud-init-net.sh — seed hostname + ssh keys from the cloud metadata service.
+#
+# Ported verbatim from the S06cloud-init-net init script (QEMU/AWS-
+# verified). Runs after dhcp has a lease. Fetches hostname (IMDSv1 then
+# instance-id fallback) and user-data (IMDSv1, then IMDSv2 token) and
+# keeps the raw user-data at /run/userdata for the home unit (home user
+# name + keys).
+#
+# Always exits 0: a slow or absent metadata service must not break boot.
 
 HOSTNAME_FILE="/etc/hostname"
 KEYS_FILE="/root/.ssh/authorized_keys"
@@ -49,13 +57,19 @@ if [ ! -s "$KEYS_FILE" ]; then
 		fi
 	fi
 	if [ -n "$data" ]; then
-		mkdir -p /root/.ssh
 		chmod 700 /root/.ssh
 		# Only key lines belong in authorized_keys (user-data is the SSH key;
 		# the filter is defensive in case anything else is ever appended).
-		printf '%s\n' "$data" | grep -E '^(ssh-|ecdsa-|sk-|comment=)' > "$KEYS_FILE"
-		chmod 600 "$KEYS_FILE"
-		# Keep the raw user-data for S15home (home user name + keys).
+		# Write the file ONLY if the filter matched a line: sshdt's start
+		# gate is file-existence, and an empty authorized_keys would make
+		# sshdt fall back to anonymous auth (open SSH).
+		KLINES=$(printf '%s\n' "$data" | grep -E '^(ssh-|ecdsa-|sk-|comment=)')
+		if [ -n "$KLINES" ]; then
+			mkdir -p /root/.ssh
+			printf '%s\n' "$KLINES" > "$KEYS_FILE"
+			chmod 600 "$KEYS_FILE"
+		fi
+		# Keep the raw user-data for the home unit (home user name + keys).
 		printf '%s\n' "$data" > /run/userdata
 		printf "Cloud-init (net): user-data fetched (%d bytes)\n" "${#data}" >&2
 	else
@@ -66,3 +80,4 @@ else
 fi
 
 printf "Cloud-init (net): done\n" >&2
+exit 0

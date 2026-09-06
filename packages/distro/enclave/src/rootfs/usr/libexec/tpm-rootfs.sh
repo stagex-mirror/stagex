@@ -1,24 +1,26 @@
 #!/bin/sh
-# S54tpm-rootfs — bind the TPM channel to the root filesystem.
+# tpm-rootfs.sh — bind the TPM channel to the root filesystem.
 #
+# Ported verbatim from the S54tpm-rootfs init script (QEMU/AWS-verified).
 # Extends PCR 11 with SHA-256 of the raw system partition (erofs rootfs
 # image bytes). The verifier then checks:
 #   live PCR 11 == SHA256_extend(0, SHA256(rootfs_partition_bytes))
 # against the local disk image's partition, giving a byte-level link from
 # the TPM quote to the exact root filesystem that /init executed.
 #
-# Runs late (S54, after S10udev): the rootfs partition is
-# read-only erofs, so measuring it later is cryptographically equivalent to
-# measuring it at mount, and late runs avoid races with device-node creation
-# and the TPM resource manager.
+# Ordering (execd): depends on lo only. The rootfs partition is read-only
+# erofs, so measuring it at any point after boot is cryptographically
+# equivalent to measuring it at mount; the only requirement is that the
+# block device node exists, and devtmpfs creates all of them before
+# execd starts.
 #
 # Retries: NitroTPM intermittently enters failure states ("commands not
 # being accepted because of a TPM failure") and recovers within seconds.
 # A single un-retried tpm2_pcrextend at boot failed silently before.
 #
-# Status is written to /run/tpm-rootfs.status (tmpfs) so an SSH session can
-# inspect the outcome; the script is always tolerant (exit 0) and can never
-# break boot.
+# Status is written to /run/tpm-rootfs.status (tmpfs) so an SSH session
+# can inspect the outcome; the script is always tolerant (exit 0) and can
+# never break boot.
 
 ROOT_DEV=""
 for d in /dev/nvme0n1p2 /dev/sda2 /dev/vda2 /dev/xvda2 /dev/hda2; do

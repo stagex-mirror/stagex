@@ -15,6 +15,7 @@ FROM stagex/user-sevctl AS user-sevctl
 FROM stagex/user-bootproof AS user-bootproof
 FROM stagex/user-snpguest AS user-snpguest
 FROM stagex/user-snptpm-agent AS user-snptpm-agent
+FROM stagex/user-execd AS user-execd
 FROM stagex/user-cryptsetup AS user-cryptsetup
 FROM stagex/user-popt AS user-popt
 FROM stagex/user-device-mapper AS user-device-mapper
@@ -32,6 +33,11 @@ FROM stagex/box-cpio AS box-cpio
 # ============================================================
 
 # --- default (enclave): attestation + virtualization tools ---
+# Init: execd (nit.mode=exec nit.target=/usr/bin/execd). The unit set lives
+# in /etc/execd/units (HCL); the base image carries lo + tpm-rootfs, the dev
+# variant adds the network/ssh/attestation daemons. The busybox init stack
+# (inittab + rcS + S??*) is gone: execd is PID 1 after nit's execve and its
+# reaper parent handles orphan reaping + the liveness floor.
 FROM scratch AS rootfs
 COPY --from=core-filesystem . /
 COPY --from=core-busybox . /
@@ -41,26 +47,19 @@ COPY --from=core-openssl . /
 COPY --from=core-curl . /
 COPY --from=core-libzstd . /
 COPY --from=core-libunwind . /
-COPY src/rootfs/etc/init.d/rcS /etc/init.d/
-COPY src/rootfs/etc/inittab /etc/inittab
-COPY src/rootfs/etc/init.d/S54tpm-rootfs /etc/init.d/
-COPY src/rootfs/etc/init.d/S02modules /etc/init.d/
-COPY src/rootfs/etc/init.d/S10udev /etc/init.d/
-COPY src/rootfs/etc/init.d/S20urandom /etc/init.d/
-COPY src/rootfs/etc/init.d/S05cloud-init-drive /etc/init.d/
+COPY --from=user-execd /usr/bin/execd /usr/bin/execd
+COPY src/rootfs/etc/environment /etc/environment
+COPY src/rootfs/etc/execd/units/lo.hcl /etc/execd/units/
+COPY src/rootfs/etc/execd/units/tpm-rootfs.hcl /etc/execd/units/
+COPY src/rootfs/usr/libexec/tpm-rootfs.sh /usr/libexec/
 COPY src/rootfs/oldroot /oldroot
 COPY --from=user-tpm2-tss . /
 COPY --from=user-tpm2-tools . /
 COPY --from=user-sevctl . /
-RUN mkdir -p /mnt /run /var/log /etc/keys /run/bootproof && touch /mnt/.keep
+RUN mkdir -p /mnt /run /var/log /etc/keys && touch /mnt/.keep
 
 # --- dev: default + server kernel + network + sshdt + full attestation stack ---
 FROM rootfs AS rootfs-dev
-COPY src/rootfs/etc/init.d/S03rust-dhcp /etc/init.d/
-COPY src/rootfs/etc/init.d/S04rust-dhcp-watchdog /etc/init.d/
-COPY src/rootfs/etc/init.d/S06cloud-init-net /etc/init.d/
-COPY src/rootfs/etc/init.d/S15home /etc/init.d/
-COPY src/dev/rootfs/etc/init.d/S50sshd /etc/init.d/
 COPY --from=user-rust-dhcp /usr/bin/dhcp-client /usr/bin/dhcp-client
 COPY --from=user-sshdt . /
 COPY --from=user-bootproof . /
@@ -75,8 +74,18 @@ COPY --from=user-util-linux . /
 COPY --from=core-ncurses . /
 COPY --from=user-snpguest . /
 COPY --from=user-snptpm-agent . /
-COPY src/rootfs/etc/init.d/S53snptpm-agent /etc/init.d/
-COPY src/rootfs/etc/init.d/S55bootproof /etc/init.d/
+# execd units + one-shot setup scripts for the daemons above (see the unit
+# files for ordering: pure depends-graph, topo-sorted by execd).
+COPY src/dev/rootfs/etc/execd/units/dhcp.hcl /etc/execd/units/
+COPY src/dev/rootfs/etc/execd/units/cloud-init-drive.hcl /etc/execd/units/
+COPY src/dev/rootfs/etc/execd/units/cloud-init-net.hcl /etc/execd/units/
+COPY src/dev/rootfs/etc/execd/units/home.hcl /etc/execd/units/
+COPY src/dev/rootfs/etc/execd/units/sshdt.hcl /etc/execd/units/
+COPY src/dev/rootfs/etc/execd/units/snptpm-agent.hcl /etc/execd/units/
+COPY src/dev/rootfs/etc/execd/units/bootproof.hcl /etc/execd/units/
+COPY src/dev/rootfs/usr/libexec/cloud-init-drive.sh /usr/libexec/
+COPY src/dev/rootfs/usr/libexec/cloud-init-net.sh /usr/libexec/
+COPY src/dev/rootfs/usr/libexec/home.sh /usr/libexec/
 # Full SPDX build-provenance document (git origin/branch/commit + every
 # dependency's name/version/digest), generated into the build context by the
 # build and baked into the image; installed at /provenance.spdx.

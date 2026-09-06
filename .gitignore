@@ -38,8 +38,9 @@ __pycache__
 # QEMU runtime state
 .qemu-run/
 
-# Generated/temp files at root
-usr/
+# Generated/temp files at root (anchored: the distros carry source trees
+# under src/*/rootfs/usr/ that must stay trackable)
+/usr/
 /qemu-boot.sh
 /qemu-startup.sh
 /run-verify.sh

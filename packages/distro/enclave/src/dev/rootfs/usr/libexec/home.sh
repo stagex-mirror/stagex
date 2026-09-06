@@ -1,5 +1,5 @@
 #!/bin/sh
-# S15home — LUKS /home volume (TPM2 PCR-locked key) + unprivileged user setup
+# home.sh —  LUKS /home volume (TPM2 PCR-locked key) + unprivileged user setup
 #
 # TPM2 key protection, two-stage PCR policy:
 #   PCR 4 (OVMF boot path) and PCR 9 (initrd/cmdline data) are NOT stable on
@@ -159,10 +159,10 @@ mount_or_reformat() {
 	if run_io $MOUNT_LIMIT mount "$MAPPED" /home; then
 		return 0
 	fi
-	printf "S15home: mount failed, trying mkfs recovery on %s\n" "$disk"
+	printf "home: mount failed, trying mkfs recovery on %s\n" "$disk"
 	if run_io $MKFS_LIMIT mkfs.ext4 -q -L home "$MAPPED" && \
 		run_io $MOUNT_LIMIT mount "$MAPPED" /home; then
-		printf "S15home: (reformatted filesystem on %s)\n" "$disk"
+		printf "home: (reformatted filesystem on %s)\n" "$disk"
 		return 0
 	fi
 	cryptsetup close home
@@ -194,7 +194,7 @@ run_io() {
 		kill -0 "$pid" 2>/dev/null || break
 		now=$(date +%s)
 		if [ "$now" -ge "$deadline" ]; then
-			printf "S15home: WARN: I/O deadline (%ss) exceeded, abandoning step\n" "$limit"
+			printf "home: WARN: I/O deadline (%ss) exceeded, abandoning step\n" "$limit"
 			# Kill the step so it cannot keep burning vCPUs after boot
 			# continues. Do NOT wait: a process in uninterruptible I/O
 			# (D state) cannot die yet and would block the boot; the
@@ -241,7 +241,7 @@ setup_user() {
 	chmod 700 "/home/$home_user/.ssh"
 	[ -f "/home/$home_user/.ssh/authorized_keys" ] && \
 		chmod 600 "/home/$home_user/.ssh/authorized_keys"
-	printf "S15home: user %s ready (home=%s)\n" "$home_user" "/home/$home_user"
+	printf "home: user %s ready (home=%s)\n" "$home_user" "/home/$home_user"
 }
 
 # Map any mounted block device to its whole-disk name. Loop devices are
@@ -328,10 +328,10 @@ start() {
 							run_io $OPEN_LIMIT open_volume "$data_disk"; then
 						if mount_or_reformat "$data_disk"; then
 							rm -f "$KEYFILE"
-							printf "S15home: ok (luks %s, pcrs %s)\n" "$data_disk" "$FULL_PCRS"
+							printf "home: ok (luks %s, pcrs %s)\n" "$data_disk" "$FULL_PCRS"
 						else
 							rm -f "$KEYFILE"
-							printf "S15home: locked (mount failed; /home stays tmpfs)\n"
+							printf "home: locked (mount failed; /home stays tmpfs)\n"
 						fi
 					elif unseal_key "$SEED_HANDLE" "$SEED_PCRS" && \
 							run_io $OPEN_LIMIT open_volume "$data_disk"; then
@@ -343,23 +343,23 @@ start() {
 						if mount_or_reformat "$data_disk"; then
 							rm -f "$KEYFILE"
 							if [ "$migrated" = 1 ]; then
-								printf "S15home: ok (luks %s, seed pcrs %s, migrated to pcrs %s)\n" \
+								printf "home: ok (luks %s, seed pcrs %s, migrated to pcrs %s)\n" \
 									"$data_disk" "$SEED_PCRS" "$FULL_PCRS"
 							else
-								printf "S15home: ok (luks %s, seed pcrs %s)\n" \
+								printf "home: ok (luks %s, seed pcrs %s)\n" \
 									"$data_disk" "$SEED_PCRS"
 							fi
 						else
 							rm -f "$KEYFILE"
-							printf "S15home: locked (mount failed; /home stays tmpfs)\n"
+							printf "home: locked (mount failed; /home stays tmpfs)\n"
 						fi
 					else
 						rm -f "$KEYFILE"
-						printf "S15home: locked (TPM unseal failed; /home stays tmpfs)\n"
+						printf "home: locked (TPM unseal failed; /home stays tmpfs)\n"
 					fi
 				else
 					rm -f "$KEYFILE"
-					printf "S15home: locked (no TPM; /home stays tmpfs)\n"
+					printf "home: locked (no TPM; /home stays tmpfs)\n"
 				fi
 				;;
 			"")
@@ -391,7 +391,7 @@ start() {
 						run_io $MKFS_LIMIT mkfs.ext4 -q -L home "$MAPPED" && \
 						run_io $MOUNT_LIMIT mount "$MAPPED" /home; then
 						rm -f "$KEYFILE"
-						printf "S15home: ok (formatted %s, seed pcrs %s; full pcrs %s apply next boot)\n" \
+						printf "home: ok (formatted %s, seed pcrs %s; full pcrs %s apply next boot)\n" \
 							"$data_disk" "$SEED_PCRS" "$FULL_PCRS"
 					else
 						# Format/open/mkfs/mount failed (or the backing store is
@@ -401,34 +401,27 @@ start() {
 						# next boot re-formats and replaces the sealed key.
 						cryptsetup close home 2>/dev/null
 						rm -f "$KEYFILE"
-						printf "S15home: WARN: setup incomplete on %s, key kept for next boot — stop/start clears a stuck volume\n" "$data_disk"
+						printf "home: WARN: setup incomplete on %s, key kept for next boot — stop/start clears a stuck volume\n" "$data_disk"
 					fi
 				else
 					rm -f "$KEYFILE"
-					printf "S15home: setup failed on %s (keygen or TPM seal failed)\n" "$data_disk"
+					printf "home: setup failed on %s (keygen or TPM seal failed)\n" "$data_disk"
 				fi
 				;;
 			*)
-				printf "S15home: skipped (%s has %s)\n" "$data_disk" "$sig"
+				printf "home: skipped (%s has %s)\n" "$data_disk" "$sig"
 				;;
 		esac
 	else
-		printf "S15home: no data disk\n"
+		printf "home: no data disk\n"
 	fi
 
 	setup_user
 	return 0
 }
 
-stop() {
-	return 0
-}
 
-case "$1" in
-	start) start ;;
-	stop) stop ;;
-	restart) stop; start ;;
-	*) echo "Usage: $0 {start|stop|restart}"; exit 1 ;;
-esac
 
-exit $?
+# One-shot (execd oneshot unit): run the setup once, always exit 0.
+start
+exit 0
