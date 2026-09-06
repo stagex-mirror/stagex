@@ -1,16 +1,22 @@
 [package]
 name = "nit"
-# Pinned to a commit of https://codeberg.org/lrvick/nit (branch
-# spawn-supervisor): the unikernel init that both loop-mounts the erofs
-# system image and runs as PID 1 (inittab sysinit/respawn/shutdown).
-# Fetched as a source archive from the codeberg.org commit.
-version = "7ee07e3"
+# Pinned to the rustix-vendor branch of https://codeberg.org/lrvick/nit: the
+# unikernel init that loop-mounts the erofs system image, sets up the runtime
+# mounts, then runs as PID 1 (inittab sysinit/respawn/shutdown).
+#
+# This pin is the auditable vendor port: rustix + linux-raw-sys + bitflags
+# vendored as git subtrees (deletions-only vs upstream, enforced by
+# make vendor-diff-check), libc replaced by rustix + first-party raw shims,
+# live syscall tests on both arches, and QEMU boot acceptance on x86_64 and
+# aarch64 (make boot-test-all). The archive is the codeberg short-SHA archive
+# of 8953f8ee, byte-verified against the hash below.
+version = "8953f8ee"
 description = "Rust unikernel init: erofs unpack + pivot, then PID-1 supervision (replaces klibc initramfs init and busybox init)"
 license = "MIT"
 website = "https://codeberg.org/lrvick/nit"
 
 [sources.nit]
-hash = "e566c5f2d73d58d9830ab7b148cc153bde60689dc48ca79d489a956bae56b870"
+hash = "7fb7ff3119ea27d7bfbb13ba9b21e4eeb68a4cd62b25bb2805211f64fd0b3a04"
 format = "tar.gz"
 file = "nit-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/nit/archive/{version}.{format}"]
