@@ -1,12 +1,12 @@
 [package]
 name = "bootproof"
-version = "bb0256dc2dbd3fa8433490f5522b3cfdebb87ef0"
+version = "46834edab4619fa34a99450d36637f5a85995fce"
 description = "Rust remote attestation agent: TPM2 + SEV-SNP in-process (sev crate), zero OS-exec, identity self-heal"
 license = "MIT OR Apache-2.0"
 website = "https://codeberg.org/caution/bootproof"
 
 [sources.bootproof]
-hash = "dda300c51cfe8d8701b7352d3e2e329c92172f875187c6c87cd08f4bd8d0e47e"
+hash = "483ab3190d84e7853c77085da76829efac085e8882bf95bf424acf00293d4f5c"
 format = "tar.gz"
 file = "bootproof-{version}.{format}"
 mirrors = ["https://codeberg.org/caution/bootproof/archive/{version}.{format}"]
