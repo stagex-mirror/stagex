@@ -35,8 +35,11 @@ $(EC2_DISK_IMG): $(DISTRO_DISK_SRC)
 	@cp out/rootfs/distro-$(EC2_DISTRO)-img/linux_amd64/disk.img $(EC2_DISK_IMG)
 	@echo "  disk.img: $$(ls -lh $(EC2_DISK_IMG) | awk '{print $$5}')"
 
-# Import disk image as AMI via box-aws-ami, capture tfvars output
-aws-ami-deploy: $(EC2_DISK_IMG)
+# Import disk image as AMI via box-aws-ami, capture tfvars output.
+# Real file target: the import re-runs only when the built disk.img changes,
+# so deploy-ec2 (ami-deploy + ec2-deploy) imports exactly once per build.
+# Force a fresh import with: rm out/aws-ami.tfvars
+$(EC2_AMI_TFVARS): $(EC2_DISK_IMG)
 	@$(check_aws_creds)
 	@echo "Importing AMI from $(EC2_DISK_IMG) ..."
 	@echo "  AMI name: $(EC2_AMI_NAME)"
@@ -56,6 +59,11 @@ aws-ami-deploy: $(EC2_DISK_IMG)
 	echo "  ami_id:      $$AMI_ID" && \
 	echo "  ami_arn:     $$(grep '^ami_arn' $(EC2_AMI_TFVARS) | cut -d'"' -f2)" && \
 	echo "  snapshot_id: $$(grep '^snapshot_id' $(EC2_AMI_TFVARS) | cut -d'"' -f2)"
+
+# Phony wrapper: import if needed (idempotent via the tfvars sentinel)
+aws-ami-deploy: $(EC2_AMI_TFVARS)
+	@AMI_ID=$$(grep '^ami_id' $(EC2_AMI_TFVARS) | cut -d'"' -f2) && \
+	echo "  AMI ready: $$AMI_ID"
 
 # Show current AMI status
 aws-ami-status:

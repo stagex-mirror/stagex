@@ -25,10 +25,11 @@ define check_aws_creds
 	fi
 endef
 
-# Deploy EC2 instance from AMI. Depends on aws-ami-deploy (defined in
-# packages/box/aws-ami/targets.mk, included into the same make) so a
-# single `make aws-ec2-deploy` chains: fresh distro -> AMI import -> launch.
-aws-ec2-deploy: aws-ami-deploy
+# Deploy EC2 instance from AMI. Depends on the AMI tfvars sentinel (defined
+# in packages/box/aws-ami/targets.mk) so a single `make aws-ec2-deploy`
+# chains: fresh distro -> AMI import (only if disk.img changed) -> launch,
+# without re-importing when deploy-ec2 has already imported.
+aws-ec2-deploy: $(EC2_AMI_TFVARS)
 	@$(check_aws_creds)
 	@if [ ! -f "$(EC2_AMI_TFVARS)" ]; then \
 		echo "ERROR: No AMI tfvars found — aws-ami-deploy did not complete" >&2; exit 1; \
