@@ -16,6 +16,7 @@ FROM stagex/user-bootproof AS user-bootproof
 FROM stagex/user-snpguest AS user-snpguest
 FROM stagex/user-snptpm-agent AS user-snptpm-agent
 FROM stagex/user-execd AS user-execd
+FROM stagex/user-brush AS user-brush
 FROM stagex/user-cryptsetup AS user-cryptsetup
 FROM stagex/user-popt AS user-popt
 FROM stagex/user-device-mapper AS user-device-mapper
@@ -48,6 +49,13 @@ COPY --from=core-curl . /
 COPY --from=core-libzstd . /
 COPY --from=core-libunwind . /
 COPY --from=user-execd /usr/bin/execd /usr/bin/execd
+# brush replaces busybox `ash` as /bin/sh: the execd libexec scripts and any
+# unit `script` body run on it, so the busybox init dependency is gone. Install
+# the binary, then override the /bin/sh symlink that core-busybox points at
+# busybox. (The rest of busybox — ip, the coreutils applets the scripts call —
+# stays; that is a separate minification pass.)
+COPY --from=user-brush /usr/bin/brush /usr/bin/brush
+RUN ln -sf /usr/bin/brush /bin/sh
 COPY src/rootfs/etc/environment /etc/environment
 COPY src/rootfs/etc/execd/units/lo.hcl /etc/execd/units/
 COPY src/rootfs/etc/execd/units/tpm-rootfs.hcl /etc/execd/units/

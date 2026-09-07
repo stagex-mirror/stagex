@@ -1,0 +1,25 @@
+[package]
+name = "brush"
+# Pinned to commit a250b84 (branch main) of
+# https://github.com/reubeno/brush: a bash/POSIX-compatible shell written in
+# Rust. Used to replace busybox `ash` as /bin/sh in the enclave: the execd
+# libexec scripts (cloud-init-*, home, tpm-rootfs) all carry #!/bin/sh, and
+# execd runs any unit `script` body via /bin/sh -c. The pin is a recent
+# POSIX-compat fix (anchor `^`/`$` to the whole string in `[[ =~ ]]`), which
+# matters for shell correctness. All constructs the enclave scripts rely on
+# (local, shift, ${var#...}, `=`, concatenation, while/for, set -eu,
+# arithmetic, command substitution, pipes, printf) are verified to run under
+# it (brush -n syntax-clean on all 4 libexec scripts + a functional smoke
+# harness). Built with default features (basic + reedline + minimal) so the
+# standard interactive shell is present; it links only musl + libunwind, both
+# already shipped in the rootfs.
+version = "a250b84eb56e4b7a36db4ac169c2938d194b998d"
+description = "bash/POSIX-compatible shell in Rust: replaces busybox ash as /bin/sh"
+license = "MIT"
+website = "https://github.com/reubeno/brush"
+
+[sources.brush]
+hash = "236d66277d66513ea770e36aa42b7772f215ce4fb0af73e231a1e47883454333"
+format = "tar.gz"
+file = "brush-{version}.{format}"
+mirrors = ["https://github.com/reubeno/brush/archive/{version}.{format}"]

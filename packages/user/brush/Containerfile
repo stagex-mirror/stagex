@@ -1,0 +1,33 @@
+FROM stagex/pallet-rust AS build
+ARG VERSION
+ARG TARGETARCH
+# The GitHub archive expands to a top-level dir named `brush-<sha>/`, not
+# `brush/` (unlike a git-worktree layout), so extract then rename to a stable
+# path rather than hard-coding the SHA-bearing directory.
+ADD fetch/brush-${VERSION}.tar.gz /tmp/
+RUN mv /tmp/brush-* /brush
+WORKDIR /brush
+# Dynamic, like the other in-rootfs Rust binaries (rust-dhcp, sshdt, execd,
+# ...): pallet-rust's musl target defaults to dynamic linking, and the shared
+# musl runtime (core-musl + core-libunwind) is already shipped in the rootfs.
+# brush runs after the pivot (it is /bin/sh, execed by execd for the libexec
+# scripts), so dynamic is fine.
+#
+# Built with default features (basic + reedline + minimal) — the standard
+# build, not a stripped one. The `brush` binary is in the top-level `brush/`
+# crate, not the workspace default-member `brush-shell`, so build `-p brush`.
+# Cargo.lock ships in the archive, so --frozen builds reproduce exactly.
+ENV RUSTFLAGS='-C codegen-units=1'
+RUN cargo fetch
+RUN --network=none <<-EOF
+  set -eux
+  ARCH=$(uname -m)
+  cargo build \
+    --frozen \
+    --release \
+    --target "${ARCH}-unknown-linux-musl" \
+    -p brush
+  install -vDm755 target/${ARCH}-unknown-linux-musl/release/brush /rootfs/usr/bin/brush
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

@@ -204,7 +204,12 @@ run_io() {
 		fi
 		sleep 5
 	done
-	wait "$pid"
+	# Only the one backgrounded step is still pending (the loop broke on
+	# its exit, and the deadline path already returned), so a bare wait
+	# reaps exactly it. NOT `wait "$pid"`: brush's wait builtin does not
+	# implement PIDs ("wait: not yet implemented: wait with process IDs")
+	# and fails with rc 99, which would mark every I/O step failed.
+	wait
 	rc=$?
 	return $rc
 }
