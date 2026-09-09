@@ -3,8 +3,7 @@ ARG VERSION
 COPY --from=stagex/user-glib . /
 COPY --from=stagex/core-pcre2 . /
 ADD fetch/libslirp-${VERSION}.tar.gz .
-#HACK: Will need to create an optional var for the commot
-WORKDIR /libslirp-v${VERSION}-9c744e1e52aa0d9646ed91d789d588696292c21e
+WORKDIR /libslirp-v${VERSION}-d09dc9a70360ee7838acccbd234ab83f3b9b37a5
 RUN --network=none <<-EOF
   meson setup \
 		--default-library=shared \

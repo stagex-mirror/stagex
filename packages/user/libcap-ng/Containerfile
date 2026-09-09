@@ -3,8 +3,10 @@ COPY --from=stagex/core-fmt . /
 ARG VERSION
 ADD fetch/libcap-ng-${VERSION}.tar.gz .
 WORKDIR /libcap-ng-${VERSION}
+ADD patches/*.patch .
 RUN --network=none <<-EOF
 	set -eux
+	patch -p1 < ./musl-cdefs-stub.patch
 	./autogen.sh
 	./configure \
 		--prefix=/usr \

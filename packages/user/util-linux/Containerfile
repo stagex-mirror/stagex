@@ -1,4 +1,5 @@
 FROM stagex/pallet-clang-gnu-busybox AS build
+COPY --from=stagex/core-linux-headers . /
 COPY --from=stagex/core-cmake . /
 COPY --from=stagex/core-bash . /
 COPY --from=stagex/core-ncurses . /
@@ -19,9 +20,10 @@ ARG VERSION
 ADD fetch/util-linux-${VERSION}.tar.gz .
 RUN mv /util-linux-* util-linux
 WORKDIR /util-linux
-ADD patches/cryptsetup-auto.patch .
+ADD patches/*.patch .
 RUN --network=none <<-EOF
 	patch -p1 < cryptsetup-auto.patch
+	patch -p1 < 0001-libmount-include-linux-openat2.patch
 	export PKG_CONFIG_FDO_SYSROOT_FILES=1
 	export CFLAGS="-D_DIRENT_HAVE_D_TYPE"
 	rm tests/ts/lsns/ioctl_ns

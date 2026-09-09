@@ -9,4 +9,4 @@ website = "https://www.nongnu.org/lzip/"
 hash = "641cf30961525cbe3b340cc883436c8854e9f5032f459f444de4782b621e6572"
 format = "tar.gz"
 file = "lzip-{version}.{format}"
-mirrors = [ "http://download.savannah.gnu.org/releases/lzip/{file}",]
+mirrors = [ "https://sources.voidlinux.org/lzip-{version}/{file}", "https://download.savannah.nongnu.org/releases/lzip/{file}",]

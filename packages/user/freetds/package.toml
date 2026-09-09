@@ -1,12 +1,12 @@
 [package]
 name = "freetds"
-version = "1.5.17"
+version = "1.5.19"
 description = "Free implementation of the TDS protocol for Sybase and Microsoft SQL Server"
 license = "LGPL-2.0-or-later"
 website = "https://www.freetds.org"
 
 [sources.freetds]
-hash = "6dee48026b7e3e2393d3ea3ce18f8f81a74d6a0f300e9951981ed7bf4de6bbc3"
+hash = "0dc2df2fea9934e3a99e00d417f3d192e9897572f6aff3905bd48f2507d16dff"
 format = "tar.bz2"
 file = "freetds-{version}.{format}"
 mirrors = [ "https://www.freetds.org/files/stable/{file}",]

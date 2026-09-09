@@ -10,6 +10,7 @@ COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
 ADD fetch/libfaketime-${VERSION}.tar.gz .
 WORKDIR /libfaketime-${VERSION}
+ADD patches/*.patch .
 ENV CFLAGS="-DFAKE_RANDOM -DFAKE_PID -DFAKE_SETTIME -DFAKE_UTIME -DINTERCEPT_SYSCALL"
 ENV CC=clang
 #HACK: force potentially compromised functionality build until this is fixed
@@ -22,6 +23,7 @@ GLIBC_2.3.2 {} GLIBC_2.2.5;
 EOF
 RUN --network=none <<-EOF
 	set -eux
+	patch -p0 < 0001-fix-settimeofday-signature.patch
 	make -j "$(nproc)" PREFIX=/usr
 	make DESTDIR=/rootfs install
 EOF
