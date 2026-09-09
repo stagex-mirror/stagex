@@ -1,6 +1,6 @@
 FROM stagex/pallet-python AS build
 ARG VERSION
-COPY --from=stagex/user-file . /
+COPY --from=stagex/core-file . /
 COPY --from=stagex/user-py-magic . /
 COPY --from=stagex/user-py-libarchive . /
 ADD fetch/diffoscope-${VERSION}.tar.gz .

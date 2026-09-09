@@ -1,0 +1,36 @@
+FROM scratch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-mold . /
+COPY --from=stagex/core-onetbb . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-xz . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-cmake . /
+COPY --from=stagex/core-samurai . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-pkgconf . /
+ARG VERSION
+COPY --from=stagex/core-nasm . /
+COPY --from=stagex/core-perl . /
+ADD fetch/libaom-${VERSION}.tar.gz .
+WORKDIR /libaom-${VERSION}
+RUN --network=none <<-EOF
+	cmake \
+		-B build \
+		-G Ninja \
+		-DCMAKE_BUILD_TYPE=MinSizeRel \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DBUILD_SHARED_LIBS=ON \
+		-DENABLE_EXAMPLES=OFF \
+		-DENABLE_TOOLS=ON \
+		-DENABLE_TESTS=OFF \
+		-DENABLE_DOCS=OFF
+	cmake --build build
+	DESTDIR=/rootfs cmake --install build
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

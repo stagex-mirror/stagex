@@ -9,8 +9,8 @@ COPY --from=stagex/core-pcre2 . /
 COPY --from=stagex/core-perl . /
 COPY --from=stagex/user-dbus . /
 COPY --from=stagex/user-duktape . /
-COPY --from=stagex/user-glib . /
-COPY --from=stagex/user-gobject-introspection . /
+COPY --from=stagex/core-glib . /
+COPY --from=stagex/core-gobject-introspection . /
 COPY --from=stagex/user-pam . /
 COPY --from=stagex/user-systemd . /
 ADD fetch/polkit-${VERSION}.tar.gz .

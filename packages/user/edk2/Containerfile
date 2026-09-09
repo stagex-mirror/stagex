@@ -2,9 +2,9 @@ FROM stagex/pallet-clang-gnu-busybox AS build
 COPY --from=stagex/pallet-python . /
 COPY --from=stagex/core-bash . /
 COPY --from=stagex/core-ncurses . /
-COPY --from=stagex/user-nasm . /
+COPY --from=stagex/core-nasm . /
 COPY --from=stagex/user-acpica . /
-COPY --from=stagex/user-util-linux . /
+COPY --from=stagex/core-util-linux . /
 ARG VERSION
 ARG OPENSSL_VERSION
 ARG SOFTFLOAT_VERSION

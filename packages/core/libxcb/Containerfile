@@ -1,0 +1,43 @@
+FROM scratch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-linux-headers . /
+COPY --from=stagex/core-llvm . /
+COPY --from=stagex/core-mold . /
+COPY --from=stagex/core-onetbb . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-xz . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-make . /
+COPY --from=stagex/core-perl . /
+COPY --from=stagex/core-gettext . /
+COPY --from=stagex/core-autoconf . /
+COPY --from=stagex/core-automake . /
+COPY --from=stagex/core-libtool . /
+COPY --from=stagex/core-pkgconf . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-flex . /
+COPY --from=stagex/core-bison . /
+COPY --from=stagex/core-m4 . /
+ARG VERSION
+COPY --from=stagex/core-libxdmcp . /
+COPY --from=stagex/core-libxslt . /
+COPY --from=stagex/core-python . /
+COPY --from=stagex/core-xcb-proto . /
+COPY --from=stagex/core-xorgproto . /
+COPY --from=stagex/core-libxau . /
+COPY --from=stagex/core-libxslt . /
+COPY --from=stagex/core-util-macros . /
+ADD fetch/libxcb-${VERSION}.tar.xz .
+WORKDIR /libxcb-${VERSION}
+RUN --network=none <<-EOF
+	./configure \
+		--prefix=/usr \
+		--enable-xkb \
+		--enable-xinput \
+		--disable-xprint
+	make
+	make install DESTDIR=/rootfs
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
