@@ -1,6 +1,6 @@
 FROM stagex/pallet-clang-meson-busybox AS build
 ARG VERSION
-COPY --from=stagex/user-glib . /
+COPY --from=stagex/core-glib . /
 COPY --from=stagex/core-pcre2 . /
 ADD fetch/libslirp-${VERSION}.tar.gz .
 WORKDIR /libslirp-v${VERSION}-d09dc9a70360ee7838acccbd234ab83f3b9b37a5

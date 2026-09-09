@@ -11,6 +11,12 @@ subpackages = [
   "php-zip",
   "php-curl",
   "php-filter",
+  "php-gd",
+  "php-dom",
+  "php-xml",
+  "php-simplexml",
+  "php-xmlreader",
+  "php-xmlwriter",
   "php-phar",
   "php-mongodb"
 ]

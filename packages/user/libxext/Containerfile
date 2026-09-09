@@ -1,13 +1,13 @@
 FROM stagex/pallet-clang-gnu-busybox AS build
-COPY --from=stagex/user-util-macros . /
-COPY --from=stagex/user-xorgproto . /
-COPY --from=stagex/user-libx11 . /
-COPY --from=stagex/user-libxcb . /
-COPY --from=stagex/user-libxdmcp . /
-COPY --from=stagex/user-libxau . /
+COPY --from=stagex/core-util-macros . /
+COPY --from=stagex/core-xorgproto . /
+COPY --from=stagex/core-libx11 . /
+COPY --from=stagex/core-libxcb . /
+COPY --from=stagex/core-libxdmcp . /
+COPY --from=stagex/core-libxau . /
 COPY --from=stagex/core-bash . /
 COPY --from=stagex/core-ncurses . /
-COPY --from=stagex/user-xmlto . /
+COPY --from=stagex/core-xmlto . /
 ARG VERSION
 ADD fetch/libXext-${VERSION}.tar.xz .
 WORKDIR /libXext-${VERSION}

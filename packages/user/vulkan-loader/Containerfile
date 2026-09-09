@@ -1,11 +1,11 @@
 FROM stagex/pallet-clang-cmake-busybox AS build
 ARG VERSION
 COPY --from=stagex/core-python . /
-COPY --from=stagex/user-xorgproto . /
-COPY --from=stagex/user-libx11 . /
-COPY --from=stagex/user-libxcb . /
-COPY --from=stagex/user-libxdmcp . /
-COPY --from=stagex/user-libxau . /
+COPY --from=stagex/core-xorgproto . /
+COPY --from=stagex/core-libx11 . /
+COPY --from=stagex/core-libxcb . /
+COPY --from=stagex/core-libxdmcp . /
+COPY --from=stagex/core-libxau . /
 COPY --from=stagex/user-libxrandr . /
 COPY --from=stagex/user-libxrender . /
 COPY --from=stagex/user-wayland . /
