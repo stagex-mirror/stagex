@@ -25,7 +25,7 @@ ADD fetch/xcb-proto-${VERSION}.tar.xz .
 WORKDIR /xcb-proto-${VERSION}
 ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
-	./configure \
+	./configure ac_cv_path_RAWCPP='cc -E -' \
 		--prefix=/usr
 	make
 	make install DESTDIR=/rootfs

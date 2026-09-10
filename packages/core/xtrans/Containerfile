@@ -25,7 +25,7 @@ ARG VERSION
 ADD fetch/xtrans-${VERSION}.tar.xz .
 WORKDIR /xtrans-${VERSION}
 RUN --network=none <<-EOF
-	./configure \
+	./configure ac_cv_path_RAWCPP='cc -E -' \
 		--prefix=/usr
 	make
 	make install DESTDIR=/rootfs

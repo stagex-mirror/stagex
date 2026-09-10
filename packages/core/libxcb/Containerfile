@@ -31,7 +31,7 @@ COPY --from=stagex/core-util-macros . /
 ADD fetch/libxcb-${VERSION}.tar.xz .
 WORKDIR /libxcb-${VERSION}
 RUN --network=none <<-EOF
-	./configure \
+	./configure ac_cv_path_RAWCPP='cc -E -' \
 		--prefix=/usr \
 		--enable-xkb \
 		--enable-xinput \
