@@ -6,6 +6,6 @@ license = "GPL-2.0-or-later"
 website = "https://codeberg.org/pere/chrpath"
 
 [sources.chrpath]
-hash = "f09c49f0618660ca11fc6d9580ddde904c7224d4c6d0f6f2d1f9bcdc9102c9aa"
+hash = "83441d1347a09a249c9f7efeac319454e17334d72e2983f18c812c7032cfef54"
 file = "chrpath-{version}.tar.gz"
 mirrors = [ "https://codeberg.org/pere/chrpath/archive/release-{version}.tar.gz", ]
