@@ -1,0 +1,18 @@
+--- a/getarg.h
++++ b/getarg.h
+@@ -13,6 +13,16 @@
+ 
+ #include "gif_lib.h"
+ 
++#ifdef __DATE__
++#undef __DATE__
++#define __DATE__ "Jan  1 1970"
++#endif
++#ifdef __TIME__
++#undef __TIME__
++#define __TIME__ "00:00:00"
++#endif
++
+ #define VERSION_COOKIE " Version %d.%d, "
+ 
+ /***************************************************************************

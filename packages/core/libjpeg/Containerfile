@@ -23,7 +23,8 @@ RUN --network=none <<-EOF
 		-G Ninja \
 		-DCMAKE_BUILD_TYPE=MinSizeRel \
 		-DCMAKE_INSTALL_PREFIX=/usr \
-		-DCMAKE_INSTALL_LIBDIR=lib
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DBUILD=19700101
 	cmake --build build
 	DESTDIR=/rootfs cmake --install build
 EOF
