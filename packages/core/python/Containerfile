@@ -27,6 +27,9 @@ RUN --network=none <<-EOF
 		--without-ensurepip
 	make -j "$(nproc)"
 	make DESTDIR=/rootfs install
+	# test-suite .pyc marshal frozenset/co_consts in non-deterministic order;
+	# strip test __pycache__ so the image is byte-reproducible
+	find /rootfs -path '*/test/*' -name '__pycache__' -type d -exec rm -rf {} +
 	install -vDm644 -t /rootfs/usr/share/licenses/python LICENSE
 	ln -s /usr/bin/python3 /rootfs/usr/bin/python
 EOF
