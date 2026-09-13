@@ -22,7 +22,9 @@ COPY --from=stagex/core-m4 . /
 ARG VERSION
 ADD fetch/giflib-${VERSION}.tar.gz .
 WORKDIR /giflib-${VERSION}
+ADD patches/*.patch .
 RUN --network=none <<-EOF
+	patch -p1 < 0001-deterministic-build-date.patch
 	make CFLAGS="-O2 -fPIC" PREFIX=/usr
 	make install DESTDIR=/rootfs PREFIX=/usr LIBDIR=/usr/lib
 EOF
