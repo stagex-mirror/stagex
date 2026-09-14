@@ -14,7 +14,6 @@ FROM stagex/user-tpm2-tools AS user-tpm2-tools
 FROM stagex/user-sevctl AS user-sevctl
 FROM stagex/user-bootproof AS user-bootproof
 FROM stagex/user-snpguest AS user-snpguest
-FROM stagex/user-snptpm-agent AS user-snptpm-agent
 FROM stagex/user-execd AS user-execd
 FROM stagex/user-brush AS user-brush
 FROM stagex/user-cryptsetup AS user-cryptsetup
@@ -81,7 +80,6 @@ COPY --from=user-e2fsprogs . /
 COPY --from=user-util-linux . /
 COPY --from=core-ncurses . /
 COPY --from=user-snpguest . /
-COPY --from=user-snptpm-agent . /
 # execd units + one-shot setup scripts for the daemons above (see the unit
 # files for ordering: pure depends-graph, topo-sorted by execd).
 COPY src/dev/rootfs/etc/execd/units/dhcp.hcl /etc/execd/units/
@@ -89,7 +87,6 @@ COPY src/dev/rootfs/etc/execd/units/cloud-init-drive.hcl /etc/execd/units/
 COPY src/dev/rootfs/etc/execd/units/cloud-init-net.hcl /etc/execd/units/
 COPY src/dev/rootfs/etc/execd/units/home.hcl /etc/execd/units/
 COPY src/dev/rootfs/etc/execd/units/sshdt.hcl /etc/execd/units/
-COPY src/dev/rootfs/etc/execd/units/snptpm-agent.hcl /etc/execd/units/
 COPY src/dev/rootfs/etc/execd/units/bootproof.hcl /etc/execd/units/
 COPY src/dev/rootfs/usr/libexec/cloud-init-drive.sh /usr/libexec/
 COPY src/dev/rootfs/usr/libexec/cloud-init-net.sh /usr/libexec/
