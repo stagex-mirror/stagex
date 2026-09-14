@@ -1,24 +1,33 @@
 FROM stagex/pallet-rust AS build
 ARG VERSION
 ARG TARGETARCH
+# The production binary statically links the tss2 C stack (bootproof-tpm's
+# `esys` feature, used by the dmext TPM gate). The static archives come from
+# the repo-local user-tpm2-tss package (same build the guest rootfs ships for
+# the tpm2 tools); libcrypto.a resolves from the pallet-rust base. The .pc
+# files' Libs lines are emptied so no pkg-config probe emits link flags;
+# bootproof's build.rs owns the whole final link line (exact archives,
+# dependents before dependencies, libc last) and compiles the trampoline.
+COPY --from=stagex/user-tpm2-tss . /
 ADD fetch/bootproof-${VERSION}.tar.gz .
 WORKDIR /bootproof
-# Dynamic: pallet-rust's musl target defaults to dynamic linking (the
-# toolchain patches crt_static_default off). Links against the shared musl
-# runtime (core-musl + core-libunwind) already shipped in the rootfs.
-ENV RUSTFLAGS='-C codegen-units=1'
+# Fully static (static-pie, no DT_NEEDED): the node is ONE self-contained
+# binary. `+crt-static` pulls in the musl runtime and the tss2 C stack so it
+# carries no shared musl/libunwind dependency from the rootfs. (The pallet
+# toolchain ships with crt_static_default off, hence the explicit feature.)
+# `bootproofd` is intentionally NOT built here: it links the `bootproof` lib,
+# and the tss2 link-args do not cross the package boundary into its own final
+# link, so it cannot build; nothing in the distro runs it (the execd unit
+# invokes /usr/bin/bootproof attest directly).
 RUN cargo fetch
 RUN --network=none <<-EOF
   set -eux
-  ARCH=$(uname -m)
-  cargo build \
-    --frozen \
-    --release \
-    --target "${ARCH}-unknown-linux-musl" \
-    -p bootproof \
-    -p bootproofd
-  install -vDm755 target/${ARCH}-unknown-linux-musl/release/bootproof /rootfs/usr/bin/bootproof
-  install -vDm755 target/${ARCH}-unknown-linux-musl/release/bootproofd /rootfs/usr/bin/bootproofd
+  for f in esys sys mu rc tcti-device tctildr; do
+    sed -i 's|^Libs:.*|Libs: |' /usr/lib/pkgconfig/tss2-$f.pc
+  done
+  cargo rustc --locked --release -p bootproof --bin bootproof -- \
+    -C target-feature=+crt-static
+  install -vDm755 target/release/bootproof /rootfs/usr/bin/bootproof
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
