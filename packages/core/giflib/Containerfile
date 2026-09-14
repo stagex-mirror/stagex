@@ -24,6 +24,8 @@ ADD fetch/giflib-${VERSION}.tar.gz .
 WORKDIR /giflib-${VERSION}
 ADD patches/*.patch .
 RUN --network=none <<-EOF
+	set -eux
+
 	patch -p1 < 0001-deterministic-build-date.patch
 	make CFLAGS="-O2 -fPIC" PREFIX=/usr
 	make install DESTDIR=/rootfs PREFIX=/usr LIBDIR=/usr/lib

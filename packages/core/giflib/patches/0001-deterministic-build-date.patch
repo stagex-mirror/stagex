@@ -1,6 +1,6 @@
 --- a/getarg.h
 +++ b/getarg.h
-@@ -13,6 +13,16 @@
+@@ -13,6 +13,15 @@
  
  #include "gif_lib.h"
  
