@@ -1,0 +1,31 @@
+[package]
+name = "gvisor"
+# gVisor (runsc) is built from the synthetic `go` branch — the branch the
+# gVisor team maintains specifically for building with the standard Go
+# toolchain (no Bazel, no Java; the default build path is Bazel-only). The
+# go branch HEAD moves daily, so the source is pinned to an exact commit sha
+# (release-20260907.0+22 line), never to the branch name.
+#
+# The go branch carries the full sidecar library code but prunes the small
+# Bazel-built entry shims that upstream's Bazel rules normally synthesize.
+# Two of them are required at runtime and are ported byte-identical from
+# upstream master (f2f951cb50bea244823fc03fbf52cfc33d9e1908) into port/ in
+# this package: runsc/cmd/sentry/sentry_main.go (the gvisor_sentry sidecar
+# main; the sentry is a STRICT requirement of runsc) and
+# runsc/prewarmer/prewarmer.c (the freestanding C prewarmer, compiled with
+# gcc, not Go). See the Containerfile for the two OPTIONAL sidecars that are
+# deliberately not built (runsc-metric-server, checkpointgofer) and why.
+version = "20260907.0"
+description = "gVisor user-space kernel OCI runtime (runsc + gvisor_sentry + prewarmer), built from the go branch with standard Go tooling"
+license = "Apache-2.0"
+website = "https://github.com/google/gvisor"
+
+[sources.gvisor]
+# Pinned go-branch commit (full sha; the branch moves daily). Byte-verified.
+version = "72a26d4d63f44f3234dd02aa58b5302eb9958158"
+hash = "57b63cb2f4d9d6d5067eb57c9e53469ae69e66851e8a4ef8ac0514a37699a8b7"
+format = "tar.gz"
+file = "gvisor-{version}.{format}"
+mirrors = [
+  "https://github.com/google/gvisor/archive/{version}.{format}",
+]

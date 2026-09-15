@@ -1,0 +1,97 @@
+# gVisor (runsc) — built from the `go` branch with the standard Go toolchain.
+#
+# The build stage is assembled from scratch out of the exact core closure that
+# was validated end-to-end (runsc --version + a systrap `runsc do echo` smoke):
+# a Go toolchain (core-go) for the two Go binaries and a gcc toolchain
+# (core-gcc + its mpfr/mpc/isl/gmp/lib deps + binutils + linux-headers) for the
+# freestanding C prewarmer. core-busybox + core-musl provide /bin/sh and the
+# dynamic runtime the toolchain binaries need; core-ca-certificates lets
+# `go mod download` reach the Go module proxy over TLS.
+FROM scratch AS build
+COPY --from=stagex/core-busybox . /
+COPY --from=stagex/core-musl . /
+COPY --from=stagex/core-go . /
+COPY --from=stagex/core-ca-certificates . /
+COPY --from=stagex/core-gcc . /
+COPY --from=stagex/core-mpfr . /
+COPY --from=stagex/core-mpc . /
+COPY --from=stagex/core-isl . /
+COPY --from=stagex/core-gmp . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-binutils . /
+COPY --from=stagex/core-linux-headers . /
+
+# Package version (used for the runsc version string).
+ARG VERSION
+# Source version = pinned go-branch commit sha (full); the fetch file is
+# gvisor-<full-sha>.tar.gz. Driven by [sources.gvisor] version in package.toml.
+ARG GVISOR_VERSION
+ARG GVISOR_SOURCE
+
+# The go-branch archive expands to a top-level dir named gvisor-<full-sha>/, so
+# extract then rename to a stable path (same pattern as brush/nit).
+ADD fetch/gvisor-${GVISOR_VERSION}.tar.gz /tmp/
+RUN mv /tmp/gvisor-* /gvisor
+WORKDIR /gvisor
+
+# Two entry shims the go branch prunes (upstream Bazel synthesizes these). Both
+# are required at runtime and are ported byte-identical from upstream master:
+#   - sentry_main.go  -> the gvisor_sentry sidecar (a STRICT runsc requirement)
+#   - prewarmer.c     -> the freestanding C prewarmer (compiled with gcc)
+# (COPY auto-creates the runsc/prewarmer/ dir, absent from the archive.)
+ADD port/runsc/cmd/sentry/sentry_main.go runsc/cmd/sentry/sentry_main.go
+ADD port/runsc/prewarmer/prewarmer.c runsc/prewarmer/prewarmer.c
+
+# Go env. On a scratch FROM the pallet-go defaults do NOT carry over, so the
+# proxy/sumdb must be set explicitly for the module download to work.
+ENV GOPATH=/cache/go \
+    GOCACHE=/cache/ \
+    GOWORK=off \
+    CGO_ENABLED=0 \
+    GOFLAGS=-buildvcs=false \
+    GOTOOLCHAIN=local \
+    GOPROXY=https://proxy.golang.org,direct \
+    GOSUMDB=sum.golang.org
+
+# Module fetch needs the network; the builds below run fully offline.
+RUN go mod download
+RUN --network=none <<-EOF
+  set -eux
+  mkdir -p /rootfs/usr/bin/gvisor-bin
+  # runsc CLI (embeds the go-branch's prebuilt checkpointgofer.bin via
+  # gvisorbinaries/embed; the standalone sidecar is NOT on the boot path).
+  go build -trimpath \
+    -ldflags "-X gvisor.dev/gvisor/runsc/version.version=${VERSION}" \
+    -o /rootfs/usr/bin/runsc ./runsc
+  # gvisor_sentry sidecar (the sentry is a STRICT requirement of runsc).
+  go build -trimpath -o /rootfs/usr/bin/gvisor-bin/gvisor_sentry ./runsc/cmd/sentry
+  # gvisor-sentry-prewarmer: freestanding C, no libc, no CRT — it runs ahead of
+  # the sentry before any dynamic loader exists. Built fully static so it needs
+  # nothing from the guest.
+  gcc -Os \
+    -ffreestanding -fno-sanitize=all \
+    -fno-stack-protector -fno-asynchronous-unwind-tables -fno-unwind-tables \
+    -static -nostdlib -nostartfiles \
+    -Wl,--build-id=none -Wl,-s -Wl,-n \
+    -o /rootfs/usr/bin/gvisor-bin/gvisor-sentry-prewarmer \
+    runsc/prewarmer/prewarmer.c
+  install -vDm644 LICENSE /rootfs/usr/share/licenses/gvisor/LICENSE
+EOF
+
+# Two OPTIONAL sidecars are deliberately NOT built (documented omission):
+#   - runsc-metric-server (runsc/cmd/metricserver): the go branch prunes the
+#     top-level runsc/metricserver Server package it imports, so its main cannot
+#     build on this branch. Optional: a Prometheus metrics endpoint; runsc
+#     operates fine without it, and nothing in the boot path invokes it.
+#   - checkpointgofer (runsc/checkpointgofer): the go branch ships a PREBUILT
+#     checkpointgofer.bin that runsc embeds (gvisorbinaries/embed). Porting the
+#     upstream master main.go would (a) collide with the existing
+#     `package checkpointgofer` in the same dir and (b) import the pruned
+#     runsc/checkpointgofer/gcs subpackage. Building it from source would only
+#     shadow the embedded prebuilt blob; checkpoint/restore is not on the boot
+#     path. (This is the one prebuilt binary retained: the go branch's own
+#     pragmatic tradeoff for standard-Go-toolchain compatibility.)
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
