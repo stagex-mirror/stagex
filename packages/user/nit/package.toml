@@ -4,22 +4,26 @@ name = "nit"
 # loop-mounts the erofs system image, sets up the runtime mounts, then execs
 # its target (`init.target=`) as the new PID 1.
 #
-# This pin is the 0.9.0 zero-dependency rebuild (main, squashed from
-# rustix-vendor; the pre-squash line is kept on `backup/main-pre-squash`):
-# no_std, no libc, no crates.io -- first-party raw syscall shims in
-# src/system/raw.rs (a closed ~21-surface set, ground-truth-pinned against
-# the kernel's own source), fail-closed cred handling, and an O_CLOEXEC exec
-# hand-off. Note the command-line keys are `init.*` (init.target/unpack/
-# uid/gid/caps); `nit.mode=` and `nit.progress=` no longer exist. The
+# This pin is the 0.9.x zero-dependency line (main; the pre-0.9 work is kept on
+# backup/main-pre-squash): no_std, no libc, no crates.io -- first-party raw
+# syscall shims in src/system/raw.rs (a closed ~21-surface set, ground-truth-
+# pinned against the kernel's own source), fail-closed cred handling, and an
+# O_CLOEXEC exec hand-off. The command-line keys are `init.*`:
+#   init.target= / init.unpack=   (as before)
+#   init.uid= / init.gid=         NEW: drop to this real+effective cred pre-exec
+#   init.caps=                    NEW: capability set handed to the target
+# `nit.mode=` and `nit.progress=` no longer exist. The uid/gid/caps keys are
+# ABSENT by default, so this pin boots the existing enclave cmdline unchanged;
+# they are the hook for the later "run the whole OS unprivileged" plan. The
 # archive is the codeberg full-SHA archive, byte-verified against the hash
 # below.
-version = "12671964293636ffcd1912f2780cebf38137f461"
-description = "Rust unikernel init: erofs unpack + pivot, then boot-to-execve hand-off (replaces klibc initramfs init and busybox init)"
+version = "9900c62fc498928b9faa39688c513691b220de98"
+description = "Rust unikernel init: erofs unpack + pivot, then boot-to-execve hand-off with optional uid/gid/capability drop (replaces klibc initramfs init and busybox init)"
 license = "MIT"
 website = "https://codeberg.org/lrvick/nit"
 
 [sources.nit]
-hash = "dfe799c21652008f95a822267dd4387991a3fc310be8eee386acfa1d7aee99c9"
+hash = "4222b2481a9193daa26e21dd958c284bf3e4f8751c75b1f50c129cd5728e14f2"
 format = "tar.gz"
 file = "nit-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/nit/archive/{version}.{format}"]
