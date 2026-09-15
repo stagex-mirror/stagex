@@ -26,7 +26,7 @@ out/rootfs/{stage}-{name}/metadata.json: \\
 
 out/rootfs/{stage}-{name}/manifest.txt: \\
 \tout/rootfs/{stage}-{name}/metadata.json {deps} {core_profile_oci_dep}
-\trm -rf out/rootfs/{stage}-{name}/linux_* && \\
+\t[ "$(CHECK)" = "1" ] || rm -rf out/rootfs/{stage}-{name}/linux_* && \\
 \tmkdir -p fetch/{stage}/{origin} && \\
 \tpython3 src/fetch.py {origin} && \\
 \t rm -rf packages/{stage}/{origin}/fetch && \\
@@ -52,10 +52,12 @@ out/rootfs/{stage}-{name}/manifest.txt: \\
 \t  --progress=$(PROGRESS) \\
 \t  -f out/cache/containerfiles/{stage}-{name}.Containerfile \\
 \t  packages/{stage}/{origin} && \\
-\tfor plat in out/rootfs/{stage}-{name}/linux_*; do \\
-\t  [ -d "$$plat" ] && bash src/fixrootfs.sh "$$plat"; \\
-\tdone && \\
-\t(cd out/rootfs/{stage}-{name} && find . -type f ! -name manifest.txt -exec sha256sum {{}} + | sort -k2) > out/rootfs/{stage}-{name}/manifest.txt
+\tif [ "$(CHECK)" != "1" ]; then \\
+\t  for plat in out/rootfs/{stage}-{name}/linux_*; do \\
+\t    [ -d "$$plat" ] && bash src/fixrootfs.sh "$$plat"; \\
+\t  done && \\
+\t  (cd out/rootfs/{stage}-{name} && find . -type f ! -name manifest.txt -exec sha256sum {{}} + | sort -k2) > out/rootfs/{stage}-{name}/manifest.txt; \\
+\tfi
 \t
 \t$(if $(filter $(IMPORT),1),$(MAKE) import-{stage}-{name},)
 
