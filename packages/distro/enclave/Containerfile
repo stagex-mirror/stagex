@@ -18,7 +18,7 @@ FROM stagex/user-execd AS user-execd
 FROM stagex/user-brush AS user-brush
 FROM stagex/user-cryptsetup AS user-cryptsetup
 FROM stagex/user-popt AS user-popt
-FROM stagex/user-device-mapper AS user-device-mapper
+FROM stagex/user-lvm2 AS user-lvm2
 FROM stagex/user-json-c AS user-json-c
 FROM stagex/user-argon2 AS user-argon2
 FROM stagex/user-libaio AS user-libaio
@@ -73,7 +73,7 @@ COPY --from=user-sshdt . /
 COPY --from=user-bootproof . /
 COPY --from=user-cryptsetup . /
 COPY --from=user-popt . /
-COPY --from=user-device-mapper . /
+COPY --from=user-lvm2 . /
 COPY --from=user-json-c . /
 COPY --from=user-argon2 . /
 COPY --from=user-libaio . /

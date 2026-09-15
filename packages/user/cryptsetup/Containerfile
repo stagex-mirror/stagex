@@ -9,7 +9,7 @@ COPY --from=stagex/user-popt . /
 COPY --from=stagex/user-json-c . /
 COPY --from=stagex/user-argon2 . /
 COPY --from=stagex/user-util-linux . /
-COPY --from=stagex/user-device-mapper . /
+COPY --from=stagex/user-lvm2 . /
 ADD fetch/cryptsetup-${VERSION}.tar.xz .
 WORKDIR /cryptsetup-${VERSION}
 RUN --network=none <<-EOF

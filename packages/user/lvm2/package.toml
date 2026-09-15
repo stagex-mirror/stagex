@@ -1,7 +1,7 @@
 [package]
-name = "device-mapper"
+name = "lvm2"
 version = "2.03.42"
-description = "Device mapper userspace library and tools from LVM2"
+description = "Logical Volume Manager: device-mapper userspace library (libdevmapper) + dm tools from LVM2"
 license = "GPL-2.0-or-later AND LGPL-2.1-or-later"
 website = "https://sourceware.org/lvm2/"
 
