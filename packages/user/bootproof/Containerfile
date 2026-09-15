@@ -1,20 +1,24 @@
 FROM stagex/pallet-rust AS build
 ARG VERSION
 ARG TARGETARCH
-# The production binary statically links the tss2 C stack (bootproof-tpm's
-# `esys` feature, used by the dmext TPM gate). The static archives come from
-# the repo-local user-tpm2-tss package (same build the guest rootfs ships for
-# the tpm2 tools); libcrypto.a resolves from the pallet-rust base. The .pc
+# The production binary links the tss2 C stack DYNAMICALLY against the guest
+# rootfs's shared objects (user-tpm2-tss; libcrypto from core-openssl is
+# pulled in transitively through libtss2-esys.so): a shared-library update
+# never forces a Rust rebuild. user-lvm2 is COPY'd too, but for its HEADERS
+# only: devicemapper-sys bindgens the dm_ioctl structs from libdevmapper.h at
+# build time, and the stratis `devicemapper` crate itself issues raw DM
+# ioctls (no libdevmapper DT_NEEDED, no undefined dm_ symbols). The .pc
 # files' Libs lines are emptied so no pkg-config probe emits link flags;
-# bootproof's build.rs owns the whole final link line (exact archives,
-# dependents before dependencies, libc last) and compiles the trampoline.
+# bootproof's build.rs owns the whole final link line (exact -l set,
+# dependents before dependencies) and compiles the trampoline.
 COPY --from=stagex/user-tpm2-tss . /
+COPY --from=stagex/user-lvm2 . /
 ADD fetch/bootproof-${VERSION}.tar.gz .
 WORKDIR /bootproof
-# Fully static (static-pie, no DT_NEEDED): the node is ONE self-contained
-# binary. `+crt-static` pulls in the musl runtime and the tss2 C stack so it
-# carries no shared musl/libunwind dependency from the rootfs. (The pallet
-# toolchain ships with crt_static_default off, hence the explicit feature.)
+# Dynamic (DT_NEEDED: tss2 .so, libunwind, musl libc; libcrypto +
+# libtss2-sys resolved transitively through libtss2-esys.so's own NEEDED):
+# the guest rootfs ships every shared object the binary needs, so one
+# C-library update is a package rebuild, not a whole-tree Rust rebuild.
 # `bootproofd` is intentionally NOT built here: it links the `bootproof` lib,
 # and the tss2 link-args do not cross the package boundary into its own final
 # link, so it cannot build; nothing in the distro runs it (the execd unit
@@ -25,8 +29,7 @@ RUN --network=none <<-EOF
   for f in esys sys mu rc tcti-device tctildr; do
     sed -i 's|^Libs:.*|Libs: |' /usr/lib/pkgconfig/tss2-$f.pc
   done
-  cargo rustc --locked --release -p bootproof --bin bootproof -- \
-    -C target-feature=+crt-static
+  cargo rustc --locked --release -p bootproof --bin bootproof
   install -vDm755 target/release/bootproof /rootfs/usr/bin/bootproof
 EOF
 FROM stagex/core-filesystem AS package
