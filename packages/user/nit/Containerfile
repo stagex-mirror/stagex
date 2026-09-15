@@ -3,20 +3,32 @@ ARG VERSION
 ARG TARGETARCH
 ADD fetch/nit-${VERSION}.tar.gz .
 WORKDIR /nit
+# nit is the unikernel init: no_std, no libc, zero crates.io dependencies.
+# The tree carries no Cargo.lock, so the old `cargo fetch --frozen` flow is
+# gone. This stage keeps network ON by necessity: `-Zbuild-std=core` makes
+# cargo resolve the sysroot crates (rustc-literal-escaper for proc_macro)
+# from the crates.io index on first use, even though only `core` is built
+# and nit itself fetches nothing. The sysroot manifest pins exact versions,
+# so the resolution is deterministic for a given pallet-rust.
+#
 # Static by necessity: nit is the initramfs init (cpio /init), executed by
-# the kernel before any rootfs is mounted — there is no musl dynamic loader
-# in memory at that point. (Every other in-rootfs Rust binary is dynamic.)
+# the kernel before any rootfs is mounted — there is no dynamic loader in
+# memory at that point. The nolibc build links no libc at all, so `-Zbuild-std=core`
+# builds core against a bare target spec (RUSTC_BOOTSTRAP unlocks the -Z flags
+# on the pallet's stable toolchain) and nit's own `_start` is the entry point.
+# The `nolibc` feature gates src/main.rs (the init binary); without it the
+# package builds only the no_std library and no binary is produced.
+ENV RUSTC_BOOTSTRAP=1
 ENV RUSTFLAGS='-C codegen-units=1 -C target-feature=+crt-static'
-RUN cargo fetch
-RUN --network=none <<-EOF
+RUN <<-EOF
   set -eux
   ARCH=$(uname -m)
   cargo build \
-    --frozen \
     --release \
-    --target "${ARCH}-unknown-linux-musl" \
-    -p nit
-  install -vDm755 target/${ARCH}-unknown-linux-musl/release/nit /rootfs/usr/bin/nit
+    --features nolibc \
+    --target target-specs/nit-${ARCH}-nolibc.json \
+    -Zjson-target-spec -Zbuild-std=core
+  install -vDm755 target/nit-${ARCH}-nolibc/release/nit /rootfs/usr/bin/nit
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

@@ -1,22 +1,25 @@
 [package]
 name = "nit"
-# Pinned to the rustix-vendor branch of https://codeberg.org/lrvick/nit: the
-# unikernel init that loop-mounts the erofs system image, sets up the runtime
-# mounts, then runs as PID 1 (inittab sysinit/respawn/shutdown).
+# Pinned to main of https://codeberg.org/lrvick/nit: the unikernel init that
+# loop-mounts the erofs system image, sets up the runtime mounts, then execs
+# its target (`init.target=`) as the new PID 1.
 #
-# This pin is the auditable vendor port: rustix + linux-raw-sys + bitflags
-# vendored as git subtrees (deletions-only vs upstream, enforced by
-# make vendor-diff-check), libc replaced by rustix + first-party raw shims,
-# live syscall tests on both arches, and QEMU boot acceptance on x86_64 and
-# aarch64 (make boot-test-all). The archive is the codeberg full-SHA archive,
-# byte-verified against the hash below.
-version = "406460d71e8ca4c8d59602c50c8a9ef5b2457e3c"
-description = "Rust unikernel init: erofs unpack + pivot, then PID-1 supervision (replaces klibc initramfs init and busybox init)"
+# This pin is the 0.9.0 zero-dependency rebuild (main, squashed from
+# rustix-vendor; the pre-squash line is kept on `backup/main-pre-squash`):
+# no_std, no libc, no crates.io -- first-party raw syscall shims in
+# src/system/raw.rs (a closed ~21-surface set, ground-truth-pinned against
+# the kernel's own source), fail-closed cred handling, and an O_CLOEXEC exec
+# hand-off. Note the command-line keys are `init.*` (init.target/unpack/
+# uid/gid/caps); `nit.mode=` and `nit.progress=` no longer exist. The
+# archive is the codeberg full-SHA archive, byte-verified against the hash
+# below.
+version = "12671964293636ffcd1912f2780cebf38137f461"
+description = "Rust unikernel init: erofs unpack + pivot, then boot-to-execve hand-off (replaces klibc initramfs init and busybox init)"
 license = "MIT"
 website = "https://codeberg.org/lrvick/nit"
 
 [sources.nit]
-hash = "29e89dddccb2c4dde2f9bea889671ffdac2137d8c77aa7523c9950001a0570c4"
+hash = "dfe799c21652008f95a822267dd4387991a3fc310be8eee386acfa1d7aee99c9"
 format = "tar.gz"
 file = "nit-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/nit/archive/{version}.{format}"]
