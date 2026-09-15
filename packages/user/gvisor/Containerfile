@@ -61,11 +61,15 @@ RUN --network=none <<-EOF
   mkdir -p /rootfs/usr/bin/gvisor-bin
   # runsc CLI (embeds the go-branch's prebuilt checkpointgofer.bin via
   # gvisorbinaries/embed; the standalone sidecar is NOT on the boot path).
+  # -s -w: strip symbol table + DWARF (this binary is ~100 MB with debug info;
+  # it lands in the measured UKI .initrd, so every byte is booted+attested).
   go build -trimpath \
-    -ldflags "-X gvisor.dev/gvisor/runsc/version.version=${VERSION}" \
+    -ldflags "-s -w -X gvisor.dev/gvisor/runsc/version.version=${VERSION}" \
     -o /rootfs/usr/bin/runsc ./runsc
   # gvisor_sentry sidecar (the sentry is a STRICT requirement of runsc).
-  go build -trimpath -o /rootfs/usr/bin/gvisor-bin/gvisor_sentry ./runsc/cmd/sentry
+  go build -trimpath \
+    -ldflags "-s -w" \
+    -o /rootfs/usr/bin/gvisor-bin/gvisor_sentry ./runsc/cmd/sentry
   # gvisor-sentry-prewarmer: freestanding C, no libc, no CRT — it runs ahead of
   # the sentry before any dynamic loader exists. Built fully static so it needs
   # nothing from the guest.
