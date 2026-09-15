@@ -33,7 +33,7 @@ FROM stagex/box-cpio AS box-cpio
 # ============================================================
 
 # --- default (enclave): attestation + virtualization tools ---
-# Init: execd (nit.mode=exec nit.target=/usr/bin/execd). The unit set lives
+# Init: execd (nit 0.9: init.unpack=/system init.target=/usr/bin/execd). The unit set lives
 # in /etc/execd/units (HCL); the base image carries lo + tpm-rootfs, the dev
 # variant adds the network/ssh/attestation daemons. The busybox init stack
 # (inittab + rcS + S??*) is gone: execd is PID 1 after nit's execve and its
