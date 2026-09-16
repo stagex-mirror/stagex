@@ -1,5 +1,11 @@
-#!/bin/sh
+#!/bin/busybox ash
 # home.sh —  LUKS /home volume (TPM2 PCR-locked key) + unprivileged user setup
+#
+# Key release + volume open are pure Rust (the `bootproof` binary:
+# dmext/unseal commands). No tpm2_*, no cryptsetup, no lossetup in the
+# open path. On-disk format stays standard LUKS2 (cryptsetup-oracle
+# compatible; a human can open the same volume by hand). The first-boot
+# luksFormat stays a cryptsetup oracle (the luks crate is read-only).
 #
 # TPM2 key protection, two-stage PCR policy:
 #   PCR 4 (OVMF boot path) and PCR 9 (initrd/cmdline data) are NOT stable on
@@ -55,11 +61,6 @@ SEED_PCRS="5,7"
 FULL_HANDLE="0x81010201"
 FULL_PCRS="4,5,7,9"
 KEYFILE="/run/home-key"
-POLICY="/run/home-policy"
-SEAL_PUB="/run/sealed.pub"
-SEAL_PRIV="/run/sealed.priv"
-PRIMARY_CTX="/run/primary.ctx"
-SEAL_CTX="/run/sealed.ctx"
 USERDATA="/run/userdata"
 FORMAT_LIMIT=900
 OPEN_LIMIT=300
@@ -91,63 +92,40 @@ tpm_retry() {
 	return 1
 }
 
-# Use the direct device TCTI (no tpm2-abrmd in this image; the kernel
-# RM on /dev/tpmrm0 handles concurrency if needed).
-if [ -c /dev/tpm0 ]; then
-	export TCTI="device:/dev/tpm0"
-elif [ -c /dev/tpmrm0 ]; then
-	export TCTI="device:/dev/tpmrm0"
+# Use the Resource-Manager char device first: on the NitroTPM /dev/tpm0
+# (direct) intermittently wedges with 0x0902, while /dev/tpmrm0 stays
+# reliable (verified on c6a; the RM driver also reclaims per-fd transient
+# contexts on close). bootproof takes the device path directly.
+if [ -c /dev/tpmrm0 ]; then
+	TPM_DEV=/dev/tpmrm0
+elif [ -c /dev/tpm0 ]; then
+	TPM_DEV=/dev/tpm0
 else
-	unset TCTI
+	TPM_DEV=
 fi
 
-# Unseal the object at $1 (hex handle) under the PCR policy $2 to $KEYFILE.
-# tpm2-tools 5.7 auth-string: "pcr:<hash>:<pcrs>" opens the policy session
-# and runs PolicyPCR in one step (there is no "policy:" prefix in this build).
-unseal_key() {
-	[ -n "$TCTI" ] || return 1
-	umask 077
-	rm -f "$KEYFILE"
-	tpm_retry /dev/null tpm2_unseal -c "$1" -p "pcr:sha256:$2" -o "$KEYFILE"
-	[ -s "$KEYFILE" ]
+# Attestation gate for key release: on an SEV-SNP host (/dev/sev-guest
+# present) the full dual gate applies (in-process SNP proof + TPM PCR
+# policy); where there is no SNP device (the QEMU dev loop) it degrades to
+# TPM-only — the same detect()-based degradation as the node side.
+BP_GATE=""
+[ -c /dev/sev-guest ] || BP_GATE="--tpm-only"
+
+# Open the LUKS volume at $1 as dm-crypt "home" (unmounted).
+# Pure Rust (bootproof): unseal the persistent handle $2 under PCR policy
+# $3 -> LUKS2 master key -> dm-crypt /dev/mapper/home. No --mount here: the
+# mount (and the e2fsck / mkfs-recovery path) is mount_or_reformat's job,
+# which needs the device open but not yet mounted. Returns 0 on success.
+open_volume() {
+	mkdir -p /dev/mapper
+	[ -c /dev/mapper/control ] || mknod -m 600 /dev/mapper/control c 10 236
+	bootproof unseal disk --device "$TPM_DEV" --handle "$2" --pcrs "$3" \
+		$BP_GATE --name home "$1"
 }
 
-# Seal $KEYFILE to the TPM2 under the PCR policy $2 and evict it to $1.
-# Idempotent: if $1 already holds a persistent object, this is a no-op
-# success (the object was sealed by a previous boot of this volume).
-seal_key() {
-	[ -s "$KEYFILE" ] || return 1
-	[ -n "$TCTI" ] || return 1
-	if tpm_retry /dev/null tpm2_getcap handles-persistent | grep -q "^- $1"; then
-		return 0
-	fi
-	[ -f "$POLICY" ] || tpm_retry /dev/null tpm2_createpolicy \
-		--policy-pcr -l "sha256:$2" -L "$POLICY"
-	[ -f "$POLICY" ] || return 1
-	tpm_retry /dev/null tpm2_createprimary -C o -c "$PRIMARY_CTX" || return 1
-	[ -f "$PRIMARY_CTX" ] || return 1
-	tpm_retry /dev/null tpm2_create -C "$PRIMARY_CTX" -i "$KEYFILE" \
-		-L "$POLICY" -u "$SEAL_PUB" -r "$SEAL_PRIV" || return 1
-	[ -f "$SEAL_PUB" ] && [ -f "$SEAL_PRIV" ] || return 1
-	tpm_retry /dev/null tpm2_load -C "$PRIMARY_CTX" \
-		-u "$SEAL_PUB" -r "$SEAL_PRIV" -c "$SEAL_CTX" || return 1
-	[ -f "$SEAL_CTX" ] || return 1
-	tpm_retry /dev/null tpm2_evictcontrol -C o -c "$SEAL_CTX" "$1" || return 1
-	rm -f "$PRIMARY_CTX" "$SEAL_CTX" "$SEAL_PUB" "$SEAL_PRIV" "$POLICY"
-	return 0
-}
-
-# True if the persistent handle $1 is defined.
-handle_exists() {
-	tpm_retry /dev/null tpm2_getcap handles-persistent | grep -q "^- $1"
-}
-
-# Remove a persistent handle (discards the key it holds).
-drop_handle() {
-	[ -n "$TCTI" ] || return 0
-	[ -z "$1" ] && return 0
-	tpm_retry /dev/null tpm2_evictcontrol -C o -c "$1" 2>/dev/null
-	return 0
+# Close the dm-crypt device "home" (failure-path cleanup). Best effort.
+close_volume() {
+	dmsetup remove home 2>/dev/null || true
 }
 
 # e2fsck, mount the opened volume at /home; on mount failure try a mkfs
@@ -165,15 +143,8 @@ mount_or_reformat() {
 		printf "home: (reformatted filesystem on %s)\n" "$disk"
 		return 0
 	fi
-	cryptsetup close home
+	close_volume
 	return 1
-}
-
-open_volume() {
-	mkdir -p /run/cryptsetup
-	mkdir -p /dev/mapper
-	[ -c /dev/mapper/control ] || mknod -m 600 /dev/mapper/control c 10 236
-	cryptsetup open --type luks2 --key-file "$KEYFILE" "$1" home
 }
 
 # Run $2 under a deadline of $1 seconds. The command runs in a background
@@ -204,12 +175,14 @@ run_io() {
 		fi
 		sleep 5
 	done
-	# Only the one backgrounded step is still pending (the loop broke on
-	# its exit, and the deadline path already returned), so a bare wait
-	# reaps exactly it. NOT `wait "$pid"`: brush's wait builtin does not
-	# implement PIDs ("wait: not yet implemented: wait with process IDs")
-	# and fails with rc 99, which would mark every I/O step failed.
-	wait
+	# Reap the step and return ITS exit status. `wait "$pid"` is the
+	# correct POSIX form — but it MUST run under busybox ash (see the
+	# shebang). /bin/sh is brush, and brush's wait builtin is broken for
+	# this purpose: `wait "$pid"` is unimplemented (rc 99) and bare
+	# `wait` returns 0 regardless of the job's status, which silently
+	# turned every failed I/O step into a success (a false
+	# "home: ok" with no volume open, and dead fail-closed recovery).
+	wait "$pid"
 	rc=$?
 	return $rc
 }
@@ -328,43 +301,45 @@ start() {
 		sig=$(blkid -o value -s TYPE "$data_disk" 2>/dev/null | head -1)
 		case "$sig" in
 			crypto_LUKS)
-				if [ -n "$TCTI" ]; then
-					if unseal_key "$FULL_HANDLE" "$FULL_PCRS" && \
-							run_io $OPEN_LIMIT open_volume "$data_disk"; then
-						if mount_or_reformat "$data_disk"; then
-							rm -f "$KEYFILE"
-							printf "home: ok (luks %s, pcrs %s)\n" "$data_disk" "$FULL_PCRS"
+				if [ -z "$TPM_DEV" ]; then
+					printf "home: locked (no TPM; /home stays tmpfs)\n"
+				elif run_io $OPEN_LIMIT open_volume "$data_disk" "$FULL_HANDLE" "$FULL_PCRS"; then
+					if mount_or_reformat "$data_disk"; then
+						printf "home: ok (luks %s, pcrs %s)\n" "$data_disk" "$FULL_PCRS"
+					else
+						close_volume
+						printf "home: locked (mount failed; /home stays tmpfs)\n"
+					fi
+				elif run_io $OPEN_LIMIT open_volume "$data_disk" "$SEED_HANDLE" "$SEED_PCRS"; then
+					# Second-boot migration: re-seal the same key under the full
+					# policy. bootproof unseals the seed and seals the full in
+					# ONE process — the key bytes never touch the shell.
+					# Idempotent (no-op once the full handle already exists).
+					migrated=0
+					if tpm_retry /dev/null bootproof dmext migrate \
+							--device "$TPM_DEV" --from-pcrs "$SEED_PCRS" \
+							--to-pcrs "$FULL_PCRS" $BP_GATE \
+							"$SEED_HANDLE" "$FULL_HANDLE"; then
+						migrated=1
+					else
+						migrated=2
+					fi
+					if mount_or_reformat "$data_disk"; then
+						if [ "$migrated" = 1 ]; then
+							printf "home: ok (luks %s, seed pcrs %s, migrated to pcrs %s)\n" \
+								"$data_disk" "$SEED_PCRS" "$FULL_PCRS"
 						else
-							rm -f "$KEYFILE"
-							printf "home: locked (mount failed; /home stays tmpfs)\n"
-						fi
-					elif unseal_key "$SEED_HANDLE" "$SEED_PCRS" && \
-							run_io $OPEN_LIMIT open_volume "$data_disk"; then
-						migrated=0
-						if ! handle_exists "$FULL_HANDLE" && \
-								seal_key "$FULL_HANDLE" "$FULL_PCRS"; then
-							migrated=1
-						fi
-						if mount_or_reformat "$data_disk"; then
-							rm -f "$KEYFILE"
-							if [ "$migrated" = 1 ]; then
-								printf "home: ok (luks %s, seed pcrs %s, migrated to pcrs %s)\n" \
-									"$data_disk" "$SEED_PCRS" "$FULL_PCRS"
-							else
-								printf "home: ok (luks %s, seed pcrs %s)\n" \
-									"$data_disk" "$SEED_PCRS"
-							fi
-						else
-							rm -f "$KEYFILE"
-							printf "home: locked (mount failed; /home stays tmpfs)\n"
+							printf "home: ok (luks %s, seed pcrs %s)\n" \
+								"$data_disk" "$SEED_PCRS"
 						fi
 					else
-						rm -f "$KEYFILE"
-						printf "home: locked (TPM unseal failed; /home stays tmpfs)\n"
+						close_volume
+						printf "home: locked (mount failed; /home stays tmpfs)\n"
 					fi
+					[ "$migrated" = 2 ] && \
+						printf "home: WARN: migration to pcrs %s failed (seed still opens)\n" "$FULL_PCRS"
 				else
-					rm -f "$KEYFILE"
-					printf "home: locked (no TPM; /home stays tmpfs)\n"
+					printf "home: locked (TPM unseal failed; /home stays tmpfs)\n"
 				fi
 				;;
 			"")
@@ -376,13 +351,11 @@ start() {
 				# boot unseals it and heals the volume (mkfs recovery) or
 				# re-formats it (which replaces the sealed key below).
 				umask 077
-				if [ -n "$TCTI" ]; then
-					# Replace any orphan key from a previous partial attempt,
-					# so the sealed key always matches the last format.
-					drop_handle "$SEED_HANDLE"
-				fi
-				if [ -n "$TCTI" ] && dd if=/dev/urandom of="$KEYFILE" bs=32 count=1 >/dev/null 2>&1 && \
-						seal_key "$SEED_HANDLE" "$SEED_PCRS"; then
+				if [ -n "$TPM_DEV" ] && \
+						dd if=/dev/urandom of="$KEYFILE" bs=32 count=1 >/dev/null 2>&1 && \
+						tpm_retry /dev/null bootproof dmext seal \
+							--device "$TPM_DEV" --pcrs "$SEED_PCRS" \
+							"@$KEYFILE" --persistent "$SEED_HANDLE" --out /dev/null; then
 					# Fixed PBKDF parameters, no benchmark (see header): the
 					# benchmark's +/-5 % convergence loop ran for ~131 min on
 					# one fresh AWS boot before settling on exactly these values.
@@ -392,7 +365,7 @@ start() {
 							--label "$LUKS_LABEL" --batch-mode --key-file "$KEYFILE" \
 							--pbkdf-force-iterations 4 --pbkdf-memory 512000 \
 							--pbkdf-parallel "$pbkdf_cpus" "$data_disk" && \
-						run_io $OPEN_LIMIT open_volume "$data_disk" && \
+						run_io $OPEN_LIMIT open_volume "$data_disk" "$SEED_HANDLE" "$SEED_PCRS" && \
 						run_io $MKFS_LIMIT mkfs.ext4 -q -L home "$MAPPED" && \
 						run_io $MOUNT_LIMIT mount "$MAPPED" /home; then
 						rm -f "$KEYFILE"
@@ -404,7 +377,7 @@ start() {
 						# to disk, the next boot unseals it and completes the
 						# setup (mkfs recovery). If the disk is still blank, the
 						# next boot re-formats and replaces the sealed key.
-						cryptsetup close home 2>/dev/null
+						close_volume
 						rm -f "$KEYFILE"
 						printf "home: WARN: setup incomplete on %s, key kept for next boot — stop/start clears a stuck volume\n" "$data_disk"
 					fi
