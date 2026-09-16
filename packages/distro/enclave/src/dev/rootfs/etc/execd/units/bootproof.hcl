@@ -23,7 +23,7 @@ unit "bootproof" {
   }
 
   depends {
-    units = ["lo", "home"]
+    units = ["lo", "home", "bootproof-collect"]
   }
 
   restart = "always"

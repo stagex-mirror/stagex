@@ -95,6 +95,7 @@ COPY src/dev/rootfs/etc/execd/units/cloud-init-net.hcl /etc/execd/units/
 COPY src/dev/rootfs/etc/execd/units/home.hcl /etc/execd/units/
 COPY src/dev/rootfs/etc/execd/units/sshdt.hcl /etc/execd/units/
 COPY src/dev/rootfs/etc/execd/units/bootproof.hcl /etc/execd/units/
+COPY src/dev/rootfs/etc/execd/units/bootproof-collect.hcl /etc/execd/units/
 COPY src/dev/rootfs/usr/libexec/cloud-init-drive.sh /usr/libexec/
 COPY src/dev/rootfs/usr/libexec/cloud-init-net.sh /usr/libexec/
 COPY src/dev/rootfs/usr/libexec/home.sh /usr/libexec/
