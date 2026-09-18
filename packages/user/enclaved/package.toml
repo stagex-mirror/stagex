@@ -1,0 +1,23 @@
+[package]
+name = "enclaved"
+version = "20260907.0"
+description = "The StageX enclave host daemon: the single no-arg daemon that owns the attestation hardware (SEV-SNP + TPM2), the bootproof evidence socket, PCR11 rootfs measurement, cloud user-data (IMDS / config-drive), unprivileged user setup, and the LUKS /home volume. No args, no shell. Also carries bootproofd, the sole HTTP face over the enclaved Unix socket."
+license = "MIT OR Apache-2.0"
+website = "https://codeberg.org/lrvick/enclaved"
+
+[sources.enclaved]
+version = "651b83d2c8ff73af262054c58e45a99ba37835b1"
+hash = "fab05d1959d558060ef99d9cacc859eef4fe566f69574426a6a814162cafb9f3"
+format = "tar.gz"
+file = "enclaved-{version}.{format}"
+mirrors = ["https://codeberg.org/lrvick/enclaved/archive/{version}.{format}"]
+
+# The shared attestation engine the enclaved daemon links (path dep
+# ../bootproof/crates/bootproof). Built from source in the same cargo
+# invocation; not a separate make package (user-bootproof ships the CLI).
+[sources.bootproof]
+version = "7a448f4ec3e4b0f3d5d8a89d7898ea9dac595301"
+hash = "0c0ff15a38be0dd467e4a52086b31346d9d4955a1c9621a1a72e469788751bb0"
+format = "tar.gz"
+file = "bootproof-{version}.{format}"
+mirrors = ["https://codeberg.org/lrvick/bootproof/archive/{version}.{format}"]

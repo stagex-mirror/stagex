@@ -1,0 +1,35 @@
+FROM stagex/pallet-rust AS build
+ARG ENCLAVED_VERSION
+ARG BOOTPROOF_VERSION
+ARG TARGETARCH
+# enclaved links the tss2 C stack DYNAMICALLY (its build.rs re-emits the
+# ordered link-args + compiles trampoline.c, because a dependency's
+# rustc-link-arg does not propagate to this bin's final link). Same pattern
+# as user-bootproof: user-tpm2-tss provides the tss2 shared objects,
+# user-lvm2 is COPY'd for its HEADERS only (devicemapper-sys bindgens the
+# dm_ioctl structs from libdevmapper.h at build time; the crate itself
+# issues raw DM ioctls, no libdevmapper DT_NEEDED). The .pc Libs lines are
+# emptied so no pkg-config probe emits stray link flags. clang (pallet-rust
+# base) compiles the trampoline.
+COPY --from=stagex/user-tpm2-tss . /
+COPY --from=stagex/user-lvm2 . /
+# The bootproof workspace MUST sit at /bootproof: enclaved's Cargo.toml
+# declares `bootproof = { path = "../bootproof/crates/bootproof" }`, and the
+# enclaved archive extracts to top-level /enclaved.
+ADD fetch/bootproof-${BOOTPROOF_VERSION}.tar.gz /
+ADD fetch/enclaved-${ENCLAVED_VERSION}.tar.gz /
+WORKDIR /enclaved
+# The `enclaved` daemon only. bootproofd (the HTTP face over the enclaved
+# socket) is a crate of the bootproof workspace and ships from
+# user-bootproof; building it here too would duplicate the workspace.
+RUN cargo fetch
+RUN --network=none <<-EOF
+  set -eux
+  for f in esys sys mu rc tcti-device tctildr; do
+    sed -i 's|^Libs:.*|Libs: |' /usr/lib/pkgconfig/tss2-$f.pc
+  done
+  cargo rustc --locked --release -p enclaved --bin enclaved
+  install -vDm755 target/release/enclaved /rootfs/usr/bin/enclaved
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

@@ -1,7 +1,7 @@
 FROM stagex/pallet-rust AS build
 ARG VERSION
 ARG TARGETARCH
-# The production binary links the tss2 C stack DYNAMICALLY against the guest
+# The production binaries link the tss2 C stack DYNAMICALLY against the guest
 # rootfs's shared objects (user-tpm2-tss; libcrypto from core-openssl is
 # pulled in transitively through libtss2-esys.so): a shared-library update
 # never forces a Rust rebuild. user-lvm2 is COPY'd too, but for its HEADERS
@@ -9,20 +9,22 @@ ARG TARGETARCH
 # build time, and the stratis `devicemapper` crate itself issues raw DM
 # ioctls (no libdevmapper DT_NEEDED, no undefined dm_ symbols). The .pc
 # files' Libs lines are emptied so no pkg-config probe emits link flags;
-# bootproof's build.rs owns the whole final link line (exact -l set,
-# dependents before dependencies) and compiles the trampoline.
+# the crate build.rs's own cargo:rustc-link-arg owns the final link line
+# (exact -l set, dependents before dependencies) and compiles the trampoline.
 COPY --from=stagex/user-tpm2-tss . /
 COPY --from=stagex/user-lvm2 . /
 ADD fetch/bootproof-${VERSION}.tar.gz .
 WORKDIR /bootproof
-# Dynamic (DT_NEEDED: tss2 .so, libunwind, musl libc; libcrypto +
-# libtss2-sys resolved transitively through libtss2-esys.so's own NEEDED):
-# the guest rootfs ships every shared object the binary needs, so one
+# Two binaries ship from this workspace:
+#   bootproof   — the narrow CLI (tpm-probe / attest / verify). Links tss2
+#                 dynamically (DT_NEEDED: tss2 .so, libunwind, musl; libcrypto
+#                 + libtss2-sys resolved transitively through libtss2-esys.so).
+#   bootproofd  — the sole HTTP face over the enclaved Unix socket (TLS :443).
+#                 Links the bootproof lib; its final link needs no tss2 symbols
+#                 of its own (verified: ldd shows only musl + libunwind), so no
+#                 per-crate build.rs is required.
+# The guest rootfs ships every shared object both binaries need, so one
 # C-library update is a package rebuild, not a whole-tree Rust rebuild.
-# `bootproofd` is intentionally NOT built here: it links the `bootproof` lib,
-# and the tss2 link-args do not cross the package boundary into its own final
-# link, so it cannot build; nothing in the distro runs it (the execd unit
-# invokes /usr/bin/bootproof attest directly).
 RUN cargo fetch
 RUN --network=none <<-EOF
   set -eux
@@ -30,7 +32,9 @@ RUN --network=none <<-EOF
     sed -i 's|^Libs:.*|Libs: |' /usr/lib/pkgconfig/tss2-$f.pc
   done
   cargo rustc --locked --release -p bootproof --bin bootproof
+  cargo rustc --locked --release -p bootproofd --bin bootproofd
   install -vDm755 target/release/bootproof /rootfs/usr/bin/bootproof
+  install -vDm755 target/release/bootproofd /rootfs/usr/bin/bootproofd
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

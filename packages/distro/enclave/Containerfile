@@ -13,6 +13,7 @@ FROM stagex/user-tpm2-tss AS user-tpm2-tss
 FROM stagex/user-tpm2-tools AS user-tpm2-tools
 FROM stagex/user-sevctl AS user-sevctl
 FROM stagex/user-bootproof AS user-bootproof
+FROM stagex/user-enclaved AS user-enclaved
 FROM stagex/user-snpguest AS user-snpguest
 FROM stagex/user-execd AS user-execd
 FROM stagex/user-brush AS user-brush
@@ -33,12 +34,12 @@ FROM stagex/box-cpio AS box-cpio
 # Stage 1: rootfs variants
 # ============================================================
 
-# --- default (enclave): attestation + virtualization tools ---
-# Init: execd (nit 0.9: init.unpack=/system init.target=/usr/bin/execd). The unit set lives
-# in /etc/execd/units (HCL); the base image carries lo + tpm-rootfs, the dev
-# variant adds the network/ssh/attestation daemons. The busybox init stack
-# (inittab + rcS + S??*) is gone: execd is PID 1 after nit's execve and its
-# reaper parent handles orphan reaping + the liveness floor.
+# --- default (enclave): minimal ---
+# Init: execd (nit: init.unpack=/system init.target=/usr/bin/execd). The unit
+# set lives in /etc/execd/units (HCL). The busybox init stack (inittab + rcS
+# + S??*) is gone: execd is PID 1 after nit's execve and its reaper parent
+# handles orphan reaping + the liveness floor. The base image carries only
+# `lo`; the dev variant adds the network + the enclaved daemon stack.
 FROM scratch AS rootfs
 COPY --from=core-filesystem . /
 COPY --from=core-busybox . /
@@ -49,28 +50,33 @@ COPY --from=core-curl . /
 COPY --from=core-libzstd . /
 COPY --from=core-libunwind . /
 COPY --from=user-execd /usr/bin/execd /usr/bin/execd
-# brush replaces busybox `ash` as /bin/sh: the execd libexec scripts and any
-# unit `script` body run on it, so the busybox init dependency is gone. Install
-# the binary, then override the /bin/sh symlink that core-busybox points at
-# busybox. (The rest of busybox — ip, the coreutils applets the scripts call —
-# stays; that is a separate minification pass.)
+# brush replaces busybox `ash` as /bin/sh: any unit `script` body runs on it.
+# (The rest of busybox — ip, the coreutils applets the daemons call — stays;
+# minification is a separate pass.)
 COPY --from=user-brush /usr/bin/brush /usr/bin/brush
 RUN ln -sf /usr/bin/brush /bin/sh
 COPY src/rootfs/etc/environment /etc/environment
 COPY src/rootfs/etc/execd/units/lo.hcl /etc/execd/units/
-COPY src/rootfs/etc/execd/units/tpm-rootfs.hcl /etc/execd/units/
-COPY src/rootfs/usr/libexec/tpm-rootfs.sh /usr/libexec/
 COPY src/rootfs/oldroot /oldroot
 COPY --from=user-tpm2-tss . /
 COPY --from=user-tpm2-tools . /
 COPY --from=user-sevctl . /
 RUN mkdir -p /mnt /run /var/log /etc/keys && touch /mnt/.keep
 
-# --- dev: default + server kernel + network + sshdt + full attestation stack ---
+# --- dev: default + server kernel + network + enclaved daemon stack ---
+# The whole boot path is shell-free. enclaved (the single no-arg daemon)
+# owns the attestation hardware (SEV-SNP + TPM2), the bootproof evidence
+# socket, the PCR11 rootfs measurement, cloud user-data (IMDS / config
+# drive), the LUKS /home volume, and the unprivileged user. bootproofd is
+# the sole HTTP face (TLS :443) over enclaved's Unix socket. The only
+# remaining external calls are the first-boot oracles enclaved execs
+# directly (cryptsetup luksFormat, mkfs.ext4, e2fsck, mount) — binaries,
+# not shell.
 FROM rootfs AS rootfs-dev
 COPY --from=user-rust-dhcp /usr/bin/dhcp-client /usr/bin/dhcp-client
 COPY --from=user-sshdt . /
 COPY --from=user-bootproof . /
+COPY --from=user-enclaved . /
 COPY --from=user-cryptsetup . /
 COPY --from=user-popt . /
 COPY --from=user-lvm2 . /
@@ -80,25 +86,20 @@ COPY --from=user-libaio . /
 COPY --from=user-e2fsprogs . /
 COPY --from=user-util-linux . /
 COPY --from=core-ncurses . /
+# Verify-flow helpers (not boot-path daemons): snpguest dumps the SNP report
+# for verify-binding's BOUND check; tpm2-tools (above) reads live PCRs.
 COPY --from=user-snpguest . /
-# gVisor: the user-space kernel that sandboxes the sshdt + attest daemons.
+# gVisor: the user-space kernel that can sandbox workloads.
 # runsc (CLI) + the gvisor-bin sidecars (gvisor_sentry is a STRICT runtime
-# requirement of runsc; the prewarmer is optional but cheap). All from-source,
-# static, built by user-gvisor (go branch, standard Go toolchain).
+# requirement of runsc; the prewarmer is optional but cheap).
 COPY --from=user-gvisor /usr/bin/runsc /usr/bin/runsc
 COPY --from=user-gvisor /usr/bin/gvisor-bin /usr/bin/gvisor-bin
-# execd units + one-shot setup scripts for the daemons above (see the unit
-# files for ordering: pure depends-graph, topo-sorted by execd).
+# execd units (pure depends-graph, topo-sorted by execd): lo (base) ->
+# dhcp -> enclaved -> { sshdt, bootproofd }. No shell scripts anywhere.
 COPY src/dev/rootfs/etc/execd/units/dhcp.hcl /etc/execd/units/
-COPY src/dev/rootfs/etc/execd/units/cloud-init-drive.hcl /etc/execd/units/
-COPY src/dev/rootfs/etc/execd/units/cloud-init-net.hcl /etc/execd/units/
-COPY src/dev/rootfs/etc/execd/units/home.hcl /etc/execd/units/
+COPY src/dev/rootfs/etc/execd/units/enclaved.hcl /etc/execd/units/
 COPY src/dev/rootfs/etc/execd/units/sshdt.hcl /etc/execd/units/
-COPY src/dev/rootfs/etc/execd/units/bootproof.hcl /etc/execd/units/
-COPY src/dev/rootfs/etc/execd/units/bootproof-collect.hcl /etc/execd/units/
-COPY src/dev/rootfs/usr/libexec/cloud-init-drive.sh /usr/libexec/
-COPY src/dev/rootfs/usr/libexec/cloud-init-net.sh /usr/libexec/
-COPY src/dev/rootfs/usr/libexec/home.sh /usr/libexec/
+COPY src/dev/rootfs/etc/execd/units/bootproofd.hcl /etc/execd/units/
 # Full SPDX build-provenance document (git origin/branch/commit + every
 # dependency's name/version/digest), generated into the build context by the
 # build and baked into the image; installed at /provenance.spdx.

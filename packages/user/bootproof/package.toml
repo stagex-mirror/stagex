@@ -1,12 +1,15 @@
 [package]
 name = "bootproof"
-version = "c54896f9ed847a05a47c02ff984ac4f4dc26dfbb"
-description = "Rust remote attestation agent: TPM2 + SEV-SNP in-process (sev crate), zero OS-exec, identity self-heal, dmext (TPM2-sealed LUKS key, SNP+PCR-gated unseal, persistent-handle migrate)"
+version = "7a448f4ec3e4b0f3d5d8a89d7898ea9dac595301"
+description = "Rust remote attestation: the shared library (attest engine, dmext LUKS unseal, collect server loop, bootproof protocol) + a narrow CLI (tpm-probe / attest / verify). SEV-SNP + TPM2 in-process (sev crate), zero OS-exec, identity self-heal."
 license = "MIT OR Apache-2.0"
-website = "https://codeberg.org/caution/bootproof"
+website = "https://codeberg.org/lrvick/bootproof"
 
 [sources.bootproof]
-hash = "b27e8178154bb01776bf28a859c8ecf2090dbd45d903d65f5bd765c0f850ca29"
+hash = "0c0ff15a38be0dd467e4a52086b31346d9d4955a1c9621a1a72e469788751bb0"
 format = "tar.gz"
 file = "bootproof-{version}.{format}"
-mirrors = ["https://codeberg.org/caution/bootproof/archive/{version}.{format}"]
+# lrvick mirror: the caution/bootproof mirror 404s this commit (the Phase-4
+# bootproofd merge is on lrvick); the archive is pre-seeded in
+# fetch/user/bootproof/ so the build uses it without re-fetching.
+mirrors = ["https://codeberg.org/lrvick/bootproof/archive/{version}.{format}"]
