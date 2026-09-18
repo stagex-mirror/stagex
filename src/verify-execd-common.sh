@@ -10,10 +10,10 @@
 #
 # capture W:
 #   $W/pcrs.txt       tpm2_pcrread (TCTI tpmrm0, fallback tpm0)
-#   $W/eventlog.bin   TPM event log from /dev/mem at the dmesg TPMEventLog=
-#                     address — PAGE-ALIGNED dd (bs=4096, 32 MiB window).
-#                     Supersedes the old bs=1 dump (~25 min over ssh; the
-#                     page-aligned form takes ~1 s).
+#   $W/eventlog.bin   TPM event log from /dev/mem, page-aligned dd of the
+#                     exact [TPMEventLog, TPMFinalLog] region (the log starts
+#                     AT TPMEventLog — a backward window ends before it).
+#                     Supersedes the old bs=1 dump (~25 min over ssh).
 #   $W/esp.raw        ESP carve-out of the boot disk (LBA 2048, 256 MiB)
 #   $W/uki/BOOTX64.EFI the UKI, mcopy'd out of the ESP
 #   $W/nonce.bin      fresh 64-byte SNP nonce
@@ -48,14 +48,28 @@ capture() {
   ssh 'cat /run/tpm-rootfs.status 2>/dev/null || echo "(no tpm-rootfs status)"'
 
   echo "=== TPM event log from /dev/mem (page-aligned) ==="
-  local EV OFF
+  local EV FL EVADDR FLADDR OFF PAGES
   EV=$(ssh 'dmesg | grep -oE "TPMEventLog=0x[0-9a-f]+" | head -1 | cut -d= -f2')
   [ -n "$EV" ] || { echo "ERROR: no TPMEventLog= in dmesg"; return 1; }
-  echo "TPMEventLog=$EV"
-  # 4K-aligned window before the event log (32 MiB), bs=4096.
-  OFF=$(python3 -c "print((int('$EV',16)//4096)*4096 - 33554432)")
-  [ "$OFF" -lt 0 ] && OFF=0
-  ssh "dd if=/dev/mem bs=4096 skip=$((OFF/4096)) count=8192 2>/dev/null | base64 -w0" \
+  FL=$(ssh 'dmesg | grep -oE "TPMFinalLog=0x[0-9a-f]+" | head -1 | cut -d= -f2')
+  echo "TPMEventLog=$EV  TPMFinalLog=${FL:-unset}"
+  # The event log STARTS at TPMEventLog (the Spec ID event sits ~41 bytes in)
+  # and runs to TPMFinalLog. Read the EXACT log region, page-aligned forward:
+  # a backward 32 MiB window ends before the log starts (no Spec ID), and a
+  # large forward read overshoots TPMFinalLog into sparse/SNP-reserved
+  # memory, which wedges the guest (unreachable until stop/start). Cap the
+  # page count: the log is a few hundred KiB; 1024 pages (4 MiB) is ample.
+  EVADDR=$(python3 -c "print(int('$EV',16)//4096*4096)")
+  if [ -n "$FL" ]; then
+    FLADDR=$(python3 -c "print((int('$FL',16)+4095)//4096*4096)")
+    PAGES=$(( (FLADDR - EVADDR) / 4096 + 1 ))
+    [ "$PAGES" -gt 1024 ] && PAGES=1024
+    [ "$PAGES" -lt 1 ] && PAGES=1
+  else
+    PAGES=256
+  fi
+  OFF="$EVADDR"
+  ssh "dd if=/dev/mem bs=4096 skip=$((OFF/4096)) count=$PAGES 2>/dev/null | base64 -w0" \
     | base64 -d > "$W/eventlog.bin"
   ls -la "$W/eventlog.bin"
 
