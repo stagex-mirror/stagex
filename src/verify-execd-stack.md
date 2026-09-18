@@ -76,6 +76,10 @@ bash src/verify-execd-stack.sh localhost 2222
 
 ## The 3-boot LUKS matrix (data disk attached)
 
+The "expected" log strings are the legacy `home.sh` phrasing — enclaved may
+word them differently; the load-bearing facts are the `handles-persistent`
+state and the `/home` mount.
+
 | boot | command | expected |
 |---|---|---|
 | 1 (blank disk) | `make qemu-start QEMU_DATA_DISK=$PWD/out/home.img` | `home: ok (formatted /dev/vdb, seed pcrs 5,7; full pcrs 4,5,7,9 apply next boot)` — ext4 on /home, ONLY `0x81010200` in `handles-persistent` |

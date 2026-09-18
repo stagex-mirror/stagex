@@ -44,6 +44,9 @@ capture() {
     ssh 'TCTI=device:/dev/tpm0 tpm2_pcrread' > "$W/pcrs.txt"
   head -4 "$W/pcrs.txt"
 
+  echo "=== enclaved PCR11 status ==="
+  ssh 'cat /run/tpm-rootfs.status 2>/dev/null || echo "(no tpm-rootfs status)"'
+
   echo "=== TPM event log from /dev/mem (page-aligned) ==="
   local EV OFF
   EV=$(ssh 'dmesg | grep -oE "TPMEventLog=0x[0-9a-f]+" | head -1 | cut -d= -f2')
