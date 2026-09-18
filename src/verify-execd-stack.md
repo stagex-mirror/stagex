@@ -64,6 +64,15 @@ docker rm -f qemu-dev && make qemu-start
 - serial: `docker logs qemu-dev`
 - QEMU has no `/dev/sev-guest`: `memory_encryption NOT PROVEN` with a reason is
   the CORRECT honest state — do not fail on it.
+- The harness forwards guest `:443` -> host `:443` (bootproofd face) alongside
+  `:2222` -> `:22` (the QEMU netdev hostfwd list), so the client can reach
+  `https://localhost/health` + `/attestation` directly.
+- **Pin rotation on QEMU:** bootproofd's identity is generated under the LUKS
+  /home (or /root tmpfs), so it ROTATES whenever that storage is recreated.
+  The client's `--pin` treats a changed SPKI as drift (hard fail) — correct
+  for real targets, but the stack verifier clears the localhost pin first and
+  re-pins (TOFU). AWS identities live on the persistent EBS volume and keep
+  their pins; a drift there is a real signal.
 - QEMU's `snpguest` produces a zeroed dummy report; `verify-binding`
   auto-skips the nonce echo there (the AWS leg is where the nonce proof is
   load-bearing).
@@ -141,7 +150,7 @@ PASS line:
    and `pcr_state` PROVEN; `memory_encryption` PROVEN only on SNP hosts
    (NOT PROVEN with a reason on QEMU swtpm is correct and does NOT fail).
 5. **luks** — data disk attached: `/home` is ext4 on `/dev/mapper/home` with
-   `LABEL=stagex-home` (stat -f / mount / blkid); no data disk: `/home` on
+   LUKS2 `LABEL=stagex-home` on the backing whole disk (blkid; the ext4 LABEL on /dev/mapper/home is `home`); no data disk: `/home` on
    tmpfs is the correct state.
 6. **dmesg** — zero lines matching `traps|general protection|CFI|UBSAN|BUG`
    (the "report a bug" boilerplate line excluded).

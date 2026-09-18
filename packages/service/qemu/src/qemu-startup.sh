@@ -51,7 +51,9 @@ QEMU_ARGS="$QEMU_ARGS -device virtio-scsi-pci,id=scsi0"
 QEMU_ARGS="$QEMU_ARGS -drive file=${QEMU_CLOUD_ISO:=/cloud-iso.img},format=raw,media=cdrom,if=none,id=cd0"
 QEMU_ARGS="$QEMU_ARGS -device scsi-cd,drive=cd0"
 
-NET_OPTS="user,id=net0,hostfwd=tcp:0.0.0.0:2222-:22"
+# The enclave exposes the bootproofd face on :443; forward it too so a host
+# client can reach https://localhost/health (bootproof verify --direct).
+NET_OPTS="user,id=net0,hostfwd=tcp:0.0.0.0:2222-:22,hostfwd=tcp:0.0.0.0:443-:443"
 if [ -n "${QEMU_NET_HOSTFWD:-}" ]; then
     NET_OPTS="$NET_OPTS,hostfwd=${QEMU_NET_HOSTFWD}"
 fi

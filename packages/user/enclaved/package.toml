@@ -6,8 +6,8 @@ license = "MIT OR Apache-2.0"
 website = "https://codeberg.org/lrvick/enclaved"
 
 [sources.enclaved]
-version = "651b83d2c8ff73af262054c58e45a99ba37835b1"
-hash = "fab05d1959d558060ef99d9cacc859eef4fe566f69574426a6a814162cafb9f3"
+version = "fab3d9b583bbaed8cc6221748e5b47c93a6085c3"
+hash = "9a1e1f33d01264e2c1e637c3d24bc8719c1933126534792d6de431921e60e245"
 format = "tar.gz"
 file = "enclaved-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/enclaved/archive/{version}.{format}"]

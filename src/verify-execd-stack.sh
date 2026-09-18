@@ -103,8 +103,29 @@ echo "=== bootproofd face (bootproof verify --direct --trust) ==="
 if [ ! -x "$BOOTPROOF" ]; then
   section_fail face "bootproof client not found: $BOOTPROOF"
 fi
+# The client pins each target's daemon pubkey (TOFU + --pin: drift is a
+# HARD failure). On AWS the identity lives on the persistent EBS /home, so
+# the pin is stable and continuity is checked. On QEMU the identity is
+# generated under the LUKS /home (or /root tmpfs), so it ROTATES whenever
+# that storage is recreated — clear the localhost pin first so the verifier
+# re-pins the current identity instead of false-failing on a legitimate
+# rotation. Real targets keep their pins (a drift there is a signal).
+PINFILE="$HOME/.config/bootproof/pins.json"
+if [ "$IP" = "localhost" ] && [ -f "$PINFILE" ]; then
+  python3 - "$PINFILE" <<'PY'
+import json, sys
+path = sys.argv[1]
+d = json.load(open(path))
+pins = d.get("pins", {})
+removed = [k for k in list(pins) if k.split(":")[0] in ("localhost", "127.0.0.1")]
+for k in removed:
+    del pins[k]
+json.dump(d, open(path, "w"), indent=2, sort_keys=True)
+print(f"(cleared {len(removed)} stale localhost pin(s) — QEMU identity rotation)")
+PY
+fi
 BP_OUT=$(env LD_LIBRARY_PATH="$BP_LIB" \
-  "$BOOTPROOF" verify "$IP" --direct --trust 2>&1)
+  "$BOOTPROOF" verify "$IP" --direct --trust --pin 2>&1)
 echo "$BP_OUT" | grep -E "FACT|PROVEN|NOT PROVEN|error|Error" || echo "(no fact lines captured)"
 # The client can exit nonzero on a NOT PROVEN row; judge from the table, not
 # the rc. "NOT PROVEN" contains "PROVEN" as a substring — exclude it explicitly.
@@ -129,12 +150,29 @@ HOMEMNT=$(ssh 'mount | grep -E " /home " || true')
 echo "fstype: $HOMEFS"
 echo "$HOMEMNT"
 case "$HOMEFS" in
-  ext4)
-    echo "data disk attached — expecting ext4 on /dev/mapper/home, LABEL=stagex-home"
+  ext2/ext3|ext4)
+    # stat -f %T reports "ext2/ext3" for ext4 volumes.
+    echo "data disk attached — expecting ext4 on /dev/mapper/home, LUKS LABEL=stagex-home"
     echo "$HOMEMNT" | grep -q "/dev/mapper/home" || \
       section_fail luks "/home is ext4 but not on /dev/mapper/home: $HOMEMNT"
-    LABEL=$(ssh 'blkid -s LABEL -o value /dev/mapper/home 2>/dev/null || true')
-    [ "$LABEL" = "stagex-home" ] || section_fail luks "LABEL is '$LABEL', expected stagex-home"
+    # The LUKS label (stagex-home) lives in the LUKS2 header on the backing
+    # whole disk; /dev/mapper/home is the UNCRYPTED device, whose LABEL is
+    # the ext4 label (home). Find the backing disk: the whole block device
+    # that is not the root disk.
+    LUKS_LABEL=$(ssh '
+      root=$(awk "\$2==\"/\" {print \\$1; exit}" /proc/mounts)
+      for d in /sys/block/*; do
+        n=$(basename $d)
+        case $n in loop*|ram*|zram*|sr*|dm-*) continue;; esac
+        [ -e $d/size ] || continue
+        whole=$n
+        case $n in nvme*) whole=$(echo $n | sed -E "s/p[0-9]+$//");;
+                   sd*|hd*|vd*) whole=$(echo $n | sed -E "s/[0-9]+$//");; esac
+        [ "$whole" = "$(basename $(echo $root | sed -E "s/\\//; s/p[0-9]+$//; s/[0-9]+$//"))" ] && continue
+        l=$(blkid -s LABEL -o value /dev/$n 2>/dev/null)
+        [ -n "$l" ] && { echo $l; break; }
+      done' 2>/dev/null)
+    [ "$LUKS_LABEL" = "stagex-home" ] || section_fail luks "LUKS LABEL on backing disk is '$LUKS_LABEL', expected stagex-home"
     ;;
   tmpfs)
     echo "no data disk — /home on tmpfs is the correct fail-soft state"
@@ -147,7 +185,7 @@ section_pass luks
 
 # ----------------------------------------------------------------- dmesg
 echo "=== dmesg ==="
-TRAPS=$(ssh 'dmesg | grep -iE "trap|general protection|CFI: |UBSAN|BUG:" | grep -v "report a bug" || true')
+TRAPS=$(ssh 'dmesg | grep -iE "trap|general protection|CFI: (violation|bad)|UBSAN|BUG:" | grep -v "report a bug" || true')
 if [ -n "$TRAPS" ]; then
   section_fail dmesg "traps/CFI/UBSAN/BUG lines:
 $TRAPS"
@@ -156,8 +194,17 @@ section_pass dmesg
 
 # --------------------------------------------------------------- userdata
 echo "=== userdata ==="
-HOSTNAME_OUT=$(ssh 'cat /etc/hostname 2>/dev/null')
-[ -n "$HOSTNAME_OUT" ] || section_fail userdata "/etc/hostname empty"
+# /etc is the read-only erofs root, so /etc/hostname is NOT a reliable
+# artifact: enclaved applies the hostname via sethostname(2) and keeps the
+# raw blob at /run/userdata (writable tmpfs). Check the live hostname and
+# the retained blob, not the RO file.
+RUNHOST=$(ssh 'hostname 2>/dev/null')
+[ -n "$RUNHOST" ] || section_fail userdata "live hostname (sethostname) empty"
+UDLEN=$(ssh 'wc -c < /run/userdata 2>/dev/null | tr -d " "' || echo 0)
+[ "${UDLEN:-0}" -ge 1 ] 2>/dev/null || section_fail userdata "/run/userdata blob missing (enclaved userdata leg did not run)"
+# The first line of the blob should be the hostname it applied.
+BLOBHN=$(ssh 'head -1 /run/userdata 2>/dev/null')
+[ "$BLOBHN" = "$RUNHOST" ] || echo "(note: blob first line '$BLOBHN' != live hostname '$RUNHOST' — acceptable if the key line leads the blob)"
 AKS=$(ssh 'wc -l < /root/.ssh/authorized_keys 2>/dev/null | tr -d " "' || echo 0)
 [ "${AKS:-0}" -ge 1 ] 2>/dev/null || section_fail userdata "/root/.ssh/authorized_keys empty (sshdt when-gate would fail-close; ssh is up so the key must exist)"
 section_pass userdata
