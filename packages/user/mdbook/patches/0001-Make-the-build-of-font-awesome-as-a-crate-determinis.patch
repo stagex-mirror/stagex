@@ -1,0 +1,47 @@
+From d408a6d1e17af74e805c5588b6814784347ca8fe Mon Sep 17 00:00:00 2001
+From: vad <vad@opensuse.org>
+Date: Sat, 19 Sep 2026 15:41:51 +0200
+Subject: [PATCH] Make the build of font-awesome-as-a-crate deterministic
+
+The order of traversing the `fontawesome-free-*-desktop/svgs` directory
+depends on the filesystem. Furthermore, the results were store in a
+`HashMap`. That caused the builds to be non-determinitic (producing
+different binaries) across different machines.
+
+Fix that by sorting the entries and storing them in a `BTreeMap`.
+---
+ Cargo.lock | 3 +--
+ Cargo.toml | 3 +++
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/Cargo.lock b/Cargo.lock
+index 47cfc287..7cd2cb28 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -502,8 +502,7 @@ checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
+ [[package]]
+ name = "font-awesome-as-a-crate"
+ version = "0.3.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "b40fbe89eb7639971503bf5f17bd31c41338e8f92e03c5744d07f2e03d43f679"
++source = "git+https://github.com/vadorovsky/docs.rs?branch=vad%2Ffont-awesome-determinism#c8cbe03c589255abdf99f251ee6c06ee18b14e7d"
+ 
+ [[package]]
+ name = "form_urlencoded"
+diff --git a/Cargo.toml b/Cargo.toml
+index c4a9ec05..2002e91e 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -111,6 +111,9 @@ listenfd = { version = "1", optional = true }
+ tokio = { workspace = true, features = ["macros", "rt-multi-thread"], optional = true }
+ tower-http = { workspace = true, features = ["fs", "trace"], optional = true }
+ 
++[patch.crates-io]
++font-awesome-as-a-crate = { git = "https://github.com/vadorovsky/docs.rs", branch = "vad/font-awesome-determinism" }
++
+ [dev-dependencies]
+ glob.workspace = true
+ mdbook-preprocessor.workspace = true
+-- 
+2.55.0
+
