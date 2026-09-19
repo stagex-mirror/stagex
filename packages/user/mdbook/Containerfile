@@ -2,8 +2,12 @@ FROM stagex/pallet-rust AS build
 ARG VERSION
 ADD fetch/mdbook-${VERSION}.tar.gz .
 WORKDIR /mdBook-${VERSION}
+ADD patches/*.patch .
 ENV RUST_BACKTRACE=1
 ENV RUSTFLAGS='-C codegen-units=1 -C target-cpu=x86-64 -C target-feature=+crt-static -C strip=symbols -C link-arg=-Wl,--build-id=none'
+RUN --network=none <<-EOF
+	patch -p1 < 0001-Make-the-build-of-font-awesome-as-a-crate-determinis.patch
+EOF
 RUN cargo fetch
 RUN --network=none <<-EOF
 	cargo build \
