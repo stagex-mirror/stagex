@@ -215,6 +215,17 @@ def tpm_extend(pcr, data, fn=hashlib.sha256):
     return h.digest()
 
 
+def userdata_extend(pcr, path):
+    """Extend a predicted PCR11 the way the enclaved daemon does with the
+    operator's user-data blob: after the rootfs extend, the daemon runs
+    PCR_Extend(11, SHA256(blob)). The extend happens post-firmware so it is
+    NOT in the event log — it must be predicted, exactly like the rootfs."""
+    if not path:
+        return pcr
+    with open(path, "rb") as f:
+        return tpm_extend(pcr, hashlib.sha256(f.read()).digest())
+
+
 def replay_pcr(events, pcr):
     val = b"\x00" * 32
     for e in events:
@@ -506,6 +517,10 @@ def check_uki(args, events, pcrs, initrd, kernel, uki, notes):
             print(f"    geometry ({src}): offset {start_byte:,} len {size_bytes:,}")
             pcr11 = replay_pcr(events, 11)
             pcr11 = tpm_extend(pcr11, hash_disk_region(args.disk, start_byte, size_bytes))
+            if args.userdata:
+                pcr11 = userdata_extend(pcr11, args.userdata)
+                print(f"    user-data:  extended PCR11 with sha256({args.userdata}) "
+                      f"[{hashlib.sha256(open(args.userdata,'rb').read()).hexdigest()[:16]}...]")
             live11 = pcrs.get(11)
             m = live11 is not None and pcr11.hex() == live11
             print(f"    replay sha256: {hexb(pcr11)}")
@@ -519,6 +534,10 @@ def check_uki(args, events, pcrs, initrd, kernel, uki, notes):
         # equal the plain replay of the stub's section measurements
         print("\n    rootfs binding (unikernel: replay == live, no partition extend)")
         pcr11 = replay_pcr(events, 11)
+        if args.userdata:
+            pcr11 = userdata_extend(pcr11, args.userdata)
+            print(f"    user-data:  extended PCR11 with sha256({args.userdata}) "
+                  f"[{hashlib.sha256(open(args.userdata,'rb').read()).hexdigest()[:16]}...]")
         live11 = pcrs.get(11)
         m = live11 is not None and pcr11.hex() == live11
         print(f"    replay sha256: {hexb(pcr11)}")
@@ -681,6 +700,7 @@ def main():
                     help="ESP-only (unikernel) disk: no system partition, PCR11 checked by plain replay")
     ap.add_argument("--part-start", type=int, help="system partition start, in 512-byte sectors (from /sys)")
     ap.add_argument("--part-size", type=int, help="system partition size, in 512-byte sectors (from /sys)")
+    ap.add_argument("--userdata", help="the operator's user-data blob file — the enclaved daemon extends PCR11 with SHA256(blob) after the rootfs extend, so the PCR11 check must extend the same way (TOFU/lock pin channel)")
     args = ap.parse_args()
 
     if not args.uki and not (args.initrd and args.cmdline):
