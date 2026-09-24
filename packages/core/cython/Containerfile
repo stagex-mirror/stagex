@@ -18,6 +18,10 @@ COPY --from=stagex/core-py-gpep517 . /
 COPY --from=stagex/core-py-wheel . /
 ADD fetch/cython-${VERSION}.tar.gz .
 WORKDIR /cython-${VERSION}
+# Cython's generated C iterates dicts/sets during codegen; fix the hash seed
+# so the emitted FlowControl*.c (and thus the compiled .so) is reproducible.
+ENV PYTHONHASHSEED=0
+ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	set -eux
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
