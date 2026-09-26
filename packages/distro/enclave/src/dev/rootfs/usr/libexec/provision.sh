@@ -36,6 +36,7 @@
 set -u
 
 DROP=/run/enclaved/drop
+SBX_SUBNET=192.168.10.0/24
 
 log() {
   printf 'provision: %s\n' "$*" >&2
@@ -51,6 +52,20 @@ log() {
 # volume bridge. enclavectl provision reads the daemon's evidence socket +
 # userdata.seed through /run/enclaved and writes the provisioned result to
 # /run/enclaved/drop.
+# Host-side NAT for the sandbox's own subnet: `runsc do` default mode is
+# "sandbox" (a veth pair on the default 192.168.10.x subnet), but without
+# this rule the sandbox's outbound IMDS traffic (source 192.168.10.x) is
+# never masqueraded to the host's primary ENI IP and is dropped. Same
+# idempotent -C||-A pattern as bootproofd-sandbox.sh; -w waits for the
+# xtables lock (the bootproofd sandbox's iptables runs in the SAME execd
+# wave and holds it briefly — a lock failure here would leave the sandbox
+# without egress on an IMDS-only host). FAIL-OPEN per this script's
+# contract — a NAT failure is logged, not fatal.
+{
+  iptables -w -t nat -C POSTROUTING -s "$SBX_SUBNET" -j MASQUERADE 2>/dev/null \
+    || iptables -w -t nat -A POSTROUTING -s "$SBX_SUBNET" -j MASQUERADE
+} || log "masquerade POSTROUTING $SBX_SUBNET failed (IMDS egress may be unavailable)"
+
 runsc --ignore-cgroups do --cwd / --force-overlay=false \
   --volume /run/enclaved:/run/enclaved /usr/bin/enclavectl provision
 rc=$?
