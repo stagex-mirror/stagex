@@ -21,7 +21,7 @@
 // failure; the socket it serves unlinks its stale copy before binding, so
 // a respawn is safe.
 unit "bootproofd" {
-  command = "/usr/bin/bootproofd"
+  script = "/usr/libexec/bootproofd-sandbox.sh"
 
   depends {
     units = ["enclaved"]

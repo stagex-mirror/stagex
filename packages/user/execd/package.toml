@@ -14,13 +14,13 @@ name = "execd"
 # 5cb1e3c additionally treats a missing /proc/net/<family> file (no
 # CONFIG_INET6 / CONFIG_UNIX) as "no sockets of that type" instead of an
 # error, so dependency health checks cannot stall the DAG on such kernels.
-version = "6b0b9be8ce3fbab6191d6646a53b8c7ba2bad1c3"
+version = "89cb134b8fea8dbfed66fb51d53e44cc2dc0f0ab"
 description = "Rust HCL unit supervisor: depends DAG, oneshot/standard units, restart policy, socket/file health"
 license = "MIT"
 website = "https://codeberg.org/lrvick/execd"
 
 [sources.execd]
-hash = "71b1827d03b6570020281920401d969a053e9c87b7c6fbbc584b3ab5e0870b07"
+hash = "edff974b7efd6f90f529b908e3322cd8025b67ffac76ae3281daccb3b676a451"
 format = "tar.gz"
 file = "execd-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/execd/archive/{version}.{format}"]

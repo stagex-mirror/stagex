@@ -1,12 +1,12 @@
 [package]
 name = "bootproof"
-version = "7a448f4ec3e4b0f3d5d8a89d7898ea9dac595301"
+version = "43f3d765f3911df7f6a78a8465d0835d58ce68d6"
 description = "Rust remote attestation: the shared library (attest engine, dmext LUKS unseal, collect server loop, bootproof protocol) + a narrow CLI (tpm-probe / attest / verify). SEV-SNP + TPM2 in-process (sev crate), zero OS-exec, identity self-heal."
 license = "MIT OR Apache-2.0"
 website = "https://codeberg.org/lrvick/bootproof"
 
 [sources.bootproof]
-hash = "0c0ff15a38be0dd467e4a52086b31346d9d4955a1c9621a1a72e469788751bb0"
+hash = "7a4d9fa02526b3e9b77950cb9e4f8266a357304d15e5fb9511e0cdbf03711e31"
 format = "tar.gz"
 file = "bootproof-{version}.{format}"
 # lrvick mirror: the caution/bootproof mirror 404s this commit (the Phase-4

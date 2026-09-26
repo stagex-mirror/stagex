@@ -25,6 +25,8 @@ FROM stagex/user-argon2 AS user-argon2
 FROM stagex/user-libaio AS user-libaio
 FROM stagex/user-e2fsprogs AS user-e2fsprogs
 FROM stagex/user-gvisor AS user-gvisor
+FROM stagex/user-iproute2 AS user-iproute2
+FROM stagex/user-iptables AS user-iptables
 FROM stagex/user-util-linux AS user-util-linux
 FROM stagex/core-ncurses AS core-ncurses
 FROM stagex/box-disk AS box-disk
@@ -94,12 +96,22 @@ COPY --from=user-snpguest . /
 # requirement of runsc; the prewarmer is optional but cheap).
 COPY --from=user-gvisor /usr/bin/runsc /usr/bin/runsc
 COPY --from=user-gvisor /usr/bin/gvisor-bin /usr/bin/gvisor-bin
+# Host-side network stack for runsc: `runsc do`'s setupNet shells out to the
+# host `ip` (veth pairs) and `iptables` (NAT). The busybox `ip` applet is too
+# limited (no `ip link add veth`); iproute2's /usr/bin/ip overwrites it.
+COPY --from=user-iproute2 . /
+COPY --from=user-iptables . /
 # execd units (pure depends-graph, topo-sorted by execd): lo (base) ->
 # dhcp -> enclaved -> { sshdt, bootproofd }. No shell scripts anywhere.
 COPY src/dev/rootfs/etc/execd/units/dhcp.hcl /etc/execd/units/
 COPY src/dev/rootfs/etc/execd/units/enclaved.hcl /etc/execd/units/
 COPY src/dev/rootfs/etc/execd/units/sshdt.hcl /etc/execd/units/
 COPY src/dev/rootfs/etc/execd/units/bootproofd.hcl /etc/execd/units/
+# P4: provisioner = sandboxed user-data provisioning (runsc do); bootproofd
+# behind a gVisor sandbox gets its TLS :443 face via a DNAT from host iptables.
+COPY src/dev/rootfs/etc/execd/units/provisioner.hcl /etc/execd/units/
+COPY src/dev/rootfs/usr/libexec/provision.sh /usr/libexec/provision.sh
+COPY src/dev/rootfs/usr/libexec/bootproofd-sandbox.sh /usr/libexec/bootproofd-sandbox.sh
 # Full SPDX build-provenance document (git origin/branch/commit + every
 # dependency's name/version/digest), generated into the build context by the
 # build and baked into the image; installed at /provenance.spdx.

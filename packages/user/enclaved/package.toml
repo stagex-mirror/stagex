@@ -6,8 +6,42 @@ license = "MIT OR Apache-2.0"
 website = "https://codeberg.org/lrvick/enclaved"
 
 [sources.enclaved]
-version = "fab3d9b583bbaed8cc6221748e5b47c93a6085c3"
-hash = "9a1e1f33d01264e2c1e637c3d24bc8719c1933126534792d6de431921e60e245"
+# eb42c31: measure: O_RDWR TPM open (EBADF fix) + tpmrm0-first + fix the raw
+# TPM2 wire protocol (response header tag|size|code u32, TPML_PCR_SELECTION
+# request, TPML_PCR_VALUES response) + TPM2_Startup cc 0x0144 (was 0x0180)
+# + RC_INITIALIZE check 0x0100 (was 0x0001) + surface the response RC
+# + command tag TPM_ST_NO_SESSIONS 0x8001 (was 0x0001 -> TPM_RC_BAD_TAG 0x0096
+#   on every command; the "silent non-zero RC")
+# + DEBUG raw response-header dump (root cause found; removed in 90e007a).
+# 90e007a: the wire protocol NEVER actually worked against a real TPM.
+#   PCR_Extend cc 0x0184 was TPM2_CC_PCR_Reset (correct: 0x0182);
+#   PCR_Read cc 0x0187 was TPM2_CC_PCR_SetAuthPolicy (correct: 0x017E);
+#   build_pcr_extend was missing the TPM2B_DATA u16 bufferSize prefix
+#   (46 -> 48). The guest's rc=0x0184 response was TPM_RC_H (invalid
+#   command handle area) — the TPM choking on the malformed command,
+#   not a tpmrm/device issue. parse_pcr_read now matches the spec
+#   (updateCounter | selection echo | TPM2B_DIGEST value; no per-value
+#   handle), cross-checked against the proven-good bootproof-tpm
+#   reference parser that produced every BOUND verdict.
+# 047cdbb: NO_SESSIONS TPM2_PCR_Extend (54 bytes, tag 0x8001) — PREMISE
+#   REFUTED by the guest: libtpms returned 0x00000125 (TPM_RC_AUTH_MISSING)
+#   on the 54-byte command. The v-bit reading was the trap: v governs
+#   non-empty auth *value*, while the chandle flag still requires a session
+#   handle in the session area. The kernel opens a session for PCR_Extend
+#   too (tpm2-cmd.c tpm2_pcr_extend -> tpm2_start_auth_session, salted
+#   HMAC); the "kernel sends it bare" read was the disable_pcr_integrity
+#   path only.
+# e8f325a: TPM_RS_PW (0x40000009) password session, empty auth — 67 bytes,
+#   tag 0x8002: header | pcrHandle | authSize 9 | (PW handle | empty
+#   nonceCaller | attrs 0 | empty auth) | TPML_DIGEST_VALUES. A PCR's auth
+#   value is empty, so empty==empty passes libtpms CheckPWAuthSession.
+# e11af0f: dropped the spurious 2-byte TPM2B_DIGEST size field before the
+#   raw digest (TPML_DIGEST_VALUES per-entry is TPMT_HA = hashAlg + raw
+#   digest, no size field — kernel tpm2-cmd.c:208-214 and libtpms
+#   TPMU_HA_Unmarshal both confirmed). The extra 2 bytes shifted the
+#   fixed 32-byte digest read -> TPM_RC_SIZE. 67 -> 65 bytes.
+version = "e11af0fb8712609f6ed42c35c2280ece76be78a4"
+hash = "4cc81159fe52de3733d43aca5d4c8d0c57e84010323338c659576f8a799f63ca"
 format = "tar.gz"
 file = "enclaved-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/enclaved/archive/{version}.{format}"]
@@ -16,8 +50,8 @@ mirrors = ["https://codeberg.org/lrvick/enclaved/archive/{version}.{format}"]
 # ../bootproof/crates/bootproof). Built from source in the same cargo
 # invocation; not a separate make package (user-bootproof ships the CLI).
 [sources.bootproof]
-version = "7a448f4ec3e4b0f3d5d8a89d7898ea9dac595301"
-hash = "0c0ff15a38be0dd467e4a52086b31346d9d4955a1c9621a1a72e469788751bb0"
+version = "43f3d765f3911df7f6a78a8465d0835d58ce68d6"
+hash = "7a4d9fa02526b3e9b77950cb9e4f8266a357304d15e5fb9511e0cdbf03711e31"
 format = "tar.gz"
 file = "bootproof-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/bootproof/archive/{version}.{format}"]

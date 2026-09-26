@@ -19,17 +19,21 @@ COPY --from=stagex/user-lvm2 . /
 ADD fetch/bootproof-${BOOTPROOF_VERSION}.tar.gz /
 ADD fetch/enclaved-${ENCLAVED_VERSION}.tar.gz /
 WORKDIR /enclaved
-# The `enclaved` daemon only. bootproofd (the HTTP face over the enclaved
-# socket) is a crate of the bootproof workspace and ships from
-# user-bootproof; building it here too would duplicate the workspace.
+# The `enclaved` daemon AND the `enclavectl` one-shot provision CLI. The
+# latter runs INSIDE the networked gVisor sandbox (it fetches the cloud
+# user-data over the netstack and file-drops the blob to the host daemon);
+# it links the same bootproof lib, no extra C stack. bootproofd (the HTTP
+# face over the enclaved socket) is a crate of the bootproof workspace and
+# ships from user-bootproof; building it here would duplicate the workspace.
 RUN cargo fetch
 RUN --network=none <<-EOF
   set -eux
   for f in esys sys mu rc tcti-device tctildr; do
     sed -i 's|^Libs:.*|Libs: |' /usr/lib/pkgconfig/tss2-$f.pc
   done
-  cargo rustc --locked --release -p enclaved --bin enclaved
+  cargo rustc --locked --release -p enclaved
   install -vDm755 target/release/enclaved /rootfs/usr/bin/enclaved
+  install -vDm755 target/release/enclavectl /rootfs/usr/bin/enclavectl
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
