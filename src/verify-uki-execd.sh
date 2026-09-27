@@ -22,11 +22,16 @@ capture "$W"
 echo "=== verify-binding ==="
 # Run verify-binding from this repo (the scripts sit in src/ alongside it).
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
+USERDATA_ARG=""
+# The daemon's measure-before-apply extends PCR11 with SHA256 of the
+# provisioned user-data blob (captured at $W/userdata.bin); replay it.
+[ -s "$W/userdata.bin" ] && USERDATA_ARG="--userdata $W/userdata.bin"
 "$REPO/src/verify-binding" \
   --log "$W/eventlog.bin" \
   --pcrs "$W/pcrs.txt" \
   --snp "$W/snp-report.bin" \
   --snp-nonce "$W/nonce.bin" \
   --uki "$W/uki/BOOTX64.EFI" \
-  --no-part
+  --no-part \
+  $USERDATA_ARG
 echo "=== work dir: $W ==="

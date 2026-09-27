@@ -47,6 +47,20 @@ capture() {
   echo "=== enclaved PCR11 status ==="
   ssh 'cat /run/tpm-rootfs.status 2>/dev/null || echo "(no tpm-rootfs status)"'
 
+  echo "=== measured user-data drop (PCR11 blob extend) ==="
+  # The enclaved daemon extends PCR11 with SHA256 of the provisioned
+  # user-data blob it applied (measure-before-apply, relay.rs). The raw
+  # blob survives at /run/userdata after apply; capture it so the
+  # verifier can replay the same extend over the firmware PCR11.
+  # Absent on hosts where no drop was ever applied (honest: the
+  # verifier then omits the user-data extend).
+  if ssh 'test -s /run/userdata && echo present'; then
+    ssh 'base64 -w0 /run/userdata' | base64 -d > "$W/userdata.bin"
+    echo "  user-data: captured ($(wc -c < "$W/userdata.bin") bytes)"
+  else
+    echo "  user-data: not present on the host"
+  fi
+
   echo "=== TPM event log from /dev/mem (page-aligned) ==="
   local EV FL EVADDR FLADDR OFF PAGES
   EV=$(ssh 'dmesg | grep -oE "TPMEventLog=0x[0-9a-f]+" | head -1 | cut -d= -f2')
