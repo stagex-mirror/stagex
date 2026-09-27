@@ -22,6 +22,9 @@ WORKDIR /cython-${VERSION}
 # so the emitted FlowControl*.c (and thus the compiled .so) is reproducible.
 ENV PYTHONHASHSEED=0
 ENV SOURCE_DATE_EPOCH=1
+# compile the Cython extension modules deterministically (setuptools defaults to -O3,
+# whose LLVM codegen is cross-machine non-deterministic); -O2 is reproducible
+ENV CFLAGS="-O2 -fPIC -fno-strict-overflow"
 RUN --network=none <<-EOF
 	set -eux
 	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
