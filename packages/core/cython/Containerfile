@@ -18,12 +18,8 @@ COPY --from=stagex/core-py-gpep517 . /
 COPY --from=stagex/core-py-wheel . /
 ADD fetch/cython-${VERSION}.tar.gz .
 WORKDIR /cython-${VERSION}
-# Cython's generated C iterates dicts/sets during codegen; fix the hash seed
-# so the emitted FlowControl*.c (and thus the compiled .so) is reproducible.
 ENV PYTHONHASHSEED=0
 ENV SOURCE_DATE_EPOCH=1
-# compile the Cython extension modules deterministically (setuptools defaults to -O3,
-# whose LLVM codegen is cross-machine non-deterministic); -O2 is reproducible
 ENV CFLAGS="-O2 -fPIC -fno-strict-overflow"
 RUN --network=none <<-EOF
 	set -eux
