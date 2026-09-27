@@ -24,7 +24,7 @@ unit "bootproofd" {
   script = "/usr/libexec/bootproofd-sandbox.sh"
 
   depends {
-    units = ["enclaved"]
+    units = ["enclaved", "provisioner"]
   }
 
   restart = "always"

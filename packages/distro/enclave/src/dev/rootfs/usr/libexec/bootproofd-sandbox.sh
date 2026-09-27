@@ -80,10 +80,44 @@ mkdir -p /home/bootproof || fail "mkdir /home/bootproof failed"
     || iptables -t nat -A POSTROUTING -s "$SBX_SUBNET" -j MASQUERADE
 } || fail "masquerade POSTROUTING $SBX_SUBNET failed"
 
-# --- (c) Exec the locked runsc form: --root / (default), overlay=none
-# (required for host-visible identity writes — see header), both volume
-# bridges.
-exec /usr/bin/runsc --ignore-cgroups do \
+# --- (c) Exec the locked runsc form. Two flags are load-bearing for egress
+# (see provision.sh for the full oracle record; same kernel constraint, no
+# CONFIG_USER_NS):
+#   --network=host : do.go still runs setupNet (veth + netns + MASQUERADE for
+#     egress — the DNAT above lands on it), but container.go:2155 then bails
+#     out of modifySpecForDirectfs BEFORE the /proc/self/uid_map read (which
+#     needs CONFIG_USER_NS and is absent), and the sandbox runs in the current
+#     user namespace (sandbox.go:1189). Without it, directfs (default ON)
+#     adds a USER namespace + reads uid_map -> exit 128 "failed to modify spec
+#     for directfs". Without the PATH below, setupNet's `ip` resolves to busybox
+#     (no netns) -> silent fallback to an empty netns -> the :443 face has no
+#     egress.
+#   PATH export   : runsc inherits execd's env (NO PATH); Go execs `ip` via its
+#     default PATH -> /usr/bin/ip = busybox. /usr/sbin (iproute2) must lead.
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+
+# --- (d) A default route must exist before `runsc do` -----------------------
+# setupNet (do.go) resolves the egress device with `ip route list default`.
+# This unit starts in the SAME execd wave as dhcp, and the DHCP lease (the
+# default route) lands a couple of seconds after boot. Without the route,
+# setupNet returns errNoDefaultInterface and `runsc do` SILENTLY falls back
+# to a fresh EMPTY netns: the sentry binds :443 in a netns with no veth and
+# no route, so the host's DNAT (eth0:443 -> 192.168.11.2) blackholes — the
+# attestation face is up but unreachable. Bounded wait (90 s, 1 s interval);
+# on timeout exit NON-ZERO so execd respawns (restart="always") and retries —
+# the DHCP lease arrives a few seconds after boot, so this converges on the
+# first or second attempt.
+i=0
+while ! ip route list default 2>/dev/null | grep -q '^default'; do
+  i=$((i + 1))
+  if [ "$i" -ge 90 ]; then break; fi
+  sleep 1
+done
+if [ "$i" -ge 90 ]; then
+  fail "no default route after 90 s; runsc would fall back to an egress-less netns (respawn and retry)"
+fi
+
+exec /usr/bin/runsc --ignore-cgroups --network=host do \
   --ip "$SBX_IP" \
   --cwd / \
   --force-overlay=false \

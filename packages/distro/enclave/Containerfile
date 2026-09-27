@@ -29,6 +29,8 @@ FROM stagex/user-iproute2 AS user-iproute2
 FROM stagex/user-iptables AS user-iptables
 FROM stagex/user-util-linux AS user-util-linux
 FROM stagex/core-ncurses AS core-ncurses
+FROM stagex/user-elfutils AS user-elfutils
+FROM stagex/core-xz AS core-xz
 FROM stagex/box-disk AS box-disk
 FROM stagex/box-cpio AS box-cpio
 
@@ -58,6 +60,20 @@ COPY --from=user-execd /usr/bin/execd /usr/bin/execd
 COPY --from=user-brush /usr/bin/brush /usr/bin/brush
 RUN ln -sf /usr/bin/brush /bin/sh
 COPY src/rootfs/etc/environment /etc/environment
+# /etc/{resolv.conf,hostname,hosts} must EXIST in the image: `runsc do`
+# (setupNet, do.go) bind-mounts generated copies of all three into every
+# sandbox, and the gofer creates each mount point with O_CREAT
+# (specutils.go SafeSetupAndMount) before the bind. The booted rootfs is
+# read-only erofs, so a missing destination is a gofer fatal (EROFS) that
+# kills the whole sandbox at boot — the sentry then dies on an empty
+# mounts pipe ("cannot read client sync file: EOF"). Present files make the
+# O_CREAT a no-op and the bind is a VFS op (no fs write), the standard
+# container-runtime convention. Content is placeholder: the sandbox never
+# reads the host files (runsc over-mounts them), and the host-side daemons
+# that do want DNS (rust-dhcp) write their own /etc/resolv.conf.
+COPY src/rootfs/etc/resolv.conf /etc/resolv.conf
+COPY src/rootfs/etc/hostname /etc/hostname
+COPY src/rootfs/etc/hosts /etc/hosts
 COPY src/rootfs/etc/execd/units/lo.hcl /etc/execd/units/
 COPY src/rootfs/oldroot /oldroot
 COPY --from=user-tpm2-tss . /
@@ -101,6 +117,17 @@ COPY --from=user-gvisor /usr/bin/gvisor-bin /usr/bin/gvisor-bin
 # limited (no `ip link add veth`); iproute2's /usr/bin/ip overwrites it.
 COPY --from=user-iproute2 . /
 COPY --from=user-iptables . /
+# iproute2's /usr/sbin/ip NEEDs libelf.so.1 (elfutils) which NEEDs
+# liblzma.so.5 (core-xz). Without libelf the ip binary cannot even load,
+# so runsc do's setupNet (which shells out to `ip route list default` to
+# find the egress device) fails and runsc falls back to an isolated netns:
+# no veth, no egress, and the sandboxed provisioner's IMDS chain dead-
+# times out on AWS (live: "IMDS chain timed out" -> drop: absent ->
+# sshdt refused). Ship only the two runtime libs (not headers/.a/man).
+# BuildKit COPY follows source symlinks, so the .so.1 soname files land
+# as the real bytes.
+COPY --from=user-elfutils /usr/lib/libelf.so.1 /usr/lib/libelf.so.1
+COPY --from=core-xz /lib/liblzma.so.5 /lib/liblzma.so.5
 # execd units (pure depends-graph, topo-sorted by execd): lo (base) ->
 # dhcp -> enclaved -> { sshdt, bootproofd }. No shell scripts anywhere.
 COPY src/dev/rootfs/etc/execd/units/dhcp.hcl /etc/execd/units/
