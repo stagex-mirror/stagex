@@ -44,7 +44,12 @@ cp /usr/src/aws-ec2.tf "$TERRAFORM_DIR/"
 cd "$TERRAFORM_DIR"
 
 # Initialize
-tofu init -backend=false -upgrade >/dev/null 2>&1
+# The aws provider is baked into the image at the default plugin mirror path
+# (see Containerfile), so init resolves it offline. NO -upgrade: that forces a
+# registry.opentofu.org lookup which times out when the registry is slow/down
+# (observed Sep 28 — the whole launch died silently because output was
+# suppressed). Pin the provider version in the image instead.
+tofu init -backend=false >/dev/null 2>&1
 
 # Build var-file with all inputs
 # USER_DATA (the SSH key, or a custom EC2_USER_DATA_FILE) may span multiple
