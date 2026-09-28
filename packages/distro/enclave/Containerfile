@@ -139,6 +139,13 @@ COPY src/dev/rootfs/etc/execd/units/bootproofd.hcl /etc/execd/units/
 COPY src/dev/rootfs/etc/execd/units/provisioner.hcl /etc/execd/units/
 COPY src/dev/rootfs/usr/libexec/provision.sh /usr/libexec/provision.sh
 COPY src/dev/rootfs/usr/libexec/bootproofd-sandbox.sh /usr/libexec/bootproofd-sandbox.sh
+# sysnet: the Qubes sys-net face — a gVisor sandbox owning the guest's data
+# plane via an AF_XDP redirect on a private veth (4-patch runsc, xdp-1..4).
+# Depends on dhcp (egress device); the XDP program attaches to the private
+# veth, never the virtio NIC, so guest egress is unaffected.
+COPY src/dev/rootfs/etc/execd/units/sysnet.hcl /etc/execd/units/
+COPY src/dev/rootfs/usr/libexec/sysnet.sh /usr/libexec/sysnet.sh
+RUN chmod 755 /usr/libexec/sysnet.sh
 # Full SPDX build-provenance document (git origin/branch/commit + every
 # dependency's name/version/digest), generated into the build context by the
 # build and baked into the image; installed at /provenance.spdx.
