@@ -1,0 +1,17 @@
+--- a/tools/xdp/cmd/redirect_host.go
++++ b/tools/xdp/cmd/redirect_host.go
+@@ -61,6 +61,14 @@
+ //go:embed bpf/redirect_host_ebpf.o
+ var redirectProgram []byte
+ 
++// RedirectProgramBytes returns the embedded redirect eBPF object that
++// xdp_loader loads and pins. Exposed so runsc's redirect path (which has no
++// xdp_loader main to run on the go branch) can perform the same pin step
++// in-process.
++func RedirectProgramBytes() []byte {
++	return redirectProgram
++}
++
+ // RedirectHostCommand is a subcommand for redirecting incoming packets based
+ // on a pinned eBPF map. It redirects all non-SSH traffic to a single AF_XDP
+ // socket.

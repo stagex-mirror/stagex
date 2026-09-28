@@ -43,6 +43,27 @@ WORKDIR /gvisor
 ADD port/runsc/cmd/sentry/sentry_main.go runsc/cmd/sentry/sentry_main.go
 ADD port/runsc/prewarmer/prewarmer.c runsc/prewarmer/prewarmer.c
 
+# AF_XDP "redirect" (netdev) mode for the sys-net sandbox. Four patches,
+# applied in order (each -p1 from the tree root, verified byte-identical
+# against a pristine extraction of this exact sha):
+#   xdp-1  ports the cilium/ebpf API drift the pinned runsc/sandbox/xdp.go needs
+#   xdp-2  exposes the embedded redirect eBPF collection from tools/xdp/cmd
+#   xdp-3  implements the missing load-and-pin step INSIDE
+#          createRedirectInterfacesAndRoutes (the go branch has no xdp_loader
+#          main and no `runsc xdp` subcommand, so the standalone pin tool the
+#          upstream redirect path expects does not exist here)
+#   xdp-4  moves the AF_XDP bind to the sentry (boot.BindSentry): the sentry's
+#          xdp.New runs UMEM -> rings -> bind in the correct order (a bare
+#          client-side bind on an unregistered socket is EINVAL). The client
+#          now passes program-fd/sockmap-fd/link-fd after the XDP socket and
+#          the client bind is removed (same protocol as the tunnel path).
+ADD patches/xdp-1-port-go-branch-api.patch /tmp/xdp-1.patch
+ADD patches/xdp-2-export-redirect-program.patch /tmp/xdp-2.patch
+ADD patches/xdp-3-load-and-pin.patch /tmp/xdp-3.patch
+ADD patches/xdp-4-redirect-bindsentry.patch /tmp/xdp-4.patch
+RUN patch -p1 -i /tmp/xdp-1.patch && patch -p1 -i /tmp/xdp-2.patch && patch -p1 -i /tmp/xdp-3.patch && patch -p1 -i /tmp/xdp-4.patch \
+    && rm -f /tmp/xdp-*.patch
+
 # Go env. On a scratch FROM the pallet-go defaults do NOT carry over, so the
 # proxy/sumdb must be set explicitly for the module download to work.
 ENV GOPATH=/cache/go \
@@ -61,9 +82,14 @@ RUN --network=none <<-EOF
   mkdir -p /rootfs/usr/bin/gvisor-bin
   # runsc CLI (embeds the go-branch's prebuilt checkpointgofer.bin via
   # gvisorbinaries/embed; the standalone sidecar is NOT on the boot path).
+  # -tags xdp: compile in the AF_XDP "redirect" (netdev) path (the sys-net
+  # sandbox's NIC ownership); swaps runsc/sandbox/no_xdp.go stubs for the real
+  # xdp.go. The sentry side (pkg/xdp, pkg/tcpip/link/xdp) is NOT build-tagged,
+  # so gvisor_sentry below stays untagged and byte-identical.
   # -s -w: strip symbol table + DWARF (this binary is ~100 MB with debug info;
   # it lands in the measured UKI .initrd, so every byte is booted+attested).
   go build -trimpath \
+    -tags xdp \
     -ldflags "-s -w -X gvisor.dev/gvisor/runsc/version.version=${VERSION}" \
     -o /rootfs/usr/bin/runsc ./runsc
   # gvisor_sentry sidecar (the sentry is a STRICT requirement of runsc).

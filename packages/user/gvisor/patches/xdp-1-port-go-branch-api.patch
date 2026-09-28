@@ -1,0 +1,49 @@
+--- a/runsc/sandbox/xdp.go
++++ b/runsc/sandbox/xdp.go
+@@ -81,7 +81,7 @@
+ 	}
+ 
+ 	log.Infof("Setting up network, config: %+v", args)
+-	if err := conn.Call(boot.NetworkCreateLinksAndRoutes, &args, nil); err != nil {
++	if err := conn.Call(boot.ContMgrSetNetworkArgs, &args, nil); err != nil {
+ 		return fmt.Errorf("creating links and routes: %w", err)
+ 	}
+ 
+@@ -121,9 +121,7 @@
+ 		return boot.CreateLinksAndRoutesArgs{}, net.Interface{}, fmt.Errorf("querying interfaces: %w", err)
+ 	}
+ 
+-	args := boot.CreateLinksAndRoutesArgs{
+-		DisconnectOk: conf.NetDisconnectOk,
+-	}
++	args := boot.CreateLinksAndRoutesArgs{}
+ 	var netIface net.Interface
+ 	for _, iface := range ifaces {
+ 		if iface.Flags&net.FlagUp == 0 {
+@@ -138,7 +136,7 @@
+ 
+ 		// We build our own loopback device.
+ 		if iface.Flags&net.FlagLoopback != 0 {
+-			link, err := loopbackLink(conf, iface, allAddrs)
++			link, err := loopbackLink(conf, iface, allAddrs, false /* disableIPv6: redirect path is IPv4-only */)
+ 			if err != nil {
+ 				return boot.CreateLinksAndRoutesArgs{}, net.Interface{}, fmt.Errorf("getting loopback link for iface %q: %w", iface.Name, err)
+ 			}
+@@ -187,7 +185,7 @@
+ 		}
+ 
+ 		// Scrape routes.
+-		routes, defv4, defv6, err := routesForIface(iface)
++		routes, defv4, defv6, err := routesForIface(iface, false /* disableIPv6: redirect path is IPv4-only */)
+ 		if err != nil {
+ 			return boot.CreateLinksAndRoutesArgs{}, net.Interface{}, fmt.Errorf("getting routes for interface %q: %v", iface.Name, err)
+ 		}
+@@ -543,7 +541,7 @@
+ 	}
+ 
+ 	log.Debugf("Setting up network, config: %+v", args)
+-	if err := conn.Call(boot.NetworkCreateLinksAndRoutes, &args, nil); err != nil {
++	if err := conn.Call(boot.ContMgrSetNetworkArgs, &args, nil); err != nil {
+ 		return fmt.Errorf("creating links and routes: %w", err)
+ 	}
+ 	return nil
