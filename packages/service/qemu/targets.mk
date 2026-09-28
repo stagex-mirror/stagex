@@ -52,14 +52,14 @@ qemu-start:
 		stagex/service-qemu:local -c 'chmod +x /usr/bin/qemu-startup.sh && exec /usr/bin/qemu-startup.sh' && \
 	echo "Waiting for SSH ..." && \
 	SSH_READY=0 && \
-	for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40; do \
-		if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3 -i $(QEMU_SSH_KEY) root@localhost -p 2222 'echo ready' >/dev/null 2>&1; then \
+	for i in $$(seq 1 100); do \
+		if ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=3 -i $(QEMU_SSH_KEY) root@localhost -p 2222 'echo ready' >/dev/null 2>&1; then \
 			SSH_READY=1; break; \
 		fi; \
 		sleep 3; \
 	done && \
 	if [ "$$SSH_READY" = "0" ]; then \
-		echo "ERROR: SSH not ready after 120s" >&2; \
+		echo "ERROR: SSH not ready after 300s" >&2; \
 		docker logs $(QEMU_CONTAINER_NAME) --tail 20 >&2; \
 		exit 1; \
 	fi && \
