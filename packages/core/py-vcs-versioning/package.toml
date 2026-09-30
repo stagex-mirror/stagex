@@ -1,0 +1,12 @@
+[package]
+name = "py-vcs-versioning"
+version = "2.3.1"
+description = "Manage Python package versions by VCS metadata"
+license = "MIT"
+website = "https://github.com/pypa/setuptools_scm"
+
+[sources.py-vcs-versioning]
+hash = "806635bd0ea653c96af98a70624be758d408a989f2cd0b390e63474d99f96b63"
+format = "tar.gz"
+file = "py-vcs-versioning-{version}.{format}"
+mirrors = [ "https://pypi.io/packages/source/v/vcs-versioning/vcs_versioning-{version}.{format}",]

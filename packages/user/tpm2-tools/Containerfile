@@ -3,7 +3,7 @@ COPY --from=stagex/core-openssl . /
 COPY --from=stagex/core-curl . /
 COPY --from=stagex/user-tpm2-tss . /
 COPY --from=stagex/user-autoconf-archive . /
-COPY --from=stagex/user-util-linux . /
+COPY --from=stagex/core-util-linux . /
 ARG VERSION
 ADD fetch/tpm2-tools-${VERSION}.tar.gz .
 WORKDIR /tpm2-tools-${VERSION}

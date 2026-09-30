@@ -1,22 +1,26 @@
 [package]
 name = "icu"
-version = "74.2"
+version = "78.3"
 description = "International Components for Unicode"
 license = "ICU"
 website = "https://icu.unicode.org"
 
 [sources.icu]
-hash = "68db082212a96d6f53e35d60f47d38b962e9f9d207a74cfac78029ae8ff5e08c"
-mirrors = ["https://github.com/unicode-org/icu/releases/download/release-{version_dash}/icu4c-{version_under}-src.tgz",]
+hash = "3a2e7a47604ba702f345878308e6fefeca612ee895cf4a5f222e7955fabfe0c0"
+file = "icu4c-{version}-sources.tgz"
+mirrors = ["https://github.com/unicode-org/icu/releases/download/release-{version}/{file}",]
 
 [sources.icudata]
-hash = "c28c3ca5f4ba3384781797138a294ca360988d4322674ad4d51e52f5d9b0a2b6"
-mirrors = ["https://github.com/unicode-org/icu/releases/download/release-{version_dash}/icu4c-{version_under}-data.zip",]
+hash = "9d8b3899096aeb83e4e21ef8a40fec9e03b28db18c48452efac882ce25a91e27"
+file = "icu4c-{version}-data.zip"
+mirrors = ["https://github.com/unicode-org/icu/releases/download/release-{version}/{file}",]
 
 [sources.icudatab]
-hash = "42a12ebfb1a82f80bb0005d9b6e018382ccaa2462f0d086a8c69ae736fdded3e"
-mirrors = ["https://github.com/unicode-org/icu/releases/download/release-{version_dash}/icu4c-{version_under}-data-bin-b.zip",]
+hash = "cb751fc5d46e218b6c71d69d9dea7ba98da937e2e41b662ad8313c9363d8b7e2"
+file = "icu4c-{version}-data-bin-b.zip"
+mirrors = ["https://github.com/unicode-org/icu/releases/download/release-{version}/{file}",]
 
 [sources.icudatal]
-hash = "2acdb1b982228040963d183b2dd9d321252c613e0f4db213d4bbc10417cde569"
-mirrors = ["https://github.com/unicode-org/icu/releases/download/release-{version_dash}/icu4c-{version_under}-data-bin-l.zip",]
+hash = "982619632b78887f1895b063e96e8c3cc7f99283337c8abbd05aa71635de613c"
+file = "icu4c-{version}-data-bin-l.zip"
+mirrors = ["https://github.com/unicode-org/icu/releases/download/release-{version}/{file}",]

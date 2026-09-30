@@ -14,6 +14,9 @@ COPY <<-'EOF' /etc/profile
 	[[ "$TARGETARCH" == "arm64" ]] \
 		&& ARCH="aarch64" \
 		&& LLVM_TARGET_ARCH="AArch64"
+	[[ "$TARGETARCH" == "riscv64" ]] \
+		&& ARCH="riscv64" \
+		&& LLVM_TARGET_ARCH="RISCV"
 	export ARCH
 	export MAKEFLAGS="-j$(nproc)"
 	export BUILD=${ARCH}-unknown-linux-musl
@@ -173,9 +176,9 @@ RUN --network=none <<-EOF
 	export CFLAGS="-fPIC"
 	export CXXFLAGS="$CFLAGS"
 
-	#HACK: The only reason we are not using "all" here is because AMDGPU does not build deterministically
-	# Zig hard requires "all" so this also forces a messy patch there as well to remove AMDGPU support as well
-	export LLVM_TARGETS_TO_BUILD="AArch64;ARM;AVR;BPF;Hexagon;Lanai;LoongArch;Mips;MSP430;NVPTX;PowerPC;RISCV;Sparc;SPIRV;SystemZ;VE;WebAssembly;X86;XCore"
+	# Specifying `all` breaks reproducibility, but listing all available
+	# architectures separately works.
+	export LLVM_TARGETS_TO_BUILD="AArch64;AMDGPU;ARM;AVR;BPF;Hexagon;Lanai;LoongArch;Mips;MSP430;NVPTX;PowerPC;RISCV;Sparc;SPIRV;SystemZ;VE;WebAssembly;X86;XCore"
 
 	CMAKE_ARGS="$(cat ./cmake_args)"
 	cmake_cache_set() {
@@ -198,6 +201,7 @@ RUN --network=none <<-EOF
 	cmake_cache_set LLVM_ENABLE_PER_TARGET_RUNTIME_DIR ON
 	cmake_cache_set LLVM_BUILD_LLVM_DYLIB ON
 	cmake_cache_set LLVM_LINK_LLVM_DYLIB ON
+	cmake_cache_set LLVM_ENABLE_RTTI ON
 
 	echo "$CMAKE_ARGS" > ./cmake_args
 

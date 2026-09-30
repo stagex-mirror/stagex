@@ -9,4 +9,4 @@ website = "http://software.schmorp.de/pkg/libev.html"
 hash = "507eb7b8d1015fbec5b935f34ebed15bf346bed04a11ab82b8eee848c4205aea"
 format = "tar.gz"
 file = "libev-{version}.{format}"
-mirrors = [ "http://dist.schmorp.de/libev/Attic/{file}",]
+mirrors = [ "https://sources.voidlinux.org/libev-{version}/{file}", "http://dist.schmorp.de/libev/Attic/{file}",]

@@ -10,8 +10,10 @@ COPY --from=stagex/core-onetbb . /
 COPY --from=stagex/core-libzstd . /
 ADD fetch/gawk-${VERSION}.tar.xz .
 WORKDIR /gawk-${VERSION}
+ADD align-fix.patch .
 RUN --network=none <<-EOF
-	set -ex
+	set -eux
+	patch -p1 < align-fix.patch
 	./configure \
 		--prefix=/usr \
 		--mandir=/usr/share/man \

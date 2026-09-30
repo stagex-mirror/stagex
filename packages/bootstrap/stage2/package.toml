@@ -48,7 +48,7 @@ file = "linux-{version}.tar.xz"
 mirrors = ["https://mirrors.kernel.org/pub/linux/kernel/v6.x/{file}"]
 
 [sources.binutils]
-version = "2.35"
-hash = "1b11659fb49e20e18db460d44485f09442c8c56d5df165de9461eb09c8302f85"
+version = "2.45"
+hash = "c50c0e7f9cb188980e2cc97e4537626b1672441815587f1eab69d2a1bfbef5d2"
 file = "binutils-{version}.tar.xz"
 mirrors = ["https://ftpmirror.gnu.org/gnu/binutils/{file}", "https://mirrors.kernel.org/gnu/binutils/{file}"]

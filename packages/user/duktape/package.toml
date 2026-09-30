@@ -1,0 +1,12 @@
+[package]
+name = "duktape"
+version = "2.7.0"
+description = "Embeddable ECMAScript engine with C API"
+license = "MIT"
+website = "https://duktape.org/"
+
+[sources.duktape]
+hash = "90f8d2fa8b5567c6899830ddef2c03f3c27960b11aca222fa17aa7ac613c2890"
+format = "tar.xz"
+file = "duktape-{version}.{format}"
+mirrors = ["https://duktape.org/duktape-{version}.{format}"]

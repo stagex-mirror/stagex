@@ -1,0 +1,12 @@
+[package]
+name = "pam"
+version = "1.7.2"
+description = "Pluggable Authentication Modules (PAM)"
+license = "BSD-3-Clause"
+website = "https://github.com/linux-pam/linux-pam"
+
+[sources.pam]
+hash = "3d86b6383fb5fd9eb9578d2cd47d92801191f4bf3f9bc61419bfefc8aa1e531a"
+format = "tar.xz"
+file = "Linux-PAM-{version}.{format}"
+mirrors = ["https://github.com/linux-pam/linux-pam/releases/download/v{version}/{file}"]

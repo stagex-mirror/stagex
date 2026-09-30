@@ -5,9 +5,6 @@ WORKDIR /pycparser-release_v${VERSION}
 RUN --network=none <<-EOF
 	set -eu
 	python setup.py build
-	cd pycparser
-	python _build_tables.py
-	cd ..
 	python setup.py install --root=/rootfs --optimize=1
 	install -vDm644 -t /rootfs/usr/share/licenses/py-pycparser LICENSE
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf

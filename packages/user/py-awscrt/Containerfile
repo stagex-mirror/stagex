@@ -1,5 +1,6 @@
 FROM stagex/pallet-cython AS build
 ARG VERSION
+COPY --from=stagex/core-py-vcs-versioning . /
 ADD fetch/py-awscrt-${VERSION}.tar.gz .
 WORKDIR /awscrt-${VERSION}
 RUN gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2

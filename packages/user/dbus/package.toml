@@ -1,0 +1,12 @@
+[package]
+name = "dbus"
+version = "1.16.2"
+description = "Message bus daemon for inter-process communication"
+license = "GPL-2.0-or-later AND MPL-2.0"
+website = "https://dbus.freedesktop.org"
+
+[sources.dbus]
+hash = "0ba2a1a4b16afe7bceb2c07e9ce99a8c2c3508e5dec290dbb643384bd6beb7e2"
+format = "tar.xz"
+file = "dbus-{version}.{format}"
+mirrors = [ "https://dbus.freedesktop.org/releases/dbus/{file}",]

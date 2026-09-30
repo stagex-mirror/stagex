@@ -1,12 +1,12 @@
 [package]
 name = "glslang"
-version = "16.3.0"
+version = "16.5.0"
 description = "Khronos reference front-end for GLSL, ESSL, and sample SPIR-V generator"
 license = "BSD-3-Clause AND Apache-2.0 AND MIT"
 website = "https://github.com/KhronosGroup/glslang"
 
 [sources.glslang]
-hash = "efff5a15258dce1ca2d323bf64c974f5fca03778174615dbc30c8d36db645bf5"
+hash = "01af17195fbeb59e39e31e9506de35bb39dfd35807ea0c9a1a99d7d1183ddd45"
 format = "tar.gz"
 file = "{version}.{format}"
 mirrors = [ "https://github.com/KhronosGroup/glslang/archive/refs/tags/{version}.tar.gz",]

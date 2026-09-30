@@ -11,6 +11,7 @@ RUN <<-EOF
 	set -eux
 	python setup.py build
 	python setup.py install --root=/rootfs
+	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /

@@ -25,6 +25,7 @@ RUN --network=none <<-EOF
             -DENABLE_LZMA=ON \
             -DENABLE_OPENSSL=ON \
             -DENABLE_ZSTD=ON \
+            -DBUILD_DOC=OFF \
             -DCMAKE_BUILD_TYPE=MinSizeRel
         cmake --build build
         DESTDIR="/rootfs" cmake --install build

@@ -1,0 +1,12 @@
+[package]
+name = "libbpf"
+version = "1.7.0"
+description = "Linux BPF library"
+website = "https://github.com/libbpf/libbpf"
+license = "LGPL-2.1"
+
+[sources.libbpf]
+hash = "7ab5feffbf78557f626f2e3e3204788528394494715a30fc2070fcddc2051b7b"
+format = "tar.gz"
+file = "libbpf-v{version}.{format}"
+mirrors = [ "https://github.com/libbpf/libbpf/archive/refs/tags/v{version}.{format}",]

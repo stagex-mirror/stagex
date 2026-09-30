@@ -9,4 +9,4 @@ license = "GPL-3.0-or-later"
 hash = "9bba0214ccf7f1079c5d59210045227bcf619519840ebfa80cd3849cff5a5bf2"
 format = "tar.xz"
 file = "bison-{version}.{format}"
-mirrors = [ "http://mirrors.kernel.org/gnu/bison/{file}",]
+mirrors = [ "https://sources.voidlinux.org/bison-{version}/{file}", "https://ftp.gnu.org/gnu/bison/{file}",]

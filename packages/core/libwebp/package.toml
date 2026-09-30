@@ -1,0 +1,12 @@
+[package]
+name = "libwebp"
+version = "1.6.0"
+description = "Library for encoding and decoding WebP images"
+license = "BSD-3-Clause"
+website = "https://developers.google.com/speed/webp"
+
+[sources.libwebp]
+hash = "e4ab7009bf0629fd11982d4c2aa83964cf244cffba7347ecd39019a9e38c4564"
+format = "tar.gz"
+file = "libwebp-{version}.{format}"
+mirrors = [ "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/{file}",]

@@ -1,12 +1,12 @@
 [package]
 name = "tpm2-tools"
-version = "5.7"
+version = "5.8"
 description = "TPM 2.0 tools based on tpm2-tss"
 license = "BSD-3-Clause"
 website = "https://github.com/tpm2-software/tpm2-tools"
 
 [sources.tpm2-tools]
-hash = "714912361fddbd7e01473be9065b2949b5ad2f5dff80063648f00f4eaf38971b"
+hash = "413c34542d49d7cbb1a676ef85bdfb8c94b12979b1ddde3e6b892c4966a941c3"
 format = "tar.gz"
 file = "tpm2-tools-{version}.{format}"
 mirrors = [ "https://github.com/tpm2-software/tpm2-tools/archive/refs/tags/{version}.{format}",]

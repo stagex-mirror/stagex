@@ -1,0 +1,7 @@
+--- src/libfaketime.c
++++ src/libfaketime.c
+@@ -5349,3 +5349,3 @@
+ #else
+-int settimeofday(const struct timeval *tv, void *tz)
++int settimeofday(const struct timeval *tv, const struct timezone *tz)
+ #endif

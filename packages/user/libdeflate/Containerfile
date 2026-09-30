@@ -6,7 +6,8 @@ WORKDIR /libdeflate-${VERSION}
 RUN --network=none <<-EOF
 	ln -sf /bin/gas /bin/as
   cmake -B build -G Ninja \
-		-DCMAKE_INSTALL_PREFIX=/usr/lib \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DLIBDEFLATE_BUILD_TESTS=OFF \
 		-DLIBDEFLATE_BUILD_SHARED_LIB=OFF \

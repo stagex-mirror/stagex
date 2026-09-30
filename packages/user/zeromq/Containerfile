@@ -1,8 +1,8 @@
 FROM stagex/pallet-clang-cmake-busybox AS build
 ARG VERSION
 COPY --from=stagex/user-libsodium . /
-COPY --from=stagex/user-util-linux . /
-COPY --from=stagex/user-xmlto . /
+COPY --from=stagex/core-util-linux . /
+COPY --from=stagex/core-xmlto . /
 ADD fetch/zeromq-${VERSION}.tar.gz .
 WORKDIR /zeromq-${VERSION}
 RUN --network=none <<-EOF

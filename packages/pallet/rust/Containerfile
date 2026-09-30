@@ -1,4 +1,6 @@
 FROM stagex/pallet-clang
+ENV SOURCE_DATE_EPOCH=1
+ENV CARGO_INCREMENTAL=0
 COPY --from=stagex/core-rust . /
 COPY --from=stagex/core-git . /
 COPY --from=stagex/core-busybox . /

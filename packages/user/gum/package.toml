@@ -1,12 +1,12 @@
 [package]
 name = "gum"
-version = "0.17.0"
+version = "2.0.0"
 description = "A tool for gumming up terminal workflows"
 license = "MIT"
 website = "https://github.com/charmbracelet/gum"
 
 [sources.gum]
-hash = "763a7f89dfebf8e77f86e680bace48a09423cfb9e4b4f4ba22d2c9836d311f95"
+hash = "8a5baa1e1647cdc3f7fdf91939de5372791ab133117416c8e3d944afbf0b3c9c"
 format = "tar.gz"
 file = "gum-{version}.{format}"
 mirrors = [

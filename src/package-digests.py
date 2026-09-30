@@ -3,18 +3,18 @@ import json
 import os
 import sys
 
-def extract_digests(filepath: str) -> set[str]:
+def extract_digests(name: str, filepath: str) -> set[str]:
   digests: set[string] = set()
   with open(filepath) as file:
     data = json.load(file)
   for manifest in data["manifests"]:
     if manifest["mediaType"] == "application/vnd.oci.image.index.v1+json":
       digest = manifest.get('digest').split('sha256:')[1]
-      digests = digests.union(extract_digests(f"{os.path.dirname(filepath)}/blobs/sha256/{digest}"))
+      digests = digests.union(extract_digests(name, f"{os.path.dirname(filepath)}/blobs/sha256/{digest}"))
     if manifest["mediaType"] == "application/vnd.oci.image.manifest.v1+json":
       digest = manifest.get('digest').split('sha256:')[1]
       platform = manifest.get('platform')
-      digests.add(f"{digest} {platform.get('os')}/{platform.get('architecture')}")
+      digests.add(f"{digest} {name} {platform.get('os')}/{platform.get('architecture')}")
   return digests
 
 def main():
@@ -27,7 +27,7 @@ def main():
 
   image_name = sys.argv[1]
   filepath = f"out/{image_name}/index.json"
-  digests = extract_digests(filepath)
+  digests = extract_digests(image_name, filepath)
   for digest in digests:
     print(digest)
 
