@@ -86,7 +86,7 @@ RUN patch -p1 -i /tmp/xdp-1.patch && patch -p1 -i /tmp/xdp-2.patch && patch -p1 
 # shifted bpf_map_type enum and must not be trusted for this object). The build
 # stage has no BPF-capable clang, so the checked-in .o ships as the artifact,
 # same model as stock's checked-in prebuilt: byte-deterministic
-# (5ed1c528bba01bfbcb928fe40d5b993e0bac45f3a1f5ee24f402275496d700ca), 3x
+# (566784adcfe73d57e1ae389a865acdd3eb3b7317f25193cebecafe27814eae17), 3x
 # verified. Reproduce: clang -O2 -target bpf -c bpf/redirect.c (any clang
 # emits these bytes: the program uses no external header at all).
 # ADD bpf/redirect_host_ebpf.o tools/xdp/cmd/bpf/redirect_host_ebpf.o

@@ -83,8 +83,9 @@ teardown() {
     done
   "$RUNSC" --root="$STATE" --overlay2=none --ignore-cgroups delete -f "$CID" \
     2>/dev/null || true
-  # detach + unpin BEFORE anything else: a pinned program with an empty
-  # socket map drops the redirect class (the wedge).
+  # detach + unpin BEFORE anything else: the program's empty-sockmap guard
+  # (sn-6e) already auto-PASSes traffic to the kernel while the socket is
+  # gone, but a lingering program is dead weight — remove it.
   if [ -n "$DEV" ]; then
     ip xdp off dev "$DEV" 2>/dev/null || true
   fi
@@ -261,12 +262,14 @@ log "start (redirect:$DEV)"
 STA=$?
 
 # --- 6. start-failure safety path ------------------------------------------------
-# If start failed (e.g. the sockmap insert), a pinned program with an EMPTY
-# socket map would blackhole the redirect class. Detach + unpin now; the
-# non-zero exit makes execd respawn and retry.
+# If start failed (e.g. the sockmap insert), the program is attached with an
+# EMPTY socket map. The empty-sockmap guard (sn-6e) keeps that safe — traffic
+# auto-PASSes to the kernel instead of blackholing — but the data plane is
+# useless until the socket exists. Detach + unpin now; the non-zero exit
+# makes execd respawn and retry from a clean state.
 if [ "$STA" -ne 0 ];
   then
-    log "start rc=$STA: wedge recovery (detach + unpin)"
+    log "start rc=$STA: detach + unpin (guard keeps egress on the kernel)"
     ip xdp off dev "$DEV" 2>/dev/null || true
     rm -f "$PIN/redirect_ip_map" "$PIN/redirect_program" "$PIN/redirect_link" 2>/dev/null || true
     rmdir "$PIN" 2>/dev/null || true

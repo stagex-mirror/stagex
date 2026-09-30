@@ -8,7 +8,8 @@ go-branch's prebuilt program and this tree's `redirect_host_ebpf.o`.
 | object | sha256 |
 |---|---|
 | stock (go-branch prebuilt, `fetch/gvisor-…/tools/xdp/cmd/bpf/`) | `c41a89a00cb92e4c352ef05a3209952e79e04e0b55a9390e1a1820acbfd2b67d` |
-| custom (this tree, `bpf/redirect_host_ebpf.o`) | `5ed1c528bba01bfbcb928fe40d5b993e0bac45f3a1f5ee24f402275496d700ca` |
+| custom v1 (bidirectional :22) | `5ed1c528bba01bfbcb928fe40d5b993e0bac45f3a1f5ee24f402275496d700ca` |
+| custom v2 (v1 + sn-6e empty-sockmap guard, SHIPPED) | `566784adcfe73d57e1ae389a865acdd3eb3b7317f25193cebecafe27814eae17` |
 
 Both objects: same map (`XSKMAP`, key 4 / value 4, max 1 entry), same symbols
 (`xdp_prog`, `sock_map`), same inlined `bpf_redirect_map` call (helper id
@@ -63,6 +64,55 @@ The ethertype bug was gating: with `!= 0x0800` every IPv4 packet (including
 :22) redirected to the sandbox before the port test, so the port-only fix
 still RST'd. Fixing both legs restores stock's exact wire semantics plus the
 intended srcport delta.
+
+## The sn-6e guard: empty-sockmap PASS (v2)
+
+v1 had a wedge: when the sandbox sentry dies, the kernel auto-removes the
+`sock_map` entry on socket close (`xsk_map_try_sock_delete`), and a
+`bpf_redirect_map` into the now-EMPTY map fails (`__xsk_map_lookup_elem` →
+NULL) and **DROPS the packet** — the redirect class goes dark for the
+supervisor's teardown window (3 failed polls × 5 s). v2 closes the guard
+inside the program itself (the data-plane authority):
+
+```c
+static int redirect(struct xdp_md *ctx)
+{
+  unsigned int key = ctx->rx_queue_index;
+  if (bpf_map_lookup_elem(&sock_map, &key) == NULL)
+    return XDP_ACT_PASS;              /* no socket: kernel keeps full egress */
+  return bpf_redirect_map(&sock_map, key, XDP_XSKB);
+}
+```
+
+Why in the program, not a userspace route-flip: the NULL lookup IS the
+authoritative "no socket to redirect to" signal (the guest verifier allows
+exactly `{redirect_map, map_lookup_elem}` on XSKMAP), so the reaction is
+atomic — egress returns the instant the socket closes, and it re-arms the
+instant a respawned sandbox re-inserts its socket. No route/ARP changes, no
+userspace coordination, no race window. It also covers the pre-start window
+(program attached, socket not yet inserted) where v1 blackholed.
+
+Disassembly delta v1 → v2, per redirect site (5 inlined `redirect()` call
+sites, all identical):
+
+```
+  v1                                   v2
+  r2 = *(u32*)(r1+0x10)                r1 = *(u32*)(r1+0x10)
+  r1 = 0; w3 = 2                        *(u32*)(r10-4) = r1         ; key on stack
+  call 0x33                             r2 = r10-4; r1 = 0
+  exit                                  call 0x1                    ; lookup
+                                         r1 = r0; w0 = 2
+                                         if r1 == 0 -> exit         ; empty -> PASS
+                                         r2 = *(u32*)(r10-4)
+                                         r1 = 0; w3 = 2
+                                         call 0x33                  ; else redirect
+                                         exit
+```
+
+The `call 0x1` (map_lookup_elem) → null-test → PASS leg is the ONLY addition;
+the ethertype/IP/proto/port gates and the `call 0x33` redirect are unchanged
+from v1 (and from stock, plus the srcport leg). 3× byte-deterministic:
+`566784adcfe73d57e1ae389a865acdd3eb3b7317f25193cebecafe27814eae17`.
 
 ## XDP attach mode (NIC-dependent, load-bearing)
 

@@ -27,6 +27,9 @@
 
 #define SEC(name) __attribute__((section(name), used))
 
+#define NULL 0 /* bpf_helpers has no <stddef.h>; the program uses NULL only in
+               * a pointer comparison (map_lookup_elem result). */
+
 /* Legacy bpf_map_def: 5 x u32, 20 bytes, BTF-free. The go-branch's prebuilt
  * .o and cilium/ebpf's no-BTF path both read the map as this raw struct, so a
  * drop-in must use it (the BTF __uint style is 32 bytes and would not match). */
@@ -55,6 +58,12 @@ struct bpf_map_def {
  * so clang folds `bpf_redirect_map(...)` into an inlined `call 0x33`. */
 static int (*bpf_redirect_map)(void *map, unsigned int index,
                                unsigned int flags) = (void *)51;
+
+/* BPF_FUNC_map_lookup_elem = 1 (0x1). The guest verifier allows exactly
+ * {redirect_map, map_lookup_elem} on XSKMAP (verifier.c BPF_MAP_TYPE_XSKMAP
+ * case), so the empty-map guard in redirect.c compiles: a NULL lookup is the
+ * authoritative "no AF_XDP socket to redirect to" signal. */
+static void *(*bpf_map_lookup_elem)(void *map, const void *key) = (void *)1;
 
 /* struct xdp_md (guest 7.2): data@0, data_end@4, data_meta@8,
  * ingress_ifindex@12, rx_queue_index@16, egress_ifindex@20. */

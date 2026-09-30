@@ -38,7 +38,21 @@ static int redirect(struct xdp_md *ctx)
   // The sentry inserts its AF_XDP socket at key = ctx->rx_queue_index
   // (single-queue NIC: 0); bpf_redirect_map delivers the packet there.
   // Matches the stock program, which reads xdp_md+0x10 (rx_queue_index).
-  return bpf_redirect_map(&sock_map, ctx->rx_queue_index, XDP_XSKB);
+  //
+  // sn-6e guard: if the socket is GONE, PASS instead of redirect. When the
+  // sentry dies the kernel auto-removes the map entry on socket close
+  // (xsk_map_try_sock_delete), and a bpf_redirect_map into the now-empty map
+  // fails and DROPS the packet — the redirect class wedges dark for the
+  // supervisor's teardown window (3 failed polls x 5 s). The NULL lookup is
+  // the authoritative "no socket to redirect to" signal (the verifier allows
+  // map_lookup_elem on XSKMAP): passing through hands full egress back to
+  // the kernel until the respawned sandbox re-inserts its socket, which
+  // re-arms the redirect. This also covers the pre-start window (program
+  // attached, socket not yet inserted), where the old program blackholed.
+  unsigned int key = ctx->rx_queue_index;
+  if (bpf_map_lookup_elem(&sock_map, &key) == NULL)
+    return XDP_ACT_PASS;
+  return bpf_redirect_map(&sock_map, key, XDP_XSKB);
 }
 
 SEC("xdp")

@@ -147,9 +147,10 @@ COPY src/dev/rootfs/usr/libexec/bootproofd-sandbox.sh /usr/libexec/bootproofd-sa
 # owning the guest NIC's data plane via an AF_XDP redirect on the uplink
 # (3-patch runsc, xdp-1..3). The redirect program XDP_PASSes tcp/22 (SSH)
 # and diverts every other class into the sandbox's sentry netstack; the
-# sandbox sources the guest's real lease address (no NAT). Accepted risk
-# (pending the sn-6e route-flip agent): a sandbox death wedges the
-# redirect class until the supervisor's liveness teardown respawns it.
+# sandbox sources the guest's real lease address (no NAT). The program's
+# empty-sockmap guard (sn-6e) makes the redirect class self-healing: a
+# sandbox death auto-PASSes traffic to the kernel until the supervisor's
+# liveness teardown respawns it and re-arms the redirect.
 COPY src/dev/rootfs/etc/execd/units/sysnet.hcl /etc/execd/units/
 COPY src/dev/rootfs/usr/libexec/sysnet.sh /usr/libexec/sysnet.sh
 RUN chmod 755 /usr/libexec/sysnet.sh

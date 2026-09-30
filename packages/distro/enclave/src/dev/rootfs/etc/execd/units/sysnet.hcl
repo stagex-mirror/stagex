@@ -19,12 +19,15 @@
 // start), so its egress needs no NAT: the sandbox IS the guest's egress
 // point. There is no private netns and no veth.
 //
-// WEDGE (accepted risk, pending the sn-6e route-flip agent): the program
-// sits on the uplink. If the sandbox dies, the redirect class
-// (everything non-tcp/22) drops — guest egress is dark EXCEPT SSH. The
-// supervisor's liveness monitor (3 consecutive failed polls) exits
-// non-zero -> teardown (kill sentry by PID, delete sandbox, detach program,
-// unpin) -> execd respawns. Recovery is bounded (~15 s + teardown).
+// DEATH RECOVERY (sn-6e, in the program): the program sits on the uplink.
+// If the sandbox dies, the kernel auto-removes the socket from the pinned
+// sockmap on close, and the program's empty-sockmap guard (map_lookup_elem
+// == NULL -> XDP_PASS) hands full egress back to the KERNEL until the
+// supervisor's liveness monitor (3 consecutive failed polls) tears down
+// (kill sentry by PID, delete sandbox, detach program, unpin) and execd
+// respawns — at which point the fresh socket re-arms the redirect. The
+// egress-dark window is now ~0 (the guard is atomic with the socket close);
+// the sandbox is dark only during its respawn.
 //
 // Depends on dhcp: the supervisor resolves the uplink from the default
 // route the dhcp unit installed; without it the sandbox is up but dark,
