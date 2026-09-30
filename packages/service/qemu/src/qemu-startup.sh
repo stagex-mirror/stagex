@@ -58,7 +58,7 @@ if [ -n "${QEMU_NET_HOSTFWD:-}" ]; then
     NET_OPTS="$NET_OPTS,hostfwd=${QEMU_NET_HOSTFWD}"
 fi
 QEMU_ARGS="$QEMU_ARGS -netdev $NET_OPTS"
-QEMU_ARGS="$QEMU_ARGS -device e1000,netdev=net0"
+QEMU_ARGS="$QEMU_ARGS -device virtio-net-pci,netdev=net0"
 
 if [ "${QEMU_TPM:-1}" != "0" ]; then
     QEMU_ARGS="$QEMU_ARGS -chardev socket,id=chrtpm,path=/tmp/vtpm-sock"

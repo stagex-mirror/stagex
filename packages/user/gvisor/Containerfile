@@ -43,26 +43,68 @@ WORKDIR /gvisor
 ADD port/runsc/cmd/sentry/sentry_main.go runsc/cmd/sentry/sentry_main.go
 ADD port/runsc/prewarmer/prewarmer.c runsc/prewarmer/prewarmer.c
 
-# AF_XDP "redirect" (netdev) mode for the sys-net sandbox. Four patches,
+# AF_XDP "redirect" (netdev) mode for the sys-net sandbox. Three patches,
 # applied in order (each -p1 from the tree root, verified byte-identical
 # against a pristine extraction of this exact sha):
-#   xdp-1  ports the cilium/ebpf API drift the pinned runsc/sandbox/xdp.go needs
-#   xdp-2  exposes the embedded redirect eBPF collection from tools/xdp/cmd
-#   xdp-3  implements the missing load-and-pin step INSIDE
-#          createRedirectInterfacesAndRoutes (the go branch has no xdp_loader
-#          main and no `runsc xdp` subcommand, so the standalone pin tool the
-#          upstream redirect path expects does not exist here)
-#   xdp-4  moves the AF_XDP bind to the sentry (boot.BindSentry): the sentry's
-#          xdp.New runs UMEM -> rings -> bind in the correct order (a bare
-#          client-side bind on an unregistered socket is EINVAL). The client
-#          now passes program-fd/sockmap-fd/link-fd after the XDP socket and
-#          the client bind is removed (same protocol as the tunnel path).
+#   xdp-1  ports the go-branch API the pinned runsc/sandbox/xdp.go needs
+#          (the upstream client referenced boot.NetworkCreateLinksAndRoutes,
+#          a synchronous RPC the go branch removed; it now uses the deferred
+#          ContMgrSetNetworkArgs, drops DisconnectOk, and passes disableIPv6
+#          to the go-branch loopbackLink/routesForIface signatures).
+#   xdp-2  sentry-side fix: SetNetworkArgs configures XDP-redirect networks
+#          SYNCHRONOUSLY (state=created). The runsc client inserts its AF_XDP
+#          socket into the pinned sockmap right after this RPC returns, and
+#          the kernel (net/xdp/xskmap.c) rejects an insert on a socket with
+#          no RX ring (-ENOBUFS); the RX ring is created here by the sentry's
+#          NewFromSocket. The go branch's deferred model (configure at start)
+#          runs too late for that insert — this is the port of master's
+#          synchronous NetworkCreateLinksAndRoutes RPC. networkArgs is then
+#          cleared so the start path does not create the links a second time.
+#   xdp-3  adds the standalone pin loader main (tools/xdp/main.go): the go
+#          branch has no xdp_loader main, so the `xdp_loader redirect`
+#          subcommand the redirect path expects does not exist here.
 ADD patches/xdp-1-port-go-branch-api.patch /tmp/xdp-1.patch
-ADD patches/xdp-2-export-redirect-program.patch /tmp/xdp-2.patch
-ADD patches/xdp-3-load-and-pin.patch /tmp/xdp-3.patch
-ADD patches/xdp-4-redirect-bindsentry.patch /tmp/xdp-4.patch
-RUN patch -p1 -i /tmp/xdp-1.patch && patch -p1 -i /tmp/xdp-2.patch && patch -p1 -i /tmp/xdp-3.patch && patch -p1 -i /tmp/xdp-4.patch \
+ADD patches/xdp-2-synchronous-configure.patch /tmp/xdp-2.patch
+ADD patches/xdp-3-loader-main.patch /tmp/xdp-3.patch
+RUN patch -p1 -i /tmp/xdp-1.patch && patch -p1 -i /tmp/xdp-2.patch && patch -p1 -i /tmp/xdp-3.patch \
     && rm -f /tmp/xdp-*.patch
+
+# Custom AF_XDP "redirect" program replacing the go-branch's prebuilt one. The
+# stock program passes ONLY dstport==22 to the kernel, so the kernel's own SSH
+# TX (SYN-ACK/banner, srcport 22) and ARP get redirected into the sandbox: new
+# SSH connections to the kernel die at banner exchange (sn-6 egress finding).
+# This object makes the :22 pass rule BIDIRECTIONAL (srcport==22 ||
+# dstport==22) so the kernel keeps both directions of its management channel,
+# and redirects everything else to the sandbox exactly as stock does. It is a
+# faithful drop-in (same map XSKMAP key4/val4/max1, same symbols xdp_prog /
+# sock_map, same inlined bpf_redirect_map call), so runsc/sandbox/xdp.go's
+# //go:embed bpf/redirect_host_ebpf.o loader needs zero changes.
+#
+# Compiled from the self-contained, fully vendored sources in bpf/ (no kernel
+# header: the map type, redirect flag, helper id, and wire headers are all
+# pinned to the guest kernel 7.2 UAPI — the build image's linux/bpf.h carries a
+# shifted bpf_map_type enum and must not be trusted for this object). The build
+# stage has no BPF-capable clang, so the checked-in .o ships as the artifact,
+# same model as stock's checked-in prebuilt: byte-deterministic
+# (5ed1c528bba01bfbcb928fe40d5b993e0bac45f3a1f5ee24f402275496d700ca), 3x
+# verified. Reproduce: clang -O2 -target bpf -c bpf/redirect.c (any clang
+# emits these bytes: the program uses no external header at all).
+# ADD bpf/redirect_host_ebpf.o tools/xdp/cmd/bpf/redirect_host_ebpf.o
+#
+# LOAD PATH (why the xdp_loader binary is the one that matters): the sys-net
+# supervisor (sysnet.sh) runs `xdp_loader redirect -device <uplink>` to load +
+# pin the program/sockmap/link into /sys/fs/bpf/<iface>/ BEFORE `runsc
+# create+start`. runsc's --EXPERIMENTAL-xdp=redirect path then consumes the
+# PINNED map (ebpf.LoadPinnedMap), so the program that actually runs is the one
+# xdp_loader embeds. runsc ALSO has an in-process pin fallback (xdp.go calls
+# tools/xdp/cmd's RedirectProgramBytes() when no pinned map exists), but Go's
+# linker dead-code-eliminates the tools/xdp/cmd //go:embed vars out of the
+# runsc binary (only the subcommand structs are referenced, not their Run
+# methods / the byte getter) — verified: none of the 5 tools/xdp/cmd .o embeds
+# are in runsc, all are in xdp_loader. So the pin MUST come from xdp_loader
+# first (sysnet.sh enforces: `[ -e $PIN/redirect_ip_map ] || fail`), which it
+# does. Both binaries embed the same file, so this one overwrite covers both.
+ADD bpf/redirect_host_ebpf.o tools/xdp/cmd/bpf/redirect_host_ebpf.o
 
 # Go env. On a scratch FROM the pallet-go defaults do NOT carry over, so the
 # proxy/sumdb must be set explicitly for the module download to work.
@@ -92,6 +134,16 @@ RUN --network=none <<-EOF
     -tags xdp \
     -ldflags "-s -w -X gvisor.dev/gvisor/runsc/version.version=${VERSION}" \
     -o /rootfs/usr/bin/runsc ./runsc
+  # xdp_loader: the standalone AF_XDP pin tool (xdp-3 adds its main). The
+  # sys-net supervisor runs `xdp_loader redirect -device <iface>` to load +
+  # pin the redirect program/sockmap/link BEFORE runsc create, which runsc's
+  # client then consumes by inserting its bound AF_XDP socket into the pinned
+  # map. Self-contained: tools/xdp/cmd embeds the redirect eBPF object
+  # (go:embed bpf/redirect_host_ebpf.o, shipped in the tree). No xdp tag
+  # needed (only runsc/sandbox/xdp.go is build-tagged; tools/xdp/cmd is not).
+  go build -trimpath \
+    -ldflags "-s -w" \
+    -o /rootfs/usr/bin/xdp_loader ./tools/xdp
   # gvisor_sentry sidecar (the sentry is a STRICT requirement of runsc).
   go build -trimpath \
     -ldflags "-s -w" \

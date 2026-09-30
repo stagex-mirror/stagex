@@ -1,5 +1,5 @@
---- a/runsc/sandbox/xdp.go
-+++ b/runsc/sandbox/xdp.go
+--- a/runsc/sandbox/xdp.go	2026-09-14 13:23:37.000000000 -0700
++++ b/runsc/sandbox/xdp.go	2026-09-29 12:01:24.784903527 -0700
 @@ -81,7 +81,7 @@
  	}
  

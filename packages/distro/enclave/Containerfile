@@ -110,7 +110,11 @@ COPY --from=user-snpguest . /
 # gVisor: the user-space kernel that can sandbox workloads.
 # runsc (CLI) + the gvisor-bin sidecars (gvisor_sentry is a STRICT runtime
 # requirement of runsc; the prewarmer is optional but cheap).
+# xdp_loader: the standalone AF_XDP pin tool the sys-net supervisor runs
+# (load + pin the redirect program/sockmap/link on the uplink before runsc
+# create; runsc's client then inserts its bound socket into the pinned map).
 COPY --from=user-gvisor /usr/bin/runsc /usr/bin/runsc
+COPY --from=user-gvisor /usr/bin/xdp_loader /usr/bin/xdp_loader
 COPY --from=user-gvisor /usr/bin/gvisor-bin /usr/bin/gvisor-bin
 # Host-side network stack for runsc: `runsc do`'s setupNet shells out to the
 # host `ip` (veth pairs) and `iptables` (NAT). The busybox `ip` applet is too
@@ -139,10 +143,13 @@ COPY src/dev/rootfs/etc/execd/units/bootproofd.hcl /etc/execd/units/
 COPY src/dev/rootfs/etc/execd/units/provisioner.hcl /etc/execd/units/
 COPY src/dev/rootfs/usr/libexec/provision.sh /usr/libexec/provision.sh
 COPY src/dev/rootfs/usr/libexec/bootproofd-sandbox.sh /usr/libexec/bootproofd-sandbox.sh
-# sysnet: the Qubes sys-net face — a gVisor sandbox owning the guest's data
-# plane via an AF_XDP redirect on a private veth (4-patch runsc, xdp-1..4).
-# Depends on dhcp (egress device); the XDP program attaches to the private
-# veth, never the virtio NIC, so guest egress is unaffected.
+# sysnet: the Qubes sys-net face, sn-6 FULL NIC ownership — a gVisor sandbox
+# owning the guest NIC's data plane via an AF_XDP redirect on the uplink
+# (3-patch runsc, xdp-1..3). The redirect program XDP_PASSes tcp/22 (SSH)
+# and diverts every other class into the sandbox's sentry netstack; the
+# sandbox sources the guest's real lease address (no NAT). Accepted risk
+# (pending the sn-6e route-flip agent): a sandbox death wedges the
+# redirect class until the supervisor's liveness teardown respawns it.
 COPY src/dev/rootfs/etc/execd/units/sysnet.hcl /etc/execd/units/
 COPY src/dev/rootfs/usr/libexec/sysnet.sh /usr/libexec/sysnet.sh
 RUN chmod 755 /usr/libexec/sysnet.sh

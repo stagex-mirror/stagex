@@ -1,0 +1,27 @@
+--- a/runsc/boot/controller.go	2026-09-14 13:23:37.000000000 -0700
++++ b/runsc/boot/controller.go	2026-09-29 14:55:03.806991270 -0700
+@@ -1321,6 +1321,24 @@
+ 
+ 	cm.l.mu.Lock()
+ 	cm.l.networkArgs = &networkArgs
++	if len(networkArgs.XDPLinks) > 0 && state == created {
++		// AF_XDP redirect: the runsc client inserts its AF_XDP socket into
++		// the pinned sockmap immediately after this RPC returns. The kernel
++		// (net/xdp/xskmap.c) refuses to insert a socket without an RX ring
++		// (-ENOBUFS), and the RX ring is created here by the sentry's
++		// NewFromSocket. Configure the network synchronously (master did
++		// this in its synchronous NetworkCreateLinksAndRoutes RPC) and clear
++		// networkArgs so the start path (loader.run) does not create the
++		// links a second time.
++		if err := cm.l.ConfigureNetwork(cm.l.k.RootNetworkNamespace().Stack()); err != nil {
++			cm.l.mu.Unlock()
++			return fmt.Errorf("failed to configure XDP redirect network: %w", err)
++		}
++		cm.l.networkArgs = nil
++		cm.l.mu.Unlock()
++		log.Infof("XDP redirect network configured synchronously")
++		return nil
++	}
+ 	cm.l.mu.Unlock()
+ 	return nil
+ }
