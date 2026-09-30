@@ -31,7 +31,7 @@ COPY --from=stagex/core-libxau . /
 ADD fetch/libX11-${VERSION}.tar.xz .
 WORKDIR /libX11-${VERSION}
 RUN --network=none <<-EOF
-	./configure \
+	./configure ac_cv_path_RAWCPP='cc -E -' \
 		--prefix=/usr \
 		--sysconfdir=/etc \
 		--mandir=/usr/share/man \

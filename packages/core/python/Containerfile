@@ -27,6 +27,7 @@ RUN --network=none <<-EOF
 		--without-ensurepip
 	make -j "$(nproc)"
 	make DESTDIR=/rootfs install
+	find /rootfs -path '*/test/*' -name '__pycache__' -type d -exec rm -rf {} +
 	install -vDm644 -t /rootfs/usr/share/licenses/python LICENSE
 	ln -s /usr/bin/python3 /rootfs/usr/bin/python
 EOF

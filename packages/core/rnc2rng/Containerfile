@@ -2,12 +2,25 @@ FROM scratch AS build
 COPY --from=stagex/core-busybox . /
 COPY --from=stagex/core-musl . /
 COPY --from=stagex/core-python . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-bzip2 . /
+COPY --from=stagex/core-ncurses . /
+COPY --from=stagex/core-sqlite3 . /
+COPY --from=stagex/core-libffi . /
+COPY --from=stagex/core-libzstd . /
+COPY --from=stagex/core-xz . /
 COPY --from=stagex/core-py-build . /
 COPY --from=stagex/core-py-installer . /
 COPY --from=stagex/core-py-gpep517 . /
 COPY --from=stagex/core-py-wheel . /
 COPY --from=stagex/core-py-packaging . /
 COPY --from=stagex/core-py-flit . /
+COPY --from=stagex/core-py-setuptools . /
+COPY --from=stagex/core-py-setuptools-scm . /
+COPY --from=stagex/core-py-distro . /
+COPY --from=stagex/core-py-toml . /
+COPY --from=stagex/core-py-vcs-versioning . /
 ARG VERSION
 ADD fetch/rnc2rng-${VERSION}.tar.gz .
 WORKDIR /rnc2rng-${VERSION}
