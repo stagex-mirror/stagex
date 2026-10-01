@@ -1,7 +1,8 @@
-# xdp-delta — stock redirect_host_ebpf.o vs the custom bidirectional program
+# xdp-delta — stock redirect_host_ebpf.o vs the custom program
 
-Record of the one semantic delta (plus two byte-order bug fixes) between the
-go-branch's prebuilt program and this tree's `redirect_host_ebpf.o`.
+Record of the semantic deltas (v1 bidirectional :22, v2 sn-6e guard, v3
+redirect-all) plus the byte-order bug fixes between the go-branch's prebuilt
+program and this tree's `redirect_host_ebpf.o`.
 
 ## Artifacts
 
@@ -9,9 +10,10 @@ go-branch's prebuilt program and this tree's `redirect_host_ebpf.o`.
 |---|---|
 | stock (go-branch prebuilt, `fetch/gvisor-…/tools/xdp/cmd/bpf/`) | `c41a89a00cb92e4c352ef05a3209952e79e04e0b55a9390e1a1820acbfd2b67d` |
 | custom v1 (bidirectional :22) | `5ed1c528bba01bfbcb928fe40d5b993e0bac45f3a1f5ee24f402275496d700ca` |
-| custom v2 (v1 + sn-6e empty-sockmap guard, SHIPPED) | `566784adcfe73d57e1ae389a865acdd3eb3b7317f25193cebecafe27814eae17` |
+| custom v2 (v1 + sn-6e empty-sockmap guard) | `566784adcfe73d57e1ae389a865acdd3eb3b7317f25193cebecafe27814eae17` |
+| custom v3 (sn-7 redirect-all, no inspection, SHIPPED) | `80ac96fbedc2976600085fa6b312f1855b739a5986302d2052cdc81f3da38860` |
 
-Both objects: same map (`XSKMAP`, key 4 / value 4, max 1 entry), same symbols
+All objects: same map (`XSKMAP`, key 4 / value 4, max 1 entry), same symbols
 (`xdp_prog`, `sock_map`), same inlined `bpf_redirect_map` call (helper id
 0x33, redirect flags 2 = XDP_ABORTED-class into the map), same map type
 SOCKMAP. The loader (`runsc` `//go:embed bpf/redirect_host_ebpf.o`) needs no
@@ -116,6 +118,10 @@ from v1 (and from stock, plus the srcport leg). 3× byte-deterministic:
 
 ## XDP attach mode (NIC-dependent, load-bearing)
 
+v2-era note (moot for v3 — see below: with no pass class left, the mode no
+longer changes what the program does, only where the kernel's own TX is
+hooked):
+
 - virtio-net-pci -> **driver** mode (`ndo_bpf`): only RX is hooked; kernel TX
   is never diverted. The dstport leg alone suffices for RX, but the srcport
   leg is kept so the program is correct in BOTH modes.
@@ -124,4 +130,108 @@ from v1 (and from stock, plus the srcport leg). 3× byte-deterministic:
   redirected).
 
 Reproduce: `clang -O2 -target bpf -c bpf/redirect.c` (any clang emits these
-bytes; the program uses no external header) — 3x verified deterministic.
+bytes; the program uses no external header). For a byte-pinned build use the
+pallet toolchain (the build image has no BPF-capable clang):
+
+```
+docker run --rm --entrypoint /bin/busybox -v <bpfdir>:/w \
+  stagex/pallet-clang-gnu-busybox:localbuild \
+  sh -c 'cd /w && /usr/bin/clang -O2 -target bpf -c redirect.c -o redirect_host_ebpf.o'
+```
+
+The source dir must contain ONLY `redirect.c` + `bpf_helpers.h` +
+`bpf_endian.h`, and the source file MUST be named `redirect.c` (the ELF
+FILE symbol embeds the source path). 3x-verified deterministic per version.
+
+## sn-7 v3: redirect-all (kernel fully offline)
+
+v3 is the maximally simple program: **no ethertype gate, no IP header parse,
+no port tests**. The netstack is the ONLY stack on the wire and it owns ARP
+too — the sentry resolves the GW MAC (ARP requests go out the AF_XDP socket,
+the GW's ARP replies must land in the sandbox, not the kernel) and answers
+ARP for its own lease IP. The kernel has no lease, no address, nothing to do.
+
+The whole body is:
+
+```c
+if (bpf_map_lookup_elem(&sock_map, &key) == NULL)  return XDP_ACT_PASS;  // sn-6e guard
+return bpf_redirect_map(&sock_map, key, XDP_XSKB);                        // ALL frames
+```
+
+| class | v2 | v3 |
+|---|---|---|
+| malformed (<14 B) | XDP_PASS (kernel drops) | **redirect (sandbox)** — no inspection; the sentry's parser drops malformed |
+| ARP (GW replies, requests) | redirect (sandbox) | redirect (sandbox) — now the netstack's ARP authority |
+| every IP frame, any class | redirect except :22 (PASS) | **redirect (sandbox)** — the :22 pass class is gone |
+| sandbox socket absent (guard) | XDP_PASS (recovery) | XDP_PASS (recovery) — unchanged, now covers ALL traffic |
+
+The sn-6e guard is byte-for-byte the same code (same key convention,
+`key = ctx->rx_queue_index`) and now covers everything: sandbox dead ->
+kernel auto-removes the sockmap entry -> NULL lookup -> XDP_PASS hands the
+full wire back to the kernel (recovery path) until the supervisor respawns
+the sandbox and the re-inserted socket re-arms the redirect. It still covers
+the pre-start window. No frame bytes are ever dereferenced, so no bounds
+check is needed.
+
+### insn-level delta v2 -> v3
+
+v2 is 80 insns (0x280 B, 5 inlined `redirect()` sites); v3 is 16 insns
+(0x80 B, 1 site). The 16-byte `ll` map-pointer insns occupy two slot numbers
+in the v3 column (slots 5-6 and 12-13).
+
+```
+ insn   v2                                          v3
+ -----  ------------------------------------------  ------------------------------------
+   0    w0 = 0x2  (PASS preload, DCE'd in v3)       0   r1 = *(u32*)(r1+0x10)  ; rx_queue_index
+   1    r3 = *(u32*)(r1+0x4)                        1   *(u32*)(r10-0x4) = r1   ; key on stack
+   2    r2 = *(u32*)(r1+0x0)                        2   r2 = r10
+   3    r4 = r2                                     3   r2 += -0x4
+   4    r4 += 0xe                                   4   r1 = 0x0 ll            ; map ptr (16 B)
+   5    if r4 > r3 -> PASS (malformed)               6   call 0x1                 ; lookup
+   6    r4 = *(u16*)(r2+0xc) ; ethertype            7   r1 = r0
+   7    if w4 == 0x8 -> IPv4 gate                   8   w0 = 0x2
+   8    REDIRECT site A (non-IPv4): ...             9   if r1 == 0 -> +5         ; empty -> PASS (guard)
+   19   r4 = r2; r4 += 0x22                        10   r2 = *(u32*)(r10-0x4)
+   21   if r4 <= r3 -> keep                        11   r1 = 0x0 ll            ; map ptr (16 B)
+   22   REDIRECT site B (IP bounds): ...           13   w3 = 0x2
+   33   r5 = *(u8*)(r2+0x17) ; IP proto            14   call 0x33                 ; redirect
+   34   if w5 == 0x6 -> TCP gate                   15   exit
+   35   REDIRECT site C (non-TCP): ...
+   46   r5 = r2; r5 += 0x36
+   48   if r5 <= r3 -> keep
+   49   REDIRECT site D (TCP bounds): ...
+   60   r3 = *(u16*)(r4+0x0) ; srcport
+   61   if w3 == 0x1600 -> PASS  (GONE)
+   62   r2 = *(u16*)(r2+0x24) ; dstport
+   63   if w2 == 0x1600 -> PASS  (GONE)
+   64   REDIRECT site E (fallthrough): ...
+   79   exit
+```
+
+Removed (everything in between): the data/data_end reads + eth bounds check,
+the ethertype read + IPv4 gate (insns 1-7), the IP-proto read + TCP gate
+(33-34), the IP/TCP header-bounds checks (19-21, 46-48), the srcport read +
+`if w3 == 0x1600 -> PASS` (60-61), the dstport read +
+`if w2 == 0x1600 -> PASS` (62-63), 4 of the 5 inlined `redirect()` sites,
+and the `w0 = 0x2` PASS preload (nothing PASSes except the guard anymore).
+Added: nothing. The surviving guard (`call 0x1` -> null-test -> `w0 = 0x2`
+exit) and redirect (`r1 = 0; w3 = 2; call 0x33`) are byte-identical to v2's
+redirect site E — verified at the byte level: `v3[0x00..0x80] == v2[0x200..0x280]`
+with zero differing bytes (the guard's branch is a relative `+5` in both, so
+even the immediate matches; only the absolute target address differs).
+
+### Verifier surface (unchanged vs v2/stock)
+
+- Helpers: exactly `map_lookup_elem` (`call 0x1`) and `redirect_map`
+  (`call 0x33`) — the guest kernel's allowed set on XSKMAP; no `callx`, no
+  new relocations (`.relxdp`: 6 `R_BPF_64_64 sock_map` -> 2, one per
+  helper call site).
+- Map section: byte-identical 20-byte `bpf_map_def` (type 0x11/XSKMAP,
+  key 4, value 4, max 1) in section `maps`; symbols `xdp_prog`, `sock_map`,
+  `__license` unchanged — the runsc `//go:embed` loader needs no changes.
+- Register usage: r1 (ctx) -> r0 (return), r10 frame for the key, nothing
+  else; the null-tested lookup result is never dereferenced (verifier-safe
+  as in v2). No memory accesses at all beyond the ctx read.
+
+3x byte-deterministic (pallet clang 22.1.8, clean source dir):
+`80ac96fbedc2976600085fa6b312f1855b739a5986302d2052cdc81f3da38860`.

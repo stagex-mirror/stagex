@@ -43,7 +43,7 @@ WORKDIR /gvisor
 ADD port/runsc/cmd/sentry/sentry_main.go runsc/cmd/sentry/sentry_main.go
 ADD port/runsc/prewarmer/prewarmer.c runsc/prewarmer/prewarmer.c
 
-# AF_XDP "redirect" (netdev) mode for the sys-net sandbox. Three patches,
+# AF_XDP "redirect" (netdev) mode for the sys-net sandbox. Four patches,
 # applied in order (each -p1 from the tree root, verified byte-identical
 # against a pristine extraction of this exact sha):
 #   xdp-1  ports the go-branch API the pinned runsc/sandbox/xdp.go needs
@@ -63,30 +63,41 @@ ADD port/runsc/prewarmer/prewarmer.c runsc/prewarmer/prewarmer.c
 #   xdp-3  adds the standalone pin loader main (tools/xdp/main.go): the go
 #          branch has no xdp_loader main, so the `xdp_loader redirect`
 #          subcommand the redirect path expects does not exist here.
+#   xdp-4  sn-7 kernel-offline: prepareRedirectInterfaceArgs HARD-REQUIRES
+#          exactly one uplink IPv4 address (len(ipAddrs) != 1 -> error), so a
+#          0-address uplink (the kernel fully offline) makes runsc
+#          create/start fail. Relaxed to 0-or-1: 0 -> the sandbox NIC starts
+#          with no protocol address (createNICWithAddrs tolerates an empty
+#          list) and rust-dhcp acquires + applies the lease in the netstack via
+#          rtnetlink; 1 -> the scraped address (unchanged); >1 -> error.
 ADD patches/xdp-1-port-go-branch-api.patch /tmp/xdp-1.patch
 ADD patches/xdp-2-synchronous-configure.patch /tmp/xdp-2.patch
 ADD patches/xdp-3-loader-main.patch /tmp/xdp-3.patch
-RUN patch -p1 -i /tmp/xdp-1.patch && patch -p1 -i /tmp/xdp-2.patch && patch -p1 -i /tmp/xdp-3.patch \
+ADD patches/xdp-4-kernel-offline-zero-addr.patch /tmp/xdp-4.patch
+RUN patch -p1 -i /tmp/xdp-1.patch && patch -p1 -i /tmp/xdp-2.patch \
+    && patch -p1 -i /tmp/xdp-3.patch && patch -p1 -i /tmp/xdp-4.patch \
     && rm -f /tmp/xdp-*.patch
 
-# Custom AF_XDP "redirect" program replacing the go-branch's prebuilt one. The
-# stock program passes ONLY dstport==22 to the kernel, so the kernel's own SSH
-# TX (SYN-ACK/banner, srcport 22) and ARP get redirected into the sandbox: new
-# SSH connections to the kernel die at banner exchange (sn-6 egress finding).
-# This object makes the :22 pass rule BIDIRECTIONAL (srcport==22 ||
-# dstport==22) so the kernel keeps both directions of its management channel,
-# and redirects everything else to the sandbox exactly as stock does. It is a
-# faithful drop-in (same map XSKMAP key4/val4/max1, same symbols xdp_prog /
-# sock_map, same inlined bpf_redirect_map call), so runsc/sandbox/xdp.go's
-# //go:embed bpf/redirect_host_ebpf.o loader needs zero changes.
+# Custom AF_XDP "redirect" program replacing the go-branch's prebuilt one (v3,
+# sn-7 kernel-offline). The maximally simple shape: NO ethertype gate, NO IP
+# header parse, NO port tests —
+#   if sock_map empty (bpf_map_lookup_elem == NULL) -> XDP_PASS   (sn-6e guard)
+#   else                                            -> bpf_redirect_map (ALL frames)
+# The kernel is fully offline (no lease, no :22, nothing to serve): the
+# netstack is the ONLY stack on the wire and owns ARP too. The guard covers
+# the sandbox-death and pre-start windows (empty map -> kernel keeps the
+# wire) atomically. It is a faithful drop-in (same map XSKMAP key4/val4/max1,
+# same symbols xdp_prog / sock_map, same inlined bpf_redirect_map call), so
+# runsc/sandbox/xdp.go's //go:embed bpf/redirect_host_ebpf.o loader needs zero
+# changes.
 #
 # Compiled from the self-contained, fully vendored sources in bpf/ (no kernel
-# header: the map type, redirect flag, helper id, and wire headers are all
-# pinned to the guest kernel 7.2 UAPI — the build image's linux/bpf.h carries a
-# shifted bpf_map_type enum and must not be trusted for this object). The build
-# stage has no BPF-capable clang, so the checked-in .o ships as the artifact,
-# same model as stock's checked-in prebuilt: byte-deterministic
-# (566784adcfe73d57e1ae389a865acdd3eb3b7317f25193cebecafe27814eae17), 3x
+# header: the map type, redirect flag, and helper id are all pinned to the
+# guest kernel 7.2 UAPI — the build image's linux/bpf.h carries a shifted
+# bpf_map_type enum and must not be trusted for this object). The build stage
+# has no BPF-capable clang, so the checked-in .o ships as the artifact, same
+# model as stock's checked-in prebuilt: byte-deterministic
+# (80ac96fbedc2976600085fa6b312f1855b739a5986302d2052cdc81f3da38860), 3x
 # verified. Reproduce: clang -O2 -target bpf -c bpf/redirect.c (any clang
 # emits these bytes: the program uses no external header at all).
 # ADD bpf/redirect_host_ebpf.o tools/xdp/cmd/bpf/redirect_host_ebpf.o

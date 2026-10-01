@@ -1,0 +1,35 @@
+diff --git a/runsc/sandbox/xdp.go b/runsc/sandbox/xdp.go
+index 6ad1b5e..ce6a0e0 100644
+--- a/runsc/sandbox/xdp.go
++++ b/runsc/sandbox/xdp.go
+@@ -163,11 +163,18 @@ func prepareRedirectInterfaceArgs(bind boot.BindOpt, conf *config.Config) (boot.
+ 			}
+ 			ipAddrs = append(ipAddrs, ipNet)
+ 		}
+-		if len(ipAddrs) != 1 {
++		// sn-7 xdp-4: the uplink may carry 0 IPv4 addresses (the kernel is
++		// fully offline; rust-dhcp acquires the lease in the netstack and
++		// applies it via rtnetlink). 0 -> the sandbox NIC starts with no
++		// protocol address (createNICWithAddrs tolerates an empty list);
++		// 1 -> the scraped address; >1 -> error (unchanged).
++		var addrs []boot.IPWithPrefix
++		if len(ipAddrs) == 1 {
++			prefix, _ := ipAddrs[0].Mask.Size()
++			addrs = append(addrs, boot.IPWithPrefix{Address: ipAddrs[0].IP, PrefixLen: prefix})
++		} else if len(ipAddrs) > 1 {
+ 			return boot.CreateLinksAndRoutesArgs{}, net.Interface{}, fmt.Errorf("we only handle a single IPv4 address, but interface %q has %d: %v", iface.Name, len(ipAddrs), ipAddrs)
+ 		}
+-		prefix, _ := ipAddrs[0].Mask.Size()
+-		addr := boot.IPWithPrefix{Address: ipAddrs[0].IP, PrefixLen: prefix}
+ 
+ 		// Collect data from the ARP table.
+ 		dump, err := netlink.NeighList(iface.Index, 0)
+@@ -224,7 +231,7 @@ func prepareRedirectInterfaceArgs(bind boot.BindOpt, conf *config.Config) (boot.
+ 			QDisc:             conf.QDisc,
+ 			Neighbors:         neighbors,
+ 			LinkAddress:       linkAddress,
+-			Addresses:         []boot.IPWithPrefix{addr},
++			Addresses:         addrs,
+ 			GVisorGRO:         conf.GVisorGRO,
+ 			Bind:              bind,
+ 		}

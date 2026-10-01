@@ -132,25 +132,24 @@ COPY --from=user-iptables . /
 # as the real bytes.
 COPY --from=user-elfutils /usr/lib/libelf.so.1 /usr/lib/libelf.so.1
 COPY --from=core-xz /lib/liblzma.so.5 /lib/liblzma.so.5
-# execd units (pure depends-graph, topo-sorted by execd): lo (base) ->
-# dhcp -> enclaved -> { sshdt, bootproofd }. No shell scripts anywhere.
-COPY src/dev/rootfs/etc/execd/units/dhcp.hcl /etc/execd/units/
+# execd units (pure depends-graph, topo-sorted by execd). sn-7 kernel-
+# offline: lo (base) -> { enclaved -> { provisioner, bootproofd }, sysnet }.
+# The kernel dhcp + sshdt units are GONE: the sysnet sandbox's netstack owns
+# the DHCP lease (rust-dhcp) and :22 (sshdt). No shell scripts in the units.
 COPY src/dev/rootfs/etc/execd/units/enclaved.hcl /etc/execd/units/
-COPY src/dev/rootfs/etc/execd/units/sshdt.hcl /etc/execd/units/
 COPY src/dev/rootfs/etc/execd/units/bootproofd.hcl /etc/execd/units/
 # P4: provisioner = sandboxed user-data provisioning (runsc do); bootproofd
 # behind a gVisor sandbox gets its TLS :443 face via a DNAT from host iptables.
 COPY src/dev/rootfs/etc/execd/units/provisioner.hcl /etc/execd/units/
 COPY src/dev/rootfs/usr/libexec/provision.sh /usr/libexec/provision.sh
 COPY src/dev/rootfs/usr/libexec/bootproofd-sandbox.sh /usr/libexec/bootproofd-sandbox.sh
-# sysnet: the Qubes sys-net face, sn-6 FULL NIC ownership — a gVisor sandbox
-# owning the guest NIC's data plane via an AF_XDP redirect on the uplink
-# (3-patch runsc, xdp-1..3). The redirect program XDP_PASSes tcp/22 (SSH)
-# and diverts every other class into the sandbox's sentry netstack; the
-# sandbox sources the guest's real lease address (no NAT). The program's
-# empty-sockmap guard (sn-6e) makes the redirect class self-healing: a
-# sandbox death auto-PASSes traffic to the kernel until the supervisor's
-# liveness teardown respawns it and re-arms the redirect.
+# sysnet: the Qubes sys-net face, sn-7 — the kernel is FULLY offline and the
+# gVisor netstack is the ONLY stack on the wire (DHCP lease via rust-dhcp,
+# ARP, SSH via sshdt, all egress). The v3 redirect program inspects nothing:
+# empty sockmap -> XDP_PASS (sn-6e death guard, covers all traffic); else
+# redirect EVERY frame to the sandbox. runsc runs the 4-patch build
+# (xdp-1..4; xdp-4 = the 0-or-1 uplink-address relaxation for the offline
+# kernel).
 COPY src/dev/rootfs/etc/execd/units/sysnet.hcl /etc/execd/units/
 COPY src/dev/rootfs/usr/libexec/sysnet.sh /usr/libexec/sysnet.sh
 RUN chmod 755 /usr/libexec/sysnet.sh
