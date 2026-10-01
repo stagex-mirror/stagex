@@ -412,10 +412,21 @@ if [ -n "$IP" ]; then
   /bin/busybox nc -w 4 "$IP" 22 </dev/null 2>/dev/null | head -c 40 | sed 's/^/    /'
   echo
 fi
-echo "  [sbx] A (GW 10.0.2.2:22): "
-/bin/busybox nc -z -w 5 10.0.2.2 22 && echo "PASS" || echo "FAIL"
+# real gateway from the dhcp log (the SAME source the payload uses for the
+# default route — NOT hardcoded 10.0.2.2, which only exists behind QEMU's
+# SLIRP and blackholes on AWS; a `nc -z` to it froze the console +
+# supervisor there, Oct 1 reboot experiment).
+GW=$(/bin/busybox tail -n 50 /run/dhcp.log 2>/dev/null | grep -oE "Gateway: [0-9.]+" | tail -n 1 | awk '{print $2}')
+if [ -n "$GW" ]; then
+  echo "  [sbx] A (GW $GW:22): "
+  /bin/busybox nc -z -w 5 "$GW" 22 && echo "PASS" || echo "FAIL"
+else
+  echo "  [sbx] A (GW :22): SKIP (no gateway in /run/dhcp.log)"
+fi
 echo "  [sbx] B (8.8.8.8:443): "
 /bin/busybox nc -z -w 6 8.8.8.8 443 && echo "PASS" || echo "FAIL"
+echo "  [sbx] C (IMDS 169.254.169.254:80): "
+/bin/busybox nc -z -w 5 169.254.169.254 80 && echo "PASS" || echo "FAIL"
 EOF
 chmod 755 "$R/sysnet-probe.sh" 2>/dev/null || true
 
@@ -486,8 +497,19 @@ if [ "$STA" -ne 0 ];
 
 # --- 7. wait for running (bounded; poll runsc list) ------------------------------
 is_running() {
-  "$RUNSC" --root="$STATE" --overlay2=none --ignore-cgroups list 2>/dev/null \
+  timeout 5 "$RUNSC" --root="$STATE" --overlay2=none --ignore-cgroups list 2>/dev/null \
     | awk -v id="$CID" '$1==id{print $3}' | grep -qi running
+}
+# runsc exec is BOUNDED: a hung probe (a `nc` to a blackholed destination,
+# an execd/exec RPC stall) must not freeze the single-threaded supervisor —
+# that freeze killed the liveness loop AND the serial console (Oct 1 AWS
+# reboot experiment: console's absolute last line was the in-sandbox probe's
+# A-probe header, byte-identical for 4+ h). timeout kills the runsc CLIENT;
+# the exec'd probe dies with it and the sandbox keeps running (a diagnostic
+# is not load-bearing), so the supervisor returns to the liveness loop.
+run_probe() {
+  timeout 20 "$RUNSC" --root="$STATE" --overlay2=none --ignore-cgroups exec "$CID" \
+    /bin/busybox sh /sysnet-probe.sh 2>&1 | sed 's/^/  /' >&2
 }
 i=0
 while [ "$i" -lt "$SBX_WAIT" ]; do
@@ -509,8 +531,10 @@ fi
 #       every frame is redirected into the netstack and the kernel owns no
 #       socket to receive the reply.
 #   (b) in-sandbox netstack:
-#       A = 10.0.2.2:22 -> the GW's sshd is SLIRP's; the sandbox netstack
-#         owns the lease, so this PASSes (the netstack is a full client).
+#       A = GW:22 (the gateway from /run/dhcp.log — 10.0.2.2 on QEMU,
+#         172.31.x.x on AWS; never hardcoded) -> the GW's sshd; the sandbox
+#         netstack owns the lease, so this PASSes (the netstack is a full
+#         client).
 #       B = 8.8.8.8:443 -> the netstack's egress; PASS.
 #   (c) host SSH (the money shot) is verified from the host harness:
 #       hostfwd :2222 -> guest :22 lands on the WIRE, is redirected into
@@ -544,9 +568,9 @@ else
 fi
 log "self-test: in-sandbox netstack"
 # the probe script was staged into the bundle rootfs before create (RO fs:
-# it can only be changed now by rebuilding the bundle).
-"$RUNSC" --root="$STATE" --overlay2=none --ignore-cgroups exec "$CID" \
-  /bin/busybox sh /sysnet-probe.sh 2>&1 | sed 's/^/  /' >&2
+# it can only be changed now by rebuilding the bundle). BOUNDED (run_probe):
+# a hung probe must not freeze the supervisor (see run_probe's comment).
+run_probe
 
 # --- 8. supervised lifetime -------------------------------------------------------
 # Hold the unit's process alive while the sandbox runs; if it dies (sentry
@@ -565,9 +589,9 @@ while [ "$i" -lt 360000 ]; do
   i=$((i + 1))
   # periodic netstack diagnostic (every ~20 s): the only path from the sandbox
   # to the serial. Captures the eth0 lease (the load-bearing assumption), the
-  # key landing, and the in-netstack sshdt banner.
-  [ $((i % 4)) -eq 0 ] && is_running && "$RUNSC" --root="$STATE" --overlay2=none --ignore-cgroups exec "$CID" \
-    /bin/busybox sh /sysnet-probe.sh 2>&1 | sed 's/^/  /' >&2
+  # key landing, and the in-netstack sshdt banner. BOUNDED (run_probe) so a
+  # hung probe can never freeze the liveness loop or the console again.
+  [ $((i % 4)) -eq 0 ] && is_running && run_probe
 done
 log "supervisor exit (liveness horizon reached; unit will respawn)"
 exit 0
