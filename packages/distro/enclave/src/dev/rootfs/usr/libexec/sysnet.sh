@@ -426,7 +426,14 @@ fi
 echo "  [sbx] B (8.8.8.8:443): "
 /bin/busybox nc -z -w 6 8.8.8.8 443 && echo "PASS" || echo "FAIL"
 echo "  [sbx] C (IMDS 169.254.169.254:80): "
-/bin/busybox nc -z -w 5 169.254.169.254 80 && echo "PASS" || echo "FAIL"
+# in-sandbox bound: the netstack treats 169.254.169.254 as ON-LINK (the /16
+# link-local used for DHCP DISCOVER is still on eth0), so it ARPs for IMDS
+# and never gets an answer (IMDS is hypervisor-virtualized, not L2-reachable)
+# — the bare `nc -z -w 5` hangs INSIDE the netstack. Bound it so the probe
+# reports a result (FAIL on timeout) instead of running to the supervisor's
+# outer kill. NOTE for the provisioner design: this is evidence the netstack
+# CANNOT reach IMDS while the /16 is present.
+/bin/busybox timeout 6 /bin/busybox nc -z -w 5 169.254.169.254 80 && echo "PASS" || echo "FAIL"
 EOF
 chmod 755 "$R/sysnet-probe.sh" 2>/dev/null || true
 
@@ -497,18 +504,24 @@ if [ "$STA" -ne 0 ];
 
 # --- 7. wait for running (bounded; poll runsc list) ------------------------------
 is_running() {
-  timeout 5 "$RUNSC" --root="$STATE" --overlay2=none --ignore-cgroups list 2>/dev/null \
+  timeout -s KILL 5 "$RUNSC" --root="$STATE" --overlay2=none --ignore-cgroups list 2>/dev/null \
     | awk -v id="$CID" '$1==id{print $3}' | grep -qi running
 }
-# runsc exec is BOUNDED: a hung probe (a `nc` to a blackholed destination,
-# an execd/exec RPC stall) must not freeze the single-threaded supervisor —
-# that freeze killed the liveness loop AND the serial console (Oct 1 AWS
-# reboot experiment: console's absolute last line was the in-sandbox probe's
-# A-probe header, byte-identical for 4+ h). timeout kills the runsc CLIENT;
-# the exec'd probe dies with it and the sandbox keeps running (a diagnostic
-# is not load-bearing), so the supervisor returns to the liveness loop.
+# runsc exec is BOUNDED with a HARD KILL (-s KILL): a hung probe (a `nc` to a
+# blackholed destination, an execd/exec RPC stall) must not freeze the
+# single-threaded supervisor — that freeze killed the liveness loop AND the
+# serial console (Oct 1 AWS: the A-probe header was the console's last line,
+# byte-identical for 4+ h). The KILL is load-bearing and was PROVEN necessary
+# on AWS (Oct 1, i-0d54ba2b7f147517b): a plain `timeout` (default SIGTERM) did
+# NOT unblock — runsc traps SIGTERM for a graceful shutdown that blocks on the
+# hung exec RPC, and the supervisor sat in it (3 byte-identical console
+# snapshots over 12 min, frozen at the C-probe header). `-k N` does not help
+# either (this busybox build does not escalate to KILL). `-s KILL` (verified
+# in-guest, rc 137) kills the runsc CLIENT; the exec'd probe dies with it and
+# the sandbox keeps running (a diagnostic is not load-bearing), so the
+# supervisor returns to the liveness loop.
 run_probe() {
-  timeout 20 "$RUNSC" --root="$STATE" --overlay2=none --ignore-cgroups exec "$CID" \
+  timeout -s KILL 20 "$RUNSC" --root="$STATE" --overlay2=none --ignore-cgroups exec "$CID" \
     /bin/busybox sh /sysnet-probe.sh 2>&1 | sed 's/^/  /' >&2
 }
 i=0
