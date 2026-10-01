@@ -425,15 +425,18 @@ else
 fi
 echo "  [sbx] B (8.8.8.8:443): "
 /bin/busybox nc -z -w 6 8.8.8.8 443 && echo "PASS" || echo "FAIL"
-echo "  [sbx] C (IMDS 169.254.169.254:80): "
-# in-sandbox bound: the netstack treats 169.254.169.254 as ON-LINK (the /16
-# link-local used for DHCP DISCOVER is still on eth0), so it ARPs for IMDS
-# and never gets an answer (IMDS is hypervisor-virtualized, not L2-reachable)
-# — the bare `nc -z -w 5` hangs INSIDE the netstack. Bound it so the probe
-# reports a result (FAIL on timeout) instead of running to the supervisor's
-# outer kill. NOTE for the provisioner design: this is evidence the netstack
-# CANNOT reach IMDS while the /16 is present.
-/bin/busybox timeout 6 /bin/busybox nc -z -w 5 169.254.169.254 80 && echo "PASS" || echo "FAIL"
+# NO C (IMDS) probe. It was the sole recurring console-freeze vector (Oct 1
+# AWS, i-0eab5c356899f04ae): the netstack treats 169.254.169.254 as ON-LINK
+# (the 169.254.2.2/16 link-local for DHCP DISCOVER is still on eth0), so it
+# ARPs for IMDS and — intermittently — the in-sandbox `nc` hangs in an
+# uninterruptible wait that NOT even `timeout -s KILL` on the outer `runsc
+# exec` could reap (4 byte-identical console snapshots / 21 min, frozen at
+# the C header; the netstack face stayed ALIVE + flapping). C is also
+# USELESS: the netstack cannot reliably reach IMDS (when it doesn't hang it
+# just emits FAIL), so it only added a hang risk for no signal. A (GW:22)
+# and B (8.8.8.8:443) are the load-bearing egress probes and do not hang
+# (they go through the real GW route + ARP). IMDS reachability is a
+# provisioner-egress design question, not a per-cycle diagnostic.
 EOF
 chmod 755 "$R/sysnet-probe.sh" 2>/dev/null || true
 
