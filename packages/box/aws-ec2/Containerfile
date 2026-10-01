@@ -9,15 +9,13 @@ COPY --from=core-busybox . /
 COPY --from=core-musl . /
 COPY --from=core-ca-certificates . /
 COPY --from=opentofu /usr/bin/tofu /usr/bin/tofu
-# Baked in the filesystem-MIRROR layout (version dir directly, no platform
-# subdir) so the box script's `provider_installation { filesystem_mirror }`
-# cli config resolves it OFFLINE. The installed layout (.../6.57.1/linux_amd64/)
-# that was here before is NOT a valid filesystem_mirror and silently fell
-# through to registry.opentofu.org — which times out when container egress is
-# flaky (observed Oct 1) and killed the whole launch. aws-ec2.tf pins
-# 6.57.1 to match; bump both together. (TOFU_PLUGIN_DIR was never a real
-# OpenTofu variable — removed.)
-COPY --from=opentofu-provider-aws /usr/bin/terraform-provider-aws /usr/local/share/tofu/plugins/registry.terraform.io/hashicorp/aws/6.57.1/terraform-provider-aws
+# Baked in the filesystem-mirror layout so the box script's
+# `provider_installation { filesystem_mirror }` cli config resolves it OFFLINE.
+# The installed layout (.../6.57.1/linux_amd64/) that was here before is NOT a
+# valid filesystem_mirror and silently fell through to registry.opentofu.org —
+# which times out when container egress is flaky (observed Oct 1) and killed
+# the whole launch.
+COPY --from=opentofu-provider-aws /usr/bin/terraform-provider-aws /usr/local/share/tofu/plugins/registry.terraform.io/hashicorp/aws/6.57.1/linux_amd64/terraform-provider-aws_v6.57.1_x5
 COPY src/box /usr/bin/box
 COPY src/aws-ec2.tf /usr/src/aws-ec2.tf
 RUN chmod +x /usr/bin/box && mkdir -p /run

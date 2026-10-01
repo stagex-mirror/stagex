@@ -1,11 +1,14 @@
 terraform {
   required_providers {
     aws = {
-      source  = "hashicorp/aws"
-      # Pinned to the version baked into the image (see Containerfile mirror
-      # layout). Without a pin, tofu init does "Finding latest version" against
-      # registry.opentofu.org, which times out when container egress to the
-      # registry is flaky/down (observed Oct 1) and kills the whole launch.
+      # Explicit registry.terraform.io host: an unprefixed "hashicorp/aws"
+      # resolves to registry.opentofu.org (OpenTofu's default) and the
+      # filesystem_mirror in the box script only covers registry.terraform.io,
+      # so the unprefixed form falls to the network. With the explicit host
+      # tofu resolves the provider from the baked mirror offline (proven
+      # in-image, Oct 1). Pinned to the version baked into the image (see
+      # Containerfile mirror layout); bump both together.
+      source  = "registry.terraform.io/hashicorp/aws"
       version = "6.57.1"
     }
   }
