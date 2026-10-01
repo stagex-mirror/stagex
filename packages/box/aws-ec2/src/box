@@ -43,20 +43,36 @@ trap "rm -rf $TERRAFORM_DIR" EXIT
 cp /usr/src/aws-ec2.tf "$TERRAFORM_DIR/"
 cd "$TERRAFORM_DIR"
 
-# Initialize
-# The aws provider is baked into the image at the default plugin mirror path
-# (see Containerfile), so init resolves it offline. NO -upgrade: that forces a
-# registry.opentofu.org lookup which times out when the registry is slow/down
-# (observed Sep 28 — the whole launch died silently because output was
-# suppressed). Pin the provider version in the image instead.
+# The aws provider is baked into the image at
+# /usr/local/share/tofu/plugins (a valid filesystem-mirror layout, see
+# Containerfile). To resolve it OFFLINE — with no version pin in the tf, so
+# tofu otherwise does "Finding latest version" against registry.opentofu.org
+# and times out when the registry is slow/down (observed Oct 1) — a cli config
+# must declare that path as a filesystem_mirror. (The Containerfile's
+# TOFU_PLUGIN_DIR env var is not a real OpenTofu variable and does nothing.)
+# NO -upgrade: it forces a registry lookup that times out offline.
+cat > "$TERRAFORM_DIR/.tfrc" <<'TFRC'
+provider_installation {
+  filesystem_mirror {
+    path    = "/usr/local/share/tofu/plugins"
+    include = ["registry.terraform.io/hashicorp/*"]
+  }
+  direct {
+    exclude = ["registry.terraform.io/hashicorp/*"]
+  }
+}
+TFRC
+export TF_CLI_CONFIG_FILE="$TERRAFORM_DIR/.tfrc"
 tofu init -backend=false >/dev/null 2>&1
 
 # Build var-file with all inputs
 # USER_DATA (the SSH key, or a custom EC2_USER_DATA_FILE) may span multiple
-# lines; HCL string literals cannot contain raw newlines, so write it to a
-# file and interpolate it with file().
-printf '%s' "$USER_DATA" > /run/userdata
-cat > /run/ec2.tfvars <<EOF
+# lines; HCL quoted string literals cannot contain raw newlines, and
+# functions (file()) are NOT allowed in variable files at all. The HCL
+# mechanism for a multi-line value in a var file is a heredoc: emit the
+# scalar variables as a quoted heredoc, then user_data as its own heredoc.
+{
+cat <<EOF
 region            = "${REGION}"
 key_name          = "${KEY_NAME}"
 instance_type     = "${INSTANCE_TYPE}"
@@ -65,14 +81,22 @@ data_volume_size  = ${DATA_VOLUME_SIZE}
 data_volume_delete_on_termination = ${DATA_DELETE_ON_TERM}
 subnet_id         = "${SUBNET_ID}"
 security_group_id = "${SECURITY_GROUP}"
-user_data         = file("/run/userdata")
 EOF
+printf 'user_data         = <<USERDATA_EOF\n'
+printf '%s' "$USER_DATA"
+printf '\nUSERDATA_EOF\n'
+} > /run/ec2.tfvars
 
-# Add ami_id from AMI_ID env var (highest priority) or AMI_TFVARS file
+# Add ami_id from AMI_ID env var (highest priority) or AMI_TFVARS file.
+# The ami tfvars (out/aws-ami.tfvars) also carries ami_arn, snapshot_id, and
+# vmimport_role_name — which aws-ec2.tf does NOT declare — so cat it in whole
+# and tofu fails with "Value for undeclared variable" (observed Oct 1: the
+# make-target path passed AMI_TFVARS while a manual AMI_ID run worked). Extract
+# only the ami_id line.
 if [ -n "$AMI_ID" ]; then
     echo "ami_id       = \"${AMI_ID}\"" >> /run/ec2.tfvars
 elif [ -n "$AMI_TFVARS" ] && [ -f "$AMI_TFVARS" ]; then
-    cat "$AMI_TFVARS" >> /run/ec2.tfvars
+    grep '^ami_id' "$AMI_TFVARS" >> /run/ec2.tfvars
 fi
 
 # Apply
