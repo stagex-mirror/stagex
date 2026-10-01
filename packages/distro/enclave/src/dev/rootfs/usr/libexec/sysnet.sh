@@ -433,6 +433,17 @@ log "pin redirect on $DEV"
 # and teardown can delete. The uplink has 0 IPv4 addresses (kernel offline):
 # xdp-4 relaxes the 1-address requirement so the sandbox NIC starts empty.
 #
+# --host-uds=open is LOAD-BEARING for the S3 co-tenant evidence channel:
+# bootproofd (in the sandbox) connects to enclaved's kernel-side collect
+# socket at /run/enclaved/sock (a bind-mounted host UDS). A Unix stream
+# connect() routes through the gofer's CONNECT RPC (fsgofer lisafs.go
+# Connect), which REFUSES with EPERM unless --host-uds permits open; the
+# sentry flattens that EPERM to ECONNREFUSED (gofer/socket.go newSender).
+# Default is `none`, so without this flag the co-tenant's evidence path is
+# dead (`collect daemon unreachable ... NOT PROVEN`, /attestation
+# evidence:[]). The bundle binds no other host UDS (erofs root is RO, no
+# sockets), so the surface is exactly the enclaved collect socket.
+#
 # -net-raw + -allow-packet-socket-write are LOAD-BEARING for rust-dhcp:
 #   * its ARP (arp crate: arp_probe/announce_address) opens AF_PACKET
 #     SOCK_RAW, gated on CAP_NET_RAW (pkg/sentry/socket/netstack/
@@ -448,14 +459,14 @@ log "pin redirect on $DEV"
 log "create (redirect:$DEV)"
 "$RUNSC" --root="$STATE" --overlay2=none --ignore-cgroups --TESTONLY-unsafe-nonroot \
   --network=sandbox --EXPERIMENTAL-xdp="redirect:$DEV" -net-raw \
-  --allow-packet-socket-write \
+  --allow-packet-socket-write --host-uds=open \
   create --bundle "$B" "$CID" < /dev/null >/dev/null 2>&1
 CRE=$?
 [ "$CRE" -eq 0 ] || { log "create rc=$CRE"; exit 1; }
 log "start (redirect:$DEV)"
 "$RUNSC" --root="$STATE" --overlay2=none --ignore-cgroups --TESTONLY-unsafe-nonroot \
   --network=sandbox --EXPERIMENTAL-xdp="redirect:$DEV" -net-raw \
-  --allow-packet-socket-write \
+  --allow-packet-socket-write --host-uds=open \
   start "$CID" < /dev/null >/dev/null 2>&1
 STA=$?
 
