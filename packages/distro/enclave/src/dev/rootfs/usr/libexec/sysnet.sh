@@ -310,6 +310,8 @@ cat > "$B/config.json" <<'EOF'
       "options": ["rbind"] },
     { "type": "bind", "source": "/run/enclaved", "destination": "/run/enclaved",
       "options": ["rbind"] },
+    { "type": "bind", "source": "/run/sysnet", "destination": "/run/sysnet",
+      "options": ["rbind"] },
     { "type": "bind", "source": "/home/bootproof", "destination": "/home/bootproof",
       "options": ["rbind"] }
   ],
@@ -341,7 +343,7 @@ chmod 755 "$R/bin/bootproofd" 2>/dev/null || true
 # the gofer creates it there. Host-side sources: enclaved owns /run/enclaved
 # (mkdir -p is idempotent); /home/bootproof persists on the LUKS volume,
 # is recreated on tmpfs /home (QEMU) — both idempotent.
-mkdir -p "$R/home/bootproof" /run/enclaved /home/bootproof 2>/dev/null \
+mkdir -p "$R/home/bootproof" /run/enclaved /home/bootproof /run/sysnet 2>/dev/null \
   || fail "mkdir bootproofd bind targets failed"
 cp -f /lib/ld-musl-x86_64.so.1  "$R/lib/" || fail "copy ld-musl failed"
 cp -f /lib/libc.musl-x86_64.so.1 "$R/lib/" || fail "copy libc.musl failed"
@@ -459,6 +461,18 @@ fi
 # 0.0.0.0:443, --state /home/bootproof, --socket /run/enclaved/sock — both
 # bound into this sandbox above).
 ( while :; do /bin/bootproofd >>/run/bootproofd.log 2>&1; sleep 2; done ) &
+# v7 obs channel (Oct 2 wire finding): the serial console is NOT a reliable
+# window into the supervisor — on the live wire the console froze at
+# 40206 B (below the 64KB cap) for 40+ min while the sandbox/netstack stayed
+# ALIVE (attestation PROVEN, :443 serving), so /run/sysnet/log was the only
+# ground truth and it was unreachable without SSH (provisioner gap). This
+# serves the HOST /run/sysnet dir (the supervisor's log file lives there,
+# bind-mounted above) over plain HTTP on :9004, INSIDE the netstack: the
+# redirect program diverts every frame class to the sandbox (v3 has no pass
+# class), so host :9004 -> netstack -> this httpd, no BPF change. Static
+# file server only (busybox httpd -h), no shell, no upload: `curl
+# http://<ip>:9004/log` reads the supervisor's live log from the wire.
+( while :; do /bin/busybox httpd -p 0.0.0.0:9004 -h /run/sysnet >>/run/httpd.log 2>&1; sleep 2; done ) &
 i=0
 while [ ! -s /root/.ssh/authorized_keys ] && [ "$i" -lt 300 ]; do
   sleep 1

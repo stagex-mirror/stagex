@@ -53,7 +53,10 @@ QEMU_ARGS="$QEMU_ARGS -device scsi-cd,drive=cd0"
 
 # The enclave exposes the bootproofd face on :443; forward it too so a host
 # client can reach https://localhost/health (bootproof verify --direct).
-NET_OPTS="user,id=net0,hostfwd=tcp:0.0.0.0:2222-:22,hostfwd=tcp:0.0.0.0:443-:443"
+# :9004 = the sysnet supervisor's obs channel (busybox httpd inside the
+# netstack serving host /run/sysnet): curl http://localhost:9004/log reads
+# the supervisor's live log (the serial console is not a reliable window).
+NET_OPTS="user,id=net0,hostfwd=tcp:0.0.0.0:2222-:22,hostfwd=tcp:0.0.0.0:443-:443,hostfwd=tcp:0.0.0.0:9004-:9004"
 if [ -n "${QEMU_NET_HOSTFWD:-}" ]; then
     NET_OPTS="$NET_OPTS,hostfwd=${QEMU_NET_HOSTFWD}"
 fi
