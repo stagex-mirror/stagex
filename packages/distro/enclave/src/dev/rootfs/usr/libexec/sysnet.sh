@@ -500,27 +500,52 @@ if [ "$STA" -ne 0 ];
     exit 1
   fi
 
-# --- 7. wait for running (bounded; poll runsc list) ------------------------------
+# --- 7. wait for running (non-blocking; poll runsc list) ------------------------
+# v5 (Oct 2): NEITHER runsc child (exec NOR list) may ever be WAITED ON.
+# Wire-proven across FIVE instances (gen-1@A, v1@C, v2@C, v3@A, v4@plain-echo):
+# when the sentry/netstack data plane is in a bad window, the runsc client
+# wedges in a kernel wait on the exec/list RPC and NEVER EXITS — so both
+# `timeout` (which blocks in waitpid AFTER sending the signal) and a bare
+# `wait` block the supervisor forever, freezing liveness + serial console.
+# v4 (local-only probe, zero wire ops, frozen at a plain echo) killed the
+# "wire-nc is the vector" hypothesis: the vector is the SYNCHRONOUS WAIT on
+# a wedged runsc child. The fix is structural: background the runsc child,
+# poll /proc/PID (non-blocking), kill -9 at the deadline. A wedged probe
+# then costs at most a leaked zombie — the supervisor never blocks on it.
+# (The `timeout -s KILL` backstop inside run_probe stays: it SIGKILLs the
+# client at the deadline even if our own kill raced; we just never wait.)
 is_running() {
-  timeout -s KILL 5 "$RUNSC" --root="$STATE" --overlay2=none --ignore-cgroups list 2>/dev/null \
-    | awk -v id="$CID" '$1==id{print $3}' | grep -qi running
+  rl_out=/tmp/.sysnet-list
+  rm -f "$rl_out" 2>/dev/null
+  "$RUNSC" --root="$STATE" --overlay2=none --ignore-cgroups \
+    list 2>/dev/null > "$rl_out" &
+  rl_pid=$!
+  j=0
+  while [ -d "/proc/$rl_pid" ] && [ "$j" -lt 5 ]; do
+    sleep 1
+    j=$((j + 1))
+  done
+  [ -d "/proc/$rl_pid" ] && kill -9 "$rl_pid" 2>/dev/null
+  awk -v id="$CID" '$1==id{print $3}' "$rl_out" 2>/dev/null | grep -qi running
 }
-# runsc exec is BOUNDED with a HARD KILL (-s KILL): a hung probe (a `nc` to a
-# blackholed destination, an execd/exec RPC stall) must not freeze the
-# single-threaded supervisor — that freeze killed the liveness loop AND the
-# serial console (Oct 1 AWS: the A-probe header was the console's last line,
-# byte-identical for 4+ h). The KILL is load-bearing and was PROVEN necessary
-# on AWS (Oct 1, i-0d54ba2b7f147517b): a plain `timeout` (default SIGTERM) did
-# NOT unblock — runsc traps SIGTERM for a graceful shutdown that blocks on the
-# hung exec RPC, and the supervisor sat in it (3 byte-identical console
-# snapshots over 12 min, frozen at the C-probe header). `-k N` does not help
-# either (this busybox build does not escalate to KILL). `-s KILL` (verified
-# in-guest, rc 137) kills the runsc CLIENT; the exec'd probe dies with it and
-# the sandbox keeps running (a diagnostic is not load-bearing), so the
-# supervisor returns to the liveness loop.
+# run_probe: the ONLY path from the sandbox to the serial (the sandbox's own
+# stdio is discarded by runsc start). Bounded the NON-BLOCKING way (v5):
+# background, poll /proc, kill -9 at the deadline — the supervisor NEVER
+# waitpids the probe, so a wedged exec channel (the v1-v4 console-freeze
+# vector) cannot freeze liveness or the console again.
 run_probe() {
-  timeout -s KILL 20 "$RUNSC" --root="$STATE" --overlay2=none --ignore-cgroups exec "$CID" \
-    /bin/busybox sh /sysnet-probe.sh 2>&1 | sed 's/^/  /' >&2
+  timeout -s KILL 20 "$RUNSC" --root="$STATE" --overlay2=none --ignore-cgroups \
+    exec "$CID" /bin/busybox sh /sysnet-probe.sh 2>&1 &
+  pr_pid=$!
+  j=0
+  while [ -d "/proc/$pr_pid" ] && [ "$j" -lt 20 ]; do
+    sleep 1
+    j=$((j + 1))
+  done
+  if [ -d "/proc/$pr_pid" ]; then
+    log "probe still running after 20 s: kill -9 (wedged exec channel; supervisor continues)"
+    kill -9 "$pr_pid" 2>/dev/null
+  fi
 }
 i=0
 while [ "$i" -lt "$SBX_WAIT" ]; do
