@@ -81,8 +81,21 @@
 # and the netstack re-DORA's. The kernel itself has no lease (offline),
 # so recovery = respawn; the dark window is the respawn time.
 #
-# Shell discipline: /bin/sh here is brush — `wait <pid>` is unimplemented.
-# This script backgrounds nothing; it polls `runsc list` for liveness.
+# Shell discipline: /bin/sh here is brush — `wait <pid>` is unimplemented,
+# and brush 0.4.0 does NOT set $! (v6: confirmed by direct test — v5's
+# `kill -9 "$pr_pid"` was a no-op on an empty pid). So: NEVER `wait`, and
+# find a real PID via `pgrep -x <comm>` + /proc/PID/cmdline match, then
+# kill -9 that PID. The probe's own in-sandbox ops run under busybox ash
+# (the bundle's /bin/sh), where $! and kill work normally.
+#
+# v6 (serial backpressure fix): the supervisor's own writes go to the tmpfs
+# log file ($LOGF), NEVER straight to the serial; a single detached
+# `tail -f` forwarder carries the file to the serial (>&2). A stalled
+# serial capture can block a serial writer (the v5 final-stall vector —
+# after the 5th wedged probe the console stopped advancing entirely);
+# a write to tmpfs cannot. If the forwarder stalls, $LOGF still holds the
+# ground truth. Serial load also drops ~95%: the full probe dump rides the
+# forwarder, not the supervisor's direct writes.
 set -u
 
 DEV=eth0                       # pinned by net.ifnames=0 on the cmdline; the
@@ -96,23 +109,79 @@ STATE=/run/sysnet/runsc
 B=/run/sysnet/bundle
 PIN=/sys/fs/bpf/$DEV
 SBX_WAIT=90                  # bounded wait for the sandbox to reach running
+LOGF=/run/sysnet/log         # v6: supervisor log (tmpfs; never blocks)
+WEDGE_LIMIT=5                # v6: consecutive wedged probes => netstack respawn
+                             # (v5 wire data: after 5 wedges the netstack went
+                             # persistently dark; the only in-guest reset is a
+                             # full teardown + execd respawn)
+WEDGE=0                      # v6: consecutive wedged-probe counter
 
-log()  { echo "sysnet: $*" >&2; }
+# v6: writes go to the tmpfs log file, never to the serial (a stalled
+# serial capture must not be able to block the supervisor). The detached
+# forwarder (launched below, before the first log call) carries $LOGF to
+# the serial; if it stalls, the file still holds the truth.
+log()  { echo "sysnet: $*" >> "$LOGF" 2>/dev/null || true; }
 fail() { log "$*"; exit 1; }
 
 # --- teardown (execd restarts us on non-zero exit) ----------------------------
+# v6: teardown MUST NOT wedge on the data plane. It is the EXIT-trap path for
+# the WEDGE_LIMIT respawn (exit 1 -> this trap -> execd restart="always"), so
+# if teardown blocks on a runsc client RPC to a degraded sentry, the supervisor
+# never exits, execd never respawns, and the recovery is dead. The two runsc
+# calls here (list, delete) are bounded the NON-BLOCKING way — background,
+# poll /proc, kill -9 at the deadline, never wait (the same proven fix as
+# is_running/run_probe; `list` is a wire-proven wedge point, `delete` is the
+# same client-RPC class). The load-bearing action is killing the sandbox init
+# by EXACT PID (releases the AF_XDP bind so a respawn re-bind never EBUSY) —
+# that is a plain kill(2), local and cannot wedge; it only needs the PID, which
+# the bounded list provides if the sentry answers in time. If list does not
+# answer (wedged), we still proceed: the supervisor exits, execd respawns, and
+# the fresh process re-tears-down/re-creates — strictly better than the old
+# "teardown wedges forever -> no respawn ever".
 teardown() {
-  # kill the sentry by exact PID first (a dead sandbox's sentry survives
-  # `runsc delete`; killing it releases the AF_XDP bind so a respawn re-bind
-  # never hits EBUSY). runsc list column 2 is the PID.
-  "$RUNSC" --root="$STATE" --overlay2=none --ignore-cgroups list 2>/dev/null \
-    | awk -v id="$CID" '$1==id{print $2}' | while read -r p; do
-      [ -n "$p" ] && kill -9 "$p" 2>/dev/null || true
+  # bounded `runsc list`: find the sandbox init PID (column 2) without waiting
+  # on a possibly-wedged list client.
+  tl_out=/tmp/.sysnet-td-list
+  rm -f "$tl_out" 2>/dev/null
+  "$RUNSC" --root="$STATE" --overlay2=none --ignore-cgroups list 2>/dev/null > "$tl_out" &
+  tl_live=0; tl_pid=; j=0
+  while [ "$j" -lt 3 ]; do
+    tl_live=0
+    for p in $(pgrep -x runsc 2>/dev/null); do
+      cl=$(tr '\0' ' ' < "/proc/$p/cmdline" 2>/dev/null)
+      case "$cl" in
+        *"$STATE"*list*) case "$cl" in *exec*) ;; *) tl_live=1; tl_pid=$p;; esac;;
+      esac
     done
+    [ "$tl_live" -eq 0 ] && break
+    sleep 1; j=$((j + 1))
+  done
+  [ "$tl_live" -eq 1 ] && kill -9 "$tl_pid" 2>/dev/null || true
+  # kill the sandbox init by exact PID (releases the AF_XDP bind). A dead
+  # sandbox's sentry survives `runsc delete`; this is what lets a respawn
+  # re-bind without EBUSY. runsc list column 2 is the PID.
+  for p in $(awk -v id="$CID" '$1==id{print $2}' "$tl_out" 2>/dev/null); do
+    [ -n "$p" ] && kill -9 "$p" 2>/dev/null || true
+  done
+  # bounded `runsc delete -f`: client RPC, same wedge class as list.
   "$RUNSC" --root="$STATE" --overlay2=none --ignore-cgroups delete -f "$CID" \
-    2>/dev/null || true
-  # detach + unpin: the program's empty-sockmap guard already auto-PASSes to
-  # the kernel while the socket is gone; a lingering program is dead weight.
+    2>/dev/null &
+  tl_live=0; tl_pid=; j=0
+  while [ "$j" -lt 3 ]; do
+    tl_live=0
+    for p in $(pgrep -x runsc 2>/dev/null); do
+      cl=$(tr '\0' ' ' < "/proc/$p/cmdline" 2>/dev/null)
+      case "$cl" in
+        *"$STATE"*delete*) case "$cl" in *exec*) ;; *) tl_live=1; tl_pid=$p;; esac;;
+      esac
+    done
+    [ "$tl_live" -eq 0 ] && break
+    sleep 1; j=$((j + 1))
+  done
+  [ "$tl_live" -eq 1 ] && kill -9 "$tl_pid" 2>/dev/null || true
+  # detach + unpin: local, fast, safe. The program's empty-sockmap guard
+  # already auto-PASSes to the kernel while the socket is gone; a lingering
+  # program is dead weight.
   ip xdp off dev "$DEV" 2>/dev/null || true
   rm -f "$PIN/redirect_ip_map" "$PIN/redirect_program" "$PIN/redirect_link" 2>/dev/null || true
   rmdir "$PIN" 2>/dev/null || true
@@ -134,6 +203,7 @@ teardown() {
     [ "$held" -eq 1 ] && { kill -9 $(ip netns pids "$ns" 2>/dev/null) 2>/dev/null; sleep 0.2; ip netns del "$ns" 2>/dev/null || true; }
   done
   log "teardown done"
+  tailf_cleanup
 }
 trap teardown EXIT
 # signal-driven teardown: brush's EXIT-trap-on-signal behavior is not relied
@@ -141,6 +211,34 @@ trap teardown EXIT
 trap 'exit 129' HUP
 trap 'exit 130' INT
 trap 'exit 143' TERM
+
+# --- v6: log file + the single detached serial forwarder -----------------------
+# Must run before the first log()/fail() call below. The forwarder is a child
+# of this script; on our exit it is orphaned to PID 1 (execd's reaper) and
+# keeps running, so BOTH startup and teardown kill stale forwarders by the
+# log path in their cmdline (never pgrep -f: it matches our own shell).
+tailf_cleanup() {
+  for p in $(pgrep -x tail 2>/dev/null); do
+    case "$(tr '\0' ' ' < "/proc/$p/cmdline" 2>/dev/null)" in
+      *"$LOGF"*) kill -9 "$p" 2>/dev/null || true;;
+    esac
+  done
+}
+# bound the tmpfs log (a long-running supervisor would otherwise grow it into
+# RAM). Truncate to the last 256 KiB once it passes 512 KiB. `tail -f` follows
+# appends and, on shrink, rewinds to the new EOF, so the forwarder survives.
+log_trim() {
+  s=$(wc -c < "$LOGF" 2>/dev/null)
+  [ -n "$s" ] && [ "$s" -gt 512000 ] && {
+    tail -c 256000 "$LOGF" > "$LOGF.tmp" 2>/dev/null || true
+    cat "$LOGF.tmp" > "$LOGF" 2>/dev/null || true
+    rm -f "$LOGF.tmp" 2>/dev/null || true
+  }
+}
+mkdir -p /run/sysnet 2>/dev/null || true
+echo "=== sysnet supervisor start $(date -u +%Y-%m-%dT%H:%M:%SZ) pid $$ ===" >> "$LOGF" 2>/dev/null || true
+tailf_cleanup
+tail -f "$LOGF" >&2 2>/dev/null &
 
 # --- 0. preconditions ----------------------------------------------------------
 [ -x "$RUNSC" ] || fail "runsc missing at $RUNSC"
@@ -514,18 +612,32 @@ if [ "$STA" -ne 0 ];
 # then costs at most a leaked zombie — the supervisor never blocks on it.
 # (The `timeout -s KILL` backstop inside run_probe stays: it SIGKILLs the
 # client at the deadline even if our own kill raced; we just never wait.)
+# v6: the v5 body used `rl_pid=$!` to bound the list child — but brush does
+# NOT set $! (empty), so /proc/$rl_pid was always true (a FIXED 5 s per call,
+# doubling the liveness-loop period) and `kill -9 ""` was a no-op (leaked
+# runsc-list zombies). The verdict (awk over $rl_out) was still correct, but
+# the latency + leak were real. Same fix as run_probe: find the REAL pid via
+# `pgrep -x runsc` + a cmdline that carries our state root AND the `list`
+# subcommand (NOT `exec` — that is run_probe's child, a different sandbox
+# call), poll /proc non-blocking, kill -9 the real pid at the deadline.
 is_running() {
   rl_out=/tmp/.sysnet-list
   rm -f "$rl_out" 2>/dev/null
   "$RUNSC" --root="$STATE" --overlay2=none --ignore-cgroups \
     list 2>/dev/null > "$rl_out" &
-  rl_pid=$!
   j=0
-  while [ -d "/proc/$rl_pid" ] && [ "$j" -lt 5 ]; do
-    sleep 1
-    j=$((j + 1))
+  while [ "$j" -lt 5 ]; do
+    rl_live=0
+    for p in $(pgrep -x runsc 2>/dev/null); do
+      cl=$(tr '\0' ' ' < "/proc/$p/cmdline" 2>/dev/null)
+      case "$cl" in
+        *"$STATE"*list*) case "$cl" in *exec*) ;; *) rl_live=1; rl_pid=$p;; esac;;
+      esac
+    done
+    [ "$rl_live" -eq 0 ] && break
+    sleep 1; j=$((j + 1))
   done
-  [ -d "/proc/$rl_pid" ] && kill -9 "$rl_pid" 2>/dev/null
+  [ "$rl_live" -eq 1 ] && kill -9 "$rl_pid" 2>/dev/null || true
   awk -v id="$CID" '$1==id{print $3}' "$rl_out" 2>/dev/null | grep -qi running
 }
 # run_probe: the ONLY path from the sandbox to the serial (the sandbox's own
@@ -533,19 +645,41 @@ is_running() {
 # background, poll /proc, kill -9 at the deadline — the supervisor NEVER
 # waitpids the probe, so a wedged exec channel (the v1-v4 console-freeze
 # vector) cannot freeze liveness or the console again.
+# v6: (a) the probe's output goes to $LOGF (tmpfs), NOT the serial — the ~60
+#      line dump was the supervisor's largest single serial writer and the
+#      v5 final-stall vector (serial backpressure); it now rides the detached
+#      forwarder. (b) brush does not set $!, so v5's kill -9 "$pr_pid" was a
+#      NO-OP (empty pid) and its "kill -9" log line fired unconditionally
+#      ([ -d /proc/ ] is always true). The actual bound was `timeout -s KILL`.
+#      v6 finds the REAL pid via `pgrep -x runsc` + the probe script in the
+#      cmdline and kills it, and the log line is now honest (fires only when a
+#      probe is actually still alive at the deadline). A fast probe breaks the
+#      poll loop early (probe gone) and logs no wedge; only a probe alive at
+#      every poll up to ~19s (just under the 20s `timeout -s KILL`) counts.
 run_probe() {
   timeout -s KILL 20 "$RUNSC" --root="$STATE" --overlay2=none --ignore-cgroups \
-    exec "$CID" /bin/busybox sh /sysnet-probe.sh 2>&1 &
-  pr_pid=$!
+    exec "$CID" /bin/busybox sh /sysnet-probe.sh >> "$LOGF" 2>&1 &
   j=0
-  while [ -d "/proc/$pr_pid" ] && [ "$j" -lt 20 ]; do
-    sleep 1
-    j=$((j + 1))
+  while [ "$j" -lt 20 ]; do
+    probe_live=0
+    for p in $(pgrep -x runsc 2>/dev/null); do
+      tr '\0' ' ' < "/proc/$p/cmdline" 2>/dev/null | grep -q 'sysnet-probe.sh' && { probe_live=1; probe_pid=$p; }
+    done
+    [ "$probe_live" -eq 0 ] && break
+    sleep 1; j=$((j + 1))
   done
-  if [ -d "/proc/$pr_pid" ]; then
-    log "probe still running after 20 s: kill -9 (wedged exec channel; supervisor continues)"
-    kill -9 "$pr_pid" 2>/dev/null
+  if [ "$probe_live" -eq 1 ]; then
+    WEDGE=$((WEDGE + 1))
+    log "probe still running after 20 s: kill -9 (wedged exec channel; wedge $WEDGE/$WEDGE_LIMIT; supervisor continues)"
+    kill -9 "$probe_pid" 2>/dev/null || true
+  else
+    WEDGE=0
+    log_trim
   fi
+  [ "$WEDGE" -ge "$WEDGE_LIMIT" ] && {
+    log "WEDGE_LIMIT ($WEDGE_LIMIT) consecutive wedged probes: respawning the netstack (exit -> teardown)"
+    exit 1
+  }
 }
 i=0
 while [ "$i" -lt "$SBX_WAIT" ]; do
