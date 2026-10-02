@@ -382,7 +382,11 @@ chmod 755 "$R/sysnet-init.sh" 2>/dev/null || true
 # gofer can serve it). The sandbox's own stdio is discarded by runsc start,
 # so THIS exec is the only way netstack state reaches the serial. It is the
 # diagnostic: eth0 lease (the load-bearing assumption), routes, authorized
-# key, in-netstack sshdt banner (isolates netstack-vs-XDP/hostfwd), egress.
+# key, in-netstack sshdt banner (isolates netstack-vs-XDP/hostfwd). It does
+# NO wire `nc` (v4): the wire probes (A/B/C) were removed after four
+# instances froze the console at a wire probe in a netstack flap window,
+# unreapable even by SIGKILL. LOCAL ops only (to the netstack's own IP /
+# files), which cannot hang. Egress/flap is measured host-side.
 # eth0-specific lease check: `ip -4 addr show | grep inet` matches loopback's
 # 127.0.0.1/8 immediately (netstack always has lo up) and would falsely report
 # a lease.
@@ -412,31 +416,22 @@ if [ -n "$IP" ]; then
   /bin/busybox nc -w 4 "$IP" 22 </dev/null 2>/dev/null | head -c 40 | sed 's/^/    /'
   echo
 fi
-# real gateway from the dhcp log (the SAME source the payload uses for the
-# default route — NOT hardcoded 10.0.2.2, which only exists behind QEMU's
-# SLIRP and blackholes on AWS; a `nc -z` to it froze the console +
-# supervisor there, Oct 1 reboot experiment).
-GW=$(/bin/busybox tail -n 50 /run/dhcp.log 2>/dev/null | grep -oE "Gateway: [0-9.]+" | tail -n 1 | awk '{print $2}')
-if [ -n "$GW" ]; then
-  echo "  [sbx] A (GW $GW:22): "
-  /bin/busybox nc -z -w 5 "$GW" 22 && echo "PASS" || echo "FAIL"
-else
-  echo "  [sbx] A (GW :22): SKIP (no gateway in /run/dhcp.log)"
-fi
-echo "  [sbx] B (8.8.8.8:443): "
-/bin/busybox nc -z -w 6 8.8.8.8 443 && echo "PASS" || echo "FAIL"
-# NO C (IMDS) probe. It was the sole recurring console-freeze vector (Oct 1
-# AWS, i-0eab5c356899f04ae): the netstack treats 169.254.169.254 as ON-LINK
-# (the 169.254.2.2/16 link-local for DHCP DISCOVER is still on eth0), so it
-# ARPs for IMDS and — intermittently — the in-sandbox `nc` hangs in an
-# uninterruptible wait that NOT even `timeout -s KILL` on the outer `runsc
-# exec` could reap (4 byte-identical console snapshots / 21 min, frozen at
-# the C header; the netstack face stayed ALIVE + flapping). C is also
-# USELESS: the netstack cannot reliably reach IMDS (when it doesn't hang it
-# just emits FAIL), so it only added a hang risk for no signal. A (GW:22)
-# and B (8.8.8.8:443) are the load-bearing egress probes and do not hang
-# (they go through the real GW route + ARP). IMDS reachability is a
-# provisioner-egress design question, not a per-cycle diagnostic.
+# NO wire `nc` probes here (A = GW:22, B = 8.8.8.8:443, and the earlier
+# C = IMDS are all GONE — v4, Oct 2). Wire-proven across FOUR instances
+# (gen-1 @ A, v1 @ C, v2 @ C, v3 @ A, disk 31c38a88): any in-sandbox
+# WIRE op landing in a netstack data-plane flap window hangs in an
+# uninterruptible wait that NOT even `timeout -s KILL` on the outer
+# `runsc exec` can reap (the runsc client sits in a kernel D-state on
+# the exec RPC the sentry can't complete), so the single-threaded
+# supervisor + serial console freeze while the netstack face stays
+# ALIVE + flapping. C was the worst (IMDS is on-link in the
+# 169.254.2.2/16 -> ARP blackhole, hung every time) but A (a
+# reachable GW) froze identically once C was gone. LOCAL in-sandbox
+# ops — the `nc`s to the netstack's OWN lease IP above, the file
+# reads, the banners — completed in every cycle including the frozen
+# ones, so they stay: they are the in-guest flap visibility. The
+# egress/flap signal is measured HOST-side (the `:443` 200/000 probe),
+# not from a periodic in-sandbox wire probe.
 EOF
 chmod 755 "$R/sysnet-probe.sh" 2>/dev/null || true
 
@@ -545,13 +540,17 @@ fi
 #       eth0 has NO inet address (the lease lives in the netstack) and NO
 #       route; any kernel TCP egress (10.0.2.2:22, 8.8.8.8:443) FAILS —
 #       every frame is redirected into the netstack and the kernel owns no
-#       socket to receive the reply.
-#   (b) in-sandbox netstack:
-#       A = GW:22 (the gateway from /run/dhcp.log — 10.0.2.2 on QEMU,
-#         172.31.x.x on AWS; never hardcoded) -> the GW's sshd; the sandbox
-#         netstack owns the lease, so this PASSes (the netstack is a full
-#         client).
-#       B = 8.8.8.8:443 -> the netstack's egress; PASS.
+#       socket to receive the reply. (These two kernel-side `nc`s run in
+#       the kernel netns with NO route + NO address, so they fail INSTANTLY
+#       with "Network is unreachable" — they cannot hang; the wire-hang
+#       vector is in-sandbox netstack ops only, and the in-sandbox probe
+#       no longer does any wire ops (v4).)
+#   (b) in-sandbox netstack (run_probe, LOCAL diagnostics only — no wire
+#       `nc`, see the probe script header):
+#       eth0 lease, routes, rust-dhcp log, bootproofd status + :443 banner
+#       (to the netstack's OWN lease IP — local, cannot hang), the
+#       authorized_keys landing, and the in-netstack sshdt banner (also to
+#       the netstack's own IP — local, cannot hang).
 #   (c) host SSH (the money shot) is verified from the host harness:
 #       hostfwd :2222 -> guest :22 lands on the WIRE, is redirected into
 #       the netstack by the program, and is served by the sandbox's sshdt.
@@ -572,12 +571,12 @@ fi
 # and no route the kernel cannot even construct a SYN (no source IP, no route)
 # — "Network is unreachable". It is NOT that the SYN is redirected (the kernel
 # never sends one). Either way the kernel's L4 plane is dark.
-if /bin/busybox nc -z -w 4 10.0.2.2 22 2>/dev/null; then
+if timeout -s KILL 10 /bin/busybox nc -z -w 4 10.0.2.2 22 2>/dev/null; then
   log "  [kern] 10.0.2.2:22: PASS (UNEXPECTED — the kernel has a route/addr?)"
 else
   log "  [kern] 10.0.2.2:22: FAIL (expected: kernel offline, no route to send)"
 fi
-if /bin/busybox nc -z -w 6 8.8.8.8 443 2>/dev/null; then
+if timeout -s KILL 10 /bin/busybox nc -z -w 6 8.8.8.8 443 2>/dev/null; then
   log "  [kern] 8.8.8.8:443: PASS (UNEXPECTED — the kernel has a route/addr?)"
 else
   log "  [kern] 8.8.8.8:443: FAIL (expected: kernel offline, no route to send)"
