@@ -44,7 +44,7 @@ aws-ec2-deploy: $(EC2_AMI_TFVARS)
 	elif [ -f ~/.ssh/id_rsa.pub ]; then \
 		USER_DATA=$$(cat ~/.ssh/id_rsa.pub); \
 	fi && \
-	docker run --rm \
+	docker run --rm --network=host \
 		-e AWS_ACCESS_KEY_ID="$(AWS_ACCESS_KEY_ID)" \
 		-e AWS_SECRET_ACCESS_KEY="$(AWS_SECRET_ACCESS_KEY)" \
 		-e REGION="$(EC2_REGION)" \

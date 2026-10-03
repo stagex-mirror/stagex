@@ -44,7 +44,7 @@ $(EC2_AMI_TFVARS): $(EC2_DISK_IMG)
 	@echo "Importing AMI from $(EC2_DISK_IMG) ..."
 	@echo "  AMI name: $(EC2_AMI_NAME)"
 	@echo "  Region: $(EC2_REGION)"
-	@docker run --rm \
+	@docker run --rm --network=host \
 		-e AWS_ACCESS_KEY_ID="$(AWS_ACCESS_KEY_ID)" \
 		-e AWS_SECRET_ACCESS_KEY="$(AWS_SECRET_ACCESS_KEY)" \
 		-e AMI_NAME="$(EC2_AMI_NAME)" \
