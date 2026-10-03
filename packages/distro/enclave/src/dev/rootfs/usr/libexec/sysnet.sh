@@ -115,6 +115,33 @@ WEDGE_LIMIT=5                # v6: consecutive wedged probes => netstack respawn
                              # persistently dark; the only in-guest reset is a
                              # full teardown + execd respawn)
 WEDGE=0                      # v6: consecutive wedged-probe counter
+# v8: data-plane watchdog (sn-7 flap chase, Oct 3 wire data
+# i-086114e6199dd1c29): the flap is the netstack DATA PLANE (261 samples:
+# dark windows were 100% TIMEOUT, zero RST) and it DEGRADES to a permanent
+# dark. is_running (runsc list, process-based) never sees a wedged-but-alive
+# netstack, so the WEDGE_LIMIT never fired and the face sat wedged forever.
+# Fix: dpmon — a plain background process INSIDE the sandbox (never a runsc
+# exec: the v5 wedge vector was the exec RPC channel) — does a real external
+# TCP connect every 10 s and writes the result to $DPF (bind-mounted
+# /run/sysnet, visible to the kernel). The kernel-side supervisor reads that
+# FILE (no runsc, no netstack, nothing that can wedge) and respawns the
+# sandbox on a SUSTAINED dark. A wedged netstack stops dpmon from writing
+# (stale file) or fails the connect (fail file): both converge on
+# "data-plane dark", which the supervisor can act on.
+DPF=/run/sysnet/dp           # v8: dpmon status file (sandbox sees the same bind)
+DP_LIMIT=24                  # v8: 24 consecutive dark checks (x 5 s loop = 120 s
+                             # of continuous dark) => respawn. Above the longest
+                             # observed SELF-RECOVERING window (~50 s, so those
+                             # never pay the ~60-90 s respawn cost); far below
+                             # the terminal dark (persisted 23 h un-recovered).
+DP_STALE=30                  # v8: a dp file older than 30 s = dark (3 missed
+                             # 10 s probes)
+DPARK=0                      # v8: consecutive data-plane-dark counter (armed only)
+DPHAVEN=0                    # v8: 1 once a FRESH "pass" has been observed. The
+                             # watchdog fires ONLY on a healthy->sustained-dark
+                             # transition: at boot dpmon writes "fail" (no
+                             # lease/egress yet) for tens of seconds, and a
+                             # slow boot must not count toward DP_LIMIT.
 
 # v6: writes go to the tmpfs log file, never to the serial (a stalled
 # serial capture must not be able to block the supervisor). The detached
@@ -276,6 +303,12 @@ for ns in $(ip netns list 2>/dev/null | awk '$1 ~ /^runsc-[0-9]+$/{print $1}'); 
 done
 rm -rf "$STATE" "$B" 2>/dev/null || true
 mkdir -p "$STATE" "$B/rootfs" || fail "mkdir bundle failed"
+# v8: a fresh generation must not read the PREVIOUS generation's dp file
+# (/run/sysnet is a host tmpfs that survives execd respawns): a stale fail/old
+# file would hand the watchdog a head start toward DP_LIMIT. The new payload's
+# dpmon recreates it within 10 s; until then its absence is startup grace
+# (DPHAVEN=0 in dpark_check), not darkness.
+rm -f "$DPF" 2>/dev/null || true
 
 # --- 3. bundle ------------------------------------------------------------------
 # Minimal bundle rootfs. The two payloads are musl-DYNAMIC
@@ -546,6 +579,13 @@ fi
 # file server only (busybox httpd -h), no shell, no upload: `curl
 # http://<ip>:9004/log` reads the supervisor's live log from the wire.
 ( while :; do /bin/busybox httpd -p 0.0.0.0:9004 -h /run/sysnet >>/run/httpd.log 2>&1; sleep 2; done ) &
+# v8: data-plane monitor (see sysnet-dpmon.sh above). Background co-tenant
+# like the others: it probes external egress, so until the lease lands the
+# connect fails and the file says "fail" — that is startup, not a wedge
+# (the armed dpark_check model ignores dark until the first healthy pass).
+# Starting it here (before the key-wait) means the file exists from the
+# earliest useful moment.
+( /bin/busybox sh /sysnet-dpmon.sh >>/run/dpmon.log 2>&1 ) &
 i=0
 while [ ! -s /root/.ssh/authorized_keys ] && [ "$i" -lt 300 ]; do
   sleep 1
@@ -629,6 +669,52 @@ fi
 # not from a periodic in-sandbox wire probe.
 EOF
 chmod 755 "$R/sysnet-probe.sh" 2>/dev/null || true
+# v8: the data-plane monitor (see the DP_* globals). A plain background
+# process INSIDE the sandbox — deliberately NOT a runsc exec (the v5 wedge
+# vector was the exec RPC channel; a background child wedging costs nothing,
+# it just stops updating the file). ONE probe: a real external TCP connect
+# to 8.8.8.8:443. It is a ROUND TRIP — the SYN goes OUT the uplink (TX path:
+# netstack -> wire) and the SYN-ACK must come BACK IN (RX path: wire ->
+# redirect socket -> netstack). So it catches every wedge mode the wire data
+# shows (TX wedge, RX fill-ring stall, sockmap drop): any of them breaks the
+# round trip -> the connect fails or hangs. A HANG is the expected wedge
+# signature (nc -w does NOT bound a blocked connect, pitfall 20) — a hung
+# dpmon stops writing -> the file goes STALE -> the kernel-side supervisor
+# counts dark -> respawn. Staleness is the bound, not the probe.
+# EGRESS-ONLY (no SELF :443 probe): egress is a superset signal. It has no
+# co-tenant dependency (a SELF probe to bootproofd:443 would false-dark while
+# bootproofd is still retrying at boot) and it tests the actual WIRE path in
+# both directions (a SELF connect only tests the netstack's local loopback).
+# A 120 s continuous-dark threshold (DP_LIMIT) also absorbs any transient
+# upstream blip to 8.8.8.8 (a false respawn is cheap + safe; teardown +
+# recreate is the only in-guest reset anyway).
+# The result file is /run/sysnet/dp — the SAME bind-mounted dir the kernel
+# uses for the supervisor log (v7-obs: writes through this bind are visible
+# on both sides, proven on the wire). Format: "<epoch> <pass|fail>".
+cat > "$R/sysnet-dpmon.sh" <<'EOF'
+#!/bin/busybox sh
+DP=/run/sysnet/dp
+while :; do
+  # pass = AT LEAST ONE external target reachable (a single upstream outage
+  # must not false-trigger the watchdog; a wedge breaks the path to ALL of
+  # them). nc -w does not bound a blocked connect (pitfall 20): a wedge that
+  # hangs the connect hangs dpmon here -> the file goes stale -> dark.
+  if /bin/busybox nc -z -w 8 8.8.8.8 443 2>/dev/null \
+    || /bin/busybox nc -z -w 8 1.1.1.1 443 2>/dev/null; then
+    res=pass
+  else
+    res=fail
+  fi
+  # Atomic publish (tmp + rename): the supervisor and the :9004 httpd read
+  # $DP from other processes — a plain `> "$DP"` (truncate + write) has a
+  # window where a concurrent reader sees an empty file. Empty is harmless
+  # (dpark_check treats it as "no fresh pass" and the next read resets), but
+  # rename(2) closes it for free.
+  echo "$(date -u +%s) $res" > "$DP.tmp" 2>/dev/null && mv -f "$DP.tmp" "$DP" 2>/dev/null
+  sleep 10
+done
+EOF
+chmod 755 "$R/sysnet-dpmon.sh" 2>/dev/null || true
 
 # --- 4. pin the redirect program on the uplink (loader) -------------------------
 # xdp_loader loads + pins program/sockmap/link under /sys/fs/bpf/eth0/ and
@@ -778,6 +864,34 @@ run_probe() {
     exit 1
   }
 }
+# v8: data-plane dark check (see the DP_* globals). Reads the dp file the
+# sandbox's dpmon writes (bind-mounted /run/sysnet) — NO runsc, NO netstack,
+# so THIS path cannot wedge (the whole point: the process-based is_running
+# cannot see a wedged-but-alive netstack, but a stale/fail dp file can).
+# Armed model (DPHAVEN): a FRESH "pass" (< DP_STALE s old) sets DPHAVEN=1
+# and returns light; with no fresh pass the check returns light until the
+# face has been healthy at least once (boot: dpmon writes "fail" for tens of
+# seconds before the lease/egress land — that is not a wedge, it is startup)
+# and dark afterwards (healthy -> sustained dark = the terminal state the
+# Oct 3 wire data showed, 23 h unrecovered). File format "<epoch> <pass|
+# fail>"; the epoch (not the fs mtime) is the age source, so a bind-mount
+# mtime quirk can't mask staleness. Returns 0=light, 1=dark.
+dpark_check() {
+  dp_now=$(date -u +%s)
+  dp_e=""; dp_st=""
+  [ -s "$DPF" ] && read -r dp_e dp_st < "$DPF" 2>/dev/null || true
+  case "$dp_e" in
+    ''|*[!0-9]*) : ;;  # corrupt/unreadable -> fall through to the armed check
+    *)
+      [ "$dp_st" = "pass" ] && [ $(( dp_now - dp_e )) -le "$DP_STALE" ] && {
+        DPHAVEN=1
+        return 0
+      }
+      ;;
+  esac
+  [ "$DPHAVEN" -eq 0 ] && return 0   # never been healthy: startup grace
+  return 1                           # was healthy, no fresh pass: dark
+}
 i=0
 while [ "$i" -lt "$SBX_WAIT" ]; do
   is_running && break
@@ -856,6 +970,20 @@ while [ "$i" -lt 360000 ]; do
   else
     FAIL=$((FAIL + 1))
     [ "$FAIL" -ge 3 ] && { log "sandbox dead (3 consecutive failed polls)"; exit 1; }
+  fi
+  # v8: data-plane watchdog (see the DP_* globals + dpark_check). This is the
+  # liveness signal that is_running CANNOT provide: a wedged-but-alive
+  # netstack still reports "running" to runsc list (the Oct 3 terminal-dark
+  # failure — 23 h un-recovered), but its dp file goes stale/fail. DP_LIMIT
+  # consecutive dark checks (120 s of continuous dark) => respawn.
+  if dpark_check; then
+    DPARK=0
+  else
+    DPARK=$((DPARK + 1))
+    [ "$DPARK" -ge "$DP_LIMIT" ] && {
+      log "data plane dark $DPARK consecutive checks (>= $((DPARK * 5)) s continuous; loop period can stretch with wedged runsc calls; last: $(cat "$DPF" 2>/dev/null)): respawning the sandbox (exit -> teardown)"
+      exit 1
+    }
   fi
   i=$((i + 1))
   # periodic netstack diagnostic (every ~20 s): the only path from the sandbox
