@@ -337,6 +337,15 @@ cp -f /usr/bin/sshdt       "$R/bin/sshdt"       || fail "copy sshdt failed"
 # already staged above; PT_INTERP /lib/ld-musl-x86_64.so.1 is present.
 cp -f /usr/bin/bootproofd  "$R/bin/bootproofd"  || fail "copy bootproofd failed"
 chmod 755 "$R/bin/bootproofd" 2>/dev/null || true
+# enclavectl (sn-7 provisioner-gap fix): the netstack is the ONLY stack with
+# egress (the kernel netns is offline), so the IMDS user-data fetch must run
+# INSIDE this sandbox. Its two NEEDED libs (libc.musl + libunwind) + the
+# musl loader are already staged above for bootproofd; PT_INTERP
+# /lib/ld-musl-x86_64.so.1 is present. It atomic-drops the blob to
+# /run/enclaved/drop (bound rw above); the host enclaved daemon picks it up
+# and writes /root/.ssh/authorized_keys.
+cp -f /usr/bin/enclavectl  "$R/bin/enclavectl"  || fail "copy enclavectl failed"
+chmod 755 "$R/bin/enclavectl" 2>/dev/null || true
 # /home/bootproof mount point: a real dir in the (readonly) bundle rootfs —
 # the gofer O_CREATs a missing bind target and dies on a readonly fs (P4
 # rule). /run/enclaved needs no placeholder: /run is the writable tmpfs, so
@@ -442,6 +451,14 @@ if echo "$A" | grep 'inet ' | grep -qv "$LLA"; then
   if [ -n "$GW" ]; then
     /bin/busybox ip -4 route replace default via "$GW" dev eth0 2>/dev/null || true
     echo "sysnet-payload: default route re-added with dev: $(/bin/busybox ip -4 route show 2>/dev/null | grep -E '^default')"
+    # IMDS host-route (provisioner-gap fix, pitfall 17): the LLA 169.254.2.2/16
+    # makes IMDS 169.254.169.254 ON-LINK to the netstack -> it ARPs for it and
+    # never gets an answer (IMDS is hypervisor-virtualized, not L2-reachable)
+    # -> the in-sandbox IMDS fetch hangs. A more-specific /32 via the GW forces
+    # L3 through the GW MAC (already pinned permanent before the XDP attach)
+    # so the in-netstack enclavectl below can reach the metadata service.
+    /bin/busybox ip -4 route replace 169.254.169.254 via "$GW" dev eth0 2>/dev/null \
+      || echo "sysnet-payload: WARNING: IMDS host-route add failed" >&2
   else
     echo "sysnet-payload: WARNING: no gateway in /run/dhcp.log; default route may lack a device (egress broken)" >&2
   fi
@@ -461,6 +478,62 @@ fi
 # 0.0.0.0:443, --state /home/bootproof, --socket /run/enclaved/sock — both
 # bound into this sandbox above).
 ( while :; do /bin/bootproofd >>/run/bootproofd.log 2>&1; sleep 2; done ) &
+# provisioner-gap fix (Oct 3 wire finding: 330 s death/respawn loop on the
+# live wire — the kernel-side provisioner's --network=host netns is the one
+# sn-7 took OFFLINE, so its IMDS fetch has no egress, authorized_keys never
+# lands, and the key-wait below expires every generation). The netstack is
+# the ONLY stack with egress, so the fetch runs HERE: enclavectl provision
+# (no args; staged above) does the full IMDSv2+IMDSv1 chain (bounded 120 s
+# deadline, no unbounded connects) with the seed fallback (QEMU), then
+# atomic-drops the blob to /run/enclaved/drop (bound rw above) — the host
+# enclaved daemon (kernel-side, no egress needed) picks it up within 2 s and
+# writes /root/.ssh/authorized_keys. Backgrounded like the other co-tenants:
+# a one-shot, its own deadline bounds it; the 300 s key-wait below already
+# covers its runtime. stdout/stderr -> /run/enclavectl.log (the sandbox stdio
+# is discarded by runsc start). FAIL-OPEN: if it never lands the drop, the
+# key-wait expires and the sandbox respawns (the pre-fix behavior).
+#
+# SOURCE-IP FIX (Oct 3 wire root cause, 142-generation :9004 capture + gvisor
+# source): the LLA 169.254.2.2/16 is a permanent eth0 primary (the re-DORA
+# bootstrap). gvisor's source selection (acquirePrimaryAddressRLocked,
+# addressable_endpoint_state.go) picks the NIC primary with the LONGEST
+# matching prefix for the destination, so for a dest in 169.254.0.0/16 (IMDS)
+# the LLA (16-bit match) BEATS the lease (0-bit) and EVERY IMDS SYN goes out
+# the wire sourced from 169.254.2.2 -- a link-local that is NOT the ENI's
+# IP. The AWS VPC/metadata path drops it (deterministic: 142/142 generations
+# with the correct via-GW route present; route selection is
+# longest-prefix-first so the L3 path was already right). QEMU never
+# reproduces it: slirp does not validate source IPs; the VPC does. The
+# source is chosen from the NIC's primary ADDRESSES, independent of the route
+# table, so the only levers are (a) remove the LLA primary or (b) a source
+# hint. The source-hint path is DEAD for this payload: the netstack input
+# parser (localRoute, netstack/stack.go) honors RTA_SRC (-> SourceHint, which
+# "takes precedent over prefix matching" in acquirePrimaryAddressRLocked), but
+# busybox 1.38's `ip route src ADDR` emits RTA_PREFSRC (iproute.c:414; its
+# RTA_SRC branch is #if 0 dead code) and RTA_PREFSRC falls into the parser's
+# default -> ErrNotSupported ("RTNETLINK answers: Not supported", proven live
+# in the sandbox). iproute2 (the one emitter that sends RTA_SRC) is not in the
+# sysnet sandbox rootfs (/usr/sbin/ip not found). So the fix is to make the
+# LLA not a primary for the fetch's duration: remove it, run enclavectl,
+# re-add it. The re-DORA path re-adds the LLA at the top of every payload run
+# anyway (see above), so a crash inside the window is not a permanent loss.
+( /bin/busybox ip -4 addr del "$LLA"/16 dev eth0 2>/dev/null || true
+  /bin/enclavectl provision >>/run/enclavectl.log 2>&1 &
+  # Bounded wait for enclavectl (the v5 discipline: background + poll /proc,
+  # never waitpid a child that could wedge; brush's `wait <pid>` is broken
+  # anyway, rc 99). enclavectl's own 120 s deadline is the expected bound;
+  # the 150 s poll is the kill fallback if it ever exceeds it. `pgrep -x`
+  # matches comm exactly (the subshell's comm is "sh", never self-matches).
+  j=0
+  while /bin/busybox pgrep -x enclavectl >/dev/null 2>&1; do
+    sleep 1
+    j=$((j + 1))
+    if [ "$j" -ge 150 ]; then /bin/busybox pkill -9 -x enclavectl 2>/dev/null || true; break; fi
+  done
+  # Re-add the LLA no matter how enclavectl exited (fail-open re-DORA).
+  # EEXIST (a respawn already re-added it) is harmless -- || true.
+  /bin/busybox ip -4 addr add "$LLA"/16 dev eth0 2>/dev/null || true
+) &
 # v7 obs channel (Oct 2 wire finding): the serial console is NOT a reliable
 # window into the supervisor — on the live wire the console froze at
 # 40206 B (below the 64KB cap) for 40+ min while the sandbox/netstack stayed
@@ -522,6 +595,16 @@ echo "    :443 banner (3 bytes, hex):"
 /bin/busybox nc -w 3 "$IP" 443 </dev/null 2>/dev/null | head -c 3 | od -An -tx1 | sed 's/^/      /' || echo "      (nc failed)"
 K=/root/.ssh/authorized_keys
 if [ -s "$K" ]; then echo "  [sbx] authorized_keys: present ($(wc -c < "$K") bytes)"; else echo "  [sbx] authorized_keys: ABSENT (sshdt not started yet)"; fi
+echo "  [sbx] enclavectl provision (in-netstack provisioner):"
+/bin/busybox pgrep -x enclavectl >/dev/null 2>&1 && echo "    running (IMDS chain in progress; 120 s deadline)" || echo "    done (or not started)"
+# Source-IP state (Oct 3 wire root cause, 142-gen :9004 capture): WITH the LLA
+# present the netstack source-selects it for 169.254.0.0/16 dests (longest
+# prefix) -> IMDS SYNs go out from a non-ENI link-local and the VPC drops them.
+# The fix removes the LLA for the fetch's duration; report which state now.
+/bin/busybox ip -4 -o addr show eth0 2>/dev/null | grep -q "169.254.2.2" && echo "    LLA present (IMDS SYNs would be LLA-sourced -- pre-fix state)" || echo "    LLA removed (IMDS SYNs lease-sourced)"
+/bin/busybox tail -n 6 /run/enclavectl.log 2>/dev/null | sed 's/^/    /' || echo "    (no /run/enclavectl.log)"
+D=/run/enclaved/drop
+if [ -s "$D" ]; then echo "    drop: pending ($(wc -c < "$D") bytes)"; else echo "    drop: absent (applied, rejected, or not yet delivered)"; fi
 IP=$(/bin/busybox ip -4 -o addr show eth0 2>/dev/null | awk '{print $4}' | cut -d/ -f1)
 if [ -n "$IP" ]; then
   echo "  [sbx] in-netstack sshdt banner from $IP:22 (first 40 bytes):"
