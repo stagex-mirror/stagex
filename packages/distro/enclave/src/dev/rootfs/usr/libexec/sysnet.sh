@@ -193,6 +193,30 @@ PLOG=/home/sysnet-events.log # v9: PERSISTENT event log (LUKS /home on AWS;
                              # post-mortem must live here (best-effort writes;
                              # a failed write before /home is mounted is
                              # harmless).
+# v10: BPF counter sampling (the Oct 4 flap discriminator). The v4 redirect
+# object (packages/user/gvisor/bpf/redirect.c) carries a second ARRAY map,
+# bpf_counts = {u32 pass, u32 redirect}; xdp-5 (xdp_loader) pins it at
+# $PIN/redirect_counts. Both counters are MONOTONIC since the program load:
+#   pass     = frames XDP_PASSed to the kernel (the empty-sockmap guard fired
+#              — bpf_map_lookup_elem(&sock_map) returned NULL);
+#   redirect = frames bpf_redirect_map'd into the sentry's AF_XDP ring.
+# count_sample (below) reads them every ~20 s with the kernel-side bpfcount
+# reader and logs the DELTAS. The discriminator: during a host-visible dark
+# window, pass climbing (redirect flat) => inbound frames are guard-PASSED
+# into the offline kernel => the sockmap lost its socket entry (gvisor sentry
+# socket lifecycle — the bug, with the in-kernel proof); redirect climbing
+# (pass flat) => inbound frames ARE reaching the sentry ring and the drop is
+# ring/netstack-side. Kernel-side read (a bpf(2) syscall) — no runsc, no
+# netstack, nothing that can wedge; best-effort: a missing pin (v3 object
+# or pre-attach) just logs one "absent" line.
+BPCOUNT=/usr/bin/bpfcount
+BPSTAT=/run/sysnet/bpstat     # v10: previous sample ("pass redirect"); /run/
+                             # sysnet is the host tmpfs bind — persists across
+                             # sandbox respawns within a boot. Cleared in
+                             # teardown (the pin dies with the program, so
+                             # the counters restart at 0 and a stale sample
+                             # would yield a bogus negative delta).
+BPSEEN=0                     # v10: 1 once "absent" has been logged (noise cap)
 
 # v6: writes go to the tmpfs log file, never to the serial (a stalled
 # serial capture must not be able to block the supervisor). The detached
@@ -300,6 +324,10 @@ teardown() {
   done
   log "teardown done"
   plog "teardown done (exit path; execd respawns)"
+  # v10: the pinned counters die with the program; drop the previous sample
+  # so the next generation's first sample reports absolute values, not a
+  # negative delta.
+  rm -f "$BPSTAT" 2>/dev/null || true
   tailf_cleanup
 }
 trap teardown EXIT
@@ -388,6 +416,7 @@ mkdir -p "$STATE" "$B/rootfs" || fail "mkdir bundle failed"
 # dpmon recreates it within 10 s; until then its absence is startup grace
 # (DPHAVEN=0 in dpark_check), not darkness.
 rm -f "$DPF" 2>/dev/null || true
+rm -f "$BPSTAT" 2>/dev/null || true   # v10: fresh generation, fresh counters
 
 # --- 3. bundle ------------------------------------------------------------------
 # Minimal bundle rootfs. The two payloads are musl-DYNAMIC
@@ -987,6 +1016,51 @@ dpark_check() {
   }
   return 1                           # was healthy, no fresh pass: dark
 }
+# v10: sample the v4 BPF counter map (see the BPCOUNT globals). Kernel-side
+# read only -- bpfcount does a bpf(2) BPF_MAP_LOOKUP_ELEM on the pinned
+# redirect_counts map; no runsc, no netstack, nothing that can wedge. Called
+# every liveness iteration (~5 s) so the per-5 s pass/redirect deltas line up
+# with the dp watchdog's timeline and the host's dark-window probe. Logs the
+# DELTAS to $LOGF (tmpfs, forwarder + :9004): the discriminator is DIRECTIONAL
+# (which counter moves during a dark), not exact. Best-effort: a missing pin
+# (v3 object, or pre-attach) logs a single "absent" line (BPSEEN cap) and
+# never blocks or fails the supervisor.
+count_sample() {
+  [ -x "$BPCOUNT" ] || return 0
+  bp_cur=$("$BPCOUNT" "$PIN/redirect_counts" 2>/dev/null) || bp_cur=""
+  # bpfcount emits "pass redirect" (two space-separated u32s). Validate the
+  # SPACE-SPLIT halves are all-digits: the whole string is NOT (it has a
+  # space), so the old `*[!0-9]*`-on-whole-string check misclassified every
+  # valid reading as "absent".
+  bp_p1=${bp_cur% *}; bp_r1=${bp_cur#* }
+  case "$bp_p1$bp_r1" in
+    ''|*[!0-9]*)
+      # a space-free bp_cur (e.g. empty or a bare token) or a non-numeric
+      # half -> treat as absent
+      [ "$BPSEEN" -eq 0 ] && { log "  [bp] redirect_counts absent (v3 object or not attached yet)"; BPSEEN=1; }
+      return 0;;
+  esac
+  BPSEEN=1
+  bp_prev=""
+  [ -s "$BPSTAT" ] && bp_prev=$(cat "$BPSTAT" 2>/dev/null)
+  case "$bp_prev" in
+    '')
+      : ;;   # first sample: no delta yet
+    *)
+      bp_p0=${bp_prev% *}; bp_r0=${bp_prev#* }
+      case "$bp_p0$bp_r0" in
+        *[!0-9]*) log "  [bp] counters reset (pass=$bp_p1 redirect=$bp_r1 abs)";;
+        *)
+          bp_dp=$(( bp_p1 - bp_p0 )); bp_dr=$(( bp_r1 - bp_r0 ))
+          if [ "$bp_dp" -lt 0 ] || [ "$bp_dr" -lt 0 ]; then
+            log "  [bp] counters reset (pass=$bp_p1 redirect=$bp_r1 abs)"
+          else
+            log "  [bp] +$bp_dp pass / +$bp_dr redirect (abs $bp_p1/$bp_r1)"
+          fi;;
+      esac;;
+  esac
+  echo "$bp_cur" > "$BPSTAT" 2>/dev/null || true
+}
 i=0
 while [ "$i" -lt "$SBX_WAIT" ]; do
   is_running && break
@@ -1133,6 +1207,10 @@ while [ "$i" -lt 360000 ]; do
   # key landing, and the in-netstack sshdt banner. BOUNDED (run_probe) so a
   # hung probe can never freeze the liveness loop or the console again.
   [ $((i % 4)) -eq 0 ] && is_running && run_probe
+  # v10: sample the v4 BPF pass/redirect counters every liveness iteration
+  # (~5 s) -- the flap discriminator (see count_sample). Kernel-side, cannot
+  # wedge; a missing pin is a single logged "absent", never a stall.
+  count_sample
 done
 log "supervisor exit (liveness horizon reached; unit will respawn)"
 exit 0

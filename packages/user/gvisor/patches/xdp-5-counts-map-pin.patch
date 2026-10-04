@@ -1,0 +1,128 @@
+--- a/tools/xdp/cmd/redirect_host.go
++++ b/tools/xdp/cmd/redirect_host.go
+@@ -46,6 +46,13 @@
+ 	return filepath.Join(RedirectPinDir(iface), "redirect_ip_map")
+ }
+ 
++// RedirectCountsPath returns the path where the v4 diagnostic counter map
++// (bpf_counts: pass/redirect frame counters) is pinned, if the loaded object
++// carries it.
++func RedirectCountsPath(iface string) string {
++	return filepath.Join(RedirectPinDir(iface), "redirect_counts")
++}
++
+ // RedirectProgramPath returns the path where the eBPF program will be pinned
+ // when xdp_loader is run against iface.
+ func RedirectProgramPath(iface string) string {
+@@ -123,6 +130,7 @@
+ 		mapPath:     RedirectMapPath(iface.Name),
+ 		programPath: RedirectProgramPath(iface.Name),
+ 		linkPath:    RedirectLinkPath(iface.Name),
++		countsPath:  RedirectCountsPath(iface.Name),
+ 	})
+ }
+ 
+@@ -134,12 +142,13 @@
+ 	mapPath     string
+ 	programPath string
+ 	linkPath    string
++	countsPath  string
+ }
+ 
+ func installProgramAndMap(opts installProgramAndMapOpts) error {
+ 	// User just wants to unpin things.
+ 	if opts.unpin {
+-		return unpin(opts.mapPath, opts.programPath, opts.linkPath)
++		return unpin(opts.mapPath, opts.programPath, opts.linkPath, opts.countsPath)
+ 	}
+ 
+ 	// Load into the kernel.
+@@ -148,21 +157,26 @@
+ 		return fmt.Errorf("failed to load spec: %v", err)
+ 	}
+ 
+-	var objects struct {
++	// Load into the kernel as a full collection so the v4 diagnostic
++	// counter map (bpf_counts, if present in the object) is also loaded
++	// and can be pinned for the bpfcount reader. A v3 object without the
++	// counter map loads fine; its .Maps simply lacks the entry.
++	coll, err := ebpf.NewCollection(spec)
++	if err != nil {
++		return fmt.Errorf("failed to load collection: %v", err)
++	}
++	defer coll.Close()
++
++	objects := struct {
+ 		Program *ebpf.Program `ebpf:"xdp_prog"`
+ 		SockMap *ebpf.Map     `ebpf:"sock_map"`
++	}{
++		Program: coll.Programs["xdp_prog"],
++		SockMap: coll.Maps["sock_map"],
+ 	}
+-	if err := spec.LoadAndAssign(&objects, nil); err != nil {
+-		return fmt.Errorf("failed to load program: %v", err)
++	if objects.Program == nil || objects.SockMap == nil {
++		return fmt.Errorf("redirect object is missing xdp_prog or sock_map")
+ 	}
+-	defer func() {
+-		if err := objects.Program.Close(); err != nil {
+-			log.Printf("failed to close program: %v", err)
+-		}
+-		if err := objects.SockMap.Close(); err != nil {
+-			log.Printf("failed to close sock map: %v", err)
+-		}
+-	}()
+ 
+ 	attachedLink, cleanup, err := attach(objects.Program, opts.iface)
+ 	if err != nil {
+@@ -181,6 +195,18 @@
+ 	}
+ 	log.Printf("Pinned map at %s", opts.mapPath)
+ 
++	// Pin the v4 diagnostic counter map (bpf_counts), if the object carries
++	// it. Best-effort: a v3 object without the map loads and pins fine, it
++	// just has no counters. The kernel-side supervisor tolerates a missing
++	// redirect_counts pin (bpfcount exits non-zero, the probe logs nothing).
++	if countsMap, ok := coll.Maps["bpf_counts"]; ok && countsMap != nil {
++		if err := countsMap.Pin(opts.countsPath); err != nil {
++			log.Printf("WARNING: failed to pin bpf_counts map at %s: %v", opts.countsPath, err)
++		} else {
++			log.Printf("Pinned counts map at %s", opts.countsPath)
++		}
++	}
++
+ 	// Pin the program at /sys/fs/bpf/<device name>/program.
+ 	if err := objects.Program.Pin(opts.programPath); err != nil {
+ 		return fmt.Errorf("failed to pin program at %s", opts.programPath)
+@@ -197,7 +223,7 @@
+ 	return nil
+ }
+ 
+-func unpin(mapPath, programPath, linkPath string) error {
++func unpin(mapPath, programPath, linkPath, countsPath string) error {
+ 	// Try to unpin both the map and program even if only one is found.
+ 	mapErr := func() error {
+ 		pinnedMap, err := ebpf.LoadPinnedMap(mapPath, nil)
+@@ -232,5 +258,21 @@
+ 		log.Printf("Unpinned link at %s", linkPath)
+ 		return nil
+ 	}()
+-	return errors.Join(mapErr, programErr, linkErr)
++	// Best-effort unpin of the v4 diagnostic counter map (a v3 object has
++	// no pin here).
++	countsErr := func() error {
++		if _, statErr := os.Stat(countsPath); statErr != nil {
++			return nil
++		}
++		pinnedMap, err := ebpf.LoadPinnedMap(countsPath, nil)
++		if err != nil {
++			return fmt.Errorf("failed to load pinned map at %s for unpinning: %v", countsPath, err)
++		}
++		if err := pinnedMap.Unpin(); err != nil {
++			return fmt.Errorf("failed to unpin map %s: %v", countsPath, err)
++		}
++		log.Printf("Unpinned map at %s", countsPath)
++		return nil
++	}()
++	return errors.Join(mapErr, programErr, linkErr, countsErr)
+ }

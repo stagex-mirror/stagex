@@ -11,7 +11,8 @@ program and this tree's `redirect_host_ebpf.o`.
 | stock (go-branch prebuilt, `fetch/gvisor-…/tools/xdp/cmd/bpf/`) | `c41a89a00cb92e4c352ef05a3209952e79e04e0b55a9390e1a1820acbfd2b67d` |
 | custom v1 (bidirectional :22) | `5ed1c528bba01bfbcb928fe40d5b993e0bac45f3a1f5ee24f402275496d700ca` |
 | custom v2 (v1 + sn-6e empty-sockmap guard) | `566784adcfe73d57e1ae389a865acdd3eb3b7317f25193cebecafe27814eae17` |
-| custom v3 (sn-7 redirect-all, no inspection, SHIPPED) | `80ac96fbedc2976600085fa6b312f1855b739a5986302d2052cdc81f3da38860` |
+| custom v3 (sn-7 redirect-all, no inspection) | `80ac96fbedc2976600085fa6b312f1855b739a5986302d2052cdc81f3da38860` |
+| custom v4 (v3 + diagnostic counter map, SHIPPED) | `ad656313c76f3c38444752fa8328676e794e28335aeb161324dbe7d3bc179fc2` |
 
 All objects: same map (`XSKMAP`, key 4 / value 4, max 1 entry), same symbols
 (`xdp_prog`, `sock_map`), same inlined `bpf_redirect_map` call (helper id
@@ -235,3 +236,60 @@ even the immediate matches; only the absolute target address differs).
 
 3x byte-deterministic (pallet clang 22.1.8, clean source dir):
 `80ac96fbedc2976600085fa6b312f1855b739a5986302d2052cdc81f3da38860`.
+
+## v4 — diagnostic counter map (the Oct 4 flap discriminator)
+
+v4 = v3 + a second map. The data path is UNCHANGED (the guard + the
+redirect, same branches, same call order); the only additions are two
+counters and the map that holds them:
+
+```c
+struct bpf_counts_val { unsigned int pass; unsigned int redirect; };
+
+struct bpf_map_def SEC("maps") bpf_counts = {
+  .type = 2,                /* BPF_MAP_TYPE_ARRAY */
+  .key_size = 4, .value_size = 8, .max_entries = 1,
+};
+```
+
+On the two exit paths, before returning, the program does
+`bpf_map_lookup_elem(&bpf_counts, &0)` and increments `pass` (the guard
+fired: `sock_map` lookup returned NULL) or `redirect`
+(`bpf_redirect_map` called). Both are monotonic since program load.
+
+Why in-program (not a kprobe/tracepoint): the counter must observe the
+EXACT decision point (guard-null vs redirect) with zero sampling error,
+and a per-frame `map_lookup_elem` on an ARRAY is a verifier-cheap direct
+access. A 32-bit increment is a plain read-modify-write in XDP context;
+concurrent-queue increments can lose counts under contention, but a LOSE
+cannot flip the direction (which counter moves), which is all the
+discriminator needs.
+
+Verifier surface: adds `map_lookup_elem` on a second map (the guest
+kernel already allows `map_lookup_elem` on XSKMAP, and ARRAY lookups are
+universally allowed). No new helpers, no memory writes to frame bytes,
+the counter-pointer result is only field-written (verifier-tracked,
+fixed-size value).
+
+Loader change (xdp-5): `xdp_loader` loads the object as a full
+`ebpf.NewCollection` (was `LoadAndAssign`) and pins `bpf_counts` at
+`/sys/fs/bpf/<iface>/redirect_counts` (best-effort: a v3 object without
+the map still loads + pins its sockmap/program/link). The pin dies with
+the program (teardown unpin + the program's own unload).
+
+Reader (bpfcount): a small static Go binary in the kernel-side rootfs
+(cilium/ebpf `LoadPinnedMap` + `LookupBytes(0)`, prints `pass
+redirect`). The sys-net supervisor samples it every liveness iteration
+(~5 s) and logs the DELTAS to the tmpfs log (`:9004` + the serial
+forwarder).
+
+The discriminator (the Oct 4 flap): during a host-visible dark window,
+`pass` climbing with `redirect` flat => inbound frames are
+guard-PASSED to the offline kernel => the sockmap LOST its socket entry
+(gvisor sentry AF_XDP socket lifecycle — the bug, with the in-kernel
+proof). `redirect` climbing with `pass` flat => inbound frames ARE
+reaching the sentry ring and the drop is ring/netstack-side.
+
+3x byte-deterministic (pallet clang 22.1.8, source dir with
+`redirect.c` + `bpf_helpers.h` + `bpf_endian.h`):
+`ad656313c76f3c38444752fa8328676e794e28335aeb161324dbe7d3bc179fc2`.

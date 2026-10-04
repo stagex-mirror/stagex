@@ -116,6 +116,13 @@ COPY --from=user-snpguest . /
 COPY --from=user-gvisor /usr/bin/runsc /usr/bin/runsc
 COPY --from=user-gvisor /usr/bin/xdp_loader /usr/bin/xdp_loader
 COPY --from=user-gvisor /usr/bin/gvisor-bin /usr/bin/gvisor-bin
+# bpfcount (v10, Oct 4 flap discriminator): the kernel-side reader for the v4
+# redirect diagnostic counter map (xdp_loader pins it at
+# /sys/fs/bpf/<iface>/redirect_counts; the sys-net supervisor samples it every
+# liveness iteration and logs the pass/redirect deltas — during a dark, pass
+# climbing vs redirect climbing tells whether inbound frames are guard-PASSED
+# to the offline kernel or reaching the sentry ring). Kernel-side only.
+COPY --from=user-gvisor /usr/bin/bpfcount /usr/bin/bpfcount
 # Host-side network stack for runsc: `runsc do`'s setupNet shells out to the
 # host `ip` (veth pairs) and `iptables` (NAT). The busybox `ip` applet is too
 # limited (no `ip link add veth`); iproute2's /usr/bin/ip overwrites it.

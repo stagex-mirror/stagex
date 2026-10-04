@@ -74,8 +74,10 @@ ADD patches/xdp-1-port-go-branch-api.patch /tmp/xdp-1.patch
 ADD patches/xdp-2-synchronous-configure.patch /tmp/xdp-2.patch
 ADD patches/xdp-3-loader-main.patch /tmp/xdp-3.patch
 ADD patches/xdp-4-kernel-offline-zero-addr.patch /tmp/xdp-4.patch
+ADD patches/xdp-5-counts-map-pin.patch /tmp/xdp-5.patch
 RUN patch -p1 -i /tmp/xdp-1.patch && patch -p1 -i /tmp/xdp-2.patch \
     && patch -p1 -i /tmp/xdp-3.patch && patch -p1 -i /tmp/xdp-4.patch \
+    && patch -p1 -i /tmp/xdp-5.patch \
     && rm -f /tmp/xdp-*.patch
 
 # Custom AF_XDP "redirect" program replacing the go-branch's prebuilt one (v3,
@@ -97,9 +99,17 @@ RUN patch -p1 -i /tmp/xdp-1.patch && patch -p1 -i /tmp/xdp-2.patch \
 # bpf_map_type enum and must not be trusted for this object). The build stage
 # has no BPF-capable clang, so the checked-in .o ships as the artifact, same
 # model as stock's checked-in prebuilt: byte-deterministic
-# (80ac96fbedc2976600085fa6b312f1855b739a5986302d2052cdc81f3da38860), 3x
-# verified. Reproduce: clang -O2 -target bpf -c bpf/redirect.c (any clang
-# emits these bytes: the program uses no external header at all).
+# (v4 = ad656313c76f3c38444752fa8328676e794e28335aeb161324dbe7d3bc179fc2), 3x
+# verified. Reproduce: clang -O2 -target bpf -c bpf/redirect.c (from a dir
+# containing redirect.c + bpf_helpers.h + bpf_endian.h, source named
+# redirect.c — the .strtab carries the source path).
+#
+# v4 ADDITION (Oct 4 flap discriminator): a second ARRAY map, bpf_counts
+# ({u32 pass, u32 redirect}), incremented on the two exit paths. xdp-5 pins
+# it at /sys/fs/bpf/<iface>/redirect_counts; the kernel-side bpfcount reader
+# (below) samples it every probe cycle. The ABI otherwise is unchanged from
+# v1..v3 (the XSKMAP sock_map, xdp_prog, and the inlined bpf_redirect_map
+# call), so runsc's redirect path needs no changes.
 # ADD bpf/redirect_host_ebpf.o tools/xdp/cmd/bpf/redirect_host_ebpf.o
 #
 # LOAD PATH (why the xdp_loader binary is the one that matters): the sys-net
@@ -116,6 +126,14 @@ RUN patch -p1 -i /tmp/xdp-1.patch && patch -p1 -i /tmp/xdp-2.patch \
 # first (sysnet.sh enforces: `[ -e $PIN/redirect_ip_map ] || fail`), which it
 # does. Both binaries embed the same file, so this one overwrite covers both.
 ADD bpf/redirect_host_ebpf.o tools/xdp/cmd/bpf/redirect_host_ebpf.o
+# bpfcount: the kernel-side reader for the v4 diagnostic counter map (the Oct
+# 4 flap discriminator). A tiny Go binary (cilium/ebpf LoadPinnedMap +
+# LookupBytes, stdlib only) that prints "pass redirect". Added to the gvisor
+# module tree as ./bpfcount so it builds against the module's own cilium/ebpf
+# v0.16.0 require and the pre-downloaded module cache (the build step runs
+# --network=none). Lands in the kernel-side rootfs (NOT the sandbox); the
+# sys-net supervisor runs it every probe cycle. Not on the sandbox boot path.
+ADD bpfcount/main.go bpfcount/main.go
 
 # Go env. On a scratch FROM the pallet-go defaults do NOT carry over, so the
 # proxy/sumdb must be set explicitly for the module download to work.
@@ -155,6 +173,14 @@ RUN --network=none <<-EOF
   go build -trimpath \
     -ldflags "-s -w" \
     -o /rootfs/usr/bin/xdp_loader ./tools/xdp
+  # bpfcount: the v4 counter-map reader (see the bpfcount/main.go note above).
+  # Static (CGO_ENABLED=0); reads /sys/fs/bpf/<iface>/redirect_counts and
+  # prints "pass redirect". Kernel-side only — the sys-net supervisor samples
+  # it every probe cycle for the Oct 4 flap discriminator. Not on the sandbox
+  # boot path.
+  go build -trimpath \
+    -ldflags "-s -w" \
+    -o /rootfs/usr/bin/bpfcount ./bpfcount
   # gvisor_sentry sidecar (the sentry is a STRICT requirement of runsc).
   go build -trimpath \
     -ldflags "-s -w" \

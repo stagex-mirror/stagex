@@ -1,6 +1,8 @@
 // Custom AF_XDP "redirect" program for the sn-7 sys-net sandbox (Qubes
 // sys-net face, full NIC ownership, kernel FULLY offline).
 //
+// v4 = v3 + a diagnostic counter map (the Oct 4 flap root-cause experiment).
+//
 // v3 is the maximally simple program: NO ethertype gate, NO IP header parse,
 // NO port tests. The netstack is the ONLY stack on the wire and it owns ARP
 // too — the sentry resolves the GW MAC (ARP requests go out the AF_XDP
@@ -22,7 +24,25 @@
 // The program never dereferences frame bytes, so no bounds check is needed;
 // every frame (ARP, IPv4, IPv6, ...) is handed to the sandbox as-is.
 //
-// Drop-in ABI vs the stock go-branch .o (unchanged from v1/v2):
+// v4 DIAGNOSTIC ADDITION (the counter map):
+//   bpf_counts: ARRAY[1] of {unsigned int pass, unsigned int redirect}
+//     index 0 = XDP_ACT_PASS (guard fired: sock_map lookup returned NULL)
+//     index 1 = XDP_ACT_REDIRECT (bpf_redirect_map call)
+// The loader pins it at /sys/fs/bpf/<iface>/redirect_counts and the
+// kernel-side supervisor samples it every probe cycle (a tiny `bpfcount`
+// reader). This is the Oct 4 flap discriminator: during a host-visible dark
+// window, if the PASS count climbs (and REDIRECT does not) while egress from
+// the netstack still works, the inbound frames are being guard-PASSED to the
+// offline kernel => the sockmap lost its socket entry (gvisor sentry socket
+// lifecycle). If REDIRECT climbs during the dark instead, the frames ARE
+// reaching the sentry's ring and the drop is ring/netstack-side.
+// Both counters are monotonic since program load; the supervisor logs
+// deltas. (Atomicity: a 32-bit increment in XDP context is a plain read-modify-
+// write; concurrent queue increments can lose counts under contention, but a
+// LOSE of counts cannot create a false pass/redirect attribution — the
+// discriminator is directional (which counter moves), not exact.)
+//
+// Drop-in ABI vs the stock go-branch .o (unchanged from v1..v3):
 //   - same map: legacy bpf_map_def, XSKMAP (byte 0x11 in the guest kernel),
 //     key4/val4/max1, section "maps";
 //   - same symbols: xdp_prog (section "xdp"), sock_map;
@@ -47,14 +67,42 @@ struct bpf_map_def SEC("maps") sock_map = {
   .flags = 0,
 };
 
+/* v4: the diagnostic counter map. ARRAY (type 2) of one 8-byte value. */
+struct bpf_counts_val {
+  unsigned int pass;
+  unsigned int redirect;
+};
+
+struct bpf_map_def SEC("maps") bpf_counts = {
+  .type = 2, /* BPF_MAP_TYPE_ARRAY */
+  .key_size = sizeof(unsigned int),
+  .value_size = sizeof(struct bpf_counts_val),
+  .max_entries = 1,
+  .flags = 0,
+};
+
 static int redirect(struct xdp_md *ctx)
 {
   // The sentry inserts its AF_XDP socket at key = ctx->rx_queue_index
   // (single-queue NIC: 0); bpf_redirect_map delivers the packet there.
   // Matches the stock program, which reads xdp_md+0x10 (rx_queue_index).
   unsigned int key = ctx->rx_queue_index;
-  if (bpf_map_lookup_elem(&sock_map, &key) == NULL)
-    return XDP_ACT_PASS; /* sn-6e guard: no socket -> kernel keeps the wire */
+  if (bpf_map_lookup_elem(&sock_map, &key) == NULL) {
+    /* sn-6e guard: no socket -> kernel keeps the wire */
+    unsigned int ckey = 0;
+    struct bpf_counts_val *cv =
+        (struct bpf_counts_val *)bpf_map_lookup_elem(&bpf_counts, &ckey);
+    if (cv)
+      cv->pass += 1;
+    return XDP_ACT_PASS;
+  }
+  {
+    unsigned int ckey = 0;
+    struct bpf_counts_val *cv =
+        (struct bpf_counts_val *)bpf_map_lookup_elem(&bpf_counts, &ckey);
+    if (cv)
+      cv->redirect += 1;
+  }
   return bpf_redirect_map(&sock_map, key, XDP_XSKB);
 }
 
