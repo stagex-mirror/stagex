@@ -142,6 +142,57 @@ DPHAVEN=0                    # v8: 1 once a FRESH "pass" has been observed. The
                              # transition: at boot dpmon writes "fail" (no
                              # lease/egress yet) for tens of seconds, and a
                              # slow boot must not count toward DP_LIMIT.
+# v9: ESCALATION (sn-7 wire data, Oct 4: i-000e5ccf2f8fefb35 sat terminally
+# dark 87 min (04:02->05:29 UTC, 222+ consecutive both-000 samples) and the
+# v8 respawn CLEARED NOTHING — the wedge is in KERNEL-SIDE NIC/AF_XDP/ENI
+# state that survives sentry death + sandbox recreation, so the exit-1 ->
+# teardown -> execd respawn re-binds a fresh AF_XDP socket onto the same
+# poisoned NIC and immediately re-wedges (a dark treadmill, no recovery
+# blips). The only proven recovery is a FULL GUEST REBOOT (the manual
+# `aws ec2 reboot-instances` at 05:29:59 cleared it in ~9 min; v7-obs's
+# 23 h dark was likewise reboot-clearable). v9 therefore escalates: a
+# SUSTAINED dark respawns the sandbox (one cheap chance); a SUSTAINED dark
+# that persists into the NEXT generation (the wedge outlived a full
+# teardown+respawn) does a full guest reboot.
+GEN_START=0                  # v9: epoch at THIS generation's start (set at the
+                             # supervisor-start line; each respawn is a new
+                             # supervisor process, so this resets per gen).
+DPBOOT=300                   # v9: BOOT DEADLINE. The v8 'armed' model (DPHAVEN)
+                             # never arms a generation that never passes egress
+                             # (no lease -> dpmon all-fail -> DPHAVEN=0 forever
+                             # -> the watchdog is unarmable -> infinite startup
+                             # grace). A generation that has had NO fresh pass
+                             # for 300 s is broken, not slow (a healthy gen
+                             # passes within seconds of its lease). This closes
+                             # the unarmable hole.
+ESCF=/run/sysnet/esc         # v9: escalation counter. /run/sysnet is the host
+                             # tmpfs (bind-mounted), so it PERSISTS across
+                             # sandbox respawns (teardown does not clear it) but
+                             # is WIPED on a full guest reboot (/run remounts)
+                             # — exactly the persistence the escalation needs.
+ESC_LIMIT=2                  # v9: after this many consecutive dark GENERATIONS
+                             # (i.e. the wedge outlived a full teardown+respawn
+                             # once), escalate from sandbox respawn to a full
+                             # guest reboot. 1 = respawn; 2nd consecutive dark
+                             # = reboot.
+RBOVR=/home/sysnet-reboot-overflow  # v9: reboot-loop guard, PERSISTENT across
+                             # reboots (LUKS /home on AWS; tmpfs on QEMU).
+                             # Counts consecutive reboots with no healthy
+                             # generation in between. A healthy gen clears it.
+RBOVR_LIMIT=3                # v9: after this many consecutive reboots without
+                             # a healthy period, STOP auto-rebooting (stay dark
+                             # + loud plog alarm) instead of looping forever.
+                             # An infinite reboot loop (guest reset every ~1-2
+                             # min, wiping LUKS/NitroTPM sessions) is a worse
+                             # liveness failure than a stable-dark + alarm.
+PLOG=/home/sysnet-events.log # v9: PERSISTENT event log (LUKS /home on AWS;
+                             # tmpfs on QEMU). The reboot that recovers a
+                             # terminal dark wipes /run (tmpfs) — the dp file,
+                             # the supervisor log, the esc counter all vanish
+                             # in the very event that recovers them. The
+                             # post-mortem must live here (best-effort writes;
+                             # a failed write before /home is mounted is
+                             # harmless).
 
 # v6: writes go to the tmpfs log file, never to the serial (a stalled
 # serial capture must not be able to block the supervisor). The detached
@@ -149,6 +200,24 @@ DPHAVEN=0                    # v8: 1 once a FRESH "pass" has been observed. The
 # the serial; if it stalls, the file still holds the truth.
 log()  { echo "sysnet: $*" >> "$LOGF" 2>/dev/null || true; }
 fail() { log "$*"; exit 1; }
+# v9: PERSISTENT event log (the post-mortem channel). /run (tmpfs) is wiped by
+# the very reboot that recovers a terminal dark, so the dp file + supervisor
+# log + esc counter all vanish in the recovery event. This log lives on /home
+# (LUKS on AWS, tmpfs on QEMU) and records the dpmon pass/fail transitions and
+# every supervisor start/teardown/escalation/reboot. BEST-EFFORT: every write
+# is `2>/dev/null || true` — /home may not be mounted yet at the first boot
+# lines, and a log write must NEVER block or fail the supervisor. Bounded to
+# the last 1 MiB (a long-lived disk must not fill the volume). A single line
+# per event (never the ~60-line probe dump — that stays in $LOGF).
+plog() {
+  printf '%s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" >> "$PLOG" 2>/dev/null || true
+  ps=$(wc -c < "$PLOG" 2>/dev/null)
+  [ -n "$ps" ] && [ "$ps" -gt 1000000 ] && {
+    tail -c 500000 "$PLOG" > "$PLOG.tmp" 2>/dev/null \
+      && cat "$PLOG.tmp" > "$PLOG" 2>/dev/null || true
+    rm -f "$PLOG.tmp" 2>/dev/null || true
+  }
+}
 
 # --- teardown (execd restarts us on non-zero exit) ----------------------------
 # v6: teardown MUST NOT wedge on the data plane. It is the EXIT-trap path for
@@ -230,6 +299,7 @@ teardown() {
     [ "$held" -eq 1 ] && { kill -9 $(ip netns pids "$ns" 2>/dev/null) 2>/dev/null; sleep 0.2; ip netns del "$ns" 2>/dev/null || true; }
   done
   log "teardown done"
+  plog "teardown done (exit path; execd respawns)"
   tailf_cleanup
 }
 trap teardown EXIT
@@ -263,6 +333,15 @@ log_trim() {
   }
 }
 mkdir -p /run/sysnet 2>/dev/null || true
+# v9: generation accounting. Each supervisor process is one generation: a
+# fresh process means a fresh sandbox + fresh AF_XDP bind. GEN_START is the
+# boot deadline's clock; the esc counter persists in /run/sysnet (host tmpfs
+# — survives teardown, wiped on a full guest reboot); the RBOVR guard
+# persists in /home (survives the reboot, so a reboot loop is detectable).
+GEN_START=$(date -u +%s)
+esc0=$(cat "$ESCF" 2>/dev/null); case "$esc0" in ''|*[!0-9]*) esc0=0;; esac
+rbovr=$(cat "$RBOVR" 2>/dev/null); case "$rbovr" in ''|*[!0-9]*) rbovr=0;; esac
+plog "supervisor start pid $$ esc=$esc0 rbovr=$rbovr"
 echo "=== sysnet supervisor start $(date -u +%Y-%m-%dT%H:%M:%SZ) pid $$ ===" >> "$LOGF" 2>/dev/null || true
 tailf_cleanup
 tail -f "$LOGF" >&2 2>/dev/null &
@@ -884,12 +963,28 @@ dpark_check() {
     ''|*[!0-9]*) : ;;  # corrupt/unreadable -> fall through to the armed check
     *)
       [ "$dp_st" = "pass" ] && [ $(( dp_now - dp_e )) -le "$DP_STALE" ] && {
+        [ "$DPHAVEN" -eq 0 ] && plog "dpmon first pass (egress healthy)"
         DPHAVEN=1
+        # v9: the wedge is gone (a fresh egress round trip just succeeded), so
+        # the escalation count for THIS boot is void and the reboot-loop guard
+        # clears too (a healthy period is exactly what RBOVR counts the ABSENCE
+        # of). esc is the host tmpfs — cleared here, and by the reboot itself.
+        echo 0 > "$ESCF" 2>/dev/null || true
+        rm -f "$RBOVR" 2>/dev/null || true
         return 0
       }
       ;;
   esac
-  [ "$DPHAVEN" -eq 0 ] && return 0   # never been healthy: startup grace
+  [ "$DPHAVEN" -eq 0 ] && {
+    # v9: BOOT DEADLINE (DPBOOT). The armed model (DPHAVEN) never arms a
+    # generation that never passes egress — no lease -> dpmon all-fail ->
+    # DPHAVEN stays 0 -> infinite startup grace, the watchdog unarmable.
+    # 300 s without a single fresh pass is broken, not slow (a healthy gen
+    # passes within seconds of its lease; the whole boot is well under 300 s).
+    # GEN_START is always > 0 (set at supervisor start, date +%s).
+    [ $(( dp_now - GEN_START )) -ge "$DPBOOT" ] && return 1
+    return 0   # startup grace (under the deadline)
+  }
   return 1                           # was healthy, no fresh pass: dark
 }
 i=0
@@ -975,13 +1070,60 @@ while [ "$i" -lt 360000 ]; do
   # liveness signal that is_running CANNOT provide: a wedged-but-alive
   # netstack still reports "running" to runsc list (the Oct 3 terminal-dark
   # failure — 23 h un-recovered), but its dp file goes stale/fail. DP_LIMIT
-  # consecutive dark checks (120 s of continuous dark) => respawn.
+  # consecutive dark checks (120 s of continuous dark) => a recovery action.
+  #
+  # v9: ESCALATION (the Oct 4 wire data: i-000e5ccf2f8fefb35, 87 min terminal
+  # dark, the v8 respawn cleared NOTHING — 222 consecutive 000 samples, no
+  # recovery blips). The terminal wedge is in KERNEL-SIDE NIC/AF_XDP/ENI
+  # state: it survives sentry death + sandbox recreation, so a respawn
+  # re-binds a fresh AF_XDP socket onto the same poisoned NIC and
+  # immediately re-wedges. The only proven recovery is a FULL GUEST REBOOT
+  # (the manual reboot cleared it in ~9 min). Model: esc (host tmpfs —
+  # survives teardown, wiped by the reboot) counts consecutive dark
+  # generations. esc 1 = the wedge may be transient: one cheap respawn.
+  # esc >= ESC_LIMIT = it outlived a full teardown+respawn: reboot the
+  # guest. RBOVR (persistent /home — survives the reboot) caps consecutive
+  # reboots without a healthy period (reboot-loop guard).
   if dpark_check; then
     DPARK=0
   else
     DPARK=$((DPARK + 1))
     [ "$DPARK" -ge "$DP_LIMIT" ] && {
-      log "data plane dark $DPARK consecutive checks (>= $((DPARK * 5)) s continuous; loop period can stretch with wedged runsc calls; last: $(cat "$DPF" 2>/dev/null)): respawning the sandbox (exit -> teardown)"
+      esc=$(cat "$ESCF" 2>/dev/null); case "$esc" in ''|*[!0-9]*) esc=0;; esac
+      esc=$((esc + 1))
+      echo "$esc" > "$ESCF" 2>/dev/null || true
+      if [ "$esc" -ge "$ESC_LIMIT" ]; then
+        rbovr=$(cat "$RBOVR" 2>/dev/null); case "$rbovr" in ''|*[!0-9]*) rbovr=0;; esac
+        if [ $((rbovr + 1)) -gt "$RBOVR_LIMIT" ]; then
+          # v9: REBOOT-LOOP GUARD. rbovr+1 consecutive reboots with no
+          # healthy generation between them: STOP rebooting — a reboot storm
+          # (guest reset every ~2-4 min, wiping LUKS/NitroTPM sessions) is a
+          # worse liveness failure than a stable-dark + a loud, persistent
+          # alarm. Alarm to plog (/home, survives) + serial, then respawn
+          # (exit 1) so the watchdog stays armed: if any future generation
+          # goes healthy, dpmon's first pass clears RBOVR and normal
+          # operation resumes.
+          log "ALARM: reboot-loop guard — $((rbovr + 1)) consecutive reboots without a healthy period (last dp: $(cat "$DPF" 2>/dev/null)): NOT rebooting; staying dark + alarm (respawning to keep the watchdog armed)"
+          plog "ALARM reboot-loop guard: rbovr=$rbovr consecutive reboots, dark persists, no further reboots (respawn only)"
+          exit 1
+        fi
+        newrbovr=$((rbovr + 1))
+        echo "$newrbovr" > "$RBOVR" 2>/dev/null || true
+        plog "data plane dark $DPARK checks (esc=$esc >= $ESC_LIMIT, wedge outlived a full respawn): FULL GUEST REBOOT rbovr=$newrbovr/$RBOVR_LIMIT last=$(cat "$DPF" 2>/dev/null)"
+        log "data plane dark $DPARK consecutive checks (>= $((DPARK * 5)) s; esc=$esc/$ESC_LIMIT — the wedge outlived a full teardown+respawn): escalating to a FULL GUEST REBOOT (rbovr=$newrbovr/$RBOVR_LIMIT; last dp: $(cat "$DPF" 2>/dev/null))"
+        # Make the durable state (plog + rbovr on LUKS /home) hit the disk
+        # before the reset.
+        sync 2>/dev/null || true
+        # reboot -f = the reboot(2) syscall (RB_FORCE): it bypasses
+        # init/nit/execd entirely (root in the init ns has CAP_SYS_BOOT) and
+        # the kernel resets the VM — clearing the kernel-side NIC/AF_XDP/ENI
+        # state a sandbox respawn cannot reach. If it fails, fall through to
+        # the sandbox respawn (exit 1) — the guard above already consumed the
+        # attempt (safe direction: failing reboots spend guard budget).
+        reboot -f 2>/dev/null || log "reboot -f FAILED (rc=$?): falling back to sandbox respawn"
+        exit 1
+      fi
+      log "data plane dark $DPARK consecutive checks (>= $((DPARK * 5)) s continuous; last: $(cat "$DPF" 2>/dev/null)): respawning the sandbox (exit -> teardown) [esc=$esc/$ESC_LIMIT]"
       exit 1
     }
   fi
