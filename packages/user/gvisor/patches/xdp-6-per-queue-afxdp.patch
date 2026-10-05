@@ -1,0 +1,468 @@
+--- a/pkg/tcpip/link/xdp/endpoint_multi.go	1969-12-31 16:00:00.000000000 -0800
++++ b/pkg/tcpip/link/xdp/endpoint_multi.go	2026-10-05 11:43:58.574433759 -0700
+@@ -0,0 +1,246 @@
++// Copyright 2026 The gVisor Authors.
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//     http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++//go:build linux
++// +build linux
++
++// xdp-6: per-queue AF_XDP endpoint. The package doc comment lives in
++// endpoint.go; this comment explains this file's addition.
++//
++// The single-queue endpoint (endpoint.go, New) is left untouched. This file
++// adds NewMulti, a link endpoint backed by ONE AF_XDP socket per RX queue.
++//
++// Why per-queue: the go-branch redirect path (runsc/sandbox/xdp.go) binds a
++// single socket at key 0 and TODOs "we can't assume there's only one queue"
++// (b/240191988). On a multi-queue NIC (e.g. the AWS c6a ENA, which runs the
++// redirect program per RX queue — ena_xdp_handle_buff) a single socket only
++// receives frames RSS-hashed to queue 0; every frame on queue >= 1 has no
++// sockmap entry and is guard-PASSED to the kernel (the sn-6e recovery path).
++// One socket per RX queue gives every queue a redirect target and uses all of
++// the NIC's receive parallelism.
++//
++// multiEndpoint wraps N independent per-queue endpoints (each created by the
++// existing New, which already takes a QueueID) and implements stack.LinkEndpoint
++// over them:
++//
++//   - Ingress: each sub-endpoint runs its own dispatch goroutine reading its
++//     own queue and feeding the shared network dispatcher — exactly the
++//     multi-FD pattern fdbased/endpoint.go uses (N per-FD goroutines, one
++//     dispatcher). DeliverNetworkPacket is safe for concurrent feeders.
++//   - Egress: WritePackets hashes each packet to a queue (pkt.Hash % N), the
++//     same per-connection affinity fdbased uses. TCP sets pkt.Hash to a
++//     per-connection txHash (so a connection stays on one queue — no reordering
++//     within a flow); UDP leaves it 0 (queue 0), identical to fdbased.
++//
++// multiEndpoint holds no mutable state of its own (the eps slice is immutable
++// after construction; all mutable state lives in the sub-endpoints, each with
++// its own mutex), so it needs no lock and is not savable (Link endpoints are
++// not savable). stack.LinkEndpoint has no Saver requirement, so no stateify
++// autogen is needed.
++package xdp
++
++import (
++	"fmt"
++
++	"gvisor.dev/gvisor/pkg/tcpip"
++	"gvisor.dev/gvisor/pkg/tcpip/header"
++	"gvisor.dev/gvisor/pkg/tcpip/stack"
++)
++
++// MultiOptions configure a per-queue AF_XDP endpoint.
++type MultiOptions struct {
++	// FDs are the AF_XDP sockets, one per RX queue.
++	FDs []int
++
++	// QueueIDs[i] is the RX queue that FDs[i] is attached to. len must equal
++	// len(FDs). In the redirect path the client binds the sockets, so this is
++	// informational there; it is used when Bind is true.
++	QueueIDs []uint32
++
++	// Address is the shared link (MAC) address for the endpoint.
++	Address tcpip.LinkAddress
++
++	// ClosedFunc is a function to be called when a queue's peer closes.
++	ClosedFunc func(tcpip.Error)
++
++	// SaveRestore, TXChecksumOffload, RXChecksumOffload propagate to each
++	// per-queue endpoint (same capabilities on every queue).
++	SaveRestore       bool
++	TXChecksumOffload bool
++	RXChecksumOffload bool
++
++	// InterfaceIndex is the interface index of the underlying device.
++	InterfaceIndex int
++
++	// Bind is true when the sentry binds the AF_XDP sockets (the tunnel path).
++	// In the redirect path the client binds, so this is false.
++	Bind bool
++
++	// GRO enables generic receive offload on each queue.
++	GRO bool
++}
++
++// NewMulti creates a link endpoint backed by one AF_XDP socket per RX queue.
++func NewMulti(opts *MultiOptions) (stack.LinkEndpoint, error) {
++	n := len(opts.FDs)
++	if n == 0 {
++		return nil, fmt.Errorf("NewMulti: no AF_XDP FDs")
++	}
++	if len(opts.QueueIDs) != n {
++		return nil, fmt.Errorf("NewMulti: QueueIDs (%d) != FDs (%d)", len(opts.QueueIDs), n)
++	}
++
++	eps := make([]stack.LinkEndpoint, n)
++	for i := 0; i < n; i++ {
++		ep, err := New(&Options{
++			FD:                opts.FDs[i],
++			ClosedFunc:        opts.ClosedFunc,
++			Address:           opts.Address,
++			SaveRestore:       opts.SaveRestore,
++			TXChecksumOffload: opts.TXChecksumOffload,
++			RXChecksumOffload: opts.RXChecksumOffload,
++			InterfaceIndex:    opts.InterfaceIndex,
++			Bind:              opts.Bind,
++			GRO:               opts.GRO,
++			QueueID:           opts.QueueIDs[i],
++		})
++		if err != nil {
++			return nil, fmt.Errorf("NewMulti: queue %d: %v", i, err)
++		}
++		eps[i] = ep
++	}
++	return &multiEndpoint{eps: eps}, nil
++}
++
++// multiEndpoint implements stack.LinkEndpoint over one AF_XDP socket per RX
++// queue. See the file header for the ingress/egress model.
++type multiEndpoint struct {
++	// eps is immutable after construction. All mutable state lives in the
++	// per-queue sub-endpoints (each with its own mutex).
++	eps []stack.LinkEndpoint
++}
++
++var _ stack.LinkEndpoint = (*multiEndpoint)(nil)
++
++// WritePackets partitions the batch across queues by the transport hash and
++// hands each partition to its per-queue endpoint. Each packet is written to
++// exactly one queue; the per-queue endpoint copies its partition to its UMEM
++// (no DecRef, as in the single endpoint), so the aggregate is refcount-neutral
++// and identical to a single endpoint receiving the whole batch.
++func (m *multiEndpoint) WritePackets(pkts stack.PacketBufferList) (int, tcpip.Error) {
++	n := len(m.eps)
++	if n == 1 {
++		return m.eps[0].WritePackets(pkts)
++	}
++
++	sub := make([]stack.PacketBufferList, n)
++	for _, pkt := range pkts.AsSlice() {
++		sub[pkt.Hash%uint32(n)].PushBack(pkt)
++	}
++
++	sent := 0
++	for i, sl := range sub {
++		if sl.Len() == 0 {
++			continue
++		}
++		w, err := m.eps[i].WritePackets(sl)
++		sent += w
++		if err != nil {
++			return sent, err
++		}
++	}
++	return sent, nil
++}
++
++// The remaining methods delegate to the first sub-endpoint (all queues share
++// the same MAC, MTU, and capabilities) or fan out to every sub-endpoint (so
++// each queue gets its own dispatch goroutine / is stopped / is closed).
++
++// MTU implements stack.LinkEndpoint.
++func (m *multiEndpoint) MTU() uint32 { return m.eps[0].MTU() }
++
++// SetMTU implements stack.LinkEndpoint.
++func (m *multiEndpoint) SetMTU(mtu uint32) {
++	for _, e := range m.eps {
++		e.SetMTU(mtu)
++	}
++}
++
++// MaxHeaderLength implements stack.LinkEndpoint.
++func (m *multiEndpoint) MaxHeaderLength() uint16 { return m.eps[0].MaxHeaderLength() }
++
++// LinkAddress implements stack.LinkEndpoint.
++func (m *multiEndpoint) LinkAddress() tcpip.LinkAddress { return m.eps[0].LinkAddress() }
++
++// SetLinkAddress implements stack.LinkEndpoint.
++func (m *multiEndpoint) SetLinkAddress(addr tcpip.LinkAddress) {
++	for _, e := range m.eps {
++		e.SetLinkAddress(addr)
++	}
++}
++
++// Capabilities implements stack.LinkEndpoint.
++func (m *multiEndpoint) Capabilities() stack.LinkEndpointCapabilities {
++	return m.eps[0].Capabilities()
++}
++
++// Attach implements stack.LinkEndpoint. Attaches every per-queue endpoint so
++// each runs its own dispatch goroutine feeding the shared dispatcher. A nil
++// dispatcher (NIC removal) stops them all.
++func (m *multiEndpoint) Attach(d stack.NetworkDispatcher) {
++	for _, e := range m.eps {
++		e.Attach(d)
++	}
++}
++
++// IsAttached implements stack.LinkEndpoint.
++func (m *multiEndpoint) IsAttached() bool { return m.eps[0].IsAttached() }
++
++// Wait implements stack.LinkEndpoint.
++func (m *multiEndpoint) Wait() {
++	for _, e := range m.eps {
++		e.Wait()
++	}
++}
++
++// ARPHardwareType implements stack.LinkEndpoint.
++func (m *multiEndpoint) ARPHardwareType() header.ARPHardwareType {
++	return m.eps[0].ARPHardwareType()
++}
++
++// AddHeader implements stack.LinkEndpoint. The link header is encoded once per
++// packet (all queues produce an identical ethernet header), so delegate to one
++// sub-endpoint — never once per queue.
++func (m *multiEndpoint) AddHeader(pkt *stack.PacketBuffer) {
++	m.eps[0].AddHeader(pkt)
++}
++
++// ParseHeader implements stack.LinkEndpoint.
++func (m *multiEndpoint) ParseHeader(pkt *stack.PacketBuffer) bool {
++	return m.eps[0].ParseHeader(pkt)
++}
++
++// Close implements stack.LinkEndpoint.
++func (m *multiEndpoint) Close() {
++	for _, e := range m.eps {
++		e.Close()
++	}
++}
++
++// SetOnCloseAction implements stack.LinkEndpoint.
++func (m *multiEndpoint) SetOnCloseAction(f func()) {
++	for _, e := range m.eps {
++		e.SetOnCloseAction(f)
++	}
++}
+--- a/runsc/boot/network.go	2026-09-14 13:23:37.000000000 -0700
++++ b/runsc/boot/network.go	2026-10-05 11:25:00.986239836 -0700
+@@ -446,13 +446,28 @@
+ 		nicID := n.Stack.NextNICID()
+ 		nicids[link.Name] = nicID
+ 
+-		// Get the AF_XDP socket.
+-		oldFD := args.FilePayload.Files[fdOffset].Fd()
+-		fd, err := unix.Dup(int(oldFD))
+-		if err != nil {
+-			return fmt.Errorf("failed to dup AF_XDP fd %v: %v", oldFD, err)
++		// Get the AF_XDP socket(s). xdp-6: one socket per RX queue. The client
++		// set NumChannels to the queue count it discovered (1 for the v12
++		// single-socket path, 2+ on a multi-queue NIC like the AWS c6a ENA).
++		nqueues := link.NumChannels
++		if nqueues <= 0 {
++			nqueues = 1
++		}
++		fds := make([]int, nqueues)
++		queueIDs := make([]uint32, nqueues)
++		for i := 0; i < nqueues; i++ {
++			oldFD := args.FilePayload.Files[fdOffset].Fd()
++			fd, err := unix.Dup(int(oldFD))
++			if err != nil {
++				return fmt.Errorf("failed to dup AF_XDP fd %v: %v", oldFD, err)
++			}
++			fds[i] = fd
++			// The client binds each socket to its own RX queue in the redirect
++			// path, so this QueueID is only used when the sentry binds (the
++			// tunnel path, which is always single-queue). It is 0..N-1 here.
++			queueIDs[i] = uint32(i)
++			fdOffset++
+ 		}
+-		fdOffset++
+ 
+ 		// When the sentry is responsible for binding, the runsc
+ 		// process sends several other FDs in order to keep them open
+@@ -470,15 +485,37 @@
+ 
+ 		// Setup packet logging if requested.
+ 		mac := tcpip.LinkAddress(link.LinkAddress)
+-		linkEP, err := xdp.New(&xdp.Options{
+-			FD:                fd,
+-			Address:           mac,
+-			TXChecksumOffload: link.TXChecksumOffload,
+-			RXChecksumOffload: link.RXChecksumOffload,
+-			InterfaceIndex:    link.InterfaceIndex,
+-			Bind:              link.Bind == BindSentry,
+-			GRO:               link.GVisorGRO,
+-		})
++		var linkEP stack.LinkEndpoint
++		var err error
++		if nqueues == 1 {
++			// v12 single-socket path (behavior identical to before xdp-6).
++			linkEP, err = xdp.New(&xdp.Options{
++				FD:                fds[0],
++				Address:           mac,
++				TXChecksumOffload: link.TXChecksumOffload,
++				RXChecksumOffload: link.RXChecksumOffload,
++				InterfaceIndex:    link.InterfaceIndex,
++				Bind:              link.Bind == BindSentry,
++				GRO:               link.GVisorGRO,
++				QueueID:           0,
++			})
++		} else {
++			// xdp-6: one AF_XDP socket per RX queue. Each socket gets its own
++			// UMEM/rings (NewFromSocket sets xs->rx, which the client's later
++			// sockmap insert requires); the client binds each socket to its own
++			// queue and inserts it into the per-queue sockmap.
++			linkEP, err = xdp.NewMulti(&xdp.MultiOptions{
++				FDs:               fds,
++				QueueIDs:          queueIDs,
++				Address:           mac,
++				SaveRestore:       false,
++				TXChecksumOffload: link.TXChecksumOffload,
++				RXChecksumOffload: link.RXChecksumOffload,
++				InterfaceIndex:    link.InterfaceIndex,
++				Bind:              link.Bind == BindSentry,
++				GRO:               link.GVisorGRO,
++			})
++		}
+ 		if err != nil {
+ 			return err
+ 		}
+--- a/runsc/sandbox/xdp.go	2026-10-05 11:50:03.770462472 -0700
++++ b/runsc/sandbox/xdp.go	2026-10-05 11:40:02.250411143 -0700
+@@ -22,6 +22,7 @@
+ 	"fmt"
+ 	"net"
+ 	"os"
++	"path/filepath"
+ 	"strings"
+ 
+ 	"github.com/cilium/ebpf"
+@@ -63,31 +64,49 @@
+ 		return fmt.Errorf("failed to generate redirect interface args: %w", err)
+ 	}
+ 
+-	// Create an XDP socket. The sentry will mmap the rings.
+-	xdpSockFD, err := unix.Socket(unix.AF_XDP, unix.SOCK_RAW, 0)
+-	if err != nil {
+-		return fmt.Errorf("unable to create AF_XDP socket: %w", err)
+-	}
+-	xdpSock := os.NewFile(uintptr(xdpSockFD), "xdp-sock-fd")
++	// xdp-6: one AF_XDP socket per RX queue. Discover the queue count from
++	// sysfs (the kernel's per-queue dirs: /sys/class/net/<iface>/queues/rx-*).
++	// N==1 is the v12 single-socket path (byte-identical behavior); N>1 is the
++	// per-queue path (multi-queue NICs like the AWS c6a ENA, which runs the
++	// redirect program per RX queue — ena_xdp_handle_buff).
++	nqueues := rxQueueCount(iface.Name)
++	if nqueues < 1 {
++		nqueues = 1
++	}
++	args.XDPLinks[0].NumChannels = nqueues
++
++	// Create the XDP socket(s). The sentry will mmap the rings (and set up
++	// each socket's RX queue, which is what lets us insert the socket into the
++	// sockmap below — the kernel's xsk_map_update_elem refuses a socket whose
++	// rx queue is not yet set up, i.e. it must happen AFTER the configure RPC).
++	socks := make([]*os.File, nqueues)
++	for q := 0; q < nqueues; q++ {
++		xdpSockFD, err := unix.Socket(unix.AF_XDP, unix.SOCK_RAW, 0)
++		if err != nil {
++			return fmt.Errorf("unable to create AF_XDP socket for queue %d: %w", q, err)
++		}
++		socks[q] = os.NewFile(uintptr(xdpSockFD), "xdp-sock-fd")
+ 
+-	// Dup to ensure os.File doesn't close it prematurely.
+-	if _, err := unix.Dup(xdpSockFD); err != nil {
+-		return fmt.Errorf("failed to dup XDP sock: %w", err)
++		// Dup to ensure os.File doesn't close it prematurely.
++		if _, err := unix.Dup(xdpSockFD); err != nil {
++			return fmt.Errorf("failed to dup XDP sock (queue %d): %w", q, err)
++		}
++		args.FilePayload.Files = append(args.FilePayload.Files, socks[q])
+ 	}
+-	args.FilePayload.Files = append(args.FilePayload.Files, xdpSock)
+ 
+ 	if err := pcapAndNAT(&args, conf); err != nil {
+ 		return err
+ 	}
+ 
+-	log.Infof("Setting up network, config: %+v", args)
++	log.Infof("Setting up network, config: %+v (xdp queues: %d)", args, nqueues)
+ 	if err := conn.Call(boot.ContMgrSetNetworkArgs, &args, nil); err != nil {
+ 		return fmt.Errorf("creating links and routes: %w", err)
+ 	}
+ 
+-	// Insert socket into eBPF map. Note that sockets are automatically
+-	// removed from eBPF maps when released. See net/xdp/xsk.c:xsk_release
+-	// and net/xdp/xsk.c:xsk_delete_from_maps.
++	// Insert each socket into the eBPF map at key = its RX queue index, then
++	// bind it to that queue. Note that sockets are automatically removed from
++	// eBPF maps when released. See net/xdp/xsk.c:xsk_release and
++	// net/xdp/xsk.c:xsk_delete_from_maps.
+ 	mapPath := xdpcmd.RedirectMapPath(iface.Name)
+ 	pinnedMap, err := ebpf.LoadPinnedMap(mapPath, nil)
+ 	if err != nil {
+@@ -95,22 +114,38 @@
+ 	}
+ 	// TODO(b/240191988): Updating of pinned maps should be synchronized and
+ 	// check for the existence of the key.
+-	mapKey := uint32(0)
+-	mapVal := uint32(xdpSockFD)
+-	if err := pinnedMap.Update(&mapKey, &mapVal, ebpf.UpdateAny); err != nil {
+-		return fmt.Errorf("failed to insert socket into map %s: %w", mapPath, err)
+-	}
++	for q := 0; q < nqueues; q++ {
++		mapKey := uint32(q)
++		mapVal := uint32(socks[q].Fd())
++		if err := pinnedMap.Update(&mapKey, &mapVal, ebpf.UpdateAny); err != nil {
++			return fmt.Errorf("failed to insert socket for queue %d into map %s: %w", q, mapPath, err)
++		}
+ 
+-	// Bind to the device.
+-	// TODO(b/240191988): We can't assume there's only one queue, but this
+-	// appears to be the case on gVNIC instances.
+-	if err := xdp.Bind(xdpSockFD, uint32(iface.Index), 0 /* queueID */, conf.AFXDPUseNeedWakeup); err != nil {
+-		return fmt.Errorf("failed to bind to interface %q: %v", iface.Name, err)
++		// Bind to the device, to this socket's own RX queue.
++		if err := xdp.Bind(int(socks[q].Fd()), uint32(iface.Index), uint32(q) /* queueID */, conf.AFXDPUseNeedWakeup); err != nil {
++			return fmt.Errorf("failed to bind to interface %q queue %d: %v", iface.Name, q, err)
++		}
+ 	}
+ 
+ 	return nil
+ }
+ 
++// rxQueueCount returns the number of RX queues on a netdev, read from sysfs
++// (/sys/class/net/<iface>/queues/rx-*). The guest kernel has CONFIG_SYSFS=y
++// (no separate NET_SYSFS symbol in 7.2), so these per-queue dirs are present
++// (e.g. ENA with 2 IO queues exposes rx-0 and rx-1). It returns 0 if the
++// directory is absent (the caller falls back to a single queue).
++//
++// x/sys v0.43.0 (the pinned version) has the ETHTOOL_GCHANNELS constant but no
++// IoctlEthtool helper, so sysfs is the portable zero-dependency path.
++func rxQueueCount(ifname string) int {
++	entries, err := filepath.Glob(filepath.Join("/sys/class/net", ifname, "queues", "rx-*"))
++	if err != nil || len(entries) == 0 {
++		return 0
++	}
++	return len(entries)
++}
++
+ // Collect addresses, routes, and neighbors from the interfaces. We only
+ // process two interfaces: the loopback and the interface we've been told to
+ // bind to. This all takes place in the netns where the runsc binary is run,
+@@ -376,6 +411,11 @@
+ 			return nil, fmt.Errorf("unable to find non-loopback interface in the ns")
+ 		}
+ 		args.XDPLinks[0].InterfaceIndex = iface.Index
++		// xdp-6: the tunnel is a single-socket design (one AF_XDP socket per
++		// veth), and the sentry reads NumChannels socket FDs. prepareRedirect-
++		// InterfaceArgs set NumChannels from conf.NumNetworkChannels; pin it to
++		// 1 so the sentry reads exactly the one socket this path sends.
++		args.XDPLinks[0].NumChannels = 1
+ 
+ 		rawLink, err := link.AttachRawLink(link.RawLinkOptions{
+ 			Program: objects.Program,
