@@ -123,6 +123,12 @@ COPY --from=user-gvisor /usr/bin/gvisor-bin /usr/bin/gvisor-bin
 # climbing vs redirect climbing tells whether inbound frames are guard-PASSED
 # to the offline kernel or reaching the sentry ring). Kernel-side only.
 COPY --from=user-gvisor /usr/bin/bpfcount /usr/bin/bpfcount
+# ethtool (v12, the sn-7 flap root-cause fix): the ETHTOOL_SCHANNELS setter
+# that collapses the uplink NIC to 1 RX queue BEFORE the XDP attach (the
+# multi-queue RSS split was the confirmed root cause of the chronic face-flap
+# — see packages/user/gvisor/ethtool.c). Kernel-side only; the sys-net
+# supervisor runs it once per generation.
+COPY --from=user-gvisor /usr/bin/ethtool /usr/bin/ethtool
 # Host-side network stack for runsc: `runsc do`'s setupNet shells out to the
 # host `ip` (veth pairs) and `iptables` (NAT). The busybox `ip` applet is too
 # limited (no `ip link add veth`); iproute2's /usr/bin/ip overwrites it.

@@ -105,6 +105,10 @@ DEV=eth0                       # pinned by net.ifnames=0 on the cmdline; the
 CID=sysnet
 RUNSC=/usr/bin/runsc
 LOADER=/usr/bin/xdp_loader
+# v12: the ETHTOOL_SCHANNELS setter (see the uplink section below). The
+# multi-queue RSS flap fix — collapses the uplink NIC to 1 RX queue so every
+# inbound frame lands on queue 0 (the one gvisor binds its AF_XDP socket at).
+ETHTOOL=/usr/bin/ethtool
 STATE=/run/sysnet/runsc
 B=/run/sysnet/bundle
 PIN=/sys/fs/bpf/$DEV
@@ -385,6 +389,9 @@ tail -f "$LOGF" >&2 2>/dev/null &
 # --- 0. preconditions ----------------------------------------------------------
 [ -x "$RUNSC" ] || fail "runsc missing at $RUNSC"
 [ -x "$LOADER" ] || fail "xdp_loader missing at $LOADER"
+# v12: the queue-collapse tool (image regression -> the multi-queue RSS flap
+# would silently reappear: q1 SYNs dropped at the door).
+[ -x "$ETHTOOL" ] || fail "ethtool missing at $ETHTOOL"
 [ -x /usr/sbin/ip ] || fail "iproute2 ip missing (libelf?)"
 mountpoint -q /sys/fs/bpf || mount -t bpf bpf /sys/fs/bpf 2>/dev/null || true
 mountpoint -q /sys/fs/bpf || fail "bpffs unavailable (no /sys/fs/bpf mount)"
@@ -425,6 +432,50 @@ mkdir -p "$STATE" "$B/rootfs" || fail "mkdir bundle failed"
 # (DPHAVEN=0 in dpark_check), not darkness.
 rm -f "$DPF" 2>/dev/null || true
 rm -f "$BPSTAT" 2>/dev/null || true   # v10: fresh generation, fresh counters
+
+# --- 2b. collapse the uplink RX to queue 0 (v12: the multi-queue RSS fix) ------
+# The chronic face-flap (root-caused on the live wire, Oct 5; v11 per-queue BPF
+# counters, i-080664c2822b62628: slot0 pass=0/redirect=1465, slot1
+# pass=788/redirect=0, 49%-dark face) is the ENA's 2-RX-queue RSS split:
+# gvisor binds ONE AF_XDP socket at sockmap key 0 (runsc/sandbox/xdp.go:178,
+# TODO(b/240191988)), ENA runs the XDP program per RX queue, so frames
+# RSS-hashed to queue 1 hit the program with an EMPTY sockmap slot -> the
+# sn-6e guard XDP_PASSes them to the fully-OFFLINE kernel -> dropped at the
+# door. Each new inbound connection's 4-tuple hashes to q0/q1 ~50/50 -> ~50%
+# of new SYNs never reach the netstack. That IS the flap.
+#
+# Fix: collapse the NIC to 1 RX queue so every inbound frame lands on queue 0
+# (the one with the socket). The tool issues exactly the ioctl of
+# `ethtool -L $DEV combined 1`: SIOCETHTOOL/ETHTOOL_SCHANNELS combined=1
+# (packages/user/gvisor/ethtool.c). ENA does a full close/open + RSS table
+# rebuild (ena_update_queue_count); virtio (QEMU, 1 queue) is a no-op.
+#
+# POSITION is load-bearing: the kernel's ethtool_set_channels checks
+# netdev_queue_busy on the queues being REMOVED (ioctl.c) and -EINVALs if an
+# AF_XDP socket leases one. So this must run BEFORE the XDP attach (section 4)
+# -- here, where no socket exists yet (stale state was just torn down). It also
+# must be before the sentry's bind, which re-arms the redirect at queue 0.
+#
+# The close/open drops the link briefly; wait for it to come back (the
+# xdp_loader + sentry need the link UP + the MAC). Bounded: a carrier that
+# never returns is a hard fail at the loader, not a supervisor hang.
+log "collapse $DEV RX to 1 queue (v12 multi-queue RSS fix)"
+if "$ETHTOOL" "$DEV" 1; then
+  log "  $DEV combined=1 set"
+  # Wait for the link to come back (bounded counter; no `seq` applet dep).
+  st=""; c=0
+  while [ "$c" -lt 20 ]; do
+    st=$(ip -o link show "$DEV" 2>/dev/null | grep -oE 'state [A-Z]+' | awk '{print $2}')
+    case "$st" in UP|UNKNOWN) break;; esac
+    sleep 1; c=$((c + 1))
+  done
+  case "$st" in
+    UP|UNKNOWN) log "  $DEV link back ($st)";;
+    *) log "  WARNING: $DEV link not UP after 20 s (st=$st); proceeding (the loader will fail hard if it is unusable)";;
+  esac
+else
+  log "  WARNING: ethtool $DEV 1 FAILED (rc=$?); the multi-queue RSS flap may persist (q1 SYNs dropped at the door)"
+fi
 
 # --- 3. bundle ------------------------------------------------------------------
 # Minimal bundle rootfs. The two payloads are musl-DYNAMIC

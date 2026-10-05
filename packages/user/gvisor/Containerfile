@@ -145,6 +145,16 @@ ADD bpf/redirect_host_ebpf.o tools/xdp/cmd/bpf/redirect_host_ebpf.o
 # sys-net supervisor runs it every probe cycle. Not on the sandbox boot path.
 ADD bpfcount/main.go bpfcount/main.go
 
+# ethtool (v12, the sn-7 flap root-cause fix): a minimal static C tool that
+# issues the SIOCETHTOOL/ETHTOOL_SCHANNELS ioctl to collapse the uplink NIC to
+# ONE RX queue (combined=1) before the XDP redirect program is attached. The
+# multi-queue RSS split (2-queue ENA, gvisor binding one AF_XDP socket at key
+# 0) was the confirmed root cause of the chronic face-flap (see ethtool.c).
+# Built with the stage's gcc (core-gcc + core-musl + core-linux-headers), fully
+# static so it needs nothing from the guest; lands in the kernel-side rootfs
+# alongside xdp_loader and bpfcount (the sysnet supervisor runs it).
+ADD ethtool.c /ethtool.c
+
 # Go env. On a scratch FROM the pallet-go defaults do NOT carry over, so the
 # proxy/sumdb must be set explicitly for the module download to work.
 ENV GOPATH=/cache/go \
@@ -191,6 +201,25 @@ RUN --network=none <<-EOF
   go build -trimpath \
     -ldflags "-s -w" \
     -o /rootfs/usr/bin/bpfcount ./bpfcount
+  # ethtool (v12): static C, the ETHTOOL_SCHANNELS setter (see the ethtool.c
+  # note above). -static so it needs nothing from the guest (the sysnet
+  # supervisor runs it kernel-side, outside the sandbox). Same toolchain as
+  # the freestanding prewarmer (the stage's core-gcc + core-musl +
+  # core-linux-headers); the only difference is it is a normal (non-
+  # freestanding) program — it links the static musl libc and the UAPI
+  # headers (linux/ethtool.h, linux/sockios.h) rather than being no-stdlib.
+  # -no-pie: a fixed-address EXEC (ELF EXEC, like busybox and the prewarmer)
+  # rather than a static-PIE (ELF DYN) — the most robust choice for a
+  # freestanding-ish tool and immune to any ASLR/relocation edge case under
+  # the hardened kernel's high-entropy mmap ASLR. -s strip it (it lands in
+  # the measured UKI .initrd).
+  # (The QEMU smoke's first "segfault at 14" was a REAL bug in ethtool.c,
+  #  NOT the PIE flag: the SIOCETHTOOL ABI reads the command struct from the
+  # POINTER in ifr.ifr_ifru.ifru_data (copy_from_user), and the first version
+  # cast the NULL ifr_data to a struct pointer and wrote through it. Fixed in
+  # ethtool.c — ifr_data now points at a real stack struct.)
+  gcc -Os -static -no-pie -s \
+    -o /rootfs/usr/bin/ethtool /ethtool.c
   # gvisor_sentry sidecar (the sentry is a STRICT requirement of runsc).
   go build -trimpath \
     -ldflags "-s -w" \
