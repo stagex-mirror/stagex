@@ -193,30 +193,38 @@ PLOG=/home/sysnet-events.log # v9: PERSISTENT event log (LUKS /home on AWS;
                              # post-mortem must live here (best-effort writes;
                              # a failed write before /home is mounted is
                              # harmless).
-# v10: BPF counter sampling (the Oct 4 flap discriminator). The v4 redirect
-# object (packages/user/gvisor/bpf/redirect.c) carries a second ARRAY map,
-# bpf_counts = {u32 pass, u32 redirect}; xdp-5 (xdp_loader) pins it at
-# $PIN/redirect_counts. Both counters are MONOTONIC since the program load:
-#   pass     = frames XDP_PASSed to the kernel (the empty-sockmap guard fired
-#              — bpf_map_lookup_elem(&sock_map) returned NULL);
-#   redirect = frames bpf_redirect_map'd into the sentry's AF_XDP ring.
-# count_sample (below) reads them every ~20 s with the kernel-side bpfcount
-# reader and logs the DELTAS. The discriminator: during a host-visible dark
-# window, pass climbing (redirect flat) => inbound frames are guard-PASSED
-# into the offline kernel => the sockmap lost its socket entry (gvisor sentry
-# socket lifecycle — the bug, with the in-kernel proof); redirect climbing
-# (pass flat) => inbound frames ARE reaching the sentry ring and the drop is
-# ring/netstack-side. Kernel-side read (a bpf(2) syscall) — no runsc, no
-# netstack, nothing that can wedge; best-effort: a missing pin (v3 object
-# or pre-attach) just logs one "absent" line.
+# v11: BPF per-queue counter sampling (the multi-queue RSS discriminator).
+# The v5 redirect object (packages/user/gvisor/bpf/redirect.c) carries a
+# second ARRAY[16] map, bpf_counts = {u32 pass, u32 redirect} indexed by
+# ctx->rx_queue_index; xdp-5 (xdp_loader) pins it at $PIN/redirect_counts.
+# ENA invokes the program per RX queue, so slot N is queue N's own frame
+# counter measured at the decision point. Every per-slot counter is
+# MONOTONIC since the program load:
+#   pass     = frames on that queue XDP_PASSed to the kernel (the
+#              empty-sockmap guard fired — bpf_map_lookup_elem(&sock_map,
+#              queue) returned NULL for that queue);
+#   redirect = frames on that queue bpf_redirect_map'd into the sentry's
+#              AF_XDP ring (gvisor binds its one socket at key 0, xdp.go:178).
+# count_sample (below) reads the 16 slots with the kernel-side bpfcount
+# reader (32 fields: p0 r0 p1 r1 ... p15 r15) and logs the per-slot DELTAS
+# as two 16-slot comma-lists:
+#   [bp] dp=<pass deltas q0..q15> dr=<redirect deltas q0..q15>
+# The confirmation (c6a ENA = 2 RX queues, RSS 50/50): q0 redirect climbs,
+# q1 pass climbs (queue 1 has no socket -> guard -> offline kernel -> drop),
+# and q1 pass tracks the dark windows. If q0 alone shows both, the program
+# ran single-queue and the pass frames are the sockmap-lifecycle variant.
+# Kernel-side read (a bpf(2) syscall) — no runsc, no netstack, nothing that
+# can wedge; best-effort: a missing pin (v3/v4 object or pre-attach) or an
+# arity mismatch just logs one "absent" line.
 BPCOUNT=/usr/bin/bpfcount
-BPSTAT=/run/sysnet/bpstat     # v10: previous sample ("pass redirect"); /run/
-                             # sysnet is the host tmpfs bind — persists across
-                             # sandbox respawns within a boot. Cleared in
-                             # teardown (the pin dies with the program, so
-                             # the counters restart at 0 and a stale sample
-                             # would yield a bogus negative delta).
-BPSEEN=0                     # v10: 1 once "absent" has been logged (noise cap)
+BPSTAT=/run/sysnet/bpstat     # v11: previous sample (32 fields: p0 r0 ...
+                             # p15 r15); /run/sysnet is the host tmpfs bind —
+                             # persists across sandbox respawns within a boot.
+                             # Cleared in teardown (the pin dies with the
+                             # program, so the counters restart at 0 and a
+                             # stale sample would yield a bogus negative
+                             # delta).
+BPSEEN=0                     # v11: 1 once "absent" has been logged (noise cap)
 
 # v6: writes go to the tmpfs log file, never to the serial (a stalled
 # serial capture must not be able to block the supervisor). The detached
@@ -1016,49 +1024,80 @@ dpark_check() {
   }
   return 1                           # was healthy, no fresh pass: dark
 }
-# v10: sample the v4 BPF counter map (see the BPCOUNT globals). Kernel-side
-# read only -- bpfcount does a bpf(2) BPF_MAP_LOOKUP_ELEM on the pinned
-# redirect_counts map; no runsc, no netstack, nothing that can wedge. Called
-# every liveness iteration (~5 s) so the per-5 s pass/redirect deltas line up
-# with the dp watchdog's timeline and the host's dark-window probe. Logs the
-# DELTAS to $LOGF (tmpfs, forwarder + :9004): the discriminator is DIRECTIONAL
-# (which counter moves during a dark), not exact. Best-effort: a missing pin
-# (v3 object, or pre-attach) logs a single "absent" line (BPSEEN cap) and
-# never blocks or fails the supervisor.
+# v11: sample the v5 per-queue BPF counter map (see the BPCOUNT globals).
+# Kernel-side read only -- bpfcount does a bpf(2) BPF_MAP_LOOKUP_ELEM on the
+# pinned redirect_counts map; no runsc, no netstack, nothing that can wedge.
+# Called every liveness iteration (~5 s) so the per-5 s deltas line up with
+# the dp watchdog's timeline and the host's dark-window probe.
+#
+# bpfcount emits 32 space-separated u32s: for each RX queue slot 0..15, the
+# pass counter then the redirect counter (p0 r0 p1 r1 ... p15 r15). ENA runs
+# the program per RX queue, so slot N is queue N's own frame counter at the
+# decision point -- the multi-queue RSS discriminator. The confirmation line
+# (gvisor binds one socket at key 0 on a 2-queue ENA): q0 redirect climbs,
+# q1 pass climbs (queue 1 has no socket -> the sn-6e guard XDP_PASSes it to
+# the offline kernel -> dropped). Logs the DELTAS as two 16-slot comma-lists:
+#   [bp] dp=<pass deltas q0..q15> dr=<redirect deltas q0..q15>
+# (machine-parseable; the host-side monitor correlates these with face state).
+# Best-effort: a missing pin (v3/v4 object, or pre-attach) logs a single
+# "absent" line (BPSEEN cap) and never blocks or fails the supervisor.
 count_sample() {
   [ -x "$BPCOUNT" ] || return 0
   bp_cur=$("$BPCOUNT" "$PIN/redirect_counts" 2>/dev/null) || bp_cur=""
-  # bpfcount emits "pass redirect" (two space-separated u32s). Validate the
-  # SPACE-SPLIT halves are all-digits: the whole string is NOT (it has a
-  # space), so the old `*[!0-9]*`-on-whole-string check misclassified every
-  # valid reading as "absent".
-  bp_p1=${bp_cur% *}; bp_r1=${bp_cur#* }
-  case "$bp_p1$bp_r1" in
-    ''|*[!0-9]*)
-      # a space-free bp_cur (e.g. empty or a bare token) or a non-numeric
-      # half -> treat as absent
-      [ "$BPSEEN" -eq 0 ] && { log "  [bp] redirect_counts absent (v3 object or not attached yet)"; BPSEEN=1; }
-      return 0;;
-  esac
+  # Validate the whole line is exactly 32 all-digit space-separated fields.
+  # (The v4 object emits 2 fields; a mismatched count means the running
+  # program and the bpfcount binary disagree -> treat as absent, log once.)
+  bp_n=0; bp_ok=1; bp_tok=""
+  for bp_tok in $bp_cur; do
+    case "$bp_tok" in
+      *[!0-9]*) bp_ok=0;;
+    esac
+    bp_n=$(( bp_n + 1 ))
+  done
+  if [ "$bp_ok" -ne 1 ] || [ "$bp_n" -ne 32 ]; then
+    [ "$BPSEEN" -eq 0 ] && { log "  [bp] redirect_counts absent or wrong arity (got $bp_n fields; v3/v4 object, not attached, or binary mismatch)"; BPSEEN=1; }
+    return 0
+  fi
   BPSEEN=1
   bp_prev=""
   [ -s "$BPSTAT" ] && bp_prev=$(cat "$BPSTAT" 2>/dev/null)
-  case "$bp_prev" in
-    '')
-      : ;;   # first sample: no delta yet
-    *)
-      bp_p0=${bp_prev% *}; bp_r0=${bp_prev#* }
-      case "$bp_p0$bp_r0" in
-        *[!0-9]*) log "  [bp] counters reset (pass=$bp_p1 redirect=$bp_r1 abs)";;
-        *)
-          bp_dp=$(( bp_p1 - bp_p0 )); bp_dr=$(( bp_r1 - bp_r0 ))
-          if [ "$bp_dp" -lt 0 ] || [ "$bp_dr" -lt 0 ]; then
-            log "  [bp] counters reset (pass=$bp_p1 redirect=$bp_r1 abs)"
-          else
-            log "  [bp] +$bp_dp pass / +$bp_dr redirect (abs $bp_p1/$bp_r1)"
-          fi;;
-      esac;;
-  esac
+  if [ -n "$bp_prev" ]; then
+    # Compute per-slot deltas; emit two comma-lists. A field count mismatch
+    # (program reload -> counters reset) -> log a reset line, no deltas.
+    bp_np=0; bp_pok=1
+    for bp_tok in $bp_prev; do
+      case "$bp_tok" in
+        *[!0-9]*) bp_pok=0;;
+      esac
+      bp_np=$(( bp_np + 1 ))
+    done
+    if [ "$bp_pok" -ne 1 ] || [ "$bp_np" -ne 32 ]; then
+      log "  [bp] counters reset (program reload or arity change)"
+    else
+      # Pairwise delta in POSIX sh (the guest /bin/sh is brush; NO arrays,
+      # NO ${@:2}): the old tokens sit in the function's positional args,
+      # the new tokens iterate the loop, one shift per slot. Slot k is pass
+      # (even) or redirect (odd). set -- inside a function touches only the
+      # function's positionals (count_sample takes none).
+      set -- $bp_prev
+      bp_dp_list=""; bp_dr_list=""
+      bp_k=0
+      for bp_c in $bp_cur; do
+        bp_p=${1:-0}
+        shift || true
+        bp_d=$(( bp_c - bp_p ))
+        [ "$bp_d" -lt 0 ] && bp_d=0   # counter reset on that slot (reload)
+        if [ $(( bp_k % 2 )) -eq 0 ]; then
+          bp_dp_list="${bp_dp_list}${bp_d},"
+        else
+          bp_dr_list="${bp_dr_list}${bp_d},"
+        fi
+        bp_k=$(( bp_k + 1 ))
+      done
+      bp_dp_list=${bp_dp_list%,}; bp_dr_list=${bp_dr_list%,}
+      log "  [bp] dp=$bp_dp_list dr=$bp_dr_list"
+    fi
+  fi
   echo "$bp_cur" > "$BPSTAT" 2>/dev/null || true
 }
 i=0

@@ -12,7 +12,8 @@ program and this tree's `redirect_host_ebpf.o`.
 | custom v1 (bidirectional :22) | `5ed1c528bba01bfbcb928fe40d5b993e0bac45f3a1f5ee24f402275496d700ca` |
 | custom v2 (v1 + sn-6e empty-sockmap guard) | `566784adcfe73d57e1ae389a865acdd3eb3b7317f25193cebecafe27814eae17` |
 | custom v3 (sn-7 redirect-all, no inspection) | `80ac96fbedc2976600085fa6b312f1855b739a5986302d2052cdc81f3da38860` |
-| custom v4 (v3 + diagnostic counter map, SHIPPED) | `ad656313c76f3c38444752fa8328676e794e28335aeb161324dbe7d3bc179fc2` |
+| custom v4 (v3 + diagnostic counter map) | `ad656313c76f3c38444752fa8328676e794e28335aeb161324dbe7d3bc179fc2` |
+| custom v5 (v4 + per-queue counter attribution, SHIPPED) | `b7eddf2be8d8250165f509ec1a094b71085508952da51455392aac490dac91d0` |
 
 All objects: same map (`XSKMAP`, key 4 / value 4, max 1 entry), same symbols
 (`xdp_prog`, `sock_map`), same inlined `bpf_redirect_map` call (helper id
@@ -293,3 +294,90 @@ reaching the sentry ring and the drop is ring/netstack-side.
 3x byte-deterministic (pallet clang 22.1.8, source dir with
 `redirect.c` + `bpf_helpers.h` + `bpf_endian.h`):
 `ad656313c76f3c38444752fa8328676e794e28335aeb161324dbe7d3bc179fc2`.
+
+## v5 — per-queue counter attribution (the multi-queue RSS discriminator)
+
+v5 = v4 with the counter map widened from a single pair to a per-RX-queue
+ARRAY[16], indexed by `ctx->rx_queue_index`. The data path is STILL
+unchanged (same guard, same redirect, same call order, same `call 0x33`
+inlined); the only delta vs v4 is that the counter slot is now the frame's
+own queue instead of a constant 0, plus a bounds check on the key.
+
+```c
+struct bpf_counts_val { unsigned int pass; unsigned int redirect; };
+
+struct bpf_map_def SEC("maps") bpf_counts = {
+  .type = 2,                /* BPF_MAP_TYPE_ARRAY */
+  .key_size = 4, .value_size = 8, .max_entries = 16,  /* v4 was 1 */
+};
+
+/* v5: count a frame for its own RX queue (slot = ctx->rx_queue_index). */
+static void count(unsigned int q, int is_pass) {
+  if (q < 16) {                          /* bounds the ARRAY key for the verifier */
+    unsigned int ckey = q;
+    struct bpf_counts_val *cv =
+        (struct bpf_counts_val *)bpf_map_lookup_elem(&bpf_counts, &ckey);
+    if (cv) { if (is_pass) cv->pass += 1; else cv->redirect += 1; }
+  }
+}
+```
+
+On the guard path `count(key, 1)`, on the redirect path `count(key, 0)` —
+`key = ctx->rx_queue_index` (the same value already used for the
+`sock_map` lookup and the `bpf_redirect_map` call). A frame on queue N >= 16
+is still redirected/passed correctly; it is simply not counted (the guard
+only bounds the counter lookup, not the data path).
+
+Why per-queue (the decisive upgrade over v4): the v10 data (v4's single
+pair) killed the naive sockmap-lifecycle hypothesis — `redirect` kept
+climbing at ~85% of the up-rate *during* darks, so the socket had not left
+the map and inbound frames WERE reaching the sentry ring. But the observed
+`pass` share was only 6.7-11%, far below the ~50% a clean 2-queue 50/50
+RSS split would predict if every queue-1 frame guard-PASSED. The missing
+variable is WHICH queue each frame lands on, and only a per-queue counter
+measures it.
+
+The program is the per-queue RX counter because ENA runs it per queue:
+`ena_netdev.c` `ena_xdp_handle_buff` (:1178) is called per `rx_ring->qid` in
+the per-queue NAPI poll, and `ena_xdp.c` registers each ring's
+`xdp_rxq_info` with its own queue index (`xdp_rxq_info_reg(..., rx_ring->qid,
+...)`, :200), so `ctx->rx_queue_index` in the program is the exact queue. No
+sysfs needed (`CONFIG_NET_SYSFS` is off in the enclave kernel; there is no
+`/sys/class/net/eth0/queues/` tree). This is measured at the decision point
+with zero sampling error, unlike an `rpackets` sampler that would also miss
+the guard-vs-redirect split.
+
+Prediction (the multi-queue RSS hypothesis — gvisor binds ONE AF_XDP socket
+at key 0, `runsc/sandbox/xdp.go:178`, on a 2-queue ENA):
+  slot 0: `redirect` climbing, `pass` ~0   (queue 0 has the socket)
+  slot 1: `pass` climbing,   `redirect` ~0 (queue 1 has no socket; the sn-6e
+                                                guard XDP_PASSes it to the
+                                                offline kernel -> dropped)
+  and the per-window slot-1 `pass` rate tracks the dark windows.
+If instead slot 0 alone shows BOTH `pass` and `redirect` climbing (slot 1
+~0), the program is running on a single queue and the `pass` frames are the
+sockmap-lifecycle variant (a socket that left the map while frames kept
+arriving). Either way the per-queue split is the discriminator v4 could not
+give.
+
+Verifier surface: identical to v4 (same `map_lookup_elem` on the counter
+map, same `call 0x33` redirect) plus a `if w2 > 0xf` bounds check on the key
+before the counter lookup — a plain 32-bit compare, no new helpers, no frame
+byte access. The insn delta vs v4 is exactly: `rx_queue_index` loaded once
+into `w2` and reused for the guard lookup, the counter key, and the
+redirect; both counter branches gain the `> 0xf` guard; `call 0x1` (guard
+lookup) and `call 0x33` (redirect) are byte-identical to stock.
+
+Reader (bpfcount): unchanged ABI surface (still
+`LoadPinnedMap` + per-key `LookupBytes`), now reads all 16 slots and prints
+32 fields: `p0 r0 p1 r1 ... p15 r15`. The sys-net supervisor `count_sample`
+validates the 32-field arity (a v4 object's 2-field output or a missing pin
+logs one "absent" line, BPSEEN cap), then logs the per-slot DELTAS as two
+16-slot comma-lists:
+  `[bp] dp=<pass deltas q0..q15> dr=<redirect deltas q0..q15>`
+(the pairwise delta is computed in POSIX sh — the guest `/bin/sh` is brush,
+no arrays — by `set -- $bp_prev` + a `shift` per slot).
+
+3x byte-deterministic (pallet clang 22.1.8, source dir with
+`redirect.c` + `bpf_helpers.h` + `bpf_endian.h`):
+`b7eddf2be8d8250165f509ec1a094b71085508952da51455392aac490dac91d0`.

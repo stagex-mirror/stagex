@@ -1,25 +1,26 @@
-// Command bpfcount reads the v4 redirect diagnostic counter map and prints
-// the two monotonic frame counters on stdout, space-separated:
+// Command bpfcount reads the v5 redirect diagnostic counter map and prints
+// the per-queue frame counters on stdout, space-separated:
 //
-//	<pass> <redirect>
+//	<p0> <r0> <p1> <r1> ... <p15> <r15>
 //
-// It loads the map that xdp_loader pinned at /sys/fs/bpf/<iface>/
-// redirect_counts (argv[1], else /sys/fs/bpf/eth0/redirect_counts).
+// 32 numbers: for each RX queue slot 0..15, the pass counter then the
+// redirect counter. It loads the map that xdp_loader pinned at
+// /sys/fs/bpf/<iface>/redirect_counts (argv[1], else
+// /sys/fs/bpf/eth0/redirect_counts).
 //
-// pass     = frames XDP_PASSed to the kernel (the sn-6e empty-sockmap guard
-//            fired: bpf_map_lookup_elem(&sock_map) returned NULL).
-// redirect = frames bpf_redirect_map'd to the sentry's AF_XDP ring.
+// The v5 map is an ARRAY[16] of {u32 pass, u32 redirect} indexed by
+// ctx->rx_queue_index — the multi-queue RSS discriminator. ENA invokes the
+// program per RX queue, so each slot is that queue's own frame counter
+// measured at the exact decision point:
 //
-// Both are monotonic since the program was loaded into the kernel. The
-// sys-net supervisor samples this every probe cycle and logs the DELTAS —
-// the Oct 4 flap discriminator. During a host-visible dark window:
-//   pass climbing, redirect flat      -> inbound frames guard-PASSED to the
-//                                       offline kernel; the sockmap lost its
-//                                       socket entry (gvisor sentry socket
-//                                       lifecycle). This is the bug.
-//   redirect climbing, pass flat      -> inbound frames ARE reaching the
-//                                       sentry ring; the drop is ring /
-//                                       netstack-side, not the guard.
+//   q0: redirect climbing, pass ~0   -> queue 0 has the sentry socket
+//   q1: pass climbing,   redirect ~0 -> queue 1 has no socket; the sn-6e
+//                                       guard XDP_PASSes every queue-1 frame
+//                                       to the offline kernel (DROPPED)
+//
+// Both per-slot counters are monotonic since the program was loaded into the
+// kernel. The sys-net supervisor samples this every liveness iteration and
+// logs the per-slot DELTAS.
 //
 // The reader is intentionally dependency-light (cilium/ebpf only, no libc:
 // CGO_ENABLED=0) so it builds static and lands in the kernel-side rootfs
@@ -27,13 +28,15 @@
 package main
 
 import (
-	"bytes"
 	"encoding/binary"
 	"fmt"
 	"os"
 
 	"github.com/cilium/ebpf"
 )
+
+// slots must match the v5 program's bpf_counts ARRAY bound (COUNT_SLOTS).
+const slots = 16
 
 func main() {
 	path := "/sys/fs/bpf/eth0/redirect_counts"
@@ -43,25 +46,32 @@ func main() {
 
 	m, err := ebpf.LoadPinnedMap(path, nil)
 	if err != nil {
-		// The v3 object (no counter map) leaves no pin here; the supervisor
-		// tolerates a non-zero exit and simply logs no counters.
+		// An older object (no counter map) leaves no pin here; the
+		// supervisor tolerates a non-zero exit and logs no counters.
 		fmt.Fprintf(os.Stderr, "bpfcount: %v\n", err)
 		os.Exit(1)
 	}
 	defer m.Close()
 
-	// The map value is {uint32 pass, uint32 redirect}; read it as raw
-	// bytes to avoid any struct-marshaling ambiguity.
-	b, err := m.LookupBytes(uint32(0))
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "bpfcount: lookup: %v\n", err)
-		os.Exit(1)
+	var out [slots * 2]int
+	for q := 0; q < slots; q++ {
+		b, err := m.LookupBytes(uint32(q))
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "bpfcount: slot %d: %v\n", q, err)
+			os.Exit(1)
+		}
+		if len(b) < 8 {
+			fmt.Fprintf(os.Stderr, "bpfcount: short slot %d (%d bytes)\n", q, len(b))
+			os.Exit(1)
+		}
+		out[q*2] = int(binary.LittleEndian.Uint32(b[0:4]))     // pass
+		out[q*2+1] = int(binary.LittleEndian.Uint32(b[4:8]))   // redirect
 	}
-	if len(b) < 8 {
-		fmt.Fprintf(os.Stderr, "bpfcount: short value (%d bytes): % x\n", len(b), bytes.TrimLeft(b, "\x00"))
-		os.Exit(1)
+	for i, n := range out {
+		if i > 0 {
+			fmt.Print(" ")
+		}
+		fmt.Print(n)
 	}
-	pass := binary.LittleEndian.Uint32(b[0:4])
-	redirect := binary.LittleEndian.Uint32(b[4:8])
-	fmt.Printf("%d %d\n", pass, redirect)
+	fmt.Println()
 }

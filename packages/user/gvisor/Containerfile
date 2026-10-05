@@ -99,17 +99,26 @@ RUN patch -p1 -i /tmp/xdp-1.patch && patch -p1 -i /tmp/xdp-2.patch \
 # bpf_map_type enum and must not be trusted for this object). The build stage
 # has no BPF-capable clang, so the checked-in .o ships as the artifact, same
 # model as stock's checked-in prebuilt: byte-deterministic
-# (v4 = ad656313c76f3c38444752fa8328676e794e28335aeb161324dbe7d3bc179fc2), 3x
+# (v5 = b7eddf2be8d8250165f509ec1a094b71085508952da51455392aac490dac91d0), 3x
 # verified. Reproduce: clang -O2 -target bpf -c bpf/redirect.c (from a dir
 # containing redirect.c + bpf_helpers.h + bpf_endian.h, source named
 # redirect.c — the .strtab carries the source path).
 #
-# v4 ADDITION (Oct 4 flap discriminator): a second ARRAY map, bpf_counts
-# ({u32 pass, u32 redirect}), incremented on the two exit paths. xdp-5 pins
-# it at /sys/fs/bpf/<iface>/redirect_counts; the kernel-side bpfcount reader
-# (below) samples it every probe cycle. The ABI otherwise is unchanged from
-# v1..v3 (the XSKMAP sock_map, xdp_prog, and the inlined bpf_redirect_map
-# call), so runsc's redirect path needs no changes.
+# v5 (multi-queue RSS discriminator): the diagnostic counter map is now
+# bpf_counts = ARRAY[16] of {u32 pass, u32 redirect}, indexed by
+# ctx->rx_queue_index — each slot is that RX queue's own frame counter at the
+# decision point (ENA runs the program per queue, ena_xdp_handle_buff). The
+# v10 data (v4's single pair) showed redirect climbing during darks while the
+# pass share was only ~7-11%, far below a 2-queue 50/50 RSS prediction, so
+# the missing variable is WHICH queue each frame lands on. Confirmation of
+# the hypothesis (gvisor binds one AF_XDP socket at key 0, xdp.go:178, on a
+# 2-queue ENA): slot 0 redirect climbs / pass ~0, slot 1 pass climbs /
+# redirect ~0 (queue 1 has no socket -> sn-6e guard -> offline kernel).
+# xdp-5 pins it at /sys/fs/bpf/<iface>/redirect_counts; the kernel-side
+# bpfcount reader (below) samples all 16 slots (32 fields: p0 r0 ... p15
+# r15) every probe cycle. The ABI otherwise is unchanged from v1..v4 (the
+# XSKMAP sock_map, xdp_prog, and the inlined bpf_redirect_map call), so
+# runsc's redirect path needs no changes.
 # ADD bpf/redirect_host_ebpf.o tools/xdp/cmd/bpf/redirect_host_ebpf.o
 #
 # LOAD PATH (why the xdp_loader binary is the one that matters): the sys-net
@@ -126,10 +135,11 @@ RUN patch -p1 -i /tmp/xdp-1.patch && patch -p1 -i /tmp/xdp-2.patch \
 # first (sysnet.sh enforces: `[ -e $PIN/redirect_ip_map ] || fail`), which it
 # does. Both binaries embed the same file, so this one overwrite covers both.
 ADD bpf/redirect_host_ebpf.o tools/xdp/cmd/bpf/redirect_host_ebpf.o
-# bpfcount: the kernel-side reader for the v4 diagnostic counter map (the Oct
-# 4 flap discriminator). A tiny Go binary (cilium/ebpf LoadPinnedMap +
-# LookupBytes, stdlib only) that prints "pass redirect". Added to the gvisor
-# module tree as ./bpfcount so it builds against the module's own cilium/ebpf
+# bpfcount: the kernel-side reader for the v5 per-queue diagnostic counter
+# map (the multi-queue RSS discriminator). A tiny Go binary
+# (cilium/ebpf LoadPinnedMap + LookupBytes, stdlib only) that prints the 16
+# slots as 32 fields: "p0 r0 p1 r1 ... p15 r15". Added to the gvisor module
+# tree as ./bpfcount so it builds against the module's own cilium/ebpf
 # v0.16.0 require and the pre-downloaded module cache (the build step runs
 # --network=none). Lands in the kernel-side rootfs (NOT the sandbox); the
 # sys-net supervisor runs it every probe cycle. Not on the sandbox boot path.
