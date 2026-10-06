@@ -567,12 +567,18 @@ chmod 755 "$R/bin/bootproofd" 2>/dev/null || true
 # and writes /root/.ssh/authorized_keys.
 cp -f /usr/bin/enclavectl  "$R/bin/enclavectl"  || fail "copy enclavectl failed"
 chmod 755 "$R/bin/enclavectl" 2>/dev/null || true
-# /home/bootproof mount point: a real dir in the (readonly) bundle rootfs —
-# the gofer O_CREATs a missing bind target and dies on a readonly fs (P4
-# rule). /run/enclaved needs no placeholder: /run is the writable tmpfs, so
-# the gofer creates it there. Host-side sources: enclaved owns /run/enclaved
-# (mkdir -p is idempotent); /home/bootproof persists on the LUKS volume,
-# is recreated on tmpfs /home (QEMU) — both idempotent.
+# /home/bootproof bind source: the HOST dir (kernel-side), created here so
+# runsc's gofer has a valid fd at `create` time. Which dir that fd points
+# at depends on WHEN the kernel mounts LUKS over /home: sysnet depends on
+# enclaved (the LUKS mounter, ready written after the mount), so on a data
+# disk the host /home/bootproof lives on the persistent LUKS volume and the
+# gofer fd follows it — the bootproof TLS identity then survives reboots
+# (stable TOFU pin). On a no-disk boot it is the init tmpfs (identity
+# re-mints, expected). The bundle rootfs also pre-creates /home/bootproof
+# because the gofer O_CREATs a missing bind target and dies on a readonly
+# fs (P4 rule); that placeholder is never the persistent store — only the
+# host dir is. /run/enclaved + /run/sysnet need no host pre-creation:
+# /run is the writable tmpfs, so the gofer creates them there.
 mkdir -p "$R/home/bootproof" /run/enclaved /home/bootproof /run/sysnet 2>/dev/null \
   || fail "mkdir bootproofd bind targets failed"
 cp -f /lib/ld-musl-x86_64.so.1  "$R/lib/" || fail "copy ld-musl failed"

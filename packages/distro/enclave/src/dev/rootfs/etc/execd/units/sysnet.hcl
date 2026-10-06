@@ -33,9 +33,18 @@
 // (kill sentry by PID, delete sandbox, detach program, unpin) and execd
 // respawns — the fresh socket re-arms the redirect and rust-dhcp re-DORA's.
 //
-// Depends on lo (not dhcp, sn-7): the kernel is offline and the lease is
-// owned by the sandbox's netstack, so there is no kernel dhcp unit to
-// depend on. eth0 exists at boot (net.ifnames=0 on the cmdline).
+// Depends on lo + enclaved (not dhcp, sn-7): the kernel is offline and the
+// lease is owned by the sandbox's netstack, so there is no kernel dhcp unit
+// to depend on. eth0 exists at boot (net.ifnames=0 on the cmdline).
+// The enclaved dependency is the gofer-bind race fix: the /home/bootproof
+// bind is a 9p directfs fd captured at `runsc create`, so if the sandbox is
+// created before enclaved mounts LUKS over /home, the fd points at the
+// pre-LUKS (init tmpfs) /home/bootproof dir for the whole boot and the
+// bootproof TLS identity re-mints every boot (pin drift). Waiting on
+// enclaved's /run/enclaved/ready (written AFTER the LUKS open+mount) means
+// the bind follows the persistent volume and the TOFU pin is stable across
+// reboots. enclaved writes ready unconditionally (disk no-op included),
+// so a no-data-disk boot (QEMU) only adds a few seconds, never a stall.
 //
 // restart="always": a dead sys-net face is respawned; the script's teardown
 // is idempotent (kill sentry, delete, xdp off, unpin, kill+del the
@@ -46,7 +55,7 @@ unit "sysnet" {
   script = "/usr/libexec/sysnet.sh"
 
   depends {
-    units = ["lo"]
+    units = ["lo", "enclaved"]
   }
 
   restart = "always"
