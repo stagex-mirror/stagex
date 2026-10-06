@@ -146,9 +146,11 @@ COPY --from=user-iptables . /
 COPY --from=user-elfutils /usr/lib/libelf.so.1 /usr/lib/libelf.so.1
 COPY --from=core-xz /lib/liblzma.so.5 /lib/liblzma.so.5
 # execd units (pure depends-graph, topo-sorted by execd). sn-7 kernel-
-# offline: lo (base) -> { enclaved -> { provisioner, bootproofd }, sysnet }.
-# The kernel dhcp + sshdt units are GONE: the sysnet sandbox's netstack owns
-# the DHCP lease (rust-dhcp) and :22 (sshdt). No shell scripts in the units.
+# offline: lo (base) -> { enclaved -> { provisioner, bootproofd }, sysnet,
+# sysnet-watchdog }. The kernel dhcp + sshdt units are GONE: the sysnet
+# sandbox's netstack owns the DHCP lease (rust-dhcp) and :22 (sshdt).
+# sysnet-watchdog (v13-supervisor) is the independent last-resort recovery
+# for the sys-net face (separate process; see its unit).
 COPY src/dev/rootfs/etc/execd/units/enclaved.hcl /etc/execd/units/
 COPY src/dev/rootfs/etc/execd/units/bootproofd.hcl /etc/execd/units/
 # P4: provisioner = sandboxed user-data provisioning (runsc do); bootproofd
@@ -166,6 +168,18 @@ COPY src/dev/rootfs/usr/libexec/bootproofd-sandbox.sh /usr/libexec/bootproofd-sa
 COPY src/dev/rootfs/etc/execd/units/sysnet.hcl /etc/execd/units/
 COPY src/dev/rootfs/usr/libexec/sysnet.sh /usr/libexec/sysnet.sh
 RUN chmod 755 /usr/libexec/sysnet.sh
+# v13-supervisor (Oct 6 wire): the INDEPENDENT last-resort recovery for the
+# sys-net face. The Oct 6 terminal dark (i-0e5a6d710e6bcc45e) showed the
+# whole recovery chain ran inside the sysnet supervisor loop, and that loop
+# had wedged ~14.5 h earlier — so there was no live process left to run the
+# reboot when the netstack went dark. The watchdog owns the reboot in a
+# separate, wedge-free process (reads only two files + reboot -f); the
+# supervisor stamps a heartbeat each iteration, the watchdog reboots on
+# heartbeat-stale OR data-plane-dark. Complementary to the supervisor's
+# cheaper 120 s respawn.
+COPY src/dev/rootfs/etc/execd/units/sysnet-watchdog.hcl /etc/execd/units/
+COPY src/dev/rootfs/usr/libexec/sysnet-watchdog.sh /usr/libexec/sysnet-watchdog.sh
+RUN chmod 755 /usr/libexec/sysnet-watchdog.sh
 # Full SPDX build-provenance document (git origin/branch/commit + every
 # dependency's name/version/digest), generated into the build context by the
 # build and baked into the image; installed at /provenance.spdx.

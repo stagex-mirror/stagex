@@ -197,6 +197,27 @@ PLOG=/home/sysnet-events.log # v9: PERSISTENT event log (LUKS /home on AWS;
                              # post-mortem must live here (best-effort writes;
                              # a failed write before /home is mounted is
                              # harmless).
+# v13-supervisor (Oct 6 wire): the Oct 6 i-0e5a6d710e6bcc45e incident proved
+# the whole recovery stack (dpmon read, dpark_check, escalation, reboot -f)
+# lived in ONE shell loop (this file's main loop) — and that loop had WEDGED
+# ~14.5 h BEFORE the netstack darked, so when the netstack went terminally
+# dark there was NO live process left to run the escalation. The v8/v9 chain
+# is correct; it just needs a live loop to run it. Fix: split the RECOVERY
+# from the SUPERVISION. The main loop below keeps doing its rich work (runsc
+# liveness, teardown, respawn, BPF counters, serial probes) and stamps a
+# heartbeat each iteration. A SEPARATE minimal execd unit (sysnet-watchdog
+# -> /usr/libexec/sysnet-watchdog.sh) owns the reboot: it only reads two
+# files ($HB heartbeat staleness + $DPF data-plane dark) and calls reboot -f
+# — NO runsc, NO pgrep, NO bpf(2), NO serial, nothing that can wedge with the
+# main loop. If the main loop wedges, the heartbeat goes stale and the
+# watchdog reboots the guest INDEPENDENTLY. The two are complementary: the
+# main loop still does the CHEAP respawn (sandbox teardown, no reboot) for a
+# process-level death or a self-recovering transient; the watchdog is the
+# last-resort full reset that survives a wedged main loop.
+HB=/run/sysnet/hb             # v13-supervisor: main-loop heartbeat (epoch).
+                             # /run/sysnet is the host tmpfs bind — visible to
+                             # both processes, wiped on guest reboot.
+WDF=/run/sysnet/watchdog.log  # v13-supervisor: watchdog's own log (tmpfs).
 # v11: BPF per-queue counter sampling (the multi-queue RSS discriminator).
 # The v5 redirect object (packages/user/gvisor/bpf/redirect.c) carries a
 # second ARRAY[16] map, bpf_counts = {u32 pass, u32 redirect} indexed by
@@ -1094,7 +1115,32 @@ dpark_check() {
 # "absent" line (BPSEEN cap) and never blocks or fails the supervisor.
 count_sample() {
   [ -x "$BPCOUNT" ] || return 0
-  bp_cur=$("$BPCOUNT" "$PIN/redirect_counts" 2>/dev/null) || bp_cur=""
+  # v13-supervisor (Oct 6 wire): the Oct 6 i-0e5a6d710e6bcc45e incident — the
+  # supervisor loop wedged ~14.5 h before the netstack darked, and the
+  # console's LAST line was a count_sample [bp] line. count_sample is the
+  # loop's ONE synchronous external process (bpfcount does a bpf(2)
+  # BPF_MAP_LOOKUP_ELEM; a bpf(2) blocked in the kernel is exactly the
+  # waitpid-class wedge). It is DIAGNOSTIC, not load-bearing — so it goes off
+  # the blocking path the same way run_probe/is_running do: background it,
+  # poll /proc non-blocking, kill -9 at the deadline, NEVER wait on it. A
+  # wedged bpfcount now costs at most a leaked zombie, not the supervisor.
+  bp_out=/tmp/.sysnet-bp
+  rm -f "$bp_out" 2>/dev/null
+  "$BPCOUNT" "$PIN/redirect_counts" > "$bp_out" 2>/dev/null &
+  bp_live=0; bp_pid=""; j=0
+  while [ "$j" -lt 3 ]; do
+    bp_live=0
+    for p in $(pgrep -x bpfcount 2>/dev/null); do
+      bp_live=1; bp_pid=$p
+    done
+    [ "$bp_live" -eq 0 ] && break
+    sleep 1; j=$((j + 1))
+  done
+  [ "$bp_live" -eq 1 ] && kill -9 "$bp_pid" 2>/dev/null || true
+  bp_cur=$(cat "$bp_out" 2>/dev/null)
+  case "$bp_cur" in
+    ''|*[!0-9\ ]*) bp_cur="" ;;  # incomplete/garbage read -> absent
+  esac
   # Validate the whole line is exactly 32 all-digit space-separated fields.
   # (The v4 object emits 2 fields; a mismatched count means the running
   # program and the bpfcount binary disagree -> treat as absent, log once.)
@@ -1223,6 +1269,13 @@ run_probe
 # runsc list miss (state-root contention) must not orphan the data plane.
 i=0; FAIL=0
 while [ "$i" -lt 360000 ]; do
+  # v13-supervisor: heartbeat FIRST, before anything that can block (is_running
+  # backgrounds runsc; run_probe the probe; count_sample bpfcount; the periodic
+  # probe the exec channel). If ANY of those wedges mid-iteration, this
+  # stamp never recurs and the separate watchdog (sysnet-watchdog.sh) sees a
+  # stale $HB and reboots the guest — the recovery that was dead with the
+  # loop on Oct 6. A plain tmpfs write: it cannot wedge the loop.
+  date -u +%s > "$HB" 2>/dev/null || true
   sleep 5
   if is_running; then
     FAIL=0
