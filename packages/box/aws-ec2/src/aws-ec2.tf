@@ -91,6 +91,12 @@ variable "data_volume_delete_on_termination" {
   default     = true
 }
 
+variable "iam_instance_profile" {
+  description = "Optional IAM instance profile name to attach (e.g. for a scoped S3 role; null = none)"
+  type        = string
+  default     = null
+}
+
 # --- Provider ---
 provider "aws" {
   region = var.region
@@ -130,6 +136,13 @@ resource "aws_instance" "this" {
 
   metadata_options {
     http_tokens = "optional"
+  }
+
+  dynamic "iam_instance_profile" {
+    for_each = var.iam_instance_profile != null ? [1] : []
+    content {
+      name = var.iam_instance_profile
+    }
   }
 
   dynamic "cpu_options" {

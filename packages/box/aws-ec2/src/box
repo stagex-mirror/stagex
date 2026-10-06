@@ -99,6 +99,12 @@ elif [ -n "$AMI_TFVARS" ] && [ -f "$AMI_TFVARS" ]; then
     grep '^ami_id' "$AMI_TFVARS" >> /run/ec2.tfvars
 fi
 
+# Optional IAM instance profile (scoped S3 role for the netdebug channel).
+# Empty -> null (the tf variable's default -> no profile, no behavior change).
+if [ -n "$IAM_INSTANCE_PROFILE" ]; then
+    echo "iam_instance_profile = \"${IAM_INSTANCE_PROFILE}\"" >> /run/ec2.tfvars
+fi
+
 # Apply
 tofu apply -auto-approve -var-file=/run/ec2.tfvars -no-color >/dev/null
 

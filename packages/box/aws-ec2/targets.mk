@@ -9,6 +9,7 @@ EC2_SECURITY_GROUP ?= sg-0ef827fb6200b34a1
 EC2_ENABLE_SEV_SNP ?= true
 EC2_DATA_VOLUME_SIZE ?= 0
 EC2_DATA_DELETE_ON_TERM ?= true
+EC2_IAM_INSTANCE_PROFILE ?=
 EC2_SSH_KEY ?= ~/.ssh/tpm-exploration.pem
 EC2_USER_DATA_FILE ?=
 
@@ -55,6 +56,7 @@ aws-ec2-deploy: $(EC2_AMI_TFVARS)
 		-e ENABLE_SEV_SNP="$(EC2_ENABLE_SEV_SNP)" \
 		-e DATA_VOLUME_SIZE="$(EC2_DATA_VOLUME_SIZE)" \
 		-e DATA_DELETE_ON_TERM="$(EC2_DATA_DELETE_ON_TERM)" \
+		-e IAM_INSTANCE_PROFILE="$(EC2_IAM_INSTANCE_PROFILE)" \
 		-e USER_DATA="$$USER_DATA" \
 		-e AMI_TFVARS=/input/aws-ami.tfvars \
 		-v $(EC2_AMI_TFVARS):/input/aws-ami.tfvars:ro \
