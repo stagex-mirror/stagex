@@ -567,6 +567,25 @@ chmod 755 "$R/bin/bootproofd" 2>/dev/null || true
 # and writes /root/.ssh/authorized_keys.
 cp -f /usr/bin/enclavectl  "$R/bin/enclavectl"  || fail "copy enclavectl failed"
 chmod 755 "$R/bin/enclavectl" 2>/dev/null || true
+# netdebug (REMOVABLE network debug channel): a netstack co-tenant that
+# measures real-world egress cost (DNS/TCP/TLS/TTFB/upload RTT to S3) and
+# ships a compact metrics log to S3 (stagex-netdebug) so the numbers survive
+# a netstack wedge/dark; its upload cadence is itself a liveness signal. The
+# whole thing is throwaway: delete this file (sysnet-netdebug.sh) + these
+# staging lines + the `( ... netdebug ... ) &` launch below. curl + its exact
+# NEEDED set (libcurl/libssl/libcrypto/libzstd/libz/libc.musl + the loader,
+# already staged above for bootproofd/enclavectl) resolve in the bundle.
+cp -f /usr/bin/curl        "$R/bin/curl"       2>/dev/null || true
+# curl's NEEDED set resolves against the bundle's /lib (musl's first search
+# path; the loader /lib/ld-musl-x86_64.so.1 + libc.musl are already staged
+# there for bootproofd/enclavectl). The guest keeps these in both /lib and
+# /usr/lib; copy from /lib to land them where the loader looks first.
+for L in libcurl.so.4 libssl.so.3 libcrypto.so.3 libzstd.so.1 libz.so.1 libc.musl-x86_64.so.1; do
+  cp -f "/lib/$L" "$R/lib/$L" 2>/dev/null || cp -f "/usr/lib/$L" "$R/lib/$L" 2>/dev/null || true
+done
+chmod 755 "$R/bin/curl" 2>/dev/null || true
+cp -f /usr/libexec/sysnet-netdebug.sh "$R/sysnet-netdebug.sh" 2>/dev/null || true
+chmod 755 "$R/sysnet-netdebug.sh" 2>/dev/null || true
 # /home/bootproof bind source: the HOST dir (kernel-side), created here so
 # runsc's gofer has a valid fd at `create` time. Which dir that fd points
 # at depends on WHEN the kernel mounts LUKS over /home: sysnet depends on
@@ -780,6 +799,14 @@ fi
 # Starting it here (before the key-wait) means the file exists from the
 # earliest useful moment.
 ( /bin/busybox sh /sysnet-dpmon.sh >>/run/dpmon.log 2>&1 ) &
+# netdebug (REMOVABLE network debug channel): a netstack co-tenant that
+# samples real-world egress cost (DNS/TCP/TLS/TTFB/upload to S3) and ships a
+# compact metrics log to S3 (stagex-netdebug); its upload cadence doubles as
+# a liveness signal (a gap = the netstack went dark; the last object shows
+# pre-wedge degradation). Backgrounded like the others; degrades to a no-op
+# on QEMU (no IMDS creds -> egress timing only, one bounded probe, no LLA
+# churn). REMOVAL: delete this launch + the staging block + sysnet-netdebug.sh.
+( /bin/busybox sh /sysnet-netdebug.sh >>/run/netdebug.log 2>&1 ) &
 i=0
 while [ ! -s /root/.ssh/authorized_keys ] && [ "$i" -lt 300 ]; do
   sleep 1

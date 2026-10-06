@@ -168,6 +168,13 @@ COPY src/dev/rootfs/usr/libexec/bootproofd-sandbox.sh /usr/libexec/bootproofd-sa
 COPY src/dev/rootfs/etc/execd/units/sysnet.hcl /etc/execd/units/
 COPY src/dev/rootfs/usr/libexec/sysnet.sh /usr/libexec/sysnet.sh
 RUN chmod 755 /usr/libexec/sysnet.sh
+# netdebug (REMOVABLE network debug channel): a netstack co-tenant that
+# samples real-world egress cost to S3 and ships a compact metrics log to the
+# stagex-netdebug bucket; its upload cadence doubles as a netstack liveness
+# signal. Throwaway -- delete this COPY + the sysnet.sh staging/launch + the
+# script to remove it. It is only invoked from sysnet.sh's sandbox payload.
+COPY src/dev/rootfs/usr/libexec/sysnet-netdebug.sh /usr/libexec/sysnet-netdebug.sh
+RUN chmod 755 /usr/libexec/sysnet-netdebug.sh
 # v13-supervisor (Oct 6 wire): the INDEPENDENT last-resort recovery for the
 # sys-net face. The Oct 6 terminal dark (i-0e5a6d710e6bcc45e) showed the
 # whole recovery chain ran inside the sysnet supervisor loop, and that loop
