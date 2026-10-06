@@ -138,12 +138,8 @@ resource "aws_instance" "this" {
     http_tokens = "optional"
   }
 
-  dynamic "iam_instance_profile" {
-    for_each = var.iam_instance_profile != null ? [1] : []
-    content {
-      name = var.iam_instance_profile
-    }
-  }
+  # null (the default) = no profile; the provider treats a null string as unset
+  iam_instance_profile = var.iam_instance_profile
 
   dynamic "cpu_options" {
     for_each = var.enable_sev_snp ? [1] : []
