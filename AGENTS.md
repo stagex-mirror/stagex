@@ -28,6 +28,25 @@
 
 ## Current Focus: SSH and Config Drive (lance/distros branch)
 
+### Completed: full standard-vs-netstack throughput benchmark (Oct 7, lance/distros)
+- **Both legs banked (netbench, static Go, 128 MiB/stream, 3 runs median, private wire us-east-2, same subnet + SG):** baseline = stock AL2023 c6a.large → stock AL2023 c6a.large (retriever worker, deep-validated line-for-line vs raw JSON: 15/15 transfers errs=0, secs-math re-derived); netstack = fresh AL2023 c6a.large client → the sn-7 enclave `i-00fa7b38df2a9a16d` (netbench server INSIDE the gvisor sandbox, kernel offline; coordinator ran bonehound's script directly after a 52-min stall — see gotchas).
+- **THE TABLE (Mbit/s, median of 3):**
+
+  | leg | standard→standard | standard→netstack | netstack as % |
+  |---|---|---|---|
+  | put ×1 (server RX) | 4741.3 | **734.1** (734.1/770.0/653.0) | **15.5%** |
+  | get ×1 (server TX) | 4740.3 | **806.1** (806.1/527.0/826.4) | **17.0%** |
+  | put ×4 aggregate | 13434.9 | **903.4** (894.1/903.4/914.6) | **6.7%** |
+  | get ×4 aggregate | 12217.3 | **1338.2** (1304.5/1572.4/1338.2) | **11.0%** |
+  | ×4 per-stream median | 3374 / 3055 | 222.6 / 263.0 | ~7% |
+  | echo RTT min/avg/max | 156 / 165 / 322 µs | **200 / 911 / 2972 µs** | avg **5.5×** |
+
+- **Read:** netstack single-stream ≈ 0.73–0.81 Gbit/s in both directions (consistent with the Oct 5/6 benchmark body: RX 590–675, TX 765–881 — this run lands in-range), ~15–17% of the stock 4.74 Gbit/s single-stream ceiling; multi-stream does NOT scale (put ×4 ≈ 903 Mbit/s aggregate = ~1.2× single; get ×4 = 1338 = ~1.7×) because the single-queue collapse (v12) funnels all RX through one AF_XDP socket — the ×4 legs only partially help on the TX side. RTT avg 911 µs = **5.5×** the stock 165 µs (min 200 µs is already 1.3× the stock min — the pure software floor). **The throughput cost is the same documented software ceiling** (`endpoint.go:36` TODO(b/240191988): GSO/GRO off + MTU 1500 → full per-packet copies through the Go stack; single-queue RX collapse), now measured against a same-wire stock baseline rather than inferred.
+- **Data:** `scratch/thru-baseline.log` (+ `thru-baseline/raw/`), `scratch/thru-netstack.log` (+ `thru-netstack-raw/`); scripts `scratch/thru-baseline/full.sh`, `scratch/run-thru-netstack.sh`.
+- **Gotchas this session:** (1) **`pkill -f 'netbench server'` self-matches the remote ssh `-c` cmdline** — it killed bonehound's start shell, so the server never bound and the smoke returned `bytes:0/errors:1` (the bracket pattern `serve[r]` is the fix; this cost the 52-min stall). (2) **bonehound sat "busy" 52 min without launching its own script** — a worker that writes a correct script and then doesn't run it is the same as a stall; the 30-min no-progress rule applied and the coordinator ran it (105 s to completion). (3) the netstack server had rebooted mid-benchmark (lease 172.31.39.10 → 172.31.33.204; a self-heal) — the script's `wait_face` liveness gate (403 = healthy) made the reboot transparent (all 18 runs landed after the re-lease; `/tmp/netbench` had already been re-staged). (4) my own `pkill -f run-thru-netstack.sh` self-matched THIS tool call's shell (empty output) — `pgrep -f "run-thru-netstack[.]sh"` is the safe check. (5) the netbench raw files carry an ssh "Warning: Permanently added…" first line — strip before parsing JSON. (6) the ×4 get leg's per-stream variance is wide (183–777 Mbit/s) — TCP fair-share over one software queue; the aggregate is the stable number.
+- **Cleanup:** bench client `i-0cde25768b5c94b84` terminated; sandbox netbench servers killed; the two pre-existing baseline instances (`i-04f59dee281f63b0b`, `i-0da496041f4098dce`) left running (tags `stagex-bench-baseline`/`baseline2`) for the S3-latency baseline re-use; bonehound told to stand down (still winding down).
+- **The measurement goal is MET:** the real-world cost of the gvisor netstack sandbox is now quantified end-to-end — latency (the S3 table above: total +35 ms, ~3.4×) AND throughput (this table: ~15–17% single-stream, ~7–11% aggregate, RTT 5.5×) — both against same-wire stock baselines. Next open thread: **remove the netdebug instrumentation** (delete `sysnet-netdebug.sh` + its staging/launch in `sysnet.sh` + the Containerfile COPY) now that the network is measured and the keeper has 16/16 self-healed darks.
+
 ### Completed
 - **tinyssh migration** — replaced openssh with tinyssh (~100KB vs ~3MB). Uses tcpsvd for TCP listener (tinysshd doesn't daemonize). Key dir at `/run/tinyssh/keys/`, reads `authorized_keys` from there.
 - **busybox-init consolidation** — init scripts moved from `core-busybox-init` subpackage into `packages/distro/busybox/src/rootfs/etc/init.d/`
