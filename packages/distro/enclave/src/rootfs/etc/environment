@@ -3,3 +3,8 @@ HOME=/root
 TERM=linux
 SHELL=/bin/sh
 RUST_LOG=info
+# execd (PID 1 via nit) binds its reload/status control socket here; nit
+# passes the ambient environment (from /etc/environment) to the exec target.
+# enclaved's fleet step sends `reload` over it after writing the
+# container-<n> units into /etc/execd/units/units.d (fail-open on failure).
+EXECD_CONTROL_SOCKET=/run/execd/ctl
