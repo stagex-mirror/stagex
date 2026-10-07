@@ -57,16 +57,27 @@ echo "$GEN" > /run/netdebug/gen 2>/dev/null
 # instance-id (from IMDS when available; the S3 object key). Fetched in the
 # credential window below; falls back to a static label.
 IID=i-unknown
-# NOIMDS=1 once a probe shows the metadata service is absent (QEMU): then we
-# never call get_creds again, so the LLA is never yanked for a doomed fetch.
+# NOIMDS=1 once ~10 consecutive instance-id probes all come back empty
+# (~100 s at the 10 s attempt cadence): the metadata service is genuinely
+# absent (QEMU: no ENI, no role). One empty probe does NOT set it -- on the
+# wire the first fetch (~130 s) can hit a cold gateway-ARP / netstack window
+# and read an empty IID while IMDS is healthy minutes later. Once set,
+# get_creds is never called again, so the LLA is never yanked for a doomed
+# fetch.
 NOIMDS=0
+IMDSFAIL=0
+IMDSFAIL_LIMIT=10
 
 # --- IMDS credentials (bounded LLA-removal window, same trick as enclavectl) ---
 # Returns 0 on success (AKID/SEC/STOK/IID set), 1 otherwise (fail-open). The
 # LLA is removed for the fetch's duration and re-added on every exit path
-# (fail-open re-DORA primary). On the very first instance-id probe: if IMDS is
-# absent (QEMU, no ENI role) that single 5 s timeout sets NOIMDS so we stop
-# churning the LLA -- the other three curls are skipped too (no 20 s window).
+# (fail-open re-DORA primary). An empty instance-id probe is a single
+# CONSECUTIVE failure, not a verdict: the caller retries on later samples
+# (a cold gateway-ARP / netstack window can read an empty IID while IMDS is
+# healthy), and only after IMDSFAIL_LIMIT consecutive empty probes does
+# NOIMDS=1 stop the attempts -- so the LLA stops churning for a genuinely
+# absent metadata service (QEMU) without giving up on the wire after one bad
+# window.
 get_creds() {
   # belt-and-suspenders on top of the i>=13 deferral: never open the LLA
   # window while enclavectl's own provision (the CRITICAL authorized_keys
@@ -77,10 +88,14 @@ get_creds() {
   /bin/busybox ip -4 addr del 169.254.2.2/16 dev eth0 2>/dev/null
   IID=$($CURL -s -m 5 http://169.254.169.254/latest/meta-data/instance-id 2>/dev/null)
   if [ -z "$IID" ]; then
-    NOIMDS=1
+    # empty probe: count the consecutive failures; only a sustained absence
+    # (~100 s at the caller's cadence) is a verdict.
+    IMDSFAIL=$((IMDSFAIL + 1))
+    [ "$IMDSFAIL" -ge "$IMDSFAIL_LIMIT" ] && NOIMDS=1
     /bin/busybox ip -4 addr add 169.254.2.2/16 dev eth0 2>/dev/null
     return 1
   fi
+  IMDSFAIL=0
   case "$IID" in i-*) : ;; *) IID=i-unknown;; esac
   TOK=$($CURL -s -m 5 -X PUT "http://169.254.169.254/latest/api/token" \
         -H "X-aws-ec2-metadata-token-ttl-seconds: 21600" 2>/dev/null)
@@ -91,9 +106,13 @@ get_creds() {
   # re-add the LLA no matter what (fail-open re-DORA primary; EEXIST is a no-op)
   /bin/busybox ip -4 addr add 169.254.2.2/16 dev eth0 2>/dev/null
   [ -n "$CREDS" ] || return 1
-  AKID=$(echo "$CREDS" | grep -oE '"AccessKeyId": *"[^"]+"'  | sed 's/.*:"\([^"]*\)"/\1/')
-  SEC=$(echo  "$CREDS" | grep -oE '"SecretAccessKey": *"[^"]+"' | sed 's/.*:"\([^"]*\)"/\1/')
-  STOK=$(echo  "$CREDS" | grep -oE '"Token": *"[^"]+"' | sed 's/.*:"\([^"]*\)"/\1/')
+  # IMDS renders the credentials JSON with a space BEFORE the colon
+  # ("AccessKeyId" : "ASIA...") -- the patterns must allow whitespace on
+  # both sides of the colon or every field extracts empty and the SigV4
+  # header goes out malformed (S3 400 AuthorizationHeaderMalformed).
+  AKID=$(echo "$CREDS" | grep -oE '"AccessKeyId" *: *"[^"]+"'  | sed 's/.*: *"\([^"]*\)"/\1/')
+  SEC=$(echo  "$CREDS" | grep -oE '"SecretAccessKey" *: *"[^"]+"' | sed 's/.*: *"\([^"]*\)"/\1/')
+  STOK=$(echo  "$CREDS" | grep -oE '"Token" *: *"[^"]+"' | sed 's/.*: *"\([^"]*\)"/\1/')
   [ -n "$AKID" ] && [ -n "$SEC" ]
 }
 
@@ -155,7 +174,10 @@ while :; do
   sample
   i=$((i + 1))
   # first credential fetch, deferred past enclavectl's LLA window (see above);
-  # once IMDS is found absent (NOIMDS) it is never retried -- no LLA churn.
+  # empty IID probes count as consecutive failures and are retried until
+  # NOIMDS (a sustained ~100 s absence) -- so a single bad netstack window
+  # does not kill the upload leg, and a genuinely absent IMDS (QEMU) still
+  # stops churning the LLA.
   [ -z "$AKID" ] && [ "$NOIMDS" -eq 0 ] && [ "$i" -ge 13 ] && get_creds \
     && echo "netdebug: creds fetched gen=$GEN iid=$IID (S3 upload enabled)"
   # one throughput sample per upload window (not every 10 s -- S3 storage)
