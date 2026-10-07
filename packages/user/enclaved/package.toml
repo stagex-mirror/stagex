@@ -40,8 +40,21 @@ website = "https://codeberg.org/lrvick/enclaved"
 #   digest, no size field — kernel tpm2-cmd.c:208-214 and libtpms
 #   TPMU_HA_Unmarshal both confirmed). The extra 2 bytes shifted the
 #   fixed 32-byte digest read -> TPM_RC_SIZE. 67 -> 65 bytes.
-version = "e11af0fb8712609f6ed42c35c2280ece76be78a4"
-hash = "4cc81159fe52de3733d43aca5d4c8d0c57e84010323338c659576f8a799f63ca"
+# bc4acdd: spec: container name= / online flags + named link lines
+#   (grammar): the N-container fleet grammar (container <ref> [sha256=…]
+#   [name=…] [online] [ports=…] [link=…] + link <name> containers=…
+#   [port=…]); names unique at parse (shadowing refused, fail closed).
+# f7c37a2: fleet: real runsc sandbox units, bundles, link dirs, execd
+#   reload: UNITS_D corrected to /etc/execd/units/units.d (execd's actual
+#   fleet dir); one shell supervisor unit per container (create -> start
+#   -> bounded runsc list keep-alive, v5 non-blocking poll pattern, no
+#   wait/timeout on a runsc child); bundle config.json from the
+#   re-verified OCI config; kernel-side link dirs created before the
+#   units; execd reload over the unix ctl socket (fail-open).
+# 40d1cc1: spec: additive advisory report fields (name/online/links);
+#   the daemon keeps re-parsing its own user-data (source of truth).
+version = "40d1cc13e7d47bbad5a5ecc6c6d98356c78e9572"
+hash = "51340d66b71ed9b6b73e31f94360ee607f8788b8aa7dc3b62aab549be78ea7e5"
 format = "tar.gz"
 file = "enclaved-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/enclaved/archive/{version}.{format}"]
