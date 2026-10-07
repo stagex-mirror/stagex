@@ -6,7 +6,17 @@ USER_DATA="${USER_DATA:-}"
 SSH_KEY="${SSH_KEY:-}"
 
 if [ -n "$USER_DATA" ]; then
-    KEY="$USER_DATA"
+    # $USER_DATA is the FULL cloud-init blob: it may carry non-key lines
+    # (user=, hostname=, container lines). authorized_keys gets the ssh
+    # key lines only; when the blob has none, derive from SSH_KEY.
+    SSH_LINES=$(printf '%s\n' "$USER_DATA" | grep -E '^(ssh-|ecdsa-|sk-)' || true)
+    if [ -n "$SSH_LINES" ]; then
+        KEY="$SSH_LINES"
+    elif [ -n "$SSH_KEY" ] && [ -f "$SSH_KEY" ]; then
+        KEY=$(ssh-keygen -y -f "$SSH_KEY" 2>/dev/null || echo "ssh-rsa PLACEHOLDER")
+    else
+        KEY="ssh-rsa PLACEHOLDER"
+    fi
 elif [ -n "$SSH_KEY" ] && [ -f "$SSH_KEY" ]; then
     KEY=$(ssh-keygen -y -f "$SSH_KEY" 2>/dev/null || echo "ssh-rsa PLACEHOLDER")
 else
@@ -19,6 +29,13 @@ HOSTNAME="qemu-dev"
 CLOUD_TMP=$(mktemp -d)
 trap "rm -rf $CLOUD_TMP" EXIT
 mkdir -p "$CLOUD_TMP/iso"
+if [ -n "$USER_DATA" ]; then
+    # The guest's config_drive() reads ./user-data FIRST: the full blob
+    # (container lines included) must land here. Without this file the
+    # reader falls back to hostname + authorized_keys and the ssh- prefix
+    # filter DROPS the container lines.
+    printf '%s\n' "$USER_DATA" > "$CLOUD_TMP/iso/user-data"
+fi
 printf '%s\n' "$KEY" > "$CLOUD_TMP/iso/authorized_keys"
 printf '%s\n' "$HOSTNAME" > "$CLOUD_TMP/iso/hostname"
 xorriso -as mkisofs -o /out/cloud-iso.img -V config-2 "$CLOUD_TMP/iso" >/dev/null 2>&1
