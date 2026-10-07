@@ -30,7 +30,7 @@
 
 ### Completed: full standard-vs-netstack throughput benchmark (Oct 7, lance/distros)
 - **Both legs banked (netbench, static Go, 128 MiB/stream, 3 runs median, private wire us-east-2, same subnet + SG):** baseline = stock AL2023 c6a.large → stock AL2023 c6a.large (retriever worker, deep-validated line-for-line vs raw JSON: 15/15 transfers errs=0, secs-math re-derived); netstack = fresh AL2023 c6a.large client → the sn-7 enclave `i-00fa7b38df2a9a16d` (netbench server INSIDE the gvisor sandbox, kernel offline; coordinator ran bonehound's script directly after a 52-min stall — see gotchas).
-- **THE TABLE (Mbit/s, median of 3):**
+- **THE TABLE (median of 3; netbench reports Mibit/s — binary, `mbitps` = 8×MiB/s = bytes·8/(secs·1048576); verified 0.0000 err on all 30 netstack + all baseline streams. Both legs use the same binary unit, so the % column is unit-independent and exact. Decimal Mbit/s = the Mibit/s figure × 1.048576, but the comparison is what matters):**
 
   | leg | standard→standard | standard→netstack | netstack as % |
   |---|---|---|---|
