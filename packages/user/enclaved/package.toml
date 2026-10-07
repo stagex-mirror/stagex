@@ -53,8 +53,16 @@ website = "https://codeberg.org/lrvick/enclaved"
 #   units; execd reload over the unix ctl socket (fail-open).
 # 40d1cc1: spec: additive advisory report fields (name/online/links);
 #   the daemon keeps re-parsing its own user-data (source of truth).
-version = "40d1cc13e7d47bbad5a5ecc6c6d98356c78e9572"
-hash = "51340d66b71ed9b6b73e31f94360ee607f8788b8aa7dc3b62aab549be78ea7e5"
+# 740d771: oci: store the manifest in pull() (daemon re-derivation anchor)
+#   - the live boot fail-closed on 'store: read <manifest>: No such
+#   file' because pull() stored config+layers but not the manifest the
+#   fleet step re-derives from; the 101 green tests masked it (the test
+#   helper stored the manifest by hand).
+# 602d92f: fleet: report poll 120s -> 600s (enclavectl's in-netstack pull
+#   has no hard deadline; the drop can land minutes after boot) + a
+#   fail-open timeout message that names the bound and posture.
+version = "602d92fcaf8b4a51c79bb42e58defbe32bd146e0"
+hash = "dd545ae24b948b86efe8f9756e17ed950e5a80137075ef4bc54506925e0b252b"
 format = "tar.gz"
 file = "enclaved-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/enclaved/archive/{version}.{format}"]
