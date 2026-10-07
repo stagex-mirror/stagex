@@ -60,6 +60,15 @@ COPY --from=user-execd /usr/bin/execd /usr/bin/execd
 COPY --from=user-brush /usr/bin/brush /usr/bin/brush
 RUN ln -sf /usr/bin/brush /bin/sh
 COPY src/rootfs/etc/environment /etc/environment
+# execd init wrapper: nit execve's init.target with an EMPTY environment
+# (envp=[null], no env-passage), so /etc/environment (a PAM login
+# convention) is inert under nit and execd's EXECD_* env-gated flags never
+# reach it. The wrapper is the env carrier: it exports the execd runtime
+# env, prepares the writable /run paths, then `exec`s /usr/bin/execd (same
+# PID, so execd is still PID 1 and its reaper/controller fork is
+# unchanged). uki-cmdline-uk points init.target at it.
+COPY src/rootfs/usr/libexec/execd-init /usr/libexec/execd-init
+RUN chmod 755 /usr/libexec/execd-init
 # /etc/{resolv.conf,hostname,hosts} must EXIST in the image: `runsc do`
 # (setupNet, do.go) bind-mounts generated copies of all three into every
 # sandbox, and the gofer creates each mount point with O_CREAT

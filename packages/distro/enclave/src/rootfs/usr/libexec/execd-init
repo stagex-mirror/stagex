@@ -1,0 +1,11 @@
+#!/bin/sh
+# execd init wrapper. nit execs init.target with an EMPTY environment
+# (raw.rs: envp=[null]) and no env-passage, so /etc/environment is never
+# read — execd's EXECD_* env-gated flags were always inert. This wrapper is
+# the env carrier: it sets the execd runtime env, prepares the writable /run
+# paths, then `exec`s the real init (same PID, so execd is still PID 1 and
+# its reaper/controller fork is unchanged).
+export EXECD_CONTROL_SOCKET=/run/execd/ctl
+export EXECD_FLEET_DIR=/run/execd/units.d
+mkdir -p /run/execd /run/execd/units.d
+exec /usr/bin/execd

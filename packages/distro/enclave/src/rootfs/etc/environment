@@ -3,15 +3,10 @@ HOME=/root
 TERM=linux
 SHELL=/bin/sh
 RUST_LOG=info
-# execd (PID 1 via nit) binds its reload/status control socket here; nit
-# passes the ambient environment (from /etc/environment) to the exec target.
-# enclaved's fleet step sends `reload` over it after writing the
-# container-<n> units into the fleet dir below (fail-open on failure).
-EXECD_CONTROL_SOCKET=/run/execd/ctl
-# execd reads the runtime-generated fleet units from HERE (not from the
-# read-only /etc/execd config dir): enclaved writes the verified
-# container-<n> units into this writable /run tmpfs dir, and execd's
-# get_units (the EXECD_FLEET_DIR override) + `reload` read it back. The
-# static units stay under /etc/execd/units (RO erofs, immutable/measured);
-# the fleet dir is decoupled so the daemon can write where the OS allows.
-EXECD_FLEET_DIR=/run/execd/units.d
+# NOTE: execd's runtime env (EXECD_CONTROL_SOCKET, EXECD_FLEET_DIR) does NOT
+# live here. nit execve's its init.target with an EMPTY environment (no
+# envp; the README's "empty environment + minimal argv at exec"), and
+# /etc/environment is a PAM login convention nit never reads — so anything
+# set here is inert under nit. Those two vars are carried by the init
+# wrapper /usr/libexec/execd-init (init.target), which exports them before
+# exec'ing /usr/bin/execd.
