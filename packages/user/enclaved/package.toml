@@ -61,8 +61,17 @@ website = "https://codeberg.org/lrvick/enclaved"
 # 602d92f: fleet: report poll 120s -> 600s (enclavectl's in-netstack pull
 #   has no hard deadline; the drop can land minutes after boot) + a
 #   fail-open timeout message that names the bound and posture.
-version = "602d92fcaf8b4a51c79bb42e58defbe32bd146e0"
-hash = "dd545ae24b948b86efe8f9756e17ed950e5a80137075ef4bc54506925e0b252b"
+# 41bb1d1: fleet: write units to the writable /run fleet dir (execd
+#   EXECD_FLEET_DIR) — UNITS_D /etc/execd/units/units.d ->
+#   /run/execd/units.d. The live green-bar boot (8b602bc3) proved the
+#   store-verify + report path fixed, then EROFS'd: /etc is a read-only
+#   erofs, and execd read the fleet dir as config_dir/units.d (a sibling),
+#   never the inside-units path enclaved wrote. The fleet dir is now
+#   decoupled from the RO config dir (maps to the trust model: static
+#   units immutable/RO, fleet units runtime-generated + verified);
+#   requires the execd 991fb3b pin (get_units(dir, fleet_dir)).
+version = "41bb1d1bf35f396b0585b7af07bdfc15541617b4"
+hash = "e495e6baa262fc45a37f0f55641298a255d8fc2a8549c69704173e53c34d372c"
 format = "tar.gz"
 file = "enclaved-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/enclaved/archive/{version}.{format}"]

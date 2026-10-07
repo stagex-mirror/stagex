@@ -14,13 +14,19 @@ name = "execd"
 # 5cb1e3c additionally treats a missing /proc/net/<family> file (no
 # CONFIG_INET6 / CONFIG_UNIX) as "no sockets of that type" instead of an
 # error, so dependency health checks cannot stall the DAG on such kernels.
-version = "89cb134b8fea8dbfed66fb51d53e44cc2dc0f0ab"
+# 991fb3b: config: decouple the fleet units dir from the config dir
+#   (writable runtime units) — get_units(dir, fleet_dir); the fleet dir is
+#   the EXECD_FLEET_DIR arg (default config_dir/units.d, the old sibling
+#   layout), so the nit/erofs sn-7 layout (RO /etc) points the runtime
+#   fleet units at the writable /run tmpfs. enclaved writes there after
+#   store verification; the reload re-reads the same static+fleet join.
+version = "991fb3bbcdeaec924bc55f3da90c2645fe229e27"
 description = "Rust HCL unit supervisor: depends DAG, oneshot/standard units, restart policy, socket/file health"
 license = "MIT"
 website = "https://codeberg.org/lrvick/execd"
 
 [sources.execd]
-hash = "edff974b7efd6f90f529b908e3322cd8025b67ffac76ae3281daccb3b676a451"
+hash = "71366f4d213a18a98e6ca882ed31bc2007fe18bed6750d9632e16dfed1ddfaf6"
 format = "tar.gz"
 file = "execd-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/execd/archive/{version}.{format}"]

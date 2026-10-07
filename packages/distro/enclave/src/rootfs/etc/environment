@@ -6,5 +6,12 @@ RUST_LOG=info
 # execd (PID 1 via nit) binds its reload/status control socket here; nit
 # passes the ambient environment (from /etc/environment) to the exec target.
 # enclaved's fleet step sends `reload` over it after writing the
-# container-<n> units into /etc/execd/units/units.d (fail-open on failure).
+# container-<n> units into the fleet dir below (fail-open on failure).
 EXECD_CONTROL_SOCKET=/run/execd/ctl
+# execd reads the runtime-generated fleet units from HERE (not from the
+# read-only /etc/execd config dir): enclaved writes the verified
+# container-<n> units into this writable /run tmpfs dir, and execd's
+# get_units (the EXECD_FLEET_DIR override) + `reload` read it back. The
+# static units stay under /etc/execd/units (RO erofs, immutable/measured);
+# the fleet dir is decoupled so the daemon can write where the OS allows.
+EXECD_FLEET_DIR=/run/execd/units.d
