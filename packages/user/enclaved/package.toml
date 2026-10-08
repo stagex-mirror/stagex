@@ -123,8 +123,25 @@ website = "https://codeberg.org/lrvick/enclaved"
 #   (b) rm -f the sentry log before --log create so the log always shows the
 #   latest attempt, (c) GRACE=24 counter tolerating consecutive non-running
 #   polls (24x5s=120s; resets on running, breaks at 0).
-version = "bd14dd1be9523966306759038b0e6b391c2fb523"
-hash = "1d146757215524a23d222bd3e2c5d77b1709069d0bc1ec92e8998338ef70a307"
+# 6e92abd: fleet: boot #10 INSTRUMENTATION ONLY (no fixes). Boot #9
+#   (disk 44587545) confirmed BUG 7 fixed live but unmasked BUG 8: the
+#   systrap sentry dies on the 7.2.0 guest kernel before writing its first
+#   log line (0-byte --log, 0-byte .err, host runsc list never shows
+#   running, audit off = no trace) -- the death is invisible. This commit
+#   adds only forensics to the container_unit template: --debug in $F
+#   (a GLOBAL flag, flags.go:66; the headless path sandbox.go:1317-1323
+#   wires the sentry boot stdio to the client stdio = the unit 2>>.err, so
+#   a Go panic/early fatal lands in .err); rm -f BOTH .log and .err per
+#   attempt; audit on (runtime sysctl, no rebuild) before create so a
+#   seccomp RET_KILL logs a type-1326 AUDIT_SECCOMP record with the syscall
+#   number in the REAL kernel dmesg; sha256sum of the in-guest sentry+runsc
+#   (A/B confound closed); a yama/audit/CET sysctl snapshot; a BOUNDED
+#   sentry /proc/$PID/status poll (Seccomp/SigBlk last-seen); and kernel
+#   dmesg tails at sentry death and at GRACE expiry. Every forensic line is
+#   a local file read/write, never waits on a child, and is guarded so a
+#   wedged forensic cannot stall the unit.
+version = "6e92abd14846d76f5709db1bca1541a7be4e9d3e"
+hash = "269f9d0930cbfb3cdadfbf7a972c6de7da3f61f711caae5057d312989b4e2a04"
 format = "tar.gz"
 file = "enclaved-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/enclaved/archive/{version}.{format}"]
