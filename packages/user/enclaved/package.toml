@@ -87,8 +87,19 @@ website = "https://codeberg.org/lrvick/enclaved"
 #   discards the sentry's stdout/stderr (exec.Command default /dev/null;
 #   the log fd goes to the empty conf.LogFilename). The log now lands
 #   in /run/enclaved/runsc-<name>.log (rbind, netstack-readable).
-version = "f998fee510aa3cb232db60e3bb2d4f6662699acf"
-hash = "842afa1e481a239267e7ffdfeebe596483eeed05002af7b379ac05cb65d0f5d2"
+# f84723a: fleet: --log is a GLOBAL flag; move it before the create
+#   subcommand. Boot #6 (c6c3ee27) carried the flag in the subcommand
+#   position (after create) and hit runsc's exact rejection: "failed to
+#   parse flags for create: flag provided but not defined: -log". --root
+#   / --network / --log are global config flags parsed before the
+#   subcommand; create has its own set (--bundle, --user-log, ...). The
+#   parse failure (rc=128) fired before any sentry booted, so no log was
+#   created and boot #6 masked boot #5's sentry death. A root-faithful
+#   local repro (root + exact guest config + the six flags) creates
+#   cleanly (rc=0), so the guest death is environment-specific; the
+#   log is still the missing evidence.
+version = "f84723a5a2de5d3818dc1c2dde81bd673892ec17"
+hash = "d4f22d82c5a9a7fd641e17d885ad80a2e37377e59385c942fcaf963d48f4dcd3"
 format = "tar.gz"
 file = "enclaved-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/enclaved/archive/{version}.{format}"]
