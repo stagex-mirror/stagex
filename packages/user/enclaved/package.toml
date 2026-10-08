@@ -79,8 +79,16 @@ website = "https://codeberg.org/lrvick/enclaved"
 #   quoted value; runsc create/start stderr is teed to
 #   /run/enclaved/runsc-<name>.err; the create rc echo prints the real
 #   captured $? (was single-quoted -> literal '?').
-version = "42774d3411127c27f476a9c69c7811c4e87c626a"
-hash = "5420056930fd512f0f3dfb131b7b306190f87e83a8e47f8f2034a4930992f24c"
+# f998fee: fleet: --log on the unit's runsc create. Boot #5 (66ad54cb)
+#   proved the quoting fix (all six flags reach runsc) but create died
+#   at sandbox start: the client sync pipe EOFed — the sentry (found at
+#   /usr/bin/gvisor-bin/gvisor_sentry, static, correct per gvisor's
+#   resolveDir) launched and died before its sync byte, and runsc
+#   discards the sentry's stdout/stderr (exec.Command default /dev/null;
+#   the log fd goes to the empty conf.LogFilename). The log now lands
+#   in /run/enclaved/runsc-<name>.log (rbind, netstack-readable).
+version = "f998fee510aa3cb232db60e3bb2d4f6662699acf"
+hash = "842afa1e481a239267e7ffdfeebe596483eeed05002af7b379ac05cb65d0f5d2"
 format = "tar.gz"
 file = "enclaved-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/enclaved/archive/{version}.{format}"]
