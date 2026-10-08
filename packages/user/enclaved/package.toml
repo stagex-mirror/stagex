@@ -140,8 +140,26 @@ website = "https://codeberg.org/lrvick/enclaved"
 #   dmesg tails at sentry death and at GRACE expiry. Every forensic line is
 #   a local file read/write, never waits on a child, and is guarded so a
 #   wedged forensic cannot stall the unit.
-version = "6e92abd14846d76f5709db1bca1541a7be4e9d3e"
-hash = "269f9d0930cbfb3cdadfbf7a972c6de7da3f61f711caae5057d312989b4e2a04"
+# b9cfddf: fleet: boot #11 DIAGNOSTIC ONLY (no fixes). Boot #10
+#   (disk d6862247) REFRAMED BUG 8: the sentry is NOT dead -- it is ALIVE
+#   BUT BLOCKED (State: S, single-threaded, Seccomp: 2 / 1 filter,
+#   NoNewPrivs, CapEff 0x8001f), never reaching its first log line; the
+#   GRACE timeout kills the stuck one at ~120s/cycle, which is why it
+#   never progresses. No Go panic even with --debug (headless stdio
+#   wiring confirmed); no trap/#GP/CFI/SIGSYS in the serial; and
+#   /proc/sys/kernel/audit_enabled does not even exist in the 7.2.0 guest
+#   (the echo ENOENTs), so the audit path was untestable and is moot.
+#   Per jaguar, catch the stuck sentry while alive (it lives ~120s/cycle):
+#   on every SPJ iteration dump its KERNEL state -- sentry-wchan,
+#   sentry-stack (the smoking gun: which kernel function it is blocked in),
+#   sentry-syscall, sentry-status, sentry-comm, sentry-maps -- plus the
+#   traced child (pgrep -P $SP) stacks (child-*.txt) and the full tree
+#   (ps -ef). At GRACE expiry, kill -QUIT $SP (Go default handler dumps all
+#   goroutine stacks to stderr = .err via --debug) then snapshot .err to
+#   quit-dump-alpha.err. All local reads, non-blocking, 2>/dev/null guards
+#   (v5 discipline -- never wait on a child).
+version = "b9cfddff19f3fed042556334e29b071440054a1c"
+hash = "04ed5414c3057ce46c8930b8f3369eb4f0f3cf7ea93dc2c5ceb6cffef2ea0978"
 format = "tar.gz"
 file = "enclaved-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/enclaved/archive/{version}.{format}"]
