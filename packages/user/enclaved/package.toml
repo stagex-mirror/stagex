@@ -70,8 +70,17 @@ website = "https://codeberg.org/lrvick/enclaved"
 #   decoupled from the RO config dir (maps to the trust model: static
 #   units immutable/RO, fleet units runtime-generated + verified);
 #   requires the execd 991fb3b pin (get_units(dir, fleet_dir)).
-version = "41bb1d1bf35f396b0585b7af07bdfc15541617b4"
-hash = "e495e6baa262fc45a37f0f55641298a255d8fc2a8549c69704173e53c34d372c"
+# 42774d3: fleet: quote the generated unit script's F={flags} assignment.
+#   The 659dee0c boot fixed the env crux (fleet: ok reloaded) but both
+#   container units looped on create: the child stderr carried
+#   'command not found: --overlay2=none' — the UNQUOTED F={flags} is a
+#   POSIX command-prefix assignment (F keeps only the first word, the
+#   rest is attempted as a command), so runsc ran BARE. Now F is one
+#   quoted value; runsc create/start stderr is teed to
+#   /run/enclaved/runsc-<name>.err; the create rc echo prints the real
+#   captured $? (was single-quoted -> literal '?').
+version = "42774d3411127c27f476a9c69c7811c4e87c626a"
+hash = "5420056930fd512f0f3dfb131b7b306190f87e83a8e47f8f2034a4930992f24c"
 format = "tar.gz"
 file = "enclaved-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/enclaved/archive/{version}.{format}"]
