@@ -109,8 +109,22 @@ website = "https://codeberg.org/lrvick/enclaved"
 #   container's rootfs is extracted directly into <bundle>/rootfs (real
 #   dir, self-contained bundle); the shared /run/enclaved/rootfs is gone,
 #   which also gives per-container isolation.
-version = "6e3b6c924d4b653e603e0cd5cf720e7c584a2da9"
-hash = "fa989b69a05af1b1662f87b7d10aa05d7c27281e57907bdd00f3e4e9f009de9b"
+# bd14dd1: fleet: BUG 7 -- idempotent delete --force, clean log per attempt,
+#   GRACE startup counter. Boot #8 (disk 87a9a515) confirmed BUG 6 fixed
+#   (real-dir rootfs, create+start succeeded, state file status running,
+#   sentry pid 1833) but surfaced BUG 7: the unit poll broke on the FIRST
+#   non-running read (the tight first runsc list ~0.5s after start raced the
+#   sentry becoming visible-as-running) -> exit 1 -> execd restart -> the
+#   restart's create hit the leftover state file (container already exists)
+#   -> start hit cannot start in state stopped -> a 4037-line poison loop.
+#   Fix in the container_unit template: (a) delete --force before create
+#   (subcommand flag, after delete, not in $F; tolerates IsNotExist so a safe
+#   no-op on a fresh boot, clears zombie/stopped/running state on a restart),
+#   (b) rm -f the sentry log before --log create so the log always shows the
+#   latest attempt, (c) GRACE=24 counter tolerating consecutive non-running
+#   polls (24x5s=120s; resets on running, breaks at 0).
+version = "bd14dd1be9523966306759038b0e6b391c2fb523"
+hash = "1d146757215524a23d222bd3e2c5d77b1709069d0bc1ec92e8998338ef70a307"
 format = "tar.gz"
 file = "enclaved-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/enclaved/archive/{version}.{format}"]
