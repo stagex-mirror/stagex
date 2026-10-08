@@ -98,8 +98,19 @@ website = "https://codeberg.org/lrvick/enclaved"
 #   local repro (root + exact guest config + the six flags) creates
 #   cleanly (rc=0), so the guest death is environment-specific; the
 #   log is still the missing evidence.
-version = "f84723a5a2de5d3818dc1c2dde81bd673892ec17"
-hash = "d4f22d82c5a9a7fd641e17d885ad80a2e37377e59385c942fcaf963d48f4dcd3"
+# 6e3b6c9: fleet: extract each bundle rootfs as a REAL dir, not a symlink.
+#   Boot #7's sentry log (runsc-alpha.log) pinned BUG 6: SafeMount opened
+#   the bind destination /run/enclaved/bundles/alpha/rootfs/run/links/web,
+#   readlink /proc/self/fd/N resolved through the SYMLINK to
+#   /run/enclaved/rootfs/alpha/run/links/web, dst != resolved ->
+#   ErrSymlinkMount -> sentry died at FS setup -> client sync EOF. OCI
+#   spec also forbids root.path symlinks. Root-faithful local A/B:
+#   symlinked rc=128 (byte-identical message), real-dir rc=0. Now each
+#   container's rootfs is extracted directly into <bundle>/rootfs (real
+#   dir, self-contained bundle); the shared /run/enclaved/rootfs is gone,
+#   which also gives per-container isolation.
+version = "6e3b6c924d4b653e603e0cd5cf720e7c584a2da9"
+hash = "fa989b69a05af1b1662f87b7d10aa05d7c27281e57907bdd00f3e4e9f009de9b"
 format = "tar.gz"
 file = "enclaved-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/enclaved/archive/{version}.{format}"]
