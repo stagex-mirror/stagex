@@ -4,7 +4,7 @@ ARG TARGETARCH
 ADD fetch/zeroclaw-v${VERSION}.tar.gz .
 WORKDIR /zeroclaw-${VERSION}
 RUN cargo fetch --locked
-ENV RUSTFLAGS="-C codegen-units=1 -C target-feature=+crt-static"
+ENV RUSTFLAGS="-C codegen-units=1"
 RUN --network=none <<-EOF
 	cargo build \
 		--frozen \
