@@ -198,8 +198,21 @@ website = "https://codeberg.org/lrvick/enclaved"
 #   (no overlay upper / write target, container.go:1118 initGoferConfs) is THE
 #   trigger. LIVE => the zero-cap delta was the trigger (the fix keeps
 #   readonly=true). Tests updated to the isolation shape (102/0/1 as root).
-version = "42c49ee729f40164d09da355f283bd321614eb66"
-hash = "e3fb29540ab2e0e461327a4fc33ee9dda4a939c4047750ee4b5518b2c91757e1"
+# 96ca9d7: fleet: BUG 8 FIX — readonly root (the isolated trigger) + all
+#   round-14/15 diagnostic instrumentation stripped. Leg A (42c49ee) flipped
+#   ONLY readonly true->false from the live round-14 shape and the death
+#   RETURNED: both containers SPGONE spj=0/1 (writable root under
+#   --overlay2=none = a writable directfs gofer lower with NO overlay upper,
+#   container.go:1118 initGoferConfs; a readonly root forces config.NoOverlay
+#   and survives). This leg: root.readonly=true, the keepalive marker probe
+#   reverted to the real image entrypoint, and the whole forensic stack
+#   removed (SPJ /proc monitor, monexit markers, sentry-*/child-*/ps-all/
+#   dmesg captures, binhash, sysctls, fleet-flags knob, audit echo, SIGQUIT
+#   dump) — the unit body is a normal supervised sandbox again: delete
+#   --force -> clean logs -> --log create -> start -> bounded runsc-list
+#   keep-alive with GRACE -> exit 1 (execd respawns). Root suite 102/0/1.
+version = "96ca9d79dd2dd30e4d1226f015edecc06954eebc"
+hash = "41c6f819e1aa960967b002691fbe5b61fbc0d2fcd6a3d9fb3f5100e215cd08d4"
 format = "tar.gz"
 file = "enclaved-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/enclaved/archive/{version}.{format}"]
