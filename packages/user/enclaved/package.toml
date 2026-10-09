@@ -158,8 +158,23 @@ website = "https://codeberg.org/lrvick/enclaved"
 #   goroutine stacks to stderr = .err via --debug) then snapshot .err to
 #   quit-dump-alpha.err. All local reads, non-blocking, 2>/dev/null guards
 #   (v5 discipline -- never wait on a child).
-version = "b9cfddff19f3fed042556334e29b071440054a1c"
-hash = "04ed5414c3057ce46c8930b8f3369eb4f0f3cf7ea93dc2c5ceb6cffef2ea0978"
+# e66b92b: fleet: round 13 diagnostics (no fix). The three additions that
+#   name the BUG 8 root cause: (1) monexit-{name}.txt records WHY the SPJ
+#   monitor exited -- SPGONE (the sentry's /proc vanished before the 120-iter
+#   bound = self-death, H-A) vs SPJBOUND (/proc present at the bound =
+#   stuck-alive, killed only by our SIGQUIT at GRACE expiry = H-B) -- the
+#   disambiguation the boot #11 mtime arithmetic could not provide (the 155 s
+#   figure was an upper bound, not a timestamp); (2) per-container suffixes on
+#   every capture (boot #11: alpha+beta raced the same sentry-*.txt paths);
+#   (3) fleet-flags-{name}.txt A/B knob, re-read on every unit start (-s check,
+#   full $F replacement) so a config variant (--network=sandbox / no --debug /
+#   sysnet raw-socket perms) tests live, one variant per ~141 s cycle, no
+#   rebuild (verified against shipped runsc aa5cc28d: Go flag last-wins).
+#   The C strace tracer is deferred: the per-second /proc/{syscall,stack,
+#   wchan,status} captures already answer which syscall + which kernel function
+#   it is blocked in, and the death exit value is moot if stuck-alive.
+version = "e66b92bb6713875f6478b91603692fbd24216e43"
+hash = "fda3941bdad7b8ff69cc8fac2013dd7a2624666e015c0c423e3c343412a9ec6d"
 format = "tar.gz"
 file = "enclaved-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/enclaved/archive/{version}.{format}"]
