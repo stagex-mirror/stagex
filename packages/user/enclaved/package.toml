@@ -173,8 +173,24 @@ website = "https://codeberg.org/lrvick/enclaved"
 #   The C strace tracer is deferred: the per-second /proc/{syscall,stack,
 #   wchan,status} captures already answer which syscall + which kernel function
 #   it is blocked in, and the death exit value is moot if stuck-alive.
-version = "e66b92bb6713875f6478b91603692fbd24216e43"
-hash = "fda3941bdad7b8ff69cc8fac2013dd7a2624666e015c0c423e3c343412a9ec6d"
+# 67a20d0: fleet: round 14 diagnostic — config-shape bisect (BUG 8, no fix).
+#   Round-13's live A/B exonerated the FLAGS (both flag sets die identically:
+#   SPGONE spj=0, sub-second silent death, 0-byte stdio). The remaining delta
+#   between the ALIVE sysnet control and the dead fleet sandboxes is the
+#   BUNDLE. This leg changes EXACTLY ONE variable — the config shape,
+#   mirrored from the sysnet bundle: readonly=false->true, capabilities
+#   forced to [CAP_NET_ADMIN, CAP_NET_RAW] in all four sets, and a DIAGNOSTIC
+#   keepalive init (busybox sh -c: write /run/enclaved/bisect-<name>-marker +
+#   a copy in the first link dir, then sleep-forever) replacing the OCI args
+#   — so we can tell whether init RAN. The fleet's busybox-farm rootfs is
+#   UNCHANGED. WIN = fleet running + marker (config shape is the cause);
+#   LOSE = still SPGONE, no marker (rootfs implicated -> next leg: minimal
+#   rootfs). BAKED into the image because the sysnet netstack's
+#   terminal-dark -> v13 reboot -f wipes /run every ~20-40 min and enclaved
+#   re-provisions bundles at every boot (a live bundle swap is destroyed
+#   before the ~2.5-min fleet cycle). Tests updated to the new shape (102/0/1).
+version = "67a20d0b58ab7e35537531ac8c38f520331358f8"
+hash = "66d1fb84a92dcc33ce062202daf2a150f79fe948eebe269313fc986b95324b94"
 format = "tar.gz"
 file = "enclaved-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/enclaved/archive/{version}.{format}"]
