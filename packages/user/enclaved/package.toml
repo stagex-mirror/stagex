@@ -189,8 +189,17 @@ website = "https://codeberg.org/lrvick/enclaved"
 #   terminal-dark -> v13 reboot -f wipes /run every ~20-40 min and enclaved
 #   re-provisions bundles at every boot (a live bundle swap is destroyed
 #   before the ~2.5-min fleet cycle). Tests updated to the new shape (102/0/1).
-version = "67a20d0b58ab7e35537531ac8c38f520331358f8"
-hash = "66d1fb84a92dcc33ce062202daf2a150f79fe948eebe269313fc986b95324b94"
+# 42c49ee: fleet: round 15 isolation — writable root with NET caps (no fix).
+#   Round 14 proved the CONFIG SHAPE is the cause (the sysnet-shape bisect kept
+#   both sandboxes alive with the fleet's own busybox-farm rootfs: SPJBOUND
+#   spj=120, init markers written). This leg flips EXACTLY ONE variable from
+#   the live bisect shape — root.readonly true->false (NET caps + keepalive
+#   marker init KEPT). DIE (SPGONE) => the writable root under --overlay2=none
+#   (no overlay upper / write target, container.go:1118 initGoferConfs) is THE
+#   trigger. LIVE => the zero-cap delta was the trigger (the fix keeps
+#   readonly=true). Tests updated to the isolation shape (102/0/1 as root).
+version = "42c49ee729f40164d09da355f283bd321614eb66"
+hash = "e3fb29540ab2e0e461327a4fc33ee9dda4a939c4047750ee4b5518b2c91757e1"
 format = "tar.gz"
 file = "enclaved-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/enclaved/archive/{version}.{format}"]
