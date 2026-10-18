@@ -1,6 +1,6 @@
 [package]
 name = "demit"
-# Pinned to commit 1a82114 (branch main) of
+# Pinned to commit c8f452c (branch main) of
 # https://codeberg.org/lrvick/wardend: the no_std, no_alloc, nolibc
 # boot-to-execve init that replaces nit in the wardend enclave topology.
 # demit is the initramfs /init: it mounts the runtime filesystems, loop-
@@ -11,13 +11,13 @@ name = "demit"
 # carries). The `nolibc` feature gates src/main.rs (the init binary); the
 # static build links no libc, so it is the initramfs init the kernel execs
 # before any rootfs exists.
-version = "1a821143eff33fbdc8ba7891a43cbaa4904eaf66"
+version = "c8f452c591fb8d1b469f072ede11d83d80bd6274"
 description = "no_std/nolibc boot-to-execve init (nit replacement): erofs unpack + pivot, then execve init.target as PID 1"
 license = "MIT"
 website = "https://codeberg.org/lrvick/wardend"
 
 [sources.wardend]
-hash = "58a257b27c0f3687cf53b426e990aa43a47b4ecca86cd93cb59bb92fd7081676"
+hash = "03e432103986c312b66ff2bbe7c9ec57634152fba9d9c8f0ef2c6fddfc58c758"
 format = "tar.gz"
 file = "wardend-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/wardend/archive/{version}.{format}"]
