@@ -1,0 +1,37 @@
+[package]
+name = "wardend"
+# Pinned to commit 1a82114 (branch main) of
+# https://codeberg.org/lrvick/wardend: the containerized unit supervisor
+# stack that replaces execd + the sysnet/sshdt shell in the wardend enclave
+# topology. This package builds the five userspace binaries the guest runs
+# after demit pivots:
+#   wardend   (bin `wardend`)  — the unit supervisor (regentd spawns it);
+#                                loads /etc/wardend/units/*.hcl, resolves the
+#                                depends DAG, runs the gvisor + container
+#                                moats. Built with --features gvisor,container
+#                                (the default is container-only; the gvisor
+#                                moat is what runs the netstack sandbox).
+#   regent    (bin `regentd`)  — PID 1 after demit: seeds /root/.ssh from the
+#                                baked key, then spawns wardend.
+#   postern   (bin `posternd`) — the in-process SSH daemon (russh), a netstack
+#                                co-tenant; pubkey-only, fail-closed.
+#   wardend-bridge (bin `bridge`) — the netstack sandbox init (`bridge wire`):
+#                                LLA bootstrap + pure-Rust DHCP + lease apply
+#                                + the :22->UDS relay + posternd supervisor +
+#                                the :8080 demo face.
+#   xattach   (bin `xattach`)  — the kernel-side XDP attach oneshot (netlink
+#                                uplink resolve, channel collapse to 1, bpffs
+#                                mount, exec of the prebuilt xdp_loader).
+# All five are musl-dynamic (the shared musl runtime is core-musl +
+# core-libunwind, already in the rootfs); only demit is static (it is the
+# initramfs init, built by the user-demit package).
+version = "1a821143eff33fbdc8ba7891a43cbaa4904eaf66"
+description = "wardend unit supervisor + regentd + posternd (russh SSH) + bridge (netstack init) + xattach (XDP attach)"
+license = "MIT OR Apache-2.0"
+website = "https://codeberg.org/lrvick/wardend"
+
+[sources.wardend]
+hash = "58a257b27c0f3687cf53b426e990aa43a47b4ecca86cd93cb59bb92fd7081676"
+format = "tar.gz"
+file = "wardend-{version}.{format}"
+mirrors = ["https://codeberg.org/lrvick/wardend/archive/{version}.{format}"]

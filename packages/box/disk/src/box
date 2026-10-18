@@ -105,16 +105,15 @@ if [ "${UNIKERNEL:-0}" = "1" ]; then
 	# --- unikernel: the erofs system image becomes the initramfs ---
 	build_erofs
 
-	# Assemble the initramfs root: nit (the static Rust init) as /init +
-	# /system. nit does what the old dash + 5-klibc-utils init-loop did
-	# (losetup /system, mount erofs, pivot_root) and then stays PID 1,
-	# running /etc/inittab (sysinit rcS, respawn getty) via its built-in
-	# supervisor — so the initramfs cpio carries no shell and no utils.
-	# The nit.* kernel-cmdline options (uki-cmdline-uk) select this:
-	# nit.unpack=/system nit.mode=spawn.
+	# Assemble the initramfs root: the init binary (nit by default, or the
+	# wardend topology's demit via INIT=/demit/init) as /init + /system. The
+	# init does what the old dash + 5-klibc-utils init-loop did (losetup
+	# /system, mount erofs, pivot_root) and then execs init.target as PID 1.
+	# The init.* kernel-cmdline options (uki-cmdline-uk) select this:
+	# init.unpack=/system init.target=<pid1>.
 	rm -rf /uki-root
 	mkdir -p /uki-root
-	cp /nit/init /uki-root/init
+	cp "${INIT:-/nit/init}" /uki-root/init
 	cp "$SYSTEM_IMG" /uki-root/system
 	# Deterministic initramfs: cpio stores each entry's mtime, and `cp` set
 	# them to "now". Normalize every mtime to SOURCE_DATE_EPOCH so the cpio is

@@ -1,0 +1,10 @@
+[package]
+name = "wardend"
+version = "2026.03.0"
+description = "Wardend enclave distro — demit init + regentd/wardend supervisor + gvisor netstack (bridge wire) + posternd SSH; kernel fully offline, the netstack owns the wire"
+provenance = true
+subpackages = [
+  "wardend-dev",
+  "wardend-dev-img",
+  "wardend-dev-vm",
+]

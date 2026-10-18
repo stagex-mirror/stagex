@@ -1,0 +1,51 @@
+FROM stagex/pallet-rust AS build
+ARG VERSION
+ARG TARGETARCH
+ADD fetch/wardend-${VERSION}.tar.gz .
+WORKDIR /wardend
+# The wardend stack has real crates.io deps (russh/sshdt for posternd, tokio,
+# aws-lc-sys, ...; 257 lock packages), so the build follows the execd pattern:
+# `cargo fetch` with network ON, then the compile with --network=none and
+# --frozen (the lock is complete for the shipped feature set).
+#
+# warden MUST be built with --features gvisor,container: the default feature
+# set is container-only, and the gvisor moat is what runs the netstack
+# sandbox (the sn-7 kernel-offline wire). A wardend built without the gvisor
+# feature has no moat for the `type = "gvisor"` netstack unit -> the warden
+# fail-closes ("sandbox kind gvisor has no matching moat") and the guest
+# panics. The other four binaries build with their default features.
+RUN cargo fetch
+RUN --network=none <<-EOF
+  set -eux
+  ARCH=$(uname -m)
+  # warden: the gvisor + container moats (the netstack + the xdp-attach
+  # container oneshot).
+  cargo build \
+    --frozen \
+    --release \
+    --target "${ARCH}-unknown-linux-musl" \
+    --features gvisor,container \
+    -p warden
+  # regent (regentd), postern (posternd), wardend-bridge (bridge), xattach.
+  cargo build \
+    --frozen \
+    --release \
+    --target "${ARCH}-unknown-linux-musl" \
+    -p regent -p postern -p wardend-bridge -p xattach
+  R="target/${ARCH}-unknown-linux-musl/release"
+  install -vDm755 "$R/wardend"  /rootfs/usr/bin/wardend
+  install -vDm755 "$R/regentd"  /rootfs/usr/bin/regentd
+  install -vDm755 "$R/posternd" /rootfs/usr/bin/posternd
+  install -vDm755 "$R/bridge"   /rootfs/usr/bin/bridge
+  install -vDm755 "$R/xattach"  /rootfs/usr/bin/xattach
+  # The unit set + the netstack bundle's OCI config, shipped alongside the
+  # binaries so they are versioned with the wardend pin (single source of
+  # truth: the distro COPYs these, it does not carry its own copy). The
+  # bundle rootfs (bridge/posternd/busybox/etc) is assembled by the distro;
+  # only config.json (the runsc contract) comes from the wardend tree.
+  install -vDm644 src/warden/units/xdp-attach.hcl /rootfs/etc/wardend/units/xdp-attach.hcl
+  install -vDm644 src/warden/units/netstack.hcl  /rootfs/etc/wardend/units/netstack.hcl
+  install -vDm644 src/warden/guest/netstack/config.json /rootfs/images/netstack/config.json
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

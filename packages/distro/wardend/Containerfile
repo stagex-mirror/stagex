@@ -1,0 +1,163 @@
+FROM stagex/core-filesystem AS core-filesystem
+FROM stagex/core-busybox AS core-busybox
+FROM stagex/core-musl AS core-musl
+FROM stagex/core-libunwind AS core-libunwind
+FROM stagex/user-demit AS user-demit
+FROM stagex/user-wardend AS user-wardend
+FROM stagex/user-linux-enclave AS user-linux-enclave
+FROM stagex/user-gvisor AS user-gvisor
+FROM stagex/box-disk AS box-disk
+FROM stagex/box-cpio AS box-cpio
+
+# ============================================================
+# Stage 0: the netstack bundle rootfs
+#
+# The gvisor netstack sandbox's root filesystem (a Dir bundle rootfs, the
+# gvisor moat's only accepted rootfs kind). Its init is `bridge wire` (the
+# bundle config.json process.args). The bundle carries:
+#   - bridge + posternd (the sandbox init + its :22 co-tenant)
+#   - busybox (posternd's interactive shell = /bin/sh; the shell tools)
+#   - /etc/{resolv.conf,hostname,hosts} — the P4 gofer rule: runsc setupNet
+#     O_CREATs each bind target on the RO bundle rootfs; a missing target is
+#     a gofer fatal (EROFS) that kills the sandbox. Present placeholders make
+#     the O_CREAT a no-op (the sandbox never reads them; runsc over-mounts).
+#   - /root/.ssh/authorized_keys — posternd's keys_dir (default /root/.ssh)
+#     INSIDE the sandbox. This is the load-bearing SSH key for the netstack
+#     model: bridge wire spawns posternd in-sandbox, which reads the BUNDLE's
+#     authorized_keys (NOT the host's — the host /root is a separate tmpfs).
+#     Fail-closed: no valid key here, posternd refuses to build, :22 stays
+#     closed.
+#
+# config.json (the runsc contract: process.args, the /run tmpfs mount, the
+# caps) is NOT here — it ships from the user-wardend package (versioned with
+# the wardend pin) and lands at /images/netstack/config.json in the host
+# rootfs below, alongside this rootfs/ at /images/netstack/rootfs/.
+# ============================================================
+FROM scratch AS netstack-bundle
+COPY --from=core-busybox . /
+# bridge + posternd are dynamic musl PIEs (NEEDED: ld-musl, libc.musl,
+# libunwind.so.1) — ship the musl runtime + libunwind into the bundle rootfs.
+# Full-package COPY (not single-file): libc.musl-x86_64.so.1 is a relative
+# symlink to ld-musl-x86_64.so.1, and BuildKit's single-file COPY of a
+# relative symlink fails to resolve the target in the context.
+COPY --from=core-musl . /
+COPY --from=core-libunwind . /
+COPY --from=user-wardend /usr/bin/bridge /usr/bin/bridge
+COPY --from=user-wardend /usr/bin/posternd /usr/bin/posternd
+COPY src/rootfs/etc/resolv.conf /etc/resolv.conf
+COPY src/rootfs/etc/hostname /etc/hostname
+COPY src/rootfs/etc/hosts /etc/hosts
+COPY src/rootfs/etc/ssh/authorized_keys /root/.ssh/authorized_keys
+
+# ============================================================
+# Stage 1: the host rootfs (the erofs system image)
+#
+# The wardend boot chain (all static, no shell on the boot path):
+#   kernel -> cpio /init (demit) -> loop-mount /system (erofs) + pivot_root
+#          -> execve init.target = /usr/bin/regentd (PID 1)
+#   regentd: creates the runtime dirs (/run/wardend, /run/wardend/run,
+#            /run/postern) + seeds the admin key, then spawns + supervises
+#            /usr/bin/wardend.
+#   wardend: reads /etc/wardend/units/*.hcl (the pure depends graph) and
+#            supervises the units:
+#     - xdp-attach (container oneshot, CLONE_NEWNS-only, shares the kernel
+#       netns): runs /usr/bin/xattach -> execs the prebuilt xdp_loader to
+#       pin the AF_XDP redirect program + socket map on the uplink (the
+#       wedge rule: attach before any netstack sandbox). Writes the
+#       sentinel netstack waits on.
+#     - netstack (gvisor sandbox): runsc create/start --network=sandbox
+#       --EXPERIMENTAL-xdp=redirect:eth0 on the /images/netstack bundle;
+#       the sandbox init `bridge wire` does LLA bootstrap + pure-Rust DHCP
+#       + lease apply, the :22 -> UDS relay, the posternd supervisor, and
+#       the :8080 demo face. The kernel is FULLY offline (no lease, no :22,
+#       no route) — the netstack is the ONLY stack on the wire.
+#
+# Host-side binaries needed: regentd, wardend, xattach (the units' commands),
+# runsc + the gvisor-bin sidecars (gvisor_sentry is a STRICT runsc
+# requirement) + xdp_loader (xattach execs it). demit is NOT here — box-disk
+# stages it separately as the cpio /init (INIT=/demit/init in the img stage).
+# ============================================================
+FROM scratch AS rootfs
+COPY --from=core-filesystem . /
+COPY --from=core-busybox . /
+# regentd/wardend/xattach are dynamic musl PIEs (NEEDED: ld-musl, libc.musl,
+# libunwind.so.1) — the musl runtime + libunwind must be in the erofs root.
+# Full-package COPY (not single-file): libc.musl-x86_64.so.1 is a relative
+# symlink; BuildKit's single-file COPY of a relative symlink fails.
+COPY --from=core-musl . /
+COPY --from=core-libunwind . /
+COPY --from=user-wardend /usr/bin/regentd /usr/bin/regentd
+COPY --from=user-wardend /usr/bin/wardend /usr/bin/wardend
+COPY --from=user-wardend /usr/bin/xattach /usr/bin/xattach
+# gVisor: runsc (the CLI the gvisor moat execs) + the gvisor-bin sidecar dir
+# (gvisor_sentry, a STRICT runsc requirement, found next to runsc via the
+# gvisorbinaries package) + xdp_loader (the standalone AF_XDP pin tool that
+# xattach execs to pin the redirect program/sockmap/link on the uplink).
+COPY --from=user-gvisor /usr/bin/runsc /usr/bin/runsc
+COPY --from=user-gvisor /usr/bin/gvisor-bin /usr/bin/gvisor-bin
+COPY --from=user-gvisor /usr/bin/xdp_loader /usr/bin/xdp_loader
+# The unit set (versioned with the wardend pin, shipped by user-wardend).
+COPY --from=user-wardend /etc/wardend/units/ /etc/wardend/units/
+# The netstack bundle: rootfs/ (Stage 0) + config.json (from user-wardend).
+COPY --from=netstack-bundle / /images/netstack/rootfs/
+COPY --from=user-wardend /images/netstack/config.json /images/netstack/config.json
+# The baked admin key (regentd seeds host /root/.ssh from this; the netstack
+# model's posternd reads the BUNDLE's copy, but the host copy keeps regentd
+# quiet and serves the postern-sandbox topology if used).
+COPY src/rootfs/etc/ssh/authorized_keys /etc/ssh/authorized_keys
+# Host placeholder /etc (harmless; the sandbox uses the bundle's copies).
+COPY src/rootfs/etc/resolv.conf /etc/resolv.conf
+COPY src/rootfs/etc/hostname /etc/hostname
+COPY src/rootfs/etc/hosts /etc/hosts
+# /oldroot: demit's pivot_root put_old target (pivot_root(c"/mnt",
+# c"/mnt/oldroot")) — it must EXIST inside the erofs image (the pivot moves
+# the old root here). Empty dir; git cannot track empty dirs, so mkdir it.
+RUN mkdir -p /mnt /run /var/log /oldroot && touch /mnt/.keep
+
+# --- dev: the full wardend topology (this IS the dev variant) ---
+FROM rootfs AS rootfs-dev
+COPY provenance.spdx /provenance.spdx
+
+# ============================================================
+# Stage 2: boot objects (inputs to box-uki)
+# ============================================================
+FROM scratch AS boot-dev
+COPY --from=user-linux-enclave /bzImage /boot/vmlinuz
+COPY src/config/uki-cmdline-uk /boot/cmdline
+
+# ============================================================
+# Stage 3: live layout — the default package
+# ============================================================
+FROM rootfs-dev AS package-wardend-dev
+COPY --from=boot-dev /boot /boot
+CMD ["/bin/sh"]
+
+# ============================================================
+# Stage 4: disk image — -img subpackage (unikernel)
+#
+# box-disk (UNIKERNEL=1) packs the OS as erofs, wraps it in a cpio whose
+# /init is the wardend init binary (demit, via INIT=/demit/init — the
+# box-disk default is /nit/init for the nit topology), and uses that cpio as
+# the UKI's .initrd. The kernel unpacks it into RAM; demit loop-mounts
+# /system, pivots, then execve's init.target (/usr/bin/regentd) as PID 1.
+# The disk is ESP-only (the OS runs from memory; storage optional).
+# ============================================================
+FROM box-disk AS img-wardend-dev
+COPY --from=package-wardend-dev . /live
+# Override box-disk's baked /nit/init with demit (the wardend init).
+COPY --from=user-demit /usr/bin/demit /demit/init
+RUN chmod +x /demit/init
+RUN UNIKERNEL=1 INIT=/demit/init box
+
+FROM scratch AS package-wardend-dev-img
+COPY --from=img-wardend-dev /disk.img /disk.img
+
+# ============================================================
+# Stage 5: -vm subpackage — QEMU runtime around the disk image
+# ============================================================
+FROM stagex/service-qemu AS package-base
+COPY src/qemu-startup.sh /usr/bin/run
+ENTRYPOINT ["/usr/bin/run"]
+
+FROM package-base AS package-wardend-dev-vm
+COPY --from=package-wardend-dev-img /disk.img /disk.img

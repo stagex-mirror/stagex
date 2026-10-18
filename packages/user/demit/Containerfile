@@ -1,0 +1,38 @@
+FROM stagex/pallet-rust AS build
+ARG VERSION
+ARG TARGETARCH
+# The wardend workspace archive extracts to a top-level `wardend/` dir.
+ADD fetch/wardend-${VERSION}.tar.gz .
+WORKDIR /wardend
+# demit is the initramfs init: no_std, no_alloc, nolibc (links no libc at
+# all), built from the shared `sys` syscall layer. Static by necessity: the
+# kernel execs it as /init before any rootfs or dynamic loader exists.
+#
+# Network ON (like nit): `-Zbuild-std=core` makes cargo resolve the sysroot
+# crates (rustc-literal-escaper for proc_macro) from the crates.io index on
+# first use, even though only `core` is built and demit itself fetches
+# nothing. The sysroot manifest pins exact versions, so the resolution is
+# deterministic for a given pallet-rust. `--frozen` is NOT used here for the
+# same reason nit omits it: the sysroot path-deps (proc_macro -> rustc-
+# literal-escaper) are not in the workspace Cargo.lock.
+#
+# The `nolibc` feature gates src/main.rs (the init binary); without it the
+# build produces only the no_std library and no binary. RUSTC_BOOTSTRAP
+# unlocks the -Z flags on the pallet's stable toolchain. The target spec is
+# the in-tree demit-x86_64-nolibc.json (a bare musl target: dynamic-linking
+# false, panic abort, crt-static default).
+ENV RUSTC_BOOTSTRAP=1
+ENV RUSTFLAGS='-C codegen-units=1 -C target-feature=+crt-static'
+RUN <<-EOF
+  set -eux
+  ARCH=$(uname -m)
+  cargo build \
+    --release \
+    --features nolibc \
+    --target src/demit/target-specs/demit-${ARCH}-nolibc.json \
+    -Zjson-target-spec -Zbuild-std=core \
+    -p demit
+  install -vDm755 target/demit-${ARCH}-nolibc/release/demit /rootfs/usr/bin/demit
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
