@@ -49,6 +49,14 @@ COPY --from=user-wardend /usr/bin/posternd /usr/bin/posternd
 # bundle config.json argv). Dynamic musl like bridge/posternd — the musl
 # runtime + libunwind above cover it.
 COPY --from=user-wardend /usr/bin/offline-srv /usr/bin/offline-srv
+# The injection seed: bridge wire reads /etc/wardend/seed (its default seed
+# path, inside the sandbox) and merges the expose/offline directives. This is
+# the sole directive source now (the bundle config.json argv is bare `bridge
+# wire`) — the offline-unit concept-proof: DIRECTIVES, not baked argv, drive
+# the relay. The seed is versioned with the wardend pin (user-wardend ships it
+# at /images/netstack/seed); the AWS user-data path will feed the same grammar
+# from IMDS instead of this baked file.
+COPY --from=user-wardend /images/netstack/seed /etc/wardend/seed
 COPY src/rootfs/etc/resolv.conf /etc/resolv.conf
 COPY src/rootfs/etc/hostname /etc/hostname
 COPY src/rootfs/etc/hosts /etc/hosts

@@ -50,6 +50,11 @@ RUN --network=none <<-EOF
   install -vDm644 src/warden/units/xdp-attach.hcl /rootfs/etc/wardend/units/xdp-attach.hcl
   install -vDm644 src/warden/units/netstack.hcl  /rootfs/etc/wardend/units/netstack.hcl
   install -vDm644 src/warden/guest/netstack/config.json /rootfs/images/netstack/config.json
+  # The injection seed (the offline-unit concept-proof): bridge wire reads it
+  # at startup and merges its expose/offline directives. The distro COPYs it
+  # into the netstack bundle rootfs at /etc/wardend/seed (the default seed
+  # path). Versioned with the wardend pin, like config.json.
+  install -vDm644 src/warden/guest/netstack/seed /rootfs/images/netstack/seed
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
