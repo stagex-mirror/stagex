@@ -44,6 +44,11 @@ COPY --from=core-musl . /
 COPY --from=core-libunwind . /
 COPY --from=user-wardend /usr/bin/bridge /usr/bin/bridge
 COPY --from=user-wardend /usr/bin/posternd /usr/bin/posternd
+# offline-srv: the offline-workload co-tenant (UDS-only, no network of its
+# own), published to the wire by bridge wire's --expose relay (see the
+# bundle config.json argv). Dynamic musl like bridge/posternd — the musl
+# runtime + libunwind above cover it.
+COPY --from=user-wardend /usr/bin/offline-srv /usr/bin/offline-srv
 COPY src/rootfs/etc/resolv.conf /etc/resolv.conf
 COPY src/rootfs/etc/hostname /etc/hostname
 COPY src/rootfs/etc/hosts /etc/hosts

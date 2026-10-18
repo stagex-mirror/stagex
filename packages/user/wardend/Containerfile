@@ -37,6 +37,10 @@ RUN --network=none <<-EOF
   install -vDm755 "$R/regentd"  /rootfs/usr/bin/regentd
   install -vDm755 "$R/posternd" /rootfs/usr/bin/posternd
   install -vDm755 "$R/bridge"   /rootfs/usr/bin/bridge
+  # offline-srv: the second bin of the wardend-bridge package (the UDS-only
+  # offline-workload stand-in, the nginx concept-proof). The distro COPYs it
+  # into the netstack bundle rootfs as a co-tenant of the wire-owning netstack.
+  install -vDm755 "$R/offline-srv" /rootfs/usr/bin/offline-srv
   install -vDm755 "$R/xattach"  /rootfs/usr/bin/xattach
   # The unit set + the netstack bundle's OCI config, shipped alongside the
   # binaries so they are versioned with the wardend pin (single source of
