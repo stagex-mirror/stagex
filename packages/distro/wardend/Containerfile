@@ -49,6 +49,13 @@ COPY --from=user-wardend /usr/bin/posternd /usr/bin/posternd
 # bundle config.json argv). Dynamic musl like bridge/posternd — the musl
 # runtime + libunwind above cover it.
 COPY --from=user-wardend /usr/bin/offline-srv /usr/bin/offline-srv
+# seald: the evidence daemon, an IN-SANDBOX co-tenant of bridge wire (spawned
+# by the bundle config.json argv's --seald-bin). The bundle's linux.devices
+# passes through /dev/tpmrm0 + /dev/tpm0 + /dev/sev-guest so seald's TPM2 /
+# SEV-SNP evidence path works in-sandbox. seald is dynamic-musl with the SAME
+# NEEDED as bridge (libc.musl + libunwind) — the musl runtime + libunwind
+# above cover it (bridge is the known-working sandbox init).
+COPY --from=user-wardend /usr/bin/seald /usr/bin/seald
 # The injection seed: bridge wire reads /etc/wardend/seed (its default seed
 # path, inside the sandbox) and merges the expose/offline directives. This is
 # the sole directive source now (the bundle config.json argv is bare `bridge

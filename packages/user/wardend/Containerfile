@@ -32,11 +32,25 @@ RUN --network=none <<-EOF
     --release \
     --target "${ARCH}-unknown-linux-musl" \
     -p regent -p postern -p wardend-bridge -p xattach
+  # seal (seald): the evidence daemon. Runs as an IN-SANDBOX co-tenant of
+  # bridge wire (the netstack sandbox); the bundle's config.json
+  # linux.devices passes through /dev/tpmrm0 + /dev/tpm0 + /dev/sev-guest so
+  # seald's TPM2 / SEV-SNP evidence path works in-sandbox.
+  cargo build \
+    --frozen \
+    --release \
+    --target "${ARCH}-unknown-linux-musl" \
+    -p seal
   R="target/${ARCH}-unknown-linux-musl/release"
   install -vDm755 "$R/wardend"  /rootfs/usr/bin/wardend
   install -vDm755 "$R/regentd"  /rootfs/usr/bin/regentd
   install -vDm755 "$R/posternd" /rootfs/usr/bin/posternd
   install -vDm755 "$R/bridge"   /rootfs/usr/bin/bridge
+  # seald: the evidence daemon (the seal package's bin). The distro COPYs it
+  # into the netstack bundle rootfs as a co-tenant of the wire-owning netstack.
+  # Dynamic-musl with the SAME NEEDED as bridge (libc.musl + libunwind), which
+  # the bundle rootfs already carries (core-musl + core-libunwind).
+  install -vDm755 "$R/seald"    /rootfs/usr/bin/seald
   # offline-srv: the second bin of the wardend-bridge package (the UDS-only
   # offline-workload stand-in, the nginx concept-proof). The distro COPYs it
   # into the netstack bundle rootfs as a co-tenant of the wire-owning netstack.
