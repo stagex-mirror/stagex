@@ -68,6 +68,18 @@ COPY src/rootfs/etc/resolv.conf /etc/resolv.conf
 COPY src/rootfs/etc/hostname /etc/hostname
 COPY src/rootfs/etc/hosts /etc/hosts
 COPY src/rootfs/etc/ssh/authorized_keys /root/.ssh/authorized_keys
+# The netstack bundle config.json bind-mounts the host's forwarded
+# attestation devices (the moat mknods the host's present TPM nodes into
+# {root}/devices at runsc-create time; --character-device-policy=passthrough
+# then opens them as host fds in the sandbox). The GOFER creates every
+# bind-mount DESTINATION with MkdirAll inside the bundle rootfs
+# (runsc/specutils/specutils.go SafeSetupAndMount) BEFORE it binds — and on
+# the wire this rootfs is served off the RO erofs host rootfs, so a mount
+# point whose PARENT (/run/wardend) does not pre-exist makes the gofer
+# fatal (mkdir EROFS -> "cannot read client sync file: EOF" -> runsc
+# create 128). Pre-create the full path here (the P4 precedent for the
+# /etc files the gofer O_CREATs) so the MkdirAll is a no-op on RO erofs.
+RUN mkdir -p /run/wardend/devices
 
 # ============================================================
 # Stage 1: the host rootfs (the erofs system image)
