@@ -40,13 +40,18 @@
 # supervisor is alive it usually reaches its own esc>=2 `reboot -f` first
 # (~390 s of dark); when the supervisor is wedged, THIS is the recovery.
 #
-# ARMED MODEL (same discipline as v9): the watchdog only fires after it has
-# itself observed a FRESH dp "pass" (egress working) since its own start,
-# plus a 600 s boot grace. A broken-from-boot generation (no lease, no
-# egress) must not accumulate toward a reboot storm — the supervisor's
-# DPBOOT=300 s boot deadline owns that path. A fresh pass ALSO clears the
-# reboot-loop guard (a healthy period is exactly what it counts the absence
-# of).
+# BOOT GRACE + ARMED MODEL (v13 fix): the watchdog fires after a 600 s boot
+# grace, WITHOUT requiring a prior fresh dp pass. (The v13-supervisor original
+# gated BOTH fire triggers on having first observed a fresh dp "pass" — but on a
+# terminal netstack dark dpmon never passes, so WDHAVEN stayed 0 and neither
+# trigger could ever fire: the ~4h dark that motivated this fix. The boot grace
+# is now the only gate that prevents a false positive during a fresh generation's
+# pre-loop + DORA. WDHAVEN still arms the "armed" log line and still clears the
+# reboot-loop guard on a healthy pass — it is no longer a fire gate. A broken-
+# from-boot generation (no lease, no egress) can therefore reach the dark
+# horizon and reboot; the WDOVR reboot-loop guard bounds that to 3 consecutive
+# reboots, and the supervisor's DPBOOT=300 s boot deadline remains the primary
+# owner of the no-lease path.
 #
 # REBOOT-LOOP GUARD: /home/sysnet-wd-overflow (persistent across reboots:
 # LUKS /home on AWS, tmpfs on QEMU) counts consecutive reboots fired by THIS
@@ -71,8 +76,11 @@ WD_HB_STALE=${WD_HB_STALE:-600}  # supervisor heartbeat older than this = the
                   # 600 s is ~20x the worst-case iteration and above the whole
                   # pre-loop setup of a fresh generation, ~180 s). Env
                   # overridable (QEMU test uses a short horizon).
-WD_DARK=${WD_DARK:-540}       # seconds of continuous data-plane dark (armed)
-                  # -> reboot. MUST stay above the worst case of the
+WD_DARK=${WD_DARK:-540}       # seconds of continuous data-plane dark
+                  # -> reboot. A MISSING dp file counts as dark (it
+                  # accumulates, it is not a reset), so the supervisor's
+                  # `rm -f "$DPF"` at every respawn cannot keep it at 0. MUST
+                  # stay above the worst case of the
                   # supervisor's CHEAP respawn cycle so a healthy respawn
                   # never pays the reboot: 120 s (DP_LIMIT detection) + ~10 s
                   # teardown + ~120-150 s fresh-gen pre-loop (ethtool/
@@ -125,8 +133,13 @@ while :; do
       rm -f "$WDOVR" 2>/dev/null || true
       log "reboot-loop guard cleared (healthy dp pass)"
     fi
-  elif [ "$WDHAVEN" -eq 1 ]; then
-    # armed + no fresh pass: accumulate continuous dark (10 s loop period)
+  else
+    # No fresh pass (dp file MISSING, stale, or fail): accumulate continuous
+    # dark (10 s loop period). A MISSING dp file counts as dark, NOT a reset —
+    # the supervisor's `rm -f "$DPF"` at every sandbox respawn (sysnet.sh) must
+    # not be able to keep DPDARK at 0 forever; the boot grace above is the only
+    # gate that keeps a fresh generation from false-firing. WDHAVEN is no longer
+    # a fire gate: it only arms the "armed" log line + the WDOVR clear above.
     DPDARK=$(( DPDARK + 10 ))
   fi
 
@@ -143,11 +156,13 @@ while :; do
       ;;
   esac
 
-  # --- fire decision (armed only; the two triggers are independent) -------
+  # --- fire decision (after the boot grace; the two triggers are
+  # independent; NOT gated on WDHAVEN — a terminal dark never gets a fresh dp
+  # pass, so arming on a pass would keep both triggers dead) ---------------
   fire=""
-  [ "$WDHAVEN" -eq 1 ] && [ "$DPDARK" -ge "$WD_DARK" ] && \
+  [ "$DPDARK" -ge "$WD_DARK" ] && \
     fire="data plane dark ${DPDARK}s (dp: $(cat "$DPF" 2>/dev/null))"
-  [ -z "$fire" ] && [ "$WDHAVEN" -eq 1 ] && [ "$hb_age" -ge "$WD_HB_STALE" ] && \
+  [ -z "$fire" ] && [ "$hb_age" -ge "$WD_HB_STALE" ] && \
     fire="supervisor heartbeat stale ${hb_age}s (hb: ${hb_e:-absent})"
   [ -n "$fire" ] || { sleep 10; continue; }
 
