@@ -71,13 +71,19 @@ ADD port/runsc/prewarmer/prewarmer.c runsc/prewarmer/prewarmer.c
 #          list) and rust-dhcp acquires + applies the lease in the netstack via
 #          rtnetlink; 1 -> the scraped address (unchanged); >1 -> error.
 #   xdp-5  the counts map pin (the sockmap / xdp map pin for the XDP attach).
-#   xdp-7  char-device sequential I/O: the gofer's openFDLisa Read/Write used
-#          pread/pwrite (ReadAt/WriteAt), which return ESPIPE ("Illegal seek")
-#          on non-seekable character devices. The --character-device-policy=
-#          passthrough char nodes (the TPM/SEV-SNP attestation devices
-#          forwarded into the netstack sandbox) are command-block devices that
-#          only accept a sequential read/write stream, so the gofer must use
-#          plain write/read (no offset) for them. This is the fix for seald's
+#   xdp-7  char-device sequential I/O: the sentry's directfs handle (the
+#          active I/O path for a donated host fd) used Preadv2/Pwritev2 with a
+#          real offset, which are preadv/pwritev — and those return ESPIPE
+#          ("Illegal seek") on non-seekable character devices. The
+#          --character-device-policy=passthrough char nodes (the TPM/SEV-SNP
+#          attestation devices forwarded into the netstack sandbox) are
+#          command-block devices that only accept a sequential read/write
+#          stream, so the sentry must use a plain read()/write() (no offset)
+#          for them. The fix: detect char devices via fstat on the host fd at
+#          open time and pass offset = -1 (which Preadv2/Pwritev2 interpret
+#          as a plain read/write) for them. A second, belt-and-suspenders fix
+#          in the gofer's openFDLisa Read/Write (the RPC fallback path) does
+#          the same for the non-donated case. This is the fix for seald's
 #          in-sandbox TPM2 quote (the write was failing with ESPIPE, so the
 #          quote could not complete and the attest gate was GATE FAIL).
 ADD patches/xdp-1-port-go-branch-api.patch /tmp/xdp-1.patch

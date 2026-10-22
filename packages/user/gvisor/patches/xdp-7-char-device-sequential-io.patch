@@ -72,3 +72,83 @@
  	n, err := rw.ReadAt(buf, int64(off))
  	if err != nil && err != io.EOF {
  		return 0, err
+--- a/pkg/sentry/fsimpl/gofer/handle.go
++++ b/pkg/sentry/fsimpl/gofer/handle.go
+@@ -35,6 +35,15 @@
+ type handle struct {
+ 	fdLisa lisafs.ClientFD
+ 	fd     int32 // -1 if unavailable
++	// charDev is true when the host file descriptor refers to a character
++	// device. Character devices are non-seekable: preadv/pwritev (Preadv2/
++	// Pwritev2 with a real offset) return ESPIPE ("Illegal seek") on them. For
++	// a char device the sentry passes offset = -1, which Preadv2/Pwritev2
++	// interpret as a plain read()/write() (no offset) — the correct form for
++	// the --character-device-policy=passthrough char nodes (the TPM/SEV-SNP
++	// attestation devices forwarded into the netstack sandbox, which are
++	// command-block devices that only accept a sequential read/write stream).
++	charDev bool
+ }
+ 
+ func (h *handle) close(ctx context.Context) {
+@@ -53,7 +62,13 @@
+ 	}
+ 	if h.fd >= 0 {
+ 		ctx.UninterruptibleSleepStart()
+-		n, err := hostfd.Preadv2(h.fd, dsts, int64(offset), 0 /* flags */)
++		// A character device is non-seekable: pass offset = -1 (plain read,
++		// no offset) so Preadv2 does not use preadv (which would ESPIPE).
++		off := int64(offset)
++		if h.charDev {
++			off = -1
++		}
++		n, err := hostfd.Preadv2(h.fd, dsts, off, 0 /* flags */)
+ 		ctx.UninterruptibleSleepFinish()
+ 		return n, err
+ 	}
+@@ -68,7 +83,13 @@
+ 	}
+ 	if h.fd >= 0 {
+ 		ctx.UninterruptibleSleepStart()
+-		n, err := hostfd.Pwritev2(h.fd, srcs, int64(offset), 0 /* flags */)
++		// A character device is non-seekable: pass offset = -1 (plain write,
++		// no offset) so Pwritev2 does not use pwritev (which would ESPIPE).
++		off := int64(offset)
++		if h.charDev {
++			off = -1
++		}
++		n, err := hostfd.Pwritev2(h.fd, srcs, off, 0 /* flags */)
+ 		ctx.UninterruptibleSleepFinish()
+ 		return n, err
+ 	}
+--- a/pkg/sentry/fsimpl/gofer/directfs_inode.go
++++ b/pkg/sentry/fsimpl/gofer/directfs_inode.go
+@@ -245,7 +245,7 @@
+ 			log.Warningf("gofer did not donate an FD for mount point")
+ 			return noHandle, unix.EIO
+ 		}
+-		return handle{fd: int32(hostFD)}, nil
++		return handle{fd: int32(hostFD), charDev: isCharDevice(hostFD)}, nil
+ 	}
+ 
+ 	// The only way to re-open an FD with different flags is via procfs or
+@@ -256,7 +256,19 @@
+ 	if err != nil {
+ 		return noHandle, err
+ 	}
+-	return handle{fd: int32(openFD)}, nil
++	return handle{fd: int32(openFD), charDev: isCharDevice(openFD)}, nil
++}
++
++// isCharDevice reports whether the host file descriptor refers to a character
++// device (via fstat, the authoritative source). A non-nil error (the fd is
++// invalid or the fstat fails) is treated as "not a char device" (the
++// regular-file path, the safe default).
++func isCharDevice(hostFD int) bool {
++	var st unix.Stat_t
++	if err := unix.Fstat(hostFD, &st); err != nil {
++		return false
++	}
++	return st.Mode&unix.S_IFMT == unix.S_IFCHR
+ }
+ 
+ // Precondition: fs.renameMu is locked.
