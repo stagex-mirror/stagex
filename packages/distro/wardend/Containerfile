@@ -44,6 +44,15 @@ COPY --from=core-musl . /
 COPY --from=core-libunwind . /
 COPY --from=user-wardend /usr/bin/bridge /usr/bin/bridge
 COPY --from=user-wardend /usr/bin/posternd /usr/bin/posternd
+# dpmon: the IN-SANDBOX data-plane liveness probe (a co-tenant of bridge
+# wire, spawned by the bundle config.json argv's --dpmon-bin). It does a
+# real external TCP connect on a bounded cadence and publishes
+# `<epoch> pass|fail` to the host-visible /run/wardend/devices/dp.status
+# (the bind-mounted dir the host-side wardend-watchdog reads).
+# Dynamic-musl with the SAME NEEDED as bridge (libc.musl + libunwind) —
+# the musl runtime + libunwind above cover it (bridge is the known-working
+# sandbox init).
+COPY --from=user-wardend /usr/bin/dpmon /usr/bin/dpmon
 # offline-srv: the offline-workload co-tenant (UDS-only, no network of its
 # own), published to the wire by bridge wire's --expose relay (see the
 # bundle config.json argv). Dynamic musl like bridge/posternd — the musl
@@ -120,6 +129,13 @@ COPY --from=core-musl . /
 COPY --from=core-libunwind . /
 COPY --from=user-wardend /usr/bin/regentd /usr/bin/regentd
 COPY --from=user-wardend /usr/bin/wardend /usr/bin/wardend
+# wardend-watchdog: the data-plane backstop (a SEPARATE process from
+# regentd + the warden; regentd spawns it once at boot). It fires
+# `reboot -f` on a dp-dark >= 540 s (the in-sandbox dpmon status stale)
+# or a stale warden heartbeat >= 600 s, with a persistent reboot-loop
+# guard on the raw disk tail. Dynamic-musl like regentd (libc.musl +
+# libunwind) — the musl runtime + libunwind above cover it.
+COPY --from=user-wardend /usr/bin/wardend-watchdog /usr/bin/wardend-watchdog
 COPY --from=user-wardend /usr/bin/xattach /usr/bin/xattach
 # gVisor: runsc (the CLI the gvisor moat execs) + the gvisor-bin sidecar dir
 # (gvisor_sentry, a STRICT runsc requirement, found next to runsc via the

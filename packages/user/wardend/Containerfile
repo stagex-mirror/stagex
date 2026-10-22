@@ -26,7 +26,8 @@ RUN --network=none <<-EOF
     --target "${ARCH}-unknown-linux-musl" \
     --features gvisor,container \
     -p warden
-  # regent (regentd), postern (posternd), wardend-bridge (bridge), xattach.
+  # regent (regentd + wardend-watchdog), postern (posternd),
+  # wardend-bridge (bridge + dpmon + offline-srv), xattach.
   cargo build \
     --frozen \
     --release \
@@ -44,8 +45,23 @@ RUN --network=none <<-EOF
   R="target/${ARCH}-unknown-linux-musl/release"
   install -vDm755 "$R/wardend"  /rootfs/usr/bin/wardend
   install -vDm755 "$R/regentd"  /rootfs/usr/bin/regentd
+  # wardend-watchdog: the data-plane backstop (a SEPARATE process from
+  # regentd + the warden; regentd spawns it once at boot). It fires
+  # `reboot -f` on a dp-dark >= 540 s (the in-sandbox dpmon status stale)
+  # or a stale warden heartbeat >= 600 s, with a persistent reboot-loop
+  # guard on the raw disk tail. Dynamic-musl like regentd (libc.musl +
+  # libunwind), which the host rootfs already carries.
+  install -vDm755 "$R/wardend-watchdog" /rootfs/usr/bin/wardend-watchdog
   install -vDm755 "$R/posternd" /rootfs/usr/bin/posternd
   install -vDm755 "$R/bridge"   /rootfs/usr/bin/bridge
+  # dpmon: the IN-SANDBOX data-plane liveness probe (a co-tenant of
+  # bridge wire, spawned by the bundle config.json argv's --dpmon-bin).
+  # It does a real external TCP connect on a bounded cadence and publishes
+  # `<epoch> pass|fail` to the host-visible /run/wardend/devices/dp.status
+  # (the bind-mounted dir the host-side wardend-watchdog reads).
+  # Dynamic-musl with the SAME NEEDED as bridge (libc.musl + libunwind),
+  # which the bundle rootfs already carries (core-musl + core-libunwind).
+  install -vDm755 "$R/dpmon"    /rootfs/usr/bin/dpmon
   # seald: the evidence daemon (the seal package's bin). The distro COPYs it
   # into the netstack bundle rootfs as a co-tenant of the wire-owning netstack.
   # Dynamic-musl with the SAME NEEDED as bridge (libc.musl + libunwind), which
