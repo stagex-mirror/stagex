@@ -1,0 +1,74 @@
+--- a/runsc/fsgofer/lisafs.go
++++ b/runsc/fsgofer/lisafs.go
+@@ -1137,18 +1137,39 @@
+ 
+ 	// hostFD is the host file descriptor which can be used to make syscalls.
+ 	hostFD int
++	// charDev is true when the open file is a character device. Character
++	// devices are non-seekable: pwrite/pread (WriteAt/ReadAt) return ESPIPE
++	// ("Illegal seek") on them, so the gofer must use plain write/read
++	// (no offset) for them. This is the fix for the TPM/SEV-SNP passthrough
++	// (the --character-device-policy=passthrough char nodes, which are
++	// command-block devices that only accept a sequential read/write stream).
++	charDev bool
+ }
+ 
+ var _ lisafs.OpenFDImpl = (*openFDLisa)(nil)
+ 
+ func (fd *controlFDLisa) newOpenFDLisa(hostFD int, flags uint32) *openFDLisa {
+ 	newFD := &openFDLisa{
+-		hostFD: hostFD,
++		hostFD:  hostFD,
++		charDev: isCharDeviceFD(hostFD),
+ 	}
+ 	newFD.OpenFD.Init(fd.FD(), flags, newFD)
+ 	return newFD
+ }
+ 
++// isCharDeviceFD reports whether the host file descriptor refers to a
++// character device (via fstat, the authoritative source — the gofer node's
++// metadata may not carry the file type). A non-nil error (the fd is invalid
++// or the fstat fails) is treated as "not a char device" (the regular-file
++// path, the safe default).
++func isCharDeviceFD(hostFD int) bool {
++	var st unix.Stat_t
++	if err := unix.Fstat(hostFD, &st); err != nil {
++		return false
++	}
++	return st.Mode&unix.S_IFMT == unix.S_IFCHR
++}
++
+ // FD implements lisafs.OpenFDImpl.FD.
+ func (fd *openFDLisa) FD() *lisafs.OpenFD {
+ 	if fd == nil {
+@@ -1178,6 +1199,13 @@
+ // Write implements lisafs.OpenFDImpl.Write.
+ func (fd *openFDLisa) Write(buf []byte, off uint64) (uint64, error) {
+ 	rw := rwfd.NewReadWriter(fd.hostFD)
++	if fd.charDev {
++		// Character devices are non-seekable: pwrite (WriteAt) returns
++		// ESPIPE. Use plain write (no offset) — the TPM/SEV-SNP command
++		// block is a sequential stream, not a seekable file.
++		n, err := rw.Write(buf)
++		return uint64(n), err
++	}
+ 	n, err := rw.WriteAt(buf, int64(off))
+ 	return uint64(n), err
+ }
+@@ -1185,6 +1213,16 @@
+ // Read implements lisafs.OpenFDImpl.Read.
+ func (fd *openFDLisa) Read(buf []byte, off uint64) (uint64, error) {
+ 	rw := rwfd.NewReadWriter(fd.hostFD)
++	if fd.charDev {
++		// Character devices are non-seekable: pread (ReadAt) returns
++		// ESPIPE. Use plain read (no offset) — the TPM/SEV-SNP command
++		// block is a sequential stream, not a seekable file.
++		n, err := rw.Read(buf)
++		if err != nil && err != io.EOF {
++			return 0, err
++		}
++		return uint64(n), nil
++	}
+ 	n, err := rw.ReadAt(buf, int64(off))
+ 	if err != nil && err != io.EOF {
+ 		return 0, err
