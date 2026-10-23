@@ -87,3 +87,4 @@
 - `make qemu-start` — starts VM, waits for SSH on port 2222
 - Logs visible via `docker logs qemu-dev` (QEMU serial → container stdout)
 - SSH key: `~/.ssh/tpm-exploration.pem`
+- **Observability gap CLOSED (Oct 23, wardend `2326325`):** seald now writes the gate result to `{devices}/gate.txt` (the bind-mounted devices dir — the same dir the moat's `probe.txt` lives in). The file survives the 64 KB console ring + is readable from the sandbox (the gofer reads it over the 9p path) AND from the host (the dir is bind-mounted). Content: `<epoch> pass|fail <summary>`. The watchdog's `watchdog.status` file (advancing every 5 s) is the second seam. A write failure is a no-op (observability, not the gate path). 129 seal tests pass. Ships with the next disk build (the deployed disk `c3a5a44b…` runs `99f1f43`, pre-gate.txt).
