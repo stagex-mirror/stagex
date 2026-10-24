@@ -1,6 +1,6 @@
 [package]
 name = "wardend"
-# Pinned to commit 2b46f87 (branch probe/tpm-eacces-mac) of
+# Pinned to commit 0678d37 (branch probe/tpm-eacces-mac) of
 # https://codeberg.org/lrvick/wardend: the containerized unit supervisor
 # stack that replaces execd + the sysnet/sshdt shell in the wardend enclave
 # topology. This package builds the five userspace binaries the guest runs
@@ -31,7 +31,7 @@ license = "MIT OR Apache-2.0"
 website = "https://codeberg.org/lrvick/wardend"
 
 [sources.wardend]
-hash = "596da9756dc8dac142c9c82c045e7a8d89708a8392d2afbd0f4dcabf50a5573e"
+hash = "913a731e4ae6f11c22f0bb7eb3cbeda9d5fc7226c97cd4db2552aadd62ff637f"
 format = "tar.gz"
 file = "wardend-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/wardend/archive/{version}.{format}"]
