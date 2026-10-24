@@ -89,6 +89,24 @@ COPY src/rootfs/etc/ssh/authorized_keys /root/.ssh/authorized_keys
 # create 128). Pre-create the full path here (the P4 precedent for the
 # /etc files the gofer O_CREATs) so the MkdirAll is a no-op on RO erofs.
 RUN mkdir -p /run/wardend/devices
+# The config.json ALSO bind-mounts {root}/devices/sev-guest -> /dev/sev-guest
+# (the SEV-SNP device; the xdp-8 char-device ioctl proxy). The gofer O_CREATs
+# the DESTINATION (/dev/sev-guest) inside the bundle rootfs before binding
+# (specutils.go SafeSetupAndMount) — and this rootfs is served RO (the OCI
+# spec's "readonly": true), so a missing destination is EROFS -> "cannot read
+# client sync file: EOF" -> runsc create 128 (the whole netstack refuses to
+# start). Pre-create the destination here (the P4 precedent for the /etc files
+# the gofer O_CREATs) so the O_CREAT is a no-op on RO. On the wire the bind
+# overlays the real char device (seald's sev_present sees a char device ->
+# memory_encryption PROVEN); on QEMU (no SEV-SNP) the moat bind-mounts a
+# placeholder REGULAR file, which is not a char device, so seald degrades
+# honestly to NOT PROVEN (tpm2-only) instead of failing the gate closed.
+# COPY (not RUN touch): BuildKit mounts a fresh /dev devtmpfs into the build
+# container, so `touch /dev/sev-guest` lands on the discarded tmpfs and never
+# reaches the image layer. COPY writes the file into the layer directly.
+# The source is an empty regular file (a placeholder; the bind overlays the
+# real char device on the wire).
+COPY src/dev-sev-guest /dev/sev-guest
 
 # ============================================================
 # Stage 1: the host rootfs (the erofs system image)
@@ -136,7 +154,29 @@ COPY --from=user-wardend /usr/bin/wardend /usr/bin/wardend
 # guard on the raw disk tail. Dynamic-musl like regentd (libc.musl +
 # libunwind) — the musl runtime + libunwind above cover it.
 COPY --from=user-wardend /usr/bin/wardend-watchdog /usr/bin/wardend-watchdog
+# wardend-xdparm: the AF_XDP sock_map fast-path re-arm (a SEPARATE process
+# from regentd + the warden; regentd spawns it once at boot, after
+# spawn_watchdog). It does a real BPF_MAP_LOOKUP_ELEM on the pinned
+# /sys/fs/bpf/<iface>/redirect_ip_map key 0 (the wedge detection: the
+# kernel auto-removes the socket from the map when the sentry dies, so a
+# missing/zero entry = the guard has XDP_ACT_PASS'd everything). On a
+# wedge it re-arms WITHOUT a reboot: a fresh AF_XDP socket (SIOCGIFINDEX +
+# sockaddr_xdp bind) + UMEM + the fill/completion/RX rings (the -ENOBUFS
+# fix — the kernel's xskmap.c refuses to insert a socket whose xs->rx is
+# NULL) + BPF_MAP_UPDATE_ELEM key 0, with bounded backoff. If the sentry
+# is DEAD it falls back to the existing respawn path (it does not
+# implement a new one). Dynamic-musl like regentd (libc.musl + libunwind)
+# — the musl runtime + libunwind above cover it.
+COPY --from=user-wardend /usr/bin/wardend-xdparm /usr/bin/wardend-xdparm
 COPY --from=user-wardend /usr/bin/xattach /usr/bin/xattach
+# The host-side dhcp oneshot's lease-apply script (the udhcpc -s handler):
+# the QEMU slirp gap — runsc's prepareRedirectInterfaceArgs is a host-side,
+# pre-sandbox step that needs the uplink to already have a single IPv4
+# address. On the wire the ENA is addressed by a prior VPC-DHCP step (the
+# unit is a no-op there); on QEMU slirp there is no host-side client, so the
+# unit runs udhcpc with this script as the -s handler. Versioned with the
+# wardend pin (user-wardend ships it).
+COPY --from=user-wardend /usr/libexec/dhcp.sh /usr/libexec/dhcp.sh
 # gVisor: runsc (the CLI the gvisor moat execs) + the gvisor-bin sidecar dir
 # (gvisor_sentry, a STRICT runsc requirement, found next to runsc via the
 # gvisorbinaries package) + xdp_loader (the standalone AF_XDP pin tool that
