@@ -1,6 +1,6 @@
 [package]
 name = "wardend"
-# Pinned to commit 96ba844 (branch probe/tpm-eacces-mac) of
+# Pinned to commit 1ae7442 (branch probe/tpm-eacces-mac) of
 # https://codeberg.org/lrvick/wardend: the containerized unit supervisor
 # stack that replaces execd + the sysnet/sshdt shell in the wardend enclave
 # topology. This package builds the five userspace binaries the guest runs
@@ -25,13 +25,13 @@ name = "wardend"
 # All five are musl-dynamic (the shared musl runtime is core-musl +
 # core-libunwind, already in the rootfs); only demit is static (it is the
 # initramfs init, built by the user-demit package).
-version = "99f1f43579f5fb8e5dbdd10b2e4dc4f770f63d3a"
+version = "1ae7442c6867cd39a37c22e79af706d64217ffa9"
 description = "wardend unit supervisor + regentd + posternd (russh SSH) + bridge (netstack init) + xattach (XDP attach) + seald (evidence daemon, in-sandbox co-tenant)"
 license = "MIT OR Apache-2.0"
 website = "https://codeberg.org/lrvick/wardend"
 
 [sources.wardend]
-hash = "49721c7e88c2e8d8773220cb1b9335522146618d72f43fa2b0563ddf74d1ac36"
+hash = "6d91d090280e402e34deea91fc8e6892d32aba28e42afe1e19cdfea03c326fa3"
 format = "tar.gz"
 file = "wardend-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/wardend/archive/{version}.{format}"]
