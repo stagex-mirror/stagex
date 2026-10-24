@@ -168,6 +168,17 @@ COPY --from=user-wardend /usr/bin/wardend-watchdog /usr/bin/wardend-watchdog
 # implement a new one). Dynamic-musl like regentd (libc.musl + libunwind)
 # — the musl runtime + libunwind above cover it.
 COPY --from=user-wardend /usr/bin/wardend-xdparm /usr/bin/wardend-xdparm
+# wardend-xdpgone: the AF_XDP sock_map wedge TRIGGER (the xdp-9
+# disambiguator's forced-wedge half; a SEPARATE process from regentd + the
+# warden + the watchdog + the re-arm). regentd spawns it once at boot. It
+# watches a trigger file in the bind-mounted devices dir; on trigger it does
+# a BPF_OBJ_GET + BPF_MAP_DELETE_ELEM on key 0 of the pinned
+# /sys/fs/bpf/eth0/redirect_ip_map, which simulates the kernel's
+# xsk_delete_from_maps auto-removal WITHOUT killing the sentry (the socket
+# fd stays open, just removed from the map) — the wedge the re-arm must
+# recover without a reboot. Dynamic-musl like regentd (libc.musl +
+# libunwind) — the musl runtime + libunwind above cover it.
+COPY --from=user-wardend /usr/bin/wardend-xdpgone /usr/bin/wardend-xdpgone
 COPY --from=user-wardend /usr/bin/xattach /usr/bin/xattach
 # The host-side dhcp oneshot's lease-apply script (the udhcpc -s handler):
 # the QEMU slirp gap — runsc's prepareRedirectInterfaceArgs is a host-side,

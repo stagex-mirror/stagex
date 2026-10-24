@@ -52,6 +52,29 @@ RUN --network=none <<-EOF
   # guard on the raw disk tail. Dynamic-musl like regentd (libc.musl +
   # libunwind), which the host rootfs already carries.
   install -vDm755 "$R/wardend-watchdog" /rootfs/usr/bin/wardend-watchdog
+  # wardend-xdparm: the AF_XDP sock_map fast-path re-arm (a SEPARATE process
+  # from regentd + the warden; regentd spawns it once at boot, after
+  # spawn_watchdog). It does a real BPF_MAP_LOOKUP_ELEM on the pinned
+  # /sys/fs/bpf/<iface>/redirect_ip_map key 0 (the wedge detection: the
+  # kernel auto-removes the socket from the map when the sentry dies, so a
+  # missing/zero entry = the guard has XDP_ACT_PASS'd everything). On a wedge
+  # it re-arms WITHOUT a reboot: a fresh AF_XDP socket (SIOCGIFINDEX +
+  # sockaddr_xdp bind) + BPF_MAP_UPDATE_ELEM key 0, with bounded backoff.
+  # If the sentry is DEAD it falls back to the existing respawn path (it does
+  # not implement a new one). Dynamic-musl like regentd (libc.musl +
+  # libunwind), which the host rootfs already carries.
+  install -vDm755 "$R/wardend-xdparm" /rootfs/usr/bin/wardend-xdparm
+  # wardend-xdpgone: the AF_XDP sock_map wedge TRIGGER (the xdp-9
+  # disambiguator's forced-wedge half; a SEPARATE process from regentd + the
+  # warden + the watchdog + the re-arm). regentd spawns it once at boot. It
+  # watches a trigger file in the bind-mounted devices dir; on trigger it does
+  # a BPF_OBJ_GET + BPF_MAP_DELETE_ELEM on key 0 of the pinned
+  # /sys/fs/bpf/eth0/redirect_ip_map, which simulates the kernel's
+  # xsk_delete_from_maps auto-removal WITHOUT killing the sentry (the socket
+  # fd stays open, just removed from the map) — the wedge the re-arm must
+  # recover without a reboot. Dynamic-musl like regentd (libc.musl +
+  # libunwind), which the host rootfs already carries.
+  install -vDm755 "$R/wardend-xdpgone" /rootfs/usr/bin/wardend-xdpgone
   install -vDm755 "$R/posternd" /rootfs/usr/bin/posternd
   install -vDm755 "$R/bridge"   /rootfs/usr/bin/bridge
   # dpmon: the IN-SANDBOX data-plane liveness probe (a co-tenant of
@@ -79,6 +102,14 @@ RUN --network=none <<-EOF
   # only config.json (the runsc contract) comes from the wardend tree.
   install -vDm644 src/warden/units/xdp-attach.hcl /rootfs/etc/wardend/units/xdp-attach.hcl
   install -vDm644 src/warden/units/netstack.hcl  /rootfs/etc/wardend/units/netstack.hcl
+  # The host-side dhcp oneshot (the QEMU slirp gap): runsc's
+  # prepareRedirectInterfaceArgs is a host-side, pre-sandbox step that needs
+  # the uplink to already have a single IPv4 address. On the wire the ENA is
+  # addressed by a prior VPC-DHCP step (the unit is a no-op there); on QEMU
+  # slirp there is no host-side client, so the unit runs udhcpc with the
+  # lease-apply script as the -s handler. xdp-attach gates on its sentinel.
+  install -vDm644 src/warden/units/dhcp.hcl /rootfs/etc/wardend/units/dhcp.hcl
+  install -vDm755 src/warden/guest/usr/libexec/dhcp.sh /rootfs/usr/libexec/dhcp.sh
   install -vDm644 src/warden/guest/netstack/config.json /rootfs/images/netstack/config.json
   # The injection seed (the offline-unit concept-proof): bridge wire reads it
   # at startup and merges its expose/offline directives. The distro COPYs it
