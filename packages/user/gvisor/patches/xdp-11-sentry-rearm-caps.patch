@@ -1,0 +1,28 @@
+diff --git a/runsc/cmd/sentry/sentrycmd/boot.go b/runsc/cmd/sentry/sentrycmd/boot.go
+index 3e711fc..f5f20eb 100644
+--- a/runsc/cmd/sentry/sentrycmd/boot.go
++++ b/runsc/cmd/sentry/sentrycmd/boot.go
+@@ -488,6 +488,23 @@ func (b *Boot) Execute(_ context.Context, f *flag.FlagSet, args ...any) subcomma
+ 	if b.applyCaps {
+ 		caps := &specs.LinuxCapabilities{}
+ 
++		// The XDP re-create (xdp-9) joins the host netns (setns(CLONE_NEWNET))
++		// to bind a new AF_XDP socket to the uplink device, then setns's back
++		// to the sentry netns. setns requires CAP_SYS_ADMIN; the AF_XDP socket
++		// bind + the BPF map delete/update require CAP_NET_ADMIN + CAP_NET_RAW.
++		// The sentry's default local set (directfs file ops + ptrace) does not
++		// include these, so the re-create setns EPERMs (observed on QEMU:
++		// "failed to join host netns: operation not permitted"). Grant them here
++		// so the re-create path works. (The guest bridge already holds the same
++		// set — CapBnd=0x203000 = SYS_ADMIN + NET_ADMIN + NET_RAW — from the
++		// OCI spec; the sentry needs it too to do the re-create work directly.)
++		var rearmCaps = []string{"CAP_SYS_ADMIN", "CAP_NET_ADMIN", "CAP_NET_RAW"}
++		for _, c := range rearmCaps {
++			caps.Bounding = append(caps.Bounding, c)
++			caps.Effective = append(caps.Effective, c)
++			caps.Permitted = append(caps.Permitted, c)
++		}
++
+ 		gPlatform, err := platform.Lookup(conf.Platform)
+ 		if err != nil {
+ 			util.Fatalf("loading platform: %v", err)

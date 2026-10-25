@@ -1,0 +1,103 @@
+diff --git a/runsc/boot/filter/config/config_main.go b/runsc/boot/filter/config/config_main.go
+index 244293e..31e0ac1 100644
+--- a/runsc/boot/filter/config/config_main.go
++++ b/runsc/boot/filter/config/config_main.go
+@@ -23,6 +23,14 @@ import (
+ 
+ // allowedSyscalls is the set of syscalls executed by the Sentry to the host OS.
+ var allowedSyscalls = seccomp.MakeSyscallRules(map[uintptr]seccomp.SyscallRule{
++	// Used by the sentry's XDP re-create (xdp-9): socket(AF_XDP) +
++	// bind(uplink) create the new AF_XDP socket and bind it to the
++	// uplink device in the host netns (after setns). Without these the
++	// seccomp filter kills the sentry on the socket(2) call (audit:
++	// sig=31 syscall=41 code=0x80000000) the instant the re-create path
++	// fires.
++	unix.SYS_BIND:          seccomp.MatchAll{},
++	unix.SYS_BPF:           seccomp.MatchAll{},
+ 	unix.SYS_CLOCK_GETTIME: seccomp.MatchAll{},
+ 	unix.SYS_CLOSE:         seccomp.MatchAll{},
+ 	unix.SYS_DUP:           seccomp.MatchAll{},
+@@ -86,7 +94,13 @@ var allowedSyscalls = seccomp.MakeSyscallRules(map[uintptr]seccomp.SyscallRule{
+ 		seccomp.EqualTo(0),
+ 		seccomp.EqualTo(0),
+ 	},
+-	unix.SYS_GETPID:    seccomp.MatchAll{},
++	unix.SYS_GETPID: seccomp.MatchAll{},
++	// Used by the sentry's XDP re-create (xdp-9): the UMEM registration
++	// (pkg/xdp/xdp.go) checks RLIMIT_MEMLOCK (getrlimit(2)) to warn if the
++	// UMEM size may exceed the memlock limit. Without this the seccomp
++	// filter kills the sentry on the getrlimit call (audit: sig=31
++	// syscall=97 code=0x80000000).
++	unix.SYS_GETRLIMIT: seccomp.MatchAll{},
+ 	unix.SYS_GETRANDOM: seccomp.MatchAll{},
+ 	unix.SYS_GETSOCKOPT: seccomp.Or{
+ 		seccomp.PerArg{
+@@ -114,6 +128,14 @@ var allowedSyscalls = seccomp.MakeSyscallRules(map[uintptr]seccomp.SyscallRule{
+ 			seccomp.EqualTo(unix.SOL_SOCKET),
+ 			seccomp.EqualTo(unix.SO_PASSCRED),
+ 		},
++		// Used by the sentry's XDP re-create (xdp-9): getsockopt(SOL_XDP)
++		// queries the UMEM mmap offsets (XDP_MMAP_OFFSETS) + the ring
++		// offsets during the NewFromSocket UMEM/ring setup (step 6).
++		seccomp.PerArg{
++			seccomp.AnyValue{},
++			seccomp.EqualTo(unix.SOL_XDP),
++			seccomp.AnyValue{},
++		},
+ 	},
+ 	unix.SYS_GETTID:       seccomp.MatchAll{},
+ 	unix.SYS_GETTIMEOFDAY: seccomp.MatchAll{},
+@@ -205,6 +227,15 @@ var allowedSyscalls = seccomp.MakeSyscallRules(map[uintptr]seccomp.SyscallRule{
+ 			seccomp.AnyValue{},
+ 			seccomp.EqualTo(unix.MAP_SHARED),
+ 		},
++		// Used by the sentry's XDP re-create (xdp-9): the UMEM + the RX/TX
++		// rings are mmap'd with MAP_SHARED|MAP_POPULATE (pkg/xdp/xdp.go:
++		// registerUMEM/registerRing) so the kernel can pre-fault the pages.
++		seccomp.PerArg{
++			seccomp.AnyValue{},
++			seccomp.AnyValue{},
++			seccomp.AnyValue{},
++			seccomp.EqualTo(unix.MAP_SHARED | unix.MAP_POPULATE),
++		},
+ 		seccomp.PerArg{
+ 			seccomp.AnyValue{},
+ 			seccomp.AnyValue{},
+@@ -304,6 +335,15 @@ var allowedSyscalls = seccomp.MakeSyscallRules(map[uintptr]seccomp.SyscallRule{
+ 		seccomp.EqualTo(unix.MSG_DONTWAIT | unix.MSG_NOSIGNAL),
+ 	},
+ 	unix.SYS_SETITIMER: seccomp.MatchAll{},
++	// Used by the sentry's XDP re-create (xdp-9): setns(CLONE_NEWNET)
++	// joins the host netns to bind the new AF_XDP socket to the uplink
++	// device, then setns back to the saved (sentry) netns fd. Without
++	// this the seccomp filter kills the sentry on the setns call
++	// (SECCOMP_RET_KILL_PROCESS, observed as a status-31 reap on QEMU).
++	unix.SYS_SETNS: seccomp.MatchAll{},
++	// Used by the sentry's XDP re-create (xdp-9): setsockopt(SOL_XDP) sets
++	// up the UMEM + the RX/TX rings on the new AF_XDP socket (step 6).
++	unix.SYS_SETSOCKOPT: seccomp.MatchAll{},
+ 	unix.SYS_SHUTDOWN: seccomp.Or{
+ 		// Used by fs/host to shutdown host sockets.
+ 		seccomp.PerArg{seccomp.AnyValue{}, seccomp.EqualTo(unix.SHUT_RD)},
+@@ -312,6 +352,10 @@ var allowedSyscalls = seccomp.MakeSyscallRules(map[uintptr]seccomp.SyscallRule{
+ 		seccomp.PerArg{seccomp.AnyValue{}, seccomp.EqualTo(unix.SHUT_RDWR)},
+ 	},
+ 	unix.SYS_SIGALTSTACK: seccomp.MatchAll{},
++	// Used by the sentry's XDP re-create (xdp-9): socket(AF_XDP, SOCK_RAW)
++	// creates the new AF_XDP socket (step 5). The boot-time bind is done by
++	// the host runsc (full caps); the re-create does it in the sentry.
++	unix.SYS_SOCKET: seccomp.MatchAll{},
+ 	unix.SYS_STATX: seccomp.PerArg{
+ 		seccomp.NonNegativeFD{},
+ 		seccomp.AnyValue{},
+@@ -326,8 +370,8 @@ var allowedSyscalls = seccomp.MakeSyscallRules(map[uintptr]seccomp.SyscallRule{
+ 	},
+ 	unix.SYS_TIMER_CREATE: seccomp.PerArg{
+ 		seccomp.EqualTo(unix.CLOCK_THREAD_CPUTIME_ID), /* which */
+-		seccomp.AnyValue{}, /* sevp */
+-		seccomp.AnyValue{}, /* timerid */
++		seccomp.AnyValue{},                            /* sevp */
++		seccomp.AnyValue{},                            /* timerid */
+ 	},
+ 	unix.SYS_TIMER_DELETE: seccomp.MatchAll{},
+ 	unix.SYS_TIMER_SETTIME: seccomp.PerArg{

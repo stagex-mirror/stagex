@@ -86,15 +86,45 @@ ADD port/runsc/prewarmer/prewarmer.c runsc/prewarmer/prewarmer.c
 #          the same for the non-donated case. This is the fix for seald's
 #          in-sandbox TPM2 quote (the write was failing with ESPIPE, so the
 #          quote could not complete and the attest gate was GATE FAIL).
+#   xdp-9  sentry-side XDP re-create: when the kernel auto-removes the pinned
+#          sockmap entry (net/xdp/xsk.c:xsk_delete_from_maps, the sock_map
+#          wedge), the sentry re-creates the AF_XDP socket and re-inserts it
+#          at key 0 so the data plane recovers without a sandbox respawn.
+#   xdp-10 the bpf seccomp allow: the sentry's XDP re-create path (xdp-9)
+#          calls the bpf() syscall (unix.SYS_BPF, 321 on amd64) to open the
+#          pinned sockmap (ebpf.NewMapFromFD) and to re-create the socket's
+#          maps. The seccomp filter (runsc/boot/filter/config/config_main.go
+#          allowedSyscalls) did NOT list bpf, so the host kernel killed the
+#          sentry with SECCOMP_RET_KILL_PROCESS (audit: sig=31 syscall=321
+#          code=0x80000000) the instant the re-create path fired — taking the
+#          whole netstack data plane down. The sentry already owns the pinned
+#          sockmap (created at bind), so MatchAll adds no new trust surface.
+#   xdp-11 the re-arm capability grant: the sentry's XDP re-create path
+#          (xdp-9) joins the host netns (setns(CLONE_NEWNET)) to bind the new
+#          AF_XDP socket, then setns's back to the sentry netns. setns
+#          requires CAP_SYS_ADMIN; the AF_XDP bind + the BPF map delete/update
+#          require CAP_NET_ADMIN + CAP_NET_RAW. The sentry's default local caps
+#          set (runsc/cmd/sentry/sentrycmd/boot.go: directfs file ops + ptrace)
+#          did NOT include these, so the re-create setns EPERMs ("failed to
+#          join host netns: operation not permitted" — the sentry self-capsets
+#          to bounding=0x8001f, which lacks SYS_ADMIN/NET_ADMIN/NET_RAW, even
+#          though the parent regentd holds the full set 0x1ffffffffff). The
+#          guest bridge already holds the same set (CapBnd=0x203000) from the
+#          OCI spec; the sentry needs it too to do the re-create work directly.
 ADD patches/xdp-1-port-go-branch-api.patch /tmp/xdp-1.patch
 ADD patches/xdp-2-synchronous-configure.patch /tmp/xdp-2.patch
 ADD patches/xdp-3-loader-main.patch /tmp/xdp-3.patch
 ADD patches/xdp-4-kernel-offline-zero-addr.patch /tmp/xdp-4.patch
 ADD patches/xdp-5-counts-map-pin.patch /tmp/xdp-5.patch
 ADD patches/xdp-7-char-device-sequential-io.patch /tmp/xdp-7.patch
+ADD patches/xdp-9-sentry-xdp-recreate.patch /tmp/xdp-9.patch
+ADD patches/xdp-10-sentry-bpf-seccomp.patch /tmp/xdp-10.patch
+ADD patches/xdp-11-sentry-rearm-caps.patch /tmp/xdp-11.patch
 RUN patch -p1 -i /tmp/xdp-1.patch && patch -p1 -i /tmp/xdp-2.patch \
     && patch -p1 -i /tmp/xdp-3.patch && patch -p1 -i /tmp/xdp-4.patch \
     && patch -p1 -i /tmp/xdp-5.patch && patch -p1 -i /tmp/xdp-7.patch \
+    && patch -p1 -i /tmp/xdp-9.patch && patch -p1 -i /tmp/xdp-10.patch \
+    && patch -p1 -i /tmp/xdp-11.patch \
     && rm -f /tmp/xdp-*.patch
 
 # Custom AF_XDP "redirect" program replacing the go-branch's prebuilt one (v3,
