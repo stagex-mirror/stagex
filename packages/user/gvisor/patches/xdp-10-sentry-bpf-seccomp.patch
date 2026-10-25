@@ -1,6 +1,4 @@
 diff --git a/runsc/boot/filter/config/config_main.go b/runsc/boot/filter/config/config_main.go
---- a/runsc/boot/filter/config/config_main.go	2026-10-24 21:23:26.853675982 -0700
-+++ b/runsc/boot/filter/config/config_main.go	2026-10-25 04:56:41.084007861 -0700
 @@ -23,6 +23,14 @@
  
  // allowedSyscalls is the set of syscalls executed by the Sentry to the host OS.
@@ -116,3 +114,23 @@ diff --git a/runsc/boot/filter/config/config_main.go b/runsc/boot/filter/config/
  		unix.SYS_OPENAT: seccomp.PerArg{
  			seccomp.NonNegativeFD{},
  			seccomp.AnyValue{},
+diff --git a/runsc/fsgofer/filter/config/config_main.go b/runsc/fsgofer/filter/config/config_main.go
+@@ -144,8 +144,16 @@
+ 	unix.SYS_MPROTECT:  seccomp.MatchAll{},
+ 	unix.SYS_MUNMAP:    seccomp.MatchAll{},
+ 	unix.SYS_NANOSLEEP: seccomp.MatchAll{},
+-	unix.SYS_OPENAT:    seccomp.MatchAll{},
+-	unix.SYS_OPENAT2:   seccomp.MatchAll{},
++	// The sentry's XDP re-create (xdp-9) sends the gofer an OpenAtReq for
++	// /proc/self/ns/net; on this build the gofer's open uses the open(2)
++	// syscall (5), not openat(2) (257). Without this the gofer's seccomp
++	// filter kills the gofer on the open call (audit: sig=31 syscall=5
++	// code=0x80000000), the gofer socket disconnects, and the sentry is
++	// killed with it (the wire boot failure; QEMU's code path uses openat
++	// so it never reproduced there).
++	unix.SYS_OPEN:    seccomp.MatchAll{},
++	unix.SYS_OPENAT:  seccomp.MatchAll{},
++	unix.SYS_OPENAT2: seccomp.MatchAll{},
+ 	unix.SYS_PPOLL:     seccomp.MatchAll{},
+ 	unix.SYS_PRCTL: seccomp.PerArg{
+ 		seccomp.EqualTo(unix.PR_SET_VMA),
