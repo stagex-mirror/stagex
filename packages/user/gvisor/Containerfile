@@ -120,11 +120,13 @@ ADD patches/xdp-7-char-device-sequential-io.patch /tmp/xdp-7.patch
 ADD patches/xdp-9-sentry-xdp-recreate.patch /tmp/xdp-9.patch
 ADD patches/xdp-10-sentry-bpf-seccomp.patch /tmp/xdp-10.patch
 ADD patches/xdp-11-sentry-rearm-caps.patch /tmp/xdp-11.patch
+ADD patches/xdp-12-initial-socket-step-logging.patch /tmp/xdp-12.patch
 RUN patch -p1 -i /tmp/xdp-1.patch && patch -p1 -i /tmp/xdp-2.patch \
     && patch -p1 -i /tmp/xdp-3.patch && patch -p1 -i /tmp/xdp-4.patch \
     && patch -p1 -i /tmp/xdp-5.patch && patch -p1 -i /tmp/xdp-7.patch \
     && patch -p1 -i /tmp/xdp-9.patch && patch -p1 -i /tmp/xdp-10.patch \
     && patch -p1 -i /tmp/xdp-11.patch \
+    && patch -p1 -i /tmp/xdp-12.patch \
     && rm -f /tmp/xdp-*.patch
 
 # Custom AF_XDP "redirect" program replacing the go-branch's prebuilt one (v3,

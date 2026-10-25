@@ -32,7 +32,7 @@ RUN --network=none <<-EOF
     --frozen \
     --release \
     --target "${ARCH}-unknown-linux-musl" \
-    -p regent -p postern -p wardend-bridge -p xattach
+    -p regent -p postern -p wardend-bridge -p xattach -p keep
   # seal (seald): the evidence daemon. Runs as an IN-SANDBOX co-tenant of
   # bridge wire (the netstack sandbox); the bundle's config.json
   # linux.devices passes through /dev/tpmrm0 + /dev/tpm0 + /dev/sev-guest so
@@ -95,6 +95,13 @@ RUN --network=none <<-EOF
   # into the netstack bundle rootfs as a co-tenant of the wire-owning netstack.
   install -vDm755 "$R/offline-srv" /rootfs/usr/bin/offline-srv
   install -vDm755 "$R/xattach"  /rootfs/usr/bin/xattach
+  # keepd: the disks daemon (the LUKS2 data plane). Runs HOST-SIDE (the gvisor
+  # moat has no block-device passthrough; the LUKS volume is a block device
+  # that lives on the host). The warden broker injects WARDEND_LUKS_KEY (the
+  # unsealed persist secret) before launch; keepd opens the LUKS volume,
+  # migrates the PCR policy (seed -> full), and mounts it at /home.
+  # Static-musl like the other host-side binaries.
+  install -vDm755 "$R/keepd"    /rootfs/usr/bin/keepd
   # The unit set + the netstack bundle's OCI config, shipped alongside the
   # binaries so they are versioned with the wardend pin (single source of
   # truth: the distro COPYs these, it does not carry its own copy). The
@@ -102,6 +109,11 @@ RUN --network=none <<-EOF
   # only config.json (the runsc contract) comes from the wardend tree.
   install -vDm644 src/warden/units/xdp-attach.hcl /rootfs/etc/wardend/units/xdp-attach.hcl
   install -vDm644 src/warden/units/netstack.hcl  /rootfs/etc/wardend/units/netstack.hcl
+  # keepd: the host-side disks daemon (the LUKS2 data plane; a persist
+  # key-ed secret, so the warden broker holds it until the key is unsealed
+  # from seald). The container moat (always in the build) is the host-side
+  # primitive; the unit runs with the warden's ambient CAP_SYS_ADMIN.
+  install -vDm644 src/warden/units/keepd.hcl /rootfs/etc/wardend/units/keepd.hcl
   # The host-side dhcp oneshot (the QEMU slirp gap): runsc's
   # prepareRedirectInterfaceArgs is a host-side, pre-sandbox step that needs
   # the uplink to already have a single IPv4 address. On the wire the ENA is

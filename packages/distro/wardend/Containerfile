@@ -2,6 +2,16 @@ FROM stagex/core-filesystem AS core-filesystem
 FROM stagex/core-busybox AS core-busybox
 FROM stagex/core-musl AS core-musl
 FROM stagex/core-libunwind AS core-libunwind
+# netdebug (the REMOVABLE S3 debug channel) needs curl + its NEEDED set.
+# core-curl ships /usr/bin/curl + /usr/lib/libcurl.so.4; the NEEDED set
+# (libssl/libcrypto/libzstd/libz) is NOT in core-curl's package stage (it is
+# in the build stage's /lib/, not the /rootfs/ install output), so stage the
+# versioned .so.N files from the core packages (they are REAL files, not
+# symlinks -- the loader only needs the versioned name).
+FROM stagex/core-curl AS core-curl
+FROM stagex/core-openssl AS core-openssl
+FROM stagex/core-libzstd AS core-libzstd
+FROM stagex/core-zlib AS core-zlib
 FROM stagex/user-demit AS user-demit
 FROM stagex/user-wardend AS user-wardend
 FROM stagex/user-linux-enclave AS user-linux-enclave
@@ -65,6 +75,28 @@ COPY --from=user-wardend /usr/bin/offline-srv /usr/bin/offline-srv
 # NEEDED as bridge (libc.musl + libunwind) — the musl runtime + libunwind
 # above cover it (bridge is the known-working sandbox init).
 COPY --from=user-wardend /usr/bin/seald /usr/bin/seald
+# keepd: the host-side disks daemon (the LUKS2 data plane; a persist
+# key-ed secret WARDEND_LUKS_KEY; the gvisor moat has no block-device
+# passthrough, so keepd runs under the container moat with the host's
+# /dev + CAP_SYS_ADMIN). Shipped by user-wardend (versioned with the
+# wardend pin).
+COPY --from=user-wardend /usr/bin/keepd /usr/bin/keepd
+# netdebug: the REMOVABLE S3 debug channel (a co-tenant of bridge wire,
+# spawned by the bundle config.json argv's --netdebug-bin). curl + its
+# NEEDED set (libcurl/libssl/libcrypto/libzstd/libz) resolve against the
+# bundle's /usr/lib (musl's search path; the loader /lib/ld-musl-x86_64.so.1
+# + libc.musl are already staged above). The versioned .so.N files are real
+# (not symlinks), so single-file COPY works. The script is a busybox sh
+# co-tenant; it samples egress + uploads to S3 (the upload cadence is the
+# liveness signal). Removal: delete this block + the script + the
+# --netdebug-bin argv + the wardend netdebug_bin plumbing.
+COPY --from=core-curl /usr/bin/curl /usr/bin/curl
+COPY --from=core-curl /usr/lib/libcurl.so.4 /usr/lib/libcurl.so.4
+COPY --from=core-openssl /usr/lib/libssl.so.3 /usr/lib/libssl.so.3
+COPY --from=core-openssl /usr/lib/libcrypto.so.3 /usr/lib/libcrypto.so.3
+COPY --from=core-libzstd /usr/lib/libzstd.so.1 /usr/lib/libzstd.so.1
+COPY --from=core-zlib /usr/lib/libz.so.1 /usr/lib/libz.so.1
+COPY src/rootfs/usr/libexec/netdebug.sh /usr/libexec/netdebug.sh
 # The injection seed: bridge wire reads /etc/wardend/seed (its default seed
 # path, inside the sandbox) and merges the expose/offline directives. This is
 # the sole directive source now (the bundle config.json argv is bare `bridge
