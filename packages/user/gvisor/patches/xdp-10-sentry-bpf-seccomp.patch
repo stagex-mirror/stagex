@@ -1,8 +1,7 @@
 diff --git a/runsc/boot/filter/config/config_main.go b/runsc/boot/filter/config/config_main.go
-index 244293e..31e0ac1 100644
---- a/runsc/boot/filter/config/config_main.go
-+++ b/runsc/boot/filter/config/config_main.go
-@@ -23,6 +23,14 @@ import (
+--- a/runsc/boot/filter/config/config_main.go	2026-10-24 21:23:26.853675982 -0700
++++ b/runsc/boot/filter/config/config_main.go	2026-10-25 04:56:41.084007861 -0700
+@@ -23,6 +23,14 @@
  
  // allowedSyscalls is the set of syscalls executed by the Sentry to the host OS.
  var allowedSyscalls = seccomp.MakeSyscallRules(map[uintptr]seccomp.SyscallRule{
@@ -17,7 +16,7 @@ index 244293e..31e0ac1 100644
  	unix.SYS_CLOCK_GETTIME: seccomp.MatchAll{},
  	unix.SYS_CLOSE:         seccomp.MatchAll{},
  	unix.SYS_DUP:           seccomp.MatchAll{},
-@@ -86,7 +94,13 @@ var allowedSyscalls = seccomp.MakeSyscallRules(map[uintptr]seccomp.SyscallRule{
+@@ -86,7 +94,13 @@
  		seccomp.EqualTo(0),
  		seccomp.EqualTo(0),
  	},
@@ -32,7 +31,7 @@ index 244293e..31e0ac1 100644
  	unix.SYS_GETRANDOM: seccomp.MatchAll{},
  	unix.SYS_GETSOCKOPT: seccomp.Or{
  		seccomp.PerArg{
-@@ -114,6 +128,14 @@ var allowedSyscalls = seccomp.MakeSyscallRules(map[uintptr]seccomp.SyscallRule{
+@@ -114,6 +128,14 @@
  			seccomp.EqualTo(unix.SOL_SOCKET),
  			seccomp.EqualTo(unix.SO_PASSCRED),
  		},
@@ -47,7 +46,7 @@ index 244293e..31e0ac1 100644
  	},
  	unix.SYS_GETTID:       seccomp.MatchAll{},
  	unix.SYS_GETTIMEOFDAY: seccomp.MatchAll{},
-@@ -205,6 +227,15 @@ var allowedSyscalls = seccomp.MakeSyscallRules(map[uintptr]seccomp.SyscallRule{
+@@ -205,6 +227,15 @@
  			seccomp.AnyValue{},
  			seccomp.EqualTo(unix.MAP_SHARED),
  		},
@@ -63,7 +62,7 @@ index 244293e..31e0ac1 100644
  		seccomp.PerArg{
  			seccomp.AnyValue{},
  			seccomp.AnyValue{},
-@@ -304,6 +335,15 @@ var allowedSyscalls = seccomp.MakeSyscallRules(map[uintptr]seccomp.SyscallRule{
+@@ -304,6 +335,15 @@
  		seccomp.EqualTo(unix.MSG_DONTWAIT | unix.MSG_NOSIGNAL),
  	},
  	unix.SYS_SETITIMER: seccomp.MatchAll{},
@@ -79,7 +78,7 @@ index 244293e..31e0ac1 100644
  	unix.SYS_SHUTDOWN: seccomp.Or{
  		// Used by fs/host to shutdown host sockets.
  		seccomp.PerArg{seccomp.AnyValue{}, seccomp.EqualTo(unix.SHUT_RD)},
-@@ -312,6 +352,10 @@ var allowedSyscalls = seccomp.MakeSyscallRules(map[uintptr]seccomp.SyscallRule{
+@@ -312,6 +352,10 @@
  		seccomp.PerArg{seccomp.AnyValue{}, seccomp.EqualTo(unix.SHUT_RDWR)},
  	},
  	unix.SYS_SIGALTSTACK: seccomp.MatchAll{},
@@ -90,7 +89,7 @@ index 244293e..31e0ac1 100644
  	unix.SYS_STATX: seccomp.PerArg{
  		seccomp.NonNegativeFD{},
  		seccomp.AnyValue{},
-@@ -326,8 +370,8 @@ var allowedSyscalls = seccomp.MakeSyscallRules(map[uintptr]seccomp.SyscallRule{
+@@ -326,8 +370,8 @@
  	},
  	unix.SYS_TIMER_CREATE: seccomp.PerArg{
  		seccomp.EqualTo(unix.CLOCK_THREAD_CPUTIME_ID), /* which */
@@ -101,3 +100,19 @@ index 244293e..31e0ac1 100644
  	},
  	unix.SYS_TIMER_DELETE: seccomp.MatchAll{},
  	unix.SYS_TIMER_SETTIME: seccomp.PerArg{
+@@ -406,6 +450,15 @@
+ 			seccomp.AnyValue{},
+ 			seccomp.AnyValue{},
+ 		},
++		// Used by the sentry's XDP re-create (xdp-9): the arm-time + the
++		// re-create-time open of /proc/self/ns/net (os.Open) uses the open(2)
++		// syscall (5) on this build, not openat(2) (257). Without this the
++		// seccomp filter kills the sentry on the open call (audit: sig=31
++		// syscall=5 code=0x80000000) on the wire (QEMU's code path uses
++		// openat, so it never reproduced there). open(2) is a standard
++		// syscall the sentry needs; the path is bounded (only the ns/net
++		// open), so MatchAll adds no new trust surface.
++		unix.SYS_OPEN: seccomp.MatchAll{},
+ 		unix.SYS_OPENAT: seccomp.PerArg{
+ 			seccomp.NonNegativeFD{},
+ 			seccomp.AnyValue{},
