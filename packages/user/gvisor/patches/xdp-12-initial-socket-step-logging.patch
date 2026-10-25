@@ -1,0 +1,165 @@
+diff --git a/runsc/sandbox/xdp.go b/runsc/sandbox/xdp.go
+--- a/runsc/sandbox/xdp.go
++++ b/runsc/sandbox/xdp.go
+@@ -68,18 +68,23 @@
+ 	if err != nil {
+ 		return fmt.Errorf("failed to generate redirect interface args: %w", err)
+ 	}
++	log.Infof("xdp: initial: redirect interface args ready (iface=%s idx=%d)", iface.Name, iface.Index)
+ 
+ 	// Create an XDP socket. The sentry will mmap the rings.
++	log.Infof("xdp: initial: about to create AF_XDP socket (socket(2))")
+ 	xdpSockFD, err := unix.Socket(unix.AF_XDP, unix.SOCK_RAW, 0)
+ 	if err != nil {
+ 		return fmt.Errorf("unable to create AF_XDP socket: %w", err)
+ 	}
++	log.Infof("xdp: initial: AF_XDP socket created (fd=%d)", xdpSockFD)
+ 	xdpSock := os.NewFile(uintptr(xdpSockFD), "xdp-sock-fd")
+ 
+ 	// Dup to ensure os.File doesn't close it prematurely.
++	log.Infof("xdp: initial: about to dup AF_XDP socket (dup(2))")
+ 	if _, err := unix.Dup(xdpSockFD); err != nil {
+ 		return fmt.Errorf("failed to dup XDP sock: %w", err)
+ 	}
++	log.Infof("xdp: initial: AF_XDP socket dup'd")
+ 	args.FilePayload.Files = append(args.FilePayload.Files, xdpSock)
+ 
+ 	// xdp-9: donate the host netns + the pinned sockmap to the sentry so it
+@@ -93,7 +98,9 @@
+ 	// two donation FDs are appended immediately after the socket (before
+ 	// pcapAndNAT) so the sentry consumes them in the documented order.
+ 	mapPath := xdpcmd.RedirectMapPath(iface.Name)
++	log.Infof("xdp: initial: about to load pinned sockmap %s (bpf BPF_OBJ_GET)", mapPath)
+ 	if rearmMap, err := ebpf.LoadPinnedMap(mapPath, nil); err == nil {
++		log.Infof("xdp: initial: pinned sockmap loaded (fd=%d)", rearmMap.FD())
+ 		rearmMapFD, err := unix.Dup(rearmMap.FD())
+ 		if err != nil {
+ 			return fmt.Errorf("failed to dup pinned sockmap for re-arm: %w", err)
+@@ -119,14 +126,18 @@
+ 		log.Infof("re-arm disabled: pinned sockmap %s not available: %v", mapPath, err)
+ 	}
+ 
++	log.Infof("xdp: initial: about to pcapAndNAT")
+ 	if err := pcapAndNAT(&args, conf); err != nil {
+ 		return err
+ 	}
++	log.Infof("xdp: initial: pcapAndNAT done")
+ 
+ 	log.Infof("Setting up network, config: %+v", args)
++	log.Infof("xdp: initial: about to ContMgrSetNetworkArgs (urpc call to the sentry)")
+ 	if err := conn.Call(boot.ContMgrSetNetworkArgs, &args, nil); err != nil {
+ 		return fmt.Errorf("creating links and routes: %w", err)
+ 	}
++	log.Infof("xdp: initial: ContMgrSetNetworkArgs done (the sentry accepted the args)")
+ 
+ 	// Insert socket into eBPF map. Note that sockets are automatically
+ 	// removed from eBPF maps when released. See net/xdp/xsk.c:xsk_release
+@@ -134,10 +145,12 @@
+ 	progPath := xdpcmd.RedirectProgramPath(iface.Name)
+ 	linkPath := xdpcmd.RedirectLinkPath(iface.Name)
+ 	var pinnedMap *ebpf.Map
++	log.Infof("xdp: initial: about to load pinned map %s (bpf BPF_OBJ_GET)", mapPath)
+ 	if pm, err := ebpf.LoadPinnedMap(mapPath, nil); err == nil {
+ 		// A pinned map already exists (re-run, or pinned by an external
+ 		// xdp_loader): reuse it.
+ 		pinnedMap = pm
++		log.Infof("xdp: initial: pinned map loaded (fd=%d)", pm.FD())
+ 	} else {
+ 		// No pinned map: perform the missing xdp_loader pin step here. Load
+ 		// the same embedded object tools/xdp/cmd embeds, attach it to the
+@@ -162,6 +175,7 @@
+ 
+ 		var attached link.Link
+ 		var attachErr error
++		log.Infof("xdp: initial: about to attach redirect program (bpf bpf(2) BPF_PROG_LOAD + xdp attach)")
+ 		for _, mode := range []link.XDPAttachFlags{link.XDPOffloadMode, link.XDPDriverMode, link.XDPGenericMode} {
+ 			attached, attachErr = link.AttachXDP(link.XDPOptions{
+ 				Program:   objects.Program,
+@@ -173,6 +187,7 @@
+ 			}
+ 			log.Infof("failed to attach redirect program in mode %v: %v", mode, attachErr)
+ 		}
++		log.Infof("xdp: initial: redirect program attached (mode loop done)")
+ 		if attached == nil {
+ 			return fmt.Errorf("failed to attach redirect program: %v", attachErr)
+ 		}
+@@ -184,19 +199,23 @@
+ 		}
+ 
+ 		// Pin the map, program, and link (same order as xdp_loader).
++		log.Infof("xdp: initial: about to pin map (bpf BPF_OBJ_PIN)")
+ 		if err := objects.SockMap.Pin(mapPath); err != nil {
+ 			return fmt.Errorf("failed to pin map at %s: %v", mapPath, err)
+ 		}
+ 		log.Infof("Pinned map at %s", mapPath)
++		log.Infof("xdp: initial: about to pin program (bpf BPF_OBJ_PIN)")
+ 		if err := objects.Program.Pin(progPath); err != nil {
+ 			return fmt.Errorf("failed to pin program at %s: %v", progPath, err)
+ 		}
+ 		log.Infof("Pinned program at %s", progPath)
++		log.Infof("xdp: initial: about to pin link (bpf BPF_OBJ_PIN)")
+ 		if err := attached.Pin(linkPath); err != nil {
+ 			return fmt.Errorf("failed to pin link at %s: %v", linkPath, err)
+ 		}
+ 		log.Infof("Pinned link at %s", linkPath)
+ 
++		log.Infof("xdp: initial: about to re-load pinned map %s (bpf BPF_OBJ_GET)", mapPath)
+ 		pinnedMap, err = ebpf.LoadPinnedMap(mapPath, nil)
+ 		if err != nil {
+ 			return fmt.Errorf("failed to load pinned map %s: %v", mapPath, err)
+@@ -206,17 +225,22 @@
+ 	// check for the existence of the key.
+ 	mapKey := uint32(0)
+ 	mapVal := uint32(xdpSockFD)
++	log.Infof("xdp: initial: about to insert socket into sockmap (bpf BPF_MAP_UPDATE_ELEM)")
+ 	if err := pinnedMap.Update(&mapKey, &mapVal, ebpf.UpdateAny); err != nil {
+ 		return fmt.Errorf("failed to insert socket into map %s: %w", mapPath, err)
+ 	}
++	log.Infof("xdp: initial: socket inserted into sockmap")
+ 
+ 	// Bind to the device.
+ 	// TODO(b/240191988): We can't assume there's only one queue, but this
+ 	// appears to be the case on gVNIC instances.
++	log.Infof("xdp: initial: about to bind to interface (bind(2) ifindex=%d)", iface.Index)
+ 	if err := xdp.Bind(xdpSockFD, uint32(iface.Index), 0 /* queueID */, conf.AFXDPUseNeedWakeup); err != nil {
+ 		return fmt.Errorf("failed to bind to interface %q: %v", iface.Name, err)
+ 	}
++	log.Infof("xdp: initial: bound to interface (ifindex=%d)", iface.Index)
+ 
++	log.Infof("xdp: initial: socket up (the data path is live)")
+ 	return nil
+ }
+ 
+diff --git a/pkg/tcpip/link/xdp/endpoint.go b/pkg/tcpip/link/xdp/endpoint.go
+--- a/pkg/tcpip/link/xdp/endpoint.go
++++ b/pkg/tcpip/link/xdp/endpoint.go
+@@ -234,6 +234,7 @@
+ 	if err := unix.SetNonblock(opts.FD, true); err != nil {
+ 		return nil, fmt.Errorf("unix.SetNonblock(%v) failed: %v", opts.FD, err)
+ 	}
++	log.Infof("xdp: initial: nonblock set (fd=%d)", opts.FD)
+ 
+ 	ep := &endpoint{
+ 		fd:     opts.FD,
+@@ -246,6 +247,7 @@
+ 	if err != nil {
+ 		return nil, err
+ 	}
++	log.Infof("xdp: initial: stopfd created")
+ 	ep.stopFD = stopFD
+ 
+ 	// Use a 2MB UMEM to match the PACKET_MMAP dispatcher. There will be
+@@ -269,11 +271,13 @@
+ 	if err != nil {
+ 		return nil, fmt.Errorf("failed to create AF_XDP dispatcher: %v", err)
+ 	}
++	log.Infof("xdp: initial: AF_XDP dispatcher created (UMEM + rings registered, ifindex=%d queue=%d)", opts.InterfaceIndex, opts.QueueID)
+ 
+ 	ep.control.UMEM.Lock()
+ 	defer ep.control.UMEM.Unlock()
+ 
+ 	ep.control.Fill.FillAll(&ep.control.UMEM)
++	log.Infof("xdp: initial: UMEM frames filled (the sentry's AF_XDP endpoint is up)")
+ 
+ 	// xdp-9: arm the re-create/re-insert path when the sentry owns the
+ 	// pinned sockmap (BindSentry). The kernel auto-removes the socket from

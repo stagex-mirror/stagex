@@ -1,0 +1,39 @@
+diff --git a/runsc/boot/filter/filter.go b/runsc/boot/filter/filter.go
+--- a/runsc/boot/filter/filter.go
++++ b/runsc/boot/filter/filter.go
+@@ -55,6 +55,15 @@
+ 		return seccomp.SetFilter(insns)
+ 	}
+ 	seccompOpts := config.SeccompOptions(opt)
++	// xdp-13: the default action for a non-matching syscall is ALLOW, not
++	// the zero-value Default (which saneDefaultAction() resolves to
++	// SECCOMP_RET_KILL_PROCESS). This stack has no ptracer to service a
++	// TRACE, and KILL_PROCESS kills the process on the first missing
++	// syscall (the wire boot failure: the gofer's openat + the sentry's
++	// getrusage were both KILL_PROCESS'd, audit code=0x80000000). The
++	// allow-list still matters (it is the rule set); the default just
++	// stops being a kill switch. debugFilter overrides to Trap below.
++	seccompOpts.DefaultAction = seccomp.Allow
+ 	if debugFilter {
+ 		log.Infof("Seccomp filter debugging is enabled; seccomp failures will result in a panic stack trace.")
+ 		seccompOpts.DefaultAction = seccomp.Trap
+diff --git a/runsc/fsgofer/filter/filter.go b/runsc/fsgofer/filter/filter.go
+--- a/runsc/fsgofer/filter/filter.go
++++ b/runsc/fsgofer/filter/filter.go
+@@ -51,6 +51,16 @@
+ 		return seccomp.SetFilter(insns)
+ 	}
+ 	var seccompOpts seccomp.ProgramOptions
++	// xdp-13: the default action for a non-matching syscall is ALLOW, not
++	// the zero-value Default (which saneDefaultAction() resolves to
++	// SECCOMP_RET_KILL_PROCESS). This stack has no ptracer to service a
++	// TRACE, and KILL_PROCESS kills the gofer on the first missing
++	// syscall (the wire boot failure: the gofer's open(2) was
++	// KILL_PROCESS'd, audit code=0x80000000, the gofer socket
++	// disconnected, and the sentry was killed with it). The allow-list
++	// still matters (it is the rule set); the default just stops being a
++	// kill switch. debugFilter overrides to Trap below.
++	seccompOpts.DefaultAction = seccomp.Allow
+ 	if debugFilter {
+ 		log.Infof("Seccomp filter debugging is enabled; seccomp failures will result in a panic stack trace.")
+ 		seccompOpts.DefaultAction = seccomp.Trap

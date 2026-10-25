@@ -25,13 +25,13 @@ name = "wardend"
 # All five are musl-dynamic (the shared musl runtime is core-musl +
 # core-libunwind, already in the rootfs); only demit is static (it is the
 # initramfs init, built by the user-demit package).
-version = "2b91bea9b5c8d01678eecf1c345daaa63fa05587"
+version = "c04c676ae525715d98d9c5cc7ff6fbf3afaa46d7"
 description = "wardend unit supervisor + regentd + posternd (russh SSH) + bridge (netstack init) + xattach (XDP attach) + seald (evidence daemon, in-sandbox co-tenant)"
 license = "MIT OR Apache-2.0"
 website = "https://codeberg.org/lrvick/wardend"
 
 [sources.wardend]
-hash = "4726088a2e0111bcbf42daa036faaab92cdaa0a8b8f3ba054b3ab59cc8845c0f"
+hash = "7e1c2bcf7d64b5f330993c59b35d4cc451daa68828b5149b52c05324520d8962"
 format = "tar.gz"
 file = "wardend-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/wardend/archive/{version}.{format}"]
