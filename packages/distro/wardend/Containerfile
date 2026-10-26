@@ -179,6 +179,11 @@ COPY --from=core-musl . /
 COPY --from=core-libunwind . /
 COPY --from=user-wardend /usr/bin/regentd /usr/bin/regentd
 COPY --from=user-wardend /usr/bin/wardend /usr/bin/wardend
+# keepd: the host-side disks daemon (the LUKS2 data plane). The keepd
+# unit runs under the container moat with `rootfs = "/"` (the host
+# rootfs), so the binary must be in THIS stage (the netstack-bundle
+# copy above is the sandbox bundle, not the host rootfs).
+COPY --from=user-wardend /usr/bin/keepd /usr/bin/keepd
 # wardend-watchdog: the data-plane backstop (a SEPARATE process from
 # regentd + the warden; regentd spawns it once at boot). It fires
 # `reboot -f` on a dp-dark >= 540 s (the in-sandbox dpmon status stale)
