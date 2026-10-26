@@ -1,0 +1,21 @@
+--- a/pkg/sentry/fsimpl/gofer/filesystem.go
++++ b/pkg/sentry/fsimpl/gofer/filesystem.go
+@@ -265,7 +265,17 @@
+ 		if linuxerr.Equals(linuxerr.ENOENT, err) {
+ 			parent.childrenMu.Lock()
+ 			defer parent.childrenMu.Unlock()
+-			parent.cacheNegativeLookupLocked(name)
++			// In InteropModeShared (the runsc default for bind mounts:
++			// cache=remote_revalidating, vfs.go:424) the host is the
++			// source of truth and files can appear from OUTSIDE the
++			// sandbox at any time (the broker writes req-current
++			// directly to the host dir). A failed lookup must not be
++			// cached as a negative dentry, or getCachedChildLocked
++			// short-circuits on the stale nil WITHOUT an RPC to the
++			// host and the newly-appeared file is never seen.
++			if fs.opts.interop != InteropModeShared {
++				parent.cacheNegativeLookupLocked(name)
++			}
+ 		}
+ 		return nil, err
+ 	}
