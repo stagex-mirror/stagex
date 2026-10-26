@@ -2,7 +2,13 @@ FROM stagex/pallet-rust AS build
 ARG VERSION
 ARG TARGETARCH
 ADD fetch/wardend-${VERSION}.tar.gz .
-WORKDIR /wardend
+# The archive extracts to the base image's default cwd `/` (the workspace
+# root: /Cargo.toml + /src/). The working dir MUST be `/` so the relative
+# `src/...` installs and cargo's default `target/` dir both resolve (the old
+# `WORKDIR /wardend` left the cwd in an empty dir, so the binaries built to
+# /target but the install looked in /wardend/target, and the unit-file
+# installs failed with "can't stat src/...").
+WORKDIR /
 # The wardend stack has real crates.io deps (russh/sshdt for posternd, tokio,
 # aws-lc-sys, ...; 257 lock packages), so the build follows the execd pattern:
 # `cargo fetch` with network ON, then the compile with --network=none and
@@ -18,6 +24,15 @@ RUN cargo fetch
 RUN --network=none <<-EOF
   set -eux
   ARCH=$(uname -m)
+  # The cwd is the workspace root `/` (see the WORKDIR above), so cargo's
+  # default target dir `target/` and the relative `src/...` paths below all
+  # resolve to the same tree.
+  T="target/${ARCH}-unknown-linux-musl/release"
+  # Clear any stale warden artifacts so the final binary is always relinked
+  # (a stale fingerprint + a missing binary makes cargo skip the link).
+  rm -rf "${T}/deps/warden-*" "${T}/deps/libwarden*" \
+         "${T}/.fingerprint/warden-*" "${T}/.fingerprint/wardend-*" 2>/dev/null || true
+  rm -f  "${T}/wardend" 2>/dev/null || true
   # warden: the gvisor + container moats (the netstack + the xdp-attach
   # container oneshot).
   cargo build \
@@ -25,7 +40,7 @@ RUN --network=none <<-EOF
     --release \
     --target "${ARCH}-unknown-linux-musl" \
     --features gvisor,container \
-    -p warden
+    -p warden --bin wardend
   # regent (regentd + wardend-watchdog), postern (posternd),
   # wardend-bridge (bridge + dpmon + offline-srv), xattach.
   cargo build \
@@ -42,7 +57,7 @@ RUN --network=none <<-EOF
     --release \
     --target "${ARCH}-unknown-linux-musl" \
     -p seal
-  R="target/${ARCH}-unknown-linux-musl/release"
+  R="${T}"
   install -vDm755 "$R/wardend"  /rootfs/usr/bin/wardend
   install -vDm755 "$R/regentd"  /rootfs/usr/bin/regentd
   # wardend-watchdog: the data-plane backstop (a SEPARATE process from
