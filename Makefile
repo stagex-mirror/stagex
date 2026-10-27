@@ -79,6 +79,46 @@ deploy-ec2:
 	@$(MAKE) IMPORT=1 distro-$(EC2_DISTRO)-img >/dev/null 2>&1
 	@$(MAKE) aws-ami-deploy
 	@$(MAKE) aws-ec2-deploy
+	@$(MAKE) attest MODE=wire
+
+# measured-boot re-BOUND automation (wardend security principle 9): the disk
+# hash is a deterministic function of (commit, dirty); every phase that moves
+# the tree (a pin bump, a source change, a patch) ends with a re-BOUND
+# (byte-level) + attestation PROVEN.
+#
+#   make rebound          — CHECK: no-op (pass) when the tree has not moved;
+#                          FAIL when the tree moved without a re-BOUND.
+#   make rebound-bind     — the re-BOUND: record the current (commit, dirty)
+#                          -> disk hash binding (run after every rebuild).
+#   make attest           — attestation PROVEN (MODE=wire|qemu; or MODE=host
+#                          with REBOUND_HOST=IP and optional REBOUND_SEV_SNP=1).
+#
+# Gotcha (unchanged by this): a pin bump does NOT invalidate stage sentinels.
+# After a pin bump, remove the sentinels of every stage downstream of the
+# changed source before rebuilding (out/rootfs/{user-gvisor,user-wardend,
+# distro-wardend-dev-img}/manifest.txt), or the build is a no-op and the
+# re-BOUND check fails against a stale disk.
+REBOUND_SSH_KEY ?=
+REBOUND_HOST ?=
+REBOUND_SEV_SNP ?=
+.PHONY: rebound rebound-bind attest
+rebound:
+	@bash src/rebound.sh disk
+rebound-bind:
+	@bash src/rebound.sh disk --bind
+attest:
+	@if [ "$(MODE)" = "wire" ]; then \
+	  bash src/rebound.sh attest --wire; \
+	elif [ "$(MODE)" = "qemu" ]; then \
+	  bash src/rebound.sh attest --qemu; \
+	elif [ "$(MODE)" = "host" ]; then \
+	  [ -n "$(REBOUND_HOST)" ] || { echo "ERROR: REBOUND_HOST required for MODE=host" >&2; exit 1; }; \
+	  ARGS="--host $(REBOUND_HOST)"; \
+	  [ "$(REBOUND_SEV_SNP)" = "1" ] && ARGS="$$ARGS --sev-snp"; \
+	  bash src/rebound.sh attest $$ARGS; \
+	else \
+	  echo "usage: make attest MODE=wire|qemu|host [REBOUND_HOST=IP REBOUND_SEV_SNP=1]" >&2; exit 2; \
+	fi
 
 .PHONY: ec2-ssh
 ec2-ssh:

@@ -14,8 +14,18 @@ from subprocess import check_output
 class TargetGenerator(object):
   TARGET_TEMPLATE = """
 .PHONY: {name} {stage}-{name}
-{name}: out/rootfs/{stage}-{name}/manifest.txt
-{stage}-{name}: out/rootfs/{stage}-{name}/manifest.txt
+{name}: out/rootfs/{stage}-{name}/manifest.txt {stage}-{name}-rebound
+{stage}-{name}: out/rootfs/{stage}-{name}/manifest.txt {stage}-{name}-rebound
+
+# measured-boot re-BOUND check (wardend security principle 9): the disk hash is
+# a deterministic function of (commit, dirty). Runs AFTER the build (a
+# dependent, not a prerequisite): no-op pass when the tree has not moved; FAIL
+# when the tree moved without a re-BOUND (stale disk hash) or when the same
+# (commit, dirty) produced a different disk (non-deterministic build).
+# Re-BOUND after every tree-moving phase: make rebound-bind
+.PHONY: {stage}-{name}-rebound
+{stage}-{name}-rebound: out/rootfs/{stage}-{name}/manifest.txt
+\tbash src/rebound.sh disk
 
 # Injected Containerfile with parent metadata (ENV, SHELL, ENTRYPOINT, WORKDIR)
 # metadata.json is the sentinel; injected Containerfile is a side effect
