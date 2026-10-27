@@ -60,10 +60,14 @@ BUILD_PATHS=(packages/ src/ Makefile package.toml)
 tree_key() {
   local commit dirty
   commit="$(git -C "$ROOT" rev-parse HEAD)"
-  dirty="$( {
-    git -C "$ROOT" status --porcelain -- "${BUILD_PATHS[@]}"
-    git -C "$ROOT" diff HEAD -- "${BUILD_PATHS[@]}"
-    git -C "$ROOT" ls-files -z --others --exclude-standard -- "${BUILD_PATHS[@]}" | xargs -0 -r sha256sum 2>/dev/null
+  # cd to $ROOT: the untracked-file paths from `git ls-files` are relative to
+  # the repo root, so sha256sum must resolve them from there — not from the
+  # caller's CWD (running from /tmp would make them unresolvable and the
+  # untracked hash would silently degenerate, moving the tree key).
+  dirty="$( cd "$ROOT" && {
+    git status --porcelain -- "${BUILD_PATHS[@]}"
+    git diff HEAD -- "${BUILD_PATHS[@]}"
+    git ls-files -z --others --exclude-standard -- "${BUILD_PATHS[@]}" | xargs -0 -r sha256sum 2>/dev/null
   } | sha256sum | cut -d' ' -f1 )"
   echo "${commit}:${dirty:0:16}"
 }
