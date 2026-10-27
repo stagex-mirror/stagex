@@ -117,6 +117,7 @@ ADD patches/xdp-3-loader-main.patch /tmp/xdp-3.patch
 ADD patches/xdp-4-kernel-offline-zero-addr.patch /tmp/xdp-4.patch
 ADD patches/xdp-5-counts-map-pin.patch /tmp/xdp-5.patch
 ADD patches/xdp-7-char-device-sequential-io.patch /tmp/xdp-7.patch
+ADD patches/xdp-8-char-device-ioctl-proxy.patch /tmp/xdp-8.patch
 ADD patches/xdp-9-sentry-xdp-recreate.patch /tmp/xdp-9.patch
 ADD patches/xdp-10-sentry-bpf-seccomp.patch /tmp/xdp-10.patch
 ADD patches/xdp-11-sentry-rearm-caps.patch /tmp/xdp-11.patch
@@ -126,6 +127,7 @@ ADD patches/xdp-14-gofer-shared-negative-dentry.patch /tmp/xdp-14.patch
 RUN patch -p1 -i /tmp/xdp-1.patch && patch -p1 -i /tmp/xdp-2.patch \
     && patch -p1 -i /tmp/xdp-3.patch && patch -p1 -i /tmp/xdp-4.patch \
     && patch -p1 -i /tmp/xdp-5.patch && patch -p1 -i /tmp/xdp-7.patch \
+    && patch -p1 -i /tmp/xdp-8.patch \
     && patch -p1 -i /tmp/xdp-9.patch && patch -p1 -i /tmp/xdp-10.patch \
     && patch -p1 -i /tmp/xdp-11.patch \
     && patch -p1 -i /tmp/xdp-12.patch \

@@ -1,17 +1,19 @@
---- a/pkg/sentry/fsimpl/gofer/special_file.go	2026-10-22 19:01:08.651439208 -0700
-+++ b/pkg/sentry/fsimpl/gofer/special_file.go	2026-10-22 19:01:24.107390434 -0700
-@@ -16,7 +16,10 @@
+--- a/pkg/sentry/fsimpl/gofer/special_file.go
++++ b/pkg/sentry/fsimpl/gofer/special_file.go
+@@ -15,8 +15,12 @@
+ package gofer
  
  import (
 +	"encoding/binary"
  	"fmt"
++	"os"
 +	"unsafe"
  
 +	"golang.org/x/sys/unix"
  	"gvisor.dev/gvisor/pkg/abi/linux"
  	"gvisor.dev/gvisor/pkg/atomicbitops"
  	"gvisor.dev/gvisor/pkg/context"
-@@ -24,6 +26,7 @@
+@@ -24,6 +27,7 @@
  	"gvisor.dev/gvisor/pkg/fdnotifier"
  	"gvisor.dev/gvisor/pkg/hostarch"
  	"gvisor.dev/gvisor/pkg/metric"
@@ -19,7 +21,7 @@
  	"gvisor.dev/gvisor/pkg/sentry/fsmetric"
  	"gvisor.dev/gvisor/pkg/sentry/fsutil"
  	"gvisor.dev/gvisor/pkg/sentry/kernel/auth"
-@@ -396,6 +399,113 @@
+@@ -396,6 +400,199 @@
  	return n, err
  }
  
@@ -29,57 +31,85 @@
 +// ioctl is proxied to the host kernel (the device's real ioctl, e.g. the
 +// SEV-SNP SNP_GET_EXT_REPORT on /dev/sev-guest). The sandboxed app (seald)
 +// is a SEPARATE process from the sentry, so the guest's ioctl argument
-+// pointer (args[2], the 32-byte sev_data struct) and the sub-pointers inside
-+// it (input_addr, output_addr, and the nested ExtReportReq.certs_address)
-+// are addresses in the GUEST's address space — they are NOT valid for the
-+// host kernel, which runs in the sentry's address space. Passing the guest
-+// pointer directly makes the host kernel copy_from_user into a guest address
-+// and fail with EFAULT (the sev crate reports this as
-+// FirmwareError(UnknownSevError(0)): the kernel failed before writing
-+// fw_err, so it reads 0). This is the fix for seald's in-sandbox SEV-SNP
-+// attestation (the default FileDescriptionDefaultImpl.Ioctl returns ENOTTY,
-+// so the get_ext_report ioctl could not complete and the memory_encryption
-+// gate was NOT PROVEN (degraded)).
++// (args[2], a pointer to the 32-byte snp_guest_request_ioctl struct) and the
++// sub-pointers inside it (req_data -> ExtReportReq, resp_data -> ReportRsp,
++// and the nested ExtReportReq.certs_address) are addresses in the GUEST's
++// address space — they are NOT valid for the host kernel, which runs in the
++// sentry's address space. Passing the guest pointer directly makes the host
++// kernel copy_from_user into a guest address and fail with EFAULT (the sev
++// crate reports this as FirmwareError(UnknownSevError(0)): the kernel failed
++// before writing fw_err, so it reads 0). This is the fix for seald's
++// in-sandbox SEV-SNP attestation (the default FileDescriptionDefaultImpl.Ioctl
++// returns ENOTTY, so the get_ext_report ioctl could not complete and the
++// memory_encryption gate was NOT PROVEN (degraded)).
 +//
 +// The proxy therefore TRANSLATES the guest pointers into the sentry's
-+// address space: copy the 32-byte sev_data out of the guest, copy the
-+// sub-buffers it references out, build a sentry-side sev_data pointing at
-+// sentry-side buffers (the certs buffer page-aligned — the kernel checks
-+// PAGE_ALIGNED(certs_address)), call the host ioctl, then copy the results
-+// back into the guest (the ReportRsp to output_addr, the certs buffer to
-+// the guest's certs_address).
++// address space: copy the 32-byte snp_guest_request_ioctl struct out of the
++// guest, copy the ExtReportReq (req_data), the ReportRsp (resp_data), and
++// the cert buffer (ExtReportReq.certs_address) out of the guest, build a
++// sentry-side struct pointing at sentry-side buffers (the cert buffer
++// page-aligned — the kernel checks IS_ALIGNED(certs_len, PAGE_SIZE)), call
++// the host ioctl, then copy the results back into the guest (the ReportRsp
++// to resp_data, the possibly-updated ExtReportReq to req_data, the cert
++// buffer to the guest's certs_address, and the possibly-updated struct to
++// args[2]).
 +//
 +// For every other case (a 9P file, fd < 0, or a non-character device) the
 +// default behavior is preserved (ENOTTY / EOPNOTSUPP for the clone family).
++// isCharDeviceFd reports whether the host file descriptor refers to a
++// character device (via fstat, the authoritative source). A non-nil error
++// (the fd is invalid or the fstat fails) is treated as "not a char device"
++// (the regular-file path, the safe default). This is the sentry-side check
++// that works for BOTH the gofer (9P) and directfs mount paths: the
++// handle.charDev field is only set in the directfs openHandle path, so a
++// gofer-donated char-device fd has charDev=false and the field alone would
++// miss it (the ioctl would fall through to ENOTTY and never reach the host
++// kernel). The donated host fd is a real fd in the sentry's fd table, so
++// fstat on it is authoritative.
++func isCharDeviceFd(fd int) bool {
++	var st unix.Stat_t
++	if err := unix.Fstat(fd, &st); err != nil {
++		return false
++	}
++	return st.Mode&unix.S_IFMT == unix.S_IFCHR
++}
++
 +func (fd *specialFileFD) Ioctl(ctx context.Context, uio usermem.IO, sysno uintptr, args arch.SyscallArguments) (uintptr, error) {
-+	if fd.handle.fd >= 0 && fd.handle.charDev {
-+		// 1. Copy the 32-byte sev_data OUT of the guest (guest -> sentry).
-+		var sevData [32]byte
-+		if _, err := uio.CopyIn(ctx, args[2].Pointer(), sevData[:], usermem.IOOpts{}); err != nil {
++	// DIAGNOSTIC (xdp-8): confirm the method is reached + which branch runs.
++	fmt.Fprintf(os.Stderr, "xdp8: Ioctl fd=%d charDev=%v isChar=%v cmd=0x%x\n", fd.handle.fd, fd.handle.charDev, isCharDeviceFd(int(fd.handle.fd)), args[1].Uint())
++	if fd.handle.fd >= 0 && isCharDeviceFd(int(fd.handle.fd)) {
++		// 1. Copy the 32-byte snp_guest_request_ioctl struct OUT of the guest.
++		var ioctlArg [32]byte
++		if _, err := uio.CopyIn(ctx, args[2].Pointer(), ioctlArg[:], usermem.IOOpts{}); err != nil {
 +			return 0, err
 +		}
-+		inputAddr := binary.LittleEndian.Uint64(sevData[0:8])
-+		inputLen := binary.LittleEndian.Uint64(sevData[8:16])
-+		outputAddr := binary.LittleEndian.Uint64(sevData[16:24])
-+		outputLen := binary.LittleEndian.Uint64(sevData[24:32])
-+		// 2. The ExtReportReq is 108 bytes (96-byte ReportReq + 8-byte
-+		//    certs_address + 4-byte certs_len).
-+		if inputLen < 108 {
++		// The kernel struct layout (include/uapi/linux/sev-guest.h):
++		//   [0:1]   msg_version (u8, must be non-zero)
++		//   [1:8]   padding (7 bytes)
++		//   [8:16]  req_data (u64) — pointer to the request structure (ExtReportReq)
++		//   [16:24] resp_data (u64) — pointer to the response structure (ReportRsp)
++		//   [24:32] exitinfo2 (u64) — firmware/VMM error value
++		msgVersion := ioctlArg[0]
++		reqData := binary.LittleEndian.Uint64(ioctlArg[8:16])
++		respData := binary.LittleEndian.Uint64(ioctlArg[16:24])
++		if msgVersion == 0 {
 +			return 0, unix.EINVAL
 +		}
-+		// 3. Page-aligned sentry buffers. Go's heap alignment is 8/16
-+		//    bytes, NOT page-aligned, so the kernel's
-+		//    PAGE_ALIGNED(certs_address) check would fail on a stack or
-+		//    heap array. Mmap an anonymous region (mmap returns a
-+		//    page-aligned address) and round the base up to a 4096
-+		//    boundary to be safe. Layout (3 pages = 12288 bytes):
-+		//    input: 108 bytes (offset 0), certs: 4096 (offset 4096,
-+		//    page-aligned), output: 4000 (offset 8192).
++		// 2. Page-aligned sentry buffers. The kernel's get_ext_report() does:
++		//    copy_from_sockptr(report_req, io->req_data, sizeof(*report_req))
++		//    copy_to_sockptr(io->resp_data, report_resp, sizeof(*report_resp))
++		//    copy_to_sockptr(certs_address, req.certs_data, report_req->certs_len)
++		//    So we need sentry buffers for the ExtReportReq (112 bytes),
++		//    the ReportRsp (4000 bytes), and the cert buffer (up to 16KB).
++		//    Layout (page-aligned):
++		//    ExtReportReq: offset 0 (112 bytes)
++		//    ReportRsp:    offset 4096 (4000 bytes)
++		//    Cert buffer:  offset 8192 (up to 16KB)
 +		const (
-+			inputOff  = 0
-+			certsOff  = 4096
-+			outputOff = 8192
-+			bufSize   = 12288
++			extReqOff = 0
++			respOff   = 4096
++			certOff   = 8192
++			bufSize   = 8192 + 0x4000 // 8192 + 16384 = 24576
 +		)
 +		buf, err := unix.Mmap(0, 0, bufSize, unix.PROT_READ|unix.PROT_WRITE, unix.MAP_PRIVATE|unix.MAP_ANONYMOUS)
 +		if err != nil {
@@ -88,38 +118,96 @@
 +		defer unix.Munmap(buf)
 +		base := uintptr(unsafe.Pointer(&buf[0]))
 +		base = (base + 4095) &^ uintptr(4095)
-+		// 4. Copy the ExtReportReq OUT of the guest (guest -> sentry).
-+		input := buf[inputOff : inputOff+108]
-+		if _, err := uio.CopyIn(ctx, hostarch.Addr(inputAddr), input, usermem.IOOpts{}); err != nil {
++		// 3. Copy the ExtReportReq OUT of the guest (guest -> sentry).
++		//    The ExtReportReq is 112 bytes (96-byte ReportReq + 8-byte
++		//    certs_address + 4-byte certs_len + 4-byte padding).
++		extReq := buf[extReqOff : extReqOff+112]
++		if _, err := uio.CopyIn(ctx, hostarch.Addr(reqData), extReq, usermem.IOOpts{}); err != nil {
 +			return 0, err
 +		}
-+		// 5. The guest's certs_address (inside the ExtReportReq).
-+		certsAddr := binary.LittleEndian.Uint64(input[96:104])
-+		if certsAddr == 0 {
-+			return 0, unix.EINVAL
++		// 4. The guest's certs_address and certs_len (inside the ExtReportReq).
++		//    ExtReportReq layout:
++		//    [0:96]   data (snp_report_req)
++		//    [96:104] certs_address (u64)
++		//    [104:108] certs_len (u32)
++		//    [108:112] padding (4 bytes)
++		certsAddr := binary.LittleEndian.Uint64(extReq[96:104])
++		certsLen := binary.LittleEndian.Uint32(extReq[104:108])
++		// 5. If the guest wants cert data, point the sentry ExtReportReq's
++		//    certs_address at the sentry cert buffer (page-aligned).
++		if certsLen != 0 && certsAddr != 0 {
++			binary.LittleEndian.PutUint64(extReq[96:104], uint64(base+certOff))
 +		}
-+		certs := buf[certsOff : certsOff+4096]
-+		// 6. Copy the ReportRsp OUT of the guest (guest -> sentry; mostly
-+		//    output, but copy it in to be safe).
-+		output := buf[outputOff : outputOff+int(outputLen)]
-+		if _, err := uio.CopyIn(ctx, hostarch.Addr(outputAddr), output, usermem.IOOpts{}); err != nil {
++		// 6. Build a sentry-side ioctl struct with the correct layout.
++		var sentryIoctl [32]byte
++		sentryIoctl[0] = msgVersion
++		// sentryIoctl[1:8] = padding (0)
++		binary.LittleEndian.PutUint64(sentryIoctl[8:16], uint64(base+extReqOff))
++		binary.LittleEndian.PutUint64(sentryIoctl[16:24], uint64(base+respOff))
++		// sentryIoctl[24:32] = 0 (exitinfo2, initially)
++		// 7. Call the host ioctl with the sentry-side struct.
++		//    Do NOT retry here: EIO + exitinfo2=SNP_GUEST_VMM_ERR_INVALID_LEN
++		//    (0x100000000) means the cert buffer is too small, NOT that the
++		//    firmware is not ready. The kernel writes the required size back
++		//    to req_data (the updated certs_len), and the sev crate's retry
++		//    path (mod.rs:161-172) handles INVALID_LEN by allocating a larger
++		//    cert buffer and retrying. Retrying the same ioctl with the same
++		//    (too-small) cert buffer is futile and causes an EFAULT on the
++		//    second attempt (the kernel's copy_from_sockptr on the stale
++		//    pointer). So: call the ioctl once, copy the results back, and
++		//    let the sev crate handle the retry.
++		_, _, errno := unix.Syscall(unix.SYS_IOCTL, uintptr(fd.handle.fd), uintptr(args[1].Uint()), uintptr(unsafe.Pointer(&sentryIoctl[0])))
++		// DIAGNOSTIC (xdp-8): the host ioctl's errno + the VMM error
++		// (extracted from exitinfo2: upper 32 bits = VMM error, lower 32
++		// bits = firmware error). 0x100000000 = SNP_GUEST_VMM_ERR(1) =
++		// SNP_GUEST_VMM_ERR_INVALID_LEN (the cert buffer is too small; the
++		// sev crate's retry path handles this).
++		_exitinfo2 := binary.LittleEndian.Uint64(sentryIoctl[24:32])
++		fmt.Fprintf(os.Stderr, "xdp8: host ioctl fd=%d cmd=0x%x errno=%d exitinfo2=0x%x vmm_error=%d fw_error=0x%x\n", fd.handle.fd, args[1].Uint(), errno, _exitinfo2, _exitinfo2>>32, _exitinfo2&0xffffffff)
++		// DIAGNOSTIC (xdp-8b): dump the first 64 bytes of the sentry cert
++		// buffer (hex) after the ioctl returns, so we can see whether the
++		// cert table entries have valid offsets/lengths. The guest's
++		// parse_table dereferences entry.offset/entry.length as raw offsets
++		// into the cert buffer; a garbage offset -> out-of-bounds read ->
++		// page fault. Also print the actual addresses (base, base+certOff,
++		// buf[0], the guest's certs_address) to confirm the pointer
++		// translation. (On the first call certs_len=0 so the buffer is
++		// empty; on the retry the kernel fills it with the cert table.)
++		fmt.Fprintf(os.Stderr, "xdp8: certbuf64 base=0x%x base+certOff=0x%x buf[0]=0x%x guest_certs_addr=0x%x certs_len=%d | %x\n",
++			base, base+certOff, uintptr(unsafe.Pointer(&buf[0])), certsAddr, certsLen, buf[certOff:certOff+64])
++		// 8. Copy the results BACK into the guest (sentry -> guest).
++		//    a. The ReportRsp (4000 bytes) to the guest's resp_data.
++		respBuf := buf[respOff : respOff+4000]
++		if _, err := uio.CopyOut(ctx, hostarch.Addr(respData), respBuf, usermem.IOOpts{}); err != nil {
 +			return 0, err
 +		}
-+		// 7. Build a sentry-side sev_data pointing at the sentry buffers,
-+		//    and update the sentry-side ExtReportReq.certs_address.
-+		var sentryData [32]byte
-+		binary.LittleEndian.PutUint64(sentryData[0:8], uint64(base))
-+		binary.LittleEndian.PutUint64(sentryData[8:16], inputLen)
-+		binary.LittleEndian.PutUint64(sentryData[16:24], uint64(base+outputOff))
-+		binary.LittleEndian.PutUint64(sentryData[24:32], outputLen)
-+		binary.LittleEndian.PutUint64(input[96:104], uint64(base+certsOff))
-+		// 8. Call the host ioctl with the sentry-side pointer.
-+		_, _, errno := unix.Syscall(unix.SYS_IOCTL, uintptr(fd.handle.fd), uintptr(args[1].Uint()), uintptr(unsafe.Pointer(&sentryData[0])))
-+		// 9. Copy the results BACK into the guest (sentry -> guest).
-+		if _, err := uio.CopyOut(ctx, hostarch.Addr(outputAddr), output, usermem.IOOpts{}); err != nil {
++		//    b. The (possibly updated) ExtReportReq to the guest's req_data.
++		//       The kernel writes back the updated certs_len if
++		//       vmm_error == INVALID_LEN. Always copy it back to be safe.
++		//       Restore the guest's original certs_address (step 5 pointed it
++		//       at the sentry's cert buffer for the host ioctl). If we left
++		//       the sentry's address here, the guest's ext_report_request.
++		//       certs_address would be a host address, and the sev crate's
++		//       parse_table would dereference it in the guest's address
++		//       space -> SIGSEGV. The cert data lives at the guest's
++		//       original certs_address, which the proxy copies in step c.
++		if certsLen != 0 && certsAddr != 0 {
++			binary.LittleEndian.PutUint64(extReq[96:104], certsAddr)
++		}
++		if _, err := uio.CopyOut(ctx, hostarch.Addr(reqData), extReq, usermem.IOOpts{}); err != nil {
 +			return 0, err
 +		}
-+		if _, err := uio.CopyOut(ctx, hostarch.Addr(certsAddr), certs, usermem.IOOpts{}); err != nil {
++		//    c. The cert buffer to the guest's certs_address (if the guest
++		//       wanted cert data).
++		if certsLen != 0 && certsAddr != 0 {
++			certBuf := buf[certOff : certOff+int(certsLen)]
++			if _, err := uio.CopyOut(ctx, hostarch.Addr(certsAddr), certBuf, usermem.IOOpts{}); err != nil {
++				return 0, err
++			}
++		}
++		//    d. The (possibly updated) ioctl struct to the guest's ioctl arg.
++		//       This includes the updated exitinfo2 (the firmware/VMM error).
++		if _, err := uio.CopyOut(ctx, args[2].Pointer(), sentryIoctl[:], usermem.IOOpts{}); err != nil {
 +			return 0, err
 +		}
 +		if errno != 0 {
