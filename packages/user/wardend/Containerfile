@@ -8,6 +8,14 @@ ADD fetch/wardend-${VERSION}.tar.gz .
 # `WORKDIR /wardend` left the cwd in an empty dir, so the binaries built to
 # /target but the install looked in /wardend/target, and the unit-file
 # installs failed with "can't stat src/...").
+#
+# The codeberg archive is NESTED under `wardend/` (the repo root), but the
+# Containerfile expects a FLAT layout (the workspace root at `/`). The
+# repacked archive in the local fetch cache is flat, so the `ADD` above
+# extracts directly to `/`. If the mirror's nested archive is ever used
+# (e.g. the local cache file is deleted and re-downloaded), the fallback
+# below moves the nested contents to `/` so the build still works.
+RUN if [ -d /wardend ]; then mv /wardend/* /wardend/.[!.]* / 2>/dev/null; rmdir /wardend; fi
 WORKDIR /
 # The wardend stack has real crates.io deps (russh/sshdt for posternd, tokio,
 # aws-lc-sys, ...; 257 lock packages), so the build follows the execd pattern:
