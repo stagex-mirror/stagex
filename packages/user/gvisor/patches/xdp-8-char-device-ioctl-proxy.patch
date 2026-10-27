@@ -1,0 +1,135 @@
+--- a/pkg/sentry/fsimpl/gofer/special_file.go	2026-10-22 19:01:08.651439208 -0700
++++ b/pkg/sentry/fsimpl/gofer/special_file.go	2026-10-22 19:01:24.107390434 -0700
+@@ -16,7 +16,10 @@
+ 
+ import (
++	"encoding/binary"
+ 	"fmt"
++	"unsafe"
+ 
++	"golang.org/x/sys/unix"
+ 	"gvisor.dev/gvisor/pkg/abi/linux"
+ 	"gvisor.dev/gvisor/pkg/atomicbitops"
+ 	"gvisor.dev/gvisor/pkg/context"
+@@ -24,6 +26,7 @@
+ 	"gvisor.dev/gvisor/pkg/fdnotifier"
+ 	"gvisor.dev/gvisor/pkg/hostarch"
+ 	"gvisor.dev/gvisor/pkg/metric"
++	"gvisor.dev/gvisor/pkg/sentry/arch"
+ 	"gvisor.dev/gvisor/pkg/sentry/fsmetric"
+ 	"gvisor.dev/gvisor/pkg/sentry/fsutil"
+ 	"gvisor.dev/gvisor/pkg/sentry/kernel/auth"
+@@ -396,6 +399,113 @@
+ 	return n, err
+ }
+ 
++// Ioctl implements vfs.FileDescriptionImpl.Ioctl.
++//
++// For a donated host file descriptor that refers to a character device, the
++// ioctl is proxied to the host kernel (the device's real ioctl, e.g. the
++// SEV-SNP SNP_GET_EXT_REPORT on /dev/sev-guest). The sandboxed app (seald)
++// is a SEPARATE process from the sentry, so the guest's ioctl argument
++// pointer (args[2], the 32-byte sev_data struct) and the sub-pointers inside
++// it (input_addr, output_addr, and the nested ExtReportReq.certs_address)
++// are addresses in the GUEST's address space — they are NOT valid for the
++// host kernel, which runs in the sentry's address space. Passing the guest
++// pointer directly makes the host kernel copy_from_user into a guest address
++// and fail with EFAULT (the sev crate reports this as
++// FirmwareError(UnknownSevError(0)): the kernel failed before writing
++// fw_err, so it reads 0). This is the fix for seald's in-sandbox SEV-SNP
++// attestation (the default FileDescriptionDefaultImpl.Ioctl returns ENOTTY,
++// so the get_ext_report ioctl could not complete and the memory_encryption
++// gate was NOT PROVEN (degraded)).
++//
++// The proxy therefore TRANSLATES the guest pointers into the sentry's
++// address space: copy the 32-byte sev_data out of the guest, copy the
++// sub-buffers it references out, build a sentry-side sev_data pointing at
++// sentry-side buffers (the certs buffer page-aligned — the kernel checks
++// PAGE_ALIGNED(certs_address)), call the host ioctl, then copy the results
++// back into the guest (the ReportRsp to output_addr, the certs buffer to
++// the guest's certs_address).
++//
++// For every other case (a 9P file, fd < 0, or a non-character device) the
++// default behavior is preserved (ENOTTY / EOPNOTSUPP for the clone family).
++func (fd *specialFileFD) Ioctl(ctx context.Context, uio usermem.IO, sysno uintptr, args arch.SyscallArguments) (uintptr, error) {
++	if fd.handle.fd >= 0 && fd.handle.charDev {
++		// 1. Copy the 32-byte sev_data OUT of the guest (guest -> sentry).
++		var sevData [32]byte
++		if _, err := uio.CopyIn(ctx, args[2].Pointer(), sevData[:], usermem.IOOpts{}); err != nil {
++			return 0, err
++		}
++		inputAddr := binary.LittleEndian.Uint64(sevData[0:8])
++		inputLen := binary.LittleEndian.Uint64(sevData[8:16])
++		outputAddr := binary.LittleEndian.Uint64(sevData[16:24])
++		outputLen := binary.LittleEndian.Uint64(sevData[24:32])
++		// 2. The ExtReportReq is 108 bytes (96-byte ReportReq + 8-byte
++		//    certs_address + 4-byte certs_len).
++		if inputLen < 108 {
++			return 0, unix.EINVAL
++		}
++		// 3. Page-aligned sentry buffers. Go's heap alignment is 8/16
++		//    bytes, NOT page-aligned, so the kernel's
++		//    PAGE_ALIGNED(certs_address) check would fail on a stack or
++		//    heap array. Mmap an anonymous region (mmap returns a
++		//    page-aligned address) and round the base up to a 4096
++		//    boundary to be safe. Layout (3 pages = 12288 bytes):
++		//    input: 108 bytes (offset 0), certs: 4096 (offset 4096,
++		//    page-aligned), output: 4000 (offset 8192).
++		const (
++			inputOff  = 0
++			certsOff  = 4096
++			outputOff = 8192
++			bufSize   = 12288
++		)
++		buf, err := unix.Mmap(0, 0, bufSize, unix.PROT_READ|unix.PROT_WRITE, unix.MAP_PRIVATE|unix.MAP_ANONYMOUS)
++		if err != nil {
++			return 0, err
++		}
++		defer unix.Munmap(buf)
++		base := uintptr(unsafe.Pointer(&buf[0]))
++		base = (base + 4095) &^ uintptr(4095)
++		// 4. Copy the ExtReportReq OUT of the guest (guest -> sentry).
++		input := buf[inputOff : inputOff+108]
++		if _, err := uio.CopyIn(ctx, hostarch.Addr(inputAddr), input, usermem.IOOpts{}); err != nil {
++			return 0, err
++		}
++		// 5. The guest's certs_address (inside the ExtReportReq).
++		certsAddr := binary.LittleEndian.Uint64(input[96:104])
++		if certsAddr == 0 {
++			return 0, unix.EINVAL
++		}
++		certs := buf[certsOff : certsOff+4096]
++		// 6. Copy the ReportRsp OUT of the guest (guest -> sentry; mostly
++		//    output, but copy it in to be safe).
++		output := buf[outputOff : outputOff+int(outputLen)]
++		if _, err := uio.CopyIn(ctx, hostarch.Addr(outputAddr), output, usermem.IOOpts{}); err != nil {
++			return 0, err
++		}
++		// 7. Build a sentry-side sev_data pointing at the sentry buffers,
++		//    and update the sentry-side ExtReportReq.certs_address.
++		var sentryData [32]byte
++		binary.LittleEndian.PutUint64(sentryData[0:8], uint64(base))
++		binary.LittleEndian.PutUint64(sentryData[8:16], inputLen)
++		binary.LittleEndian.PutUint64(sentryData[16:24], uint64(base+outputOff))
++		binary.LittleEndian.PutUint64(sentryData[24:32], outputLen)
++		binary.LittleEndian.PutUint64(input[96:104], uint64(base+certsOff))
++		// 8. Call the host ioctl with the sentry-side pointer.
++		_, _, errno := unix.Syscall(unix.SYS_IOCTL, uintptr(fd.handle.fd), uintptr(args[1].Uint()), uintptr(unsafe.Pointer(&sentryData[0])))
++		// 9. Copy the results BACK into the guest (sentry -> guest).
++		if _, err := uio.CopyOut(ctx, hostarch.Addr(outputAddr), output, usermem.IOOpts{}); err != nil {
++			return 0, err
++		}
++		if _, err := uio.CopyOut(ctx, hostarch.Addr(certsAddr), certs, usermem.IOOpts{}); err != nil {
++			return 0, err
++		}
++		if errno != 0 {
++			return 0, errno
++		}
++		return 0, nil
++	}
++	return fd.FileDescriptionDefaultImpl.Ioctl(ctx, uio, sysno, args)
++}
++
+ // Seek implements vfs.FileDescriptionImpl.Seek.
+ func (fd *specialFileFD) Seek(ctx context.Context, offset int64, whence int32) (int64, error) {
+ 	if !fd.seekable {
