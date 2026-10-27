@@ -48,15 +48,22 @@ die()  { echo "rebound: $*" >&2; exit 1; }
 usage() { echo "usage: rebound.sh disk [--bind] | attest --wire | attest --qemu | attest --host IP [--sev-snp]" >&2; exit 2; }
 
 # --- the tree key: (commit, dirty) -------------------------------------------
-# dirty = content hash of the working tree state: status (names, incl.
-# untracked) + the full diff against HEAD + the content of untracked files.
+# dirty = content hash of the build-relevant working-tree state, scoped to the
+# paths that actually move the build: packages/ (Containerfiles, package.toml
+# pins, gvisor patches), src/ (build scripts), Makefile. The scope EXCLUDES
+# local state that is not a build input (.cargo/, scratch/, system, init, and
+# the gitignored out/ + fetch/), so a log appended to scratch/ or cargo-cache
+# churn does NOT move the tree key (no false STALE). "The tree moved" means a
+# pin bump, a source change, or a patch — all of which live under the scope.
+# dirty = status + diff (scoped) + the content of untracked build-relevant files.
+BUILD_PATHS=(packages/ src/ Makefile package.toml)
 tree_key() {
   local commit dirty
   commit="$(git -C "$ROOT" rev-parse HEAD)"
   dirty="$( {
-    git -C "$ROOT" status --porcelain
-    git -C "$ROOT" diff HEAD
-    git -C "$ROOT" ls-files -z --others --exclude-standard | xargs -0 -r sha256sum 2>/dev/null
+    git -C "$ROOT" status --porcelain -- "${BUILD_PATHS[@]}"
+    git -C "$ROOT" diff HEAD -- "${BUILD_PATHS[@]}"
+    git -C "$ROOT" ls-files -z --others --exclude-standard -- "${BUILD_PATHS[@]}" | xargs -0 -r sha256sum 2>/dev/null
   } | sha256sum | cut -d' ' -f1 )"
   echo "${commit}:${dirty:0:16}"
 }
