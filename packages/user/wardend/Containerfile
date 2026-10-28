@@ -56,6 +56,15 @@ RUN --network=none <<-EOF
     --release \
     --target "${ARCH}-unknown-linux-musl" \
     -p regent -p postern -p wardend-bridge -p xattach -p keep
+  # bastion (bastiond): the sandbox init that owns the wire. It replaces
+  # `bridge wire` as the bundle's config.json process.args. The bundle's
+  # init is now bastiond; the bridge crate still builds (bastiond links its
+  # tcp/ws relay core), but the bridge BINARY is no longer the sandbox init.
+  cargo build \
+    --frozen \
+    --release \
+    --target "${ARCH}-unknown-linux-musl" \
+    -p bastion
   # seal (seald): the evidence daemon. Runs as an IN-SANDBOX co-tenant of
   # bridge wire (the netstack sandbox); the bundle's config.json
   # linux.devices passes through /dev/tpmrm0 + /dev/tpm0 + /dev/sev-guest so
@@ -100,6 +109,12 @@ RUN --network=none <<-EOF
   install -vDm755 "$R/wardend-xdpgone" /rootfs/usr/bin/wardend-xdpgone
   install -vDm755 "$R/posternd" /rootfs/usr/bin/posternd
   install -vDm755 "$R/bridge"   /rootfs/usr/bin/bridge
+  # bastiond: the sandbox init (replaces `bridge wire` as the bundle's
+  # config.json process.args). Dynamic-musl with the SAME NEEDED as bridge
+  # (libc.musl + libunwind), which the bundle rootfs already carries
+  # (core-musl + core-libunwind). The distro COPYs it into the netstack
+  # bundle rootfs; it is the sandbox init, not a host-side binary.
+  install -vDm755 "$R/bastiond" /rootfs/usr/bin/bastiond
   # dpmon: the IN-SANDBOX data-plane liveness probe (a co-tenant of
   # bridge wire, spawned by the bundle config.json argv's --dpmon-bin).
   # It does a real external TCP connect on a bounded cadence and publishes

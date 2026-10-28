@@ -2,16 +2,6 @@ FROM stagex/core-filesystem AS core-filesystem
 FROM stagex/core-busybox AS core-busybox
 FROM stagex/core-musl AS core-musl
 FROM stagex/core-libunwind AS core-libunwind
-# netdebug (the REMOVABLE S3 debug channel) needs curl + its NEEDED set.
-# core-curl ships /usr/bin/curl + /usr/lib/libcurl.so.4; the NEEDED set
-# (libssl/libcrypto/libzstd/libz) is NOT in core-curl's package stage (it is
-# in the build stage's /lib/, not the /rootfs/ install output), so stage the
-# versioned .so.N files from the core packages (they are REAL files, not
-# symlinks -- the loader only needs the versioned name).
-FROM stagex/core-curl AS core-curl
-FROM stagex/core-openssl AS core-openssl
-FROM stagex/core-libzstd AS core-libzstd
-FROM stagex/core-zlib AS core-zlib
 FROM stagex/user-demit AS user-demit
 FROM stagex/user-wardend AS user-wardend
 FROM stagex/user-linux-enclave AS user-linux-enclave
@@ -23,9 +13,9 @@ FROM stagex/box-cpio AS box-cpio
 # Stage 0: the netstack bundle rootfs
 #
 # The gvisor netstack sandbox's root filesystem (a Dir bundle rootfs, the
-# gvisor moat's only accepted rootfs kind). Its init is `bridge wire` (the
+# gvisor moat's only accepted rootfs kind). Its init is `bastiond` (the
 # bundle config.json process.args). The bundle carries:
-#   - bridge + posternd (the sandbox init + its :22 co-tenant)
+#   - bastiond + posternd (the sandbox init + its :22 co-tenant)
 #   - busybox (posternd's interactive shell = /bin/sh; the shell tools)
 #   - /etc/{resolv.conf,hostname,hosts} — the P4 gofer rule: runsc setupNet
 #     O_CREATs each bind target on the RO bundle rootfs; a missing target is
@@ -33,10 +23,17 @@ FROM stagex/box-cpio AS box-cpio
 #     the O_CREAT a no-op (the sandbox never reads them; runsc over-mounts).
 #   - /root/.ssh/authorized_keys — posternd's keys_dir (default /root/.ssh)
 #     INSIDE the sandbox. This is the load-bearing SSH key for the netstack
-#     model: bridge wire spawns posternd in-sandbox, which reads the BUNDLE's
+#     model: bastiond spawns posternd in-sandbox, which reads the BUNDLE's
 #     authorized_keys (NOT the host's — the host /root is a separate tmpfs).
 #     Fail-closed: no valid key here, posternd refuses to build, :22 stays
 #     closed.
+#
+# The bundle is SHELL-FREE at the init level: the sandbox init (bastiond) and
+# its co-tenants (posternd, offline-srv, seald, dpmon) are all native
+# binaries, and the IMDS LLA-removal window is pure-Rust netlink (no
+# `busybox ip` shell-out). busybox is retained ONLY for posternd's SSH
+# status/logs/interactive-shell (posternd execs /bin/sh -c; it is a separate
+# crate, not part of this change).
 #
 # config.json (the runsc contract: process.args, the /run tmpfs mount, the
 # caps) is NOT here — it ships from the user-wardend package (versioned with
@@ -52,6 +49,7 @@ COPY --from=core-busybox . /
 # relative symlink fails to resolve the target in the context.
 COPY --from=core-musl . /
 COPY --from=core-libunwind . /
+COPY --from=user-wardend /usr/bin/bastiond /usr/bin/bastiond
 COPY --from=user-wardend /usr/bin/bridge /usr/bin/bridge
 COPY --from=user-wardend /usr/bin/posternd /usr/bin/posternd
 # dpmon: the IN-SANDBOX data-plane liveness probe (a co-tenant of bridge
@@ -81,26 +79,10 @@ COPY --from=user-wardend /usr/bin/seald /usr/bin/seald
 # /dev + CAP_SYS_ADMIN). Shipped by user-wardend (versioned with the
 # wardend pin).
 COPY --from=user-wardend /usr/bin/keepd /usr/bin/keepd
-# netdebug: the REMOVABLE S3 debug channel (a co-tenant of bridge wire,
-# spawned by the bundle config.json argv's --netdebug-bin). curl + its
-# NEEDED set (libcurl/libssl/libcrypto/libzstd/libz) resolve against the
-# bundle's /usr/lib (musl's search path; the loader /lib/ld-musl-x86_64.so.1
-# + libc.musl are already staged above). The versioned .so.N files are real
-# (not symlinks), so single-file COPY works. The script is a busybox sh
-# co-tenant; it samples egress + uploads to S3 (the upload cadence is the
-# liveness signal). Removal: delete this block + the script + the
-# --netdebug-bin argv + the wardend netdebug_bin plumbing.
-COPY --from=core-curl /usr/bin/curl /usr/bin/curl
-COPY --from=core-curl /usr/lib/libcurl.so.4 /usr/lib/libcurl.so.4
-COPY --from=core-openssl /usr/lib/libssl.so.3 /usr/lib/libssl.so.3
-COPY --from=core-openssl /usr/lib/libcrypto.so.3 /usr/lib/libcrypto.so.3
-COPY --from=core-libzstd /usr/lib/libzstd.so.1 /usr/lib/libzstd.so.1
-COPY --from=core-zlib /usr/lib/libz.so.1 /usr/lib/libz.so.1
-COPY src/rootfs/usr/libexec/netdebug.sh /usr/libexec/netdebug.sh
-# The injection seed: bridge wire reads /etc/wardend/seed (its default seed
+# The injection seed: bastiond reads /etc/wardend/seed (its default seed
 # path, inside the sandbox) and merges the expose/offline directives. This is
-# the sole directive source now (the bundle config.json argv is bare `bridge
-# wire`) — the offline-unit concept-proof: DIRECTIVES, not baked argv, drive
+# the sole directive source now (the bundle config.json argv is bare `bastiond`)
+# — the offline-unit concept-proof: DIRECTIVES, not baked argv, drive
 # the relay. The seed is versioned with the wardend pin (user-wardend ships it
 # at /images/netstack/seed); the AWS user-data path will feed the same grammar
 # from IMDS instead of this baked file.
@@ -158,7 +140,7 @@ COPY src/dev-sev-guest /dev/sev-guest
 #       sentinel netstack waits on.
 #     - netstack (gvisor sandbox): runsc create/start --network=sandbox
 #       --EXPERIMENTAL-xdp=redirect:eth0 on the /images/netstack bundle;
-#       the sandbox init `bridge wire` does LLA bootstrap + pure-Rust DHCP
+#       the sandbox init `bastiond` does LLA bootstrap + pure-Rust DHCP
 #       + lease apply, the :22 -> UDS relay, the posternd supervisor, and
 #       the :8080 demo face. The kernel is FULLY offline (no lease, no :22,
 #       no route) — the netstack is the ONLY stack on the wire.
