@@ -1,6 +1,6 @@
 [package]
 name = "php"
-version = "8.5.10"
+version = "8.5.12"
 description = "A popular general-purpose scripting language that is especially suited to web development."
 license = "PHP-3.0.1"
 website = "https://www.php.net/"
@@ -51,7 +51,7 @@ subpackages = [
 ]
 
 [sources.php]
-hash = "f5c0ac99b85b3d677de475c2e4f509f9b4f54663f3ee5a84d6d9481a521d4100"
+hash = "81a0f450349e84b08eb43faa85f8a4c835684f3cc1c50471775d1317a046c525"
 format = "tar.gz"
 file = "php-{version}.{format}"
 mirrors = [ "https://www.php.net/distributions/{file}" ]
