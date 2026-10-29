@@ -1,0 +1,45 @@
+diff --git a/pkg/sentry/socket/netlink/route/protocol.go b/pkg/sentry/socket/netlink/route/protocol.go
+--- a/pkg/sentry/socket/netlink/route/protocol.go
++++ b/pkg/sentry/socket/netlink/route/protocol.go
+@@ -21,6 +21,7 @@ import (
+ 	"gvisor.dev/gvisor/pkg/abi/linux"
+ 	"gvisor.dev/gvisor/pkg/context"
+ 	"gvisor.dev/gvisor/pkg/errors/linuxerr"
++	"gvisor.dev/gvisor/pkg/log"
+ 	"gvisor.dev/gvisor/pkg/marshal/primitive"
+ 	"gvisor.dev/gvisor/pkg/sentry/inet"
+ 	"gvisor.dev/gvisor/pkg/sentry/kernel"
+@@ -608,6 +609,9 @@ func (p *Protocol) newAddr(ctx context.Context, s *netlink.Socket, msg *nlmsg.M
+ 	var ifa linux.InterfaceAddrMessage
+ 	attrs, ok := msg.GetData(&ifa)
+ 	if !ok {
++		// xdp-15: the LLA re-add returns EOPNOTSUPP (95) on the real
++		// ENA wire. Log the ifa header to capture the message shape.
++		log.Infof("xdp-15: newAddr: GetData failed (family=%d prefixlen=%d index=%d)", ifa.Family, ifa.PrefixLen, ifa.Index)
+ 		return syserr.ErrInvalidArgument
+ 	}
+ 
+@@ -639,6 +643,12 @@ func (p *Protocol) newAddr(ctx context.Context, s *netlink.Socket, msg *nlmsg.M
+ 					return syserr.ErrExists
+ 				}
+ 			} else if err != nil {
++				// xdp-15: the LLA re-add returns EOPNOTSUPP (95) on the
++				// real ENA wire. Log the gVisor-side error to close the
++				// root cause (the -95 is EOPNOTSUPP, which maps to
++				// tcpip.ErrNotSupported via the type assertion in
++				// nic.addAddress, OR an unknown attribute below).
++				log.Infof("xdp-15: newAddr: AddInterfaceAddr failed (family=%d prefixlen=%d index=%d err=%v)", ifa.Family, ifa.PrefixLen, ifa.Index, err)
+ 				return syserr.ErrInvalidArgument
+ 			}
+ 		case linux.IFA_ADDRESS:
+@@ -645,6 +655,10 @@ func (p *Protocol) newAddr(ctx context.Context, s *netlink.Socket, msg *nlmsg.M
+ 			// broadcast address (the last IP address of the subnet) is
+ 			// used by default.
+ 		default:
++			// xdp-15: the LLA re-add returns EOPNOTSUPP (95) here on the
++			// real ENA wire. Log the unknown attribute type + the ifa
++			// header to close the root cause.
++			log.Infof("xdp-15: newAddr: unknown attribute type=%d (family=%d prefixlen=%d index=%d)", ahdr.Type, ifa.Family, ifa.PrefixLen, ifa.Index)
+ 			ctx.Warningf("Unknown attribute: %v", ahdr.Type)
+ 			return syserr.ErrNotSupported
+ 		}
