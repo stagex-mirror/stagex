@@ -42,7 +42,7 @@ FROM stagex/box-cpio AS box-cpio
 # ============================================================
 FROM scratch AS netstack-bundle
 COPY --from=core-busybox . /
-# bridge + posternd are dynamic musl PIEs (NEEDED: ld-musl, libc.musl,
+# bastiond + posternd are dynamic musl PIEs (NEEDED: ld-musl, libc.musl,
 # libunwind.so.1) — ship the musl runtime + libunwind into the bundle rootfs.
 # Full-package COPY (not single-file): libc.musl-x86_64.so.1 is a relative
 # symlink to ld-musl-x86_64.so.1, and BuildKit's single-file COPY of a
@@ -50,7 +50,9 @@ COPY --from=core-busybox . /
 COPY --from=core-musl . /
 COPY --from=core-libunwind . /
 COPY --from=user-wardend /usr/bin/bastiond /usr/bin/bastiond
-COPY --from=user-wardend /usr/bin/bridge /usr/bin/bridge
+# NOTE: the `bridge` binary was deleted in wardend 0980f89 (the wire logic
+# was folded into bastiond; the wardend-bridge package now produces only
+# the dpmon + offline-srv co-tenants). No `bridge` COPY here.
 COPY --from=user-wardend /usr/bin/posternd /usr/bin/posternd
 # dpmon: the IN-SANDBOX data-plane liveness probe (a co-tenant of bridge
 # wire, spawned by the bundle config.json argv's --dpmon-bin). It does a

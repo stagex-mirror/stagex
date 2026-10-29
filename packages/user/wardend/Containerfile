@@ -108,7 +108,9 @@ RUN --network=none <<-EOF
   # libunwind), which the host rootfs already carries.
   install -vDm755 "$R/wardend-xdpgone" /rootfs/usr/bin/wardend-xdpgone
   install -vDm755 "$R/posternd" /rootfs/usr/bin/posternd
-  install -vDm755 "$R/bridge"   /rootfs/usr/bin/bridge
+  # NOTE: the `bridge` binary was deleted in wardend 0980f89 (the wire logic
+  # was folded into bastiond; the wardend-bridge package now produces only
+  # the dpmon + offline-srv co-tenants). No `bridge` install here.
   # bastiond: the sandbox init (replaces `bridge wire` as the bundle's
   # config.json process.args). Dynamic-musl with the SAME NEEDED as bridge
   # (libc.musl + libunwind), which the bundle rootfs already carries
