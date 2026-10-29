@@ -6,6 +6,8 @@ FROM stagex/user-demit AS user-demit
 FROM stagex/user-wardend AS user-wardend
 FROM stagex/user-linux-enclave AS user-linux-enclave
 FROM stagex/user-gvisor AS user-gvisor
+FROM stagex/user-tpm2-tss AS user-tpm2-tss
+FROM stagex/core-openssl AS core-openssl
 FROM stagex/box-disk AS box-disk
 FROM stagex/box-cpio AS box-cpio
 
@@ -71,10 +73,24 @@ COPY --from=user-wardend /usr/bin/offline-srv /usr/bin/offline-srv
 # seald: the evidence daemon, an IN-SANDBOX co-tenant of bridge wire (spawned
 # by the bundle config.json argv's --seald-bin). The bundle's linux.devices
 # passes through /dev/tpmrm0 + /dev/tpm0 + /dev/sev-guest so seald's TPM2 /
-# SEV-SNP evidence path works in-sandbox. seald is dynamic-musl with the SAME
-# NEEDED as bridge (libc.musl + libunwind) — the musl runtime + libunwind
-# above cover it (bridge is the known-working sandbox init).
+# SEV-SNP evidence path works in-sandbox. Dynamic-musl, but its NEEDED is
+# MORE than bridge's: the seal crate depends on bootproof (the wardenctl
+# wire-acceptance path), which links tss2 dynamically — NEEDED:
+# libtss2-tcti-device.so.0 + libtss2-esys.so.0 + libtss2-mu.so.0 (plus
+# libunwind + libc.musl). The tss2 .so's (musl-built, same ABI as seald)
+# + their transitive libtss2-sys.so.1 + libcrypto.so.3 (OpenSSL 3,
+# libtss2-esys's NEEDED) must be in the bundle rootfs or the dynamic
+# linker fails and seald exits before binding its sockets (the crash-loop
+# that reset both :443 attest.sock + :2222 admin.sock). The stale "SAME
+# NEEDED as bridge" comment predates the bootproof path dep.
 COPY --from=user-wardend /usr/bin/seald /usr/bin/seald
+# The tss2 + libcrypto runtime for seald (the NEEDED above). Full-package
+# COPY (not single-file): the .so.0 / .so.1 / .so.3 entries are relative
+# symlinks to the versioned .so, and BuildKit's single-file COPY of a
+# relative symlink fails to resolve the target in the context (the same
+# gotcha as the core-musl COPY above).
+COPY --from=user-tpm2-tss /usr/lib /usr/lib
+COPY --from=core-openssl /usr/lib/libcrypto.so.3 /usr/lib/libcrypto.so.3
 # keepd: the host-side disks daemon (the LUKS2 data plane; a persist
 # key-ed secret WARDEND_LUKS_KEY; the gvisor moat has no block-device
 # passthrough, so keepd runs under the container moat with the host's
@@ -163,6 +179,14 @@ COPY --from=core-musl . /
 COPY --from=core-libunwind . /
 COPY --from=user-wardend /usr/bin/regentd /usr/bin/regentd
 COPY --from=user-wardend /usr/bin/wardend /usr/bin/wardend
+# wardenctl: the host-side admin client (the wardenctl target's client
+# side). A HOST-side tool (NOT a sandbox co-tenant) — it runs on the
+# admin's machine. For the def-of-done test it must be in the distro
+# rootfs so it is available on the host. It connects to the seald's
+# admin UDS over the wire (the expose 0.0.0.0:2222 relay) and verifies
+# the bundle with the HSM public key (the 65-byte P-256 point the seald
+# writes to the bind-mounted devices dir as hsm-pub.hex).
+COPY --from=user-wardend /usr/bin/wardenctl /usr/bin/wardenctl
 # keepd: the host-side disks daemon (the LUKS2 data plane). The keepd
 # unit runs under the container moat with `rootfs = "/"` (the host
 # rootfs), so the binary must be in THIS stage (the netstack-bundle
