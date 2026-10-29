@@ -16,6 +16,27 @@ ADD fetch/wardend-${VERSION}.tar.gz .
 # (e.g. the local cache file is deleted and re-downloaded), the fallback
 # below moves the nested contents to `/` so the build still works.
 RUN if [ -d /wardend ]; then mv /wardend/* /wardend/.[!.]* / 2>/dev/null; rmdir /wardend; fi
+# bootproof: the path dep for the seal + wardenctl crates (the bootproof
+# generic engine + the bootproof-platform-wardend verifier). The wardend
+# archive is FLAT at /, so the path dep `../../../bootproof/crates/<crate>`
+# resolves to /bootproof/crates/<crate>. The bootproof archive's top-level
+# IS `bootproof/`, so the ADD extracts directly to /bootproof (no mv). This
+# MUST precede `cargo fetch` (cargo fetch resolves the workspace, so the
+# path deps must exist). The archive is in the same build context (the
+# [sources.bootproof] in the package.toml drops it into fetch/user/wardend).
+ARG BOOTPROOF_SOURCE
+ADD fetch/${BOOTPROOF_SOURCE} .
+# The bootproof crate's build.rs links the tss2 C stack DYNAMICALLY +
+# bindgens the devicemapper structs from libdevmapper.h at build time, so
+# the tss2 + lvm2 shared objects + headers must be present in the build
+# context (the SAME two COPYs the bootproof Containerfile uses). The .pc
+# files' Libs lines are emptied in the build RUN below so no pkg-config
+# probe emits link flags (the crate's own cargo:rustc-link-arg owns the
+# final link line). This is needed for the wardenctl build (it reuses the
+# bootproof generic engine + the platform-wardend verifier, which depend
+# on the bootproof crate's build.rs).
+COPY --from=stagex/user-tpm2-tss . /
+COPY --from=stagex/user-lvm2 . /
 WORKDIR /
 # The wardend stack has real crates.io deps (russh/sshdt for posternd, tokio,
 # aws-lc-sys, ...; 257 lock packages), so the build follows the execd pattern:
@@ -74,6 +95,23 @@ RUN --network=none <<-EOF
     --release \
     --target "${ARCH}-unknown-linux-musl" \
     -p seal
+  # wardenctl: the local TRUSTED admin client (the wardenctl target's client
+  # side). A HOST-side tool (NOT a sandbox co-tenant) — it runs on the
+  # admin's machine. It reuses the seal crate's pure-Rust crypto (P-256 /
+  # ECDSA / SHA-256) + the bootproof generic engine (the verify_bundle + the
+  # platform-wardend verifier). The bootproof crate's build.rs links the
+  # tss2 C stack dynamically, so empty the .pc files' Libs lines first
+  # (the SAME sed the bootproof Containerfile uses) so no pkg-config probe
+  # emits link flags (the crate's own cargo:rustc-link-arg owns the final
+  # link line). Built with the default features (no gvisor/container).
+  for f in esys sys mu rc tcti-device tctildr; do
+    sed -i 's|^Libs:.*|Libs: |' /usr/lib/pkgconfig/tss2-$f.pc
+  done
+  cargo build \
+    --frozen \
+    --release \
+    --target "${ARCH}-unknown-linux-musl" \
+    -p wardenctl
   R="${T}"
   install -vDm755 "$R/wardend"  /rootfs/usr/bin/wardend
   install -vDm755 "$R/regentd"  /rootfs/usr/bin/regentd
@@ -130,6 +168,10 @@ RUN --network=none <<-EOF
   # Dynamic-musl with the SAME NEEDED as bridge (libc.musl + libunwind), which
   # the bundle rootfs already carries (core-musl + core-libunwind).
   install -vDm755 "$R/seald"    /rootfs/usr/bin/seald
+  # wardenctl: the host-side admin client (the wardenctl target's client
+  # side). Dynamic-musl with the SAME NEEDED as the other host binaries
+  # (libc.musl + libunwind), which the host rootfs already carries.
+  install -vDm755 "$R/wardenctl" /rootfs/usr/bin/wardenctl
   # offline-srv: the second bin of the wardend-bridge package (the UDS-only
   # offline-workload stand-in, the nginx concept-proof). The distro COPYs it
   # into the netstack bundle rootfs as a co-tenant of the wire-owning netstack.

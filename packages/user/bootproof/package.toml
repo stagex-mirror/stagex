@@ -6,7 +6,7 @@ license = "MIT OR Apache-2.0"
 website = "https://codeberg.org/lrvick/bootproof"
 
 [sources.bootproof]
-hash = "7a4d9fa02526b3e9b77950cb9e4f8266a357304d15e5fb9511e0cdbf03711e31"
+hash = "453ed82459e3f91ecb9e34de7a91bdb1fa40ce84f9e32062fd2b32163078628e"
 format = "tar.gz"
 file = "bootproof-{version}.{format}"
 # lrvick mirror: the caution/bootproof mirror 404s this commit (the Phase-4
