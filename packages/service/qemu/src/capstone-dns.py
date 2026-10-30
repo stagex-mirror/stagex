@@ -3,7 +3,7 @@
 #
 # The guest's DNS poller queries the slirp forwarder (10.0.2.3), which
 # forwards to the CONTAINER's resolver (this server, via /etc/resolv.conf).
-# This server answers the capstone A record (capstone.lrvick.dev ->
+# This server answers the capstone A record (udunit.lrvick.dev ->
 # 10.0.2.15, the guest's lease IP) so the poll sees PointsToSelf; every
 # other query is forwarded to 1.1.1.1 (the real resolver) and the response
 # is relayed back. The A record is the external DNS dependency the capstone
@@ -79,14 +79,14 @@ def main():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock.bind(BIND)
-    print(f"capstone-dns: listening on {BIND[1]} (capstone.lrvick.dev -> {TARGET})", flush=True)
+    print(f"capstone-dns: listening on {BIND[1]} (udunit.lrvick.dev -> {TARGET})", flush=True)
     while True:
         data, addr = sock.recvfrom(4096)
         if len(data) < 16:
             continue
         name, _ = decode_name(data, 12)
         print(f"capstone-dns: query {name} from {addr}", flush=True)
-        if name == "capstone.lrvick.dev" or name.endswith(".capstone.lrvick.dev"):
+        if name == "udunit.lrvick.dev" or name.endswith(".udunit.lrvick.dev"):
             sock.sendto(build_answer(data), addr)
         else:
             # Forward to the real resolver + relay the response back.
