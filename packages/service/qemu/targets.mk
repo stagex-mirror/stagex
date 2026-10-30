@@ -47,6 +47,8 @@ qemu-start:
 		-e QEMU_DISK=/input/disk.img \
 		-e QEMU_CLOUD=/input/cloud.img \
 		-e QEMU_CLOUD_ISO=/input/cloud-iso.img \
+		$(if $(QEMU_DNS),-e QEMU_DNS="$(QEMU_DNS)") \
+		$(if $(QEMU_NET_HOSTFWD),-e QEMU_NET_HOSTFWD="$(QEMU_NET_HOSTFWD)") \
 		$(if $(QEMU_DATA_DISK),-v $(QEMU_DATA_DISK):/input/data.img -e QEMU_DATA_DISK=/input/data.img) \
 		--entrypoint /bin/sh \
 		stagex/service-qemu:local -c 'chmod +x /usr/bin/qemu-startup.sh && exec /usr/bin/qemu-startup.sh' && \

@@ -1,0 +1,73 @@
+{
+  "ociVersion": "1.0.2",
+  "process": {
+    "args": [
+      "/usr/bin/bastiond",
+      "--imds",
+      "--seald-bin",
+      "/usr/bin/seald",
+      "--dpmon-bin",
+      "/usr/bin/dpmon",
+      "--acme-url",
+      "http://172.31.37.195:14001/"
+    ],
+    "env": [
+      "PATH=/bin:/usr/bin:/sbin:/usr/sbin"
+    ],
+    "cwd": "/",
+    "capabilities": {
+      "bounding": [
+        "CAP_NET_ADMIN",
+        "CAP_NET_RAW",
+        "CAP_SYS_ADMIN"
+      ],
+      "effective": [
+        "CAP_NET_ADMIN",
+        "CAP_NET_RAW",
+        "CAP_SYS_ADMIN"
+      ],
+      "permitted": [
+        "CAP_NET_ADMIN",
+        "CAP_NET_RAW",
+        "CAP_SYS_ADMIN"
+      ],
+      "inheritable": [
+        "CAP_NET_ADMIN",
+        "CAP_NET_RAW",
+        "CAP_SYS_ADMIN"
+      ]
+    }
+  },
+  "root": {
+    "path": "rootfs",
+    "readonly": true
+  },
+  "hostname": "netstack",
+  "mounts": [
+    {
+      "type": "tmpfs",
+      "source": "tmpfs",
+      "destination": "/run",
+      "options": [
+        "mode=0755"
+      ]
+    },
+    {
+      "type": "bind",
+      "source": "/run/wardend/devices",
+      "destination": "/run/wardend/devices",
+      "options": [
+        "rbind"
+      ]
+    },
+    {
+      "type": "bind",
+      "source": "/run/wardend/devices/sev-guest",
+      "destination": "/dev/sev-guest",
+      "options": [
+        "rbind"
+      ]
+    }
+  ],
+  "linux": {}
+}

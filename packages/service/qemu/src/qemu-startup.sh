@@ -58,7 +58,26 @@ QEMU_ARGS="$QEMU_ARGS -device scsi-cd,drive=cd0"
 # the supervisor's live log (the serial console is not a reliable window).
 NET_OPTS="user,id=net0,hostfwd=tcp:0.0.0.0:2222-:22,hostfwd=tcp:0.0.0.0:443-:443,hostfwd=tcp:0.0.0.0:9004-:9004"
 if [ -n "${QEMU_NET_HOSTFWD:-}" ]; then
-    NET_OPTS="$NET_OPTS,hostfwd=${QEMU_NET_HOSTFWD}"
+    # QEMU's user netdev does NOT accept a comma-joined hostfwd list in one
+    # parameter — each forward is a separate `hostfwd=` parameter. Split the
+    # comma-separated list into individual hostfwd= entries (POSIX sh; the
+    # script runs under /bin/sh, not bash).
+    _HFWD="${QEMU_NET_HOSTFWD}"
+    while [ -n "${_HFWD}" ]; do
+        _h="${_HFWD%%,*}"
+        [ -n "${_h}" ] && NET_OPTS="$NET_OPTS,hostfwd=${_h}"
+        case "${_HFWD}" in
+            *,*) _HFWD="${_HFWD#*,}" ;;
+            *)   _HFWD="" ;;
+        esac
+    done
+fi
+# The slirp DNS forwarder target (the guest's DNS queries are forwarded to
+# this address on the host; the default is the host's /etc/resolv.conf).
+# A `-dns 127.0.0.1` makes slirp forward the guest's DNS to a local
+# nameserver (the capstone DNS server) instead of the host's resolver.
+if [ -n "${QEMU_DNS:-}" ]; then
+    NET_OPTS="$NET_OPTS,dns=$QEMU_DNS"
 fi
 QEMU_ARGS="$QEMU_ARGS -netdev $NET_OPTS"
 QEMU_ARGS="$QEMU_ARGS -device virtio-net-pci,netdev=net0"

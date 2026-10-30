@@ -1,0 +1,10 @@
+# The container-fleet spec (the wire-acceptance fleet; baked, not IMDS —
+# the IMDS user-data fetch is broken on the real wire (the per-attempt LLA
+# re-add fails with EOPNOTSUPP -95), so the fleet spec is baked into the
+# bundle rootfs at /etc/wardend/fleet. The spec parser (spec::parse_lines)
+# reads this file directly (load_fleet_spec) — NOT the broken IMDS path.
+#
+# The container line (the backend) must precede the host line (a dangling
+# backend is a hard error in the spec parser).
+container docker.io/library/udunit:latest name=udunit
+host udunit.lrvick.dev backend=udunit

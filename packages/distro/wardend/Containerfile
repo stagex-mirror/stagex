@@ -105,6 +105,14 @@ COPY --from=user-wardend /usr/bin/keepd /usr/bin/keepd
 # at /images/netstack/seed); the AWS user-data path will feed the same grammar
 # from IMDS instead of this baked file.
 COPY --from=user-wardend /images/netstack/seed /etc/wardend/seed
+# The container-fleet spec (the wire-acceptance fleet; baked, not IMDS —
+# the IMDS user-data fetch is broken on the real wire (the per-attempt LLA
+# re-add fails with EOPNOTSUPP -95), so the fleet spec is baked into the
+# bundle rootfs at /etc/wardend/fleet. The spec parser (spec::parse_lines)
+# reads this file directly (load_fleet_spec) — NOT the broken IMDS path.
+# The container line (the backend) must precede the host line (a dangling
+# backend is a hard error in the spec parser).
+COPY src/etc/wardend/fleet /etc/wardend/fleet
 COPY src/rootfs/etc/resolv.conf /etc/resolv.conf
 COPY src/rootfs/etc/hostname /etc/hostname
 COPY src/rootfs/etc/hosts /etc/hosts
@@ -245,6 +253,18 @@ COPY --from=user-wardend /etc/wardend/units/ /etc/wardend/units/
 # The netstack bundle: rootfs/ (Stage 0) + config.json (from user-wardend).
 COPY --from=netstack-bundle / /images/netstack/rootfs/
 COPY --from=user-wardend /images/netstack/config.json /images/netstack/config.json
+# The wire-acceptance ACME URL (baked, not IMDS — the IMDS user-data fetch
+# is broken on the real wire). The ACME server is the mock ACME instance in
+# the SAME VPC (the VPC's default SG allows intra-VPC traffic; the mock's
+# :14001 is reachable from the wardend's private IP). The client's
+# HttpTransport is plain HTTP (the split_url rejects non-http schemes), so the
+# mock speaks plain HTTP end-to-end (the Location headers are plain-HTTP
+# URLs). The trailing slash is REQUIRED: the client builds the resource URLs
+# by concatenating the directory URL + the resource name (e.g.
+# `{directory}new-account`). This is the user-wardend config.json with the
+# `--acme-url` argv appended (a pre-baked COPY, not a RUN — the host rootfs
+# stage is FROM scratch + busybox-only, so there is no python3 to patch it).
+COPY src/netstack-config.json /images/netstack/config.json
 # The baked admin key (regentd seeds host /root/.ssh from this; the netstack
 # model's posternd reads the BUNDLE's copy, but the host copy keeps regentd
 # quiet and serves the postern-sandbox topology if used).
