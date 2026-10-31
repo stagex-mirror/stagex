@@ -1,0 +1,321 @@
+--- xdp16-a/pkg/xdp/rxqueue.go	2026-10-31 15:44:15.022190911 -0700
++++ xdp16-b/pkg/xdp/rxqueue.go	2026-10-31 15:44:15.062190870 -0700
+@@ -90,6 +90,18 @@
+ 	return rq.producer.Load() - rq.consumer.RacyLoad()
+ }
+ 
++// Consumer returns the current RX consumer index (the shared atomic value the
++// dispatch loop advances via Release). It is NON-destructive (it does not
++// advance the cached consumer, so it does not steal descriptors from the
++// dispatch loop's Peek) and thread-safe (consumer is a shared atomic value).
++// The re-arm loop (xdp-16) reads it to detect the data-plane-only wedge: the
++// eBPF guard keeps redirecting frames (the bpf_counts redirect counter climbs)
++// but the consumer index is not advancing (the socket's ring is not being
++// drained).
++func (rq *RXQueue) Consumer() uint32 {
++	return rq.consumer.RacyLoad()
++}
++
+ func (rq *RXQueue) free() uint32 {
+ 	// Return any buffers we know about without incurring an atomic
+ 	// operation if possible.
+--- xdp16-a/pkg/tcpip/link/xdp/endpoint.go	2026-10-31 15:44:15.026190908 -0700
++++ xdp16-b/pkg/tcpip/link/xdp/endpoint.go	2026-10-31 15:44:15.058190875 -0700
+@@ -19,6 +19,7 @@
+ package xdp
+ 
+ import (
++	"encoding/binary"
+ 	"fmt"
+ 	"os"
+ 	"strings"
+@@ -163,6 +164,37 @@
+ 		// XDP_UMEM_REG starts clean) + the 300ms x 10 retry (covers the RCU
+ 		// grace period for the old socket's async bind release).
+ 		recreating atomicbitops.Bool
++		// countsFD is the donated pinned bpf_counts fd (dup'd). The eBPF
++		// program increments the per-queue redirect counter at the XDP
++		// decision point (independent of whether the descriptor lands in the
++		// ring), so it is the authoritative "frames are still arriving at the
++		// socket" signal. -1 = not donated (the third trigger is a no-op).
++		countsFD int
++		// countsMap is the bpf_counts map reconstructed from countsFD (nil if
++		// the donation was absent or failed to load). The third trigger reads
++		// it; when nil the third trigger is a no-op (graceful degrade).
++		countsMap *ebpf.Map
++		// lastRedirect is the sum of the redirect field across all 16 slots at
++		// the previous rearmLoop sample (the baseline for the strictly-
++		// increasing check). lastConsumer is the RX consumer index at the
++		// previous sample (the baseline for the not-advancing check).
++		lastRedirect uint64
++		lastConsumer uint32
++		// havePrevSample is set once a baseline sample has been taken. The
++		// first sample has no "previous", so the delta checks are skipped
++		// until it is set (no false-fire on the first sample).
++		havePrevSample bool
++		// consecutiveRedirectUp is the count of consecutive rearmLoop samples
++		// (10 s cadence) in which the redirect counter was STRICTLY INCREASING
++		// (frames continuously arriving at the decision point). A lull
++		// (no new frames) resets it to 0 (gates out idle windows). Fire the
++		// third trigger at >= 3 (30 s of continuous arrival).
++		consecutiveRedirectUp uint32
++		// consecutiveConsumerFlat is the count of consecutive rearmLoop samples
++		// (10 s cadence) in which the RX consumer index was UNCHANGED (the
++		// socket's ring is not being drained). A draining ring resets it to 0.
++		// Fire the third trigger at >= 3 (30 s of continuous non-drain).
++		consecutiveConsumerFlat uint32
+ 	} `state:"nosave"`
+ }
+ 
+@@ -225,6 +257,13 @@
+ 	// periodic check reads it and the re-create re-inserts at key 0.
+ 	// -1 = not donated (re-arm cannot monitor the map).
+ 	MapFD int
++
++	// CountsFD is the donated pinned bpf_counts fd (dup'd by the caller). The
++	// third re-arm trigger (xdp-16) reads the per-queue redirect counter from
++	// it to detect the data-plane-only wedge (frames still arriving at the
++	// decision point but the ring not draining). -1 = not donated (the third
++	// trigger is a no-op; the first two triggers still run).
++	CountsFD int
+ }
+ 
+ // New creates a new endpoint from an AF_XDP socket.
+@@ -328,6 +367,22 @@
+ 				log.Warningf("xdp: re-arm: failed to load pinned sockmap from donated fd %d: %v", opts.MapFD, err)
+ 			}
+ 		}
++		// xdp-16: reconstruct the pinned bpf_counts map from the donated fd
++		// (the third re-arm trigger's "frames still arriving" signal). BPF
++		// maps are global, not per-netns, so this works from the sentry
++		// netns. If the donation is absent or fails to load, the third
++		// trigger is a no-op (graceful degrade); the first two triggers still
++		// run. The re-arm loop itself is gated on sockMap (the re-create
++		// needs the map to re-insert), so this only matters when the loop
++		// runs.
++		ep.rearm.countsFD = opts.CountsFD
++		if opts.CountsFD >= 0 {
++			if m, err := ebpf.NewMapFromFD(opts.CountsFD); err == nil {
++				ep.rearm.countsMap = m
++			} else {
++				log.Warningf("xdp: re-arm: failed to load pinned bpf_counts from donated fd %d: %v", opts.CountsFD, err)
++			}
++		}
+ 		if ep.rearm.sockMap != nil {
+ 			ep.wg.Add(1)
+ 			go ep.rearmLoop()
+@@ -401,8 +456,10 @@
+ 		ep.rearmMu.RLock()
+ 		control := ep.control
+ 		occ := uint32(0)
++		consumer := uint32(0)
+ 		if control != nil {
+ 			occ = control.RX.Occupancy()
++			consumer = control.RX.Consumer()
+ 		}
+ 		ep.rearmMu.RUnlock()
+ 		// Half the 512-desc ring (NDescriptors = nFrames/2 = 512) = 256. A
+@@ -429,7 +486,72 @@
+ 				ep.rearm.consecutiveEmpty = 0
+ 			}
+ 		}
+-		wedge := ep.rearm.consecutiveFull >= 3 || ep.rearm.consecutiveEmpty >= 3
++		// The wedge signal 3 (xdp-16): the data-plane-only wedge — the eBPF
++		// guard is STILL redirecting frames to the socket (the bpf_counts
++		// redirect counter is strictly increasing, so frames are continuously
++		// arriving at the decision point) but the RX consumer index is NOT
++		// advancing (the socket's ring is not being drained). The first two
++		// triggers cannot see this case: the ring is ~0 (not full, so trigger
++		// 1 does not fire) and the map is populated (the socket is still in
++		// the map, so trigger 2 does not fire). This is the map-populated +
++		// ring-~0 + not-processing wedge. The 30 s window (3 consecutive 10 s
++		// samples) absorbs the healthy in-flight lag (a frame is redirected
++		// before its descriptor is consumed, <1 s), so a healthy active
++		// endpoint never false-fires. Gated on countsMap != nil (graceful
++		// degrade when the counter map is not donated) and on !recreating
++		// (skip the delete-then-re-insert window, mirroring the map-empty
++		// guard). The first sample has no "previous", so the delta checks are
++		// skipped until a baseline is taken (no false-fire on the first
++		// sample).
++		thirdSignal := false
++		if ep.rearm.countsMap != nil && !recreating {
++			// Read the redirect counter: iterate the 16 slots of the ARRAY
++			// (key 0..15), summing the redirect field of each 8-byte value
++			// ({pass@0:4, redirect@4:8}). Summing all 16 slots is robust to
++			// multi-queue (only slot 0 advances on the single-queue c6a, but
++			// summing is correct in general).
++			var curRedirect uint64
++			redirectOK := true
++			for slot := uint32(0); slot < 16; slot++ {
++				b, err := ep.rearm.countsMap.LookupBytes(slot)
++				if err != nil || len(b) < 8 {
++					redirectOK = false
++					break
++				}
++				curRedirect += uint64(binary.LittleEndian.Uint32(b[4:8]))
++			}
++			if redirectOK {
++				redirectUp := false
++				consumerFlat := false
++				if ep.rearm.havePrevSample {
++					redirectUp = curRedirect > ep.rearm.lastRedirect
++					consumerFlat = consumer == ep.rearm.lastConsumer
++				}
++				if redirectUp {
++					ep.rearm.consecutiveRedirectUp++
++				} else {
++					ep.rearm.consecutiveRedirectUp = 0
++				}
++				if consumerFlat {
++					ep.rearm.consecutiveConsumerFlat++
++				} else {
++					ep.rearm.consecutiveConsumerFlat = 0
++				}
++				ep.rearm.lastRedirect = curRedirect
++				ep.rearm.lastConsumer = consumer
++				ep.rearm.havePrevSample = true
++				// The third wedge signal: the map is populated (not the empty
++				// case, trigger 2), the ring is not full (not the ring-full
++				// case, trigger 1), the redirect counter is strictly increasing
++				// for 3 consecutive samples (frames continuously arriving), and
++				// the consumer index is unchanged for 3 consecutive samples
++				// (continuously not processing = the wedge).
++				thirdSignal = !mapEmpty && occ < 256 &&
++					ep.rearm.consecutiveRedirectUp >= 3 &&
++					ep.rearm.consecutiveConsumerFlat >= 3
++			}
++		}
++		wedge := ep.rearm.consecutiveFull >= 3 || ep.rearm.consecutiveEmpty >= 3 || thirdSignal
+ 		if !wedge {
+ 			// Not wedged. Reset the re-create backoff (the ring is draining
+ 			// and the map is populated).
+@@ -440,7 +562,11 @@
+ 		if !ep.rearm.rearmNextAttempt.IsZero() && time.Now().Before(ep.rearm.rearmNextAttempt) {
+ 			continue
+ 		}
+-		log.Infof("xdp: re-arm: wedge detected (consecutiveFull=%d occ=%d consecutiveEmpty=%d); re-creating", ep.rearm.consecutiveFull, occ, ep.rearm.consecutiveEmpty)
++		if thirdSignal {
++			log.Infof("xdp: re-arm: wedge detected (redirect-up, consumer-flat; redirect=%d consumer=%d consecutiveRedirectUp=%d consecutiveConsumerFlat=%d occ=%d); re-creating", ep.rearm.lastRedirect, consumer, ep.rearm.consecutiveRedirectUp, ep.rearm.consecutiveConsumerFlat, occ)
++		} else {
++			log.Infof("xdp: re-arm: wedge detected (consecutiveFull=%d occ=%d consecutiveEmpty=%d); re-creating", ep.rearm.consecutiveFull, occ, ep.rearm.consecutiveEmpty)
++		}
+ 		if err := ep.rearmAFXDPSocket(); err != nil {
+ 			ep.rearmFails()
+ 			log.Warningf("xdp: re-arm: re-create failed (attempt %d): %v", ep.rearm.rearmFails, err)
+@@ -450,6 +576,13 @@
+ 			ep.rearm.rearmCount++
+ 			ep.rearm.consecutiveFull = 0
+ 			ep.rearm.consecutiveEmpty = 0
++			// Reset the third-trigger counters (xdp-16): the re-create
++			// re-inserted a fresh socket, so the previous baseline is stale.
++			ep.rearm.consecutiveRedirectUp = 0
++			ep.rearm.consecutiveConsumerFlat = 0
++			ep.rearm.lastRedirect = 0
++			ep.rearm.lastConsumer = 0
++			ep.rearm.havePrevSample = false
+ 			log.Infof("xdp: socket re-created + re-inserted at key 0 (re-arm #%d) on %q", ep.rearm.rearmCount, ep.rearm.ifaceName)
+ 		}
+ 	}
+--- xdp16-a/runsc/sandbox/xdp.go	2026-10-31 15:44:15.026190908 -0700
++++ xdp16-b/runsc/sandbox/xdp.go	2026-10-31 15:44:15.078190854 -0700
+@@ -122,6 +122,34 @@
+ 		args.XDPLinks[0].Rearm = true
+ 		args.XDPLinks[0].RearmMapPath = mapPath
+ 		args.XDPLinks[0].RearmUseNeedWakeup = conf.AFXDPUseNeedWakeup
++		// xdp-16: donate the pinned bpf_counts fd (the third re-arm
++		// trigger's "frames still arriving" signal). It is a THIRD donation,
++		// appended after the netns + sockmap FDs so the sentry consumes it
++		// in the documented order. Best-effort: an older object (no counter
++		// map) leaves no pin, so when it cannot be loaded the fd is NOT
++		// appended (RearmCounts stays false) and the sentry's CountsFD
++		// defaults to -1 (the third trigger degrades to a no-op, like the
++		// existing "no pinned sockmap fd" path). The pin is global (not
++		// per-netns), so LoadPinnedMap from the path works from runsc's
++		// context (mirroring the sockmap load above).
++		countsPath := xdpcmd.RedirectCountsPath(iface.Name)
++		if countsMap, err := ebpf.LoadPinnedMap(countsPath, nil); err == nil {
++			log.Infof("xdp: initial: pinned bpf_counts loaded (fd=%d)", countsMap.FD())
++			countsFD, err := unix.Dup(countsMap.FD())
++			if err != nil {
++				return fmt.Errorf("failed to dup pinned bpf_counts for re-arm: %w", err)
++			}
++			countsFile := os.NewFile(uintptr(countsFD), "xdp-rearm-counts-fd")
++			// Dup to keep the sentry's copy alive after runsc's os.File
++			// closes (mirrors the sockmap fd donation above).
++			if _, err := unix.Dup(countsFD); err != nil {
++				return fmt.Errorf("failed to dup re-arm counts fd: %w", err)
++			}
++			args.FilePayload.Files = append(args.FilePayload.Files, countsFile)
++			args.XDPLinks[0].RearmCounts = true
++		} else {
++			log.Infof("re-arm counts disabled: pinned bpf_counts %s not available: %v", countsPath, err)
++		}
+ 	} else {
+ 		log.Infof("re-arm disabled: pinned sockmap %s not available: %v", mapPath, err)
+ 	}
+--- xdp16-a/runsc/boot/network.go	2026-10-31 15:44:15.022190911 -0700
++++ xdp16-b/runsc/boot/network.go	2026-10-31 15:44:15.062190870 -0700
+@@ -180,6 +180,13 @@
+ 	// RearmUseNeedWakeup mirrors the original bind's XDP_USE_NEED_WAKEUP
+ 	// flag so the re-create re-binds identically.
+ 	RearmUseNeedWakeup bool
++
++	// RearmCounts, when true, indicates the runsc side also donated a dup
++	// of the pinned bpf_counts fd (the third re-arm trigger's "frames still
++	// arriving" signal, xdp-16). It is the THIRD donation, appended after
++	// the netns + sockmap FDs. When false (the pin was absent), the sentry's
++	// CountsFD defaults to -1 and the third trigger degrades to a no-op.
++	RearmCounts bool
+ }
+ 
+ // LoopbackLink configures a loopback link.
+@@ -313,6 +320,11 @@
+ 			// for the re-create/re-insert self-heal.
+ 			if link.Rearm {
+ 				wantFDs += 2
++				// xdp-16: a third donation (the pinned bpf_counts fd) when
++				// the runsc side could load the counter pin.
++				if link.RearmCounts {
++					wantFDs++
++				}
+ 			}
+ 		default:
+ 			return fmt.Errorf("unknown bind value: %d", v)
+@@ -498,7 +510,7 @@
+ 		// can re-create + re-insert its own AF_XDP socket on a wedge. Consume
+ 		// (dup) both and pass them to xdp.New. -1 = not donated (re-arm is a
+ 		// no-op); fd 0 is stdin and must not be mistaken for a donation.
+-		var netnsFD, mapFD = -1, -1
++		var netnsFD, mapFD, countsFD = -1, -1, -1
+ 		if link.Rearm {
+ 			oldFD := args.FilePayload.Files[fdOffset].Fd()
+ 			netnsFD, err = unix.Dup(int(oldFD))
+@@ -512,6 +524,17 @@
+ 				return fmt.Errorf("failed to dup re-arm map fd %v: %v", oldFD, err)
+ 			}
+ 			fdOffset++
++			// xdp-16: consume (dup) the third donation (the pinned bpf_counts
++			// fd) when the runsc side could load the counter pin. -1 = not
++			// donated (the third trigger degrades to a no-op).
++			if link.RearmCounts {
++				oldFD = args.FilePayload.Files[fdOffset].Fd()
++				countsFD, err = unix.Dup(int(oldFD))
++				if err != nil {
++					return fmt.Errorf("failed to dup re-arm counts fd %v: %v", oldFD, err)
++				}
++				fdOffset++
++			}
+ 		}
+ 
+ 		// Setup packet logging if requested.
+@@ -532,6 +555,10 @@
+ 			UseNeedWakeup: link.RearmUseNeedWakeup,
+ 			NetNSFD:       netnsFD,
+ 			MapFD:         mapFD,
++			// xdp-16: the third re-arm trigger's "frames still arriving"
++			// signal. -1 = not donated (the third trigger degrades to a
++			// no-op; the first two triggers still run).
++			CountsFD: countsFD,
+ 		})
+ 		if err != nil {
+ 			return err

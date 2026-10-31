@@ -125,6 +125,7 @@ ADD patches/xdp-12-initial-socket-step-logging.patch /tmp/xdp-12.patch
 ADD patches/xdp-13-seccomp-default-allow.patch /tmp/xdp-13.patch
 ADD patches/xdp-14-gofer-shared-negative-dentry.patch /tmp/xdp-14.patch
 ADD patches/xdp-15-netlink-newaddr-diagnostic.patch /tmp/xdp-15.patch
+ADD patches/xdp-16-sentry-xdp-redirect-counter.patch /tmp/xdp-16.patch
 RUN patch -p1 -i /tmp/xdp-1.patch && patch -p1 -i /tmp/xdp-2.patch \
     && patch -p1 -i /tmp/xdp-3.patch && patch -p1 -i /tmp/xdp-4.patch \
     && patch -p1 -i /tmp/xdp-5.patch && patch -p1 -i /tmp/xdp-7.patch \
@@ -135,6 +136,7 @@ RUN patch -p1 -i /tmp/xdp-1.patch && patch -p1 -i /tmp/xdp-2.patch \
     && patch -p1 -i /tmp/xdp-13.patch \
     && patch -p1 -i /tmp/xdp-14.patch \
     && patch -p1 -i /tmp/xdp-15.patch \
+    && patch -p1 -i /tmp/xdp-16.patch \
     && rm -f /tmp/xdp-*.patch
 
 # Custom AF_XDP "redirect" program replacing the go-branch's prebuilt one (v3,
