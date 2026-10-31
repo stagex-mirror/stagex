@@ -1,6 +1,6 @@
 diff -ruN xdp9-a/pkg/tcpip/link/xdp/endpoint.go xdp9-b/pkg/tcpip/link/xdp/endpoint.go
---- a/pkg/tcpip/link/xdp/endpoint.go	2026-10-24 21:23:26.853675982 -0700
-+++ b/pkg/tcpip/link/xdp/endpoint.go	2026-10-25 04:27:17.944078277 -0700
+--- xdp9-a/pkg/tcpip/link/xdp/endpoint.go	2026-09-14 13:23:37.000000000 -0700
++++ xdp9-b/pkg/tcpip/link/xdp/endpoint.go	2026-10-31 06:12:08.304959067 -0700
 @@ -20,9 +20,15 @@
  
  import (
@@ -41,7 +41,7 @@ diff -ruN xdp9-a/pkg/tcpip/link/xdp/endpoint.go xdp9-b/pkg/tcpip/link/xdp/endpoi
  	control *xdp.ControlBlock
  
  	// stopFD is used to stop the dispatch loop.
-@@ -70,6 +84,75 @@
+@@ -70,6 +84,86 @@
  	//
  	// +checklocks:mu
  	addr tcpip.LinkAddress
@@ -82,6 +82,17 @@ diff -ruN xdp9-a/pkg/tcpip/link/xdp/endpoint.go xdp9-b/pkg/tcpip/link/xdp/endpoi
 +		// ring (idle) resets it to 0. Fire the re-create at >= 3 (30 s of
 +		// a persistently-full ring).
 +		consecutiveFull uint32
++		// consecutiveEmpty is the count of consecutive rearmLoop samples
++		// (10 s cadence) in which the pinned sockmap was EMPTY (no entry
++		// at key 0). The kernel's xsk_delete_from_maps auto-removes the
++		// socket from the map when it is released (the fd is closed); the
++		// eBPF guard then sees a NULL lookup at key 0 and XDP_PASSes every
++		// frame to the offline kernel (the data plane is dark). A
++		// persistently-empty map (>= 3 consecutive samples = 30 s) is the
++		// socket-left-the-map wedge (the occupancy check cannot see it: no
++		// frames arrive at the sentry's socket, so its ring stays ~0). A
++		// populated map resets it to 0. Fire the re-create at >= 3.
++		consecutiveEmpty uint32
 +		// netnsFD is the donated host-network-namespace fd (dup'd). The
 +		// sentry runs in its own netns, but the uplink device + the pinned
 +		// map live in the host netns, so the re-create joins it (see
@@ -117,7 +128,7 @@ diff -ruN xdp9-a/pkg/tcpip/link/xdp/endpoint.go xdp9-b/pkg/tcpip/link/xdp/endpoi
  }
  
  // Options specify the details about the fd-based endpoint to be created.
-@@ -108,6 +191,29 @@
+@@ -108,6 +202,29 @@
  
  	// QueueID is the ID of the RX queue to which the AF_XDP socket is attached.
  	QueueID uint32
@@ -147,7 +158,7 @@ diff -ruN xdp9-a/pkg/tcpip/link/xdp/endpoint.go xdp9-b/pkg/tcpip/link/xdp/endpoi
  }
  
  // New creates a new endpoint from an AF_XDP socket.
-@@ -169,9 +275,337 @@
+@@ -169,9 +286,371 @@
  
  	ep.control.Fill.FillAll(&ep.control.UMEM)
  
@@ -216,13 +227,22 @@ diff -ruN xdp9-a/pkg/tcpip/link/xdp/endpoint.go xdp9-b/pkg/tcpip/link/xdp/endpoi
 +// (double the interval, capped at 60 s); a success resets it. Bounded +
 +// idempotent.
 +//
-+// The map-emptiness check (the original trigger) is RETIRED: the pinned map is
-+// an XSKMAP with a single entry (the live socket) that persists even after a
-+// delete (the live socket holds the reference), so an empty map is not a
-+// reliable wedge signal. The data-plane liveness (RX ring occupancy) is the
-+// correct signal. The map_info + heartbeat logging is kept (useful for wire
-+// verification: it confirms the donated map fd is alive + the map is the
-+// pinned XSKMAP the host's redirect program uses).
++// The map-PRESENCE check (the original trigger, revived): the pinned map is
++// an XSKMAP with a single entry (the live socket). The entry is present
++// while the socket is alive (the live socket holds the reference) and
++// ABSENT when the socket is released (the kernel's xsk_delete_from_maps
++// auto-removes it; the reference count drops to 0 and the entry is gone).
++// So an EMPTY map is the socket-left-the-map wedge (the eBPF guard XDP_PASSes
++// every frame to the offline kernel). The occupancy check cannot see this
++// case: no frames arrive at the sentry's socket, so its ring stays ~0. The
++// map-presence check is the correct signal for it. The re-arm's own
++// delete-then-re-insert briefly empties the map; the recreating flag guard
++// (skip the check while a re-arm is in flight) + the 3-sample (30 s) trigger
++// (not single-sample) prevent that window from false-firing.
++//
++// The map_info + heartbeat logging is kept (useful for wire verification: it
++// confirms the donated map fd is alive + the map is the pinned XSKMAP the
++// host's redirect program uses).
 +func (ep *endpoint) rearmLoop() {
 +	defer ep.wg.Done()
 +	ticker := time.NewTicker(10 * time.Second)
@@ -231,17 +251,25 @@ diff -ruN xdp9-a/pkg/tcpip/link/xdp/endpoint.go xdp9-b/pkg/tcpip/link/xdp/endpoi
 +		if ep.rearm.sockMap == nil {
 +			continue
 +		}
-+		// Heartbeat: read key 0 of the pinned map to confirm the donated fd is
-+		// alive (a persistent error would otherwise mask a dead donated fd).
-+		// This is NOT the wedge trigger (the map is a single-entry XSKMAP that
-+		// persists even when wedged); it is observability only.
-+		_, hbErr := ep.rearm.sockMap.NextKeyBytes(nil)
-+		log.Infof("xdp: re-arm: heartbeat (mapFD=%d err=%v)", ep.rearm.mapFD, hbErr)
-+		// The wedge signal: the RX ring is persistently full and not draining.
-+		// Read the occupancy non-destructively (producer - consumer, both
-+		// shared atomics) under the re-arm lock (a stable control snapshot; the
-+		// dispatch loop drains the ring, so a persistently-full ring means the
-+		// dispatch loop is not draining it = the wedge).
++		// While a re-arm is in flight (recreating set), the map is
++		// deliberately emptied (the delete-then-re-insert window); skip the
++		// presence check so that window does not false-fire. The occupancy
++		// check is unaffected (the old socket's ring is still readable).
++		recreating := ep.rearm.recreating.Load()
++		// Heartbeat + presence: read key 0 of the pinned map. NextKeyBytes
++		// returns (nil, nil) when the map is EMPTY (the socket was
++		// auto-removed by xsk_delete_from_maps) and (key, nil) when an entry
++		// is present. This is BOTH the observability heartbeat (the donated
++		// fd is alive) AND the socket-left-the-map wedge signal (an empty
++		// map).
++		nextKey, hbErr := ep.rearm.sockMap.NextKeyBytes(nil)
++		mapEmpty := nextKey == nil && hbErr == nil
++		log.Infof("xdp: re-arm: heartbeat (mapFD=%d err=%v empty=%v)", ep.rearm.mapFD, hbErr, mapEmpty)
++		// The wedge signal 1: the RX ring is persistently full and not
++		// draining. Read the occupancy non-destructively (producer - consumer,
++		// both shared atomics) under the re-arm lock (a stable control
++		// snapshot; the dispatch loop drains the ring, so a persistently-full
++		// ring means the dispatch loop is not draining it = the wedge).
 +		ep.rearmMu.RLock()
 +		control := ep.control
 +		occ := uint32(0)
@@ -258,9 +286,25 @@ diff -ruN xdp9-a/pkg/tcpip/link/xdp/endpoint.go xdp9-b/pkg/tcpip/link/xdp/endpoi
 +		} else {
 +			ep.rearm.consecutiveFull = 0
 +		}
-+		wedge := ep.rearm.consecutiveFull >= 3
++		// The wedge signal 2: the map is persistently EMPTY (the socket was
++		// released + auto-removed; the eBPF guard XDP_PASSes every frame to
++		// the offline kernel). The occupancy check cannot see this case (no
++		// frames arrive at the sentry's socket, so its ring stays ~0). A
++		// persistently-empty map (>= 3 consecutive samples = 30 s) is the
++		// socket-left-the-map wedge. A populated map resets the counter. The
++		// recreating guard skips this check while a re-arm is in flight (the
++		// delete-then-re-insert window briefly empties the map).
++		if !recreating {
++			if mapEmpty {
++				ep.rearm.consecutiveEmpty++
++			} else {
++				ep.rearm.consecutiveEmpty = 0
++			}
++		}
++		wedge := ep.rearm.consecutiveFull >= 3 || ep.rearm.consecutiveEmpty >= 3
 +		if !wedge {
-+			// Not wedged. Reset the re-create backoff (the ring is draining).
++			// Not wedged. Reset the re-create backoff (the ring is draining
++			// and the map is populated).
 +			ep.rearm.rearmFails = 0
 +			continue
 +		}
@@ -268,7 +312,7 @@ diff -ruN xdp9-a/pkg/tcpip/link/xdp/endpoint.go xdp9-b/pkg/tcpip/link/xdp/endpoi
 +		if !ep.rearm.rearmNextAttempt.IsZero() && time.Now().Before(ep.rearm.rearmNextAttempt) {
 +			continue
 +		}
-+		log.Infof("xdp: re-arm: wedge detected (consecutiveFull=%d occ=%d); re-creating", ep.rearm.consecutiveFull, occ)
++		log.Infof("xdp: re-arm: wedge detected (consecutiveFull=%d occ=%d consecutiveEmpty=%d); re-creating", ep.rearm.consecutiveFull, occ, ep.rearm.consecutiveEmpty)
 +		if err := ep.rearmAFXDPSocket(); err != nil {
 +			ep.rearmFails()
 +			log.Warningf("xdp: re-arm: re-create failed (attempt %d): %v", ep.rearm.rearmFails, err)
@@ -277,6 +321,7 @@ diff -ruN xdp9-a/pkg/tcpip/link/xdp/endpoint.go xdp9-b/pkg/tcpip/link/xdp/endpoi
 +			ep.rearm.rearmNextAttempt = time.Time{}
 +			ep.rearm.rearmCount++
 +			ep.rearm.consecutiveFull = 0
++			ep.rearm.consecutiveEmpty = 0
 +			log.Infof("xdp: socket re-created + re-inserted at key 0 (re-arm #%d) on %q", ep.rearm.rearmCount, ep.rearm.ifaceName)
 +		}
 +	}
@@ -485,7 +530,7 @@ diff -ruN xdp9-a/pkg/tcpip/link/xdp/endpoint.go xdp9-b/pkg/tcpip/link/xdp/endpoi
  // Attach launches the goroutine that reads packets from the file descriptor and
  // dispatches them via the provided dispatcher. If one is already attached,
  // then nothing happens.
-@@ -291,14 +725,20 @@
+@@ -291,14 +770,20 @@
  	var preallocatedBatch [fifo.BatchSize]unix.XDPDesc
  	batch := preallocatedBatch[:0]
  
@@ -510,7 +555,7 @@ diff -ruN xdp9-a/pkg/tcpip/link/xdp/endpoint.go xdp9-b/pkg/tcpip/link/xdp/endpoi
  		return 0, &tcpip.ErrNoBufferSpace{}
  	}
  
-@@ -306,14 +746,14 @@
+@@ -306,14 +791,14 @@
  	// possible we allocate up-front.
  	for _, pkt := range pkts.AsSlice() {
  		batch = append(batch, unix.XDPDesc{
@@ -527,7 +572,7 @@ diff -ruN xdp9-a/pkg/tcpip/link/xdp/endpoint.go xdp9-b/pkg/tcpip/link/xdp/endpoi
  		offset := 0
  		var view *buffer.View
  		views, pktOffset := pkt.AsViewList()
-@@ -324,15 +764,15 @@
+@@ -324,15 +809,15 @@
  		for view = view.Next(); view != nil; view = view.Next() {
  			offset += copy(frame[offset:], view.AsSlice())
  		}
@@ -546,7 +591,7 @@ diff -ruN xdp9-a/pkg/tcpip/link/xdp/endpoint.go xdp9-b/pkg/tcpip/link/xdp/endpoi
  
  	return pkts.Len(), nil
  }
-@@ -341,11 +781,27 @@
+@@ -341,11 +826,27 @@
  	var views []*buffer.View
  
  	for {
@@ -575,7 +620,7 @@ diff -ruN xdp9-a/pkg/tcpip/link/xdp/endpoint.go xdp9-b/pkg/tcpip/link/xdp/endpoi
  			return !stopped, tcpip.TranslateErrno(errno)
  		}
  		if stopped {
-@@ -356,7 +812,7 @@
+@@ -356,7 +857,7 @@
  		// until there are no packets left.
  		for {
  			// We can receive multiple packets at once.
@@ -584,7 +629,7 @@ diff -ruN xdp9-a/pkg/tcpip/link/xdp/endpoint.go xdp9-b/pkg/tcpip/link/xdp/endpoi
  
  			if nReceived == 0 {
  				break
-@@ -367,19 +823,19 @@
+@@ -367,19 +868,19 @@
  
  			// Populate views quickly so that we can release frames
  			// back to the kernel.
@@ -611,8 +656,8 @@ diff -ruN xdp9-a/pkg/tcpip/link/xdp/endpoint.go xdp9-b/pkg/tcpip/link/xdp/endpoi
  			// Process each packet.
  			ep.mu.RLock()
 diff -ruN xdp9-a/pkg/xdp/rxqueue.go xdp9-b/pkg/xdp/rxqueue.go
---- a/pkg/xdp/rxqueue.go	2026-10-24 21:23:26.853675982 -0700
-+++ b/pkg/xdp/rxqueue.go	2026-10-25 04:27:17.944078277 -0700
+--- xdp9-a/pkg/xdp/rxqueue.go	2026-09-14 13:23:37.000000000 -0700
++++ xdp9-b/pkg/xdp/rxqueue.go	2026-10-31 06:11:44.473033784 -0700
 @@ -78,6 +78,18 @@
  	return entries, index
  }
@@ -633,8 +678,8 @@ diff -ruN xdp9-a/pkg/xdp/rxqueue.go xdp9-b/pkg/xdp/rxqueue.go
  	// Return any buffers we know about without incurring an atomic
  	// operation if possible.
 diff -ruN xdp9-a/runsc/boot/network.go xdp9-b/runsc/boot/network.go
---- a/runsc/boot/network.go	2026-10-24 21:23:26.857675970 -0700
-+++ b/runsc/boot/network.go	2026-10-25 04:27:17.944078277 -0700
+--- xdp9-a/runsc/boot/network.go	2026-09-14 13:23:37.000000000 -0700
++++ xdp9-b/runsc/boot/network.go	2026-10-31 06:11:44.473033784 -0700
 @@ -161,6 +161,25 @@
  	// NumChannels controls how many underlying FDs are to be used to
  	// create this endpoint.
@@ -718,8 +763,8 @@ diff -ruN xdp9-a/runsc/boot/network.go xdp9-b/runsc/boot/network.go
  		if err != nil {
  			return err
 diff -ruN xdp9-a/runsc/sandbox/xdp.go xdp9-b/runsc/sandbox/xdp.go
---- a/runsc/sandbox/xdp.go	2026-10-24 21:23:26.873675918 -0700
-+++ b/runsc/sandbox/xdp.go	2026-10-25 04:27:17.948078265 -0700
+--- xdp9-a/runsc/sandbox/xdp.go	2026-10-31 06:10:19.421303837 -0700
++++ xdp9-b/runsc/sandbox/xdp.go	2026-10-31 06:11:44.473033784 -0700
 @@ -41,6 +41,12 @@
  //
  // To enable XDP support, build gVisor with `--define=gotags=xdp`.
@@ -858,21 +903,3 @@ diff -ruN xdp9-a/runsc/sandbox/xdp.go xdp9-b/runsc/sandbox/xdp.go
  	}
  	// TODO(b/240191988): Updating of pinned maps should be synchronized and
  	// check for the existence of the key.
-diff -ruN xdp9-a/tools/xdp/cmd/redirect_host.go xdp9-b/tools/xdp/cmd/redirect_host.go
---- a/tools/xdp/cmd/redirect_host.go	2026-10-24 21:23:26.873675918 -0700
-+++ b/tools/xdp/cmd/redirect_host.go	2026-10-25 04:27:17.948078265 -0700
-@@ -68,6 +68,14 @@
- //go:embed bpf/redirect_host_ebpf.o
- var redirectProgram []byte
- 
-+// RedirectProgramBytes returns the embedded redirect eBPF object (xdp-9: the
-+// runsc-side re-create re-loads the pinned program from these bytes when the
-+// kernel auto-removed it; the host-side xdp_loader pins it from the same
-+// bytes, so the re-create's program is byte-identical to the original).
-+func RedirectProgramBytes() []byte {
-+	return redirectProgram
-+}
-+
- // RedirectHostCommand is a subcommand for redirecting incoming packets based
- // on a pinned eBPF map. It redirects all non-SSH traffic to a single AF_XDP
- // socket.
