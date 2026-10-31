@@ -903,3 +903,22 @@ diff -ruN xdp9-a/runsc/sandbox/xdp.go xdp9-b/runsc/sandbox/xdp.go
  	}
  	// TODO(b/240191988): Updating of pinned maps should be synchronized and
  	// check for the existence of the key.
+
+diff -ruN xdp9-a/tools/xdp/cmd/redirect_host.go xdp9-b/tools/xdp/cmd/redirect_host.go
+--- a/tools/xdp/cmd/redirect_host.go	2026-10-24 21:23:26.873675918 -0700
++++ b/tools/xdp/cmd/redirect_host.go	2026-10-25 04:27:17.948078265 -0700
+@@ -68,6 +68,14 @@
+ //go:embed bpf/redirect_host_ebpf.o
+ var redirectProgram []byte
+ 
++// RedirectProgramBytes returns the embedded redirect eBPF object (xdp-9: the
++// runsc-side re-create re-loads the pinned program from these bytes when the
++// kernel auto-removed it; the host-side xdp_loader pins it from the same
++// bytes, so the re-create's program is byte-identical to the original).
++func RedirectProgramBytes() []byte {
++	return redirectProgram
++}
++
+ // RedirectHostCommand is a subcommand for redirecting incoming packets based
+ // on a pinned eBPF map. It redirects all non-SSH traffic to a single AF_XDP
+ // socket.
