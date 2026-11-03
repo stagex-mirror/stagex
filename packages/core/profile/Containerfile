@@ -1,5 +1,6 @@
-FROM scratch AS package
+FROM stagex/bootstrap-stage3 AS package
 COPY <<-'EOF' /etc/profile
+	set -eux
 	TARGETARCH=${TARGETARCH:-}
 	ARCH=${ARCH:-}
 	[[ "$TARGETARCH" == "amd64" ]] && export ARCH="x86_64"
