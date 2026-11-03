@@ -9,4 +9,4 @@ website = "https://pagure.io/xmlto"
 hash = "40504db68718385a4eaa9154a28f59e51e59d006d1aa14f5bc9d6fded1d6017a"
 format = "tar.gz"
 file = "xmlto-{version}.{format}"
-mirrors = [ "https://releases.pagure.org/xmlto/{file}",]
+mirrors = [ "https://releases.pagure.org/xmlto/{file}", "https://anduin.linuxfromscratch.org/BLFS/xmlto/{file}",]
