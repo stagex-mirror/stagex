@@ -9,7 +9,7 @@
       "--dpmon-bin",
       "/usr/bin/dpmon",
       "--acme-url",
-      "http://172.31.37.195:14001/"
+      "https://acme-staging-v02.api.letsencrypt.org/directory/"
     ],
     "env": [
       "PATH=/bin:/usr/bin:/sbin:/usr/sbin"
