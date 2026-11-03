@@ -5,6 +5,241 @@
 > history, pins, or gotchas from a prior session. This file carries only the
 > current operational state.
 
+### Capstone QA flow (domain -> real LE cert -> SNI -> nginx -> reboot -> seal)
+
+> The repeatable end-to-end QA proof. Each step is copy-pasteable and
+> self-verifying: the PASS check is stated inline; a FAIL is the negation.
+> All AWS commands are `--region us-east-2`. Host = the capstone instance
+> (the post-qa-0 deploy; see /tmp/capstone-host-decision.md).
+> `HOST_PRIV` / `HOST_PUB` are its private + public IPs.
+
+**Preconditions (once, before the flow):**
+- qa-0 (3cc56d6) landed; fresh disk built + deployed; instance running.
+- The mock ACME (i-002baf6972d4b6f4c @ 172.31.37.195:14001) is running in
+  the same VPC (the baked `--acme-url` dials it). For real LE, set
+  `BASTION_ACME=https://acme-staging-v02.api.letsencrypt.org/directory`
+  (staging first; production only after the full flow is green).
+- Evidence channel: `curl -s http://<HOST_PUB>:18090/` (the debug face
+  carries the wire log: seald gate, fleet, ACME chain lines).
+
+#### 1. Point the domain at the instance IP
+
+Private zone (what the poller's VPC resolver answers — the PointsToSelf
+surface). Use the PRIVATE/lease IP: it matches even if the IMDS public-IP
+fetch degraded.
+
+```bash
+cat > /tmp/rrs-private.json <<EOF
+{ "Comment": "capstone: domains -> host lease IP",
+  "Changes": [
+    { "Action": "UPSERT", "ResourceRecordSet": {
+        "Name": "udunit.lrvick.dev.", "Type": "A", "TTL": 60,
+        "ResourceRecords": [ { "Value": "${HOST_PRIV}" } ] } },
+    { "Action": "UPSERT", "ResourceRecordSet": {
+        "Name": "nginx.lrvick.dev.", "Type": "A", "TTL": 60,
+        "ResourceRecords": [ { "Value": "${HOST_PRIV}" } ] } } ] }
+EOF
+aws route53 change-resource-record-sets --region us-east-2 \
+  --hosted-zone-id Z0513053FKI6A7CE77LQ --content-file /tmp/rrs-private.json \
+  --output json
+```
+
+Public zone (what the LE HTTP-01 validator resolves). Point at the PUBLIC IP.
+
+```bash
+cat > /tmp/rrs-public.json <<EOF
+{ "Comment": "capstone: public A -> host public IP",
+  "Changes": [
+    { "Action": "UPSERT", "ResourceRecordSet": {
+        "Name": "udunit.lrvick.dev.", "Type": "A", "TTL": 60,
+        "ResourceRecords": [ { "Value": "${HOST_PUB}" } ] } },
+    { "Action": "UPSERT", "ResourceRecordSet": {
+        "Name": "nginx.lrvick.dev.", "Type": "A", "TTL": 60,
+        "ResourceRecords": [ { "Value": "${HOST_PUB}" } ] } } ] }
+EOF
+aws route53 change-resource-record-sets --region us-east-2 \
+  --hosted-zone-id Z096393632D75C2NRZH9M --content-file /tmp/rrs-public.json \
+  --output json
+```
+
+**PASS:** `aws route53 get-change --region us-east-2 --id <ChangeId>` reaches
+`INSYNC`; `aws route53 test-dns-answer --region us-east-2 --hosted-zone-id
+Z096393632D75C2NRZH9M --record-name udunit.lrvick.dev --record-type A`
+returns `${HOST_PUB}`. **FAIL:** still PENDING after 5 min, or the answer is
+the old value. (The full dry-run/apply/verify sequence lives in
+/tmp/capstone-dns-sequence.md.)
+
+#### 2. Wardend alters user-data to expect the domain
+
+The fleet spec is the domain-binding source. The writable copy is
+`/run/wardend/devices/fleet` (seeded from the baked baseline
+`/etc/wardend/fleet` on first boot; an existing file is never clobbered, so
+an operator change survives a sandbox respawn). `wardenctl` reaches the
+seald admin face through posternd (the sole :22 service); the
+`setdomain`/`unsetdomain` verbs are posternd userdata verbs that upsert a
+line in the blob.
+
+```bash
+wardenctl userdata get /run/wardend/devices/fleet        # baseline read
+wardenctl userdata set /run/wardend/devices/fleet \
+  <(echo "host udunit.lrvick.dev backend=udunit")        # expect the domain
+wardenctl state                                          # latch posture
+```
+
+**PASS:** `userdata get` returns the spec with the `host` line; `state`
+shows the malleable latch + the user-data-derived state updated. **FAIL:**
+the set is refused (sealed — see step 9) or the get does not show the line.
+(The fleet mtime re-read thread picks up the write-back; cadence is the
+poll cadence.)
+
+#### 3. PointsToSelf detection
+
+```bash
+# wait ~90 s (poll cadence 30 s + TTL 60 s), then read the evidence file:
+curl -s http://${HOST_PUB}:18090/ | grep -i "fleet\|acme\|dns"
+```
+
+**PASS:** the poller's evidence file `/run/wardend/devices/dns-poll.txt`
+shows `udunit.lrvick.dev -> PointsToSelf` (and the same for
+`nginx.lrvick.dev`); the wire log shows the domain activated + the ACME
+worker started. **FAIL:** `PointsElsewhere` (the A record does not match the
+lease IP or the public IP — re-check step 1's values against the instance's
+actual IPs) or `NoAnswer` (propagation).
+
+#### 4. ACME against the ACME server (mock first, then LE staging)
+
+The chain: `new-nonce -> new-account -> new-order -> order/1 -> authz/1 ->
+(challenge fetch) -> finalize -> cert/1`. The signer is the `SealSigner`
+(seald HSM over `seal.sock`; the scalar never crosses to bastiond). The
+http-01 challenge is served on the `:80` face from `state.pending`.
+
+```bash
+# watch the chain drive (the mock's journal is the evidence channel for the
+# mock leg; the wire debug face for the wardend leg):
+curl -s http://${HOST_PUB}:18090/ | grep -i "acme\|challenge\|cert"
+# the cert file (default dir /run/wardend/certs):
+#   /run/wardend/certs/udunit.lrvick.dev.pem
+```
+
+**PASS:** the worker log shows the full chain completing (`challenge
+fetched`, `cert/1`); the cert file exists and is a valid PEM; the worker
+reached `Issued`. **FAIL:** `challenge fetch failed: HTTP Error 404` (the
+mock-side race — the background-retry fix in acme-mock.py; or the `:80`
+face not serving `state.pending`), or the chain stalls at authz.
+For real LE: same checks, with the staging directory URL and the public-zone
+A record (step 1) as the validator surface.
+
+#### 5. bastiond terminates TLS + SNI routes to posternd
+
+```bash
+curl -sS --resolve udunit.lrvick.dev:443:${HOST_PUB} \
+  https://udunit.lrvick.dev/ | head
+```
+
+**PASS:** the TLS 1.3 handshake completes (the post-qa-0 key schedule) and
+the response is the attestation page (the default-route / known-SNI route
+through the vhost face to the backend UDS). **FAIL:** the handshake drops
+(pre-qa-0 HkdfLabel / spurious-HKDF-Extract class) or an unknown-SNI
+fallback instead of the attestation page.
+
+#### 6. Wardend adds the nginx container vhost; it gets its own cert
+
+The `unit` seed directive spawns the unit (nginx-srv, UDS-only); the
+`host` line in the fleet spec binds the domain to the backend UDS
+(`container` must precede `host` — a dangling backend is a hard error).
+
+```bash
+wardenctl unit add nginx <unit-file>      # add the unit (nginx-srv on
+                                          # /run/wardend/nginx.sock)
+wardenctl unit list
+wardenctl userdata set /run/wardend/devices/fleet \
+  <(echo "host nginx.lrvick.dev backend=nginx")
+```
+
+**PASS:** `unit list` shows the nginx unit; the wire log shows the unit
+spawned + the second domain activated; a second ACME order completes (same
+seald HSM key) and `/run/wardend/certs/nginx.lrvick.dev.pem` exists.
+**FAIL:** the unit never spawns (bin missing in the bundle rootfs — the
+nginx-srv install) or the second order 404s.
+
+#### 7. Both domains answer over HTTPS with real certs
+
+```bash
+curl -sS --resolve udunit.lrvick.dev:443:${HOST_PUB} https://udunit.lrvick.dev/
+curl -sS --resolve nginx.lrvick.dev:443:${HOST_PUB} https://nginx.lrvick.dev/
+openssl s_client -connect ${HOST_PUB}:443 -servername udunit.lrvick.dev \
+  < /dev/null 2>/dev/null | openssl x509 -noout -issuer -subject
+openssl s_client -connect ${HOST_PUB}:443 -servername nginx.lrvick.dev \
+  < /dev/null 2>/dev/null | openssl x509 -noout -issuer -subject
+```
+
+**PASS:** udunit returns the attestation page, nginx returns the stock
+nginx default page, both over HTTPS; `s_client` shows the LE (staging)
+chain on BOTH servernames. **FAIL:** one domain 404s / falls back, or the
+cert is not the issued one.
+
+#### 8. Reboot -> everything comes back
+
+```bash
+aws ec2 reboot-instances --region us-east-2 --instance-ids <HOST_ID>
+# wait ~5 min (the AF_XDP data-plane wedge is the known class; the
+# watchdog self-heals a full-sandbox death), then:
+curl -s http://${HOST_PUB}:18090/ | grep -i "gate\|fleet\|acme\|unit"
+curl -sS --resolve udunit.lrvick.dev:443:${HOST_PUB} https://udunit.lrvick.dev/ -o /dev/null -w '%{http_code}\n'
+curl -sS --resolve nginx.lrvick.dev:443:${HOST_PUB} https://nginx.lrvick.dev/ -o /dev/null -w '%{http_code}\n'
+wardenctl state
+```
+
+**PASS:** seald GATE PASS (tpm_quote + memory_encryption PROVEN on the real
+NitroTPM + SEV-SNP); both faces up; both domains answer over HTTPS again
+(fresh staging certs re-issued on boot — `/run/wardend/certs` is TMPFS, so
+the certs do NOT survive the reboot; the fresh boot's ACME worker re-drives
+the chain and re-issues them); the fleet file is intact (never clobbered on
+respawn); the latch is still malleable (not yet sealed). **FAIL:** a face
+down after the watchdog window, a domain 404ing (the re-issuance did not
+complete — re-check step 4's chain on the fresh boot), or the fleet file
+clobbered.
+
+#### 9. Seal -> reboot -> user-data can no longer be altered
+
+```bash
+wardenctl seal                 # one-way latch (the user-data PCR is now
+                              # the state anchor)
+wardenctl state                # posture: sealed
+# reboot, then attempt an alteration:
+aws ec2 reboot-instances --region us-east-2 --instance-ids <HOST_ID>
+wardenctl state                # sealed, restored (not fresh-unsealed)
+wardenctl userdata set /run/wardend/devices/fleet <(echo "host x.lrvick.dev backend=x")
+```
+
+**PASS:** `state` shows the sealed posture (restored, not fresh-unsealed —
+the SEALST01 block on the boot disk); the `userdata set` is REFUSED
+(fail-closed — the sealed anchor rejects the user-data change; the
+`userdata_set_after_seal_is_refused` behavior). **FAIL:** the set succeeds
+after the seal, or the posture is malleable after the reboot (the seal
+state did not persist).
+
+**Gotchas (carried from the prior sessions):**
+- The DNS A record must point at the instance whose worker is running
+  (PointsToSelf compares against that instance's lease IP; pointing it at
+  the other instance deactivates the worker).
+- The worker reaches `Issued` and does NOT re-step (Ok(None) forever); a
+  reboot is needed to re-test the chain.
+- The mock's challenge fetch is on a background thread with retries
+  (the wardend publishes the token to `state.pending` only after the
+  authz response is sent back — the race the retry closes).
+- The `--acme-url` trailing slash is REQUIRED (resource URLs are built by
+  concatenation).
+- Stay on the STAGING endpoint through ALL reboot legs (steps 8-9 re-issue
+  the certs on every boot; the production rate limits — 50 certs/domain/week
+  + 300/month per account — would throttle the repeated re-issuance).
+- The IMDS user-data fetch is broken on the real wire (the LLA re-add
+  fails EOPNOTSUPP -95); the fleet spec is the source, not IMDS.
+- The AF_XDP data-plane wedge is the known class; the watchdog
+  (dp-dark >= 540 s / hb-stale >= 600 s) self-heals a full-sandbox death;
+  a data-plane-only dark needs the content-based trigger (the fail-sample
+  streak fix, wardend f4e65ab + 99f1f43).
+
 ### Completed: ACME chain wire acceptance — the challenge-fetch race root-caused + fixed (Oct 31, old wardend i-038732c55aaf3873a @ 172.31.46.188, old mock i-002baf6972d4b6f4c @ 172.31.37.195)
 - **WIRE-ACCEPTED (Oct 31):** the full ACME chain on the wardend wire is proven end-to-end: `new-nonce → new-account → new-order → order/1 → authz/1 → (background challenge fetch) → finalize → cert/1`. **THE "ZERO CONNECTIONS" PREMISE WAS A MISDIAGNOSIS** — the mock log showed the worker connecting and driving the full chain every 5 min (00:26, 00:27, 01:47, 05:32). The real failure was a single **race**: the mock fetched the http-01 challenge **synchronously in the authz handler**, but the wardend worker only publishes the token to the `:80` face's `state.pending` map **AFTER the authz response is sent back** (`wire.rs:3089`, after `step()` returns `Ok(Some(()))`) → the `:80` face returned 404 (`challenge fetch failed: HTTP Error 404: Not Found`). The worker's `OrderPending` step: `fetch_authz` (the mock generates token T + fetches `/.well-known/acme-challenge/T` from the `:80` face) → response sent back → worker sets `self.token = T` + the wire loop inserts it into `state.pending` → the `:80` face can now serve it. The mock's fetch landed before the insert. **THE FIX (mock-side, `acme-mock.py`):** the authz handler now spawns a **background thread** (`fetch_challenge_retry`, 1 s cadence, up to 15 attempts) that retries the challenge fetch, giving the worker time to receive the authz response, set the token, and publish it. **WIRE EVIDENCE (the fresh worker after the reboot, 05:45):** `05:45:17` new-nonce → new-account; `05:45:23` new-order; `05:45:28` order/1 → authz/1 (the background fetch thread spawned); `05:45:29` **`challenge fetched (attempt 2): tok-40ec356475604b3b.eyJrdHkiOiJFQyIsImNydiI6IlAtMjU2IiwieCI...`** — the http-01 key authorization (token + JWK) fetched from the wardend's `:80` face, proving the `:80` face works; `05:45:33` cert/1 — the certificate fetched, the chain complete. The worker reached `Issued` (the cert is written to the vhost's cert file).
 - **CORRECTION to the prior root cause (the "public zones only" reading was a query artifact):** there IS a **private** hosted zone — `Z0513053FKI6A7CE77LQ` (comment "capstone-wire-private", `PrivateZone=true`, associated with `vpc-01d661c69a9c75e02` us-east-2) — and it already had the `udunit.lrvick.dev` A record. The earlier `Private: None` reading was a `--query` artifact (the `Config.Private` field is absent for public zones, not null for private ones — verify with `--output json`). The `ConflictingDomainExists` error on the second `create-hosted-zone` confirmed the VPC was already associated with the private zone.
@@ -103,7 +338,21 @@
 - **:443 attestation face — WIRE-ACCEPTED (Oct 23, wardend `ae84d12` / `9810d25`, disk `ac5d7677…`, AMI `ami-007e12c3f199ff56e`, instance `i-03d4a797a1b4196c0` @ 3.20.234.111).** The fix: (a) add `expose 0.0.0.0:443=/run/wardend/seal.sock` to the netstack seed (the existing expose primitive; the relay is a byte pipe, the client speaks seald's framing — [4-byte BE len][code][payload]; 1=attest, 2=seal, 3=unseal, 4=quorum — not HTTP); (b) fix the bastiond `https_uds` name mismatch (`seald.sock` → `seal.sock`, the name seald actually binds). **QEMU-accepted:** :443 OPEN (3/3 samples); the seald gate fails on QEMU (expected — swtpm; the wire NitroTPM is the real device). **Wire-accepted (end-to-end):** :443 OPEN + :22 OPEN; the seed has the :443 expose; **seal.sock EXISTS** (created at boot = the gate passed on the real NitroTPM); **frame round-trip OK** — an attest request (len=1, code=1) returned the seald protocol response (`attest error: empty nonce` — expected for a nonce-less request) → the relay connects to seal.sock and seald processes the request. **The :443 face is now the attestation channel over the wire** (replacing the old execd stack's :443). **Build gotcha this session:** the `out/targets.mk` was stale (still referencing the old commit `a0271ee`) — the user-wardend build was a no-op (docker layer cache + stale VERSION arg). Fixed with `python3 src/targets.py > out/targets.mk` (the known stale-targets gotcha). The QEMU launch needed both `/cloud.img` (virtio) + `/cloud-iso.img` (cdrom) mounted rw (the image's script differs from the source: it uses `/cloud-iso.img` for the cdrom, and QEMU needs write access to the drives).
 - **DATA-PLANE-ONLY DARK — the mtime-based watchdog does NOT fire (Oct 23, wire-observed on `i-03d4a797a1b4196c0` @ 3.20.234.111).** CORRECTION 2 (the prior "the wedge is a full-sandbox-death, so the mtime trigger works") is INCOMPLETE. A **data-plane-only dark** (the AF_XDP wedge with the sandbox/netstack ALIVE) keeps dpmon alive, so dpmon writes `<epoch> fail` every 10 s, keeping dp.status's **mtime fresh** — the mtime-staleness trigger (`dp_stale >= 540`) never fires. The warden is also alive (heartbeat fresh), so the hb trigger doesn't fire either. **Wire-observed: a ~25-min dark with BOTH faces down and NO self-heal** (the old disk's watchdog has no content trigger; a manual `reboot-instances` was required). **TWO watchdog fixes (wardend `f4e65ab` + `99f1f43`, 10/10 tests pass):** (1) **device auto-detect** — the guard device default `/dev/vda` does not exist on AMIs that use `/dev/xvda` (this AMI) or `/dev/nvme0n1`; a missing device made the guard read/write fail silently, so the reboot-loop counter never persisted and the guard was inert. Now auto-detects the root block device (first of `/dev/vda`/`/dev/xvda`/`/dev/sda`/`/dev/nvme0n1` that opens; `WARDEND_GUARD_DEV` env override still wins). (2) **content-based dp-dark trigger** — fire when the last dpmon sample is `fail` for a sustained period (≥540 s, the same `dp_dark` horizon), not just when the mtime is stale. A `pass` sample (or an unreadable file) resets the streak. This covers the data-plane-only dark (the mtime trigger covers the full-sandbox-death). **NEW DISK WIRE-ACCEPTED (the fresh-boot path, Oct 23):** disk `c3a5a44b…` (wardend `99f1f43`), AMI `ami-0e5624b5fa62e477d`, instance `i-0eae65eebbac53a39` @ 18.191.148.8 — :443 + :22 OPEN; **frame round-trip OK** (seald answering through :443 = the gate PASSED on the fresh NitroTPM); **seald STABLE** (PID 15, seal.sock exists, 3 samples); **watchdog RUNNING** (the status file advances every 5 s: `1792725340 live` → `1792725345 live`; the watchdog is a host-side process spawned by regentd, so it does not appear in the sandbox's `ps` — the advancing status file is the authoritative proof). The binary carries both fixes (verified in the rootfs: `/dev/xvda` + `/dev/nvme0n1` candidates + the content-trigger strings). **The content-trigger self-heal is the one thing still pending a natural wedge** (the fresh boot has no wedge to fire on yet). **Build gotcha this session:** the AWS credentials file uses LOWERCASE keys (`aws_access_key_id`), and the `check_aws_creds` make target reads `$(AWS_ACCESS_KEY_ID)` as a MAKE variable (not the shell env) — so `export`ing the env does NOT work; the creds must be passed as make command-line args, and `deploy-ec2`'s inner `$(MAKE)` does not inherit them, so run `aws-ami-deploy` + `aws-ec2-deploy` directly.
 
-### Next Steps
+### Capstone QA Process — the full end-to-end proof (the domain → ACME → TLS → vhost → seal cycle)
+- **THE GOAL (user directive, Nov 1):** a documented, repeatable QA process that proves the full stack end-to-end: (1) point a domain at the instance's IP; (2) use wardenctl to alter the user-data to expect the domain for posternd ingress; (3) the domain record is detected (DNS poll → `PointsToSelf`) and ACME queries Let's Encrypt for a real cert via a private key held in the seald HSM via pkcs#11 over a socket (the `SealSigner` — the scalar never crosses to bastiond); (4) bastiond terminates TLS and uses SNI to route the page to posternd; (5) use wardenctl to add a new container with a new vhost (a stock nginx container); (6) that vhost gets a cert as well; (7) hit either domain and get either the posternd-served attestation page or the nginx default page, both over HTTPS with real certs; (8) reboot and prove it all comes back up; (9) seal, reboot again, and verify user-data can no longer be altered (the one-way latch).
+- **IMPLEMENTATION STATE (source-confirmed, wardend 0e35cc5):** all the pieces exist. `SealSigner` (acme.rs:235) — the seald HSM signer over `seal.sock` (pkcs#11 over a socket; the scalar never crosses). `vhost_face` (wire.rs:2626) — SNI routing + TLS 1.3 termination + the seald signer (CertificateVerify). `dns_poll_thread` (wire.rs:2991) — `PointsToSelf` detection. `fleet_reread_thread` (wire.rs:2925) — the `setdomain` write-back + mtime re-read. The `unit` seed directive — add a new container/vhost. `AcmeClient` (acme.rs:310) — the RFC 8555 flow.
+- **THE GAP (why the capstone is not yet green on the deployed disk):** the deployed disk's seed (src/warden/guest/netstack/seed) has **no `BASTION_ACME`** (the argv is `--imds --seald-bin --dpmon-bin` only). The code is `if cfg.acme_url.is_empty() { skip }` — so the ACME worker is NOT running. The :443 face serves the plain HTML attestation page (no TLS, no cert) — which is exactly what a browser sees today (`curl http://52.14.214.239:443/` = HTTP 200, 2464 bytes, ~37s). To complete the capstone: (1) set `BASTION_ACME` to the real Let's Encrypt directory URL (`https://acme-v02.api.letsencrypt.org/directory`); (2) the DNS detection needs to handle the PUBLIC-IP path (real LE fetches the http-01 challenge over public :80, but `PointsToSelf` currently checks the VPC-internal lease IP — the domain's public A record points at the public IP, not the lease IP); (3) the `setdomain` wardenctl verb (if not already present) + the user-data path for the domain binding.
+- **THE QA STEPS (the repeatable process):**
+  1. **DNS:** point the domain's A record at the instance's IP (the private zone for the VPC-internal detection, the public zone for real LE's challenge fetch).
+  2. **User-data:** `wardenctl userdata set` the domain binding (the `host <domain> backend=<vhost>` spec line) — the fleet spec write-back.
+  3. **Detection + ACME:** the DNS poll detects `PointsToSelf` → the ACME worker starts → the RFC 8555 flow (new-nonce → new-account → new-order → authz → challenge fetch → finalize → cert) → the cert is written to the vhost's cert file (signed by the seald HSM via pkcs#11 over `seal.sock`).
+  4. **TLS + SNI:** bastiond terminates TLS (the seald signer's CertificateVerify) + SNI routes the known domain to the backend UDS (posternd).
+  5. **New vhost:** `wardenctl` adds a new container with a new vhost (a stock nginx container) — the `unit` seed directive + the `container`/`host` spec lines.
+  6. **Second cert:** the new vhost gets a cert as well (a second ACME order, same seald HSM key).
+  7. **Both domains:** hit either domain → the posternd-served attestation page OR the nginx default page, both over HTTPS with real certs.
+  8. **Reboot:** reboot → prove it all comes back up (the DNS poll re-detects, the ACME worker re-runs, the certs are re-fetched or restored, the TLS + SNI routing works).
+  9. **Seal + reboot:** seal (the one-way latch) → reboot → verify user-data can no longer be altered (the sealed PCR anchor rejects a user-data change).
+- **OPEN:** (1) set `BASTION_ACME` to real Let's Encrypt + fix the public-IP DNS detection; (2) verify the `setdomain` wardenctl verb (or add it); (3) run the full QA process end-to-end on the wire; (4) document the gotchas as they surface.
 - **Wire acceptance of BOTH fixes — COMPLETE for the disambiguator + (c); (b)/(d) indirect; two open items (Oct 22):** deployed disk `8a198d5d…` (wardend `96ba844`, stagex `3985a4b9ba`) as `EC2_DISTRO=wardend-dev`, c6a.large us-east-2, SEV-SNP on → instance `i-0dec718852a6eb1da` @ 3.16.26.86, AMI `ami-0b870030a85e3ef52`. Launched 21:11:37; 600s mark 21:21:37; manual reboot 21:48:53. **(a) PASS for the kill-deadline fix:** at 21:25 (13 min, 4 min PAST the 600s mark) :22 was OPEN + seald (PID 13) ALIVE → the warden survived past 600s (the old bug would have killed it at 21:21:37). **Wedge timing:** boot 21:11:37 → wedge ~21:33-21:36 = ~22-25 min, i.e. 12-15 min AFTER the 600s mark, NOT at it → retires the kill-deadline hypothesis for the wedge; the wedge is the AF_XDP data-plane class (one-shot, persistent-within-a-boot, not the 10-min-periodic kill-deadline pattern). **(c) PASS:** seald (PID 12) alive + stable post-reboot, 4 sockets present, NOT crash-looping — NEW: the wire seald is STABLE (the NitroTPM gate passes on the wire; QEMU's swtpm fail-closed exit-1/respawn-1s loop does NOT reproduce on the wire). **(b)+(d) INDIRECTLY confirmed, not directly read:** seald stable = gate passed; real NitroTPM + SEV-SNP host = tpm_quote + memory_encryption PROVEN. **The AF_XDP full wedge was cleared by the manual reboot** (:22 back at 21:53:36, ~5 min post-reboot) — the v13-class self-heal, but the **wardend stack has NO data-plane watchdog** (the v13 supervisor/watchdog is the old execd stack — grep-verified: `reboot -f`/`dp_target`/`WARDEND_DP` have zero hits in `src/`), so this one needed a manual nudge. **TWO OPEN ITEMS (the next work):** (1) **the :443-specific partial dark post-reboot** — :22 is UP (data plane works) but LISTEN_443=0 (the attestation face not serving); this is SEPARATE from the AF_XDP wedge (that takes :22 down too); needs its own root cause (the :443 relay bind, or the HTTPS UDS backend readiness). (2) **the observability gap** — the seald gate line (tpm_quote/memory_encryption) + the regentd/wardend logs go to seald's stderr = `host:[3]` (a gvisor host-side pipe, NOT the kernel ttyS0), so `get-console-output` (the kernel console) does NOT carry them (the console ring is 0 bytes for the seald lines on both boots); the only channels are the :443 face (down) or a UDS query of seal.sock (no client in the sandbox: busybox nc lacks unix-socket support, no socat/python). FIX DIRECTION: route the gvisor host process stdout to the kernel console, OR add a UDS client to the sandbox, OR expose the gate result on a readable file/face. **The kill-deadline fix is the gate for moving to the keepd chain — CONFIRMED working on the wire.**
 - **v13-supervisor WIRE-ACCEPTED — recovery path PROVEN on five natural terminal darks, THREE hard-attributed to the independent watchdog (Oct 6):** the Oct 6 terminal-dark gap (recovery co-located with the wedging supervisor loop) is fixed: `sysnet.sh` stamps `/run/sysnet/hb` each loop iteration + `count_sample` is bounded (bpf(2) off the blocking path); the NEW separate `sysnet-watchdog` execd unit owns `reboot -f` on (a) armed dp-dark ≥540 s OR (b) hb-stale ≥600 s (the Oct 6 mode), with its own armed model + persistent reboot-loop guard, and no runsc/pgrep/bpf(2)/serial on its path. QEMU: no-false-fire clean boot + fire-logic A/B/C/D on the real bytes (A = exact Oct 6 input shape → FIRES). Wire (`i-001928ffe7c473452` @ 18.225.32.161, AMI `ami-00c13caccb2eed5eb`, disk `b054f01c…` @ `e421b70326`): healthy path green (watchdog armed, hb advancing, `memory_encryption + tpm_quote + pcr_state + sign_key PROVEN` through :443), **AND the recovery path is wire-ACCEPTED — FIVE TIMES**: five independent natural terminal netstack darks (06:07 ~638 s, 08:07 ~663 s, 09:30 ~614 s, ~11:2x, ~12:3x — last two start-uncaptured; all NetworkOut=0 egress-death class) each self-recovered by an automatic FULL GUEST REBOOT with zero operator action (face back ~15-19 s post-boot; attestation PROVEN again after each, last re-verify at the 5th reboot pin `82a10a95`). **Trigger attribution (corrected again Oct 6): darks #3, #4 and #5 are HARD-ATTRIBUTED to the independent watchdog** — the post-boot `reboot-loop guard cleared` line proves WDOVR existed after those reboots, and its sole writer (grep-verified; `sysnet.sh` has zero WDOVR refs) is the watchdog fire path, whose post-boot log has no `FIRING` (written pre-reboot, survived the reboot). Darks #1/#2 remain the two-mechanism-fits inference (correct arithmetic: the supervisor's healthy-loop esc≥2 chain lands ~560-770 s with the gen-2 `DPBOOT=300 s` grace; both mechanisms fit both) — the disambiguator for those is the persistent fire-marker (open thread below). **The v12 RSS fix is confirmed working on this instance (240 per-queue `[bp]` lines, q1-15 fully silent) — the terminal darks are the kernel-side data-plane wedge class, not the RSS flap.** **This instance supersedes v12 as the one to keep; the v12 `i-0e5a6d710e6bcc45e` + v11 `i-080664c2822b62628` are historical controls.** **MAJOR correction (Oct 6): /home IS the persistent LUKS volume** (WDOVR survived two consecutive reboots — impossible on the init tmpfs; the deployed `e11af0f` enclaved has the full `mount_ext4(mapped, "/home")` path; the "no LUKS / nit tmpfs" reading was a sandbox-view artifact) — which also means the watchdog reboot-loop guard + PLOG are FUNCTIONAL, not inert. **OPEN threads:** (1) **the gofer-bind race — RESOLVED (Oct 6, QEMU-accepted, see the GOFER-BIND RACE FIX bullet above):** `sysnet depends enclaved` makes the LUKS mount precede the gofer fd capture; identity is now byte-stable across 3 reboots on a data disk (wire redeploy is the remaining acceptance when the next disk ships); (2) the persistent fire-marker on the boot disk (ESP tail, written by BOTH fire paths before `reboot -f`) to close attribution for darks #1/#2 (darks #3/#4 are already hard-attributed via the WDOVR chain); (3) the QEMU seam test (SIGSTOP the kernel-side supervisor → hb-stale → watchdog fires on the Oct 6 mode's trigger (b) specifically — the wire darks exercised trigger (a), dp-dark; trigger (b) is proven by the QEMU fire-logic A test on the real bytes but not end-to-end in a single live boot); (4) the face monitor is RUNNING again (window 2, `mon-v13wd2.sh`, since 13:21; tally wake at 19:25 UTC) — it had stopped at 09:54 and missed dark #4's start.
 - **WINDOW-2 CORRECTION (Oct 6 ~15:00 UTC) — seven self-healed darks, and the attribution framing tightened (do NOT read as "7 hard-attributed"):** the window-2 face monitor caught **two MORE** natural terminal darks on the keeper `i-001928ffe7c473452`: **#6 (13:59:46→14:01:42, ~116 s)** and **#7 (14:38:16→14:41:12, ~176 s)** — both self-recovered (face back and STAYED up 17+ min; no terminal-then-permanent-dark). So **SEVEN** natural terminal darks total, all self-healed, attestation still PROVEN on the current boot (re-verified just now through the netstack :443: memory_encryption + tpm_quote + pcr_state + sign_key PROVEN, exit 0). **Three corrections to the prior framing, all from the "verify, don't infer" rule:** (a) **The recovery MECHANISM for #6/#7 is NOT yet hard-attributed — and the durations HINT it is the SUPERVISOR's own fast path, not the independent watchdog.** #6 (~116 s) and #7 (~176 s) are SHORTER than the independent watchdog's thresholds (dp-dark ≥540 s / hb-stale ≥600 s) and match the SUPERVISOR's `DP_LIMIT` (24 × 5 s = 120 s) escalation (esc=1 sandbox-respawn, or esc≥2 → `reboot -f`) instead. The independent watchdog is the BACKSTOP for the Oct 6 mode (supervisor loop wedged → it cannot recover itself); for a plain netstack dark with a healthy supervisor, the supervisor's own 120 s escalation fires FIRST because it's faster. So most self-heals are likely the supervisor's fast path; only #3/#4/#5 are HARD-attributed to the watchdog (via the WDOVR sole-writer chain captured earlier), #1/#2/#6/#7 are self-healed-but-mechanism-pending. (b) **The identity re-mint (82a10a95 → 9147ced) does NOT prove a full guest reboot — it is the gofer RACE.** The `/home/bootproof` gofer fd is captured at every `runsc create` (boot OR respawn); if that capture lands before `enclaved` mounts LUKS (the `sysnet depends lo`-only race the QEMU-accepted fix closes), bootproofd mints fresh into the pre-LUKS tmpfs dir. So a re-mint can happen on a plain sandbox respawn too, and is EXPECTED on the wire until the fix ships with the next disk. It is therefore not evidence of a guest reboot. (c) **Data-loss gotcha (why #6/#7 attribution is stuck):** the pre-reboot FIRING evidence is TRANSIENT — the persistent `/home/watchdog.log` + `/home/sysnet-events.log` (plog) are NOT readable from the sandbox (only `/home/bootproof` is gofer-bound into it; kernel-side /home LUKS contents are invisible over SSH), and the 64 KB serial ring (`get-console-output`) has already scrolled past the #7 pre-reboot lines (ring frozen at the bare-timestamp stall 14:48:54; current boot's `attest: serving pin=9147ced…` + DHCP BOUND + authorized_keys present all visible and healthy). The **fire-marker (open thread #2)** is exactly what closes this permanently: a boot-disk (ESP-tail) marker written by BOTH fire paths before `reboot -f` is readable from the local disk bytes, not the transient ring. **Bottom line: the v13 recovery keeps working (7/7 self-healed, attestation PROVEN throughout); the honest attribution state is #3/#4/#5 watchdog-hard, the rest self-healed-mechanism-pending, and the next step is the fire-marker to make attribution durable + a re-capture of the persistent logs (readable via a local-disk/AMI path or a bind) to close #6/#7.**
