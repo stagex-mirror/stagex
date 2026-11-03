@@ -1,12 +1,12 @@
 [package]
 name = "py-pyasn1"
-version = "0.6.4"
+version = "0.6.5"
 description = "Python ASN.1 library with a focus on performance and a pythonic API"
 license = "BSD-2-Clause"
 website = "https://github.com/pyasn1/pyasn1"
 
 [sources.py-pyasn1]
-hash = "8eba5d49bbdedfe58c2adcd9eed32658bd1a58e6418581a32c7f4d16eb49c70f"
+hash = "d309a997d5216c410c3ba52c60cf07475af5669b22e4a5c2f41b8fe4cafa42d2"
 format = "tar.gz"
 file = "py-pyasn1-{version}.{format}"
 mirrors = [ "https://github.com/pyasn1/pyasn1/archive/refs/tags/v{version}.{format}",]

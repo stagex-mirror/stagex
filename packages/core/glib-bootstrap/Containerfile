@@ -29,7 +29,6 @@ COPY --from=stagex/core-rhash . /
 COPY --from=stagex/core-util-linux . /
 ADD fetch/glib-${VERSION}.tar.xz .
 WORKDIR /glib-${VERSION}
-COPY *.patch .
 RUN --network=none <<-EOF
 	export CFLAGS="-ffat-lto-objects -O2"
 	export CXXFLAGS="-O2"

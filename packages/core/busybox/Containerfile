@@ -3,6 +3,8 @@ ARG VERSION
 ARG TARGETARCH
 ADD fetch/busybox-${VERSION}.tar.bz2 .
 WORKDIR /busybox-${VERSION}
+COPY CVE-2026-38754.patch .
+RUN --network=none patch -p1 < CVE-2026-38754.patch
 ENV KCONFIG_NOTIMESTAMP=1
 ENV ARCH=$TARGETARCH
 RUN --network=none <<-EOF

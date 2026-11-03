@@ -1,14 +1,12 @@
 FROM stagex/pallet-python AS build
 ARG VERSION
-COPY --from=stagex/core-py-hatchling . /
-COPY --from=stagex/core-py-pathspec . /
-COPY --from=stagex/core-py-pluggy . /
-COPY --from=stagex/core-py-trove-classifiers . /
+COPY --from=stagex/core-uv . /
+COPY --from=stagex/core-libunwind . /
 ADD fetch/py-dnspython-${VERSION}.tar.gz .
 WORKDIR /dnspython-${VERSION}
 RUN --network=none <<-EOF
 	set -eu
-	gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
+	uv build --offline --no-cache --wheel --out-dir .dist
 	python -m installer --destdir=/rootfs .dist/*.whl
 	install -vDm644 -t /rootfs/usr/share/licenses/py-dnspython LICENSE
 	find /rootfs | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf

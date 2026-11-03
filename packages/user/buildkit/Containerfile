@@ -7,7 +7,7 @@ ENV GOPATH=/cache/go
 ENV GOBIN=${GOPATH}/bin
 ENV PATH=${GOBIN}:${PATH}
 WORKDIR /buildkit-${VERSION}
-RUN <<-EOF
+RUN --network=none <<-EOF
 	set -eux
 	mkdir -p out
 	go build -v \
