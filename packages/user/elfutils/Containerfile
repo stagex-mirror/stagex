@@ -11,10 +11,10 @@ ADD fetch/elfutils-${VERSION}.tar.bz2 .
 WORKDIR /elfutils-${VERSION}
 ENV CFLAGS="-D_GNU_SOURCE -Wno-unaligned-access"
 ENV LDFLAGS="-Wl,-z,stack-size=2097152"
-ADD patches/musl-macros.patch .
+ADD patches/musl-fnmatch.patch .
 WORKDIR /elfutils-${VERSION}
 RUN --network=none <<-EOF
-	patch -p1 < musl-macros.patch
+	patch -p1 < musl-fnmatch.patch
 	autoreconf -vif
 	mkdir build
 	cd build

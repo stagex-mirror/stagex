@@ -1,0 +1,11 @@
+[package]
+name = "glib"
+version = "2.88.3"
+description = "Low-level core library for GNOME projects"
+license = "LGPL-2.1-or-later"
+website = "https://docs.gtk.org/glib/"
+
+[sources.glib]
+hash = "ab24d24e698dfa1e408b7bcdb508f4aafc906185a8b8ce72fdf79bbbdc9b383b"
+file = "glib-{version}.tar.xz"
+mirrors = [ "https://download.gnome.org/sources/glib/{version_major_minor}/{file}",]

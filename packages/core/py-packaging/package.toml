@@ -1,12 +1,12 @@
 [package]
 name = "py-packaging"
-version = "26.2"
+version = "26.3"
 description = "Reusable core utilities for various Python Packaging interoperability specifications"
 license = "Apache-2.0 OR BSD-2-Clause"
 website = "https://github.com/pypa/packaging"
 
 [sources.py-packaging]
-hash = "ff452ff5a3e828ce110190feff1178bb1f2ea2281fa2075aadb987c2fb221661"
+hash = "94edc256424af38762eb31306eed28beb9f0efc50a8837492c9d6fd6004aed79"
 format = "tar.gz"
 file = "py-packaging-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/p/packaging/packaging-{version}.{format}",]

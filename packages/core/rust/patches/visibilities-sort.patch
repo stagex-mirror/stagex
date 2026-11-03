@@ -1,0 +1,15 @@
+diff --git a/compiler/rustc_middle/src/hir/map.rs b/compiler/rustc_middle/src/hir/map.rs
+index e914489..06043b4 100644
+--- a/compiler/rustc_middle/src/hir/map.rs
++++ b/compiler/rustc_middle/src/hir/map.rs
+@@ -1186,7 +1186,15 @@ pub(super) fn crate_hash(tcx: TyCtxt<'_>, _: LocalCrate) -> Svh {
+         // FIXME: Figure out how to remove `visibilities_for_hashing` by hashing visibilities on
+         // the fly in the resolver, storing only their accumulated hash in `ResolverGlobalCtxt`,
+         // and combining it with other hashes here.
+-        resolutions.visibilities_for_hashing.stable_hash(&mut hcx, &mut stable_hasher);
++        let mut visibilities = resolutions.visibilities_for_hashing.clone();
++        visibilities.sort_unstable_by_key(|e| rustc_index::Idx::index(e.0));
++        visibilities.stable_hash(&mut hcx, &mut stable_hasher);
+         with_metavar_spans(|mspans| {
+             mspans.freeze_and_get_read_spans().stable_hash(&mut hcx, &mut stable_hasher);
+         });

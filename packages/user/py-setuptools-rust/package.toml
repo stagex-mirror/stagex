@@ -1,12 +1,12 @@
 [package]
 name = "py-setuptools-rust"
-version = "1.12.1"
+version = "1.13.0"
 description = "Compile and distribute Python extensions written in rust as easily as if they were written in C."
 license = "MIT"
 website = "https://github.com/PyO3/setuptools-rust"
 
 [sources.py-setuptools-rust]
-hash = "0226bbf904ae495fa84ccbadde3b2e663a080e90df406c0be01f9e9c0c49c2ca"
+hash = "7e502b9069fc35804e0a9b249a65ba90679dcd1abd51d397163d8376cad0667d"
 format = "tar.gz"
 file = "py-setuptools-rust-{version}.{format}"
 mirrors = [ "https://github.com/PyO3/setuptools-rust/archive/refs/tags/v{version}.{format}",]

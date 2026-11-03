@@ -76,7 +76,7 @@ get_filename() {
 
 get_signing_fp() {
   file="$1"
-  ($GPGV "$file" >/dev/null || :) 2>&1 | awk '$4 == "key" { print $5 }'
+  (LC_ALL=C $GPGV "$file" >/dev/null || :) 2>&1 | awk '$4 == "key" { print $5 }'
 }
 
 dir_has_no_sig() {

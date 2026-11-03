@@ -1,6 +1,6 @@
 FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
-COPY --from=stagex/user-util-linux . /
+COPY --from=stagex/core-util-linux . /
 ADD fetch/e2fsprogs-${VERSION}.tar.gz .
 WORKDIR /e2fsprogs-${VERSION}
 RUN --network=none <<-EOF

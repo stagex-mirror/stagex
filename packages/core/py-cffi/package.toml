@@ -1,12 +1,12 @@
 [package]
 name = "py-cffi"
-version = "2.0.0"
+version = "2.1.1"
 description = "Foreign Function Interface for Python calling C code"
 license = "MIT"
 website = "https://cffi.readthedocs.org/"
 
 [sources.py-cffi]
-hash = "44d1b5909021139fe36001ae048dbdde8214afa20200eda0f64c068cac5d5529"
+hash = "dd31f52ea1086513bb9df30f8fcee9b8918323ae067a3d5b78bc826a000712be"
 format = "tar.gz"
 file = "py-cffi-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/c/cffi/cffi-{version}.{format}",]

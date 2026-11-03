@@ -1,7 +1,7 @@
 FROM stagex/pallet-clang-gnu-busybox AS build
 ARG VERSION
 COPY --from=stagex/core-openssl . /
-COPY --from=stagex/user-util-linux . /
+COPY --from=stagex/core-util-linux . /
 COPY --from=stagex/user-e2fsprogs . /
 COPY --from=stagex/user-openldap . /
 COPY --from=stagex/user-groff . /

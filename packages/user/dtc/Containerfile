@@ -5,7 +5,7 @@ ADD fetch/dtc-${VERSION}.tar.xz .
 WORKDIR /dtc-${VERSION}
 RUN --network=none <<-EOF
   sed -i s:-Werror::g Makefile
-	sed -i "s|@VERSION@|${VERSION}|" setup.py
+	[ -f setup.py ] && sed -i "s|@VERSION@|${VERSION}|" setup.py || true
   make
   make DESTDIR=/rootfs PREFIX=/usr install
 EOF

@@ -1,12 +1,12 @@
 [package]
 name = "ansible"
-version = "13.6.0"
+version = "14.3.1"
 description = "Official assortment of Ansible collections"
 website = "https://pypi.org/project/ansible/"
 license = "GPL-3.0-or-later"
 
 [sources.ansible]
-hash = "5141552c1bd37f56839eb5b11ef0d93e92391295c97947d507b8daf7265b12b8"
+hash = "98d4ad2b355feac8dc04d99e8377d6cb801b1d58bbfadd6d80534e4607fb5c4d"
 format = "tar.gz"
 file = "ansible-{version}.{format}"
 mirrors = [ "https://pypi.python.org/packages/source/a/ansible/ansible-{version}.{format}",]

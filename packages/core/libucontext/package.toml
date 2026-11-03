@@ -1,11 +1,11 @@
 [package]
 name = "libucontext"
-version = "1.5"
+version = "1.5.2"
 description = "ucontext function implementations"
 license = "ISC"
 website = "https://github.com/kaniini/libucontext"
 
 [sources.libucontext]
-hash = "bf2a80d1bacbf10a9fc686870ace4802524ff1b5fd5ba22a9c51b82a4aa718a0"
+hash = "b7deadd8d3b9fdb66603e420a99fb12ca170654ee319c37a5fa8b100bf0420a5"
 file = "libucontext-{version}.tar.xz"
-mirrors = ["https://distfiles.ariadne.space/libucontext/{file}"]
+mirrors = [ "https://distfiles.ariadne.space/libucontext/{file}",]

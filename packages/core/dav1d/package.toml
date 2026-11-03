@@ -1,0 +1,12 @@
+[package]
+name = "dav1d"
+version = "1.5.4"
+description = "AV1 cross-platform decoder"
+license = "BSD-2-Clause"
+website = "https://www.videolan.org/projects/dav1d.html"
+
+[sources.dav1d]
+hash = "686616b7c69eb88d44459391ab25cac13b6647a3b288835c5784e71c1514a5c5"
+format = "tar.xz"
+file = "dav1d-{version}.{format}"
+mirrors = [ "https://download.videolan.org/pub/videolan/dav1d/{version}/{file}",]

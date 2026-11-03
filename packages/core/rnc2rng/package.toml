@@ -1,0 +1,12 @@
+[package]
+name = "rnc2rng"
+version = "2.7.0"
+description = "Relax NG Compact to Relax NG XML converter"
+license = "MIT"
+website = "https://github.com/djc/rnc2rng"
+
+[sources.rnc2rng]
+hash = "b3764fbc45af65358ea0d04b5db75069a85aeda2f5e3fbb6776d9659c25184c9"
+format = "tar.gz"
+file = "rnc2rng-{version}.{format}"
+mirrors = ["https://github.com/djc/rnc2rng/archive/refs/tags/{version}.{format}"]

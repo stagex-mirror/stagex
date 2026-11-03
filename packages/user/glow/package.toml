@@ -1,12 +1,12 @@
 [package]
 name = "glow"
-version = "2.1.2"
+version = "3.0.0"
 description = "Render markdown on the terminal"
 license = "MIT"
 website = "https://github.com/charmbracelet/glow"
 
 [sources.glow]
-hash = "1b933139da1d08647bf5b3f112cab9548fdc2b40c056c7fa3d84d8706de5265a"
+hash = "18df6f3c09157021366b8c702b5badba405d37dbb42f132353eb50c1b0d3f464"
 format = "tar.gz"
 file = "glow-{version}.{format}"
 mirrors = [

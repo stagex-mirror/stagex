@@ -756,7 +756,10 @@ mirrors = ["https://github.com/westes/flex/releases/download/v2.6.4/{file}"]
 [sources.tcc_0927]
 hash = "de23af78fca90ce32dff2dd45b3432b2334740bb9bb7b05bf60fdbfc396ceb9c"
 file = "tcc-0.9.27.tar.bz2"
-mirrors = ["https://download.savannah.gnu.org/releases/tinycc/{file}"]
+mirrors = [
+  "https://download.savannah.gnu.org/releases/tinycc/{file}",
+  "https://download-mirror.savannah.gnu.org/releases/tinycc/{file}",
+]
 
 [sources.util_linux_2191]
 hash = "d12e0f1be0257eadca6a2653acfb4792571c9f7189ed642873363f9b6797bb51"
@@ -902,7 +905,10 @@ mirrors = [
 [sources.libunistring_0910]
 hash = "eb8fb2c3e4b6e2d336608377050892b54c3c983b646c561836550863003c05d7"
 file = "libunistring-0.9.10.tar.xz"
-mirrors = ["https://ftpmirror.gnu.org/gnu/libunistring/{file}"]
+mirrors = [
+  "https://ftpmirror.gnu.org/gnu/libunistring/{file}",
+  "https://mirrors.kernel.org/gnu/libunistring/{file}",
+]
 
 [sources.gnulib_52a06cb3]
 hash = "009989b81c0bebc5f6550636ed653fbcb237dafc2af5c706f3522087ca571e4d"
@@ -1350,7 +1356,7 @@ hash = "c9297d5bcd7cb43f3dfc2fed5389e948c9312fd962ef6a4ce455cff963ebe4f1"
 file = "gcc-10.4.0.tar.xz"
 mirrors = [
   "https://ftpmirror.gnu.org/gnu/gcc/gcc-10.4.0/{file}",
-  "https://mirrors.kernel.org/gnu/gcc/gcc-13.1.0/{file}",
+  "https://mirrors.kernel.org/gnu/gcc/gcc-10.4.0/{file}",
 ]
 
 [sources.sed_409]

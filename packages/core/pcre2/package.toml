@@ -1,12 +1,12 @@
 [package]
 name = "pcre2"
-version = "10.47"
+version = "10.48"
 description = "Perl Compatible Regular Expressions library"
 license = "BSD-3-Clause"
 website = "https://github.com/PCRE2Project/pcre2"
 
 [sources.pcre2]
-hash = "409c443549b13b216da40049850a32f3e6c57d4224ab11553ab5a786878a158e"
+hash = "38c2a44986d70050f5fc8219901de87fc32784ab271d3c7d4400683a0b76794b"
 format = "tar.gz"
 file = "pcre2-{version}.{format}"
 mirrors = [ "https://github.com/PCRE2Project/pcre2/archive/refs/tags/{file}",]

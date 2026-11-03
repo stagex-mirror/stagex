@@ -1,12 +1,12 @@
 [package]
 name = "libclc"
-version = "22.1.5"
+version = "22.1.8"
 description = "Open source implementation of the library requirements of the OpenCL C programming language"
 license = "Apache-2.0 WITH LLVM-exception"
 website = "https://libclc.llvm.org"
 
 [sources.libclc]
-hash = "7972b87b705a003ce70ab55f9f0fb495d156887cba0eb296d284731139118e2c"
+hash = "922f1817a0df7b1489272d18134ee0087a8b068828f87ac63b9861b1a9965888"
 format = "tar.xz"
 file = "llvm-project-{version}.src.{format}"
-mirrors = [ "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/{file}", ]
+mirrors = [ "https://github.com/llvm/llvm-project/releases/download/llvmorg-{version}/{file}",]
