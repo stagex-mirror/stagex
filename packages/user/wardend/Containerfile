@@ -62,6 +62,15 @@ RUN --network=none <<-EOF
   rm -rf "${T}/deps/warden-*" "${T}/deps/libwarden*" \
          "${T}/.fingerprint/warden-*" "${T}/.fingerprint/wardend-*" 2>/dev/null || true
   rm -f  "${T}/wardend" 2>/dev/null || true
+  # The SAME stale-fingerprint trap for wardend-bridge: a new [[bin]] (the
+  # nginx-srv vhost stand-in) added to the package is not relinked when the
+  # BuildKit layer cache reuses the prior build's target dir (the offline-srv
+  # + dpmon bins from the old build are present, but the new nginx-srv bin
+  # is missing -> the install can't stat it). Clear the package's stale
+  # artifacts so the final binaries are always relinked.
+  rm -rf "${T}/deps/wardend-bridge-*" "${T}/deps/libwardend_bridge*" \
+         "${T}/.fingerprint/wardend-bridge-*" 2>/dev/null || true
+  rm -f  "${T}/nginx-srv" "${T}/offline-srv" "${T}/dpmon" 2>/dev/null || true
   # warden: the gvisor + container moats (the netstack + the xdp-attach
   # container oneshot).
   cargo build \
@@ -176,6 +185,12 @@ RUN --network=none <<-EOF
   # offline-workload stand-in, the nginx concept-proof). The distro COPYs it
   # into the netstack bundle rootfs as a co-tenant of the wire-owning netstack.
   install -vDm755 "$R/offline-srv" /rootfs/usr/bin/offline-srv
+  # nginx-srv: the third bin of the wardend-bridge package (the UDS-only
+  # stock-nginx-workload stand-in, the capstone's second vhost). The distro
+  # COPYs it into the netstack bundle rootfs as a co-tenant of the wire-owning
+  # netstack. Dynamic-musl with the SAME NEEDED as offline-srv (libc.musl +
+  # libunwind), which the bundle rootfs already carries.
+  install -vDm755 "$R/nginx-srv" /rootfs/usr/bin/nginx-srv
   install -vDm755 "$R/xattach"  /rootfs/usr/bin/xattach
   # keepd: the disks daemon (the LUKS2 data plane). Runs HOST-SIDE (the gvisor
   # moat has no block-device passthrough; the LUKS volume is a block device

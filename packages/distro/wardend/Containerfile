@@ -70,6 +70,13 @@ COPY --from=user-wardend /usr/bin/dpmon /usr/bin/dpmon
 # bundle config.json argv). Dynamic musl like bridge/posternd — the musl
 # runtime + libunwind above cover it.
 COPY --from=user-wardend /usr/bin/offline-srv /usr/bin/offline-srv
+# nginx-srv: the stock-nginx-workload stand-in (the capstone's second
+# vhost; a UDS-only HTTP responder that serves the stock nginx default
+# page, no network of its own). Spawned by the seed's `unit` directive
+# (the capstone's second vhost). Dynamic-musl with the SAME NEEDED as
+# offline-srv (libc.musl + libunwind), which the bundle rootfs already
+# carries (core-musl + core-libunwind above).
+COPY --from=user-wardend /usr/bin/nginx-srv /usr/bin/nginx-srv
 # seald: the evidence daemon, an IN-SANDBOX co-tenant of bridge wire (spawned
 # by the bundle config.json argv's --seald-bin). The bundle's linux.devices
 # passes through /dev/tpmrm0 + /dev/tpm0 + /dev/sev-guest so seald's TPM2 /

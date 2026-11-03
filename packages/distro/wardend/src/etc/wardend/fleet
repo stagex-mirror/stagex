@@ -8,3 +8,13 @@
 # backend is a hard error in the spec parser).
 container docker.io/library/udunit:latest name=udunit
 host udunit.lrvick.dev backend=udunit
+# The capstone's second vhost (the stock-nginx concept-proof): the
+# `container` line declares the backend name (the spec parser's hard-error
+# check: a dangling backend is a typo); the `host` line binds the domain
+# to the backend (the SNI -> backend UDS route: /run/wardend/nginx.sock,
+# spawned by the seed's `unit` directive). The second domain gets a cert
+# as well (a second ACME order, the same seald HSM key); both domains
+# are served over HTTPS with real certs (the SNI routes the domain to the
+# backend UDS).
+container docker.io/library/nginx:latest name=nginx
+host nginx.lrvick.dev backend=nginx
