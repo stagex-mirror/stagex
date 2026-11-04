@@ -188,6 +188,30 @@ COPY src/dev-sev-guest /dev/sev-guest
 # requirement) + xdp_loader (xattach execs it). demit is NOT here — box-disk
 # stages it separately as the cpio /init (INIT=/demit/init in the img stage).
 # ============================================================
+# scribe-bundle: the log ring buffer's bundle (a Dir rootfs). The warden's
+# scribe unit (src/warden/units/scribe.hcl) references /images/scribe
+# (config.json + rootfs/). scribed is PURE-STANDALONE (no workspace deps) —
+# its NEEDED is just libc.musl, which core-musl covers (no libunwind, no
+# tss2). The /etc gofer files (resolv.conf/hostname/hosts) are the SAME
+# runsc setupNet gofer O_CREAT rule as the netstack bundle (a readonly
+# rootfs needs them to exist). The devices dir is bind-mounted into the
+# sandbox (the config.json bind), so scribed's write + read sockets land
+# host-visible in /run/wardend/devices.
+FROM scratch AS scribe-bundle
+COPY --from=core-musl . /
+COPY --from=user-wardend /usr/bin/scribed /usr/bin/scribed
+COPY src/rootfs/etc/resolv.conf /etc/resolv.conf
+COPY src/rootfs/etc/hostname /etc/hostname
+COPY src/rootfs/etc/hosts /etc/hosts
+# ============================================================
+# The host rootfs (the erofs /). The OS runs from RAM; this is the
+# boot disk's root.
+#
+# Host-side binaries needed: regentd, wardend, xattach (the units' commands),
+# runsc + the gvisor-bin sidecars (gvisor_sentry is a STRICT runsc
+# requirement) + xdp_loader (xattach execs it). demit is NOT here — box-disk
+# stages it separately as the cpio /init (INIT=/demit/init in the img stage).
+# ============================================================
 FROM scratch AS rootfs
 COPY --from=core-filesystem . /
 COPY --from=core-busybox . /
@@ -265,6 +289,10 @@ COPY --from=user-wardend /etc/wardend/units/ /etc/wardend/units/
 # The netstack bundle: rootfs/ (Stage 0) + config.json (from user-wardend).
 COPY --from=netstack-bundle / /images/netstack/rootfs/
 COPY --from=user-wardend /images/netstack/config.json /images/netstack/config.json
+# The scribe bundle: rootfs/ (the scribe-bundle stage) + config.json (from
+# user-wardend). The warden's scribe unit references /images/scribe.
+COPY --from=scribe-bundle / /images/scribe/rootfs/
+COPY --from=user-wardend /images/scribe/config.json /images/scribe/config.json
 # The wire-acceptance ACME URL (baked, not IMDS — the IMDS user-data fetch
 # is broken on the real wire). The ACME server is the mock ACME instance in
 # the SAME VPC (the VPC's default SG allows intra-VPC traffic; the mock's

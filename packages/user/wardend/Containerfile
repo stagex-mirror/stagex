@@ -223,6 +223,12 @@ RUN --network=none <<-EOF
   # only config.json (the runsc contract) comes from the wardend tree.
   install -vDm644 src/warden/units/xdp-attach.hcl /rootfs/etc/wardend/units/xdp-attach.hcl
   install -vDm644 src/warden/units/netstack.hcl  /rootfs/etc/wardend/units/netstack.hcl
+  # scribe: the log ring buffer (a standalone gvisor unit; one of the
+  # per-daemon sandboxes). The bundle (a Dir rootfs) is /images/scribe
+  # (config.json + rootfs/ carrying scribed + the /etc gofer files). The
+  # devices dir is bind-mounted into the sandbox, so scribed's write +
+  # read sockets land host-visible in /run/wardend/devices.
+  install -vDm644 src/warden/units/scribe.hcl     /rootfs/etc/wardend/units/scribe.hcl
   # keepd: the host-side disks daemon (the LUKS2 data plane; a persist
   # key-ed secret, so the warden broker holds it until the key is unsealed
   # from seald). The container moat (always in the build) is the host-side
@@ -237,6 +243,11 @@ RUN --network=none <<-EOF
   install -vDm644 src/warden/units/dhcp.hcl /rootfs/etc/wardend/units/dhcp.hcl
   install -vDm755 src/warden/guest/usr/libexec/dhcp.sh /rootfs/usr/libexec/dhcp.sh
   install -vDm644 src/warden/guest/netstack/config.json /rootfs/images/netstack/config.json
+  # scribe: the bundle's OCI config (the runsc contract). The distro
+  # assembles /images/scribe (config.json + rootfs/ carrying scribed + the
+  # /etc gofer files), like the netstack bundle. No network (a plain
+  # runsc; the moat's network_flags emits --network=host).
+  install -vDm644 src/warden/guest/scribe/config.json /rootfs/images/scribe/config.json
   # The injection seed (the offline-unit concept-proof): bridge wire reads it
   # at startup and merges its expose/offline directives. The distro COPYs it
   # into the netstack bundle rootfs at /etc/wardend/seed (the default seed
