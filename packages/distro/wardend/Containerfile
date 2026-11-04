@@ -315,7 +315,7 @@ COPY --from=scribe-bundle / /images/scribe/rootfs/
 COPY --from=seald-bundle / /images/seald/rootfs/
 # The posternd bundle: rootfs/ (the posternd-bundle stage) — no config.json
 # (eliminated). The warden's posternd unit references /images/posternd.
-COPY --from=posternd-bundle / /images/posternd/rootfs/
+COPY --from=posternd-bundle / /images/postern/rootfs/
 # NOTE: the per-bundle config.json is ELIMINATED (the unit HCL is the single
 # source of truth for the sandbox spec; the moat renders the OCI spec into
 # a per-unit state dir at spawn time). The pre-baked netstack config.json
