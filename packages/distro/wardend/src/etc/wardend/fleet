@@ -18,3 +18,9 @@ host udunit.lrvick.dev backend=udunit
 # backend UDS).
 container docker.io/library/nginx:latest name=nginx
 host nginx.lrvick.dev backend=nginx
+# The capstone's ACME domain (real LE-issued cert, our own TLS 1.3 ACME
+# client + seald HSM key). Reuses the nginx backend (the SNI route).
+# The `acme=` line is the ACME directory URL — PRODUCTION (the staging
+# edge resets the host's connection; production is the capstone target).
+host acme-test.cautionos.dev backend=nginx
+acme=https://acme-v02.api.letsencrypt.org/directory
