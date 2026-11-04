@@ -15,36 +15,29 @@ FROM stagex/box-cpio AS box-cpio
 # Stage 0: the netstack bundle rootfs
 #
 # The gvisor netstack sandbox's root filesystem (a Dir bundle rootfs, the
-# gvisor moat's only accepted rootfs kind). Its init is `bastiond` (the
-# bundle config.json process.args). The bundle carries:
-#   - bastiond + posternd (the sandbox init + its :22 co-tenant)
-#   - busybox (posternd's interactive shell = /bin/sh; the shell tools)
+# gvisor moat's only accepted rootfs kind). Its init is `bastiond` — the
+# SOLE occupant of the netstack bundle (the per-daemon architecture: seald
+# + posternd are their own gvisor units, each with a dedicated bundle
+# image; dpmon + offline-srv are deleted). The unit HCL is the single
+# source of truth for the sandbox spec (the per-bundle config.json is
+# eliminated — the warden's moat renders the OCI spec into a per-unit
+# state dir at spawn time); this stage assembles ONLY the rootfs/.
+# The bundle carries:
+#   - bastiond (the sandbox init) + nginx-srv (the capstone's second
+#     vhost, spawned by the seed's `unit` directive)
 #   - /etc/{resolv.conf,hostname,hosts} — the P4 gofer rule: runsc setupNet
 #     O_CREATs each bind target on the RO bundle rootfs; a missing target is
 #     a gofer fatal (EROFS) that kills the sandbox. Present placeholders make
 #     the O_CREAT a no-op (the sandbox never reads them; runsc over-mounts).
-#   - /root/.ssh/authorized_keys — posternd's keys_dir (default /root/.ssh)
-#     INSIDE the sandbox. This is the load-bearing SSH key for the netstack
-#     model: bastiond spawns posternd in-sandbox, which reads the BUNDLE's
-#     authorized_keys (NOT the host's — the host /root is a separate tmpfs).
-#     Fail-closed: no valid key here, posternd refuses to build, :22 stays
-#     closed.
+#   - the seed + the fleet spec (the directive + domain-binding sources)
 #
-# The bundle is SHELL-FREE at the init level: the sandbox init (bastiond) and
-# its co-tenants (posternd, offline-srv, seald, dpmon) are all native
-# binaries, and the IMDS LLA-removal window is pure-Rust netlink (no
-# `busybox ip` shell-out). busybox is retained ONLY for posternd's SSH
-# status/logs/interactive-shell (posternd execs /bin/sh -c; it is a separate
-# crate, not part of this change).
-#
-# config.json (the runsc contract: process.args, the /run tmpfs mount, the
-# caps) is NOT here — it ships from the user-wardend package (versioned with
-# the wardend pin) and lands at /images/netstack/config.json in the host
-# rootfs below, alongside this rootfs/ at /images/netstack/rootfs/.
+# The bundle is SHELL-FREE: the sandbox init (bastiond) + nginx-srv are
+# native binaries, and the IMDS LLA-removal window is pure-Rust netlink (no
+# `busybox ip` shell-out). busybox moved to the posternd bundle (posternd's
+# interactive shell = /bin/sh; posternd is now a per-daemon unit).
 # ============================================================
 FROM scratch AS netstack-bundle
-COPY --from=core-busybox . /
-# bastiond + posternd are dynamic musl PIEs (NEEDED: ld-musl, libc.musl,
+# bastiond + nginx-srv are dynamic musl PIEs (NEEDED: ld-musl, libc.musl,
 # libunwind.so.1) — ship the musl runtime + libunwind into the bundle rootfs.
 # Full-package COPY (not single-file): libc.musl-x86_64.so.1 is a relative
 # symlink to ld-musl-x86_64.so.1, and BuildKit's single-file COPY of a
@@ -54,65 +47,30 @@ COPY --from=core-libunwind . /
 COPY --from=user-wardend /usr/bin/bastiond /usr/bin/bastiond
 # NOTE: the `bridge` binary was deleted in wardend 0980f89 (the wire logic
 # was folded into bastiond; the wardend-bridge package now produces only
-# the dpmon + offline-srv co-tenants). No `bridge` COPY here.
-COPY --from=user-wardend /usr/bin/posternd /usr/bin/posternd
-# dpmon: the IN-SANDBOX data-plane liveness probe (a co-tenant of bridge
-# wire, spawned by the bundle config.json argv's --dpmon-bin). It does a
-# real external TCP connect on a bounded cadence and publishes
-# `<epoch> pass|fail` to the host-visible /run/wardend/devices/dp.status
-# (the bind-mounted dir the host-side wardend-watchdog reads).
-# Dynamic-musl with the SAME NEEDED as bridge (libc.musl + libunwind) —
-# the musl runtime + libunwind above cover it (bridge is the known-working
-# sandbox init).
-COPY --from=user-wardend /usr/bin/dpmon /usr/bin/dpmon
-# offline-srv: the offline-workload co-tenant (UDS-only, no network of its
-# own), published to the wire by bridge wire's --expose relay (see the
-# bundle config.json argv). Dynamic musl like bridge/posternd — the musl
-# runtime + libunwind above cover it.
-COPY --from=user-wardend /usr/bin/offline-srv /usr/bin/offline-srv
+# the nginx-srv co-tenant — dpmon + offline-srv are deleted). No `bridge`
+# COPY here.
 # nginx-srv: the stock-nginx-workload stand-in (the capstone's second
 # vhost; a UDS-only HTTP responder that serves the stock nginx default
 # page, no network of its own). Spawned by the seed's `unit` directive
-# (the capstone's second vhost). Dynamic-musl with the SAME NEEDED as
-# offline-srv (libc.musl + libunwind), which the bundle rootfs already
-# carries (core-musl + core-libunwind above).
+# (the capstone's second vhost). Dynamic-musl (libc.musl + libunwind),
+# which the bundle rootfs already carries (core-musl + core-libunwind
+# above).
 COPY --from=user-wardend /usr/bin/nginx-srv /usr/bin/nginx-srv
-# seald: the evidence daemon, an IN-SANDBOX co-tenant of bridge wire (spawned
-# by the bundle config.json argv's --seald-bin). The bundle's linux.devices
-# passes through /dev/tpmrm0 + /dev/tpm0 + /dev/sev-guest so seald's TPM2 /
-# SEV-SNP evidence path works in-sandbox. Dynamic-musl, but its NEEDED is
-# MORE than bridge's: the seal crate depends on bootproof (the wardenctl
-# wire-acceptance path), which links tss2 dynamically — NEEDED:
-# libtss2-tcti-device.so.0 + libtss2-esys.so.0 + libtss2-mu.so.0 (plus
-# libunwind + libc.musl). The tss2 .so's (musl-built, same ABI as seald)
-# + their transitive libtss2-sys.so.1 + libcrypto.so.3 (OpenSSL 3,
-# libtss2-esys's NEEDED) must be in the bundle rootfs or the dynamic
-# linker fails and seald exits before binding its sockets (the crash-loop
-# that reset both :443 attest.sock + :2222 admin.sock). The stale "SAME
-# NEEDED as bridge" comment predates the bootproof path dep.
-COPY --from=user-wardend /usr/bin/seald /usr/bin/seald
-# scribed: the log ring buffer (a co-tenant of the netstack sandbox,
-# spawned by the warden as a standalone unit). It owns the scribe-write
-# + scribe-read sockets in the devices dir. Pure-std (no workspace
-# deps) — its NEEDED is just libc.musl, which core-musl above covers.
-COPY --from=user-wardend /usr/bin/scribed /usr/bin/scribed
-# The tss2 + libcrypto runtime for seald (the NEEDED above). Full-package
-# COPY (not single-file): the .so.0 / .so.1 / .so.3 entries are relative
-# symlinks to the versioned .so, and BuildKit's single-file COPY of a
-# relative symlink fails to resolve the target in the context (the same
-# gotcha as the core-musl COPY above).
-COPY --from=user-tpm2-tss /usr/lib /usr/lib
-COPY --from=core-openssl /usr/lib/libcrypto.so.3 /usr/lib/libcrypto.so.3
-# keepd: the host-side disks daemon (the LUKS2 data plane; a persist
-# key-ed secret WARDEND_LUKS_KEY; the gvisor moat has no block-device
-# passthrough, so keepd runs under the container moat with the host's
-# /dev + CAP_SYS_ADMIN). Shipped by user-wardend (versioned with the
-# wardend pin).
+# NOTE: posternd + seald + scribed are no longer netstack co-tenants — they
+# are per-daemon gvisor units with their own dedicated bundle images (the
+# posternd-bundle + seald-bundle stages below, like scribe-bundle). dpmon +
+# offline-srv are deleted entirely. The tss2 + libcrypto runtime moved to
+# the seald bundle (seald's NEEDED). keepd: the host-side disks daemon
+# (the LUKS2 data plane; a persist key-ed secret WARDEND_LUKS_KEY; the
+# gvisor moat has no block-device passthrough, so keepd runs under the
+# container moat with the host's /dev + CAP_SYS_ADMIN). Shipped by
+# user-wardend (versioned with the wardend pin).
 COPY --from=user-wardend /usr/bin/keepd /usr/bin/keepd
 # The injection seed: bastiond reads /etc/wardend/seed (its default seed
 # path, inside the sandbox) and merges the expose/offline directives. This is
-# the sole directive source now (the bundle config.json argv is bare `bastiond`)
-# — the offline-unit concept-proof: DIRECTIVES, not baked argv, drive
+# the sole directive source now (the netstack unit HCL's process args are
+# bare `bastiond` — the per-bundle config.json is eliminated) — the
+# offline-unit concept-proof: DIRECTIVES, not baked argv, drive
 # the relay. The seed is versioned with the wardend pin (user-wardend ships it
 # at /images/netstack/seed); the AWS user-data path will feed the same grammar
 # from IMDS instead of this baked file.
@@ -128,37 +86,25 @@ COPY src/etc/wardend/fleet /etc/wardend/fleet
 COPY src/rootfs/etc/resolv.conf /etc/resolv.conf
 COPY src/rootfs/etc/hostname /etc/hostname
 COPY src/rootfs/etc/hosts /etc/hosts
-COPY src/rootfs/etc/ssh/authorized_keys /root/.ssh/authorized_keys
-# The netstack bundle config.json bind-mounts the host's forwarded
-# attestation devices (the moat mknods the host's present TPM nodes into
-# {root}/devices at runsc-create time; --character-device-policy=passthrough
-# then opens them as host fds in the sandbox). The GOFER creates every
-# bind-mount DESTINATION with MkdirAll inside the bundle rootfs
-# (runsc/specutils/specutils.go SafeSetupAndMount) BEFORE it binds — and on
-# the wire this rootfs is served off the RO erofs host rootfs, so a mount
-# point whose PARENT (/run/wardend) does not pre-exist makes the gofer
-# fatal (mkdir EROFS -> "cannot read client sync file: EOF" -> runsc
-# create 128). Pre-create the full path here (the P4 precedent for the
-# /etc files the gofer O_CREATs) so the MkdirAll is a no-op on RO erofs.
+# NOTE: /root/.ssh/authorized_keys moved to the posternd bundle (posternd
+# is now a per-daemon unit; the host rootfs keeps its own copy for
+# regentd's host /root/.ssh seeding). The /dev/sev-guest placeholder moved
+# to the seald bundle (seald is now a per-daemon unit; the netstack
+# itself does not touch /dev/sev-guest). The netstack bundle's config.json
+# is eliminated (the unit HCL is the single source of truth for the sandbox
+# spec; the moat renders the OCI spec at spawn time).
+# The unit HCL bind-mounts the host's forwarded attestation devices (the
+# moat mknods the host's present TPM nodes into {root}/devices at runsc-
+# create time; --character-device-policy=passthrough then opens them as host
+# fds in the sandbox). The GOFER creates every bind-mount DESTINATION with
+# MkdirAll inside the bundle rootfs (runsc/specutils/specutils.go
+# SafeSetupAndMount) BEFORE it binds — and on the wire this rootfs is served
+# off the RO erofs host rootfs, so a mount point whose PARENT (/run/wardend)
+# does not pre-exist makes the gofer fatal (mkdir EROFS -> "cannot read
+# client sync file: EOF" -> runsc create 128). Pre-create the full path here
+# (the P4 precedent for the /etc files the gofer O_CREATs) so the MkdirAll
+# is a no-op on RO erofs.
 RUN mkdir -p /run/wardend/devices
-# The config.json ALSO bind-mounts {root}/devices/sev-guest -> /dev/sev-guest
-# (the SEV-SNP device; the xdp-8 char-device ioctl proxy). The gofer O_CREATs
-# the DESTINATION (/dev/sev-guest) inside the bundle rootfs before binding
-# (specutils.go SafeSetupAndMount) — and this rootfs is served RO (the OCI
-# spec's "readonly": true), so a missing destination is EROFS -> "cannot read
-# client sync file: EOF" -> runsc create 128 (the whole netstack refuses to
-# start). Pre-create the destination here (the P4 precedent for the /etc files
-# the gofer O_CREATs) so the O_CREAT is a no-op on RO. On the wire the bind
-# overlays the real char device (seald's sev_present sees a char device ->
-# memory_encryption PROVEN); on QEMU (no SEV-SNP) the moat bind-mounts a
-# placeholder REGULAR file, which is not a char device, so seald degrades
-# honestly to NOT PROVEN (tpm2-only) instead of failing the gate closed.
-# COPY (not RUN touch): BuildKit mounts a fresh /dev devtmpfs into the build
-# container, so `touch /dev/sev-guest` lands on the discarded tmpfs and never
-# reaches the image layer. COPY writes the file into the layer directly.
-# The source is an empty regular file (a placeholder; the bind overlays the
-# real char device on the wire).
-COPY src/dev-sev-guest /dev/sev-guest
 
 # ============================================================
 # Stage 1: the host rootfs (the erofs system image)
@@ -190,12 +136,14 @@ COPY src/dev-sev-guest /dev/sev-guest
 # ============================================================
 # scribe-bundle: the log ring buffer's bundle (a Dir rootfs). The warden's
 # scribe unit (src/warden/units/scribe.hcl) references /images/scribe
-# (config.json + rootfs/). scribed is PURE-STANDALONE (no workspace deps) —
-# its NEEDED is just libc.musl, which core-musl covers (no libunwind, no
-# tss2). The /etc gofer files (resolv.conf/hostname/hosts) are the SAME
-# runsc setupNet gofer O_CREAT rule as the netstack bundle (a readonly
-# rootfs needs them to exist). The devices dir is bind-mounted into the
-# sandbox (the config.json bind), so scribed's write + read sockets land
+# (rootfs/ — the per-bundle config.json is eliminated; the unit HCL is the
+# single source of truth for the sandbox spec, and the moat renders the OCI
+# spec into a per-unit state dir at spawn time). scribed is PURE-STANDALONE
+# (no workspace deps) — its NEEDED is just libc.musl, which core-musl covers
+# (no libunwind, no tss2). The /etc gofer files (resolv.conf/hostname/hosts)
+# are the SAME runsc setupNet gofer O_CREAT rule as the netstack bundle (a
+# readonly rootfs needs them to exist). The devices dir is bind-mounted into
+# the sandbox (the unit HCL's bind), so scribed's write + read sockets land
 # host-visible in /run/wardend/devices.
 FROM scratch AS scribe-bundle
 COPY --from=core-musl . /
@@ -203,6 +151,73 @@ COPY --from=user-wardend /usr/bin/scribed /usr/bin/scribed
 COPY src/rootfs/etc/resolv.conf /etc/resolv.conf
 COPY src/rootfs/etc/hostname /etc/hostname
 COPY src/rootfs/etc/hosts /etc/hosts
+# seald-bundle: the evidence daemon's bundle (a Dir rootfs). The warden's
+# seald unit (src/warden/units/seald.hcl — being created in the wardend repo
+# in parallel; the CURRENT pin does not have it yet) references /images/seald
+# (rootfs/ — the per-bundle config.json is eliminated, same as scribe). The
+# devices dir is bind-mounted into the sandbox (the moat's
+# forward_attestation_devices + the unit HCL's bind), so seald's admin/seal
+# sockets + gate.txt + hsm-pub.hex land host-visible in /run/wardend/devices.
+# Dynamic-musl, but its NEEDED is MORE than bastiond's: the seal crate
+# depends on bootproof (the wardenctl wire-acceptance path), which links tss2
+# dynamically — NEEDED: libtss2-tcti-device.so.0 + libtss2-esys.so.0 +
+# libtss2-mu.so.0 (plus libunwind + libc.musl). The tss2 .so's (musl-built,
+# same ABI as seald) + their transitive libtss2-sys.so.1 + libcrypto.so.3
+# (OpenSSL 3, libtss2-esys's NEEDED) must be in the bundle rootfs or the
+# dynamic linker fails and seald exits before binding its sockets (the
+# crash-loop that reset both :443 attest.sock + :2222 admin.sock).
+# The /dev/sev-guest placeholder (the xdp-8 char-device ioctl proxy) moved
+# here with seald: the unit HCL bind-mounts {root}/devices/sev-guest ->
+# /dev/sev-guest; the gofer O_CREATs the DESTINATION inside the bundle
+# rootfs before binding, and this rootfs is served RO (the OCI spec's
+# "readonly": true), so a missing destination is EROFS -> "cannot read
+# client sync file: EOF" -> runsc create 128. Pre-create it here (COPY, not
+# RUN touch: BuildKit mounts a fresh /dev devtmpfs into the build container,
+# so `touch /dev/sev-guest` lands on the discarded tmpfs and never reaches
+# the image layer). On the wire the bind overlays the real char device
+# (seald's sev_present sees a char device -> memory_encryption PROVEN); on
+# QEMU (no SEV-SNP) the moat bind-mounts a placeholder REGULAR file, which
+# is not a char device, so seald degrades honestly to NOT PROVEN (tpm2-only)
+# instead of failing the gate closed.
+FROM scratch AS seald-bundle
+COPY --from=core-musl . /
+COPY --from=core-libunwind . /
+COPY --from=user-wardend /usr/bin/seald /usr/bin/seald
+# The tss2 + libcrypto runtime for seald (the NEEDED above). Full-package
+# COPY (not single-file): the .so.0 / .so.1 / .so.3 entries are relative
+# symlinks to the versioned .so, and BuildKit's single-file COPY of a
+# relative symlink fails to resolve the target in the context (the same
+# gotcha as the core-musl COPY above).
+COPY --from=user-tpm2-tss /usr/lib /usr/lib
+COPY --from=core-openssl /usr/lib/libcrypto.so.3 /usr/lib/libcrypto.so.3
+COPY src/rootfs/etc/resolv.conf /etc/resolv.conf
+COPY src/rootfs/etc/hostname /etc/hostname
+COPY src/rootfs/etc/hosts /etc/hosts
+COPY src/dev-sev-guest /dev/sev-guest
+# posternd-bundle: the SSH daemon's bundle (a Dir rootfs). The warden's
+# posternd unit (src/warden/units/posternd.hcl — being created in the
+# wardend repo in parallel; the CURRENT pin does not have it yet) references
+# /images/posternd (rootfs/ — the per-bundle config.json is eliminated,
+# same as scribe). The devices dir is bind-mounted into the sandbox (the
+# unit HCL's bind), so posternd's UDS lands host-visible in
+# /run/wardend/devices (the wardenctl face proxies to it; the SSH :22
+# relay routes to it). Dynamic-musl (libc.musl + libunwind), which
+# core-musl + core-libunwind cover. busybox moved here with posternd
+# (posternd execs /bin/sh -c for its interactive shell / status / logs).
+# /root/.ssh/authorized_keys moved here with posternd: posternd's keys_dir
+# (default /root/.ssh) INSIDE the sandbox. This is the load-bearing SSH key
+# for the netstack model: posternd reads the BUNDLE's authorized_keys (NOT
+# the host's — the host /root is a separate tmpfs). Fail-closed: no valid
+# key here, posternd refuses to build, :22 stays closed.
+FROM scratch AS posternd-bundle
+COPY --from=core-busybox . /
+COPY --from=core-musl . /
+COPY --from=core-libunwind . /
+COPY --from=user-wardend /usr/bin/posternd /usr/bin/posternd
+COPY src/rootfs/etc/resolv.conf /etc/resolv.conf
+COPY src/rootfs/etc/hostname /etc/hostname
+COPY src/rootfs/etc/hosts /etc/hosts
+COPY src/rootfs/etc/ssh/authorized_keys /root/.ssh/authorized_keys
 # ============================================================
 # The host rootfs (the erofs /). The OS runs from RAM; this is the
 # boot disk's root.
@@ -238,7 +253,7 @@ COPY --from=user-wardend /usr/bin/wardenctl /usr/bin/wardenctl
 COPY --from=user-wardend /usr/bin/keepd /usr/bin/keepd
 # wardend-watchdog: the data-plane backstop (a SEPARATE process from
 # regentd + the warden; regentd spawns it once at boot). It fires
-# `reboot -f` on a dp-dark >= 540 s (the in-sandbox dpmon status stale)
+# `reboot -f` on a dp-dark >= 540 s (the dp.status file stale)
 # or a stale warden heartbeat >= 600 s, with a persistent reboot-loop
 # guard on the raw disk tail. Dynamic-musl like regentd (libc.musl +
 # libunwind) — the musl runtime + libunwind above cover it.
@@ -286,25 +301,27 @@ COPY --from=user-gvisor /usr/bin/gvisor-bin /usr/bin/gvisor-bin
 COPY --from=user-gvisor /usr/bin/xdp_loader /usr/bin/xdp_loader
 # The unit set (versioned with the wardend pin, shipped by user-wardend).
 COPY --from=user-wardend /etc/wardend/units/ /etc/wardend/units/
-# The netstack bundle: rootfs/ (Stage 0) + config.json (from user-wardend).
+# The netstack bundle: rootfs/ (Stage 0) — the per-bundle config.json is
+# eliminated (the unit HCL is the single source of truth for the sandbox
+# spec; the moat renders the OCI spec into a per-unit state dir at spawn
+# time), so there is no config.json COPY.
 COPY --from=netstack-bundle / /images/netstack/rootfs/
-COPY --from=user-wardend /images/netstack/config.json /images/netstack/config.json
-# The scribe bundle: rootfs/ (the scribe-bundle stage) + config.json (from
-# user-wardend). The warden's scribe unit references /images/scribe.
+# The scribe bundle: rootfs/ (the scribe-bundle stage) — no config.json
+# (eliminated, same as the netstack bundle). The warden's scribe unit
+# references /images/scribe.
 COPY --from=scribe-bundle / /images/scribe/rootfs/
-COPY --from=user-wardend /images/scribe/config.json /images/scribe/config.json
-# The wire-acceptance ACME URL (baked, not IMDS — the IMDS user-data fetch
-# is broken on the real wire). The ACME server is the mock ACME instance in
-# the SAME VPC (the VPC's default SG allows intra-VPC traffic; the mock's
-# :14001 is reachable from the wardend's private IP). The client's
-# HttpTransport is plain HTTP (the split_url rejects non-http schemes), so the
-# mock speaks plain HTTP end-to-end (the Location headers are plain-HTTP
-# URLs). The trailing slash is REQUIRED: the client builds the resource URLs
-# by concatenating the directory URL + the resource name (e.g.
-# `{directory}new-account`). This is the user-wardend config.json with the
-# `--acme-url` argv appended (a pre-baked COPY, not a RUN — the host rootfs
-# stage is FROM scratch + busybox-only, so there is no python3 to patch it).
-COPY src/netstack-config.json /images/netstack/config.json
+# The seald bundle: rootfs/ (the seald-bundle stage) — no config.json
+# (eliminated). The warden's seald unit references /images/seald.
+COPY --from=seald-bundle / /images/seald/rootfs/
+# The posternd bundle: rootfs/ (the posternd-bundle stage) — no config.json
+# (eliminated). The warden's posternd unit references /images/posternd.
+COPY --from=posternd-bundle / /images/posternd/rootfs/
+# NOTE: the pre-baked netstack config.json (src/netstack-config.json, with
+# the --acme-url argv appended) is ELIMINATED — the per-bundle config.json
+# is gone (the unit HCL is the single source of truth for the sandbox spec;
+# the moat renders the OCI spec into a per-unit state dir at spawn time).
+# The ACME URL + the --imds flag now live in the netstack unit HCL (the
+# wardend repo; the pin bump lands it).
 # The baked admin key (regentd seeds host /root/.ssh from this; the netstack
 # model's posternd reads the BUNDLE's copy, but the host copy keeps regentd
 # quiet and serves the postern-sandbox topology if used).

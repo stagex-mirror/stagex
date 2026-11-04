@@ -64,10 +64,11 @@ RUN --network=none <<-EOF
   rm -f  "${T}/wardend" 2>/dev/null || true
   # The SAME stale-fingerprint trap for wardend-bridge: a new [[bin]] (the
   # nginx-srv vhost stand-in) added to the package is not relinked when the
-  # BuildKit layer cache reuses the prior build's target dir (the offline-srv
-  # + dpmon bins from the old build are present, but the new nginx-srv bin
-  # is missing -> the install can't stat it). Clear the package's stale
-  # artifacts so the final binaries are always relinked.
+  # BuildKit layer cache reuses the prior build's target dir (the old
+  # build's bins are present, but the new nginx-srv bin is missing -> the
+  # install can't stat it). Clear the package's stale artifacts so the
+  # final binaries are always relinked. (dpmon + offline-srv are deleted;
+  # their stale artifacts are cleared too, harmlessly.)
   rm -rf "${T}/deps/wardend-bridge-*" "${T}/deps/libwardend_bridge*" \
          "${T}/.fingerprint/wardend-bridge-*" 2>/dev/null || true
   rm -f  "${T}/nginx-srv" "${T}/offline-srv" "${T}/dpmon" 2>/dev/null || true
@@ -80,7 +81,7 @@ RUN --network=none <<-EOF
     --features gvisor,container \
     -p warden --bin wardend
   # regent (regentd + wardend-watchdog), postern (posternd),
-  # wardend-bridge (bridge + dpmon + offline-srv), xattach.
+  # wardend-bridge (nginx-srv), xattach.
   cargo build \
     --frozen \
     --release \
@@ -121,8 +122,8 @@ RUN --network=none <<-EOF
     --release \
     --target "${ARCH}-unknown-linux-musl" \
     -p wardenctl
-  # scribe (scribed): the log ring buffer. A standalone gvisor unit (a
-  # co-tenant of the netstack sandbox, like seald/posternd/offline-srv).
+  # scribe (scribed): the log ring buffer. A PER-DAEMON gvisor unit (one of
+  # the per-daemon sandboxes, like seald + posternd).
   # It is PURE-STANDALONE (no workspace deps, no feature flags) — it builds
   # with the SAME frozen lock but WITHOUT the gvisor/container features
   # (those are warden's, not scribe's; a `--features warden/gvisor` form
@@ -138,7 +139,7 @@ RUN --network=none <<-EOF
   install -vDm755 "$R/regentd"  /rootfs/usr/bin/regentd
   # wardend-watchdog: the data-plane backstop (a SEPARATE process from
   # regentd + the warden; regentd spawns it once at boot). It fires
-  # `reboot -f` on a dp-dark >= 540 s (the in-sandbox dpmon status stale)
+  # `reboot -f` on a dp-dark >= 540 s (the dp.status file stale)
   # or a stale warden heartbeat >= 600 s, with a persistent reboot-loop
   # guard on the raw disk tail. Dynamic-musl like regentd (libc.musl +
   # libunwind), which the host rootfs already carries.
@@ -166,47 +167,43 @@ RUN --network=none <<-EOF
   # recover without a reboot. Dynamic-musl like regentd (libc.musl +
   # libunwind), which the host rootfs already carries.
   install -vDm755 "$R/wardend-xdpgone" /rootfs/usr/bin/wardend-xdpgone
+  # posternd: the SSH daemon (a PER-DAEMON gvisor unit — its own dedicated
+  # bundle image, like scribe). The distro COPYs it into the posternd
+  # bundle rootfs (/images/posternd/rootfs/). Dynamic-musl (libc.musl +
+  # libunwind), which the posternd-bundle stage carries.
   install -vDm755 "$R/posternd" /rootfs/usr/bin/posternd
   # NOTE: the `bridge` binary was deleted in wardend 0980f89 (the wire logic
   # was folded into bastiond; the wardend-bridge package now produces only
-  # the dpmon + offline-srv co-tenants). No `bridge` install here.
-  # bastiond: the sandbox init (replaces `bridge wire` as the bundle's
-  # config.json process.args). Dynamic-musl with the SAME NEEDED as bridge
-  # (libc.musl + libunwind), which the bundle rootfs already carries
-  # (core-musl + core-libunwind). The distro COPYs it into the netstack
-  # bundle rootfs; it is the sandbox init, not a host-side binary.
+  # the nginx-srv co-tenant — dpmon + offline-srv are deleted). No `bridge`
+  # install here.
+  # bastiond: the sandbox init — the SOLE occupant of the netstack bundle
+  # (the per-daemon architecture: seald + posternd are their own gvisor
+  # units, each with a dedicated bundle image). Dynamic-musl (libc.musl +
+  # libunwind), which the bundle rootfs already carries (core-musl +
+  # core-libunwind). The distro COPYs it into the netstack bundle rootfs;
+  # it is the sandbox init, not a host-side binary.
   install -vDm755 "$R/bastiond" /rootfs/usr/bin/bastiond
-  # dpmon: the IN-SANDBOX data-plane liveness probe (a co-tenant of
-  # bridge wire, spawned by the bundle config.json argv's --dpmon-bin).
-  # It does a real external TCP connect on a bounded cadence and publishes
-  # `<epoch> pass|fail` to the host-visible /run/wardend/devices/dp.status
-  # (the bind-mounted dir the host-side wardend-watchdog reads).
-  # Dynamic-musl with the SAME NEEDED as bridge (libc.musl + libunwind),
-  # which the bundle rootfs already carries (core-musl + core-libunwind).
-  install -vDm755 "$R/dpmon"    /rootfs/usr/bin/dpmon
-  # seald: the evidence daemon (the seal package's bin). The distro COPYs it
-  # into the netstack bundle rootfs as a co-tenant of the wire-owning netstack.
-  # Dynamic-musl with the SAME NEEDED as bridge (libc.musl + libunwind), which
-  # the bundle rootfs already carries (core-musl + core-libunwind).
+  # seald: the evidence daemon (the seal package's bin). A PER-DAEMON
+  # gvisor unit (its own dedicated bundle image, like scribe). The distro
+  # COPYs it into the seald bundle rootfs (/images/seald/rootfs/).
+  # Dynamic-musl, but its NEEDED is MORE than bastiond's: the seal crate
+  # depends on bootproof, which links tss2 dynamically (libtss2-* +
+  # libcrypto.so.3) — the seald-bundle stage carries those.
   install -vDm755 "$R/seald"    /rootfs/usr/bin/seald
-  # scribed: the log ring buffer (the scribe package's bin). The distro
-  # COPYs it into the netstack bundle rootfs as a co-tenant of the
-  # wire-owning netstack. Pure-std (no workspace deps) — its NEEDED is
-  # just libc.musl (the bundle rootfs already carries core-musl).
+  # scribed: the log ring buffer (the scribe package's bin). A PER-DAEMON
+  # gvisor unit (its own dedicated bundle image). The distro COPYs it into
+  # the scribe bundle rootfs (/images/scribe/rootfs/). Pure-std (no
+  # workspace deps) — its NEEDED is just libc.musl.
   install -vDm755 "$R/scribed"  /rootfs/usr/bin/scribed
   # wardenctl: the host-side admin client (the wardenctl target's client
   # side). Dynamic-musl with the SAME NEEDED as the other host binaries
   # (libc.musl + libunwind), which the host rootfs already carries.
   install -vDm755 "$R/wardenctl" /rootfs/usr/bin/wardenctl
-  # offline-srv: the second bin of the wardend-bridge package (the UDS-only
-  # offline-workload stand-in, the nginx concept-proof). The distro COPYs it
-  # into the netstack bundle rootfs as a co-tenant of the wire-owning netstack.
-  install -vDm755 "$R/offline-srv" /rootfs/usr/bin/offline-srv
-  # nginx-srv: the third bin of the wardend-bridge package (the UDS-only
+  # nginx-srv: the bin of the wardend-bridge package (the UDS-only
   # stock-nginx-workload stand-in, the capstone's second vhost). The distro
-  # COPYs it into the netstack bundle rootfs as a co-tenant of the wire-owning
-  # netstack. Dynamic-musl with the SAME NEEDED as offline-srv (libc.musl +
-  # libunwind), which the bundle rootfs already carries.
+  # COPYs it into the netstack bundle rootfs (spawned by the seed's `unit`
+  # directive). Dynamic-musl (libc.musl + libunwind), which the netstack
+  # bundle rootfs already carries.
   install -vDm755 "$R/nginx-srv" /rootfs/usr/bin/nginx-srv
   install -vDm755 "$R/xattach"  /rootfs/usr/bin/xattach
   # keepd: the disks daemon (the LUKS2 data plane). Runs HOST-SIDE (the gvisor
@@ -216,19 +213,41 @@ RUN --network=none <<-EOF
   # migrates the PCR policy (seed -> full), and mounts it at /home.
   # Static-musl like the other host-side binaries.
   install -vDm755 "$R/keepd"    /rootfs/usr/bin/keepd
-  # The unit set + the netstack bundle's OCI config, shipped alongside the
-  # binaries so they are versioned with the wardend pin (single source of
-  # truth: the distro COPYs these, it does not carry its own copy). The
-  # bundle rootfs (bridge/posternd/busybox/etc) is assembled by the distro;
-  # only config.json (the runsc contract) comes from the wardend tree.
+  # The unit set, shipped alongside the binaries so they are versioned with
+  # the wardend pin (single source of truth: the distro COPYs these, it does
+  # not carry its own copy). The unit HCL is the single source of truth for
+  # the sandbox spec (the per-bundle config.json is eliminated — the warden's
+  # moat renders the OCI spec into a per-unit state dir at spawn time); the
+  # bundle images carry ONLY rootfs/ (binary + musl libs + /etc gofer
+  # files), assembled by the distro.
   install -vDm644 src/warden/units/xdp-attach.hcl /rootfs/etc/wardend/units/xdp-attach.hcl
   install -vDm644 src/warden/units/netstack.hcl  /rootfs/etc/wardend/units/netstack.hcl
   # scribe: the log ring buffer (a standalone gvisor unit; one of the
   # per-daemon sandboxes). The bundle (a Dir rootfs) is /images/scribe
-  # (config.json + rootfs/ carrying scribed + the /etc gofer files). The
-  # devices dir is bind-mounted into the sandbox, so scribed's write +
-  # read sockets land host-visible in /run/wardend/devices.
+  # (rootfs/ carrying scribed + the /etc gofer files). The devices dir is
+  # bind-mounted into the sandbox, so scribed's write + read sockets land
+  # host-visible in /run/wardend/devices.
   install -vDm644 src/warden/units/scribe.hcl     /rootfs/etc/wardend/units/scribe.hcl
+  # seald: the evidence daemon (a standalone gvisor unit; one of the
+  # per-daemon sandboxes). The bundle (a Dir rootfs) is /images/seald
+  # (rootfs/ carrying seald + the /etc gofer files + the tss2 runtime +
+  # the /dev/sev-guest placeholder). The devices dir is bind-mounted into
+  # the sandbox, so seald's admin/seal sockets + gate.txt + hsm-pub.hex
+  # land host-visible in /run/wardend/devices. NOTE: the unit HCL is being
+  # created in the wardend repo in parallel; the CURRENT pin (9ebd8d4)
+  # does not have src/warden/units/seald.hcl yet — this install fails
+  # until the pin bump lands.
+  install -vDm644 src/warden/units/seald.hcl     /rootfs/etc/wardend/units/seald.hcl
+  # posternd: the SSH daemon (a standalone gvisor unit; one of the
+  # per-daemon sandboxes). The bundle (a Dir rootfs) is /images/posternd
+  # (rootfs/ carrying posternd + the /etc gofer files + the authorized
+  # keys at /root/.ssh — posternd's keys_dir INSIDE the sandbox; the host
+  # /root is a separate tmpfs). The devices dir is bind-mounted into the
+  # sandbox, so posternd's UDS lands host-visible in /run/wardend/devices.
+  # NOTE: same as seald — the CURRENT pin does not have
+  # src/warden/units/posternd.hcl yet; this install fails until the pin
+  # bump lands.
+  install -vDm644 src/warden/units/posternd.hcl /rootfs/etc/wardend/units/posternd.hcl
   # keepd: the host-side disks daemon (the LUKS2 data plane; a persist
   # key-ed secret, so the warden broker holds it until the key is unsealed
   # from seald). The container moat (always in the build) is the host-side
@@ -242,16 +261,15 @@ RUN --network=none <<-EOF
   # lease-apply script as the -s handler. xdp-attach gates on its sentinel.
   install -vDm644 src/warden/units/dhcp.hcl /rootfs/etc/wardend/units/dhcp.hcl
   install -vDm755 src/warden/guest/usr/libexec/dhcp.sh /rootfs/usr/libexec/dhcp.sh
-  install -vDm644 src/warden/guest/netstack/config.json /rootfs/images/netstack/config.json
-  # scribe: the bundle's OCI config (the runsc contract). The distro
-  # assembles /images/scribe (config.json + rootfs/ carrying scribed + the
-  # /etc gofer files), like the netstack bundle. No network (a plain
-  # runsc; the moat's network_flags emits --network=host).
-  install -vDm644 src/warden/guest/scribe/config.json /rootfs/images/scribe/config.json
-  # The injection seed (the offline-unit concept-proof): bridge wire reads it
+  # NOTE: the per-bundle config.json files are ELIMINATED (the unit HCL is
+  # the single source of truth for the sandbox spec; the warden's moat
+  # renders the OCI spec into a per-unit state dir at spawn time). No
+  # /images/<name>/config.json installs here — the bundle images carry ONLY
+  # rootfs/ (the distro assembles them).
+  # The injection seed (the offline-unit concept-proof): bastiond reads it
   # at startup and merges its expose/offline directives. The distro COPYs it
   # into the netstack bundle rootfs at /etc/wardend/seed (the default seed
-  # path). Versioned with the wardend pin, like config.json.
+  # path). Versioned with the wardend pin.
   install -vDm644 src/warden/guest/netstack/seed /rootfs/images/netstack/seed
 EOF
 FROM stagex/core-filesystem AS package
