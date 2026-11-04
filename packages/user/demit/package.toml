@@ -11,13 +11,27 @@ name = "demit"
 # carries). The `nolibc` feature gates src/main.rs (the init binary); the
 # static build links no libc, so it is the initramfs init the kernel execs
 # before any rootfs exists.
-version = "c8f452c591fb8d1b469f072ede11d83d80bd6274"
+version = "e8ab7e86cf87ba06f2f2e7cdd2fb65760754c0f8"
 description = "no_std/nolibc boot-to-execve init (nit replacement): erofs unpack + pivot, then execve init.target as PID 1"
 license = "MIT"
 website = "https://codeberg.org/lrvick/wardend"
 
 [sources.wardend]
-hash = "03e432103986c312b66ff2bbe7c9ec57634152fba9d9c8f0ef2c6fddfc58c758"
+hash = "050235aeed5aed78bb69f03142e4aad5fb9f6565cda4eb4d6e99dd35745f72b4"
 format = "tar.gz"
 file = "wardend-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/wardend/archive/{version}.{format}"]
+
+# bootproof: the path dep for the seal + wardenctl crates (the bootproof
+# generic engine + the bootproof-platform-wardend verifier). demit itself
+# does NOT depend on it, but `cargo build -p demit` loads the WHOLE
+# workspace manifest (which includes src/seal -> bootproof), so the path
+# dep `../../../bootproof/crates/<crate>` (which resolves to
+# /bootproof/crates/<crate> in the archive extraction) must exist. Same
+# archive as user-wardend.
+[sources.bootproof]
+version = "6d196ad3018edda9b082e8b314c1463a09703953"
+hash = "97247cc86076fda1631171aad2e3e4abed326e98bf0639927868f26c9b378c66"
+format = "tar.gz"
+file = "bootproof-{version}.{format}"
+mirrors = ["https://codeberg.org/lrvick/bootproof/archive/{version}.{format}"]
