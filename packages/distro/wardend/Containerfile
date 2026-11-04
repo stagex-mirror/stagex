@@ -91,6 +91,11 @@ COPY --from=user-wardend /usr/bin/nginx-srv /usr/bin/nginx-srv
 # that reset both :443 attest.sock + :2222 admin.sock). The stale "SAME
 # NEEDED as bridge" comment predates the bootproof path dep.
 COPY --from=user-wardend /usr/bin/seald /usr/bin/seald
+# scribed: the log ring buffer (a co-tenant of the netstack sandbox,
+# spawned by the warden as a standalone unit). It owns the scribe-write
+# + scribe-read sockets in the devices dir. Pure-std (no workspace
+# deps) — its NEEDED is just libc.musl, which core-musl above covers.
+COPY --from=user-wardend /usr/bin/scribed /usr/bin/scribed
 # The tss2 + libcrypto runtime for seald (the NEEDED above). Full-package
 # COPY (not single-file): the .so.0 / .so.1 / .so.3 entries are relative
 # symlinks to the versioned .so, and BuildKit's single-file COPY of a

@@ -121,6 +121,18 @@ RUN --network=none <<-EOF
     --release \
     --target "${ARCH}-unknown-linux-musl" \
     -p wardenctl
+  # scribe (scribed): the log ring buffer. A standalone gvisor unit (a
+  # co-tenant of the netstack sandbox, like seald/posternd/offline-srv).
+  # It is PURE-STANDALONE (no workspace deps, no feature flags) — it builds
+  # with the SAME frozen lock but WITHOUT the gvisor/container features
+  # (those are warden's, not scribe's; a `--features warden/gvisor` form
+  # fails). The write socket (SOCK_DGRAM, one bounded datagram per line) +
+  # the read socket (stream UDS, framed) both land in the devices dir.
+  cargo build \
+    --frozen \
+    --release \
+    --target "${ARCH}-unknown-linux-musl" \
+    -p scribe
   R="${T}"
   install -vDm755 "$R/wardend"  /rootfs/usr/bin/wardend
   install -vDm755 "$R/regentd"  /rootfs/usr/bin/regentd
@@ -177,6 +189,11 @@ RUN --network=none <<-EOF
   # Dynamic-musl with the SAME NEEDED as bridge (libc.musl + libunwind), which
   # the bundle rootfs already carries (core-musl + core-libunwind).
   install -vDm755 "$R/seald"    /rootfs/usr/bin/seald
+  # scribed: the log ring buffer (the scribe package's bin). The distro
+  # COPYs it into the netstack bundle rootfs as a co-tenant of the
+  # wire-owning netstack. Pure-std (no workspace deps) — its NEEDED is
+  # just libc.musl (the bundle rootfs already carries core-musl).
+  install -vDm755 "$R/scribed"  /rootfs/usr/bin/scribed
   # wardenctl: the host-side admin client (the wardenctl target's client
   # side). Dynamic-musl with the SAME NEEDED as the other host binaries
   # (libc.musl + libunwind), which the host rootfs already carries.
