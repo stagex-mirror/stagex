@@ -36,7 +36,7 @@ FROM stagex/box-cpio AS box-cpio
 # `busybox ip` shell-out). busybox moved to the posternd bundle (posternd's
 # interactive shell = /bin/sh; posternd is now a per-daemon unit).
 # ============================================================
-FROM scratch AS netstack-bundle
+FROM scratch AS bastiond-bundle
 # bastiond + nginx-srv are dynamic musl PIEs (NEEDED: ld-musl, libc.musl,
 # libunwind.so.1) — ship the musl runtime + libunwind into the bundle rootfs.
 # Full-package COPY (not single-file): libc.musl-x86_64.so.1 is a relative
@@ -74,7 +74,7 @@ COPY --from=user-wardend /usr/bin/keepd /usr/bin/keepd
 # the relay. The seed is versioned with the wardend pin (user-wardend ships it
 # at /images/netstack/seed); the AWS user-data path will feed the same grammar
 # from IMDS instead of this baked file.
-COPY --from=user-wardend /images/netstack/seed /etc/wardend/seed
+COPY --from=user-wardend /images/bastiond/seed /etc/wardend/seed
 # The container-fleet spec (the wire-acceptance fleet; baked, not IMDS —
 # the IMDS user-data fetch is broken on the real wire (the per-attempt LLA
 # re-add fails with EOPNOTSUPP -95), so the fleet spec is baked into the
@@ -305,7 +305,7 @@ COPY --from=user-wardend /etc/wardend/units/ /etc/wardend/units/
 # eliminated (the unit HCL is the single source of truth for the sandbox
 # spec; the moat renders the OCI spec into a per-unit state dir at spawn
 # time), so there is no config.json COPY.
-COPY --from=netstack-bundle / /images/netstack/rootfs/
+COPY --from=bastiond-bundle / /images/bastiond/rootfs/
 # The scribe bundle: rootfs/ (the scribe-bundle stage) — no config.json
 # (eliminated, same as the netstack bundle). The warden's scribe unit
 # references /images/scribe.
@@ -316,12 +316,12 @@ COPY --from=seald-bundle / /images/seald/rootfs/
 # The posternd bundle: rootfs/ (the posternd-bundle stage) — no config.json
 # (eliminated). The warden's posternd unit references /images/posternd.
 COPY --from=posternd-bundle / /images/posternd/rootfs/
-# NOTE: the pre-baked netstack config.json (src/netstack-config.json, with
-# the --acme-url argv appended) is ELIMINATED — the per-bundle config.json
-# is gone (the unit HCL is the single source of truth for the sandbox spec;
-# the moat renders the OCI spec into a per-unit state dir at spawn time).
-# The ACME URL + the --imds flag now live in the netstack unit HCL (the
-# wardend repo; the pin bump lands it).
+# NOTE: the per-bundle config.json is ELIMINATED (the unit HCL is the single
+# source of truth for the sandbox spec; the moat renders the OCI spec into
+# a per-unit state dir at spawn time). The pre-baked netstack config.json
+# (src/netstack-config.json, with the --acme-url argv appended) + its QEMU
+# twin were DELETED — the ACME URL + the --imds flag now live in the
+# netstack unit HCL (the wardend repo; the pin bump lands it).
 # The baked admin key (regentd seeds host /root/.ssh from this; the netstack
 # model's posternd reads the BUNDLE's copy, but the host copy keeps regentd
 # quiet and serves the postern-sandbox topology if used).

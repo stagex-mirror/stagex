@@ -221,7 +221,7 @@ RUN --network=none <<-EOF
   # bundle images carry ONLY rootfs/ (binary + musl libs + /etc gofer
   # files), assembled by the distro.
   install -vDm644 src/warden/units/xdp-attach.hcl /rootfs/etc/wardend/units/xdp-attach.hcl
-  install -vDm644 src/warden/units/netstack.hcl  /rootfs/etc/wardend/units/netstack.hcl
+  install -vDm644 src/warden/units/bastiond.hcl /rootfs/etc/wardend/units/bastiond.hcl
   # scribe: the log ring buffer (a standalone gvisor unit; one of the
   # per-daemon sandboxes). The bundle (a Dir rootfs) is /images/scribe
   # (rootfs/ carrying scribed + the /etc gofer files). The devices dir is
@@ -233,10 +233,7 @@ RUN --network=none <<-EOF
   # (rootfs/ carrying seald + the /etc gofer files + the tss2 runtime +
   # the /dev/sev-guest placeholder). The devices dir is bind-mounted into
   # the sandbox, so seald's admin/seal sockets + gate.txt + hsm-pub.hex
-  # land host-visible in /run/wardend/devices. NOTE: the unit HCL is being
-  # created in the wardend repo in parallel; the CURRENT pin (9ebd8d4)
-  # does not have src/warden/units/seald.hcl yet — this install fails
-  # until the pin bump lands.
+  # land host-visible in /run/wardend/devices.
   install -vDm644 src/warden/units/seald.hcl     /rootfs/etc/wardend/units/seald.hcl
   # posternd: the SSH daemon (a standalone gvisor unit; one of the
   # per-daemon sandboxes). The bundle (a Dir rootfs) is /images/posternd
@@ -270,7 +267,7 @@ RUN --network=none <<-EOF
   # at startup and merges its expose/offline directives. The distro COPYs it
   # into the netstack bundle rootfs at /etc/wardend/seed (the default seed
   # path). Versioned with the wardend pin.
-  install -vDm644 src/warden/guest/netstack/seed /rootfs/images/netstack/seed
+  install -vDm644 src/warden/guest/bastiond/seed /rootfs/images/bastiond/seed
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
