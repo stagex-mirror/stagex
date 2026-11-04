@@ -31,7 +31,7 @@ license = "MIT OR Apache-2.0"
 website = "https://codeberg.org/lrvick/wardend"
 
 [sources.wardend]
-hash = "7f767c658fa80c20dc8e43883f19482f2184d638aa054c0ae04d58794fbccd09"
+hash = "f4de535f21c26e420d85e090839e2c7fc73643bba5ce1b5a7eb21b1194434291"
 format = "tar.gz"
 file = "wardend-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/wardend/archive/{version}.{format}"]
