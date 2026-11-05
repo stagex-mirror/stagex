@@ -11,13 +11,13 @@ name = "demit"
 # carries). The `nolibc` feature gates src/main.rs (the init binary); the
 # static build links no libc, so it is the initramfs init the kernel execs
 # before any rootfs exists.
-version = "3ea7e7f2a2da2ebb2768ae0490110454bd0940f8"
+version = "7d3f4d69a426c25128db7f95325dd90081d4cf6b"
 description = "no_std/nolibc boot-to-execve init (nit replacement): erofs unpack + pivot, then execve init.target as PID 1"
 license = "MIT"
 website = "https://codeberg.org/lrvick/wardend"
 
 [sources.wardend]
-hash = "7c1921c6aa999da5b366bc89744855651949243968e9c3ec50645a2e88a8eb20"
+hash = "47e6a20dcdacdfb57b9958587ae7365df2243d671e18ca9d65eed91703e55161"
 format = "tar.gz"
 file = "wardend-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/wardend/archive/{version}.{format}"]
