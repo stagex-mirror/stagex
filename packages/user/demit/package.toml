@@ -11,7 +11,7 @@ name = "demit"
 # carries). The `nolibc` feature gates src/main.rs (the init binary); the
 # static build links no libc, so it is the initramfs init the kernel execs
 # before any rootfs exists.
-version = "d5b13c96855fb79091cff22e0da9456b25f3e98a"
+version = "906a61474f3b84a9ede95e6ea940f26a534a1abb"
 description = "no_std/nolibc boot-to-execve init (nit replacement): erofs unpack + pivot, then execve init.target as PID 1"
 license = "MIT"
 website = "https://codeberg.org/lrvick/wardend"
