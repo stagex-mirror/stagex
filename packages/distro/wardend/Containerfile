@@ -149,6 +149,12 @@ COPY src/run/wardend/devices/.keep /run/wardend/devices/.keep
 # host-visible in /run/wardend/devices.
 FROM scratch AS scribe-bundle
 COPY --from=core-musl . /
+# scribed is dynamic-musl and NEEDS libunwind (_Unwind_* symbols: the musl
+# loader reports "symbol not found" for _Unwind_RaiseException et al. without
+# libunwind.so.1 on the bundle rootfs). The pin drifted from the
+# "pure-standalone, libc.musl only" assumption above — mirror the other
+# dynamic-musl bundles (posternd/seald/bastiond) and ship core-libunwind.
+COPY --from=core-libunwind . /
 COPY --from=user-wardend /usr/bin/scribed /usr/bin/scribed
 COPY src/rootfs/etc/resolv.conf /etc/resolv.conf
 COPY src/rootfs/etc/hostname /etc/hostname
