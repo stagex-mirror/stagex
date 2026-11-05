@@ -362,13 +362,6 @@ COPY src/rootfs/etc/ssh/authorized_keys /etc/ssh/authorized_keys
 COPY src/rootfs/etc/resolv.conf /etc/resolv.conf
 COPY src/rootfs/etc/hostname /etc/hostname
 COPY src/rootfs/etc/hosts /etc/hosts
-# DEV escape hatch: the stock-runsc forensic probe (root co-tenant script) +
-# its unit. The script runs as a container-moat co-tenant and forces its output
-# to /dev/console, so it survives the wedged gvisor units. Remove once the
-# gvisor start wedge is root-caused.
-COPY src/gvisor-probe.sh /usr/libexec/gvisor-probe.sh
-RUN chmod +x /usr/libexec/gvisor-probe.sh
-COPY src/rootfs/etc/wardend/units/gvisor-probe.hcl /etc/wardend/units/gvisor-probe.hcl
 # /oldroot: demit's pivot_root put_old target (pivot_root(c"/mnt",
 # c"/mnt/oldroot")) — it must EXIST inside the erofs image (the pivot moves
 # the old root here). Empty dir; git cannot track empty dirs, so mkdir it.
