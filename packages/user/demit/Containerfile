@@ -4,6 +4,19 @@ ARG TARGETARCH
 # The wardend workspace archive extracts to a top-level `wardend/` dir.
 ADD fetch/wardend-${VERSION}.tar.gz .
 WORKDIR /wardend
+# bootproof: the path dep for the seal + wardenctl crates (the bootproof
+# generic engine + the bootproof-platform-wardend verifier). demit itself
+# does NOT depend on it, but `cargo build -p demit` loads the WHOLE
+# workspace manifest (which includes src/seal -> bootproof), so the path
+# dep `../../../bootproof/crates/<crate>` (relative to /wardend/src/seal,
+# i.e. /wardend/src/seal/../../.. = /, so the dep resolves to
+# /bootproof/crates/<crate> — the workspace root's PARENT) must exist.
+# The bootproof archive's top-level IS `bootproof/`, so the ADD must
+# extract to / (NOT . = /wardend, which would land the archive at
+# /wardend/bootproof/ — one level too deep). This MUST precede the cargo
+# build (cargo resolves the workspace, so the path deps must exist).
+ARG BOOTPROOF_SOURCE
+ADD fetch/${BOOTPROOF_SOURCE} /
 # demit is the initramfs init: no_std, no_alloc, nolibc (links no libc at
 # all), built from the shared `sys` syscall layer. Static by necessity: the
 # kernel execs it as /init before any rootfs or dynamic loader exists.

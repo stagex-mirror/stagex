@@ -153,6 +153,14 @@ COPY --from=user-wardend /usr/bin/scribed /usr/bin/scribed
 COPY src/rootfs/etc/resolv.conf /etc/resolv.conf
 COPY src/rootfs/etc/hostname /etc/hostname
 COPY src/rootfs/etc/hosts /etc/hosts
+# Pre-create /run/wardend/devices (the bind destination) in the image: the
+# gofer's MkdirAll for the bind mount destination runs against the RO erofs
+# bundle rootfs (where /run does not pre-exist) before the tmpfs /run is
+# mounted, so a missing parent is EROFS -> "cannot read client sync file:
+# EOF" -> runsc create 128. A COPY of a .keep file creates the parent dirs
+# without a shell (FROM scratch has no /bin/sh); the gofer's MkdirAll then
+# finds the full path already present (no mkdir syscall -> no EROFS).
+COPY src/run/wardend/devices/.keep /run/wardend/devices/.keep
 # seald-bundle: the evidence daemon's bundle (a Dir rootfs). The warden's
 # seald unit (src/warden/units/seald.hcl — being created in the wardend repo
 # in parallel; the CURRENT pin does not have it yet) references /images/seald
@@ -196,6 +204,14 @@ COPY src/rootfs/etc/resolv.conf /etc/resolv.conf
 COPY src/rootfs/etc/hostname /etc/hostname
 COPY src/rootfs/etc/hosts /etc/hosts
 COPY src/dev-sev-guest /dev/sev-guest
+# Pre-create /run/wardend/devices (the bind destination) in the image: the
+# gofer's MkdirAll for the bind mount destination runs against the RO erofs
+# bundle rootfs (where /run does not pre-exist) before the tmpfs /run is
+# mounted, so a missing parent is EROFS -> "cannot read client sync file:
+# EOF" -> runsc create 128. A COPY of a .keep file creates the parent dirs
+# without a shell (FROM scratch has no /bin/sh); the gofer's MkdirAll then
+# finds the full path already present (no mkdir syscall -> no EROFS).
+COPY src/run/wardend/devices/.keep /run/wardend/devices/.keep
 # posternd-bundle: the SSH daemon's bundle (a Dir rootfs). The warden's
 # posternd unit (src/warden/units/posternd.hcl — being created in the
 # wardend repo in parallel; the CURRENT pin does not have it yet) references
@@ -220,6 +236,14 @@ COPY src/rootfs/etc/resolv.conf /etc/resolv.conf
 COPY src/rootfs/etc/hostname /etc/hostname
 COPY src/rootfs/etc/hosts /etc/hosts
 COPY src/rootfs/etc/ssh/authorized_keys /root/.ssh/authorized_keys
+# Pre-create /run/wardend/devices (the bind destination) in the image: the
+# gofer's MkdirAll for the bind mount destination runs against the RO erofs
+# bundle rootfs (where /run does not pre-exist) before the tmpfs /run is
+# mounted, so a missing parent is EROFS -> "cannot read client sync file:
+# EOF" -> runsc create 128. A COPY of a .keep file creates the parent dirs
+# without a shell (FROM scratch has no /bin/sh); the gofer's MkdirAll then
+# finds the full path already present (no mkdir syscall -> no EROFS).
+COPY src/run/wardend/devices/.keep /run/wardend/devices/.keep
 # ============================================================
 # The host rootfs (the erofs /). The OS runs from RAM; this is the
 # boot disk's root.
