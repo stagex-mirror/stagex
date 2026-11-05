@@ -12,6 +12,11 @@ EC2_DATA_DELETE_ON_TERM ?= true
 EC2_IAM_INSTANCE_PROFILE ?=
 EC2_SSH_KEY ?= ~/.ssh/tpm-exploration.pem
 EC2_USER_DATA_FILE ?=
+# The ACME prerequisites (the bastiond http-01 path). Empty -> null (the tf
+# variable's default -> no Route53 A record; back-compat). The SG :80/:443
+# ingress rules are unconditional (idempotent) and need no input.
+EC2_ROUTE53_ZONE_ID ?=
+EC2_ROUTE53_DOMAIN ?=
 
 # AMI tfvars file — produced by aws-ami-deploy
 EC2_AMI_TFVARS := $(CURDIR)/out/aws-ami.tfvars
@@ -57,6 +62,8 @@ aws-ec2-deploy: $(EC2_AMI_TFVARS)
 		-e DATA_VOLUME_SIZE="$(EC2_DATA_VOLUME_SIZE)" \
 		-e DATA_DELETE_ON_TERM="$(EC2_DATA_DELETE_ON_TERM)" \
 		-e IAM_INSTANCE_PROFILE="$(EC2_IAM_INSTANCE_PROFILE)" \
+		-e ROUTE53_ZONE_ID="$(EC2_ROUTE53_ZONE_ID)" \
+		-e ROUTE53_DOMAIN="$(EC2_ROUTE53_DOMAIN)" \
 		-e USER_DATA="$$USER_DATA" \
 		-e AMI_TFVARS=/input/aws-ami.tfvars \
 		-v $(EC2_AMI_TFVARS):/input/aws-ami.tfvars:ro \

@@ -97,6 +97,29 @@ variable "iam_instance_profile" {
   default     = null
 }
 
+# --- ACME prerequisites (the bastiond http-01 path) ---
+# The bastiond ACME flow (http-01) needs two out-of-band prerequisites that
+# the deploy previously did NOT manage: (1) a DNS A record for the bastion
+# domain -> the instance's public IP (the DNS poll gates the ACME thread on
+# the domain PointsToSelf — A record == lease IP or public IP), and (2) the
+# security group's ingress :80 (the ACME validator) + :443 (the HTTPS face).
+# Both are now additive + conditional: null zone/domain = no Route53 record
+# (back-compat: an existing deploy with no zone is unchanged); the SG rules
+# are unconditional (idempotent — a pre-existing rule is not a conflict, the
+# provider's fingerprint-based ID only removes rules it created on destroy).
+
+variable "route53_zone_id" {
+  description = "Route53 hosted-zone ID for the bastion domain (null = no A record managed; the deploy stays back-compat)"
+  type        = string
+  default     = null
+}
+
+variable "route53_domain" {
+  description = "The bastion domain to point at the instance's public IP (null = no A record managed; e.g. acme-test.cautionos.dev)"
+  type        = string
+  default     = null
+}
+
 # --- Provider ---
 provider "aws" {
   region = var.region
@@ -153,6 +176,54 @@ resource "aws_instance" "this" {
     ManagedBy = "stagex"
     Box       = "aws-ec2"
   }
+}
+
+# --- ACME prerequisite (1): the security group's ingress :80 + :443 ---
+# The bastiond http-01 validator reaches the guest's :80 challenge face and
+# the HTTPS face is :443; both must be open from the world. This is
+# ADDITIVE + idempotent: it adds to the pre-existing SG (var.security_group_id)
+# without restructuring it. The provider's fingerprint-based ID means a
+# pre-existing identical rule is not a conflict, and on destroy only the rules
+# this config created are removed (the SG itself is left alone — it is
+# pre-existing, not managed here).
+
+resource "aws_security_group_rule" "acme_http80" {
+  type              = "ingress"
+  from_port         = 80
+  to_port           = 80
+  protocol          = "tcp"
+  security_group_id = var.security_group_id
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "ACME http-01 validator (the bastiond :80 challenge face)"
+  depends_on        = [aws_instance.this]
+}
+
+resource "aws_security_group_rule" "acme_https443" {
+  type              = "ingress"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  security_group_id = var.security_group_id
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "HTTPS face (the bastiond :443 vhost)"
+  depends_on        = [aws_instance.this]
+}
+
+# --- ACME prerequisite (2): the Route53 A record (domain -> public IP) ---
+# The DNS poll gates the ACME thread on the domain PointsToSelf (A record ==
+# lease IP or public IP). The A record points at the instance's public IP
+# (aws_instance.this.public_ip). Conditional: null zone/domain = no record
+# (back-compat — an existing deploy with no zone is unchanged). The 60 s TTL
+# means a new record is visible within one DNS-poll cycle (the poll re-runs
+# every 30 s) after propagation.
+resource "aws_route53_record" "acme_a" {
+  count = (var.route53_zone_id != null && var.route53_domain != null) ? 1 : 0
+
+  zone_id = var.route53_zone_id
+  name    = var.route53_domain
+  type    = "A"
+  ttl     = 60
+  records = [aws_instance.this.public_ip]
 }
 
 # --- Outputs ---

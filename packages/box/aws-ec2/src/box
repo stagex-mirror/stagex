@@ -29,6 +29,12 @@ SUBNET_ID="${SUBNET_ID:-subnet-0d2a9fba54fb287f3}"
 SECURITY_GROUP="${SECURITY_GROUP:-sg-0ef827fb6200b34a1}"
 USER_DATA="${USER_DATA:-}"
 WAIT_SSH="${WAIT_SSH:-true}"
+# The ACME prerequisites (the bastiond http-01 path). Empty -> null (the tf
+# variable's default -> no Route53 A record; back-compat, no behavior change
+# for an existing deploy with no zone). The SG :80/:443 ingress rules are
+# unconditional (idempotent) and need no input.
+ROUTE53_ZONE_ID="${ROUTE53_ZONE_ID:-}"
+ROUTE53_DOMAIN="${ROUTE53_DOMAIN:-}"
 
 # Validate AWS credentials
 if [ -z "${AWS_ACCESS_KEY_ID}" ] || [ -z "${AWS_SECRET_ACCESS_KEY}" ]; then
@@ -103,6 +109,16 @@ fi
 # Empty -> null (the tf variable's default -> no profile, no behavior change).
 if [ -n "$IAM_INSTANCE_PROFILE" ]; then
     echo "iam_instance_profile = \"${IAM_INSTANCE_PROFILE}\"" >> /run/ec2.tfvars
+fi
+
+# The ACME Route53 A record (the bastiond http-01 path). Empty -> null (the
+# tf variable's default -> no record; back-compat). Both must be set for the
+# record to be managed (the tf count is 1 only when both are non-null).
+if [ -n "$ROUTE53_ZONE_ID" ]; then
+    echo "route53_zone_id = \"${ROUTE53_ZONE_ID}\"" >> /run/ec2.tfvars
+fi
+if [ -n "$ROUTE53_DOMAIN" ]; then
+    echo "route53_domain = \"${ROUTE53_DOMAIN}\"" >> /run/ec2.tfvars
 fi
 
 # Apply
