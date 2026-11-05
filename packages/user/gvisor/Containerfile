@@ -111,6 +111,21 @@ ADD port/runsc/prewarmer/prewarmer.c runsc/prewarmer/prewarmer.c
 #          though the parent regentd holds the full set 0x1ffffffffff). The
 #          guest bridge already holds the same set (CapBnd=0x203000) from the
 #          OCI spec; the sentry needs it too to do the re-create work directly.
+#   uds-17 the gofer host-UDS connect allowlist: with --host-uds=open|all the
+#          gofer proxies connect() to ANY host unix socket path the sandbox
+#          can name (runsc/fsgofer/lisafs.go Connect/ConnectWithCreds only
+#          gate on the AllowOpen bit). This adds --allowed-host-uds (a
+#          comma-separated list of absolute host paths, plumbed
+#          runsc/config -> runsc/cmd/gofer.go -> fsgofer.Config): when the
+#          list is non-empty, only connect() to a listed path (exact match
+#          after filepath.Clean; no prefix/glob matching) is permitted, and
+#          every other connect is refused exactly like the AllowOpen()==false
+#          path (EPERM + the once-log warning pattern). An EMPTY list keeps
+#          the old behavior unchanged (all connects allowed when the open bit
+#          is set), so bastiond and other existing users need no changes.
+#          ConnectWithCreds gates before any UID/GID switching. bind (the
+#          create bit) is NOT affected. Predicate + unit tests live in
+#          runsc/fsgofer (hostUDSConnectAllowed).
 ADD patches/xdp-1-port-go-branch-api.patch /tmp/xdp-1.patch
 ADD patches/xdp-2-synchronous-configure.patch /tmp/xdp-2.patch
 ADD patches/xdp-3-loader-main.patch /tmp/xdp-3.patch
@@ -126,6 +141,7 @@ ADD patches/xdp-13-seccomp-default-allow.patch /tmp/xdp-13.patch
 ADD patches/xdp-14-gofer-shared-negative-dentry.patch /tmp/xdp-14.patch
 ADD patches/xdp-15-netlink-newaddr-diagnostic.patch /tmp/xdp-15.patch
 ADD patches/xdp-16-sentry-xdp-redirect-counter.patch /tmp/xdp-16.patch
+ADD patches/uds-17-gofer-connect-allowlist.patch /tmp/uds-17.patch
 RUN patch -p1 -i /tmp/xdp-1.patch && patch -p1 -i /tmp/xdp-2.patch \
     && patch -p1 -i /tmp/xdp-3.patch && patch -p1 -i /tmp/xdp-4.patch \
     && patch -p1 -i /tmp/xdp-5.patch && patch -p1 -i /tmp/xdp-7.patch \
@@ -137,7 +153,8 @@ RUN patch -p1 -i /tmp/xdp-1.patch && patch -p1 -i /tmp/xdp-2.patch \
     && patch -p1 -i /tmp/xdp-14.patch \
     && patch -p1 -i /tmp/xdp-15.patch \
     && patch -p1 -i /tmp/xdp-16.patch \
-    && rm -f /tmp/xdp-*.patch
+    && patch -p1 -i /tmp/uds-17.patch \
+    && rm -f /tmp/xdp-*.patch /tmp/uds-*.patch
 
 # Custom AF_XDP "redirect" program replacing the go-branch's prebuilt one (v3,
 # sn-7 kernel-offline). The maximally simple shape: NO ethertype gate, NO IP

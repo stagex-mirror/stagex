@@ -1,0 +1,315 @@
+diff --git a/runsc/config/config.go b/runsc/config/config.go
+--- a/runsc/config/config.go
++++ b/runsc/config/config.go
+@@ -111,6 +111,13 @@
+ 	// DO NOT call it directly, use GetHostUDS() instead.
+ 	HostUDS HostUDS `flag:"host-uds"`
+ 
++	// AllowedHostUDS is the list of absolute host Unix-domain socket paths
++	// the gofer may connect() to when HostUDS allows opening. Empty means
++	// no path restriction (all connects the HostUDS bit allows are
++	// permitted). Only consulted on the connect path; bind (create) is not
++	// affected.
++	AllowedHostUDS stringListConfig `flag:"allowed-host-uds"`
++
+ 	// HostFifo controls permission to access host FIFO (or named pipes).
+ 	HostFifo HostFifo `flag:"host-fifo"`
+ 
+@@ -540,6 +547,15 @@
+ 		// Deprecated flag was used together with flag that replaced it.
+ 		return fmt.Errorf("fsgofer-host-uds has been replaced with host-uds flag")
+ 	}
++	// uds-17: --allowed-host-uds entries are exact host paths the gofer may
++	// connect() to; require absolute paths (the gate compares them against
++	// the gofer's host-side absolute node paths, so a relative entry could
++	// never match and silently rejecting everything is not acceptable).
++	for _, p := range c.AllowedHostUDS {
++		if !filepath.IsAbs(p) {
++			return fmt.Errorf("--allowed-host-uds: %q is not an absolute path", p)
++		}
++	}
+ 	if len(c.ProfilingMetrics) > 0 && len(c.ProfilingMetricsLog) == 0 {
+ 		return fmt.Errorf("profiling-metrics flag requires defining a profiling-metrics-log for output")
+ 	}
+@@ -947,6 +963,38 @@
+ 	return &v
+ }
+ 
++// stringListConfig holds a comma-separated list of strings. It implements
++// flag.Value so a repeatable list can be plumbed through the standard
++// flag/Config/ToFlags reflection machinery (empty elements are dropped, so
++// the zero value and the empty string both mean "unset").
++type stringListConfig []string
++
++func stringListConfigPtr(v stringListConfig) *stringListConfig {
++	return &v
++}
++
++// Set implements flag.Value. Set(String()) should be idempotent.
++func (s *stringListConfig) Set(v string) error {
++	var list stringListConfig
++	for _, part := range strings.Split(v, ",") {
++		if part != "" {
++			list = append(list, part)
++		}
++	}
++	*s = list
++	return nil
++}
++
++// Get implements flag.Value.
++func (s *stringListConfig) Get() any {
++	return *s
++}
++
++// String implements flag.Value.
++func (s stringListConfig) String() string {
++	return strings.Join(s, ",")
++}
++
+ // HostUDS tells how much of the host UDS the file system has access to.
+ type HostUDS int
+ 
+diff --git a/runsc/config/flags.go b/runsc/config/flags.go
+--- a/runsc/config/flags.go
++++ b/runsc/config/flags.go
+@@ -37,6 +37,7 @@
+ 	flagStraceSyscalls          = "strace-syscalls"
+ 	flagStraceLogSize           = "strace-log-size"
+ 	flagHostUDS                 = "host-uds"
++	flagAllowedHostUDS          = "allowed-host-uds"
+ 	flagNetDisconnectOK         = "net-disconnect-ok"
+ 	flagReproduceNFTables       = "reproduce-nftables"
+ 	flagOCISeccomp              = "oci-seccomp"
+@@ -143,6 +144,7 @@
+ 		"    'medium' can be 'memory', 'self' or 'dir=/abs/dir/path' in which filestore will be created\n"+
+ 		"    'size' optional parameter overrides default overlay upper layer size\n")
+ 	flagSet.Var(hostUDSPtr(HostUDSNone), flagHostUDS, "controls permission to access host Unix-domain sockets. Values: none|open|create|all, default: none")
++	flagSet.Var(stringListConfigPtr(nil), flagAllowedHostUDS, "comma-separated list of absolute host paths the gofer may connect() to when --host-uds allows opening. If empty (default), no path restriction is applied (all connects the --host-uds bit allows are permitted). Exact path match only, no prefix or glob matching. Example: --allowed-host-uds=/run/foo.sock,/run/bar.sock")
+ 	flagSet.Var(hostFifoPtr(HostFifoNone), "host-fifo", "controls permission to access host FIFOs (or named pipes). Values: none|open, default: none")
+ 	flagSet.Var(charDevicePolicyPtr(CharDevEmulatedOnly), "character-device-policy", "controls how character device files on gofer mounts (rootfs and bind mounts) are handled. 'emulated-only' serves devices implemented by the sentry and fails opens of other devices with ENXIO (default and more secure); 'prefer-emulated' serves sentry-implemented devices from the sentry and opens the rest through the host; 'passthrough' opens all of them through the host. Values: emulated-only|prefer-emulated|passthrough, default: emulated-only")
+ 	flagSet.Bool("gvisor-marker-file", false, "enable the presence of the /proc/gvisor/kernel_is_gvisor file that can be used by applications to detect that gVisor is in use")
+diff --git a/runsc/cmd/gofer.go b/runsc/cmd/gofer.go
+--- a/runsc/cmd/gofer.go
++++ b/runsc/cmd/gofer.go
+@@ -443,6 +443,7 @@
+ 	// These are global fsgofer configurations.
+ 	fsgoferConf := &fsgofer.Config{
+ 		HostUDS:            conf.GetHostUDS(),
++		AllowedHostUDS:     conf.AllowedHostUDS,
+ 		HostFifo:           conf.HostFifo,
+ 		CharDevicePolicy:   conf.CharacterDevicePolicy,
+ 		DonateMountPointFD: conf.DirectFS,
+diff --git a/runsc/fsgofer/lisafs.go b/runsc/fsgofer/lisafs.go
+--- a/runsc/fsgofer/lisafs.go
++++ b/runsc/fsgofer/lisafs.go
+@@ -54,6 +54,12 @@
+ 	// HostUDS signals whether the gofer can connect to host unix domain sockets.
+ 	HostUDS config.HostUDS
+ 
++	// AllowedHostUDS is the list of absolute host paths the gofer may
++	// connect() to when HostUDS allows opening (uds-17). Empty means no
++	// path restriction (unchanged behavior: every connect the HostUDS bit
++	// allows is permitted). Exact-path match only; see hostUDSConnectAllowed.
++	AllowedHostUDS []string
++
+ 	// HostFifo signals whether the gofer can connect to host FIFOs.
+ 	HostFifo config.HostFifo
+ 
+@@ -510,14 +516,41 @@
+ 	return nil
+ }
+ 
++// hostUDSConnectAllowed reports whether connecting to the host unix domain
++// socket at hostPath is permitted under the AllowedHostUDS allowlist (uds-17).
++//
++// Security predicate (this is a security boundary):
++//   - An empty allowlist allows everything (the pre-uds-17 behavior, so
++//     existing uses such as bastiond need no changes).
++//   - Otherwise the path must EQUAL one of the entries after filepath.Clean
++//     (exact absolute-path match only; no prefix matching, no globbing).
++func hostUDSConnectAllowed(allowed []string, hostPath string) bool {
++	if len(allowed) == 0 {
++		return true
++	}
++	if !filepath.IsAbs(hostPath) {
++		// The allowlist is absolute paths by construction (validated in
++		// config.Validate); a relative connect path can never equal one.
++		return false
++	}
++	cleaned := filepath.Clean(hostPath)
++	for _, p := range allowed {
++		if filepath.Clean(p) == cleaned {
++			return true
++		}
++	}
++	return false
++}
++
+ // Used to log rejected fifo/uds operations, one time each.
+ var (
+-	logRejectedFifoOpenOnce     sync.Once
+-	logRejectedUdsOpenOnce      sync.Once
+-	logRejectedUdsCreateOnce    sync.Once
+-	logRejectedUdsConnectOnce   sync.Once
+-	logRejectedCharDevOpenOnce  sync.Once
+-	logRejectedBlockDevOpenOnce sync.Once
++	logRejectedFifoOpenOnce            sync.Once
++	logRejectedUdsOpenOnce             sync.Once
++	logRejectedUdsCreateOnce           sync.Once
++	logRejectedUdsConnectOnce          sync.Once
++	logRejectedUdsConnectAllowlistOnce sync.Once
++	logRejectedCharDevOpenOnce         sync.Once
++	logRejectedBlockDevOpenOnce        sync.Once
+ )
+ 
+ // Open implements lisafs.ControlFDImpl.Open.
+@@ -847,12 +880,23 @@
+ 
+ // Connect implements lisafs.ControlFDImpl.Connect.
+ func (fd *controlFDLisa) Connect(sockType uint32) (int, error) {
+-	if !fd.Conn().Impl().(*connectionImpl).config.HostUDS.AllowOpen() {
++	impl := fd.Conn().Impl().(*connectionImpl)
++	if !impl.config.HostUDS.AllowOpen() {
+ 		logRejectedUdsConnectOnce.Do(func() {
+ 			log.Warningf("Rejecting attempt to connect to unix domain socket from host filesystem: %q. If you want to allow this, set flag --host-uds=open", fd.ControlFD.Node().FilePath())
+ 		})
+ 		return -1, unix.EPERM
+ 	}
++	// uds-17: when an allowlist is configured, only connect() to the listed
++	// absolute host paths is permitted. Refuse exactly like the
++	// AllowOpen()==false path (same error, same once-log pattern). An empty
++	// allowlist means no restriction (unchanged behavior).
++	if !hostUDSConnectAllowed(impl.config.AllowedHostUDS, fd.Node().FilePath()) {
++		logRejectedUdsConnectAllowlistOnce.Do(func() {
++			log.Warningf("Rejecting attempt to connect to unix domain socket from host filesystem: %q. If you want to allow this, add the path to --allowed-host-uds", fd.ControlFD.Node().FilePath())
++		})
++		return -1, unix.EPERM
++	}
+ 
+ 	// TODO(gvisor.dev/issue/1003): Due to different app vs replacement
+ 	// mappings, the app path may have fit in the sockaddr, but we can't fit
+@@ -889,6 +933,16 @@
+ 		})
+ 		return -1, unix.EPERM
+ 	}
++	// uds-17: same allowlist gate as Connect (ConnectWithCreds ends up
++	// calling fd.Connect below, but gate here too before any UID/GID
++	// switching work happens, so a rejected connect never touches the
++	// credential state).
++	if !hostUDSConnectAllowed(impl.config.AllowedHostUDS, fd.Node().FilePath()) {
++		logRejectedUdsConnectAllowlistOnce.Do(func() {
++			log.Warningf("Rejecting attempt to connect to unix domain socket from host filesystem: %q. If you want to allow this, add the path to --allowed-host-uds", fd.ControlFD.Node().FilePath())
++		})
++		return -1, unix.EPERM
++	}
+ 	runtime.LockOSThread()
+ 	defer runtime.UnlockOSThread()
+ 
+diff --git a/runsc/fsgofer/lisafs_test.go b/runsc/fsgofer/lisafs_test.go
+new file mode 100644
+--- /dev/null
++++ b/runsc/fsgofer/lisafs_test.go
+@@ -0,0 +1,102 @@
++// Copyright 2026 The gVisor Authors.
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//     http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package fsgofer
++
++import "testing"
++
++// TestHostUDSConnectAllowed covers the uds-17 allowlist predicate: an empty
++// list allows everything, a non-empty list requires an exact absolute-path
++// match (no prefix matching, no globbing).
++func TestHostUDSConnectAllowed(t *testing.T) {
++	for _, tc := range []struct {
++		name     string
++		allowed  []string
++		path     string
++		expected bool
++	}{
++		{
++			name:     "EmptyListAllows",
++			allowed:  nil,
++			path:     "/anything/at/all.sock",
++			expected: true,
++		},
++		{
++			name:     "EmptyListAllowsRelativeToo",
++			allowed:  []string{},
++			path:     "relative.sock",
++			expected: true,
++		},
++		{
++			name:     "ExactMatchAllows",
++			allowed:  []string{"/run/foo.sock"},
++			path:     "/run/foo.sock",
++			expected: true,
++		},
++		{
++			name:     "ExactMatchAmongSeveral",
++			allowed:  []string{"/run/a.sock", "/run/b.sock"},
++			path:     "/run/b.sock",
++			expected: true,
++		},
++		{
++			name:     "CleanedPathMatches",
++			allowed:  []string{"/run/foo.sock"},
++			path:     "/run//foo.sock",
++			expected: true,
++		},
++		{
++			name:     "PrefixDoesNotAllow",
++			allowed:  []string{"/run/foo.sock"},
++			path:     "/run/foo.sock.extra",
++			expected: false,
++		},
++		{
++			name:     "DirectoryPrefixDoesNotAllow",
++			allowed:  []string{"/run"},
++			path:     "/run/foo.sock",
++			expected: false,
++		},
++		{
++			name:     "DifferentPathRejects",
++			allowed:  []string{"/run/foo.sock"},
++			path:     "/run/bar.sock",
++			expected: false,
++		},
++		{
++			name:     "RelativePathRejects",
++			allowed:  []string{"/run/foo.sock"},
++			path:     "run/foo.sock",
++			expected: false,
++		},
++		{
++			name:     "EmptyPathRejects",
++			allowed:  []string{"/run/foo.sock"},
++			path:     "",
++			expected: false,
++		},
++		{
++			name:     "GlobDoesNotMatch",
++			allowed:  []string{"/run/*.sock"},
++			path:     "/run/foo.sock",
++			expected: false,
++		},
++	} {
++		t.Run(tc.name, func(t *testing.T) {
++			if got := hostUDSConnectAllowed(tc.allowed, tc.path); got != tc.expected {
++				t.Errorf("hostUDSConnectAllowed(%v, %q) = %v, want %v", tc.allowed, tc.path, got, tc.expected)
++			}
++		})
++	}
++}
