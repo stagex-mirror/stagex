@@ -2,7 +2,6 @@ FROM stagex/core-filesystem AS core-filesystem
 FROM stagex/core-busybox AS core-busybox
 FROM stagex/core-musl AS core-musl
 FROM stagex/core-libunwind AS core-libunwind
-FROM stagex/user-demit AS user-demit
 FROM stagex/user-wardend AS user-wardend
 FROM stagex/user-linux-enclave AS user-linux-enclave
 FROM stagex/user-gvisor AS user-gvisor
@@ -316,6 +315,9 @@ COPY --from=user-wardend /usr/bin/wardend-xdparm /usr/bin/wardend-xdparm
 # libunwind) — the musl runtime + libunwind above cover it.
 COPY --from=user-wardend /usr/bin/wardend-xdpgone /usr/bin/wardend-xdpgone
 COPY --from=user-wardend /usr/bin/xattach /usr/bin/xattach
+# bailiffd: the reserved k8s-worker adapter (dynamic-musl; no unit file
+# references it yet, but the fleet ships it with the rest of the repo).
+COPY --from=user-wardend /usr/bin/bailiffd /usr/bin/bailiffd
 # The host-side dhcp oneshot's lease-apply script (the udhcpc -s handler):
 # the QEMU slirp gap — runsc's prepareRedirectInterfaceArgs is a host-side,
 # pre-sandbox step that needs the uplink to already have a single IPv4
@@ -397,8 +399,10 @@ CMD ["/bin/sh"]
 # ============================================================
 FROM box-disk AS img-wardend-dev
 COPY --from=package-wardend-dev . /live
-# Override box-disk's baked /nit/init with demit (the wardend init).
-COPY --from=user-demit /usr/bin/demit /demit/init
+# Override box-disk's baked /nit/init with demit (the wardend init — the
+# binary ships in user-wardend, built in the same workspace pass as the rest
+# of the repo; the separate user-demit package is retired).
+COPY --from=user-wardend /usr/bin/demit /demit/init
 RUN chmod +x /demit/init
 RUN UNIKERNEL=1 INIT=/demit/init box
 

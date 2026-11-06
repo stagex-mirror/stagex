@@ -1,10 +1,11 @@
 [package]
 name = "wardend"
-# Pinned to commit b128127 (branch main) of
+# Pinned to commit 061029b (tag v0.3.9, branch main) of
 # https://codeberg.org/lrvick/wardend: the containerized unit supervisor
 # stack that replaces execd + the sysnet/sshdt shell in the wardend enclave
-# topology. This package builds the five userspace binaries the guest runs
-# after demit pivots:
+# topology. This package builds EVERY binary of the wardend workspace (the
+# single build site for the repo; the separate user-demit package is
+# retired). The core daemons:
 #   wardend   (bin `wardend`)  — the unit supervisor (regentd spawns it);
 #                                loads /etc/wardend/units/*.hcl, resolves the
 #                                depends DAG, runs the gvisor + container
@@ -12,21 +13,32 @@ name = "wardend"
 #                                (the default is container-only; the gvisor
 #                                moat is what runs the netstack sandbox).
 #   regent    (bin `regentd`)  — PID 1 after demit: seeds /root/.ssh from the
-#                                baked key, then spawns wardend.
+#                                baked key, then spawns wardend. Also builds
+#                                wardend-watchdog + wardend-xdparm +
+#                                wardend-xdpgone (the data-plane backstops).
 #   postern   (bin `posternd`) — the in-process SSH daemon (russh), a netstack
 #                                co-tenant; pubkey-only, fail-closed.
-#   wardend-bridge (bin `bridge`) — the netstack sandbox init (`bridge wire`):
-#                                LLA bootstrap + pure-Rust DHCP + lease apply
-#                                + the :22->UDS relay + posternd supervisor +
-#                                the :8080 demo face.
+#   bastion   (bin `bastiond`) — the netstack sandbox init (the wire owner:
+#                                LLA bootstrap + DHCP + the :22->UDS relay +
+#                                the posternd supervisor; the wardend-bridge
+#                                crate's `bridge` binary was deleted — its
+#                                wire logic was folded into bastiond).
 #   xattach   (bin `xattach`)  — the kernel-side XDP attach oneshot (netlink
 #                                uplink resolve, channel collapse to 1, bpffs
 #                                mount, exec of the prebuilt xdp_loader).
-# All five are musl-dynamic (the shared musl runtime is core-musl +
+#   demit     (bin `demit`)    — the initramfs init (no_std/nolibc, static;
+#                                the UKI .initrd /init — the distro COPYs it
+#                                from this image; the user-demit package is
+#                                retired, this is the single build site).
+#   bailiffd  (bin `bailiffd`) — the reserved k8s-worker adapter (shipped
+#                                with the fleet; no unit file references it
+#                                yet).
+# All are musl-dynamic (the shared musl runtime is core-musl +
 # core-libunwind, already in the rootfs); only demit is static (it is the
-# initramfs init, built by the user-demit package).
+# initramfs init — built in this SAME pass with the nolibc target spec, the
+# separate user-demit package is retired).
 version = "061029ba621a533b28eda35f486c5bef3dbc19bd"
-description = "wardend unit supervisor + regentd + posternd (russh SSH) + bridge (netstack init) + xattach (XDP attach) + seald (evidence daemon, in-sandbox co-tenant)"
+description = "wardend unit supervisor + regentd + posternd (russh SSH) + xattach (XDP attach) + seald (evidence daemon, in-sandbox co-tenant) + scribed (log ring) + keepd (LUKS) + demit (initramfs init) + wardenctl + bailiffd"
 license = "MIT OR Apache-2.0"
 website = "https://codeberg.org/lrvick/wardend"
 

@@ -127,13 +127,24 @@ RUN --network=none <<-EOF
   # It is PURE-STANDALONE (no workspace deps, no feature flags) — it builds
   # with the SAME frozen lock but WITHOUT the gvisor/container features
   # (those are warden's, not scribe's; a `--features warden/gvisor` form
-  # fails). The write socket (SOCK_DGRAM, one bounded datagram per line) +
-  # the read socket (stream UDS, framed) both land in the devices dir.
+  # fails). The write socket (SOCK_SEQPACKET — host-bound in gVisor, see
+  # bind_seqpacket_listener) + the read socket (stream UDS, framed) both
+  # land in the devices dir.
   cargo build \
     --frozen \
     --release \
     --target "${ARCH}-unknown-linux-musl" \
     -p scribe
+  # bailiff (bailiffd): the optional k8s-worker adapter (Pod assignments ->
+  # unit files via the wardend-unit converter). Reserved (no unit file ships
+  # for it yet), but it is a daemon of this repo, so the package ships it
+  # with the rest. Pure workspace deps (wardend-unit + wardend-bus), so the
+  # frozen lock covers it.
+  cargo build \
+    --frozen \
+    --release \
+    --target "${ARCH}-unknown-linux-musl" \
+    -p bailiff
   R="${T}"
   install -vDm755 "$R/wardend"  /rootfs/usr/bin/wardend
   install -vDm755 "$R/regentd"  /rootfs/usr/bin/regentd
@@ -213,6 +224,10 @@ RUN --network=none <<-EOF
   # migrates the PCR policy (seed -> full), and mounts it at /home.
   # Static-musl like the other host-side binaries.
   install -vDm755 "$R/keepd"    /rootfs/usr/bin/keepd
+  # bailiffd: the optional k8s-worker adapter (reserved: no unit ships for
+  # it yet; see the build note above). Dynamic-musl like the other host
+  # binaries.
+  install -vDm755 "$R/bailiffd" /rootfs/usr/bin/bailiffd
   # The unit set, shipped alongside the binaries so they are versioned with
   # the wardend pin (single source of truth: the distro COPYs these, it does
   # not carry its own copy). The unit HCL is the single source of truth for
@@ -241,9 +256,6 @@ RUN --network=none <<-EOF
   # keys at /root/.ssh — posternd's keys_dir INSIDE the sandbox; the host
   # /root is a separate tmpfs). The devices dir is bind-mounted into the
   # sandbox, so posternd's UDS lands host-visible in /run/wardend/devices.
-  # NOTE: same as seald — the CURRENT pin does not have
-  # src/warden/units/posternd.hcl yet; this install fails until the pin
-  # bump lands.
   install -vDm644 src/warden/units/posternd.hcl /rootfs/etc/wardend/units/posternd.hcl
   # keepd: the host-side disks daemon (the LUKS2 data plane; a persist
   # key-ed secret, so the warden broker holds it until the key is unsealed
@@ -268,6 +280,29 @@ RUN --network=none <<-EOF
   # into the netstack bundle rootfs at /etc/wardend/seed (the default seed
   # path). Versioned with the wardend pin.
   install -vDm644 src/warden/guest/bastiond/seed /rootfs/images/bastiond/seed
+EOF
+# demit: the initramfs init (the UKI .initrd /init). NO_STD + NO_ALLOC +
+# NOLIBC (links no libc at all): the bare in-tree target spec (dynamic-
+# linking false, panic abort, crt-static) + -Zbuild-std=core (sysroot core).
+# SEPARATE RUN, NETWORK ON (like the retired user-demit package used):
+# -Zbuild-std resolves the sysroot crates (rustc-literal-escaper via
+# proc_macro) from the crates.io index, which is NOT in the workspace lock
+# (so no --frozen either). The `nolibc` feature gates src/main.rs (the init
+# binary). RUSTC_BOOTSTRAP unlocks the -Z flags on the pallet's stable
+# toolchain. This REPLACED the separate user-demit package (same archive,
+# same flags): one archive fetch now builds every binary of the repo.
+ENV RUSTC_BOOTSTRAP=1
+ENV RUSTFLAGS='-C codegen-units=1 -C target-feature=+crt-static'
+RUN <<-EOF
+  set -eux
+  ARCH=$(uname -m)
+  cargo build \
+    --release \
+    --features nolibc \
+    --target src/demit/target-specs/demit-${ARCH}-nolibc.json \
+    -Zjson-target-spec -Zbuild-std=core \
+    -p demit
+  install -vDm755 target/demit-${ARCH}-nolibc/release/demit /rootfs/usr/bin/demit
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs/ /
