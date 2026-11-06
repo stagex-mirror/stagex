@@ -1,6 +1,6 @@
 [package]
 name = "wardend"
-# Pinned to commit 79bb4dc (tag v0.3.12, branch main) of
+# Pinned to commit 996c603 (aws-v0313 = v0.3.11 + bastiond SNP boot fix) of
 # https://codeberg.org/lrvick/wardend: the containerized unit supervisor
 # stack that replaces execd + the sysnet/sshdt shell in the wardend enclave
 # topology. v0.3.12 = v0.3.11 + the posternd shell-free bundle (the built-ins-
@@ -50,13 +50,13 @@ name = "wardend"
 # core-libunwind, already in the rootfs); only demit is static (it is the
 # initramfs init — built in this SAME pass with the nolibc target spec, the
 # separate user-demit package is retired).
-version = "79bb4dcfeec43bcba766267228b6f3900de457e0"
+version = "996c60329e656324d83cb0736af11141eecdbf80"
 description = "wardend unit supervisor + regentd + posternd (russh SSH) + xattach (XDP attach) + seald (evidence daemon, in-sandbox co-tenant) + scribed (log ring) + keepd (LUKS) + demit (initramfs init) + wardenctl + bailiffd"
 license = "MIT OR Apache-2.0"
 website = "https://codeberg.org/lrvick/wardend"
 
 [sources.wardend]
-hash = "dd968e54ba0d6f556044fbaa763057444b61b3b3afd06f8132dc77f09608f1c6"
+hash = "5cc50dd3e6c0b737f4fa94605d9e615e47b7733bfe8e1e0286b815a43f177537"
 format = "tar.gz"
 file = "wardend-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/wardend/archive/{version}.{format}"]
