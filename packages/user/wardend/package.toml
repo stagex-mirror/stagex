@@ -1,9 +1,14 @@
 [package]
 name = "wardend"
-# Pinned to commit 061029b (tag v0.3.9, branch main) of
+# Pinned to commit d422021 (tag v0.3.10, branch main) of
 # https://codeberg.org/lrvick/wardend: the containerized unit supervisor
 # stack that replaces execd + the sysnet/sshdt shell in the wardend enclave
-# topology. This package builds EVERY binary of the wardend workspace (the
+# topology. v0.3.10 is the reliable dual-destination logging release: the
+# warden puts fd 1 + fd 2 (the serial console) in O_NONBLOCK at boot so a full
+# 16550 buffer no longer wedges the single-threaded log pump (the console froze
+# mid-line AND the ring stopped growing ~30s post-boot), and the scribe ring
+# bounds a per-unit window alongside the global bound so the gvisor --debug
+# flood cannot evict a quiet unit's lines out of `logs -u <unit>`. This package builds EVERY binary of the wardend workspace (the
 # single build site for the repo; the separate user-demit package is
 # retired). The core daemons:
 #   wardend   (bin `wardend`)  — the unit supervisor (regentd spawns it);
@@ -37,13 +42,13 @@ name = "wardend"
 # core-libunwind, already in the rootfs); only demit is static (it is the
 # initramfs init — built in this SAME pass with the nolibc target spec, the
 # separate user-demit package is retired).
-version = "061029ba621a533b28eda35f486c5bef3dbc19bd"
+version = "d4220217734094c29d283905eb0b7e75cc996289"
 description = "wardend unit supervisor + regentd + posternd (russh SSH) + xattach (XDP attach) + seald (evidence daemon, in-sandbox co-tenant) + scribed (log ring) + keepd (LUKS) + demit (initramfs init) + wardenctl + bailiffd"
 license = "MIT OR Apache-2.0"
 website = "https://codeberg.org/lrvick/wardend"
 
 [sources.wardend]
-hash = "9e38160f34f4fa95a3d9f2886b241ee7c55a5f6844dc67aa97496b1de89c0b7b"
+hash = "b0da0c786a19f272364505d5e8a956bc0bffb10d953ba35ccaad6a3558f7b92e"
 format = "tar.gz"
 file = "wardend-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/wardend/archive/{version}.{format}"]
