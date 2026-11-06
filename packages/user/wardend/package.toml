@@ -1,12 +1,17 @@
 [package]
 name = "wardend"
-# Pinned to commit cb73d31 (tag v0.3.11, branch main) of
+# Pinned to commit 79bb4dc (tag v0.3.12, branch main) of
 # https://codeberg.org/lrvick/wardend: the containerized unit supervisor
 # stack that replaces execd + the sysnet/sshdt shell in the wardend enclave
-# topology. v0.3.11 = v0.3.10 (reliable dual-destination logging) + the C1
-# ACME CSR fix: build_csr now emits a valid RFC 2986 PKCS#10 request so a
-# real ACME CA (Boulder) can parse it (issuance was structurally impossible
-# before; the mock accepted any payload). v0.3.10 is the logging release: the
+# topology. v0.3.12 = v0.3.11 + the posternd shell-free bundle (the built-ins-
+# only ssh surface): the bundle ships exactly ONE executable (posternd) + the
+# shared musl runtime — no busybox, no /bin/sh. status is a pure-Rust /proc
+# report (posternd status), and an arbitrary exec / interactive shell is
+# DECLINED by the daemon (posternd decline, exit 127) — there is nothing else
+# in the sandbox to run. v0.3.11 = the C1 ACME CSR fix: build_csr now emits a
+# valid RFC 2986 PKCS#10 request so a real ACME CA (Boulder) can parse it
+# (issuance was structurally impossible before; the mock accepted any
+# payload). v0.3.10 is the logging release: the
 # warden puts fd 1 + fd 2 (the serial console) in O_NONBLOCK at boot so a full
 # 16550 buffer no longer wedges the single-threaded log pump (the console froze
 # mid-line AND the ring stopped growing ~30s post-boot), and the scribe ring
@@ -45,13 +50,13 @@ name = "wardend"
 # core-libunwind, already in the rootfs); only demit is static (it is the
 # initramfs init — built in this SAME pass with the nolibc target spec, the
 # separate user-demit package is retired).
-version = "cb73d31c00264f1d97541e2d8952b513eafe383a"
+version = "79bb4dcfeec43bcba766267228b6f3900de457e0"
 description = "wardend unit supervisor + regentd + posternd (russh SSH) + xattach (XDP attach) + seald (evidence daemon, in-sandbox co-tenant) + scribed (log ring) + keepd (LUKS) + demit (initramfs init) + wardenctl + bailiffd"
 license = "MIT OR Apache-2.0"
 website = "https://codeberg.org/lrvick/wardend"
 
 [sources.wardend]
-hash = "c8b0439a14996a68fc878344ec03c5b5968c3759b886358d9512eef0b72189bb"
+hash = "dd968e54ba0d6f556044fbaa763057444b61b3b3afd06f8132dc77f09608f1c6"
 format = "tar.gz"
 file = "wardend-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/wardend/archive/{version}.{format}"]
