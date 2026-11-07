@@ -1,9 +1,24 @@
 [package]
 name = "wardend"
-# Pinned to commit 996c603 (aws-v0313 = v0.3.11 + bastiond SNP boot fix) of
+# Pinned to commit 450e290 (the ACME acceptance build) of
 # https://codeberg.org/lrvick/wardend: the containerized unit supervisor
 # stack that replaces execd + the sysnet/sshdt shell in the wardend enclave
-# topology. v0.3.12 = v0.3.11 + the posternd shell-free bundle (the built-ins-
+# topology. 450e290 = the ACME acceptance build, three fixes on top of the
+# 4f5f6625 (anchor-gate rbind) pin: (1) IMDS bind-to-lease (A1) — the
+# bastion's IMDS TCP connect now binds the lease IP as the source; gvisor's
+# longest-prefix route selection otherwise picks the LLA 169.254.2.2 for
+# 169.254.169.254 and the VPC drops LLA-sourced packets, so user-data +
+# public-IP fetch timed out forever on the wire (RTM_DELADDR is EOPNOTSUPP
+# in gvisor, so the LLA-removal window is structurally dead); (2) the ACME
+# pending-order authz POST (B) — Boulder returns order status pending per
+# RFC 8555 7.4, but the old code only fetched authz + POSTed challenges
+# once the order flipped to ready: a deadlock (never POSTs -> never
+# validates -> never ready); (3) the posternd late-user-data re-materialize
+# (A2) — posternd materializes authorized_keys from user-data once at boot,
+# before the IMDS fetch lands it ~300s later; the per-auth pass now
+# re-materializes when the key set is empty and the user-data file has since
+# appeared, so SSH works after the boot lag without a respawn.
+# v0.3.12 = v0.3.11 + the posternd shell-free bundle (the built-ins-
 # only ssh surface): the bundle ships exactly ONE executable (posternd) + the
 # shared musl runtime — no busybox, no /bin/sh. status is a pure-Rust /proc
 # report (posternd status), and an arbitrary exec / interactive shell is
@@ -50,13 +65,13 @@ name = "wardend"
 # core-libunwind, already in the rootfs); only demit is static (it is the
 # initramfs init — built in this SAME pass with the nolibc target spec, the
 # separate user-demit package is retired).
-version = "4f5f66258cc3b7b6474506ff795b70e49de76e82"
+version = "450e29013ad22b7246ba28861fa6b04cb4d4eec0"
 description = "wardend unit supervisor + regentd + posternd (russh SSH) + xattach (XDP attach) + seald (evidence daemon, in-sandbox co-tenant) + scribed (log ring) + keepd (LUKS) + demit (initramfs init) + wardenctl + bailiffd"
 license = "MIT OR Apache-2.0"
 website = "https://codeberg.org/lrvick/wardend"
 
 [sources.wardend]
-hash = "61a834f01e655429c885196e2a70bb30fcebae91c0dcddd84bb234506ebcc35c"
+hash = "10d13737f0a17f1d5247296b197535200000a32b722436fa010bba5701753d48"
 format = "tar.gz"
 file = "wardend-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/wardend/archive/{version}.{format}"]
