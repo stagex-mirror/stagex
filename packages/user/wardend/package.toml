@@ -1,9 +1,19 @@
 [package]
 name = "wardend"
-# Pinned to commit 8637d08 (the browser-handshake fixes) of
+# Pinned to commit 29fb982 (the TLS 1.3 wire-format fixes) of
 # https://codeberg.org/lrvick/wardend: the containerized unit supervisor
 # stack that replaces execd + the sysnet/sshdt shell in the wardend enclave
-# topology. 8637d08 = the middlebox-CCS skip + the full cert chain on top
+# topology. 29fb982 = the certificate_list frame fix + the application
+# sequence-number bases on top of 8637d08: (1) the chain fix had emitted a
+# bogus per-entry length prefix inside the certificate_list; RFC 8446
+# 4.4.2 entries are self-delimiting, so OpenSSL d2i'd the wrong slice as
+# the X509 ("wrong tag ... Type=X509" in tls_process_server_certificate)
+# and every handshake aborted at the Certificate. (2) RFC 8446 5.3: the
+# record sequence number is per-key and zeroed when each key is installed;
+# the app keys had been seeded from the handshake count (server 4, client
+# 1), so the server's first application record used a nonce the client
+# could not open (empty body after a clean handshake; the read side died
+# with a tag mismatch). 8637d08 = the middlebox-CCS skip + the full cert chain on top
 # of fffdf04: (1) a TLS 1.3 client sends a PLAINTEXT middlebox
 # ChangeCipherSpec record (content type 0x14, RFC 8446 §5/§6.2) before its
 # encrypted Finished; read_client_finished decrypted exactly one record,
@@ -94,13 +104,13 @@ name = "wardend"
 # core-libunwind, already in the rootfs); only demit is static (it is the
 # initramfs init — built in this SAME pass with the nolibc target spec, the
 # separate user-demit package is retired).
-version = "8637d08d458d73b8297fc1fbbb3fa21abe1e2490"
+version = "29fb9820c425bca303c48b14b752cc753db05879"
 description = "wardend unit supervisor + regentd + posternd (russh SSH) + xattach (XDP attach) + seald (evidence daemon, in-sandbox co-tenant) + scribed (log ring) + keepd (LUKS) + demit (initramfs init) + wardenctl + bailiffd"
 license = "MIT OR Apache-2.0"
 website = "https://codeberg.org/lrvick/wardend"
 
 [sources.wardend]
-hash = "f607bec8239a1328b284494a2cbcf415f6349c31075c4b126d98521a8d16c65c"
+hash = "0f3a6b5440321f1174940b3f3ab9d087c52aa6ece728ef1889614a809a06cea9"
 format = "tar.gz"
 file = "wardend-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/wardend/archive/{version}.{format}"]
