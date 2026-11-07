@@ -50,13 +50,13 @@ name = "wardend"
 # core-libunwind, already in the rootfs); only demit is static (it is the
 # initramfs init — built in this SAME pass with the nolibc target spec, the
 # separate user-demit package is retired).
-version = "996c60329e656324d83cb0736af11141eecdbf80"
+version = "4f5f66258cc3b7b6474506ff795b70e49de76e82"
 description = "wardend unit supervisor + regentd + posternd (russh SSH) + xattach (XDP attach) + seald (evidence daemon, in-sandbox co-tenant) + scribed (log ring) + keepd (LUKS) + demit (initramfs init) + wardenctl + bailiffd"
 license = "MIT OR Apache-2.0"
 website = "https://codeberg.org/lrvick/wardend"
 
 [sources.wardend]
-hash = "5cc50dd3e6c0b737f4fa94605d9e615e47b7733bfe8e1e0286b815a43f177537"
+hash = "61a834f01e655429c885196e2a70bb30fcebae91c0dcddd84bb234506ebcc35c"
 format = "tar.gz"
 file = "wardend-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/wardend/archive/{version}.{format}"]
