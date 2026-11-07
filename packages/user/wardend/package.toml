@@ -1,9 +1,16 @@
 [package]
 name = "wardend"
-# Pinned to commit 9831d7b (the ACME nonce fix) of
+# Pinned to commit 22957b6 (the http-01 key-authorization fix) of
 # https://codeberg.org/lrvick/wardend: the containerized unit supervisor
 # stack that replaces execd + the sysnet/sshdt shell in the wardend enclave
-# topology. 9831d7b = the ACME Replay-Nonce threading fix on top of 450e290
+# topology. 22957b6 = the http-01 key-authorization fix on top of 9831d7b:
+# the served /.well-known/acme-challenge body was token + "." + b64url(the
+# whole JWK JSON), but RFC 8555 8.1 requires token + "." + base64url(the
+# RFC 7638 SHA-256 thumbprint of the canonical JWK). Boulder recomputes the
+# thumbprint and compares byte-for-byte, so the served body never matched and
+# every http-01 validation marked the authorization INVALID (the box reached
+# OrderPending + POSTed the challenge but never finalized). Routed through the
+# existing jwk_thumbprint helper. 9831d7b = the ACME Replay-Nonce threading fix on top of 450e290
 # (see below): the ACME client reused ONE Replay-Nonce across fetch_order /
 # fetch_authz / finalize, but Boulder's nonces are single-use (RFC 8555 6.5),
 # so the follow-on POST-as-GET replayed a spent nonce and Boulder answered
@@ -71,13 +78,13 @@ name = "wardend"
 # core-libunwind, already in the rootfs); only demit is static (it is the
 # initramfs init — built in this SAME pass with the nolibc target spec, the
 # separate user-demit package is retired).
-version = "9831d7b98b23038ee4e8092419e4f65ebab73e4a"
+version = "22957b6ec6bebfd3836c682eebff0f8a6966bbba"
 description = "wardend unit supervisor + regentd + posternd (russh SSH) + xattach (XDP attach) + seald (evidence daemon, in-sandbox co-tenant) + scribed (log ring) + keepd (LUKS) + demit (initramfs init) + wardenctl + bailiffd"
 license = "MIT OR Apache-2.0"
 website = "https://codeberg.org/lrvick/wardend"
 
 [sources.wardend]
-hash = "3a28fd59dfa817ca78f2c072eee6c539c5429e80d5aac772dd2394de4072fbc8"
+hash = "7db1e747d76b9eaee8a25c430dfd2de215c4c30c95a1e6afeb2e0cc71042c28b"
 format = "tar.gz"
 file = "wardend-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/wardend/archive/{version}.{format}"]
