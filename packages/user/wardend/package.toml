@@ -1,9 +1,14 @@
 [package]
 name = "wardend"
-# Pinned to commit 29fb982 (the TLS 1.3 wire-format fixes) of
+# Pinned to commit 71ff804 (the :443 route fallback) of
 # https://codeberg.org/lrvick/wardend: the containerized unit supervisor
 # stack that replaces execd + the sysnet/sshdt shell in the wardend enclave
-# topology. 29fb982 = the certificate_list frame fix + the application
+# topology. 71ff804 = the dead-backend route fallback on top of 29fb982: the
+# vhost dialed the backend UDS after the handshake and returned silently on
+# connect failure, so a routed domain whose backend unit is down reset every
+# client (the live acme-test.cautionos.dev PR_CONNECT_RESET); the probe now
+# decides relay vs the attest verify page BEFORE the branch. 29fb982 = the
+# certificate_list frame fix + the application
 # sequence-number bases on top of 8637d08: (1) the chain fix had emitted a
 # bogus per-entry length prefix inside the certificate_list; RFC 8446
 # 4.4.2 entries are self-delimiting, so OpenSSL d2i'd the wrong slice as
@@ -104,13 +109,13 @@ name = "wardend"
 # core-libunwind, already in the rootfs); only demit is static (it is the
 # initramfs init — built in this SAME pass with the nolibc target spec, the
 # separate user-demit package is retired).
-version = "29fb9820c425bca303c48b14b752cc753db05879"
+version = "71ff804bf0952fc5460402c126a8f162e0c0a849"
 description = "wardend unit supervisor + regentd + posternd (russh SSH) + xattach (XDP attach) + seald (evidence daemon, in-sandbox co-tenant) + scribed (log ring) + keepd (LUKS) + demit (initramfs init) + wardenctl + bailiffd"
 license = "MIT OR Apache-2.0"
 website = "https://codeberg.org/lrvick/wardend"
 
 [sources.wardend]
-hash = "0f3a6b5440321f1174940b3f3ab9d087c52aa6ece728ef1889614a809a06cea9"
+hash = "ff70473f80bfa02e22f5ca1bdcc12f81972f95b58e9204614be8326a60152c68"
 format = "tar.gz"
 file = "wardend-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/wardend/archive/{version}.{format}"]
