@@ -218,6 +218,18 @@ COPY src/dev-sev-guest /dev/sev-guest
 # without a shell (FROM scratch has no /bin/sh); the gofer's MkdirAll then
 # finds the full path already present (no mkdir syscall -> no EROFS).
 COPY src/run/wardend/devices/.keep /run/wardend/devices/.keep
+# Pre-create /run/wardend/seal-devices (the attestation-devices bind DESTINATION)
+# in the image. Same P4 gofer rule as the devices .keep above and the /dev/sev-guest
+# placeholder: the seald unit HCL rbind-mounts {root}/seal-devices, and the gofer
+# MkdirAlls the bind DESTINATION inside the RO erofs bundle rootfs (where /run does
+# not pre-exist) BEFORE the tmpfs /run is mounted, so a missing parent is EROFS ->
+# "cannot read client sync file: EOF" -> runsc create 128 (the wedge this fixes: the
+# host-side rbind renders correctly and opens the chardev, but create 128s before the
+# anchor gate ever runs). The COPY of a .keep file creates the parent dirs without a
+# shell (FROM scratch has no /bin/sh); the gofer's MkdirAll then finds the full path
+# already present (no mkdir syscall -> no EROFS). This is the seald-only subtree (the
+# rbind that carries tpmrm0 in as a real chardev via the moat's nested sub-mounts).
+COPY src/run/wardend/seal-devices/.keep /run/wardend/seal-devices/.keep
 # posternd-bundle: the SSH daemon's bundle (a Dir rootfs). The warden's
 # posternd unit (src/warden/units/posternd.hcl — being created in the
 # wardend repo in parallel; the CURRENT pin does not have it yet) references
