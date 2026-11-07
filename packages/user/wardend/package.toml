@@ -1,9 +1,20 @@
 [package]
 name = "wardend"
-# Pinned to commit fffdf04 (the ACME cert-key split) of
+# Pinned to commit 8637d08 (the browser-handshake fixes) of
 # https://codeberg.org/lrvick/wardend: the containerized unit supervisor
 # stack that replaces execd + the sysnet/sshdt shell in the wardend enclave
-# topology. fffdf04 = the cert/account key split on top of 22957b6:
+# topology. 8637d08 = the middlebox-CCS skip + the full cert chain on top
+# of fffdf04: (1) a TLS 1.3 client sends a PLAINTEXT middlebox
+# ChangeCipherSpec record (content type 0x14, RFC 8446 §5/§6.2) before its
+# encrypted Finished; read_client_finished decrypted exactly one record,
+# so the 6-byte CCS hit the short-record guard and every browser
+# connection died with PR_CONNECT_RESET right after the handshake looked
+# fine (live on acme-test.cautionos.dev). (2) The Certificate message
+# carried the leaf only; the issued LE leaf is signed by the YE1
+# intermediate (not in client trust stores), so curl said 'unable to get
+# local issuer'. fetch_certificate returns the full-chain PEM; serve every
+# block (leaf-to-root) in the certificate_list. fffdf04 = the cert/account
+# key split on top of 22957b6:
 # Boulder rejects finalization when the CSR's key equals the ACME account
 # key ("certificate public key must be different than account key", live
 # on acme-test.cautionos.dev), so the CSR + the issued cert now live on a
@@ -83,13 +94,13 @@ name = "wardend"
 # core-libunwind, already in the rootfs); only demit is static (it is the
 # initramfs init — built in this SAME pass with the nolibc target spec, the
 # separate user-demit package is retired).
-version = "fffdf04470525dbccfe198b2dfe98cfc5b30e2ba"
+version = "8637d08d458d73b8297fc1fbbb3fa21abe1e2490"
 description = "wardend unit supervisor + regentd + posternd (russh SSH) + xattach (XDP attach) + seald (evidence daemon, in-sandbox co-tenant) + scribed (log ring) + keepd (LUKS) + demit (initramfs init) + wardenctl + bailiffd"
 license = "MIT OR Apache-2.0"
 website = "https://codeberg.org/lrvick/wardend"
 
 [sources.wardend]
-hash = "7edbf315f31fa13a22ae32a703b11aa5f1e7f43e5c866997e7ec4d67f190088a"
+hash = "f607bec8239a1328b284494a2cbcf415f6349c31075c4b126d98521a8d16c65c"
 format = "tar.gz"
 file = "wardend-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/wardend/archive/{version}.{format}"]
