@@ -242,6 +242,16 @@ COPY src/run/wardend/devices/.keep /run/wardend/devices/.keep
 # already present (no mkdir syscall -> no EROFS). This is the seald-only subtree (the
 # rbind that carries tpmrm0 in as a real chardev via the moat's nested sub-mounts).
 COPY src/run/wardend/seal-devices/.keep /run/wardend/seal-devices/.keep
+# The trust-root BASELINE (SEC-02 shape-D): the dev admin public key, baked
+# for seald to self-materialize into the devices plane at boot (seald's
+# seed_admin_pubkeys copies /etc/wardend/admin-pubkeys/*.pub -> the devices
+# dir before loading, never-clobber; 581e85e). This is PUBLIC material (the
+# 65-byte uncompressed SEC1 P-256 point); the private half is NOT here (it
+# lives in the host rootfs for the wardenctl client). DEV material: the
+# operator replaces both halves before prod. Generate with
+# wardenctl admin-key pub | xxd -r -p (65 RAW bytes, NOT the 130-hex stdout
+# — a naive redirect = 131B = silently empty keyring).
+COPY src/etc/wardend/admin-pubkeys/dev.pub /etc/wardend/admin-pubkeys/dev.pub
 # posternd-bundle: the SSH daemon's bundle (a Dir rootfs). The warden's
 # posternd unit (src/warden/units/posternd.hcl — being created in the
 # wardend repo in parallel; the CURRENT pin does not have it yet) references
@@ -333,6 +343,16 @@ COPY --from=user-wardend /usr/bin/wardend /usr/bin/wardend
 # the bundle with the HSM public key (the 65-byte P-256 point the seald
 # writes to the bind-mounted devices dir as hsm-pub.hex).
 COPY --from=user-wardend /usr/bin/wardenctl /usr/bin/wardenctl
+# The DEV admin client key (SEC-02 shape-D): wardenctl is a HOST-side tool
+# (this rootfs), and the admin signature gate needs WARDENCTL_ADMIN_KEY
+# pointing at the 32-byte private seed for the control-plane commands
+# (facts/state/seal/...; status + attest stay keyless). Baked here next to
+# wardenctl so the def-of-done facts probe (G3) runs the authenticated path
+# on the host. DEV material by the shape-D-for-dev posture (same trust
+# class as the baked dev authorized_keys): the operator replaces BOTH the
+# private seed (here) AND the public trust root (the seald-bundle baseline)
+# before any prod deploy.
+COPY src/etc/wardend/admin-keys/dev.seed /etc/wardend/admin-keys/dev.seed
 # keepd: the host-side disks daemon (the LUKS2 data plane). The keepd
 # unit runs under the container moat with `rootfs = "/"` (the host
 # rootfs), so the binary must be in THIS stage (the netstack-bundle

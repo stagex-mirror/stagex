@@ -47,4 +47,32 @@
 # across boots and drive nothing. Inert-but-warm beats inert-and-cold:
 # commenting buys zero safety and hides a cutover dependency (§9 row 7:
 # deploy is ACME-issuance-dependent for the System Health host-add).
+#
+# The baked STAGING argv fallback (chipmunk hcl cite, verified at pin
+# 72ae8b0 bastiond.hcl:65 = command [--acme-url
+# https://acme-staging-v02.api.letsencrypt.org/directory]): with NO fleet
+# acme= line, a setdomain'd host falls to the baked STAGING URL -> the
+# browser verifier pins the PRODUCTION ISRG root -> fail CLOSED. So this
+# production acme= line is LOAD-BEARING for the cutover (it is the ONLY
+# thing that makes a host-add issue a production-rooted cert), not mere
+# bookkeeping. Keep it live.
 acme=https://acme-v02.api.letsencrypt.org/directory
+#
+# System Health (the de-host campaign destination, D1): posternd's new
+# HTTP face on the dedicated http.sock UDS, reached by the bastiond SNI
+# route table. grammar locked: backend name == the socket stem on the
+# DEVICES PLANE (backend_uds() -> "/run/wardend/devices/{name}.sock" at
+# the bastiond route builder; the container line declares the name so the
+# parser's dangling-backend check is satisfied — posternd is spawned by
+# its OWN unit, the image ref here is inert declaration grammar, exactly
+# like the retired nginx block).
+# The backend=http resolves to /run/wardend/devices/http.sock
+# (DEFAULT_HTTP_SOCK, http.rs:61). The devices/ dir is the SHARED
+# CROSS-NS RENDEZVOUS PLANE (the per-daemon-sandbox split makes bare
+# /run/wardend namespace-private; every cross-sandbox face rides devices/
+# — :22's postern.sock was its first consumer). Domain = the operator's
+# stated end-state (verify.cautionos
+# .dev); the only prod-time change on this line is DNS + ACME issuance
+# (PointsToSelf gates on real-IP answers — an operator deploy concern).
+container docker.io/library/posternd:latest name=http
+host verify.cautionos.dev backend=http
