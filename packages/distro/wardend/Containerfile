@@ -45,6 +45,17 @@ FROM scratch AS bastiond-bundle
 COPY --from=core-musl . /
 COPY --from=core-libunwind . /
 COPY --from=user-wardend /usr/bin/bastiond /usr/bin/bastiond
+# tss2 + libcrypto runtime (the System Health seam): since wardend ddc3e3f
+# (the bootproof::proxy seam adoption in bastion/src/health.rs), bastiond's
+# NEEDED carries libtss2-{tcti-device,esys,mu}.so.0 (the bootproof seal
+# stack links tss2 dynamically) - without these the sandbox init dies at
+# exec ("Error loading shared library libtss2-esys.so.0" -> exit 127 ->
+# the unit crash-loop -> no netstack, no faces, no SSH). The SAME two COPYs
+# the seald-bundle stage uses (the .so entries are relative symlinks, so a
+# full /usr/lib COPY, not single-file); libcrypto.so.3 is esys's own NEEDED
+# (transitive, proven in the seald-bundle's crash-loop lesson).
+COPY --from=user-tpm2-tss /usr/lib /usr/lib
+COPY --from=core-openssl /usr/lib/libcrypto.so.3 /usr/lib/libcrypto.so.3
 # NOTE: the `bridge` binary was deleted in wardend 0980f89 (the wire logic
 # was folded into bastiond; the wardend-bridge package now produces only
 # the nginx-srv co-tenant — dpmon + offline-srv are deleted). No `bridge`
@@ -59,8 +70,9 @@ COPY --from=user-wardend /usr/bin/nginx-srv /usr/bin/nginx-srv
 # NOTE: posternd + seald + scribed are no longer netstack co-tenants — they
 # are per-daemon gvisor units with their own dedicated bundle images (the
 # posternd-bundle + seald-bundle stages below, like scribe-bundle). dpmon +
-# offline-srv are deleted entirely. The tss2 + libcrypto runtime moved to
-# the seald bundle (seald's NEEDED). keepd: the host-side disks daemon
+# offline-srv are deleted entirely. The tss2 + libcrypto runtime ships in
+# BOTH the seald bundle (seald's NEEDED) and the bastiond bundle (since the
+# ddc3e3f seam swap, bastiond's NEEDED too - see the COPY above). keepd: the host-side disks daemon
 # (the LUKS2 data plane; a persist key-ed secret WARDEND_LUKS_KEY; the
 # gvisor moat has no block-device passthrough, so keepd runs under the
 # container moat with the host's /dev + CAP_SYS_ADMIN). Shipped by
