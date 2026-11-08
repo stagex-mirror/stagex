@@ -251,7 +251,11 @@ COPY src/run/wardend/seal-devices/.keep /run/wardend/seal-devices/.keep
 # operator replaces both halves before prod. Generate with
 # wardenctl admin-key pub | xxd -r -p (65 RAW bytes, NOT the 130-hex stdout
 # — a naive redirect = 131B = silently empty keyring).
-COPY src/etc/wardend/admin-pubkeys/dev.pub /etc/wardend/admin-pubkeys/dev.pub
+# PROD BAKE (2026-11-08, deploy of 55cec5db): dev.pub replaced with prod.pub —
+# the dev seed is public in git, so leaving dev.pub baked would leave a
+# publicly-known seed authorized on the control plane. prod.pub is minted with
+# the tip wardenctl (`admin-key gen` + `admin-key pub | xxd -r -p`).
+COPY src/etc/wardend/admin-pubkeys/prod.pub /etc/wardend/admin-pubkeys/prod.pub
 # posternd-bundle: the SSH daemon's bundle (a Dir rootfs). The warden's
 # posternd unit (src/warden/units/posternd.hcl — being created in the
 # wardend repo in parallel; the CURRENT pin does not have it yet) references
@@ -352,7 +356,11 @@ COPY --from=user-wardend /usr/bin/wardenctl /usr/bin/wardenctl
 # class as the baked dev authorized_keys): the operator replaces BOTH the
 # private seed (here) AND the public trust root (the seald-bundle baseline)
 # before any prod deploy.
-COPY src/etc/wardend/admin-keys/dev.seed /etc/wardend/admin-keys/dev.seed
+# PROD BAKE (2026-11-08, deploy of 55cec5db): dev.seed replaced with
+# prod.seed (0600, git-ignored — `git check-ignore` must say YES for this
+# path). The dev half is fully retired from this bake: neither half of the
+# public-in-git dev pair is authorized on the prod control plane.
+COPY src/etc/wardend/admin-keys/prod.seed /etc/wardend/admin-keys/prod.seed
 # keepd: the host-side disks daemon (the LUKS2 data plane). The keepd
 # unit runs under the container moat with `rootfs = "/"` (the host
 # rootfs), so the binary must be in THIS stage (the netstack-bundle

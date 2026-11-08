@@ -44,3 +44,4 @@ __pycache__
 /qemu-boot.sh
 /qemu-startup.sh
 /run-verify.sh
+packages/distro/wardend/src/etc/wardend/admin-keys/*.seed
