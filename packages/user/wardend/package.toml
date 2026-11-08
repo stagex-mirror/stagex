@@ -126,11 +126,17 @@ mirrors = ["https://codeberg.org/lrvick/wardend/archive/{version}.{format}"]
 # wardenctl crates' path dep `../../../bootproof/crates/<crate>` resolves to
 # `/bootproof/crates/<crate>`. This source drops the bootproof archive into
 # the same build context (fetch/user/wardend); the Containerfile extracts it
-# to /bootproof. The archive is pre-seeded in fetch/user/wardend/ so the
-# build uses it without re-fetching (the lrvick mirror 404s some commits).
+# to /bootproof. Sibling pin raised to the gate tip 0b52091 (the I-2 doc-
+# signature API: canonical_doc_digest + the 3-arg build_wardend_evidence —
+# seal's admin.rs at wardend 3c2516e imports them; the stale 5fa8fb4 sibling
+# fails the build: E0432 + E0061). Same consensus bytes as [sources.bootproof]
+# in packages/user/bootproof/package.toml (byte-identical file, cp-witnessed
+# sha) under the wardend package's fetch placement. Re-anchor: the hash is the
+# git-archive CONSENSUS (three-way cross-host, blessed form), NOT codeberg
+# stream bytes.
 [sources.bootproof]
-version = "5fa8fb41e77be98f72356a6b4993993e97633579"
-hash = "9325c24f076cf5f35ed55d15609ab2b1e4bfd91cedb21575d664de06c094be3c"
+version = "0b52091fc24a4eea84c2fd1a996150bd89d2258f"
+hash = "8ba7f0420843e40658300ac8ef7666e714392b6920e4c11706242eace00b407e"
 format = "tar.gz"
 file = "bootproof-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/bootproof/archive/{version}.{format}"]
