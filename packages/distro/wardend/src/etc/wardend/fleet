@@ -6,8 +6,12 @@
 #
 # The container line (the backend) must precede the host line (a dangling
 # backend is a hard error in the spec parser).
-container docker.io/library/udunit:latest name=udunit
-host udunit.lrvick.dev backend=udunit
+# The udunit vhost was REMOVED from the default boot (de-host campaign
+# ruling: a second outside host whose backend is spawned by nothing — a
+# dead-backend route; masked pre-deletion by the legacy page, post-
+# deletion a 404. Single-outside-host doctrine). The container+host pair
+# moved together (a dangling backend is a spec-parser hard error).
+#
 # The capstone's second vhost (the stock-nginx concept-proof): the
 # `container` line declares the backend name (the spec parser's hard-error
 # check: a dangling backend is a typo); the `host` line binds the domain
@@ -16,11 +20,31 @@ host udunit.lrvick.dev backend=udunit
 # as well (a second ACME order, the same seald HSM key); both domains
 # are served over HTTPS with real certs (the SNI routes the domain to the
 # backend UDS).
-container docker.io/library/nginx:latest name=nginx
-host nginx.lrvick.dev backend=nginx
+# COMMENTED-OUT (de-host campaign ruling: nginx = comment-out encoding,
+# single-outside-host doctrine — nginx-srv rides as opt-in proof config).
+# The WHOLE nginx-referencing cluster moves together (parser-relevant is
+# FOUR lines, not the unit-of-three phrase): container(19) + both hosts
+# (20 + acme-test 25) — commenting the container while acme-test's
+# backend=nginx stays live is a dangling-backend HARD ERROR at boot.
+# acme-test rides with its only backend (its domain was an nginx
+# concept-proof; a live backend-less host line is the hard-error class).
+#container docker.io/library/nginx:latest name=nginx
+#host nginx.lrvick.dev backend=nginx
+#host acme-test.cautionos.dev backend=nginx
 # The capstone's ACME domain (real LE-issued cert, our own TLS 1.3 ACME
-# client + seald HSM key). Reuses the nginx backend (the SNI route).
-# The `acme=` line is the ACME directory URL — PRODUCTION (the staging
-# edge resets the host's connection; production is the capstone target).
-host acme-test.cautionos.dev backend=nginx
+# client + seald HSM key). Rode the nginx backend (the SNI route) — now
+# riding the comment-out with the cluster.
+#
+# KEEP-ACTIVE (chipmunk ruling + squid source check, auditable):
+# the acme= line stays LIVE with zero host lines. Verified host-line-
+# driven, NOT cert-store-driven: acme_thread iterates state.domains
+# (wire.rs:3223; populated ONLY from spec host lines at :2941/:3560),
+# gated on state.active (PointsToSelf DNS poll, :3221-3224); zero host
+# lines = zero iterations = zero orders = the line is INERT. No cert-
+# store enumeration exists: cert_dir is WRITE-ONLY (write_cert :3293-
+# 3302 is the only disk touch; s.certs written only at :3250, in-memory)
+# and /run/wardend/certs is TMPFS — capstone-era certs cannot persist
+# across boots and drive nothing. Inert-but-warm beats inert-and-cold:
+# commenting buys zero safety and hides a cutover dependency (§9 row 7:
+# deploy is ACME-issuance-dependent for the System Health host-add).
 acme=https://acme-v02.api.letsencrypt.org/directory
