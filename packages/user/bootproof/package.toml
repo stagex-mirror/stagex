@@ -1,15 +1,18 @@
 [package]
 name = "bootproof"
-version = "43f3d765f3911df7f6a78a8465d0835d58ce68d6"
+version = "0b52091fc24a4eea84c2fd1a996150bd89d2258f"
 description = "Rust remote attestation: the shared library (attest engine, dmext LUKS unseal, collect server loop, bootproof protocol) + a narrow CLI (tpm-probe / attest / verify). SEV-SNP + TPM2 in-process (sev crate), zero OS-exec, identity self-heal."
 license = "MIT OR Apache-2.0"
 website = "https://codeberg.org/lrvick/bootproof"
 
 [sources.bootproof]
-hash = "453ed82459e3f91ecb9e34de7a91bdb1fa40ce84f9e32062fd2b32163078628e"
+hash = "8ba7f0420843e40658300ac8ef7666e714392b6920e4c11706242eace00b407e"
 format = "tar.gz"
 file = "bootproof-{version}.{format}"
-# lrvick mirror: the caution/bootproof mirror 404s this commit (the Phase-4
-# bootproofd merge is on lrvick); the archive is pre-seeded in
-# fetch/user/bootproof/ so the build uses it without re-fetching.
+# Re-anchor (combined re-gate, operator auth 2026-11-08): the hash is the
+# git-archive CONSENSUS (three-way cross-host, blessed form: git -c
+# tar.umask=0002 archive --format=tar.gz --prefix=bootproof/ <tip>), NOT
+# codeberg stream bytes; the archive is seeded into fetch/user/bootproof/
+# by the STEP 0 seed producer (assert-before-build), so the forge never
+# enters the trust path and a clean host verifies from source.
 mirrors = ["https://codeberg.org/lrvick/bootproof/archive/{version}.{format}"]
