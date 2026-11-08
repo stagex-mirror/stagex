@@ -263,6 +263,23 @@ COPY src/run/wardend/seal-devices/.keep /run/wardend/seal-devices/.keep
 FROM scratch AS posternd-bundle
 COPY --from=core-musl . /
 COPY --from=core-libunwind . /
+# tss2 + libcrypto runtime (the bootproof forced-link class, the third
+# victim: bastiond at 2ce7277, this stage now, wardenctl in the host rootfs
+# below). Since wardend e1968e9 ('postern: borrow the bootproof HTTP-attest
+# policy for the :22 /health/api face') + 6fb8d49 (parse_hex_nonce),
+# posternd depends on the bootproof lib, and bootproof-tpm (attest + esys)
+# is an UNCONDITIONAL dep of that lib - bootproof-tpm/build.rs FORCES
+# -ltss2-esys -ltss2-mu -ltss2-tcti-device + libcrypto + a trampoline.o,
+# so posternd's NEEDED carries libtss2-{tcti-device,esys,mu}.so.0 (a host
+# debug ldd shows none - the production link is effectively not --as-needed;
+# do not ldd-disprove this). Without these the sandbox init dies at exec
+# ('Error loading shared library libtss2-esys.so.0' -> exit 127 -> the
+# posternd unit crash-loop -> no :22 face, no wardenctl path). The SAME two
+# COPYs the seald-bundle + bastiond-bundle stages use (full /usr/lib: the
+# .so entries are relative symlinks, single-file COPY breaks them);
+# libcrypto.so.3 is esys's own transitive NEEDED.
+COPY --from=user-tpm2-tss /usr/lib /usr/lib
+COPY --from=core-openssl /usr/lib/libcrypto.so.3 /usr/lib/libcrypto.so.3
 COPY --from=user-wardend /usr/bin/posternd /usr/bin/posternd
 COPY src/rootfs/etc/resolv.conf /etc/resolv.conf
 COPY src/rootfs/etc/hostname /etc/hostname
@@ -294,6 +311,18 @@ COPY --from=core-busybox . /
 # symlink; BuildKit's single-file COPY of a relative symlink fails.
 COPY --from=core-musl . /
 COPY --from=core-libunwind . /
+# tss2 + libcrypto runtime for the HOST-side wardenctl (the bootproof
+# forced-link class, see the posternd-bundle stage's comment for the full
+# mechanism - bootproof-tpm's build.rs forces the dynamic tss2 link into
+# EVERY binary that touches the bootproof lib, and wardenctl does since the
+# bootproof path-dep reached its build graph: NEEDED carries
+# libtss2-{tcti-device,esys,mu}.so.0 + libcrypto transitively). Without
+# these the in-disk wardenctl cannot exec ('Error loading shared library
+# libtss2-esys.so.0' on the host); the shell-free host design masked this
+# across builds (nobody could run it to find out). Full-dir COPY per the
+# relative-symlink/BuildKit law; libcrypto.so.3 is esys's own NEEDED.
+COPY --from=user-tpm2-tss /usr/lib /usr/lib
+COPY --from=core-openssl /usr/lib/libcrypto.so.3 /usr/lib/libcrypto.so.3
 COPY --from=user-wardend /usr/bin/regentd /usr/bin/regentd
 COPY --from=user-wardend /usr/bin/wardend /usr/bin/wardend
 # wardenctl: the host-side admin client (the wardenctl target's client

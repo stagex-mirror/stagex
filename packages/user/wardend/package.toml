@@ -109,13 +109,13 @@ name = "wardend"
 # core-libunwind, already in the rootfs); only demit is static (it is the
 # initramfs init — built in this SAME pass with the nolibc target spec, the
 # separate user-demit package is retired).
-version = "ddc3e3f969ffffb385b7a56e9eaea8a2d5c8a653"
+version = "6d68c692a60d0aac1f55edd3f79f4e15a7bc6d95"
 description = "wardend unit supervisor + regentd + posternd (russh SSH) + xattach (XDP attach) + seald (evidence daemon, in-sandbox co-tenant) + scribed (log ring) + keepd (LUKS) + demit (initramfs init) + wardenctl + bailiffd"
 license = "MIT OR Apache-2.0"
 website = "https://codeberg.org/lrvick/wardend"
 
 [sources.wardend]
-hash = "f01a182d0e60cf7c8976e1ba6623f006d9ca91afa5daa7f93ac89ea1bdc080fb"
+hash = "2985b3b56943612d694caa5c8524d3c39f7d7aa2636c03923cab76807d031cf3"
 format = "tar.gz"
 file = "wardend-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/wardend/archive/{version}.{format}"]
@@ -129,8 +129,8 @@ mirrors = ["https://codeberg.org/lrvick/wardend/archive/{version}.{format}"]
 # to /bootproof. The archive is pre-seeded in fetch/user/wardend/ so the
 # build uses it without re-fetching (the lrvick mirror 404s some commits).
 [sources.bootproof]
-version = "caa1c7939489e6fe371bc4e8d4f9c2660f206083"
-hash = "3f473c60a3611536b367f0002f8ae71727e3fc9e9c65cc51ea0aebdc630c0e20"
+version = "5fa8fb41e77be98f72356a6b4993993e97633579"
+hash = "9325c24f076cf5f35ed55d15609ab2b1e4bfd91cedb21575d664de06c094be3c"
 format = "tar.gz"
 file = "bootproof-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/bootproof/archive/{version}.{format}"]
