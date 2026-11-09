@@ -109,13 +109,13 @@ name = "wardend"
 # core-libunwind, already in the rootfs); only demit is static (it is the
 # initramfs init — built in this SAME pass with the nolibc target spec, the
 # separate user-demit package is retired).
-version = "3c2516e490bd0f637179b8da0e8bdfb5c139421b"
+version = "49414a47da8718ed1bda05b846c6aee651f4369c"
 description = "wardend unit supervisor + regentd + posternd (russh SSH) + xattach (XDP attach) + seald (evidence daemon, in-sandbox co-tenant) + scribed (log ring) + keepd (LUKS) + demit (initramfs init) + wardenctl + bailiffd"
 license = "MIT OR Apache-2.0"
 website = "https://codeberg.org/lrvick/wardend"
 
 [sources.wardend]
-hash = "4ae9cd9a0abd333225399dfbd45c036d02155500ffca8d75f9332663133fe52e"
+hash = "37431f1ef88e4d71d24ab2a30fda1fab7eb24811021576aea13671f8e275678a"
 format = "tar.gz"
 file = "wardend-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/wardend/archive/{version}.{format}"]
@@ -130,13 +130,14 @@ mirrors = ["https://codeberg.org/lrvick/wardend/archive/{version}.{format}"]
 # signature API: canonical_doc_digest + the 3-arg build_wardend_evidence —
 # seal's admin.rs at wardend 3c2516e imports them; the stale 5fa8fb4 sibling
 # fails the build: E0432 + E0061). Same consensus bytes as [sources.bootproof]
-# in packages/user/bootproof/package.toml (byte-identical file, cp-witnessed
-# sha) under the wardend package's fetch placement. Re-anchor: the hash is the
+# in packages/user/bootproof/package.toml (byte-identical blessed archive,
+# STEP 0 seed x2 byte-identical) under the wardend package's fetch placement.
+# Re-anchor: the hash is the
 # git-archive CONSENSUS (three-way cross-host, blessed form), NOT codeberg
 # stream bytes.
 [sources.bootproof]
-version = "0b52091fc24a4eea84c2fd1a996150bd89d2258f"
-hash = "8ba7f0420843e40658300ac8ef7666e714392b6920e4c11706242eace00b407e"
+version = "5edced34692a6d91bf0efb4c4e273ea834d02107"
+hash = "38846ceacc8bb92c7c599fa7206af9dd936e7d6e76cf00f2d97a047d070ed415"
 format = "tar.gz"
 file = "bootproof-{version}.{format}"
 mirrors = ["https://codeberg.org/lrvick/bootproof/archive/{version}.{format}"]
