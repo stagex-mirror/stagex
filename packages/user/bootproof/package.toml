@@ -1,12 +1,12 @@
 [package]
 name = "bootproof"
-version = "0b52091fc24a4eea84c2fd1a996150bd89d2258f"
+version = "5edced34692a6d91bf0efb4c4e273ea834d02107"
 description = "Rust remote attestation: the shared library (attest engine, dmext LUKS unseal, collect server loop, bootproof protocol) + a narrow CLI (tpm-probe / attest / verify). SEV-SNP + TPM2 in-process (sev crate), zero OS-exec, identity self-heal."
 license = "MIT OR Apache-2.0"
 website = "https://codeberg.org/lrvick/bootproof"
 
 [sources.bootproof]
-hash = "8ba7f0420843e40658300ac8ef7666e714392b6920e4c11706242eace00b407e"
+hash = "38846ceacc8bb92c7c599fa7206af9dd936e7d6e76cf00f2d97a047d070ed415"
 format = "tar.gz"
 file = "bootproof-{version}.{format}"
 # Re-anchor (combined re-gate, operator auth 2026-11-08): the hash is the
