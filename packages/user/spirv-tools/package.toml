@@ -1,11 +1,11 @@
 [package]
 name = "spirv-tools"
-version = "1.4.341.0"
+version = "1.4.357.0"
 description = "API and commands for processing SPIR-V modules"
 website = "https://github.com/KhronosGroup/SPIRV-LLVM-Tools"
 license = "Apache-2.0"
 
 [sources.spirv-tools]
-hash = "15bfb678138cdf9cd1480dfb952547bbb66b763a735b6d5582578572f5c2e6f9"
+hash = "d31e7109b6ef3559067e53e520870eafed7c9534d00db9728814b6df03fa4a5e"
 file = "spirv-tools-{version}.tar.gz"
 mirrors = [ "https://github.com/KhronosGroup/SPIRV-Tools/archive/refs/tags/vulkan-sdk-{version}.tar.gz", ]

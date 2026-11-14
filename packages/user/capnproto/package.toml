@@ -1,11 +1,11 @@
 [package]
 name = "capnproto"
-version = "1.4.0"
+version = "1.5.0"
 description = "Cap'n Proto serialization and RPC system"
 license = "MIT"
 website = "https://capnproto.org"
 
 [sources.capnproto]
-hash = "fa02378ad522b318916b9ad928d1372fc9abd43dd1f4f0392e50450f5c87828f"
+hash = "77dbc13ca82d9c87ddb4581dd49559d45b63096433d3dadea08b7f31b360a5ba"
 file = "capnproto-c++-{version}.tar.gz"
 mirrors = [ "https://capnproto.org/{file}",]

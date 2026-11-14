@@ -1,7 +1,8 @@
 FROM stagex/pallet-clang-meson-busybox AS build
 COPY --from=stagex/core-coreutils . /
+COPY --from=stagex/core-libucontext . /
 COPY --from=stagex/user-gperf . /
-COPY --from=stagex/user-util-linux . /
+COPY --from=stagex/core-util-linux . /
 COPY --from=stagex/user-kmod . /
 COPY --from=stagex/user-py-jinja2 . /
 COPY --from=stagex/user-py-markupsafe . /
@@ -79,3 +80,4 @@ RUN --network=none <<-EOF
 EOF
 FROM stagex/core-filesystem AS package
 COPY --from=build /rootfs /
+COPY --from=stagex/core-libucontext /usr/lib/libucontext.so /usr/lib/libucontext.so.1 /usr/lib/
