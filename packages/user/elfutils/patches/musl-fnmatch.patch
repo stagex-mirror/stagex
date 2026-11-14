@@ -1,0 +1,13 @@
+--- a/lib/system.h
++++ b/lib/system.h
+@@ -182,6 +182,10 @@
+ #define DEFFILEMODE (S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH)/* 0666 */
+ #endif
+ 
++#ifndef FNM_EXTMATCH
++#define FNM_EXTMATCH 0
++#endif
++
+ static inline ssize_t __attribute__ ((unused))
+ pwrite_retry (int fd, const void *buf, size_t len, off_t off)
+ {

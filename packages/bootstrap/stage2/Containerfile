@@ -34,7 +34,7 @@ COPY --chmod=755 <<-'EOF' /env.sh
 	export PATH=${SYSROOT}/bin:${BASE_PATH}
 EOF
 
-ARG TARGET_LIST="x86_64 aarch64"
+ARG TARGET_LIST="x86_64 aarch64 riscv64"
 
 # Setup sysroot
 COPY --chmod=755 <<-'EOF' /sysroot.sh
@@ -237,7 +237,7 @@ COPY --chmod=755 <<-'EOF' /linux.sh
 	cp -r /linux-${LINUX_VERSION} /linux-build-${TARGET_ARCH}
 	cd /linux-build-${TARGET_ARCH}
 	set -eux
-	make -j$(nproc) ARCH="$(echo ${TARGET_ARCH} | sed 's/aarch64/arm64/')" headers
+	make -j$(nproc) ARCH="$(echo ${TARGET_ARCH} | sed 's/aarch64/arm64/' | sed 's/riscv64/riscv/')" headers
 	find usr/include ! -name '*.h' -type f -delete
 	cp -Rv usr/include/* "${SYSROOT}/include/"
 	rm -rf "${SYSROOT}/_tmp"

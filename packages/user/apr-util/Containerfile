@@ -10,9 +10,7 @@ COPY --from=stagex/user-openldap . /
 COPY --from=stagex/user-postgresql . /
 ADD fetch/apr-util-${VERSION}.tar.bz2 .
 WORKDIR /apr-util-${VERSION}
-COPY *.patch .
 RUN --network=none <<-EOF
-	patch -p1 < musl-fix-testsuite.patch
 	./configure \
 		--prefix=/usr \
 		--with-apr=/usr \

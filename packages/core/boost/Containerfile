@@ -43,6 +43,9 @@ RUN --network=none <<-EOF
 	[[ "$TARGETARCH" == "arm64" ]] \
 		&& ARCH="aarch64" \
 		&& BOOST_ARCH="$TARGETARCH"
+	[[ "$TARGETARCH" == "riscv64" ]] \
+		&& ARCH="riscv64" \
+		&& BOOST_ARCH="$ARCH"D
 	CLANG_VER="$(ls -d /lib/clang/*/ | sort -V | tail -1 | xargs basename)"
 	ln -s "/lib/clang/$CLANG_VER/lib/$ARCH-unknown-linux-musl" "/lib/clang/$CLANG_VER/lib/$BOOST_ARCH-pc-linux"
 	ln -sf /usr/bin/ld.mold /usr/bin/ld

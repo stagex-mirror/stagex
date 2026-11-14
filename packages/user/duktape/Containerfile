@@ -1,0 +1,11 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+ARG VERSION
+ADD fetch/duktape-${VERSION}.tar.xz .
+WORKDIR /duktape-${VERSION}
+RUN --network=none <<-EOF
+	make -f Makefile.sharedlibrary install \
+		DESTDIR="/rootfs" \
+		INSTALL_PREFIX="/usr"
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

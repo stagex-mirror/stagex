@@ -1,0 +1,92 @@
+From d050555c830a8c42cddf6fc24e94394f55d2c7bf Mon Sep 17 00:00:00 2001
+From: vad <vad.sol@proton.me>
+Date: Fri, 26 Jun 2026 11:01:58 +0200
+Subject: [PATCH] [TableGen] Make DFA packetizer resource numbering
+ deterministic
+
+`DFAPacketizerEmitter` collected itinerary records in a `std::set` keyed
+by Record pointers, so iteration order depended on allocation addresses.
+It also assigned functional-unit bits from the unit's index within each
+itinerary list, overwriting prior entries for duplicate FU names.
+
+This made generated packetizer tables non-reproducible for R600. In
+AMDGPU's R600 itineraries, `ALU_NULL` appears in both VLIW5 and VLIW4
+models at different positions; depending on iteration order it could be
+assigned either its own bit or collide with `TRANS`.
+
+Use insertion-ordered collection for itinerary records, assign resource
+bits once per functional-unit name, and use deterministic namespace
+grouping. This makes the generated `R600GenDFAPacketizer.inc` stable
+across builds and preserves distinct bits for `TRANS` and `ALU_NULL`.
+---
+ llvm/utils/TableGen/DFAPacketizerEmitter.cpp | 21 ++++++++++++--------
+ 1 file changed, 13 insertions(+), 8 deletions(-)
+
+diff --git a/llvm/utils/TableGen/DFAPacketizerEmitter.cpp b/llvm/utils/TableGen/DFAPacketizerEmitter.cpp
+index 1bf4c7a8fd80..628ce61d9024 100644
+--- a/llvm/utils/TableGen/DFAPacketizerEmitter.cpp
++++ b/llvm/utils/TableGen/DFAPacketizerEmitter.cpp
+@@ -17,6 +17,7 @@
+ #include "Common/CodeGenSchedule.h"
+ #include "Common/CodeGenTarget.h"
+ #include "DFAEmitter.h"
++#include "llvm/ADT/SetVector.h"
+ #include "llvm/ADT/SmallVector.h"
+ #include "llvm/Support/Debug.h"
+ #include "llvm/Support/raw_ostream.h"
+@@ -26,9 +27,7 @@
+ #include <cstdint>
+ #include <deque>
+ #include <map>
+-#include <set>
+ #include <string>
+-#include <unordered_map>
+ #include <vector>
+ 
+ #define DEBUG_TYPE "dfa-emitter"
+@@ -101,7 +100,7 @@ int DFAPacketizerEmitter::collectAllFuncUnits(
+   LLVM_DEBUG(dbgs() << "collectAllFuncUnits");
+   LLVM_DEBUG(dbgs() << " (" << ProcModels.size() << " itineraries)\n");
+ 
+-  std::set<const Record *> ProcItinList;
++  SmallSetVector<const Record *, 8> ProcItinList;
+   for (const CodeGenProcModel *Model : ProcModels)
+     ProcItinList.insert(Model->ItinsDef);
+ 
+@@ -116,14 +115,20 @@ int DFAPacketizerEmitter::collectAllFuncUnits(
+     // Convert macros to bits for each stage.
+     unsigned numFUs = FUs.size();
+     for (unsigned j = 0; j < numFUs; ++j) {
+-      assert((j < DFA_MAX_RESOURCES) &&
++      std::string FuncName = FUs[j]->getName().str();
++      auto It = FUNameToBitsMap.find(FuncName);
++      if (It != FUNameToBitsMap.end()) {
++        LLVM_DEBUG(dbgs() << " " << FUs[j]->getName() << ":0x"
++                          << Twine::utohexstr(It->second));
++        continue;
++      }
++      assert((TotalFUs < DFA_MAX_RESOURCES) &&
+              "Exceeded maximum number of representable resources");
+-      uint64_t FuncResources = 1ULL << j;
+-      FUNameToBitsMap[FUs[j]->getName().str()] = FuncResources;
++      uint64_t FuncResources = 1ULL << TotalFUs++;
++      FUNameToBitsMap[FuncName] = FuncResources;
+       LLVM_DEBUG(dbgs() << " " << FUs[j]->getName() << ":0x"
+                         << Twine::utohexstr(FuncResources));
+     }
+-    TotalFUs += numFUs;
+     LLVM_DEBUG(dbgs() << "\n");
+   }
+   return TotalFUs;
+@@ -215,7 +220,7 @@ void DFAPacketizerEmitter::run(raw_ostream &OS) {
+   CodeGenTarget CGT(Records);
+   CodeGenSchedModels CGS(Records, CGT);
+ 
+-  std::unordered_map<std::string, std::vector<const CodeGenProcModel *>>
++  std::map<std::string, std::vector<const CodeGenProcModel *>>
+       ItinsByNamespace;
+   for (const CodeGenProcModel &ProcModel : CGS.procModels()) {
+     if (ProcModel.hasItineraries()) {
+-- 
+2.52.0
+

@@ -58,6 +58,13 @@ matrix = ["@zoefinja:tchncs.de"]
 email = ["z.kron@lugges.eu", "zoe.kron@posteo.de"]
 website = "https://kron.fi"
 
+[people.vad]
+name = "Michal Rostecki"
+location = "DE-BE"
+matrix = ["@vad:unredacted.org", "@vad.sol:matrix.org"]
+email = ["vad.sol@proton.me"]
+fediverse = "@vad@defcon.social"
+
 [keys]
 
 [keys.lancevick.personal]
@@ -117,6 +124,14 @@ id = "21684C20478F95A277FA54A000B81DC07B71A212"
 algorithm = "ED25519"
 offline-ca = true
 backup = false
+interaction = true
+
+[keys.vad.personal]
+id = "EFAE0525DF1C0AC915DA02662250551AAE929E69"
+algorithm = "nistp256"
+devices = "Trezor Safe 7"
+offline-ca = true
+backup = true
 interaction = true
 
 [machines]
@@ -226,4 +241,26 @@ model = "Ryzen 7"
 ghz = 4.83
 cores = 16
 os = "Fedora"
+runtime = "Docker"
+
+[machines.vad.local1]
+location = "DE-BE"
+type = "metal"
+arch = "x86_64"
+brand = "AMD"
+model = "EPYC 7H12"
+ghz = 2.60
+cores = 64
+os = "Linux"
+runtime = "Docker"
+
+[machines.vad.local2]
+location = "DE-BE"
+type = "metal"
+arch = "riscv64"
+brand = "SpacemiT"
+model = "K3"
+ghz = 2.20
+cores = 16
+os = "Linux"
 runtime = "Docker"

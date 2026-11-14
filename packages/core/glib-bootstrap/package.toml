@@ -1,0 +1,12 @@
+[package]
+name = "glib-bootstrap"
+version = "2.88.1"
+description = "Bootstrap glib without introspection (for building gobject-introspection)"
+license = "LGPL-2.1-or-later"
+website = "https://gitlab.gnome.org/GNOME/glib"
+
+[sources.glib]
+hash = "51ab804c56f6eab3e5045c774d1290ac5e4c923d4f9a3d8e33123bee45c1840e"
+format = "tar.xz"
+file = "glib-{version}.{format}"
+mirrors = ["https://download.gnome.org/sources/glib/2.88/glib-{version}.tar.xz"]

@@ -5,6 +5,7 @@ COPY <<-'EOF' /etc/profile
 	ARCH=${ARCH:-}
 	[[ "$TARGETARCH" == "amd64" ]] && export ARCH="x86_64"
 	[[ "$TARGETARCH" == "arm64" ]] && export ARCH="aarch64"
+	[[ "$TARGETARCH" == "riscv64" ]] && export ARCH="riscv64"
 	[[ -n "$ARCH" ]] && TARGET=${ARCH}-unknown-linux-musl
 	export MAKEFLAGS="-j$(nproc)"
 	export CC=clang

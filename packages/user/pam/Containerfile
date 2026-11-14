@@ -1,0 +1,32 @@
+FROM stagex/pallet-clang-meson-busybox AS build
+COPY --from=stagex/core-docbook-xsl . /
+COPY --from=stagex/core-gettext . /
+COPY --from=stagex/core-gdbm . /
+COPY --from=stagex/core-libxml2 . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-pcre2 . /
+COPY --from=stagex/user-systemd . /
+ARG VERSION
+ADD fetch/Linux-PAM-${VERSION}.tar.xz .
+WORKDIR /Linux-PAM-${VERSION}
+RUN --network=none <<-EOF
+	meson setup \
+		--default-library=both \
+		--prefix=/usr \
+		--libdir=/usr/lib \
+		-Daudit=disabled \
+		-Ddb=gdbm \
+		-Ddocs=disabled \
+		-Dexamples=false \
+		-Di18n=enabled \
+		-Dlogind=enabled \
+		-Dnis=disabled \
+		-Dopenssl=enabled \
+		-Dpam_userdb=enabled \
+		-Dpwaccess=disabled \
+		. output
+	meson compile -C output
+	DESTDIR=/rootfs meson install --no-rebuild -C output
+EOF
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /

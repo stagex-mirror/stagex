@@ -1,0 +1,10 @@
+--- a/libmount/src/mountP.h
++++ b/libmount/src/mountP.h
+@@ -25,6 +25,7 @@
+ #include <stdarg.h>
+ #include <stdint.h>
+ #include <inttypes.h>
++#include <linux/openat2.h>
+ 
+ #include "c.h"
+ 

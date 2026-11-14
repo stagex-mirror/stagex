@@ -1,12 +1,12 @@
 [package]
 name = "nftables"
-version = "1.1.3"
+version = "1.1.6"
 description = "Netfilter nftables userspace tools"
 license = "GPL-2.0-only AND GPL-2.0-or-later"
 website = "https://netfilter.org/projects/nftables"
 
 [sources.nftables]
-hash = "9c8a64b59c90b0825e540a9b8fcb9d2d942c636f81ba50199f068fde44f34ed8"
+hash = "372931bda8556b310636a2f9020adc710f9bab66f47efe0ce90bff800ac2530c"
 format = "tar.xz"
 file = "nftables-{version}.{format}"
 mirrors = [ "https://netfilter.org/projects/nftables/files/{file}",]
