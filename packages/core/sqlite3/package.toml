@@ -1,12 +1,12 @@
 [package]
 name = "sqlite3"
-version = "3.53.2"
+version = "3.53.4"
 description = "SQLite is a C-language library that implements a small, fast, self-contained, high-reliability, full-featured, SQL database engine."
 license = "blessing"
 website = "https://www.sqlite.org"
 
 [sources.sqlite3]
-hash = "7fe547e2870e470f4891ff71f71b701e312d44e4413faabf5958afa0c789d3ca"
+hash = "16bc1b2027ba2653e3d262e740376be23f67cad77865db814493267494326c3c"
 format = "tar.gz"
 file = "sqlite3-{version}.{format}"
-mirrors = [ "https://github.com/sqlite/sqlite/archive/refs/tags/version-{version}.{format}", ]
+mirrors = [ "https://github.com/sqlite/sqlite/archive/refs/tags/version-{version}.{format}",]

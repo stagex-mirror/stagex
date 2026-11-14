@@ -1,12 +1,12 @@
 [package]
 name = "py-gssapi"
-version = "1.11.1"
+version = "1.12.0"
 description = "Provides both low-level and high level wrappers around the GSSAPI C libraries"
 website = "https://github.com/pythongssapi/python-gssapi"
 license = "ISC"
 
 [sources.py-gssapi]
-hash = "4598e5b5380a5fff1fee18e6401c21dceb9fb50cadde50ef84852f27caaa455d"
+hash = "86ca716f513e58555233d9826754188cff10f6475998ae47d86d80ab294d1de9"
 format = "tar.gz"
 file = "py-gssapi-{version}.{format}"
 mirrors = [ "https://github.com/pythongssapi/python-gssapi/archive/v{version}/python-gssapi-{version}.{format}",]

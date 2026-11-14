@@ -1,6 +1,6 @@
 FROM stagex/pallet-cython AS build
 ARG VERSION
-COPY --from=stagex/user-file . /
+COPY --from=stagex/core-file . /
 ADD fetch/py-magic-${VERSION}.tar.gz .
 WORKDIR /python-magic-${VERSION}
 RUN gpep517 build-wheel --wheel-dir .dist --output-fd 3 3>&1 >&2
