@@ -1,12 +1,12 @@
 [package]
 name = "py-pygments"
-version = "2.20.0"
+version = "2.21.0"
 description = "Generic syntax highlighter"
 license = "BSD-2-Clause"
 website = "https://pygments.org"
 
 [sources.py-pygments]
-hash = "6757cd03768053ff99f3039c1a36d6c0aa0b263438fcab17520b30a303a82b5f"
+hash = "610ca751c9bc2492b38eb9a38a7fbc93edbbb2d7182edaf34e66ae493dee5c8c"
 format = "tar.gz"
 file = "py-pygments-{version}.{format}"
 mirrors = [ "https://files.pythonhosted.org/packages/source/P/Pygments/pygments-{version}.{format}",]
