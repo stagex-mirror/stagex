@@ -4,7 +4,7 @@
 FROM stagex/pallet-gcc-gnu-busybox AS build
 ARG VERSION
 COPY --from=stagex/core-perl . /
-COPY --from=stagex/user-util-linux . /
+COPY --from=stagex/core-util-linux . /
 ADD fetch/syslinux-${VERSION}.tar.xz .
 WORKDIR /syslinux-${VERSION}
 COPY patches/*.patch .

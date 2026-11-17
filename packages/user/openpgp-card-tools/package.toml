@@ -1,12 +1,12 @@
 [package]
 name = "openpgp-card-tools"
-version = "0.11.12"
+version = "0.11.13"
 description = "Tools for OpenPGP card devices"
 license = "Apache-2.0 OR MIT"
 website = "https://codeberg.org/openpgp-card/openpgp-card-tools"
 
 [sources.openpgp-card-tools]
-hash = "f21ea3b67cf051fc74dd8a7f11ee4d9445f416ad566e479140bb51f28ce6ab75"
+hash = "bf39f8fd527ed99b361c173833811efa8e843032f4ca974f9e7c441b7f21edd1"
 format = "tar.gz"
 file = "openpgp-card-tools-{version}.{format}"
 mirrors = [ "https://codeberg.org/openpgp-card/openpgp-card-tools/archive/v{version}.{format}",]
