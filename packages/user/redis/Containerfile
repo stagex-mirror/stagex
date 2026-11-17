@@ -8,8 +8,12 @@ ENV SOURCE_DATE_EPOCH=1
 RUN --network=none <<-EOF
 	ln -sf /usr/bin/clang /usr/bin/gcc 2>/dev/null || true
 	export CFLAGS="-fno-lto -Wno-deprecated-declarations"
-	make -j1 USE_JEMALLOC=no MALLOC=libc BUILD_TLS=yes CC=clang all
-	make install PREFIX="/rootfs" INSTALL_BIN="/rootfs/usr/bin"
+	make -j1 USE_JEMALLOC=no MALLOC=libc BUILD_TLS=yes CC=clang redis-server redis-cli redis-benchmark
+	mkdir -p /rootfs/usr/bin
+	install -vDm755 src/redis-server src/redis-cli src/redis-benchmark -t /rootfs/usr/bin/
+	ln -sf redis-server /rootfs/usr/bin/redis-check-rdb
+	ln -sf redis-server /rootfs/usr/bin/redis-check-aof
+	ln -sf redis-server /rootfs/usr/bin/redis-sentinel
 	install -vDm644 -t /rootfs/usr/share/licenses/redis LICENSE.txt
 EOF
 FROM stagex/core-filesystem AS package
