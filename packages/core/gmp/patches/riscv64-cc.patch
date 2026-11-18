@@ -1,0 +1,24 @@
+--- a/configure.ac
++++ b/configure.ac
+@@ -1363,7 +1363,8 @@
+ 
+   # RISC-V
+   [riscv64-*-*])
+-    cclist="gcc"
++    cclist="gcc cc"
++    cc_cflags="-O2"
+     path="riscv/64"
+     ;;
+ 
+--- a/configure
++++ b/configure
+@@ -5008,7 +5008,8 @@
+ 
+   # RISC-V
+   riscv64-*-*)
+-    cclist="gcc"
++    cclist="gcc cc"
++    cc_cflags="-O2"
+     path="riscv/64"
+     ;;
+ 
