@@ -15,6 +15,10 @@ ENV CC='clang -fPIE -pie'
 RUN --network=none <<-EOF
 	set -eux
 	ARCH="$(uname -m)"
+	case "${ARCH}" in
+		riscv64) TARGET="linux64-riscv64" ;;
+		*) TARGET="linux-${ARCH}" ;;
+	esac
 	perl ./Configure \
 		--prefix=/usr \
 		--libdir=lib \
@@ -32,7 +36,7 @@ RUN --network=none <<-EOF
 		no-ssl3 \
 		no-seed \
 		no-weak-ssl-ciphers \
-		linux-${ARCH}
+		"${TARGET}"
 	make -j "$(nproc)"
 	make DESTDIR=/rootfs install
 	install -vDm644 -t /rootfs/usr/share/licenses/openssl LICENSE.txt
