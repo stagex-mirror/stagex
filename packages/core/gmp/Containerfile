@@ -15,9 +15,10 @@ COPY --from=stagex/core-zlib . /
 COPY --from=stagex/core-libzstd . /
 ADD fetch/gmp-${VERSION}.tar.xz .
 WORKDIR /gmp-${VERSION}
+ADD patches/riscv64-cc.patch .
 RUN --network=none <<EOF
 	set -eux
-	sed -i '/^  riscv64-\*-\*)/,/^    ;;/s|cclist="gcc"|cclist="gcc cc"\n    cc_cflags="-O2"|' configure
+	patch -p1 < riscv64-cc.patch
 	./configure \
 		--prefix=/usr \
 		--build=$(uname -m)-linux-musl
