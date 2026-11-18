@@ -1,12 +1,12 @@
 [package]
 name = "buildkit"
-version = "0.34.1"
+version = "0.35.0"
 description = "Concurrent, cache-efficient, and Dockerfile-agnostic builder toolkit"
 license = "Apache-2.0"
 website = "https://github.com/moby/buildkit"
 
 [sources.buildkit]
-hash = "0f7d4a765b273359d0752aa1c8a309606578fd0db42e71f0fc5de845d3b1139b"
+hash = "214dadc2fd4730171f7d3be2c96c80d063e943d5cba84e34d803d3ebd37b4fb3"
 format = "tar.gz"
 file = "buildkit-{version}.{format}"
 mirrors = [ "https://github.com/moby/buildkit/archive/v{version}.{format}",]

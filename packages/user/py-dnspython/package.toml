@@ -1,12 +1,12 @@
 [package]
 name = "py-dnspython"
-version = "2.9.1"
+version = "2.9.2"
 description = "A DNS toolkit for Python"
 website = "http://www.dnspython.org"
 license = "ISC"
 
 [sources.py-dnspython]
-hash = "422bc311e25c0d99ebb976cbc3d52f34fc72a49b48d81d08f4b44c6af8e0bbad"
+hash = "6b187bdd3e4838ea0920a7c6580040f707004cdb94a500c76bfaa471bd91b78f"
 format = "tar.gz"
 file = "py-dnspython-{version}.{format}"
 mirrors = [ "https://github.com/rthalley/dnspython/archive/v{version}/dnspython-{version}.{format}",]
