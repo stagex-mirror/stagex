@@ -74,7 +74,7 @@ RUN --network=none <<-EOF
 		--localstatedir=/var \
 		--with-layout=GNU \
 		--prefix=/usr \
-		--with-pic \
+		--enable-pic \
 		--disable-all \
 		--disable-zend-signals \
 		--with-bz2=shared \
@@ -135,7 +135,7 @@ RUN --network=none <<-EOF
 		--localstatedir=/var \
 		--with-layout=GNU \
 		--prefix=/usr \
-		--with-pic \
+		--enable-pic \
 		--disable-all \
 		--disable-zend-signals \
 		--with-bz2=shared \
