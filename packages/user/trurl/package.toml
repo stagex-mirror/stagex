@@ -1,0 +1,12 @@
+[package]
+name = "trurl"
+version = "0.16.1"
+description = "Command line tool for URL parsing and manipulation"
+license = "curl"
+website = "https://curl.se/trurl/"
+
+[sources.trurl]
+hash = "aac947d4fb421a58abc19a3771e87942cd4721b8f855c433478c94c11a8203ba"
+format = "tar.gz"
+file = "trurl-{version}.{format}"
+mirrors = [ "https://github.com/curl/trurl/releases/download/trurl-{version}/{file}",]
