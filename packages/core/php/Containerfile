@@ -60,6 +60,7 @@ ENV LDFLAGS="-Wl,-O1, -pie"
 RUN --network=none <<-EOF
 	set -eux
 
+	patch -p1 < snprintf-macros-c-only.patch
 	patch -p1 < remove-timestamps-from-phar.patch
 	patch -p1 < file-order-phar-pack.patch
 

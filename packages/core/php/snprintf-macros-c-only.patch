@@ -1,0 +1,19 @@
+diff --git a/main/snprintf.h b/main/snprintf.h
+--- a/main/snprintf.h
++++ b/main/snprintf.h
+@@ -91,6 +91,7 @@
+ #endif
+ #define vslprintf ap_php_vslprintf
+ 
++#ifndef __cplusplus
+ #ifdef snprintf
+ #undef snprintf
+ #endif
+@@ -108,6 +109,7 @@
+ #ifndef HAVE_ASPRINTF
+ #define asprintf ap_php_asprintf
+ #endif
++#endif /* __cplusplus */
+ 
+ typedef enum {
+ 	LM_STD = 0,
