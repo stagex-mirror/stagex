@@ -1,0 +1,19 @@
+FROM stagex/pallet-clang-gnu-busybox AS build
+COPY --from=stagex/core-curl . /
+COPY --from=stagex/core-openssl . /
+COPY --from=stagex/core-zlib . /
+COPY --from=stagex/core-libzstd . /
+ARG VERSION
+ADD fetch/trurl-${VERSION}.tar.gz .
+WORKDIR /trurl-${VERSION}
+ENV SOURCE_DATE_EPOCH=1
+RUN --network=none <<-EOF
+	set -eux
+	export LDFLAGS="${LDFLAGS} -static"
+	make NDEBUG=1 TRURL_IGNORE_CURL_CONFIG=1 LDLIBS="$(curl-config --static-libs)" -j "$(nproc)"
+	make DESTDIR=/rootfs PREFIX=/usr install
+	install -vDm644 -t /rootfs/usr/share/licenses/trurl COPYING
+EOF
+
+FROM stagex/core-filesystem AS package
+COPY --from=build /rootfs/ /
