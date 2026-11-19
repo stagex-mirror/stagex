@@ -8,9 +8,11 @@ COPY --from=stagex/core-make . /
 COPY --from=stagex/core-musl . /
 ADD fetch/zlib-${VERSION}.tar.gz .
 WORKDIR /zlib-${VERSION}
+COPY patches /patches
 ENV CFLAGS="-fPIC"
 RUN --network=none <<-EOF
 	set -eux; \
+	patch -p1 < /patches/CVE-2026-76844-CVE-2026-85091.patch; \
 	./configure \
 		--prefix=/usr \
 		--libdir=/usr/lib \

@@ -19,7 +19,7 @@ RUN --network=none <<-EOF
 	unset rootfs
 
 	export rootfs="rootfs-extended-with-deploy"
-	go build -v -o hugo_extended_with_deploy --tags extended,deploy
+	go build -v -o hugo_extended_with_deploy --tags extended,withdeploy
 	install -vDm755 hugo_extended_with_deploy /${rootfs}/usr/bin/hugo
 	install -vDm644 -t /${rootfs}/usr/share/licenses/hugo LICENSE
 	unset rootfs
