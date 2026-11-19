@@ -1,8 +1,8 @@
 diff --git a/ext/phar/tar.c b/ext/phar/tar.c
 --- a/ext/phar/tar.c
 +++ b/ext/phar/tar.c
-@@ -972,7 +972,7 @@
- 	char *buf, *signature, sigbuf[8];
+@@ -1053,7 +1053,7 @@
+ 	char *buf, sigbuf[8];
 
  	entry.flags = PHAR_ENT_PERM_DEF_FILE;
 -	entry.timestamp = time(NULL);
@@ -13,7 +13,7 @@ diff --git a/ext/phar/tar.c b/ext/phar/tar.c
 diff --git a/ext/phar/zip.c b/ext/phar/zip.c
 --- a/ext/phar/zip.c
 +++ b/ext/phar/zip.c
-@@ -158,7 +158,7 @@
+@@ -178,7 +178,7 @@
  	struct tm *tm, tmbuf;
  	time_t now;
 
@@ -22,9 +22,8 @@ diff --git a/ext/phar/zip.c b/ext/phar/zip.c
  	tm = php_localtime_r(&now, &tmbuf);
 
  	tm->tm_year = ((ddate>>9)&127) + 1980 - 1900;
-@@ -1271,7 +1271,7 @@
+@@ -1269,6 +1269,6 @@
 
- 	pass.error = &temperr;
  	entry.flags = PHAR_ENT_PERM_DEF_FILE;
 -	entry.timestamp = time(NULL);
 +	entry.timestamp = source_date_epoch_time(NULL);
@@ -34,7 +33,7 @@ diff --git a/ext/phar/zip.c b/ext/phar/zip.c
 diff --git a/ext/phar/phar.c b/ext/phar/phar.c
 --- a/ext/phar/phar.c
 +++ b/ext/phar/phar.c
-@@ -2872,7 +2872,7 @@ ZEND_ATTRIBUTE_NONNULL_ARGS(1, 4) int phar_flush_ex(phar_archive_data *phar, zen
+@@ -2906,7 +2906,7 @@ ZEND_ATTRIBUTE_NONNULL_ARGS(1, 4) int phar_flush_ex(phar_archive_data *phar, zen
  			4: metadata-len
  			+: metadata
  		*/
@@ -46,19 +45,19 @@ diff --git a/ext/phar/phar.c b/ext/phar/phar.c
 diff --git a/ext/phar/stream.c b/ext/phar/stream.c
 --- a/ext/phar/stream.c
 +++ b/ext/phar/stream.c
-@@ -469,7 +469,7 @@ static int phar_stream_flush(php_stream *stream) /* {{{ */
- 	phar_entry_data *data = (phar_entry_data *) stream->abstract;
- 
+@@ -480,7 +480,7 @@ static int phar_stream_flush(php_stream *stream) /* {{{ */
+ 	const phar_entry_data *data = stream->abstract;
+
  	if (data->internal_file->is_modified) {
 -		data->internal_file->timestamp = time(0);
 +		data->internal_file->timestamp = source_date_epoch_time(0);
  		ret = phar_flush(data->phar, &error);
  		if (error) {
- 			php_stream_wrapper_log_error(stream->wrapper, REPORT_ERRORS, "%s", error);
+ 			php_stream_warn(stream, FlushFailed, "%s", error);
 diff --git a/ext/phar/phar_internal.h b/ext/phar/phar_internal.h
 --- a/ext/phar/phar_internal.h
 +++ b/ext/phar/phar_internal.h
-@@ -323,6 +323,21 @@
+@@ -320,6 +320,21 @@
  	return PHAR_G(cached_fp)[entry->phar->phar_pos].manifest[entry->manifest_pos].fp_type;
  }
 
