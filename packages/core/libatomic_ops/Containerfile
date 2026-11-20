@@ -29,6 +29,7 @@ RUN --network=none <<-EOF
 		-Dbuild_tests=OFF
 	cmake --build build-static
 	DESTDIR=/rootfs cmake --install build-static
+       rm -f /rootfs/usr/lib/cmake/atomic_ops/Atomic_opsTargets*.cmake
 	DESTDIR=/rootfs cmake --install build
 EOF
 FROM stagex/core-filesystem AS package
