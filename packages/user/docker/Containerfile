@@ -8,7 +8,7 @@ COPY --from=stagex/user-libmnl . /
 COPY --from=stagex/user-nftables . /
 COPY --from=stagex/user-libseccomp . /
 ARG VERSION
-ENV CGO_ENABLED=1
+ENV CGO_ENABLED=0
 
 FROM base AS build-dockerd
 ADD fetch/docker-${VERSION}.tar.gz .
@@ -16,7 +16,6 @@ WORKDIR /moby-docker-v${VERSION}
 RUN --network=none <<-EOF
 	go build \
 		-o /build/dockerd \
-		-tags seccomp \
 		-gcflags='' \
 		-ldflags " \
 			${GO_LDFLAGS} \
@@ -27,7 +26,6 @@ RUN --network=none <<-EOF
 		./cmd/dockerd
 	go build \
 		-o /build/docker-proxy \
-		-tags seccomp \
 		-gcflags='' \
 		-ldflags " \
 			${GO_LDFLAGS} \
@@ -56,7 +54,6 @@ RUN --network=none <<-EOF
 		-mod=vendor \
 		-modfile=vendor.mod \
 		-o /build/docker \
-		-tags ' pkcs11' \
 		-ldflags " \
 			${GO_LDFLAGS} \
 			-buildmode=pie \

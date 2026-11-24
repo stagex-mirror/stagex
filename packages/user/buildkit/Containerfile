@@ -1,5 +1,6 @@
 FROM stagex/pallet-cgo AS build
 ARG VERSION
+ENV CGO_ENABLED=0
 ADD fetch/buildkit-${VERSION}.tar.gz .
 ENV GOPROXY=https://proxy.golang.org,direct
 ENV GOSUMDB=sum.golang.org

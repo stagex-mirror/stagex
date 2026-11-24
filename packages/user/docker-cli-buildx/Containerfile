@@ -1,5 +1,6 @@
 FROM stagex/pallet-cgo AS build
 ARG VERSION
+ENV CGO_ENABLED=0
 ADD fetch/docker-cli-buildx-${VERSION}.tar.gz .
 WORKDIR /buildx-${VERSION}
 RUN <<-EOF

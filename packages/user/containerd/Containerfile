@@ -5,8 +5,8 @@ COPY --from=stagex/user-go-md2man . /
 ADD fetch/containerd-${VERSION}.tar.gz .
 WORKDIR /containerd-${VERSION}
 RUN <<-EOF
-	make \
-		SHIM_CGO_ENABLED=1 \
+	CGO_ENABLED=0 make \
+		SHIM_CGO_ENABLED=0 \
 		VERSION=${VERSION} \
 		REVISION=${VERSION} \
 		BUILDMODE=pie \
